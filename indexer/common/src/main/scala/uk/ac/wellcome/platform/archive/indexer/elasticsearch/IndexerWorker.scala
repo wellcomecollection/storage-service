@@ -9,25 +9,35 @@ import grizzled.slf4j.Logging
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.Message
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
-import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Result, Successful}
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.{MetricsMonitoringClient, MetricsMonitoringProcessor}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+  AlpakkaSQSWorker,
+  AlpakkaSQSWorkerConfig
+}
+import uk.ac.wellcome.messaging.worker.models.{
+  NonDeterministicFailure,
+  Result,
+  Successful
+}
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.{
+  MetricsMonitoringClient,
+  MetricsMonitoringProcessor
+}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
-
 
 class IndexerWorker[T, IndexedT](
   config: AlpakkaSQSWorkerConfig,
   indexer: Indexer[T, IndexedT],
   metricsNamespace: String
-)(implicit
+)(
+  implicit
   actorSystem: ActorSystem,
   sqsAsync: SqsAsyncClient,
   monitoringClient: MetricsMonitoringClient,
-  decoder: Decoder[T],
+  decoder: Decoder[T]
 ) extends Runnable
-  with Logging {
+    with Logging {
 
   implicit val ec: ExecutionContext = actorSystem.dispatcher
 

@@ -7,7 +7,10 @@ import io.circe.Decoder
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Successful}
+import uk.ac.wellcome.messaging.worker.models.{
+  NonDeterministicFailure,
+  Successful
+}
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.Indexer
 import uk.ac.wellcome.platform.archive.indexer.fixtures.IndexerFixtures
@@ -34,7 +37,6 @@ abstract class IndexerWorkerTestCases[T, IndexedT](
   it("processes a single message") {
     val (t, id) = createT
     withLocalElasticsearchIndex(mapping) { index =>
-
       val future =
         withIndexerWorker(index) {
           _.process(t)
@@ -55,7 +57,6 @@ abstract class IndexerWorkerTestCases[T, IndexedT](
     val (t, _) = createT
 
     withLocalElasticsearchIndex(badMapping) { index =>
-
       val future =
         withIndexerWorker(index) {
           _.process(t)
