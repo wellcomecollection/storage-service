@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.indexer
 import com.sksamuel.elastic4s.ElasticDsl.{properties, textField}
 import com.sksamuel.elastic4s.Index
 import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
-import io.circe.{Decoder, Json}
+import io.circe.Decoder
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
@@ -12,8 +12,11 @@ import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.Indexer
 import uk.ac.wellcome.platform.archive.indexer.fixtures.IndexerFixtures
 
-abstract class IndexerWorkerTestCases[T, IndexedT](implicit val decoder: Decoder[T])
-  extends AnyFunSpec
+abstract class IndexerWorkerTestCases[T, IndexedT](
+  implicit
+    decoderT: Decoder[T],
+    decoderIT: Decoder[IndexedT]
+) extends AnyFunSpec
     with Matchers
     with EitherValues
     with IndexerFixtures[T, IndexedT]
@@ -22,6 +25,7 @@ abstract class IndexerWorkerTestCases[T, IndexedT](implicit val decoder: Decoder
   val mapping: MappingDefinition
   def createT: (T, String)
   def createIndexer(index: Index): Indexer[T, IndexedT]
+  def convertToIndexed(t:T): IndexedT
 
   protected val badMapping: MappingDefinition = properties(
     Seq(textField("name"))
@@ -29,11 +33,10 @@ abstract class IndexerWorkerTestCases[T, IndexedT](implicit val decoder: Decoder
 
   it("processes a single message") {
     val (t, id) = createT
-
     withLocalElasticsearchIndex(mapping) { index =>
 
       val future =
-        withIndexerWorker(index, createIndexer) {
+        withIndexerWorker(index) {
           _.process(t)
         }
 
@@ -41,15 +44,10 @@ abstract class IndexerWorkerTestCases[T, IndexedT](implicit val decoder: Decoder
         _ shouldBe a[Successful[_]]
       }
 
-      val storedT =
-        getT[Json](index, id)
-          .as[Map[String, Json]]
-          .right
-          .value
+      val expectedIndexedT = convertToIndexed(t)
+      val actualIndexedT = getT[IndexedT](index, id)
 
-      val storedTId = storedT("id").asString.get
-
-      storedTId shouldBe id
+      actualIndexedT shouldBe expectedIndexedT
     }
   }
 
@@ -59,7 +57,7 @@ abstract class IndexerWorkerTestCases[T, IndexedT](implicit val decoder: Decoder
     withLocalElasticsearchIndex(badMapping) { index =>
 
       val future =
-        withIndexerWorker(index, createIndexer) {
+        withIndexerWorker(index) {
           _.process(t)
         }
 

@@ -18,9 +18,11 @@ trait IndexerFixtures[T, IndexedT]
     with Akka
     with AlpakkaSQSWorkerFixtures
     with StorageRandomThings { this: Suite =>
+
+  def createIndexer(index: Index): Indexer[T, IndexedT]
+
   def withIndexerWorker[R](
     index: Index,
-    indexer: Index => Indexer[T, IndexedT],
     queue: Queue = dummyQueue,
   )(testWith: TestWith[IndexerWorker[T, IndexedT], R])(
     implicit decoder: Decoder[T]
@@ -30,7 +32,7 @@ trait IndexerFixtures[T, IndexedT]
 
         val worker = new IndexerWorker[T, IndexedT](
           config = createAlpakkaSQSWorkerConfig(queue),
-          indexer = indexer(index),
+          indexer = createIndexer(index),
           metricsNamespace = "indexer"
         )
 

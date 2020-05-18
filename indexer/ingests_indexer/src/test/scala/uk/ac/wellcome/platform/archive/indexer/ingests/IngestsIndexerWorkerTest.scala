@@ -27,4 +27,6 @@ class IngestsIndexerWorkerTest
           index = index
         )
 
+  override def convertToIndexed(t: Ingest): IndexedIngest =
+    IndexedIngest(t)
 }

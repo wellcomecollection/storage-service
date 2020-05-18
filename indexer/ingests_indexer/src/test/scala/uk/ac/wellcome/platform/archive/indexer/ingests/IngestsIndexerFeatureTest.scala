@@ -10,6 +10,7 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.Indexer
 import uk.ac.wellcome.platform.archive.indexer.fixtures.IndexerFixtures
 import uk.ac.wellcome.platform.archive.indexer.ingests.models.IndexedIngest
 
@@ -22,17 +23,19 @@ class IngestsIndexerFeatureTest
     with EitherValues
     with IndexerFixtures[Ingest, IndexedIngest]
     with IngestGenerators {
-  it("processes a single message") {
-    val ingest = createIngest
 
-    def createIndexer(index: Index) = new IngestIndexer(
+  override def createIndexer(index: Index): Indexer[Ingest, IndexedIngest] =
+    new IngestIndexer(
       client = elasticClient,
       index = index
     )
 
+  it("processes a single message") {
+    val ingest = createIngest
+
     withLocalElasticsearchIndex(IngestsIndexConfig.mapping) { index =>
       withLocalSqsQueue() { queue =>
-        withIndexerWorker(index, createIndexer, queue) { worker =>
+        withIndexerWorker(index, queue) { worker =>
           worker.run()
 
           sendNotificationToSQS(queue, ingest)
