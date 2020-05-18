@@ -11,7 +11,16 @@ module "base" {
     module.internal_api_container.container_definition
   ]
 
+  # We need to run at least three API tasks (three = number of Availability Zones).
+  # If you run less than three, the load balancer has to route requests between
+  # AZs, which adds significant latency.
+  #
+  #     Your load balancer is most effective when you ensure that each
+  #     enabled Availability Zone has at least one registered target
+  #
+  # See: https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/how-elastic-load-balancing-works.html
   desired_task_count = max(3, var.desired_task_count)
+
   security_group_ids = var.security_group_ids
 
   service_discovery_namespace_id = var.service_discovery_namespace_id

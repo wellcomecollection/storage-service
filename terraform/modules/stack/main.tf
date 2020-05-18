@@ -70,7 +70,10 @@ module "ingests_indexer" {
     aws_security_group.interservice.id
   ]
 
-  min_capacity = 0
+  # We run the indexer all the time to updates appear in the reporting cluster
+  # almost as soon as they're available in the API, rather than waiting for the
+  # indexer to spin up/down every time.
+  min_capacity = 1
   max_capacity = var.max_capacity
 
   use_fargate_spot = true
