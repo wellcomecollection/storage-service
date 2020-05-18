@@ -129,7 +129,7 @@ variable "archivematica_ingests_bucket" {
   type = string
 }
 
-variable "es_ingests_index_prefix" {
+variable "es_ingests_index_name" {
   type = string
 }
 

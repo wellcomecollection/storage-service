@@ -50,7 +50,7 @@ module "stack_staging" {
   replicas_table_arn  = data.terraform_remote_state.critical_staging.outputs.replicas_table_arn
   replicas_table_name = data.terraform_remote_state.critical_staging.outputs.replicas_table_name
 
-  es_ingests_index_prefix = "storage_stage_ingests"
+  es_ingests_index_name = "storage_stage_ingests"
 
   ingests_indexer_secrets = {
     es_host     = "stage/ingests_indexer/es_host"
