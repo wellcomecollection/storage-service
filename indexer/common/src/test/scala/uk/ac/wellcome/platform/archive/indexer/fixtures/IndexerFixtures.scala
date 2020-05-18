@@ -1,41 +1,40 @@
-package uk.ac.wellcome.platform.archive.indexer.ingests.fixtures
+package uk.ac.wellcome.platform.archive.indexer.fixtures
 
 import com.sksamuel.elastic4s.Index
+import io.circe.Decoder
 import org.scalatest.Suite
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
-import uk.ac.wellcome.platform.archive.indexer.fixtures.ElasticsearchFixtures
-import uk.ac.wellcome.platform.archive.indexer.ingests.{
-  IngestIndexer,
-  IngestsIndexerWorker
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
+  Indexer,
+  IndexerWorker
 }
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-trait IngestsIndexerFixtures
+trait IndexerFixtures[T, IndexedT]
     extends ElasticsearchFixtures
     with Akka
     with AlpakkaSQSWorkerFixtures
     with StorageRandomThings { this: Suite =>
-  def withIngestsIndexerWorker[R](
-    queue: Queue = dummyQueue,
-    index: Index
-  )(testWith: TestWith[IngestsIndexerWorker, R]): R = {
-    val ingestIndexer = new IngestIndexer(
-      client = elasticClient,
-      index = index
-    )
 
+  def createIndexer(index: Index): Indexer[T, IndexedT]
+
+  def withIndexerWorker[R](
+    index: Index,
+    queue: Queue = dummyQueue
+  )(testWith: TestWith[IndexerWorker[T, IndexedT], R])(
+    implicit decoder: Decoder[T]
+  ): R = {
     withActorSystem { implicit actorSystem =>
       withFakeMonitoringClient() { implicit monitoringClient =>
-        val worker = new IngestsIndexerWorker(
+        val worker = new IndexerWorker[T, IndexedT](
           config = createAlpakkaSQSWorkerConfig(queue),
-          ingestIndexer = ingestIndexer,
-          metricsNamespace = "ingests_indexer"
+          indexer = createIndexer(index),
+          metricsNamespace = "indexer"
         )
 
         testWith(worker)
