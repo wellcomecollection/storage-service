@@ -50,7 +50,7 @@ module "stack_prod" {
   replicas_table_arn  = data.terraform_remote_state.critical_prod.outputs.replicas_table_arn
   replicas_table_name = data.terraform_remote_state.critical_prod.outputs.replicas_table_name
 
-  es_ingests_index_prefix = "storage_ingests"
+  es_ingests_index_name = "storage_ingests"
 
   ingests_indexer_secrets = {
     es_host     = "prod/ingests_indexer/es_host"

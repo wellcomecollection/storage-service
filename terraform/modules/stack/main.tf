@@ -60,7 +60,7 @@ module "ingests_indexer" {
     queue_url         = module.updated_ingests_queue.url
     metrics_namespace = local.ingests_indexer_service_name
 
-    es_ingests_index_prefix = var.es_ingests_index_prefix
+    es_ingests_index_name = var.es_ingests_index_name
   }
 
   secrets = var.ingests_indexer_secrets
