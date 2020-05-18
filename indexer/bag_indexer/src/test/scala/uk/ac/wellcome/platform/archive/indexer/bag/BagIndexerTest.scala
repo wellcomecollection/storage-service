@@ -37,11 +37,12 @@ class BagIndexerTest
 
   override def createDocumentPair: (StorageManifest, StorageManifest) = {
     val storageManifest = createStorageManifest
+
     val olderStorageManifest = createStorageManifestWith(
       ingestId = storageManifest.ingestId,
       createdDate = Instant.ofEpochMilli(1)
     )
-    val newerStorageManifest = createStorageManifestWith(
+    val newerStorageManifest = olderStorageManifest.copy(
       ingestId = storageManifest.ingestId,
       createdDate = Instant.ofEpochMilli(2)
     )
