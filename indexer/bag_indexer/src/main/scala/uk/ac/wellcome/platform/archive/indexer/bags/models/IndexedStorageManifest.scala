@@ -8,7 +8,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 case class IndexedStorageManifest(
   id: String,
   createdDate: Instant,
-  @JsonKey("type") ontologyType: String = "Bag",
+  @JsonKey("type") ontologyType: String = "Bag"
 )
 
 object IndexedStorageManifest {

@@ -25,7 +25,7 @@ trait IndexerFixtures[T, IndexedT]
 
   def withIndexerWorker[R](
     index: Index,
-    queue: Queue = dummyQueue,
+    queue: Queue = dummyQueue
   )(testWith: TestWith[IndexerWorker[T, IndexedT], R])(
     implicit decoder: Decoder[T]
   ): R = {

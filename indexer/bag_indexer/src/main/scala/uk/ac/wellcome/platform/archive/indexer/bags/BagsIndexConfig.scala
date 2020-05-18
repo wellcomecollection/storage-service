@@ -9,6 +9,6 @@ object BagsIndexConfig extends IndexConfig {
     Seq(
       keywordField("id"),
       dateField("createdDate"),
-      keywordField("type"),
+      keywordField("type")
     )
 }
