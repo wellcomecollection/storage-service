@@ -131,7 +131,8 @@ class IngestStatusUpdateTest
       (Ingest.Accepted, Ingest.Succeeded),
       (Ingest.Accepted, Ingest.Failed),
       (Ingest.Processing, Ingest.Succeeded),
-      (Ingest.Processing, Ingest.Failed)
+      (Ingest.Processing, Ingest.Failed),
+      (Ingest.Failed, Ingest.Succeeded),
     )
 
     it("updates the status of an ingest") {
@@ -152,7 +153,6 @@ class IngestStatusUpdateTest
 
     val disallowedStatusUpdates = Table(
       ("initial", "update"),
-      (Ingest.Failed, Ingest.Succeeded),
       (Ingest.Failed, Ingest.Processing),
       (Ingest.Failed, Ingest.Accepted),
       (Ingest.Succeeded, Ingest.Failed),

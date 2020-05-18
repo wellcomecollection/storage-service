@@ -113,6 +113,19 @@ object IngestStates {
     case None => Left(NoCallbackOnIngestError())
   }
 
+  // The ingest statuses form a sort-of waterfall.  If you imagine them
+  // in this order:
+  //
+  //    accepted
+  //      +-> processing
+  //            +-> failed
+  //                  +-> succeeded
+  //
+  // You can move down, but you can't move back up again.
+  //
+  // e.g. once an ingest has moved to "processing" (an app has started doing
+  // some work on it), then it can't move back to "accepted".
+  //
   private def statusUpdateIsAllowed(
     initial: Ingest.Status,
     update: Ingest.Status
@@ -122,8 +135,9 @@ object IngestStates {
 
       case Ingest.Accepted   => true
       case Ingest.Processing => update != Ingest.Accepted
+      case Ingest.Failed     => update == Ingest.Succeeded
       case Ingest.Succeeded  => false
-      case Ingest.Failed     => false
+
     }
 
   private def callbackStatusUpdateIsAllowed(

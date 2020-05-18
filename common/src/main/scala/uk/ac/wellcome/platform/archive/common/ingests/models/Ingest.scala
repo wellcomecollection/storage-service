@@ -42,11 +42,11 @@ case object Ingest {
     override def toString: String = "processing"
   }
 
-  case object Succeeded extends Completed {
-    override def toString: String = "succeeded"
-  }
-
   case object Failed extends Completed {
     override def toString: String = "failed"
+  }
+
+  case object Succeeded extends Completed {
+    override def toString: String = "succeeded"
   }
 }
