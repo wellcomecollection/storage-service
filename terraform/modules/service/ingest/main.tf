@@ -4,6 +4,9 @@ module "base" {
   service_name = var.service_name
   cluster_arn  = var.cluster_arn
 
+  cpu    = 1024
+  memory = 2048
+
   container_definitions = [
     module.nginx_container.container_definition,
     module.external_api_container.container_definition,
@@ -31,6 +34,10 @@ module "base" {
   container_port = module.nginx_container.container_port
 
   subnets = var.subnets
+
+  # We don't use Fargate Spot for the ingests service, because it includes the
+  # external-facing ingests API which has to stay up.
+  use_fargate_spot = false
 }
 
 module "nginx_container" {
