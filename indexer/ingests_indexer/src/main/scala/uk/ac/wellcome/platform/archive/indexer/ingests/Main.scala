@@ -6,14 +6,12 @@ import com.sksamuel.elastic4s.Index
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder,
-  SQSBuilder
-}
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.ElasticsearchIndexCreator
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{ElasticsearchIndexCreator, IndexerWorker}
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.config.ElasticClientBuilder
+import uk.ac.wellcome.platform.archive.indexer.ingests.models.IndexedIngest
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
@@ -56,9 +54,9 @@ object Main extends WellcomeTypesafeApp {
       index = index
     )
 
-    new IngestsIndexerWorker(
+    new IndexerWorker[Ingest, IndexedIngest](
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
-      ingestIndexer = ingestIndexer,
+      indexer = ingestIndexer,
       metricsNamespace = config.required[String]("aws.metrics.namespace")
     )
   }

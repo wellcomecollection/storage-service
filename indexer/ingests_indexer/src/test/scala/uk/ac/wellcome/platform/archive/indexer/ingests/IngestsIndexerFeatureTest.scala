@@ -2,26 +2,37 @@ package uk.ac.wellcome.platform.archive.indexer.ingests
 
 import java.util.UUID
 
+import com.sksamuel.elastic4s.Index
 import io.circe.Json
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.indexer.ingests.fixtures.IngestsIndexerFixtures
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.indexer.fixtures.IndexerFixtures
+import uk.ac.wellcome.platform.archive.indexer.ingests.models.IndexedIngest
+
+import scala.concurrent.ExecutionContext.Implicits.global
+
 
 class IngestsIndexerFeatureTest
     extends AnyFunSpec
     with Matchers
     with EitherValues
-    with IngestsIndexerFixtures
+    with IndexerFixtures[Ingest, IndexedIngest]
     with IngestGenerators {
   it("processes a single message") {
     val ingest = createIngest
 
+    def createIndexer(index: Index) = new IngestIndexer(
+      client = elasticClient,
+      index = index
+    )
+
     withLocalElasticsearchIndex(IngestsIndexConfig.mapping) { index =>
       withLocalSqsQueue() { queue =>
-        withIngestsIndexerWorker(queue, index) { worker =>
+        withIndexerWorker(index, createIndexer, queue) { worker =>
           worker.run()
 
           sendNotificationToSQS(queue, ingest)
