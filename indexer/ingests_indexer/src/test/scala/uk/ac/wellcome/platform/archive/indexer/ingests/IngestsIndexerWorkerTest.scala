@@ -13,7 +13,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class IngestsIndexerWorkerTest
     extends IndexerWorkerTestCases[Ingest, IndexedIngest]
-      with IngestGenerators{
+    with IngestGenerators {
 
   override val mapping: MappingDefinition = IngestsIndexConfig.mapping
 

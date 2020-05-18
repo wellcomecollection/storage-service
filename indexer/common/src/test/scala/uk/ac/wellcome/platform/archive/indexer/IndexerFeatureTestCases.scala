@@ -9,8 +9,11 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.Indexer
 import uk.ac.wellcome.platform.archive.indexer.fixtures.IndexerFixtures
 
-abstract class IndexerFeatureTestCases[T, IndexedT](implicit decoderT: Decoder[T], encoderT: Encoder[T], decoderIT: Decoder[IndexedT])
-  extends AnyFunSpec
+abstract class IndexerFeatureTestCases[T, IndexedT](
+  implicit decoderT: Decoder[T],
+  encoderT: Encoder[T],
+  decoderIT: Decoder[IndexedT]
+) extends AnyFunSpec
     with Matchers
     with EitherValues
     with IndexerFixtures[T, IndexedT] {

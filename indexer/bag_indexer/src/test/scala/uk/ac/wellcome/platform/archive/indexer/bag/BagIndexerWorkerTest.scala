@@ -6,14 +6,17 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.indexer.IndexerWorkerTestCases
-import uk.ac.wellcome.platform.archive.indexer.bags.{BagIndexer, BagsIndexConfig}
+import uk.ac.wellcome.platform.archive.indexer.bags.{
+  BagIndexer,
+  BagsIndexConfig
+}
 import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.Indexer
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class BagIndexerWorkerTest
-  extends IndexerWorkerTestCases[StorageManifest, IndexedStorageManifest]
+    extends IndexerWorkerTestCases[StorageManifest, IndexedStorageManifest]
     with StorageManifestGenerators {
 
   override val mapping: MappingDefinition = BagsIndexConfig.mapping
@@ -24,7 +27,9 @@ class BagIndexerWorkerTest
     (storageManifest, storageManifest.id.toString)
   }
 
-  override def createIndexer(index: Index): Indexer[StorageManifest, IndexedStorageManifest] =
+  override def createIndexer(
+    index: Index
+  ): Indexer[StorageManifest, IndexedStorageManifest] =
     new BagIndexer(
       client = elasticClient,
       index = index

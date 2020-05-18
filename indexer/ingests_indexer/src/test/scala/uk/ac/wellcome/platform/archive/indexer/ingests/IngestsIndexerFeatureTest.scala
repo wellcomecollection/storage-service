@@ -12,7 +12,7 @@ import uk.ac.wellcome.platform.archive.indexer.ingests.models.IndexedIngest
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class IngestsIndexerFeatureTest
-  extends IndexerFeatureTestCases[Ingest, IndexedIngest]
+    extends IndexerFeatureTestCases[Ingest, IndexedIngest]
     with IngestGenerators {
 
   override def convertIndexedT(t: Ingest): IndexedIngest = IndexedIngest(t)
