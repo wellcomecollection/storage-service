@@ -15,7 +15,6 @@ import uk.ac.wellcome.platform.archive.indexer.ingests.models.IndexedIngest
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-
 class IngestsIndexerFeatureTest
     extends AnyFunSpec
     with Matchers

@@ -8,10 +8,12 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{Indexer, IndexerWorker}
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
+  Indexer,
+  IndexerWorker
+}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-
 
 trait IndexerFixtures[T, IndexedT]
     extends ElasticsearchFixtures
@@ -21,13 +23,12 @@ trait IndexerFixtures[T, IndexedT]
   def withIndexerWorker[R](
     index: Index,
     indexer: Index => Indexer[T, IndexedT],
-    queue: Queue = dummyQueue,
+    queue: Queue = dummyQueue
   )(testWith: TestWith[IndexerWorker[T, IndexedT], R])(
     implicit decoder: Decoder[T]
   ): R = {
     withActorSystem { implicit actorSystem =>
       withFakeMonitoringClient() { implicit monitoringClient =>
-
         val worker = new IndexerWorker[T, IndexedT](
           config = createAlpakkaSQSWorkerConfig(queue),
           indexer = indexer(index),

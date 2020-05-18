@@ -23,8 +23,8 @@ class IngestsIndexerWorkerTest
 
   override def createIndexer(index: Index): Indexer[Ingest, IndexedIngest] =
     new IngestIndexer(
-          client = elasticClient,
-          index = index
-        )
+      client = elasticClient,
+      index = index
+    )
 
 }
