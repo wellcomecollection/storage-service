@@ -17,7 +17,9 @@ class BagIndexer(val client: ElasticClient, val index: Index)(
   override protected def id(storageManifest: StorageManifest): String =
     storageManifest.id.toString
 
-  override protected def toDisplay(storageManifest: StorageManifest): IndexedStorageManifest =
+  override protected def toDisplay(
+    storageManifest: StorageManifest
+  ): IndexedStorageManifest =
     IndexedStorageManifest(storageManifest)
 
   override protected def version(storageManifest: StorageManifest): Long =
