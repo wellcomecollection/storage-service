@@ -17,8 +17,8 @@ import uk.ac.wellcome.platform.archive.indexer.fixtures.IndexerFixtures
 
 abstract class IndexerWorkerTestCases[T, IndexedT](
   implicit
-    decoderT: Decoder[T],
-    decoderIT: Decoder[IndexedT]
+  decoderT: Decoder[T],
+  decoderIT: Decoder[IndexedT]
 ) extends AnyFunSpec
     with Matchers
     with EitherValues
@@ -28,7 +28,7 @@ abstract class IndexerWorkerTestCases[T, IndexedT](
   val mapping: MappingDefinition
   def createT: (T, String)
   def createIndexer(index: Index): Indexer[T, IndexedT]
-  def convertToIndexed(t:T): IndexedT
+  def convertToIndexed(t: T): IndexedT
 
   protected val badMapping: MappingDefinition = properties(
     Seq(textField("name"))
