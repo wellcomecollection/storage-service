@@ -296,7 +296,7 @@ trait IngestTrackerTestCases[Context]
           (Ingest.Processing, Ingest.Succeeded),
           (Ingest.Failed, Ingest.Failed),
           (Ingest.Failed, Ingest.Succeeded),
-          (Ingest.Succeeded, Ingest.Succeeded),
+          (Ingest.Succeeded, Ingest.Succeeded)
         )
 
         it("updates the status of an ingest") {
@@ -324,7 +324,7 @@ trait IngestTrackerTestCases[Context]
           (Ingest.Failed, Ingest.Processing),
           (Ingest.Succeeded, Ingest.Accepted),
           (Ingest.Succeeded, Ingest.Processing),
-          (Ingest.Succeeded, Ingest.Failed),
+          (Ingest.Succeeded, Ingest.Failed)
         )
 
         it("does not allow the status to go backwards") {
