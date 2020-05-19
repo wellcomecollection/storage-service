@@ -60,9 +60,19 @@ module "stack_prod" {
     es_password = "prod/ingests_indexer/es_password"
   }
 
+  es_bags_index_name = "storage_bags"
+
+  bag_indexer_secrets = {
+    es_host     = "prod/bag_indexer/es_host"
+    es_port     = "prod/bag_indexer/es_port"
+    es_protocol = "prod/bag_indexer/es_protocol"
+    es_username = "prod/bag_indexer/es_username"
+    es_password = "prod/bag_indexer/es_password"
+  }
+
   workflow_bucket_name = local.workflow_bucket_name
 
   archivematica_ingests_bucket             = data.terraform_remote_state.archivematica_infra.outputs.ingests_bucket_arn
-  bag_register_output_subscribe_principals = ["${local.catalogue_pipeline_account_principal}"]
+  bag_register_output_subscribe_principals = [local.catalogue_pipeline_account_principal]
 }
 
