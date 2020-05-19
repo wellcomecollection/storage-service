@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+"""
+Trigger an end-to-end test of a bag through the storage service.
+"""
+
+import os
 
 import boto3
 from wellcome_storage_service import StorageServiceClient
@@ -26,18 +31,20 @@ def get_client(api_url):
     )
 
 
-def main():
-    # TODO: Make this configurable by environment variable.
-    client = get_client(
-        api_url="https://api-stage.wellcomecollection.org/storage/v1"
-    )
+def main(*args):
+    bucket = os.environ["BUCKET"]
+    key = os.environ["KEY"]
+    external_identifier = os.environ["EXTERNAL_IDENTIFIER"]
 
-    # TODO: Use the bag from wc-storage-infra
+    api_url = os.environ["API_URL"]
+
+    client = get_client(api_url=api_url)
+
     ingest_location = client.create_s3_ingest(
         space_id="testing",
-        s3_bucket="wellcomecollection-workflow-export-bagit-stage",
-        s3_key="b28656313.tar.gz",
-        external_identifier="b28656313"
+        s3_bucket=bucket,
+        s3_key=key,
+        external_identifier=external_identifier
     )
 
     print(ingest_location)

@@ -13,7 +13,7 @@ SBT_DOCKER_LIBRARIES    =
 SBT_NO_DOCKER_LIBRARIES =
 
 PYTHON_APPS =
-LAMBDAS 	= trigger_test_bag
+LAMBDAS 	= end_to_end_bag_test
 
 TF_NAME =
 TF_PATH =
