@@ -36,6 +36,8 @@ def main(*args):
     key = os.environ["KEY"]
     external_identifier = os.environ["EXTERNAL_IDENTIFIER"]
 
+    ingest_type = os.environ.get("INGEST_TYPE", "create")
+
     api_url = os.environ["API_URL"]
 
     client = get_client(api_url=api_url)
@@ -44,7 +46,8 @@ def main(*args):
         space_id="testing",
         s3_bucket=bucket,
         s3_key=key,
-        external_identifier=external_identifier
+        external_identifier=external_identifier,
+        ingest_type=ingest_type,
     )
 
     print(ingest_location)
