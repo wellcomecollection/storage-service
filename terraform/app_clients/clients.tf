@@ -31,3 +31,14 @@ module "catalogue_client" {
   allow_bags_access    = true
   allow_ingests_access = true
 }
+
+module "end_to_end_client" {
+  source = "../modules/app_client"
+
+  name         = "End-to-end Lambda tester"
+  user_pool_id = local.wc_user_pool_id
+
+  allow_bags_access    = true
+  allow_ingests_access = true
+}
+
