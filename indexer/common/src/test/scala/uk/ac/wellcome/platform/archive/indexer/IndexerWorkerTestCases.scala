@@ -11,7 +11,6 @@ import uk.ac.wellcome.messaging.worker.models.{
   NonDeterministicFailure,
   Successful
 }
-import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.Indexer
 import uk.ac.wellcome.platform.archive.indexer.fixtures.IndexerFixtures
 
@@ -22,8 +21,7 @@ abstract class IndexerWorkerTestCases[T, IndexedT](
 ) extends AnyFunSpec
     with Matchers
     with EitherValues
-    with IndexerFixtures[T, IndexedT]
-    with IngestGenerators {
+    with IndexerFixtures[T, IndexedT] {
 
   val mapping: MappingDefinition
   def createT: (T, String)
