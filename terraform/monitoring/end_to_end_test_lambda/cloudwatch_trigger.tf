@@ -22,6 +22,6 @@ resource "aws_lambda_permission" "allow_cloudwatch_trigger" {
 resource "aws_cloudwatch_event_target" "event_trigger" {
   count = 0
 
-  rule  = aws_cloudwatch_event_rule.every_day_at_9pm.name
-  arn   = module.lambda.arn
+  rule = aws_cloudwatch_event_rule.every_day_at_9pm.name
+  arn  = module.lambda.arn
 }

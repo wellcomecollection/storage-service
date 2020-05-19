@@ -1,7 +1,7 @@
 module "end_to_end_bag_tester_stage" {
   source = "./end_to_end_test_lambda"
 
-  name = "end_to_end_bag_test--staging"
+  name        = "end_to_end_bag_test--staging"
   description = "Send a bag to test the staging storage service"
 
   environment = {
@@ -19,7 +19,7 @@ module "end_to_end_bag_tester_stage" {
 module "end_to_end_bag_tester_prod" {
   source = "./end_to_end_test_lambda"
 
-  name = "end_to_end_bag_test"
+  name        = "end_to_end_bag_test"
   description = "Send a bag to test the storage service"
 
   environment = {
