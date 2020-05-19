@@ -7,12 +7,31 @@ locals {
   test_bag_prefix = "test_bags/"
 }
 
-resource "aws_s3_bucket_object" "bag_with_one_text_file" {
-  bucket = local.infra_bucket
-  key    = "${local.test_bag_prefix}bag_with_one_text_file.tar.gz"
-  source = "${path.module}/../../monitoring/test_bags/bag_with_one_text_file.tar.gz"
+module "bag_with_one_text_file" {
+  source = "./test_bag"
 
-  etag = filemd5("${path.module}/../../monitoring/test_bags/bag_with_one_text_file.tar.gz")
+  infra_bucket    = local.infra_bucket
+  test_bag_prefix = local.test_bag_prefix
+
+  filename = "bag_with_one_text_file.tar.gz"
+}
+
+module "bag_with_fetch_file_stage" {
+  source = "./test_bag"
+
+  infra_bucket    = local.infra_bucket
+  test_bag_prefix = local.test_bag_prefix
+
+  filename = "bag_with_fetch_file_stage.tar.gz"
+}
+
+module "bag_with_fetch_file_prod" {
+  source = "./test_bag"
+
+  infra_bucket    = local.infra_bucket
+  test_bag_prefix = local.test_bag_prefix
+
+  filename = "bag_with_fetch_file_prod.tar.gz"
 }
 
 # Give the unpacker tasks permission to read all of the test bags.
@@ -31,5 +50,10 @@ data "aws_iam_policy_document" "read_test_bags" {
 
 resource "aws_iam_role_policy" "allow_staging_read_test_bags" {
   role   = data.terraform_remote_state.stack_staging.outputs.unpacker_task_role_name
+  policy = data.aws_iam_policy_document.read_test_bags.json
+}
+
+resource "aws_iam_role_policy" "allow_prod_read_test_bags" {
+  role   = data.terraform_remote_state.stack_prod.outputs.unpacker_task_role_name
   policy = data.aws_iam_policy_document.read_test_bags.json
 }
