@@ -119,8 +119,16 @@ variable "archivematica_ingests_bucket" {
   type = string
 }
 
+variable "es_bags_index_name" {
+  type = string
+}
+
 variable "es_ingests_index_name" {
   type = string
+}
+
+variable "bag_indexer_secrets" {
+  type = map(string)
 }
 
 variable "ingests_indexer_secrets" {

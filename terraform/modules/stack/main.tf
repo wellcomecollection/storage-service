@@ -81,6 +81,44 @@ module "ingests_indexer" {
   service_discovery_namespace_id = local.service_discovery_namespace_id
 }
 
+# bag_indexer
+
+module "bag_indexer" {
+  source = "../service/worker"
+
+  container_image = local.image_ids["bag_indexer"]
+
+  cluster_name = aws_ecs_cluster.cluster.name
+  cluster_arn  = aws_ecs_cluster.cluster.arn
+
+  subnets      = var.private_subnets
+  service_name = "${var.namespace}-bag-indexer"
+
+  environment = {
+    queue_url         = module.bag_register_output_queue.url
+    metrics_namespace = local.bag_indexer_service_name
+
+    es_bags_index_name = var.es_bags_index_name
+  }
+
+  secrets = var.bag_indexer_secrets
+
+  security_group_ids = [
+    aws_security_group.service_egress.id,
+    aws_security_group.interservice.id
+  ]
+
+  # We run the indexer all the time to updates appear in the reporting cluster
+  # almost as soon as they're available in the API, rather than waiting for the
+  # indexer to spin up/down every time.
+  min_capacity = 1
+  max_capacity = var.max_capacity
+
+  use_fargate_spot = true
+
+  service_discovery_namespace_id = local.service_discovery_namespace_id
+}
+
 # bags_api
 
 module "bags_api" {

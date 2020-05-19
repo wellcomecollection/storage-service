@@ -11,6 +11,7 @@ locals {
   bag_register_service_name           = "${var.namespace}-bag-register"
   bag_verifier_post_repl_service_name = "${var.namespace}-bag-verifier-post-replication"
   bag_verifier_pre_repl_service_name  = "${var.namespace}-bag-verifier-pre-replication"
+  bag_indexer_service_name            = "${var.namespace}-bag_indexer"
   ingests_indexer_service_name        = "${var.namespace}-ingests_indexer"
   replica_aggregator_service_name     = "${var.namespace}-replica_aggregator"
 

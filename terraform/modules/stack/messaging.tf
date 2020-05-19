@@ -356,7 +356,7 @@ module "bag_register_output_queue" {
 
   topic_arns = [module.bag_register_output_topic.arn]
 
-  role_names = []
+  role_names = [module.bag_indexer.task_role_name]
 
   aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn

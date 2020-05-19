@@ -12,6 +12,7 @@ locals {
     "bag_root_finder",
     "bag_verifier",
     "bag_unpacker",
+    "bag_indexer",
     "replica_aggregator",
   ]
 }
