@@ -15,7 +15,8 @@ class IngestsIndexerFeatureTest
     extends IndexerFeatureTestCases[Ingest, IndexedIngest]
     with IngestGenerators {
 
-  override def convertIndexedT(ingest: Ingest): IndexedIngest = IndexedIngest(ingest)
+  override def convertIndexedT(ingest: Ingest): IndexedIngest =
+    IndexedIngest(ingest)
 
   def createT: (Ingest, String) = {
     val ingest = createIngest

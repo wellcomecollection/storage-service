@@ -19,7 +19,9 @@ class BagIndexerFeatureTest
     extends IndexerFeatureTestCases[StorageManifest, IndexedStorageManifest]
     with StorageManifestGenerators {
 
-  override def convertIndexedT(manifest: StorageManifest): IndexedStorageManifest =
+  override def convertIndexedT(
+    manifest: StorageManifest
+  ): IndexedStorageManifest =
     IndexedStorageManifest(manifest)
 
   def createT: (StorageManifest, String) = {

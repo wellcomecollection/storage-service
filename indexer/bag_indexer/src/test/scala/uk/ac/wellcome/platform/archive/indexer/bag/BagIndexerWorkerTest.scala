@@ -35,6 +35,8 @@ class BagIndexerWorkerTest
       index = index
     )
 
-  override def convertToIndexed(manifest: StorageManifest): IndexedStorageManifest =
+  override def convertToIndexed(
+    manifest: StorageManifest
+  ): IndexedStorageManifest =
     IndexedStorageManifest(manifest)
 }
