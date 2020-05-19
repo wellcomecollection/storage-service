@@ -29,10 +29,12 @@ The indexer apps record manifests, files and ingests in Elasticsearch.
     -   Password: use your favourite technique of choice
     -   Roles: add the role you created in step 4
 
-6.  Put the following variables in Elasticsearch:
+6.  Put the following variables in Secrets Manager:
 
     -   `${label}/ingests_indexer/es_host`
     -   `${label}/ingests_indexer/es_port`
     -   `${label}/ingests_indexer/es_protocol`
     -   `${label}/ingests_indexer/es_username`
     -   `${label}/ingests_indexer/es_password`
+
+    You can use this script to add secrets to Secrets Manager: <https://github.com/wellcomecollection/platform-infrastructure/blob/master/scripts/add_kms_secret.py>
