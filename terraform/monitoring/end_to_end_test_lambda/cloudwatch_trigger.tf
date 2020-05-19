@@ -3,12 +3,16 @@
 # `count` to 1.
 
 resource "aws_cloudwatch_event_rule" "every_day_at_9pm" {
+  count = 0
+
   name                = "trigger-${var.name}"
   schedule_expression = "cron(* 21 * * ? *)"
 }
 
 
 resource "aws_lambda_permission" "allow_cloudwatch_trigger" {
+  count = 0
+
   action        = "lambda:InvokeFunction"
   function_name = module.lambda.function_name
   principal     = "events.amazonaws.com"
