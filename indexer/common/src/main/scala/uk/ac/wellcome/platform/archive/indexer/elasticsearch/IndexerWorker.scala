@@ -41,26 +41,28 @@ abstract class IndexerWorker[SourceT, T, IndexedT](
 
   implicit val ec: ExecutionContext = actorSystem.dispatcher
 
-  private def index(t: T): Future[Result[Unit]] = indexer
-    .index(Seq(t))
-    .map {
-      case Right(_) =>
-        debug(s"Successfully indexed $t")
-        Successful(None)
+  private def index(t: T): Future[Result[Unit]] =
+    indexer
+      .index(Seq(t))
+      .map {
+        case Right(_) =>
+          debug(s"Successfully indexed $t")
+          Successful(None)
 
-      // We can't be sure what the error is here.  The cost of retrying it is
-      // very cheap, so assume it's a flaky error and let it land on the DLQ if not.
-      case Left(t) =>
-        warn(s"Unable to index $t")
-        NonDeterministicFailure(new Throwable(s"Error indexing $t"))
-    }
+        // We can't be sure what the error is here.  The cost of retrying it is
+        // very cheap, so assume it's a flaky error and let it land on the DLQ if not.
+        case Left(t) =>
+          warn(s"Unable to index $t")
+          NonDeterministicFailure(new Throwable(s"Error indexing $t"))
+      }
 
   def load(source: SourceT): Future[T]
 
-  def process(sourceT: SourceT): Future[Result[Unit]] = for {
-    t <- load(sourceT)
-    result <- index(t)
-  } yield result
+  def process(sourceT: SourceT): Future[Result[Unit]] =
+    for {
+      t <- load(sourceT)
+      result <- index(t)
+    } yield result
 
   val worker: AlpakkaSQSWorker[SourceT, Instant, Instant, Unit] =
     new AlpakkaSQSWorker[SourceT, Instant, Instant, Unit](

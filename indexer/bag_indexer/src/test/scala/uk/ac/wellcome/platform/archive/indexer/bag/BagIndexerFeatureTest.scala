@@ -10,13 +10,24 @@ import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerato
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.indexer.IndexerFeatureTestCases
 import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
-import uk.ac.wellcome.platform.archive.indexer.bags.{BagIndexer, BagIndexerWorker, BagsIndexConfig}
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{Indexer, IndexerWorker}
+import uk.ac.wellcome.platform.archive.indexer.bags.{
+  BagIndexer,
+  BagIndexerWorker,
+  BagsIndexConfig
+}
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
+  Indexer,
+  IndexerWorker
+}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class BagIndexerFeatureTest
-    extends IndexerFeatureTestCases[StorageManifest, StorageManifest, IndexedStorageManifest]
+    extends IndexerFeatureTestCases[
+      StorageManifest,
+      StorageManifest,
+      IndexedStorageManifest
+    ]
     with StorageManifestGenerators {
 
   override def convertIndexedT(
@@ -40,7 +51,12 @@ class BagIndexerFeatureTest
 
   override val mapping: MappingDefinition = BagsIndexConfig.mapping
 
-  override def withIndexerWorker[R](index: Index, queue: SQS.Queue)(testWith: TestWith[IndexerWorker[StorageManifest, StorageManifest, IndexedStorageManifest], R])(implicit decoder: Decoder[StorageManifest]): R = {
+  override def withIndexerWorker[R](index: Index, queue: SQS.Queue)(
+    testWith: TestWith[
+      IndexerWorker[StorageManifest, StorageManifest, IndexedStorageManifest],
+      R
+    ]
+  )(implicit decoder: Decoder[StorageManifest]): R = {
     withActorSystem { implicit actorSystem =>
       withFakeMonitoringClient() { implicit monitoringClient =>
         val worker = new BagIndexerWorker(

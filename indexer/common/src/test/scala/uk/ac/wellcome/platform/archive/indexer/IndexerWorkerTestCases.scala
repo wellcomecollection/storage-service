@@ -6,7 +6,10 @@ import io.circe.Decoder
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Successful}
+import uk.ac.wellcome.messaging.worker.models.{
+  NonDeterministicFailure,
+  Successful
+}
 import uk.ac.wellcome.platform.archive.indexer.fixtures.IndexerFixtures
 
 abstract class IndexerWorkerTestCases[SourceT, T, IndexedT](

@@ -9,7 +9,10 @@ import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.indexer.IndexerWorkerTestCases
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{Indexer, IndexerWorker}
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
+  Indexer,
+  IndexerWorker
+}
 import uk.ac.wellcome.platform.archive.indexer.ingests.models.IndexedIngest
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -35,7 +38,9 @@ class IngestsIndexerWorkerTest
   override def convertToIndexed(t: Ingest): IndexedIngest =
     IndexedIngest(t)
 
-  override def withIndexerWorker[R](index: Index, queue: SQS.Queue)(testWith: TestWith[IndexerWorker[Ingest, Ingest, IndexedIngest], R])(implicit decoder: Decoder[Ingest]): R = {
+  override def withIndexerWorker[R](index: Index, queue: SQS.Queue)(
+    testWith: TestWith[IndexerWorker[Ingest, Ingest, IndexedIngest], R]
+  )(implicit decoder: Decoder[Ingest]): R = {
     withActorSystem { implicit actorSystem =>
       withFakeMonitoringClient() { implicit monitoringClient =>
         val worker = new IngestsIndexerWorker(
