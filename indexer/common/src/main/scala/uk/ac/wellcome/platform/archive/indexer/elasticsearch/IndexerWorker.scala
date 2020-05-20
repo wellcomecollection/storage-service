@@ -26,7 +26,7 @@ import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class IndexerWorker[T, IndexedT](
+abstract class IndexerWorker[SourceT, T, IndexedT](
   config: AlpakkaSQSWorkerConfig,
   indexer: Indexer[T, IndexedT],
   metricsNamespace: String
@@ -35,13 +35,13 @@ class IndexerWorker[T, IndexedT](
   actorSystem: ActorSystem,
   sqsAsync: SqsAsyncClient,
   monitoringClient: MetricsMonitoringClient,
-  decoder: Decoder[T]
+  decoder: Decoder[SourceT]
 ) extends Runnable
     with Logging {
 
   implicit val ec: ExecutionContext = actorSystem.dispatcher
 
-  def process(t: T): Future[Result[Unit]] =
+  private def index(t: T): Future[Result[Unit]] =
     indexer
       .index(Seq(t))
       .map {
@@ -56,11 +56,19 @@ class IndexerWorker[T, IndexedT](
           NonDeterministicFailure(new Throwable(s"Error indexing $t"))
       }
 
-  val worker: AlpakkaSQSWorker[T, Instant, Instant, Unit] =
-    new AlpakkaSQSWorker[T, Instant, Instant, Unit](
+  def load(source: SourceT): Future[T]
+
+  def process(sourceT: SourceT): Future[Result[Unit]] =
+    for {
+      t <- load(sourceT)
+      result <- index(t)
+    } yield result
+
+  val worker: AlpakkaSQSWorker[SourceT, Instant, Instant, Unit] =
+    new AlpakkaSQSWorker[SourceT, Instant, Instant, Unit](
       config,
       monitoringProcessorBuilder = (ec: ExecutionContext) =>
-        new MetricsMonitoringProcessor[T](metricsNamespace)(
+        new MetricsMonitoringProcessor[SourceT](metricsNamespace)(
           monitoringClient,
           ec
         )
