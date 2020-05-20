@@ -10,6 +10,10 @@ module "daily_reporter_lambda" {
   timeout = 30
 }
 
+data "aws_secretsmanager_secret_version" "storage_service_reporter_slack_webhook" {
+  secret_id = "storage_service_reporter/slack_webhook"
+}
+
 data "aws_secretsmanager_secret_version" "storage_service_reporter_es_host" {
   secret_id = "storage_service_reporter/es_host"
 }
@@ -33,6 +37,7 @@ data "aws_iam_policy_document" "read_es_secrets" {
     ]
 
     resources = [
+      data.aws_secretsmanager_secret_version.storage_service_reporter_slack_webhook.arn,
       data.aws_secretsmanager_secret_version.storage_service_reporter_es_host.arn,
       data.aws_secretsmanager_secret_version.storage_service_reporter_es_port.arn,
       data.aws_secretsmanager_secret_version.storage_service_reporter_es_user.arn,
@@ -49,7 +54,7 @@ resource "aws_iam_role_policy" "allow_reporter_to_read_es_secrets" {
 # Schedule the reporter to run at 6am every day
 
 resource "aws_cloudwatch_event_rule" "every_day_at_6am" {
-  name                = "trigger-${var.name}"
+  name                = "trigger_daily_reporter"
   schedule_expression = "cron(* 6 * * ? *)"
 }
 
