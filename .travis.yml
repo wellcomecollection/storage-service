@@ -24,6 +24,8 @@ jobs:
     - env: SBT_PROJECT=ingests_api
     - env: SBT_PROJECT=notifier
 
+    - env: TASK=s3_object_tagger-test
+
     # - env: TASK=python_client-test
 
 script:
