@@ -1,32 +1,26 @@
 package uk.ac.wellcome.platform.archive.indexer
 
 import com.sksamuel.elastic4s.ElasticDsl.{properties, textField}
-import com.sksamuel.elastic4s.Index
 import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
 import io.circe.Decoder
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.messaging.worker.models.{
-  NonDeterministicFailure,
-  Successful
-}
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.Indexer
+import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Successful}
 import uk.ac.wellcome.platform.archive.indexer.fixtures.IndexerFixtures
 
-abstract class IndexerWorkerTestCases[T, IndexedT](
+abstract class IndexerWorkerTestCases[SourceT, T, IndexedT](
   implicit
-  decoderT: Decoder[T],
+  decoderT: Decoder[SourceT],
   decoderIT: Decoder[IndexedT]
 ) extends AnyFunSpec
     with Matchers
     with EitherValues
-    with IndexerFixtures[T, IndexedT] {
+    with IndexerFixtures[SourceT, T, IndexedT] {
 
   val mapping: MappingDefinition
-  def createT: (T, String)
-  def createIndexer(index: Index): Indexer[T, IndexedT]
-  def convertToIndexed(t: T): IndexedT
+  def createT: (SourceT, String)
+  def convertToIndexed(t: SourceT): IndexedT
 
   protected val badMapping: MappingDefinition = properties(
     Seq(textField("name"))
