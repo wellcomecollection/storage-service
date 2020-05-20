@@ -24,7 +24,7 @@ trait StorageManifestVHSFixture extends EitherValues {
 
   type StorageManifestTypedStore = MemoryTypedStore[String, StorageManifest]
 
-  def createIndex: StorageManifestIndex =
+  def createStorageManifestIndex: StorageManifestIndex =
     new MemoryStore[Version[String, Int], StoreEntry](
       initialEntries = Map.empty
     ) with MemoryMaxima[String, StoreEntry]

@@ -6,29 +6,25 @@ import io.circe.Decoder
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS
+import uk.ac.wellcome.platform.archive.common.KnownReplicasPayload
+import uk.ac.wellcome.platform.archive.common.fixtures.StorageManifestVHSFixture
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.indexer.IndexerFeatureTestCases
 import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
-import uk.ac.wellcome.platform.archive.indexer.bags.{
-  BagIndexer,
-  BagIndexerWorker,
-  BagsIndexConfig
-}
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
-  Indexer,
-  IndexerWorker
-}
+import uk.ac.wellcome.platform.archive.indexer.bags.{BagIndexer, BagIndexerWorker, BagsIndexConfig}
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{Indexer, IndexerWorker}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class BagIndexerFeatureTest
     extends IndexerFeatureTestCases[
-      StorageManifest,
+      KnownReplicasPayload,
       StorageManifest,
       IndexedStorageManifest
     ]
-    with StorageManifestGenerators {
+      with StorageManifestGenerators
+      with StorageManifestVHSFixture {
 
   override def convertIndexedT(
     manifest: StorageManifest
@@ -53,16 +49,19 @@ class BagIndexerFeatureTest
 
   override def withIndexerWorker[R](index: Index, queue: SQS.Queue)(
     testWith: TestWith[
-      IndexerWorker[StorageManifest, StorageManifest, IndexedStorageManifest],
+      IndexerWorker[KnownReplicasPayload, StorageManifest, IndexedStorageManifest],
       R
     ]
-  )(implicit decoder: Decoder[StorageManifest]): R = {
+  )(implicit decoder: Decoder[KnownReplicasPayload]): R = {
     withActorSystem { implicit actorSystem =>
       withFakeMonitoringClient() { implicit monitoringClient =>
+        val storageManifestDao = createStorageManifestDao()
+
         val worker = new BagIndexerWorker(
           config = createAlpakkaSQSWorkerConfig(queue),
           indexer = createIndexer(index),
-          metricsNamespace = "indexer"
+          metricsNamespace = "indexer",
+          storageManifestDao = storageManifestDao
         )
 
         testWith(worker)

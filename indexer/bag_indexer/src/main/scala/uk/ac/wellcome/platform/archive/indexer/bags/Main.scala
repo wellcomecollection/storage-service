@@ -6,12 +6,9 @@ import com.sksamuel.elastic4s.Index
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder,
-  SQSBuilder
-}
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
+import uk.ac.wellcome.platform.archive.common.config.builders.StorageManifestDaoBuilder
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.ElasticsearchIndexCreator
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.config.ElasticClientBuilder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
@@ -56,10 +53,13 @@ object Main extends WellcomeTypesafeApp {
       index = index
     )
 
+    val storageManifestDao = StorageManifestDaoBuilder.build(config)
+
     new BagIndexerWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
       indexer = bagIndexer,
-      metricsNamespace = config.required[String]("aws.metrics.namespace")
+      metricsNamespace = config.required[String]("aws.metrics.namespace"),
+      storageManifestDao = storageManifestDao
     )
   }
 }
