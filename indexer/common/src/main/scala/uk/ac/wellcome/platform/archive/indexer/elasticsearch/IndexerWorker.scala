@@ -9,22 +9,14 @@ import grizzled.slf4j.Logging
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.Message
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{
-  AlpakkaSQSWorker,
-  AlpakkaSQSWorkerConfig
-}
-import uk.ac.wellcome.messaging.worker.models.{
-  NonDeterministicFailure,
-  Result,
-  Successful
-}
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.{
-  MetricsMonitoringClient,
-  MetricsMonitoringProcessor
-}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
+import uk.ac.wellcome.messaging.worker.models.{DeterministicFailure, NonDeterministicFailure, Result, Successful}
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.{MetricsMonitoringClient, MetricsMonitoringProcessor}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
+import cats.data.EitherT
+import cats.implicits._
 
 abstract class IndexerWorker[SourceT, T, IndexedT](
   config: AlpakkaSQSWorkerConfig,
@@ -41,28 +33,36 @@ abstract class IndexerWorker[SourceT, T, IndexedT](
 
   implicit val ec: ExecutionContext = actorSystem.dispatcher
 
-  private def index(t: T): Future[Result[Unit]] =
-    indexer
-      .index(Seq(t))
-      .map {
-        case Right(_) =>
-          debug(s"Successfully indexed $t")
-          Successful(None)
+  private def indexT(t: T): Future[Either[IndexerWorkerError, T]] =
+    indexer.index(Seq(t)) map {
+      case Right(_) => Right(t)
+      // We can't be sure what the error is here.  The cost of retrying it is
+      // very cheap, so assume it's a flaky error and can be retried.
+      case Left(_) => Left(
+        RetryableIndexingError(
+          payload = t,
+          cause = new Exception(s"Error indexing $t")
+        )
+      )
+    }
 
-        // We can't be sure what the error is here.  The cost of retrying it is
-        // very cheap, so assume it's a flaky error and let it land on the DLQ if not.
-        case Left(t) =>
-          warn(s"Unable to index $t")
-          NonDeterministicFailure(new Throwable(s"Error indexing $t"))
-      }
-
-  def load(source: SourceT): Future[T]
+  def load(source: SourceT): Future[Either[IndexerWorkerError, T]]
 
   def process(sourceT: SourceT): Future[Result[Unit]] =
-    for {
-      t <- load(sourceT)
-      result <- index(t)
-    } yield result
+    (for {
+      t <- EitherT(load(sourceT))
+      result <- EitherT(indexT(t))
+    } yield result).value map {
+      case Right(t) =>
+        debug(s"Successfully indexed $t")
+        Successful(None)
+      case Left(RetryableIndexingError(t,e)) =>
+        warn(s"RetryableIndexingError: Unable to index $t")
+        NonDeterministicFailure(e)
+      case Left(e@FatalIndexingError(t)) =>
+        warn(s"FatalIndexingError: Unable to index $t")
+        DeterministicFailure(e)
+    }
 
   val worker: AlpakkaSQSWorker[SourceT, Instant, Instant, Unit] =
     new AlpakkaSQSWorker[SourceT, Instant, Instant, Unit](

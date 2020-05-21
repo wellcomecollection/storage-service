@@ -10,7 +10,8 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{Indexer, IndexerWorker}
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{FatalIndexingError, Indexer, IndexerWorker, IndexerWorkerError, RetryableIndexingError}
+import uk.ac.wellcome.storage._
 
 import scala.concurrent.Future
 
@@ -31,25 +32,27 @@ class BagIndexerWorker(
       IndexedStorageManifest
     ](config, indexer, metricsNamespace) {
 
-  def load(source: KnownReplicasPayload): Future[StorageManifest] = {
-
-    val bagId = BagId(
-      space = source.storageSpace,
-      externalIdentifier = source.externalIdentifier
+  def load(source: KnownReplicasPayload): Future[Either[IndexerWorkerError, StorageManifest]] = Future {
+    storageManifestDao.get(
+      id = BagId(
+        space = source.storageSpace,
+        externalIdentifier = source.externalIdentifier
+      ),
+      version = source.version
     )
-
-    val bagVersion = source.version
-
-    // TODO:
-    //  - actually handle errors
-    //  - fix either/future weirdness
-    val storageManifest = Future {
-      storageManifestDao.get(bagId, bagVersion) match  {
-        case Left(_) => throw new Exception("OH GAWD")
-        case Right(storageManifest) => storageManifest
-      }
-    }
-
-    storageManifest
+  } map {
+    case Right(manifest) => Right(manifest)
+    // StoreReadError indicates a backend issue like timeout, which may be temporary
+    case Left(StoreReadError(e)) =>
+      warn(f"StoreReadError: Failed to load $source, got $e")
+      Left(RetryableIndexingError(
+        payload = source,
+        cause = e
+      ))
+    case Left(e) =>
+      error(new Exception(f"Failed to load $source, got $e"))
+      Left(FatalIndexingError(
+        payload = source)
+      )
   }
 }

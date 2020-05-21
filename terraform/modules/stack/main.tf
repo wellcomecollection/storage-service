@@ -97,6 +97,8 @@ module "bag_indexer" {
   environment = {
     queue_url         = module.bag_register_output_queue.url
     metrics_namespace = local.bag_indexer_service_name
+    vhs_bucket_name   = var.vhs_manifests_bucket_name
+    vhs_table_name    = var.vhs_manifests_table_name
 
     es_bags_index_name = var.es_bags_index_name
   }

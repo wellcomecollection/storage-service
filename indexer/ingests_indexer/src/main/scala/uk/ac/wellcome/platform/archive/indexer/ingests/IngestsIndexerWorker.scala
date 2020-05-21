@@ -6,10 +6,7 @@ import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
-  Indexer,
-  IndexerWorker
-}
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{Indexer, IndexerWorker, IndexerWorkerError}
 import uk.ac.wellcome.platform.archive.indexer.ingests.models.IndexedIngest
 
 import scala.concurrent.Future
@@ -30,5 +27,6 @@ class IngestsIndexerWorker(
       metricsNamespace
     ) {
 
-  def load(source: Ingest): Future[Ingest] = Future.successful(source)
+  def load(source: Ingest): Future[Either[IndexerWorkerError, Ingest]] =
+    Future.successful(Right(source))
 }
