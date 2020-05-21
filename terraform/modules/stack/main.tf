@@ -323,7 +323,7 @@ module "replicator_verifier_primary" {
 
   replica_id           = "primary"
   replica_display_name = "primary location"
-  storage_provider     = "aws-s3-ia"
+  storage_provider     = "amazon-s3"
   replica_type         = "primary"
 
   topic_arns = [
@@ -371,7 +371,7 @@ module "replicator_verifier_glacier" {
 
   replica_id           = "glacier"
   replica_display_name = "Amazon Glacier"
-  storage_provider     = "aws-s3-glacier"
+  storage_provider     = "amazon-s3"
   replica_type         = "secondary"
 
   topic_arns = [
