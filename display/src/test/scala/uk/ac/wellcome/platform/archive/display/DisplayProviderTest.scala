@@ -16,14 +16,14 @@ class DisplayProviderTest
   val providerPairs = Table(
     ("display", "internal"),
     (DisplayProvider("amazon-s3"), AmazonS3StorageProvider),
-    (DisplayProvider("azure-blob-storage"), AzureBlobStorageProvider),
+    (DisplayProvider("azure-blob-storage"), AzureBlobStorageProvider)
   )
 
   val deprecatedProviderPairs = Table(
     ("display", "internal"),
     (DisplayProvider("aws-s3-standard"), AmazonS3StorageProvider),
     (DisplayProvider("aws-s3-ia"), AmazonS3StorageProvider),
-    (DisplayProvider("aws-s3-glacier"), AmazonS3StorageProvider),
+    (DisplayProvider("aws-s3-glacier"), AmazonS3StorageProvider)
   )
 
   it("turns a DisplayProvider into a StorageProvider") {
@@ -64,12 +64,12 @@ class DisplayProviderTest
       ("provider", "jsonString"),
       (
         DisplayProvider(AmazonS3StorageProvider),
-        """{"id": "amazon-s3", "type": "Provider"}""",
+        """{"id": "amazon-s3", "type": "Provider"}"""
       ),
       (
         DisplayProvider(AzureBlobStorageProvider),
-        """{"id": "azure-blob-storage", "type": "Provider"}""",
-      ),
+        """{"id": "azure-blob-storage", "type": "Provider"}"""
+      )
     )
 
     it("decodes correctly") {
@@ -93,7 +93,7 @@ class DisplayProviderTest
       "json",
       """{"id": "aws-s3-standard", "type": "Provider"}""",
       """{"id": "aws-s3-ia", "type": "Provider"}""",
-      """{"id": "aws-s3-glacier", "type": "Provider"}""",
+      """{"id": "aws-s3-glacier", "type": "Provider"}"""
     )
 
     it("decodes deprecated storage IDs") {

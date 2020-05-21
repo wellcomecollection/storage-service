@@ -14,7 +14,7 @@ class StorageProviderTest
     ("aws-s3-ia", AmazonS3StorageProvider),
     ("aws-s3-glacier", AmazonS3StorageProvider),
     ("amazon-s3", AmazonS3StorageProvider),
-    ("azure-blob-storage", AzureBlobStorageProvider),
+    ("azure-blob-storage", AzureBlobStorageProvider)
   )
 
   it("creates the correct storage provider from an ID") {

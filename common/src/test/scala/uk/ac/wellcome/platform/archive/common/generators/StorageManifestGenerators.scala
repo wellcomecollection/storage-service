@@ -53,7 +53,9 @@ trait StorageManifestGenerators
       ),
       location = createPrimaryLocation,
       replicaLocations = (1 to randomInt(0, 5))
-        .map { _ => createSecondaryLocation },
+        .map { _ =>
+          createSecondaryLocation
+        },
       createdDate = createdDate,
       ingestId = ingestId
     )

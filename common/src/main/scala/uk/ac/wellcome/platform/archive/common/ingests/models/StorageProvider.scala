@@ -43,4 +43,3 @@ case object AmazonS3StorageProvider extends StorageProvider {
 case object AzureBlobStorageProvider extends StorageProvider {
   override val id: String = "azure-blob-storage"
 }
-
