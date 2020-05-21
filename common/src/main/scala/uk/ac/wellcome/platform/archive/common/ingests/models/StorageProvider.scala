@@ -20,15 +20,18 @@ case object StorageProvider {
     "aws-s3-glacier" -> AmazonS3StorageProvider
   )
 
-  def allowedValues: Seq[String] =
+  def recognisedValues: Seq[String] =
     idLookup.keys.toSeq
+
+  def allowedValues: Seq[String] =
+    (idLookup ++ deprecatedIdLookup).keys.toSeq
 
   def apply(id: String): StorageProvider =
     (idLookup ++ deprecatedIdLookup).get(id) match {
       case Some(provider) => provider
       case None =>
         throw new IllegalArgumentException(
-          s"Unrecognised storage provider ID: $id; valid values are: ${allowedValues.mkString(", ")}"
+          s"Unrecognised storage provider ID: $id; valid values are: ${recognisedValues.mkString(", ")}"
         )
     }
 }
