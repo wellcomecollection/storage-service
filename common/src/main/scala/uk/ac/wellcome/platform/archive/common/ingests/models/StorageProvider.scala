@@ -6,32 +6,40 @@ sealed trait StorageProvider {
 
 case object StorageProvider {
   private val idLookup = Map(
-    StandardStorageProvider.id -> StandardStorageProvider,
-    InfrequentAccessStorageProvider.id -> InfrequentAccessStorageProvider,
-    GlacierStorageProvider.id -> GlacierStorageProvider
+    AmazonS3StorageProvider.id -> AmazonS3StorageProvider,
+    AzureBlobStorageProvider.id -> AzureBlobStorageProvider
   )
 
-  def allowedValues: Seq[String] =
+  // This map includes the identifiers of storage providers that we have
+  // removed from the storage service.  We still need to be able to deserialise
+  // them for backwards-compatibility with clients, ingests and storage manifests,
+  // but we don't want to advertise their presence in, say, error messages.
+  private val deprecatedIdLookup = Map(
+    "aws-s3-standard" -> AmazonS3StorageProvider,
+    "aws-s3-ia" -> AmazonS3StorageProvider,
+    "aws-s3-glacier" -> AmazonS3StorageProvider
+  )
+
+  def recognisedValues: Seq[String] =
     idLookup.keys.toSeq
 
+  def allowedValues: Seq[String] =
+    (idLookup ++ deprecatedIdLookup).keys.toSeq
+
   def apply(id: String): StorageProvider =
-    idLookup.get(id) match {
+    (idLookup ++ deprecatedIdLookup).get(id) match {
       case Some(provider) => provider
       case None =>
         throw new IllegalArgumentException(
-          s"Unrecognised storage provider ID: $id; valid values are: ${allowedValues.mkString(", ")}"
+          s"Unrecognised storage provider ID: $id; valid values are: ${recognisedValues.mkString(", ")}"
         )
     }
 }
 
-case object StandardStorageProvider extends StorageProvider {
-  override val id: String = "aws-s3-standard"
+case object AmazonS3StorageProvider extends StorageProvider {
+  override val id: String = "amazon-s3"
 }
 
-case object InfrequentAccessStorageProvider extends StorageProvider {
-  override val id: String = "aws-s3-ia"
-}
-
-case object GlacierStorageProvider extends StorageProvider {
-  override val id: String = "aws-s3-glacier"
+case object AzureBlobStorageProvider extends StorageProvider {
+  override val id: String = "azure-blob-storage"
 }

@@ -10,9 +10,11 @@ class StorageProviderTest
     with TableDrivenPropertyChecks {
   val providerPairs = Table(
     ("id", "provider"),
-    ("aws-s3-standard", StandardStorageProvider),
-    ("aws-s3-ia", InfrequentAccessStorageProvider),
-    ("aws-s3-glacier", GlacierStorageProvider)
+    ("aws-s3-standard", AmazonS3StorageProvider),
+    ("aws-s3-ia", AmazonS3StorageProvider),
+    ("aws-s3-glacier", AmazonS3StorageProvider),
+    ("amazon-s3", AmazonS3StorageProvider),
+    ("azure-blob-storage", AzureBlobStorageProvider)
   )
 
   it("creates the correct storage provider from an ID") {
@@ -29,7 +31,7 @@ class StorageProviderTest
 
     thrown.getMessage shouldBe (
       "Unrecognised storage provider ID: not-a-storage-provider; " +
-        "valid values are: aws-s3-standard, aws-s3-ia, aws-s3-glacier"
+        "valid values are: amazon-s3, azure-blob-storage"
     )
   }
 }

@@ -8,9 +8,7 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.generators.StorageLocationGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.InfrequentAccessStorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.{
-  PrimaryStorageLocation,
   ReplicaResult,
   StorageLocation
 }
@@ -28,10 +26,7 @@ class ReplicaAggregatorTest
     with StorageRandomThings {
 
   def createReplicaResultWith(
-    storageLocation: StorageLocation = PrimaryStorageLocation(
-      provider = InfrequentAccessStorageProvider,
-      prefix = createObjectLocationPrefix
-    )
+    storageLocation: StorageLocation = createPrimaryLocation
   ): ReplicaResult =
     ReplicaResult(
       storageLocation = storageLocation,

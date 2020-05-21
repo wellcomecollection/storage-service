@@ -41,7 +41,7 @@ class DisplayIngestTest
         id = id,
         ingestType = CreateIngestType,
         sourceLocation = SourceLocation(
-          provider = StandardStorageProvider,
+          provider = AmazonS3StorageProvider,
           location = ObjectLocation("bukkit", "key.txt")
         ),
         space = StorageSpace(spaceId),
@@ -56,7 +56,7 @@ class DisplayIngestTest
 
       displayIngest.id shouldBe id.underlying
       displayIngest.sourceLocation shouldBe DisplayLocation(
-        DisplayProvider(id = "aws-s3-standard"),
+        DisplayProvider(id = "amazon-s3"),
         bucket = "bukkit",
         path = "key.txt"
       )
@@ -116,7 +116,7 @@ class DisplayIngestTest
 
   describe("RequestDisplayIngest") {
     it("transforms itself into a ingest") {
-      val displayProvider = DisplayProvider(id = "aws-s3-ia")
+      val displayProvider = DisplayProvider(id = "amazon-s3")
       val bucket = "ingest-bucket"
       val path = "bag.zip"
 
@@ -143,7 +143,7 @@ class DisplayIngestTest
 
       ingest.id shouldBe a[IngestID]
       ingest.sourceLocation shouldBe SourceLocation(
-        provider = InfrequentAccessStorageProvider,
+        provider = AmazonS3StorageProvider,
         location = ObjectLocation(bucket, path)
       )
       ingest.callback shouldBe Some(

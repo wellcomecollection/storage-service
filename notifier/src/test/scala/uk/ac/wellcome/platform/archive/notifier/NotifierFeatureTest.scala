@@ -88,7 +88,7 @@ class NotifierFeatureTest
                  |    "type": "Location",
                  |    "provider": {
                  |      "type": "Provider",
-                 |      "id": "aws-s3-standard"
+                 |      "id": "amazon-s3"
                  |    },
                  |    "bucket": "${ingest.sourceLocation.location.namespace}",
                  |    "path": "${ingest.sourceLocation.location.path}"
@@ -199,7 +199,7 @@ class NotifierFeatureTest
                    |    "type": "Location",
                    |    "provider": {
                    |      "type": "Provider",
-                   |      "id": "aws-s3-standard"
+                   |      "id": "amazon-s3"
                    |    },
                    |    "bucket": "${ingest.sourceLocation.location.namespace}",
                    |    "path": "${ingest.sourceLocation.location.path}"

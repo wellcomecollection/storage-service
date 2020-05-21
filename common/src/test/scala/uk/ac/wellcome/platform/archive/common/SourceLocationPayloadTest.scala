@@ -30,7 +30,7 @@ class SourceLocationPayloadTest
       id = ingestId,
       ingestType = ingestType,
       sourceLocation = SourceLocation(
-        provider = StandardStorageProvider,
+        provider = AmazonS3StorageProvider,
         location = sourceLocation
       ),
       space = space,
