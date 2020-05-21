@@ -9,9 +9,20 @@ import grizzled.slf4j.Logging
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.Message
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
-import uk.ac.wellcome.messaging.worker.models.{DeterministicFailure, NonDeterministicFailure, Result, Successful}
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.{MetricsMonitoringClient, MetricsMonitoringProcessor}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+  AlpakkaSQSWorker,
+  AlpakkaSQSWorkerConfig
+}
+import uk.ac.wellcome.messaging.worker.models.{
+  DeterministicFailure,
+  NonDeterministicFailure,
+  Result,
+  Successful
+}
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.{
+  MetricsMonitoringClient,
+  MetricsMonitoringProcessor
+}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -38,12 +49,13 @@ abstract class IndexerWorker[SourceT, T, IndexedT](
       case Right(_) => Right(t)
       // We can't be sure what the error is here.  The cost of retrying it is
       // very cheap, so assume it's a flaky error and can be retried.
-      case Left(_) => Left(
-        RetryableIndexingError(
-          payload = t,
-          cause = new Exception(s"Error indexing $t")
+      case Left(_) =>
+        Left(
+          RetryableIndexingError(
+            payload = t,
+            cause = new Exception(s"Error indexing $t")
+          )
         )
-      )
     }
 
   def load(source: SourceT): Future[Either[IndexerWorkerError, T]]
@@ -56,10 +68,10 @@ abstract class IndexerWorker[SourceT, T, IndexedT](
       case Right(t) =>
         debug(s"Successfully indexed $t")
         Successful(None)
-      case Left(RetryableIndexingError(t,e)) =>
+      case Left(RetryableIndexingError(t, e)) =>
         warn(s"RetryableIndexingError: Unable to index $t")
         NonDeterministicFailure(e)
-      case Left(e@FatalIndexingError(t)) =>
+      case Left(e @ FatalIndexingError(t)) =>
         warn(s"FatalIndexingError: Unable to index $t")
         DeterministicFailure(e)
     }
