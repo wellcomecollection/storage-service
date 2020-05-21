@@ -18,7 +18,7 @@ trait IngestGenerators extends BagIdGenerators with ObjectLocationGenerators {
 
   def createSourceLocation: SourceLocation =
     SourceLocation(
-      provider = StandardStorageProvider,
+      provider = AmazonS3StorageProvider,
       location = createObjectLocation
     )
 

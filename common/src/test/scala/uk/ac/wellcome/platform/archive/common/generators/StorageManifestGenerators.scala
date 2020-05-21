@@ -3,20 +3,16 @@ package uk.ac.wellcome.platform.archive.common.generators
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, BagVersion}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  IngestID,
-  StandardStorageProvider
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
-import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 import scala.util.Random
 
 trait StorageManifestGenerators
     extends BagInfoGenerators
     with StorageSpaceGenerators
-    with ObjectLocationGenerators {
+    with StorageLocationGenerators {
 
   val checksumAlgorithm: HashingAlgorithm = SHA256
 
@@ -55,17 +51,9 @@ trait StorageManifestGenerators
           createStorageManifestFile
         )
       ),
-      location = PrimaryStorageLocation(
-        provider = StandardStorageProvider,
-        prefix = createObjectLocationPrefix
-      ),
+      location = createPrimaryLocation,
       replicaLocations = (1 to randomInt(0, 5))
-        .map { _ =>
-          SecondaryStorageLocation(
-            provider = StandardStorageProvider,
-            prefix = createObjectLocationPrefix
-          )
-        },
+        .map { _ => createSecondaryLocation },
       createdDate = createdDate,
       ingestId = ingestId
     )

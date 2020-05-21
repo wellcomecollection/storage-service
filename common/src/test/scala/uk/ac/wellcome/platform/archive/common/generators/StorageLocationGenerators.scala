@@ -1,12 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.generators
 
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  GlacierStorageProvider,
-  InfrequentAccessStorageProvider,
-  StandardStorageProvider,
-  StorageProvider
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.StorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   PrimaryStorageLocation,
   SecondaryStorageLocation
@@ -18,12 +13,8 @@ trait StorageLocationGenerators
     extends ObjectLocationGenerators
     with StorageRandomThings {
   def createProvider: StorageProvider =
-    chooseFrom(
-      Seq(
-        StandardStorageProvider,
-        InfrequentAccessStorageProvider,
-        GlacierStorageProvider
-      )
+    StorageProvider(
+      id = chooseFrom(StorageProvider.allowedValues)
     )
 
   def createPrimaryLocation: PrimaryStorageLocation =

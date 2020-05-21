@@ -66,14 +66,14 @@ trait PayloadGenerators
 
   def createKnownReplicas = KnownReplicas(
     location = PrimaryStorageLocation(
-      provider = InfrequentAccessStorageProvider,
+      provider = AmazonS3StorageProvider,
       prefix = createObjectLocationPrefix
     ),
     replicas = (1 to randomInt(from = 0, to = 5))
       .map(
         _ =>
           SecondaryStorageLocation(
-            provider = InfrequentAccessStorageProvider,
+            provider = AmazonS3StorageProvider,
             prefix = createObjectLocationPrefix
           )
       )
