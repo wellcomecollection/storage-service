@@ -49,7 +49,7 @@ trait CreateIngest[UnpackerDestination] extends ResponseBase with Logging {
       )
     } else if (!StorageProvider.allowedValues.contains(providerId)) {
       createBadRequestResponse(
-        s"""Unrecognised value at .sourceLocation.provider.id: got "$providerId", valid values are: ${StorageProvider.allowedValues
+        s"""Unrecognised value at .sourceLocation.provider.id: got "$providerId", valid values are: ${StorageProvider.recognisedValues
           .mkString(", ")}."""
       )
     } else {

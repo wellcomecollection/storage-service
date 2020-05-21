@@ -74,41 +74,41 @@ class CreateIngestApiTest
               Unmarshal(response.entity).to[ResponseDisplayIngest]
             }
 
-          whenReady(ingestFuture) { actualIngest =>
-            actualIngest.context shouldBe contextUrlTest
-            actualIngest.id shouldBe id
-            actualIngest.sourceLocation shouldBe DisplayLocation(
-              provider = DisplayProvider(id = "aws-s3-standard"),
+          whenReady(ingestFuture) { retrievedIngest =>
+            retrievedIngest.context shouldBe contextUrlTest
+            retrievedIngest.id shouldBe id
+            retrievedIngest.sourceLocation shouldBe DisplayLocation(
+              provider = DisplayProvider(id = "amazon-s3"),
               bucket = bucketName,
               path = s3key
             )
 
-            actualIngest.callback.isDefined shouldBe true
-            actualIngest.callback.get.url shouldBe testCallbackUri.toString
-            actualIngest.callback.get.status.get shouldBe DisplayStatus(
+            retrievedIngest.callback.isDefined shouldBe true
+            retrievedIngest.callback.get.url shouldBe testCallbackUri.toString
+            retrievedIngest.callback.get.status.get shouldBe DisplayStatus(
               "processing"
             )
 
-            actualIngest.ingestType shouldBe CreateDisplayIngestType
+            retrievedIngest.ingestType shouldBe CreateDisplayIngestType
 
-            actualIngest.status shouldBe DisplayStatus("accepted")
+            retrievedIngest.status shouldBe DisplayStatus("accepted")
 
-            actualIngest.space shouldBe DisplayStorageSpace(spaceName)
+            retrievedIngest.space shouldBe DisplayStorageSpace(spaceName)
 
-            actualIngest.bag.info.externalIdentifier shouldBe externalIdentifier
+            retrievedIngest.bag.info.externalIdentifier shouldBe externalIdentifier
 
             val expectedIngest = Ingest(
               id = IngestID(id),
               ingestType = CreateIngestType,
               sourceLocation = SourceLocation(
-                provider = StandardStorageProvider,
+                provider = AmazonS3StorageProvider,
                 location = ObjectLocation(bucketName, s3key)
               ),
               space = StorageSpace(spaceName),
               callback = Some(Callback(testCallbackUri, Callback.Pending)),
               status = Ingest.Accepted,
               externalIdentifier = externalIdentifier,
-              createdDate = Instant.parse(actualIngest.createdDate),
+              createdDate = Instant.parse(retrievedIngest.createdDate),
               events = Nil
             )
 
@@ -374,7 +374,7 @@ class CreateIngestApiTest
           badJson(json).noSpaces,
           expectedMessage =
             "Unrecognised value at .sourceLocation.provider.id: got \"not-a-storage-provider\", " +
-              "valid values are: aws-s3-standard, aws-s3-ia, aws-s3-glacier."
+              "valid values are: amazon-s3, azure-blob-storage."
         )
       }
 
