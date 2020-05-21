@@ -20,6 +20,6 @@ def choose_tags(bucket, key):
     _, file_extension = os.path.splitext(key)
 
     if storage_space == "digitised" and file_extension.lower() == ".mxf":
-        tags.append(("FileType", "MXF video master"))
+        tags.append(("Content-Type", "application/mxf"))
 
     return tags
