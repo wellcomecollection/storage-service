@@ -29,4 +29,5 @@ class IngestsIndexerWorker(
 
   def load(source: Ingest): Future[Either[IndexerWorkerError, Ingest]] =
     Future.successful(Right(source))
+
 }

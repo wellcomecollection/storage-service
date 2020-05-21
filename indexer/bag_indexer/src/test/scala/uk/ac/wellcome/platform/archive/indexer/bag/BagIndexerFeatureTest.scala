@@ -18,6 +18,7 @@ import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifes
 import uk.ac.wellcome.platform.archive.indexer.bags.{BagIndexer, BagIndexerWorker, BagsIndexConfig}
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{Indexer, IndexerWorker}
 
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class BagIndexerFeatureTest
