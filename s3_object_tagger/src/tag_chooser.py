@@ -1,7 +1,7 @@
 import os
 
 
-def choose_tags(bucket, key):
+def choose_tags(*, bucket, key):
     """
     Given the bucket, key and size of an object, decide what tags (if any)
     should be applied to it.
