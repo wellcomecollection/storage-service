@@ -8,7 +8,7 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
-import uk.ac.wellcome.storage.NoMaximaValueError
+import uk.ac.wellcome.storage.NoVersionExistsError
 
 trait GetLatestBag extends Logging {
   val storageManifestDao: StorageManifestDao
@@ -19,7 +19,7 @@ trait GetLatestBag extends Logging {
         info(s"Found latest version of bag $bagId is ${manifest.version}")
         complete(manifest)
 
-      case Left(_: NoMaximaValueError) =>
+      case Left(_: NoVersionExistsError) =>
         info(s"Could not find any versions of bag $bagId")
         complete(StatusCodes.NotFound)
 

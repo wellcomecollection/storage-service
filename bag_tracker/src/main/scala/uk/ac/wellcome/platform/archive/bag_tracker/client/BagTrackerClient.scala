@@ -46,7 +46,7 @@ class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem)
 
   override def getLatestBag(
     bagId: BagId
-  ): Future[Either[BagTrackerError, StorageManifest]] =
+  ): Future[Either[BagTrackerGetError, StorageManifest]] =
     getManifest(
       trackerHost
         .withPath(Path(s"/bags/$bagId"))
