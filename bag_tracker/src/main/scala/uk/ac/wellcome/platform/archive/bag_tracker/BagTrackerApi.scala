@@ -8,7 +8,10 @@ import akka.http.scaladsl.server.Route
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bag_tracker.services.LookupBagVersions
+import uk.ac.wellcome.platform.archive.bag_tracker.services.{
+  GetBag,
+  LookupBagVersions
+}
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagId,
   BagVersion,
@@ -31,6 +34,7 @@ class BagTrackerApi(val storageManifestDao: StorageManifestDao)(
   actorSystem: ActorSystem
 ) extends Runnable
     with Logging
+    with GetBag
     with LookupBagVersions {
   implicit val ec: ExecutionContextExecutor = actorSystem.dispatcher
 
@@ -78,12 +82,23 @@ class BagTrackerApi(val storageManifestDao: StorageManifestDao)(
               }
           }
         },
+        // Get a bag.  Optionally supplying a ?version=NNN parameter.
         get {
-          pathPrefix(Segment / Remaining) { (space, remaining) =>
-            println(s"space = $space")
-            println(s"remaining = $remaining")
-            println("get the bag!")
-            complete(StatusCodes.OK)
+          pathPrefix(Segment / Remaining) {
+            (space, externalIdentifier) =>
+              val bagId = BagId(
+                space = StorageSpace(space),
+                externalIdentifier = ExternalIdentifier(externalIdentifier)
+              )
+
+              parameter('version.as[Int] ?) {
+                case None =>
+                  println(s"bagId = $bagId")
+                  println("get the latest bag!")
+                  complete(StatusCodes.OK)
+                case Some(version) =>
+                  getBag(bagId = bagId, version = BagVersion(version))
+              }
           }
         }
       )
