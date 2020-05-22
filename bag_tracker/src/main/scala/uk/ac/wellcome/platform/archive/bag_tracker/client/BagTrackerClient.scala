@@ -2,7 +2,8 @@ package uk.ac.wellcome.platform.archive.bag_tracker.client
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.{HttpMethods, HttpRequest, StatusCodes, Uri}
+import akka.http.scaladsl.marshalling.Marshal
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.Uri.{Path, Query}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
@@ -41,8 +42,37 @@ class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem)
 
   override def createBag(
     storageManifest: StorageManifest
-  ): Future[Either[BagTrackerError, Unit]] =
-    Future.failed(new Throwable("BOOM!"))
+  ): Future[Either[BagTrackerCreateError, Unit]] =
+    for {
+      manifestEntity <- Marshal(storageManifest).to[RequestEntity]
+
+      requestUri = trackerHost.withPath(Path("/bags"))
+
+      request = HttpRequest(
+        uri = requestUri,
+        method = HttpMethods.POST,
+        entity = manifestEntity
+      )
+
+      _ = info(s"Making request: $request")
+      response <- Http().singleRequest(request)
+
+      result <- response.status match {
+        case StatusCodes.Created =>
+          info(
+            s"CREATED for POST to $requestUri with ${storageManifest.idWithVersion}"
+          )
+          Future(Right(()))
+
+        case status =>
+          val err = new Exception(s"$status for POST to IngestsTracker")
+          error(
+            f"Unexpected status for POST to $requestUri with ${storageManifest.idWithVersion}",
+            err
+          )
+          Future(Left(BagTrackerCreateError(err)))
+      }
+    } yield result
 
   override def getLatestBag(
     bagId: BagId
