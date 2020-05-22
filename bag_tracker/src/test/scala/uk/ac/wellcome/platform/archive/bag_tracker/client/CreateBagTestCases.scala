@@ -12,7 +12,12 @@ import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 import uk.ac.wellcome.storage.{StoreWriteError, WriteError}
 
-trait CreateBagTestCases extends AnyFunSpec with EitherValues with ScalaFutures with StorageManifestGenerators with BagTrackerClientTestBase {
+trait CreateBagTestCases
+    extends AnyFunSpec
+    with EitherValues
+    with ScalaFutures
+    with StorageManifestGenerators
+    with BagTrackerClientTestBase {
   describe("createBag") {
     it("stores a bag in the storage manifest dao") {
       val manifest = createStorageManifest
@@ -25,7 +30,10 @@ trait CreateBagTestCases extends AnyFunSpec with EitherValues with ScalaFutures 
             whenReady(future) { result =>
               result shouldBe Right(())
 
-              dao.get(id = manifest.id, version = manifest.version).right.value shouldBe manifest
+              dao
+                .get(id = manifest.id, version = manifest.version)
+                .right
+                .value shouldBe manifest
             }
           }
         }
@@ -36,10 +44,12 @@ trait CreateBagTestCases extends AnyFunSpec with EitherValues with ScalaFutures 
       val versionedStore = MemoryVersionedStore[BagId, HybridStoreEntry[
         StorageManifest,
         EmptyMetadata
-        ]](initialEntries = Map.empty)
+      ]](initialEntries = Map.empty)
 
       val brokenDao = new MemoryStorageManifestDao(versionedStore) {
-        override def put(storageManifest: StorageManifest): Either[WriteError, StorageManifest] =
+        override def put(
+          storageManifest: StorageManifest
+        ): Either[WriteError, StorageManifest] =
           Left(StoreWriteError(new Throwable("BOOM!")))
       }
 

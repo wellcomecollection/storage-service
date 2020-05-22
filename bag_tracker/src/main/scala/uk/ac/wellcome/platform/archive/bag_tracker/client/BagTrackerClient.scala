@@ -59,12 +59,17 @@ class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem)
 
       result <- response.status match {
         case StatusCodes.Created =>
-          info(s"CREATED for POST to $requestUri with ${storageManifest.idWithVersion}")
+          info(
+            s"CREATED for POST to $requestUri with ${storageManifest.idWithVersion}"
+          )
           Future(Right(()))
 
         case status =>
           val err = new Exception(s"$status for POST to IngestsTracker")
-          error(f"Unexpected status for POST to $requestUri with ${storageManifest.idWithVersion}", err)
+          error(
+            f"Unexpected status for POST to $requestUri with ${storageManifest.idWithVersion}",
+            err
+          )
           Future(Left(BagTrackerCreateError(err)))
       }
     } yield result

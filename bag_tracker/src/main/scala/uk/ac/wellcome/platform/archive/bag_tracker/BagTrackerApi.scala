@@ -60,7 +60,6 @@ class BagTrackerApi(val storageManifestDao: StorageManifestDao)(
             createBag(storageManifest)
           }
         },
-
         // We look for /versions at the end of the path: this means we should
         // return a list of versions, not the complete manifest.
         //

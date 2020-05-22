@@ -12,10 +12,13 @@ trait CreateBag extends Logging {
 
   def createBag(storageManifest: StorageManifest): Route =
     storageManifestDao.put(storageManifest) match {
-      case Right(_)           => complete(StatusCodes.Created)
+      case Right(_) => complete(StatusCodes.Created)
 
       case Left(storageError) =>
-        warn(s"Unexpected error storing bag ${storageManifest.idWithVersion}", storageError.e)
+        warn(
+          s"Unexpected error storing bag ${storageManifest.idWithVersion}",
+          storageError.e
+        )
         complete(StatusCodes.InternalServerError)
     }
 }
