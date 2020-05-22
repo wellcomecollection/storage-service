@@ -10,6 +10,7 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bag_tracker.services.{
   GetBag,
+  GetLatestBag,
   LookupBagVersions
 }
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
@@ -35,6 +36,7 @@ class BagTrackerApi(val storageManifestDao: StorageManifestDao)(
 ) extends Runnable
     with Logging
     with GetBag
+    with GetLatestBag
     with LookupBagVersions {
   implicit val ec: ExecutionContextExecutor = actorSystem.dispatcher
 
@@ -92,10 +94,7 @@ class BagTrackerApi(val storageManifestDao: StorageManifestDao)(
               )
 
               parameter('version.as[Int] ?) {
-                case None =>
-                  println(s"bagId = $bagId")
-                  println("get the latest bag!")
-                  complete(StatusCodes.OK)
+                case None => getLatestBag(bagId = bagId)
                 case Some(version) =>
                   getBag(bagId = bagId, version = BagVersion(version))
               }

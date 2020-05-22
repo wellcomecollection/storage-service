@@ -46,19 +46,26 @@ class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem)
 
   override def getLatestBag(
     bagId: BagId
-  ): Future[Either[BagTrackerError, StorageManifest]] =
-    Future.failed(new Throwable("BOOM!"))
+  ): Future[Either[BagTrackerGetError, StorageManifest]] =
+    getManifest(
+      trackerHost
+        .withPath(Path(s"/bags/$bagId"))
+    )
 
   override def getBag(
     bagId: BagId,
     version: BagVersion
+  ): Future[Either[BagTrackerGetError, StorageManifest]] =
+    getManifest(
+      trackerHost
+        .withPath(Path(s"/bags/$bagId"))
+        .withQuery(Query(("version", version.underlying.toString)))
+    )
+
+  private def getManifest(
+    requestUri: Uri
   ): Future[Either[BagTrackerGetError, StorageManifest]] = {
-    val requestUri = trackerHost
-      .withPath(Path(s"/bags/$bagId"))
-      .withQuery(Query(("version", version.underlying.toString)))
-
     val request = HttpRequest(uri = requestUri, method = HttpMethods.GET)
-
     info(s"Making request: $request")
 
     for {
