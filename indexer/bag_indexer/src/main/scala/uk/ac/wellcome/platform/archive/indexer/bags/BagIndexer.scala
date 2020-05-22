@@ -23,5 +23,5 @@ class BagIndexer(val client: ElasticClient, val index: Index)(
     IndexedStorageManifest(storageManifest)
 
   override protected def version(storageManifest: StorageManifest): Long =
-    storageManifest.createdDate.toEpochMilli
+    storageManifest.version.underlying
 }

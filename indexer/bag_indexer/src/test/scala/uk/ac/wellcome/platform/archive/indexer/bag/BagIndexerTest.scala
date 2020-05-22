@@ -1,20 +1,16 @@
 package uk.ac.wellcome.platform.archive.indexer.bag
 
-import java.time.Instant
-
 import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
 import com.sksamuel.elastic4s.{ElasticClient, Index}
 import org.scalatest.Assertion
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.indexer.IndexerTestCases
-import uk.ac.wellcome.platform.archive.indexer.bags.{
-  BagIndexer,
-  BagsIndexConfig
-}
+import uk.ac.wellcome.platform.archive.indexer.bags.{BagIndexer, BagsIndexConfig}
 import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.Indexer
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -48,16 +44,15 @@ class BagIndexerTest
 
     val olderStorageManifest = createStorageManifestWith(
       ingestId = storageManifest.ingestId,
-      createdDate = Instant.ofEpochMilli(1)
+      version = BagVersion(1)
     )
     val newerStorageManifest = olderStorageManifest.copy(
       ingestId = storageManifest.ingestId,
-      createdDate = Instant.ofEpochMilli(2)
+      version = BagVersion(2)
     )
 
     assert(
-      olderStorageManifest.createdDate
-        .isBefore(newerStorageManifest.createdDate)
+      olderStorageManifest.version.underlying < newerStorageManifest.version.underlying
     )
 
     (olderStorageManifest, newerStorageManifest)
