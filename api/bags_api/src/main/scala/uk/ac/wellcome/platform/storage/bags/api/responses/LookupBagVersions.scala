@@ -36,7 +36,7 @@ trait LookupBagVersions extends Logging with ResponseBase {
       case None =>
         buildResultsList(
           bagId = bagId,
-          storageManifestDao.listVersions(bagId),
+          storageManifestDao.listAllVersions(bagId),
           notFoundMessage = s"No storage manifest versions found for $bagId"
         )
 
@@ -45,7 +45,7 @@ trait LookupBagVersions extends Logging with ResponseBase {
           case Success(version) =>
             buildResultsList(
               bagId = bagId,
-              storageManifestDao.listVersions(bagId, before = version),
+              storageManifestDao.listVersionsBefore(bagId, before = version),
               notFoundMessage =
                 s"No storage manifest versions found for $bagId before $version"
             )

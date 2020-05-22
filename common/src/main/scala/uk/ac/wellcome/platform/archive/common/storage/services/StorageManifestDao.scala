@@ -34,15 +34,17 @@ trait StorageManifestDao {
       )
       .map { _.identifiedT.t }
 
-  protected def listVersions(
+  def listVersions(
     bagId: BagId,
     before: Option[BagVersion]
   ): Either[ReadError, Seq[StorageManifest]]
 
-  def listVersions(bagId: BagId): Either[ReadError, Seq[StorageManifest]] =
+  // TODO: The methods below should be replaced with uses of listVersions().
+
+  def listAllVersions(bagId: BagId): Either[ReadError, Seq[StorageManifest]] =
     listVersions(bagId, before = None)
 
-  def listVersions(
+  def listVersionsBefore(
     bagId: BagId,
     before: BagVersion
   ): Either[ReadError, Seq[StorageManifest]] =

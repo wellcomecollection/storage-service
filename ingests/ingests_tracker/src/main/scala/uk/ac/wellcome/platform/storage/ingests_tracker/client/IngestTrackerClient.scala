@@ -125,7 +125,7 @@ class AkkaIngestTrackerClient(trackerHost: Uri)(implicit as: ActorSystem)
           Future(Left(IngestTrackerNotFoundError(id)))
         case status =>
           val err = new Exception(s"$status from IngestsTracker")
-          error(f"NOT OK for GET to $requestUri, err")
+          error(f"NOT OK for GET to $requestUri", err)
           Future(Left(IngestTrackerUnknownGetError(id, err)))
       }
     } yield ingest
