@@ -37,7 +37,7 @@ cache:
     - project/target
     - target
 
-    - api/bags_api/target
+    - bags_api/target
     - bag_replicator/target
     - bag_register/target
     - bag_root_finder/target
