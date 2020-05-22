@@ -24,7 +24,9 @@ trait GetBag extends Logging {
         complete(StatusCodes.NotFound)
 
       case Left(err) =>
-        warn(s"Unexpected error looking for bag id=$bagId version=$version: $err")
+        warn(
+          s"Unexpected error looking for bag id=$bagId version=$version: $err"
+        )
         complete(StatusCodes.InternalServerError)
     }
   }

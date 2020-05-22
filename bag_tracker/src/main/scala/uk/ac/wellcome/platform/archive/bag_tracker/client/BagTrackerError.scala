@@ -11,5 +11,5 @@ case class BagTrackerUnknownListError(err: Throwable)
     extends BagTrackerListVersionsError
 
 case class BagTrackerNotFoundError()
-  extends BagTrackerListVersionsError
+    extends BagTrackerListVersionsError
     with BagTrackerGetError

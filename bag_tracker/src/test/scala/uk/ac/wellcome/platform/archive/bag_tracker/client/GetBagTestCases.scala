@@ -4,7 +4,10 @@ import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.funspec.AnyFunSpec
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
-import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, StorageManifestGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagIdGenerators,
+  StorageManifestGenerators
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.EmptyMetadata
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
@@ -12,7 +15,13 @@ import uk.ac.wellcome.storage.{ReadError, StoreReadError}
 import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
-trait GetBagTestCases extends AnyFunSpec with EitherValues with ScalaFutures with BagIdGenerators with BagTrackerClientTestBase with StorageManifestGenerators {
+trait GetBagTestCases
+    extends AnyFunSpec
+    with EitherValues
+    with ScalaFutures
+    with BagIdGenerators
+    with BagTrackerClientTestBase
+    with StorageManifestGenerators {
   describe("getBag") {
     it("finds the correct version of a bag") {
       val space = createStorageSpace
@@ -66,10 +75,13 @@ trait GetBagTestCases extends AnyFunSpec with EitherValues with ScalaFutures wit
       }
     }
 
-    it("returns a Left[BagTrackerNotFoundError] if there are no versions of this bag") {
+    it(
+      "returns a Left[BagTrackerNotFoundError] if there are no versions of this bag"
+    ) {
       withApi() { _ =>
         withClient(trackerHost) { client =>
-          val future = client.getBag(bagId = createBagId, version = createBagVersion)
+          val future =
+            client.getBag(bagId = createBagId, version = createBagVersion)
 
           whenReady(future) {
             _.left.value shouldBe BagTrackerNotFoundError()
@@ -78,20 +90,26 @@ trait GetBagTestCases extends AnyFunSpec with EitherValues with ScalaFutures wit
       }
     }
 
-    it("returns a Left[BagTrackerUnknownGetError] if the API has an unexpected error") {
+    it(
+      "returns a Left[BagTrackerUnknownGetError] if the API has an unexpected error"
+    ) {
       val versionedStore = MemoryVersionedStore[BagId, HybridStoreEntry[
         StorageManifest,
         EmptyMetadata
-        ]](initialEntries = Map.empty)
+      ]](initialEntries = Map.empty)
 
       val brokenDao = new MemoryStorageManifestDao(versionedStore) {
-        override def get(id: BagId, version: BagVersion): Either[ReadError, StorageManifest] =
+        override def get(
+          id: BagId,
+          version: BagVersion
+        ): Either[ReadError, StorageManifest] =
           Left(StoreReadError(new Throwable("BOOM!")))
       }
 
       withApi(brokenDao) { _ =>
         withClient(trackerHost) { client =>
-          val future = client.getBag(bagId = createBagId, version = createBagVersion)
+          val future =
+            client.getBag(bagId = createBagId, version = createBagVersion)
 
           whenReady(future) {
             _.left.value shouldBe a[BagTrackerUnknownGetError]
@@ -103,7 +121,8 @@ trait GetBagTestCases extends AnyFunSpec with EitherValues with ScalaFutures wit
     it("fails if the tracker API is unavailable") {
       withApi() { _ =>
         withClient("http://localhost.nope:8080") { client =>
-          val future = client.getBag(bagId = createBagId, version = createBagVersion)
+          val future =
+            client.getBag(bagId = createBagId, version = createBagVersion)
 
           whenReady(future.failed) {
             _ shouldBe a[Throwable]
