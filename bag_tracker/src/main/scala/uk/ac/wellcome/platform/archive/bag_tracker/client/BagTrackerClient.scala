@@ -81,7 +81,7 @@ class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem)
 
         case StatusCodes.NotFound =>
           info(s"Not Found for GET to $requestUri")
-          Future(Left(BagTrackerNotFoundListError()))
+          Future(Left(BagTrackerNotFoundError()))
 
         case status =>
           val err = new Throwable(s"$status from IngestsTracker")

@@ -127,7 +127,7 @@ trait ListVersionsTestCases
     }
 
     it(
-      "returns Left[BagTrackerNotFoundListError] if there are no versions for this bag ID"
+      "returns Left[BagTrackerNotFoundError] if there are no versions for this bag ID"
     ) {
       val bagId = createBagId
 
@@ -136,14 +136,14 @@ trait ListVersionsTestCases
           val future = client.listVersionsOf(bagId, maybeBefore = None)
 
           whenReady(future) {
-            _.left.value shouldBe BagTrackerNotFoundListError()
+            _.left.value shouldBe BagTrackerNotFoundError()
           }
         }
       }
     }
 
     it(
-      "returns Left[BagTrackerNotFoundListError] if there are no versions before the given version"
+      "returns Left[BagTrackerNotFoundError] if there are no versions before the given version"
     ) {
       val space = createStorageSpace
       val externalIdentifier = createExternalIdentifier
@@ -164,7 +164,7 @@ trait ListVersionsTestCases
             client.listVersionsOf(bagId, maybeBefore = Some(BagVersion(4)))
 
           whenReady(future) {
-            _.left.value shouldBe BagTrackerNotFoundListError()
+            _.left.value shouldBe BagTrackerNotFoundError()
           }
         }
       }
