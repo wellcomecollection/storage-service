@@ -26,7 +26,7 @@ trait ListVersionsTestCases extends AnyFunSpec with EitherValues with ScalaFutur
       )
 
       withApi(initialManifests = Seq(manifest)) { _ =>
-        withClient { client =>
+        withClient(trackerHost) { client =>
           val future = client.listVersionsOf(manifest.id, maybeBefore = None)
 
           whenReady(future) {
@@ -56,7 +56,7 @@ trait ListVersionsTestCases extends AnyFunSpec with EitherValues with ScalaFutur
         }
 
       withApi(initialManifests = manifests) { _ =>
-        withClient { client =>
+        withClient(trackerHost) { client =>
           val future = client.listVersionsOf(bagId, maybeBefore = None)
 
           whenReady(future) { result =>
@@ -91,7 +91,7 @@ trait ListVersionsTestCases extends AnyFunSpec with EitherValues with ScalaFutur
           }
 
       withApi(initialManifests = manifests) { _ =>
-        withClient { client =>
+        withClient(trackerHost) { client =>
           val future = client.listVersionsOf(bagId, maybeBefore = Some(BagVersion(3)))
 
           whenReady(future) { result =>
@@ -108,7 +108,7 @@ trait ListVersionsTestCases extends AnyFunSpec with EitherValues with ScalaFutur
       val bagId = createBagId
 
       withApi(initialManifests = Seq.empty) { _ =>
-        withClient { client =>
+        withClient(trackerHost) { client =>
           val future = client.listVersionsOf(bagId, maybeBefore = None)
 
           whenReady(future) {
@@ -133,7 +133,7 @@ trait ListVersionsTestCases extends AnyFunSpec with EitherValues with ScalaFutur
       val bagId = BagId(space = space, externalIdentifier = externalIdentifier)
 
       withApi(initialManifests = manifests) { _ =>
-        withClient { client =>
+        withClient(trackerHost) { client =>
           val future = client.listVersionsOf(bagId, maybeBefore = Some(BagVersion(4)))
 
           whenReady(future) {
@@ -155,7 +155,7 @@ trait ListVersionsTestCases extends AnyFunSpec with EitherValues with ScalaFutur
       }
 
       withApi(brokenDao) { _ =>
-        withClient { client =>
+        withClient(trackerHost) { client =>
           val future = client.listVersionsOf(createBagId, maybeBefore = None)
 
           whenReady(future) {
@@ -166,7 +166,15 @@ trait ListVersionsTestCases extends AnyFunSpec with EitherValues with ScalaFutur
     }
 
     it("fails if the tracker API is unavailable") {
-      true shouldBe false
+      withApi() { _ =>
+        withClient("http://localhost.nope:8080") { client =>
+          val future = client.listVersionsOf(createBagId, maybeBefore = None)
+
+          whenReady(future.failed) {
+            _ shouldBe a[Throwable]
+          }
+        }
+      }
     }
   }
 }

@@ -27,15 +27,17 @@ trait BagTrackerClientTestBase extends Matchers with Akka {
     testWith(dao)
   }
 
-  def withApi[R](initialManifests: Seq[StorageManifest])(testWith: TestWith[BagTrackerApi, R]): R =
+  def withApi[R](initialManifests: Seq[StorageManifest] = Seq.empty)(testWith: TestWith[BagTrackerApi, R]): R =
     withStorageManifestDao(initialManifests) { dao =>
       withApi(dao) { api =>
         testWith(api)
       }
     }
 
-  val host: String = "localhost"
-  val port: Int = 8080
+  private val host: String = "localhost"
+  private val port: Int = 8080
+
+  val trackerHost: String = s"http://$host:$port"
 
   def withApi[R](dao: StorageManifestDao)(testWith: TestWith[BagTrackerApi, R]): R =
     withActorSystem { implicit actorSystem =>
@@ -46,7 +48,7 @@ trait BagTrackerClientTestBase extends Matchers with Akka {
       testWith(api)
     }
 
-  def withClient[R](testWith: TestWith[BagTrackerClient, R]): R
+  def withClient[R](trackerHost: String)(testWith: TestWith[BagTrackerClient, R]): R
 }
 
 trait BagTrackerClientTestCases extends ListVersionsTestCases
