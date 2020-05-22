@@ -30,7 +30,7 @@ trait BagTrackerClient {
 
   def listVersionsOf(
     bagId: BagId,
-    before: Option[BagVersion]
+    maybeBefore: Option[BagVersion]
   ): Future[Either[BagTrackerError, BagVersionList]]
 }
 
