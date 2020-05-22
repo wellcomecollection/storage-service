@@ -52,8 +52,34 @@ class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem)
   override def getBag(
     bagId: BagId,
     version: BagVersion
-  ): Future[Either[BagTrackerError, StorageManifest]] =
-    Future.failed(new Throwable("BOOM!"))
+  ): Future[Either[BagTrackerGetError, StorageManifest]] = {
+    val requestUri = trackerHost
+      .withPath(Path(s"/bags/$bagId/versions"))
+      .withQuery(Query(("version", version.underlying.toString)))
+
+    val request = HttpRequest(uri = requestUri, method = HttpMethods.GET)
+
+    info(s"Making request: $request")
+
+    for {
+      response <- Http().singleRequest(request)
+
+      result <- response.status match {
+        case StatusCodes.OK =>
+          info(s"OK for GET to $requestUri")
+          Unmarshal(response.entity).to[StorageManifest].map { Right(_) }
+
+        case StatusCodes.NotFound =>
+          info(s"Not Found for GET to $requestUri")
+          Future(Left(BagTrackerNotFoundError()))
+
+        case status =>
+          val err = new Throwable(s"$status from bag tracker API")
+          error(s"Unexpected status from GET to $requestUri: $status", err)
+          Future(Left(BagTrackerUnknownGetError(err)))
+      }
+    } yield result
+  }
 
   override def listVersionsOf(
     bagId: BagId,
@@ -84,7 +110,7 @@ class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem)
           Future(Left(BagTrackerNotFoundError()))
 
         case status =>
-          val err = new Throwable(s"$status from IngestsTracker")
+          val err = new Throwable(s"$status from bag tracker API")
           error(s"Unexpected status from GET to $requestUri: $status", err)
           Future(Left(BagTrackerUnknownListError(err)))
       }
