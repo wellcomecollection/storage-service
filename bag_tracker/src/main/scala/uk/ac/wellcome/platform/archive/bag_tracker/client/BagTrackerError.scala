@@ -4,6 +4,8 @@ sealed trait BagTrackerError
 
 sealed trait BagTrackerGetError extends BagTrackerError
 
+case class BagTrackerCreateError(err: Throwable) extends BagTrackerError
+
 case class BagTrackerUnknownGetError(err: Throwable) extends BagTrackerGetError
 
 sealed trait BagTrackerListVersionsError extends BagTrackerError
