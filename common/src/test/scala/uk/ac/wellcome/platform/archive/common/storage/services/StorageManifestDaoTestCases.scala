@@ -118,7 +118,7 @@ trait StorageManifestDaoTestCases[Context]
           }
 
           dao
-            .listVersions(bagId = storageManifest.id)
+            .listAllVersions(bagId = storageManifest.id)
             .right
             .value should contain theSameElementsAs manifests
         }
@@ -142,7 +142,7 @@ trait StorageManifestDaoTestCases[Context]
           }
 
           dao
-            .listVersions(bagId = storageManifest.id)
+            .listAllVersions(bagId = storageManifest.id)
             .right
             .value shouldBe manifests.reverse
         }
@@ -167,17 +167,17 @@ trait StorageManifestDaoTestCases[Context]
 
           val bagId = storageManifest.id
 
-          dao.listVersions(bagId).right.value should have size 7
+          dao.listAllVersions(bagId).right.value should have size 7
 
           // Omitting versions 5 and 6
           dao
-            .listVersions(bagId, before = BagVersion(5))
+            .listVersionsBefore(bagId, before = BagVersion(5))
             .right
             .value should have size 5
 
           // Omitting versions 3, 4, 5 and 6
           dao
-            .listVersions(bagId, before = BagVersion(3))
+            .listVersionsBefore(bagId, before = BagVersion(3))
             .right
             .value should have size 3
         }
@@ -187,7 +187,7 @@ trait StorageManifestDaoTestCases[Context]
     it("returns an empty list if there are no manifests") {
       withContext { implicit context =>
         withDao { dao =>
-          dao.listVersions(createBagId).right.value shouldBe empty
+          dao.listAllVersions(createBagId).right.value shouldBe empty
         }
       }
     }

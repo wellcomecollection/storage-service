@@ -1,10 +1,18 @@
 package uk.ac.wellcome.platform.archive.bag_tracker.client
 
+import akka.actor.ActorSystem
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.{HttpMethods, HttpRequest, StatusCodes, Uri}
+import akka.http.scaladsl.model.Uri.{Path, Query}
+import akka.http.scaladsl.unmarshalling.Unmarshal
+import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
+import grizzled.slf4j.Logging
+import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bag_tracker.models.BagVersionList
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 trait BagTrackerClient {
   def createBag(
@@ -20,8 +28,53 @@ trait BagTrackerClient {
     version: BagVersion
   ): Future[Either[BagTrackerError, StorageManifest]]
 
-  def getVersionsOf(
+  def listVersionsOf(
     bagId: BagId,
     before: Option[BagVersion]
   ): Future[Either[BagTrackerError, BagVersionList]]
+}
+
+class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem) extends BagTrackerClient with Logging {
+  implicit val ec: ExecutionContext = actorSystem.dispatcher
+
+  override def createBag(storageManifest: StorageManifest): Future[Either[BagTrackerError, Unit]] =
+    Future.failed(new Throwable("BOOM!"))
+
+  override def getLatestBag(bagId: BagId): Future[Either[BagTrackerError, StorageManifest]] =
+    Future.failed(new Throwable("BOOM!"))
+
+  override def getBag(bagId: BagId, version: BagVersion): Future[Either[BagTrackerError, StorageManifest]] =
+    Future.failed(new Throwable("BOOM!"))
+
+  override def listVersionsOf(bagId: BagId, maybeBefore: Option[BagVersion]): Future[Either[BagTrackerListVersionsError, BagVersionList]] = {
+    val baseRequestUri = trackerHost.withPath(Path(s"/$bagId/versions"))
+
+    val requestUri = maybeBefore match {
+      case None         => baseRequestUri
+      case Some(before) => baseRequestUri.withQuery(Query(("before", before.underlying.toString)))
+    }
+
+    val request = HttpRequest(uri = requestUri, method = HttpMethods.GET)
+
+    info(s"Making request: $request")
+
+    for {
+      response <- Http().singleRequest(request)
+
+      result <- response.status match {
+        case StatusCodes.OK =>
+          info(s"OK for GET to $requestUri")
+          Unmarshal(response.entity).to[BagVersionList].map { Right(_) }
+
+        case StatusCodes.NotFound =>
+          info(s"Not Found for GET to $requestUri")
+          Future(Left(BagTrackerNotFoundListError(bagId, maybeBefore = maybeBefore)))
+
+        case status =>
+          val err = new Throwable(s"$status from IngestsTracker")
+          error(s"Unexpected status from GET to $requestUri: $status", err)
+          Future(Left(BagTrackerUnknownListError(bagId, maybeBefore = maybeBefore, err = err)))
+      }
+    } yield result
+  }
 }

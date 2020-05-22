@@ -143,7 +143,7 @@ trait BagsApiFixture
       ): Either[ReadError, StorageManifest] =
         Left(StoreReadError(new Throwable("BOOM!")))
 
-      override def listVersions(
+      override def listAllVersions(
         bagId: BagId
       ): Either[ReadError, Seq[StorageManifest]] =
         Left(StoreReadError(new Throwable("BOOM!")))

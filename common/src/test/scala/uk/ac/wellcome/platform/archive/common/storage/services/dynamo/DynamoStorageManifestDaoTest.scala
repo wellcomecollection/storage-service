@@ -144,7 +144,7 @@ class DynamoStorageManifestDaoTest
           implicit val context: (Table, Bucket) = (table, bucket)
 
           withDao { dao =>
-            val err = dao.listVersions(bagId).left.value
+            val err = dao.listAllVersions(bagId).left.value
 
             err.e.getMessage should startWith("Errors querying DynamoDB")
           }
@@ -166,7 +166,7 @@ class DynamoStorageManifestDaoTest
               s3Client.deleteObject(bucket.name, _)
             }
 
-            val err = dao.listVersions(storageManifest.id).left.value
+            val err = dao.listAllVersions(storageManifest.id).left.value
 
             err.e.getMessage should startWith(
               "Errors fetching S3 objects for manifests"
@@ -190,7 +190,7 @@ class DynamoStorageManifestDaoTest
               s3Client.putObject(bucket.name, _, randomAlphanumeric)
             }
 
-            val err = dao.listVersions(storageManifest.id).left.value
+            val err = dao.listAllVersions(storageManifest.id).left.value
 
             err.e.getMessage should startWith(
               "Errors fetching S3 objects for manifests"
