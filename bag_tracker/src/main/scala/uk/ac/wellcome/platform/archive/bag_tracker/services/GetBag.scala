@@ -8,7 +8,7 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
-import uk.ac.wellcome.storage.DoesNotExistError
+import uk.ac.wellcome.storage.{DoesNotExistError, NoVersionExistsError}
 
 trait GetBag extends Logging {
   val storageManifestDao: StorageManifestDao
@@ -19,7 +19,7 @@ trait GetBag extends Logging {
         info(s"Found bag id=$bagId version=$version")
         complete(manifest)
 
-      case Left(_: DoesNotExistError) =>
+      case Left(_: DoesNotExistError) | Left(_: NoVersionExistsError) =>
         info(s"Could not find bag id=$bagId version=$version")
         complete(StatusCodes.NotFound)
 

@@ -54,7 +54,7 @@ class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem)
     version: BagVersion
   ): Future[Either[BagTrackerGetError, StorageManifest]] = {
     val requestUri = trackerHost
-      .withPath(Path(s"/bags/$bagId/versions"))
+      .withPath(Path(s"/bags/$bagId"))
       .withQuery(Query(("version", version.underlying.toString)))
 
     val request = HttpRequest(uri = requestUri, method = HttpMethods.GET)
