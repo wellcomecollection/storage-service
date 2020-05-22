@@ -26,6 +26,22 @@ trait StorageManifestGenerators
     )
   }
 
+  // TODO:
+  //  the path prefix needs to be what the DestinationBuilder
+  //  provides - should those be coupled here somehow
+  def createStorageManifestFileWith(
+    pathPrefix: String
+  ): StorageManifestFile = {
+    val path = createBagPathWithPrefix(pathPrefix)
+
+    StorageManifestFile(
+      checksum = randomChecksumValue,
+      name = path.value,
+      path = path.value,
+      size = Random.nextLong().abs
+    )
+  }
+
   def createStorageManifestWith(
     ingestId: IngestID = createIngestID,
     space: StorageSpace = createStorageSpace,
