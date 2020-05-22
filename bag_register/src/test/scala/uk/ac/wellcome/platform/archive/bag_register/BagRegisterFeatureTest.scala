@@ -72,7 +72,7 @@ class BagRegisterFeatureTest
       knownReplicas = knownReplicas
     )
 
-    withLocalSqsQueue() { queue =>
+    withLocalSqsQueue(visibilityTimeout = 5) { queue =>
       withBagRegisterWorker(
         queue = queue,
         ingests = ingests,
