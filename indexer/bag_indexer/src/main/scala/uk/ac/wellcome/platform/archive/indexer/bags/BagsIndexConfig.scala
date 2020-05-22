@@ -25,7 +25,7 @@ object BagsIndexConfig extends IndexConfig {
     Seq(
       objectField("payloadFileSuffixTally").fields(suffixTallyFields),
       intField("payloadFileCount"),
-      longField("payloadFileSize"),
+      longField("payloadFileSize")
     )
 
   override protected val fields: Seq[FieldDefinition] =
@@ -38,7 +38,6 @@ object BagsIndexConfig extends IndexConfig {
       objectField("payloadFiles").fields(fileFields),
       objectField("payloadStats").fields(payloadStatsFields),
       objectField("newPayloadStats").fields(payloadStatsFields),
-
       keywordField("type")
     )
 }

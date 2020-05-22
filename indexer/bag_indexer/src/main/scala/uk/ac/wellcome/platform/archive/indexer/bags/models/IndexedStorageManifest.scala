@@ -14,10 +14,10 @@ case class IndexedSuffixTally(
 )
 
 case class IndexedPayloadStats(
-                         fileCount: Int,
-                         fileSize: Long,
-                         fileSuffixTally: Seq[IndexedSuffixTally]
-                       )
+  fileCount: Int,
+  fileSize: Long,
+  fileSuffixTally: Seq[IndexedSuffixTally]
+)
 
 case class IndexedFileFields(
   path: String,
@@ -56,13 +56,13 @@ object IndexedStorageManifest {
     val payloadStats = IndexedPayloadStats(
       fileCount = 0,
       fileSize = 0,
-      fileSuffixTally = Nil,
+      fileSuffixTally = Nil
     )
 
     val newPayloadStats = IndexedPayloadStats(
       fileCount = 0,
       fileSize = 0,
-      fileSuffixTally = Nil,
+      fileSuffixTally = Nil
     )
 
     IndexedStorageManifest(
