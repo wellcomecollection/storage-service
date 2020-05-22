@@ -1,4 +1,8 @@
-variable "container_image" {
+variable "api_container_image" {
+  type = string
+}
+
+variable "tracker_container_image" {
   type = string
 }
 
@@ -6,24 +10,20 @@ variable "service_name" {
   type = string
 }
 
-variable "environment" {
-  type    = map(string)
-  default = {}
+variable "api_environment" {
+  type = map(string)
 }
 
-variable "secrets" {
-  type    = map(string)
-  default = {}
+variable "tracker_environment" {
+  type = map(string)
 }
 
 variable "cpu" {
-  type    = number
-  default = 1024
+  type = number
 }
 
 variable "memory" {
-  type    = number
-  default = 2048
+  type = number
 }
 
 variable "container_port" {

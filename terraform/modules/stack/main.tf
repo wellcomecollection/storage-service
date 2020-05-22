@@ -121,13 +121,14 @@ module "bag_indexer" {
 # bags_api
 
 module "bags_api" {
-  source = "../service/api"
+  source = "../service/bags"
 
   service_name = "${var.namespace}-bags-api"
 
-  container_image = local.image_ids["bags_api"]
+  api_container_image     = local.image_ids["bags_api"]
+  tracker_container_image = local.image_ids["bag_tracker"]
 
-  environment = {
+  api_environment = {
     context_url           = "${var.api_url}/context.json"
     app_base_url          = "${var.api_url}/storage/v1/bags"
     vhs_bucket_name       = var.vhs_manifests_bucket_name
@@ -135,6 +136,14 @@ module "bags_api" {
     metrics_namespace     = local.bags_api_service_name
     responses_bucket_name = aws_s3_bucket.large_response_cache.id
   }
+
+  tracker_environment = {
+    vhs_bucket_name = var.vhs_manifests_bucket_name
+    vhs_table_name  = var.vhs_manifests_table_name
+  }
+
+  cpu    = 1024
+  memory = 2048
 
   load_balancer_arn           = module.api.loadbalancer_arn
   load_balancer_listener_port = local.bags_listener_port
