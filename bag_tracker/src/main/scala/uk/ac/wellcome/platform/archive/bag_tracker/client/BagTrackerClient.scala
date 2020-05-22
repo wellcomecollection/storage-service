@@ -47,7 +47,7 @@ class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem) 
     Future.failed(new Throwable("BOOM!"))
 
   override def listVersionsOf(bagId: BagId, maybeBefore: Option[BagVersion]): Future[Either[BagTrackerListVersionsError, BagVersionList]] = {
-    val baseRequestUri = trackerHost.withPath(Path(s"/$bagId/versions"))
+    val baseRequestUri = trackerHost.withPath(Path(s"/bags/$bagId/versions"))
 
     val requestUri = maybeBefore match {
       case None         => baseRequestUri
