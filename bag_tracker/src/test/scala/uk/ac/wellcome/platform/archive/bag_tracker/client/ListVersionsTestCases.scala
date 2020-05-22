@@ -6,6 +6,12 @@ import org.scalatest.funspec.AnyFunSpec
 import uk.ac.wellcome.platform.archive.bag_tracker.models.{BagVersionEntry, BagVersionList}
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, StorageManifestGenerators}
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
+import uk.ac.wellcome.platform.archive.common.storage.services.EmptyMetadata
+import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
+import uk.ac.wellcome.storage.{ReadError, StoreReadError}
+import uk.ac.wellcome.storage.store.HybridStoreEntry
+import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
 trait ListVersionsTestCases extends AnyFunSpec with EitherValues with ScalaFutures with BagTrackerClientTestBase with BagIdGenerators with StorageManifestGenerators {
   describe("listVersionsOf") {
@@ -106,17 +112,60 @@ trait ListVersionsTestCases extends AnyFunSpec with EitherValues with ScalaFutur
           val future = client.listVersionsOf(bagId, maybeBefore = None)
 
           whenReady(future) {
-            _.left.value shouldBe BagTrackerNotFoundListError(bagId, maybeBefore = None)
+            _.left.value shouldBe BagTrackerNotFoundListError()
           }
         }
       }
     }
 
     it("returns Left[BagTrackerNotFoundListError] if there are no versions before the given version") {
-      true shouldBe false
+      val space = createStorageSpace
+      val externalIdentifier = createExternalIdentifier
+
+      val manifests = (5 to 10).map { version =>
+        createStorageManifestWith(
+          space = space,
+          bagInfo = createBagInfoWith(externalIdentifier = externalIdentifier),
+          version = BagVersion(version)
+        )
+      }
+
+      val bagId = BagId(space = space, externalIdentifier = externalIdentifier)
+
+      withApi(initialManifests = manifests) { _ =>
+        withClient { client =>
+          val future = client.listVersionsOf(bagId, maybeBefore = Some(BagVersion(4)))
+
+          whenReady(future) {
+            _.left.value shouldBe BagTrackerNotFoundListError()
+          }
+        }
+      }
     }
 
     it("returns Left[BagTrackerUnknownListError] if the API has an unexpected error") {
+      val versionedStore = MemoryVersionedStore[BagId, HybridStoreEntry[
+        StorageManifest,
+        EmptyMetadata
+        ]](initialEntries = Map.empty)
+
+      val brokenDao = new MemoryStorageManifestDao(versionedStore) {
+        override def listVersions(bagId: BagId, before: Option[BagVersion]): Either[ReadError, Seq[StorageManifest]] =
+          Left(StoreReadError(new Throwable("BOOM!")))
+      }
+
+      withApi(brokenDao) { _ =>
+        withClient { client =>
+          val future = client.listVersionsOf(createBagId, maybeBefore = None)
+
+          whenReady(future) {
+            _.left.value shouldBe a[BagTrackerUnknownListError]
+          }
+        }
+      }
+    }
+
+    it("fails if the tracker API is unavailable") {
       true shouldBe false
     }
   }
