@@ -47,16 +47,9 @@ module "app_container" {
   source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v2.4.1"
   name   = "app"
 
-  image = var.container_image
+  image = var.api_container_image
 
-  environment = var.environment
-  secrets     = var.secrets
+  environment = var.api_environment
 
   log_configuration = module.base.log_configuration
-}
-
-module "app_container_secrets_permissions" {
-  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v2.4.1"
-  secrets   = var.secrets
-  role_name = module.base.task_execution_role_name
 }
