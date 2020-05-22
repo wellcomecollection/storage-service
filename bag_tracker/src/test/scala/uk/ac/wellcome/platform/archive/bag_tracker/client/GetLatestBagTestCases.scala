@@ -4,7 +4,10 @@ import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.funspec.AnyFunSpec
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
-import uk.ac.wellcome.platform.archive.common.generators.{BagIdGenerators, StorageManifestGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagIdGenerators,
+  StorageManifestGenerators
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.EmptyMetadata
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
@@ -12,12 +15,13 @@ import uk.ac.wellcome.storage.{ReadError, StoreReadError}
 import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
-trait GetLatestBagTestCases extends AnyFunSpec
-  with EitherValues
-  with ScalaFutures
-  with BagIdGenerators
-  with BagTrackerClientTestBase
-  with StorageManifestGenerators {
+trait GetLatestBagTestCases
+    extends AnyFunSpec
+    with EitherValues
+    with ScalaFutures
+    with BagIdGenerators
+    with BagTrackerClientTestBase
+    with StorageManifestGenerators {
 
   describe("getLatestBag()") {
     it("finds the latest version of a bag") {
@@ -57,11 +61,13 @@ trait GetLatestBagTestCases extends AnyFunSpec
       }
     }
 
-    it("returns a Left[BagTrackerUnknownGetError] if the API has an unexpected error") {
+    it(
+      "returns a Left[BagTrackerUnknownGetError] if the API has an unexpected error"
+    ) {
       val versionedStore = MemoryVersionedStore[BagId, HybridStoreEntry[
         StorageManifest,
         EmptyMetadata
-        ]](initialEntries = Map.empty)
+      ]](initialEntries = Map.empty)
 
       val brokenDao = new MemoryStorageManifestDao(versionedStore) {
         override def getLatest(id: BagId): Either[ReadError, StorageManifest] =

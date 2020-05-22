@@ -62,7 +62,9 @@ class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem)
         .withQuery(Query(("version", version.underlying.toString)))
     )
 
-  private def getManifest(requestUri: Uri): Future[Either[BagTrackerGetError, StorageManifest]] = {
+  private def getManifest(
+    requestUri: Uri
+  ): Future[Either[BagTrackerGetError, StorageManifest]] = {
     val request = HttpRequest(uri = requestUri, method = HttpMethods.GET)
     info(s"Making request: $request")
 
