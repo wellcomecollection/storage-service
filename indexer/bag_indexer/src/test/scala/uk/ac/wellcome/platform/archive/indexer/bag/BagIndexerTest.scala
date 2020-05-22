@@ -6,7 +6,10 @@ import org.scalatest.Assertion
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.indexer.IndexerTestCases
-import uk.ac.wellcome.platform.archive.indexer.bags.{BagIndexer, BagsIndexConfig}
+import uk.ac.wellcome.platform.archive.indexer.bags.{
+  BagIndexer,
+  BagsIndexConfig
+}
 import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.Indexer
 import uk.ac.wellcome.json.JsonUtil._

@@ -8,7 +8,7 @@ object BagsIndexConfig extends IndexConfig {
   private val suffixTallyFields: Seq[FieldDefinition] =
     Seq(
       keywordField("suffix"),
-      intField("count"),
+      intField("count")
     )
 
   private val fileFields: Seq[FieldDefinition] =
@@ -18,7 +18,6 @@ object BagsIndexConfig extends IndexConfig {
       keywordField("name"),
       longField("size"),
       keywordField("checksum"),
-
       keywordField("type")
     )
 
@@ -29,17 +28,13 @@ object BagsIndexConfig extends IndexConfig {
       keywordField("externalIdentifier"),
       intField("version"),
       dateField("createdDate"),
-
       objectField("payloadFiles").fields(fileFields),
-
       objectField("payloadFileSuffixTally").fields(suffixTallyFields),
       intField("payloadFileCount"),
       longField("payloadFileSize"),
-
       objectField("newPayloadFileSuffixTally").fields(suffixTallyFields),
       intField("newPayloadFileCount"),
       longField("newPayloadFileSize"),
-
       keywordField("type")
     )
 }
