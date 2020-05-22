@@ -32,6 +32,25 @@ resource "aws_iam_role_policy" "s3_large_response_cache" {
   policy = data.aws_iam_policy_document.s3_large_response_cache.json
 }
 
+# bag_indexer
+
+resource "aws_iam_role_policy" "bag_indexer_vhs_manifests_readwrite" {
+  role   = module.bag_indexer.task_role_name
+  policy = var.vhs_manifests_readwrite_policy
+}
+
+resource "aws_iam_role_policy" "bag_indexer_metrics" {
+  role   = module.bag_indexer.task_role_name
+  policy = data.aws_iam_policy_document.cloudwatch_putmetrics.json
+}
+
+# ingests_indexer
+
+resource "aws_iam_role_policy" "ingests_indexer_metrics" {
+  role   = module.ingests_indexer.task_role_name
+  policy = data.aws_iam_policy_document.cloudwatch_putmetrics.json
+}
+
 # ingests_service
 
 resource "aws_iam_role_policy" "ingests_table_readwrite" {

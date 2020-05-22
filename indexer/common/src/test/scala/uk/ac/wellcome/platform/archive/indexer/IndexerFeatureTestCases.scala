@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.indexer.fixtures.IndexerFixtures
 
 abstract class IndexerFeatureTestCases[SourceT, T, IndexedT](
   implicit decoderT: Decoder[SourceT],
-  encoderT: Encoder[T],
+  encoderT: Encoder[SourceT],
   decoderIT: Decoder[IndexedT]
 ) extends AnyFunSpec
     with Matchers
@@ -18,9 +18,9 @@ abstract class IndexerFeatureTestCases[SourceT, T, IndexedT](
 
   val mapping: MappingDefinition
 
-  def convertIndexedT(t: T): IndexedT
+  def convertIndexedT(t: SourceT): IndexedT
 
-  def createT: (T, String)
+  def createT: (SourceT, String)
 
   it("processes a single message") {
     withLocalElasticsearchIndex(mapping) { index =>

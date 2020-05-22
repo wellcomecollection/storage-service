@@ -21,6 +21,10 @@ abstract class IndexerWorkerTestCases[SourceT, T, IndexedT](
     with EitherValues
     with IndexerFixtures[SourceT, T, IndexedT] {
 
+  // TODO: Cover the code path where "load" is called
+  // We should have tests to test failure modes in load
+  // If this code is shared with the catalogue we should add those.
+
   val mapping: MappingDefinition
   def createT: (SourceT, String)
   def convertToIndexed(t: SourceT): IndexedT

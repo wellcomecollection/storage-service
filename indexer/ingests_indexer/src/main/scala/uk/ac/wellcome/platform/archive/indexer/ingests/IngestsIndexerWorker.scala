@@ -8,7 +8,8 @@ import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClien
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
   Indexer,
-  IndexerWorker
+  IndexerWorker,
+  IndexerWorkerError
 }
 import uk.ac.wellcome.platform.archive.indexer.ingests.models.IndexedIngest
 
@@ -30,5 +31,7 @@ class IngestsIndexerWorker(
       metricsNamespace
     ) {
 
-  def load(source: Ingest): Future[Ingest] = Future.successful(source)
+  def load(source: Ingest): Future[Either[IndexerWorkerError, Ingest]] =
+    Future.successful(Right(source))
+
 }
