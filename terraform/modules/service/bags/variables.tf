@@ -12,7 +12,10 @@ variable "service_name" {
 
 variable "api_environment" {
   type    = map(string)
-  default = {}
+}
+
+variable "tracker_environment" {
+  type    = map(string)
 }
 
 variable "cpu" {

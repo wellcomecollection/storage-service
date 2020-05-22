@@ -9,7 +9,8 @@ module "base" {
 
   container_definitions = [
     module.nginx_container.container_definition,
-    module.app_container.container_definition
+    module.app_container.container_definition,
+    module.tracker_container.container_definition,
   ]
 
   # We need to run at least three API tasks (three = number of Availability Zones).
@@ -50,6 +51,17 @@ module "app_container" {
   image = var.api_container_image
 
   environment = var.api_environment
+
+  log_configuration = module.base.log_configuration
+}
+
+module "tracker_container" {
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v2.4.1"
+  name   = "tracker"
+
+  image = var.tracker_container_image
+
+  environment = var.tracker_environment
 
   log_configuration = module.base.log_configuration
 }

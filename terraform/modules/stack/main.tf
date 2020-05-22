@@ -137,6 +137,11 @@ module "bags_api" {
     responses_bucket_name = aws_s3_bucket.large_response_cache.id
   }
 
+  tracker_environment = {
+    vhs_bucket_name = var.vhs_manifests_bucket_name
+    vhs_table_name  = var.vhs_manifests_table_name
+  }
+
   cpu    = 1024
   memory = 2048
 

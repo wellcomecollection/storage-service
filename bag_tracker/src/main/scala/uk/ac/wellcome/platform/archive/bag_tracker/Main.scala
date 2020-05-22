@@ -13,6 +13,6 @@ object Main extends WellcomeTypesafeApp {
 
     new BagTrackerApi(
       storageManifestDao = StorageManifestDaoBuilder.build(config)
-    )
+    )(host = "localhost", port = 8080)
   }
 }
