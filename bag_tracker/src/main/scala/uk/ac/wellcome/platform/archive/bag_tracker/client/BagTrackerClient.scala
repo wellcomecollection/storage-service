@@ -34,24 +34,37 @@ trait BagTrackerClient {
   ): Future[Either[BagTrackerError, BagVersionList]]
 }
 
-class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem) extends BagTrackerClient with Logging {
+class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem)
+    extends BagTrackerClient
+    with Logging {
   implicit val ec: ExecutionContext = actorSystem.dispatcher
 
-  override def createBag(storageManifest: StorageManifest): Future[Either[BagTrackerError, Unit]] =
+  override def createBag(
+    storageManifest: StorageManifest
+  ): Future[Either[BagTrackerError, Unit]] =
     Future.failed(new Throwable("BOOM!"))
 
-  override def getLatestBag(bagId: BagId): Future[Either[BagTrackerError, StorageManifest]] =
+  override def getLatestBag(
+    bagId: BagId
+  ): Future[Either[BagTrackerError, StorageManifest]] =
     Future.failed(new Throwable("BOOM!"))
 
-  override def getBag(bagId: BagId, version: BagVersion): Future[Either[BagTrackerError, StorageManifest]] =
+  override def getBag(
+    bagId: BagId,
+    version: BagVersion
+  ): Future[Either[BagTrackerError, StorageManifest]] =
     Future.failed(new Throwable("BOOM!"))
 
-  override def listVersionsOf(bagId: BagId, maybeBefore: Option[BagVersion]): Future[Either[BagTrackerListVersionsError, BagVersionList]] = {
+  override def listVersionsOf(
+    bagId: BagId,
+    maybeBefore: Option[BagVersion]
+  ): Future[Either[BagTrackerListVersionsError, BagVersionList]] = {
     val baseRequestUri = trackerHost.withPath(Path(s"/bags/$bagId/versions"))
 
     val requestUri = maybeBefore match {
-      case None         => baseRequestUri
-      case Some(before) => baseRequestUri.withQuery(Query(("before", before.underlying.toString)))
+      case None => baseRequestUri
+      case Some(before) =>
+        baseRequestUri.withQuery(Query(("before", before.underlying.toString)))
     }
 
     val request = HttpRequest(uri = requestUri, method = HttpMethods.GET)

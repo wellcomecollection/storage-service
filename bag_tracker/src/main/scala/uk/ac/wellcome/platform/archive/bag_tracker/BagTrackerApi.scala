@@ -9,14 +9,24 @@ import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bag_tracker.services.LookupBagVersions
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion, ExternalIdentifier}
-import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagId,
+  BagVersion,
+  ExternalIdentifier
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  StorageManifest,
+  StorageSpace
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
-class BagTrackerApi(val storageManifestDao: StorageManifestDao)(host: String, port: Int)(
+class BagTrackerApi(val storageManifestDao: StorageManifestDao)(
+  host: String,
+  port: Int
+)(
   implicit
   actorSystem: ActorSystem
 ) extends Runnable
@@ -44,7 +54,6 @@ class BagTrackerApi(val storageManifestDao: StorageManifestDao)(host: String, po
             complete(StatusCodes.Created)
           }
         },
-
         // We look for /versions at the end of the path: this means we should
         // return a list of versions, not the complete manifest.
         //
@@ -53,20 +62,22 @@ class BagTrackerApi(val storageManifestDao: StorageManifestDao)(host: String, po
         // slash appended!
         //
         pathSuffix("versions" /) {
-          path(Segment / Remaining) { (space, externalIdentifier) =>
-            val bagId = BagId(
-              space = StorageSpace(space),
-              externalIdentifier = ExternalIdentifier(externalIdentifier)
-            )
+          path(Segment / Remaining) {
+            (space, externalIdentifier) =>
+              val bagId = BagId(
+                space = StorageSpace(space),
+                externalIdentifier = ExternalIdentifier(externalIdentifier)
+              )
 
-            get {
-              parameter('before.as[Int] ?) { maybeBefore =>
-                lookupVersions(bagId = bagId, maybeBefore = maybeBefore.map { BagVersion(_) })
+              get {
+                parameter('before.as[Int] ?) { maybeBefore =>
+                  lookupVersions(bagId = bagId, maybeBefore = maybeBefore.map {
+                    BagVersion(_)
+                  })
+                }
               }
-            }
           }
         },
-
         get {
           pathPrefix(Segment / Remaining) { (space, remaining) =>
             println(s"space = $space")
