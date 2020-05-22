@@ -185,7 +185,8 @@ trait StorageRandomThings extends RandomThings {
 
   def createBagPath: BagPath = BagPath(randomAlphanumeric)
 
-  def createBagPathWithPrefix(prefix: String): BagPath = BagPath(f"$prefix/$randomAlphanumeric")
+  def createBagPathWithPrefix(prefix: String): BagPath =
+    BagPath(f"$prefix/$randomAlphanumeric")
 
   def createChecksumWith(algorithm: HashingAlgorithm = SHA256): Checksum =
     Checksum(algorithm = algorithm, value = randomChecksumValue)
