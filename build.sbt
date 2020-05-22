@@ -67,6 +67,12 @@ lazy val bag_register = setupProject(
 lazy val bag_replicator =
   setupProject(project, "bag_replicator", localDependencies = Seq(common))
 
+lazy val bag_tracker = setupProject(
+  project,
+  folder = "bag_tracker",
+  localDependencies = Seq(common)
+)
+
 lazy val bag_verifier =
   setupProject(project, "bag_verifier", localDependencies = Seq(common))
 

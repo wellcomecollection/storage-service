@@ -13,6 +13,7 @@ jobs:
     - env: SBT_PROJECT=bag_register
     - env: SBT_PROJECT=bag_replicator
     - env: SBT_PROJECT=bag_root_finder
+    - env: SBT_PROJECT=bag_tracker
     - env: SBT_PROJECT=bag_verifier
     - env: SBT_PROJECT=bag_unpacker
     - env: SBT_PROJECT=bag_versioner
@@ -40,6 +41,7 @@ cache:
     - bag_replicator/target
     - bag_register/target
     - bag_root_finder/target
+    - bag_tracker/target
     - bag_unpacker/target
     - bag_verifier/target
     - bag_versioner/target
