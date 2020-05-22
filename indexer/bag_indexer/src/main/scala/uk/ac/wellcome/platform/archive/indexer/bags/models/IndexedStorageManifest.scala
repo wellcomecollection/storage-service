@@ -13,6 +13,12 @@ case class IndexedSuffixTally(
   count: Int
 )
 
+case class IndexedPayloadStats(
+                         fileCount: Int,
+                         fileSize: Long,
+                         fileSuffixTally: Seq[IndexedSuffixTally]
+                       )
+
 case class IndexedFileFields(
   path: String,
   name: String,
@@ -38,12 +44,8 @@ case class IndexedStorageManifest(
   version: Int,
   createdDate: Instant,
   payloadFiles: Seq[IndexedFileFields],
-  payloadFileCount: Int,
-  payloadFileSize: Long,
-  payloadFileSuffixTally: Seq[IndexedSuffixTally],
-  newPayloadFileCount: Int,
-  newPayloadFileSize: Long,
-  newPayloadFileSuffixTally: Seq[IndexedSuffixTally],
+  payloadStats: IndexedPayloadStats,
+  newPayloadStats: IndexedPayloadStats,
   @JsonKey("type") ontologyType: String = "Bag"
 )
 
@@ -51,18 +53,26 @@ object IndexedStorageManifest {
   def apply(storageManifest: StorageManifest): IndexedStorageManifest = {
     val payloadFiles = storageManifest.manifest.files.map(IndexedFileFields(_))
 
+    val payloadStats = IndexedPayloadStats(
+      fileCount = 0,
+      fileSize = 0,
+      fileSuffixTally = Nil,
+    )
+
+    val newPayloadStats = IndexedPayloadStats(
+      fileCount = 0,
+      fileSize = 0,
+      fileSuffixTally = Nil,
+    )
+
     IndexedStorageManifest(
       id = storageManifest.id.toString,
       space = storageManifest.space.underlying,
       version = storageManifest.version.underlying,
       createdDate = storageManifest.createdDate,
       payloadFiles = payloadFiles,
-      payloadFileCount = 0,
-      payloadFileSize = 0,
-      payloadFileSuffixTally = Nil,
-      newPayloadFileCount = 0,
-      newPayloadFileSize = 0,
-      newPayloadFileSuffixTally = Nil
+      payloadStats = payloadStats,
+      newPayloadStats = newPayloadStats
     )
   }
 }
