@@ -64,4 +64,5 @@ trait BagTrackerClientTestBase extends Matchers with Akka {
 
 trait BagTrackerClientTestCases
     extends GetBagTestCases
+    with GetLatestBagTestCases
     with ListVersionsTestCases
