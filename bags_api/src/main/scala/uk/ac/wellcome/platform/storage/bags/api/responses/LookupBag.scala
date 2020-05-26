@@ -34,7 +34,7 @@ trait LookupBag extends Logging with ResponseBase {
 
   implicit val ec: ExecutionContext
 
-  def lookupBagBetter(bagId: BagId, maybeVersionString: Option[String]): Future[Route] =
+  def lookupBag(bagId: BagId, maybeVersionString: Option[String]): Future[Route] =
     maybeVersionString match {
       case None =>
         lookupTrackerBag(

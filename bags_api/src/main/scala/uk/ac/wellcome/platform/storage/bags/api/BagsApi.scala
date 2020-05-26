@@ -90,7 +90,7 @@ trait BagsApi extends LargeResponses with LookupBag with LookupBagVersions {
         get {
           parameter('version.as[String] ?) { maybeVersionString =>
             withFuture {
-              lookupBagBetter(bagId = bagId, maybeVersionString = maybeVersionString)
+              lookupBag(bagId = bagId, maybeVersionString = maybeVersionString)
             }
           }
         }
