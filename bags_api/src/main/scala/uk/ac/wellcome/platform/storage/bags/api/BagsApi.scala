@@ -32,52 +32,60 @@ trait BagsApi extends LargeResponses with LookupBag with LookupBagVersions {
       // slash appended!
       //
       pathSuffix("versions" /) {
-        path(Segment / Remaining) { (space, remaining) =>
-          val bagId = BagId(
-            space = StorageSpace(space),
-            externalIdentifier = decodeExternalIdentifier(remaining)
-          )
+        path(Segment / Remaining) {
+          (space, remaining) =>
+            val bagId = BagId(
+              space = StorageSpace(space),
+              externalIdentifier = decodeExternalIdentifier(remaining)
+            )
 
-          val chemistAndDruggist = BagId(
-            space = StorageSpace("digitised"),
-            externalIdentifier = ExternalIdentifier("b19974760")
-          )
+            val chemistAndDruggist = BagId(
+              space = StorageSpace("digitised"),
+              externalIdentifier = ExternalIdentifier("b19974760")
+            )
 
-          get {
-            parameter('before.as[String] ?) { maybeBefore =>
+            get {
+              parameter('before.as[String] ?) {
+                maybeBefore =>
+                  // This is some special casing to handle Chemist & Druggist, which
+                  // is enormous.  If somebody tries to retrieve it, direct them straight
+                  // to the cached response.
+                  //
+                  // We should fix the bags API so retrieving this API doesn't cause the
+                  // app to run out of heap space/memory.
+                  //
+                  // See https://github.com/wellcomecollection/platform/issues/4549
+                  bagId match {
+                    case id if id == chemistAndDruggist =>
+                      val url = s3Uploader
+                        .getPresignedGetURL(
+                          location = ObjectLocation(
+                            namespace =
+                              "wellcomecollection-storage-prod-large-response-cache",
+                            path = "responses/digitised/b19974760/v1"
+                          ),
+                          expiryLength = 1 days
+                        )
+                        .right
+                        .get
 
-              // This is some special casing to handle Chemist & Druggist, which
-              // is enormous.  If somebody tries to retrieve it, direct them straight
-              // to the cached response.
-              //
-              // We should fix the bags API so retrieving this API doesn't cause the
-              // app to run out of heap space/memory.
-              //
-              // See https://github.com/wellcomecollection/platform/issues/4549
-              bagId match {
-                case id if id == chemistAndDruggist =>
-                  val url = s3Uploader.getPresignedGetURL(
-                    location = ObjectLocation(
-                      namespace = "wellcomecollection-storage-prod-large-response-cache",
-                      path = "responses/digitised/b19974760/v1"
-                    ),
-                    expiryLength = 1 days
-                  ).right.get
+                      complete(
+                        HttpResponse(
+                          status = StatusCodes.TemporaryRedirect,
+                          headers = Location(url.toExternalForm) :: Nil
+                        )
+                      )
 
-                  complete(
-                    HttpResponse(
-                      status = StatusCodes.TemporaryRedirect,
-                      headers = Location(url.toExternalForm) :: Nil
-                    )
-                  )
-
-                case _ =>
-                  withFuture {
-                    lookupVersions(bagId = bagId, maybeBeforeString = maybeBefore)
+                    case _ =>
+                      withFuture {
+                        lookupVersions(
+                          bagId = bagId,
+                          maybeBeforeString = maybeBefore
+                        )
+                      }
                   }
               }
             }
-          }
         }
       },
       // Look up a single manifest.

@@ -68,9 +68,10 @@ object Main extends WellcomeTypesafeApp {
       override implicit val ec: ExecutionContext = ecMain
       override val contextURL: URL = contextURLMain
 
-      override val bagTrackerClient: BagTrackerClient = new AkkaBagTrackerClient(
-        trackerHost = config.required[String]("bags.tracker.host")
-      )
+      override val bagTrackerClient: BagTrackerClient =
+        new AkkaBagTrackerClient(
+          trackerHost = config.required[String]("bags.tracker.host")
+        )
 
       override val s3Uploader: S3Uploader = uploader
       override val maximumResponseByteLength: Long = defaultMaxByteLength

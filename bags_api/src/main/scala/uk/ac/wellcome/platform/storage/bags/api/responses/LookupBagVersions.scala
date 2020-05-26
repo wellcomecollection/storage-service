@@ -27,13 +27,17 @@ trait LookupBagVersions extends Logging with ResponseBase {
 
   implicit val ec: ExecutionContext
 
-  def lookupVersions(bagId: BagId, maybeBeforeString: Option[String]): Future[Route] =
+  def lookupVersions(
+    bagId: BagId,
+    maybeBeforeString: Option[String]
+  ): Future[Route] =
     maybeBeforeString match {
-      case None => lookupTrackerVersions(
-        bagId = bagId,
-        maybeBefore = None,
-        notFoundMessage = s"No storage manifest versions found for $bagId"
-      )
+      case None =>
+        lookupTrackerVersions(
+          bagId = bagId,
+          maybeBefore = None,
+          notFoundMessage = s"No storage manifest versions found for $bagId"
+        )
 
       case Some(versionString) =>
         parseVersion(versionString) match {
@@ -41,7 +45,8 @@ trait LookupBagVersions extends Logging with ResponseBase {
             lookupTrackerVersions(
               bagId = bagId,
               maybeBefore = Some(version),
-              notFoundMessage = s"No storage manifest versions found for $bagId before $version"
+              notFoundMessage =
+                s"No storage manifest versions found for $bagId before $version"
             )
 
           case Failure(_) =>
@@ -60,7 +65,8 @@ trait LookupBagVersions extends Logging with ResponseBase {
   private def lookupTrackerVersions(
     bagId: BagId,
     maybeBefore: Option[BagVersion],
-    notFoundMessage: String): Future[Route] =
+    notFoundMessage: String
+  ): Future[Route] =
     bagTrackerClient
       .listVersionsOf(bagId = bagId, maybeBefore = maybeBefore)
       .map {
@@ -82,7 +88,10 @@ trait LookupBagVersions extends Logging with ResponseBase {
           )
 
         case Left(BagTrackerUnknownListError(err)) =>
-          error(s"Unexpected error looking up versions for bag ID $bagId before $maybeBefore", err)
+          error(
+            s"Unexpected error looking up versions for bag ID $bagId before $maybeBefore",
+            err
+          )
           complete(
             InternalServerError -> InternalServerErrorResponse(
               context = contextURL,

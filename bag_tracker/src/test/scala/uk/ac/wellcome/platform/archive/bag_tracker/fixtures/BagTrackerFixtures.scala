@@ -16,7 +16,9 @@ trait BagTrackerFixtures extends Akka {
 
   val trackerHost: String = s"http://$host:$port"
 
-  def withApi[R](dao: StorageManifestDao)(testWith: TestWith[BagTrackerApi, R]): R =
+  def withApi[R](
+    dao: StorageManifestDao
+  )(testWith: TestWith[BagTrackerApi, R]): R =
     withActorSystem { implicit actorSystem =>
       val api = new BagTrackerApi(dao)(host = host, port = port)
 
@@ -25,7 +27,9 @@ trait BagTrackerFixtures extends Akka {
       testWith(api)
     }
 
-  def withBagTrackerClient[R](storageManifestDao: StorageManifestDao)(testWith: TestWith[BagTrackerClient, R]): R =
+  def withBagTrackerClient[R](
+    storageManifestDao: StorageManifestDao
+  )(testWith: TestWith[BagTrackerClient, R]): R =
     withActorSystem { implicit actorSystem =>
       withApi(storageManifestDao) { _ =>
         val client = new AkkaBagTrackerClient(trackerHost = Uri(trackerHost))

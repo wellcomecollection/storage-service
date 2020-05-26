@@ -13,10 +13,7 @@ import uk.ac.wellcome.platform.archive.bag_tracker.client.{
   BagTrackerNotFoundError,
   BagTrackerUnknownGetError
 }
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagId,
-  BagVersion
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.platform.archive.common.http.models.{
   InternalServerErrorResponse,
@@ -34,7 +31,10 @@ trait LookupBag extends Logging with ResponseBase {
 
   implicit val ec: ExecutionContext
 
-  def lookupBag(bagId: BagId, maybeVersionString: Option[String]): Future[Route] =
+  def lookupBag(
+    bagId: BagId,
+    maybeVersionString: Option[String]
+  ): Future[Route] =
     maybeVersionString match {
       case None =>
         lookupTrackerBag(
@@ -58,7 +58,8 @@ trait LookupBag extends Logging with ResponseBase {
                 NotFound -> UserErrorResponse(
                   context = contextURL,
                   statusCode = StatusCodes.NotFound,
-                  description = s"Storage manifest $bagId $versionString not found"
+                  description =
+                    s"Storage manifest $bagId $versionString not found"
                 )
               )
             }
@@ -68,7 +69,8 @@ trait LookupBag extends Logging with ResponseBase {
   private def lookupTrackerBag(
     bagId: BagId,
     maybeVersion: Option[BagVersion],
-    notFoundMessage: String): Future[Route] = {
+    notFoundMessage: String
+  ): Future[Route] = {
     val response = maybeVersion match {
       case Some(version) => bagTrackerClient.getBag(bagId, version = version)
       case None          => bagTrackerClient.getLatestBag(bagId)

@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.storage.bags.api.models
 import java.net.URL
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.bag_tracker.models.{BagVersionEntry, BagVersionList}
+import uk.ac.wellcome.platform.archive.bag_tracker.models.{
+  BagVersionEntry,
+  BagVersionList
+}
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 
@@ -37,7 +40,10 @@ case class DisplayBagVersionList(
 )
 
 case object DisplayBagVersionList {
-  def apply(contextURL: URL, bagVersionList: BagVersionList): DisplayBagVersionList =
+  def apply(
+    contextURL: URL,
+    bagVersionList: BagVersionList
+  ): DisplayBagVersionList =
     DisplayBagVersionList(
       context = contextURL.toString,
       results = bagVersionList.versions.map { entry =>
