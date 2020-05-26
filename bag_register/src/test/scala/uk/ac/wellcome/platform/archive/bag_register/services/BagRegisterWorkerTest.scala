@@ -17,7 +17,6 @@ import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
-
 class BagRegisterWorkerTest
     extends AnyFunSpec
     with Matchers

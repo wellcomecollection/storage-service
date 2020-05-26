@@ -33,10 +33,14 @@ class BagRegisterWorker[IngestDestination, OutgoingDestination](
 ) extends IngestStepWorker[KnownReplicasPayload, RegistrationSummary] {
   implicit val ec: ExecutionContext = as.dispatcher
 
-  override def process(payload: KnownReplicasPayload): Future[Result[RegistrationSummary]] =
+  override def process(
+    payload: KnownReplicasPayload
+  ): Future[Result[RegistrationSummary]] =
     processPayload(payload).map { toResult }
 
-  def processPayload(payload: KnownReplicasPayload): Future[IngestStepResult[RegistrationSummary]] =
+  def processPayload(
+    payload: KnownReplicasPayload
+  ): Future[IngestStepResult[RegistrationSummary]] =
     for {
       _ <- Future.fromTry {
         ingestUpdater.start(payload.ingestId)
@@ -72,6 +76,8 @@ class BagRegisterWorker[IngestDestination, OutgoingDestination](
   // Because the bag tracker client returns a Future[…] rather than a Try[…],
   // we bypass this method and define our own process().  We still have to define
   // a method here, but it should never be called.
-  override def processMessage(payload: KnownReplicasPayload): Try[IngestStepResult[RegistrationSummary]] =
+  override def processMessage(
+    payload: KnownReplicasPayload
+  ): Try[IngestStepResult[RegistrationSummary]] =
     Failure(new Throwable("Not used"))
 }
