@@ -5,6 +5,7 @@ import java.time.Instant
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, BagVersion}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
+import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
 import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
 
 import scala.util.Random
@@ -18,6 +19,8 @@ trait StorageManifestGenerators
 
   def createStorageManifestFile: StorageManifestFile = {
     val path = createBagPath
+
+
     StorageManifestFile(
       checksum = randomChecksumValue,
       name = path.value,
@@ -26,17 +29,16 @@ trait StorageManifestGenerators
     )
   }
 
-  // TODO:
-  //  the path prefix needs to be what the DestinationBuilder
-  //  provides - should those be coupled here somehow
   def createStorageManifestFileWith(
     pathPrefix: String
   ): StorageManifestFile = {
-    val path = createBagPathWithPrefix(pathPrefix)
+
+    val name  = randomAlphanumeric
+    val path = createBagPathWithPrefix(pathPrefix, name)
 
     StorageManifestFile(
       checksum = randomChecksumValue,
-      name = path.value,
+      name = name,
       path = path.value,
       size = Random.nextLong().abs
     )
@@ -49,7 +51,18 @@ trait StorageManifestGenerators
     version: BagVersion = createBagVersion,
     fileCount: Int = 3,
     createdDate: Instant = Instant.now
-  ): StorageManifest =
+  ): StorageManifest = {
+
+    val destinationBuilder = new DestinationBuilder(randomAlphanumeric)
+
+    val destination = destinationBuilder.buildDestination(
+      storageSpace=space,
+      externalIdentifier = bagInfo.externalIdentifier,
+      version = version
+    )
+
+    val pathPrefix = destination.path
+
     StorageManifest(
       space = space,
       info = bagInfo,
@@ -57,14 +70,14 @@ trait StorageManifestGenerators
       manifest = FileManifest(
         checksumAlgorithm,
         files = (1 to fileCount)
-          .map(_ => createStorageManifestFile)
+          .map(_ => createStorageManifestFileWith(pathPrefix))
       ),
       tagManifest = FileManifest(
         checksumAlgorithm,
         files = Seq(
-          createStorageManifestFile,
-          createStorageManifestFile,
-          createStorageManifestFile
+          createStorageManifestFileWith(pathPrefix),
+          createStorageManifestFileWith(pathPrefix),
+          createStorageManifestFileWith(pathPrefix)
         )
       ),
       location = createPrimaryLocation,
@@ -75,6 +88,7 @@ trait StorageManifestGenerators
       createdDate = createdDate,
       ingestId = ingestId
     )
+  }
 
   def createStorageManifestWithFileCount(fileCount: Int): StorageManifest =
     createStorageManifestWith(fileCount = fileCount)

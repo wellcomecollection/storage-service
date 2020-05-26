@@ -1,12 +1,9 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.services
+package uk.ac.wellcome.platform.archive.common.storage.services
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.generators.{
-  ExternalIdentifierGenerators,
-  StorageSpaceGenerators
-}
+import uk.ac.wellcome.platform.archive.common.generators.{ExternalIdentifierGenerators, StorageSpaceGenerators}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 
 class DestinationBuilderTest

@@ -3,10 +3,8 @@ package uk.ac.wellcome.platform.archive.indexer.bags.models
 import java.time.Instant
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  StorageManifest,
-  StorageManifestFile
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageManifestFile}
+import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
 
 case class IndexedSuffixTally(
   suffix: String,
@@ -64,6 +62,22 @@ object IndexedStorageManifest {
       fileSize = 0,
       fileSuffixTally = Nil
     )
+
+    val expectedDestinationBuilder = new DestinationBuilder("unused")
+
+    val expectedDestination = expectedDestinationBuilder.buildDestination(
+      storageManifest.space,
+      storageManifest.info.externalIdentifier,
+      storageManifest.version
+    )
+
+    val expectedCurrentPath = expectedDestination.path
+
+    val currentVersionFiles = storageManifest.manifest.files.partition { file =>
+      file.path.startsWith(expectedCurrentPath)
+    }
+
+    println(currentVersionFiles)
 
     IndexedStorageManifest(
       id = storageManifest.id.toString,
