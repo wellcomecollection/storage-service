@@ -1,6 +1,6 @@
 {
   "id" : "bags_api",
-  "folder" : "api/bags_api",
+  "folder" : "bags_api",
   "dependencyIds" : [
     "display"
   ]

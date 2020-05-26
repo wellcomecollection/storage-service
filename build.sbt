@@ -117,7 +117,7 @@ lazy val ingests_api = setupProject(
 
 lazy val bags_api = setupProject(
   project,
-  "api/bags_api",
+  "bags_api",
   localDependencies = Seq(display),
   externalDependencies = ExternalDependencies.circeOpticsDependencies
 )
