@@ -16,12 +16,12 @@ import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
   Register
 }
+import uk.ac.wellcome.platform.archive.bag_tracker.client.AkkaBagTrackerClient
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
-  OutgoingPublisherBuilder,
-  StorageManifestDaoBuilder
+  OutgoingPublisherBuilder
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   S3SizeFinder,
@@ -53,8 +53,6 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: SqsAsyncClient =
       SQSBuilder.buildSQSAsyncClient(config)
 
-    val storageManifestDao = StorageManifestDaoBuilder.build(config)
-
     val operationName = OperationNameBuilder.getName(config)
 
     val ingestUpdater = IngestUpdaterBuilder.build(
@@ -70,7 +68,9 @@ object Main extends WellcomeTypesafeApp {
 
     val register = new Register(
       bagReader = new S3BagReader(),
-      storageManifestDao = storageManifestDao,
+      bagTrackerClient = new AkkaBagTrackerClient(
+        trackerHost = config.required[String]("bags.tracker.host")
+      ),
       storageManifestService = storageManifestService
     )
 

@@ -2,8 +2,7 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 
 import java.time.Instant
 
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.TryValues
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
@@ -14,28 +13,22 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   PayloadGenerators,
   StorageLocationGenerators
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestCompleted,
-  IngestFailed,
-  KnownReplicas,
-  PrimaryStorageLocation
-}
+import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
-import scala.util.Success
 
 class BagRegisterWorkerTest
     extends AnyFunSpec
     with Matchers
     with ScalaFutures
+    with IntegrationPatience
     with BagInfoGenerators
     with BagRegisterFixtures
     with PayloadGenerators
-    with StorageLocationGenerators
-    with TryValues {
+    with StorageLocationGenerators {
 
-  describe("handling a successful registration") {
+  it("handles a successful registration") {
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =
       MemoryStreamStore[ObjectLocation]()
 
@@ -71,54 +64,48 @@ class BagRegisterWorkerTest
       knownReplicas = knownReplicas
     )
 
-    val result =
-      withBagRegisterWorker(
-        ingests = ingests,
-        storageManifestDao = storageManifestDao
-      ) {
-        _.processMessage(payload)
+    withBagRegisterWorker(
+      ingests = ingests,
+      storageManifestDao = storageManifestDao
+    ) { worker =>
+      val future = worker.processPayload(payload)
+
+      whenReady(future) {
+        _ shouldBe a[IngestCompleted[_]]
       }
-
-    it("returns an IngestCompleted") {
-      result shouldBe a[Success[_]]
-      result.success.value shouldBe a[IngestCompleted[_]]
     }
 
-    it("stores the manifest in the dao") {
-      val bagId = BagId(
-        space = space,
-        externalIdentifier = bagInfo.externalIdentifier
-      )
+    val bagId = BagId(
+      space = space,
+      externalIdentifier = bagInfo.externalIdentifier
+    )
 
-      val storageManifest =
-        storageManifestDao.getLatest(bagId).right.value
+    val storageManifest =
+      storageManifestDao.getLatest(bagId).right.value
 
-      storageManifest.space shouldBe bagId.space
-      storageManifest.info shouldBe bagInfo
-      storageManifest.manifest.files should have size dataFileCount
+    storageManifest.space shouldBe bagId.space
+    storageManifest.info shouldBe bagInfo
+    storageManifest.manifest.files should have size dataFileCount
 
-      storageManifest.location shouldBe PrimaryStorageLocation(
-        provider = primaryLocation.provider,
-        prefix = bagRoot
-          .copy(
-            path = bagRoot.path.stripSuffix(s"/$version")
-          )
-      )
+    storageManifest.location shouldBe PrimaryStorageLocation(
+      provider = primaryLocation.provider,
+      prefix = bagRoot
+        .copy(
+          path = bagRoot.path.stripSuffix(s"/$version")
+        )
+    )
 
-      storageManifest.replicaLocations shouldBe empty
+    storageManifest.replicaLocations shouldBe empty
 
-      storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
-    }
+    storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
-    it("updates the ingests monitor") {
-      assertBagRegisterSucceeded(
-        ingestId = payload.ingestId,
-        ingests = ingests
-      )
-    }
+    assertBagRegisterSucceeded(
+      ingestId = payload.ingestId,
+      ingests = ingests
+    )
   }
 
-  describe("stores multiple versions of a bag") {
+  it("stores multiple versions of a bag") {
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =
       MemoryStreamStore[ObjectLocation]()
 
@@ -173,39 +160,35 @@ class BagRegisterWorkerTest
       externalIdentifier = bagInfo1.externalIdentifier
     )
 
-    val results =
-      withBagRegisterWorker(storageManifestDao = storageManifestDao) { worker =>
-        Seq(payload1, payload2).map { worker.processMessage }
+    withBagRegisterWorker(storageManifestDao = storageManifestDao) { worker =>
+      whenReady(worker.processPayload(payload1)) {
+        _ shouldBe a[IngestCompleted[_]]
       }
 
-    it("returns an IngestCompleted") {
-      results.foreach { result =>
-        result shouldBe a[Success[_]]
-        result.success.value shouldBe a[IngestCompleted[_]]
+      whenReady(worker.processPayload(payload2)) {
+        _ shouldBe a[IngestCompleted[_]]
       }
     }
 
-    it("stores multiple versions in the dao") {
-      storageManifestDao
-        .get(bagId, version = version1)
-        .right
-        .value
-        .version shouldBe version1
-      storageManifestDao
-        .get(bagId, version = version2)
-        .right
-        .value
-        .version shouldBe version2
+    storageManifestDao
+      .get(bagId, version = version1)
+      .right
+      .value
+      .version shouldBe version1
+    storageManifestDao
+      .get(bagId, version = version2)
+      .right
+      .value
+      .version shouldBe version2
 
-      storageManifestDao
-        .getLatest(bagId)
-        .right
-        .value
-        .version shouldBe version2
-    }
+    storageManifestDao
+      .getLatest(bagId)
+      .right
+      .value
+      .version shouldBe version2
   }
 
-  describe("registering a bag with multiple locations") {
+  it("registers a bag with multiple locations") {
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =
       MemoryStreamStore[ObjectLocation]()
 
@@ -247,48 +230,42 @@ class BagRegisterWorkerTest
       externalIdentifier = bagInfo.externalIdentifier
     )
 
-    val result =
-      withBagRegisterWorker(storageManifestDao = storageManifestDao) {
-        _.processMessage(payload)
+    withBagRegisterWorker(storageManifestDao = storageManifestDao) { worker =>
+      val future = worker.processPayload(payload)
+
+      whenReady(future) {
+        _ shouldBe a[IngestCompleted[_]]
       }
+    }
 
     val storageManifest =
       storageManifestDao.getLatest(bagId).right.value
 
-    it("returns an IngestCompleted") {
-      result shouldBe a[Success[_]]
-      result.success.value shouldBe a[IngestCompleted[_]]
-    }
+    storageManifest.location shouldBe primaryLocation.copy(
+      prefix = bagRoot
+        .copy(
+          path = bagRoot.path.stripSuffix(s"/$version")
+        )
+    )
 
-    it("stores the manifest in the dao") {
-      storageManifest.location shouldBe primaryLocation.copy(
-        prefix = bagRoot
-          .copy(
-            path = bagRoot.path.stripSuffix(s"/$version")
-          )
-      )
+    storageManifest.replicaLocations shouldBe
+      replicas.map { secondaryLocation =>
+        val prefix = secondaryLocation.prefix
 
-      storageManifest.replicaLocations shouldBe
-        replicas.map { secondaryLocation =>
-          val prefix = secondaryLocation.prefix
+        secondaryLocation.copy(
+          prefix = prefix
+            .copy(path = prefix.path.stripSuffix(s"/$version"))
+        )
+      }
 
-          secondaryLocation.copy(
-            prefix = prefix
-              .copy(path = prefix.path.stripSuffix(s"/$version"))
-          )
-        }
-    }
+    val tagManifestFiles =
+      storageManifest.tagManifest.files
+        .filter { _.name == "tagmanifest-sha256.txt" }
 
-    it("includes the tagmanifest-sha256.txt in the storage manifest") {
-      val tagManifestFiles =
-        storageManifest.tagManifest.files
-          .filter { _.name == "tagmanifest-sha256.txt" }
-
-      tagManifestFiles should have size 1
-    }
+    tagManifestFiles should have size 1
   }
 
-  describe("handles a failed registration") {
+  it("handles a failed registration") {
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =
       MemoryStreamStore[ObjectLocation]()
 
@@ -299,21 +276,18 @@ class BagRegisterWorkerTest
     // in this payload.
     val payload = createKnownReplicasPayload
 
-    val result =
+    val future =
       withBagRegisterWorker(ingests = ingests) {
-        _.processMessage(payload)
+        _.processPayload(payload)
       }
 
-    it("returns an IngestFailed") {
-      result shouldBe a[Success[_]]
-      result.success.value shouldBe a[IngestFailed[_]]
+    whenReady(future) {
+      _ shouldBe a[IngestFailed[_]]
     }
 
-    it("updates the ingests monitor") {
-      assertBagRegisterFailed(
-        ingestId = payload.ingestId,
-        ingests = ingests
-      )
-    }
+    assertBagRegisterFailed(
+      ingestId = payload.ingestId,
+      ingests = ingests
+    )
   }
 }

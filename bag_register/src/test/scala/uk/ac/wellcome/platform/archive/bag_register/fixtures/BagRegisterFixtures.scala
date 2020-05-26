@@ -13,6 +13,7 @@ import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
   Register
 }
+import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
   BagVersion,
@@ -47,6 +48,7 @@ trait BagRegisterFixtures
     with StorageManifestVHSFixture
     with IngestUpdateAssertions
     with ExternalIdentifierGenerators
+    with BagTrackerFixtures
     with StringNamespaceFixtures {
 
   override implicit val asyncSqsClient: SqsAsyncClient =
@@ -82,24 +84,26 @@ trait BagRegisterFixtures
           sizeFinder = new MemorySizeFinder(streamStore.memoryStore)
         )
 
-        val register = new Register(
-          bagReader = bagReader,
-          storageManifestDao = storageManifestDao,
-          storageManifestService = storageManifestService
-        )
+        withBagTrackerClient(storageManifestDao) { bagTrackerClient =>
+          val register = new Register(
+            bagReader = bagReader,
+            bagTrackerClient = bagTrackerClient,
+            storageManifestService = storageManifestService
+          )
 
-        val service = new BagRegisterWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
-          ingestUpdater =
-            createIngestUpdaterWith(ingests, stepName = "register"),
-          outgoingPublisher = createOutgoingPublisherWith(outgoing),
-          register = register,
-          metricsNamespace = "bag_register"
-        )
+          val service = new BagRegisterWorker(
+            config = createAlpakkaSQSWorkerConfig(queue),
+            ingestUpdater =
+              createIngestUpdaterWith(ingests, stepName = "register"),
+            outgoingPublisher = createOutgoingPublisherWith(outgoing),
+            register = register,
+            metricsNamespace = "bag_register"
+          )
 
-        service.run()
+          service.run()
 
-        testWith(service)
+          testWith(service)
+        }
       }
     }
 

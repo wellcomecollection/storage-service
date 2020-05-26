@@ -60,8 +60,7 @@ lazy val bag_root_finder =
 lazy val bag_register = setupProject(
   project,
   "bag_register",
-  localDependencies = Seq(common),
-  externalDependencies = ExternalDependencies.circeOpticsDependencies
+  localDependencies = Seq(common, bag_tracker)
 )
 
 lazy val bag_replicator =
