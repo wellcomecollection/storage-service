@@ -57,7 +57,9 @@ class DisplayFileManifestTest
     )
   }
 
-  private def createStorageManifestFileWithName(name: String): StorageManifestFile =
+  private def createStorageManifestFileWithName(
+    name: String
+  ): StorageManifestFile =
     createStorageManifestFile.copy(name = name)
 
   private def createFileManifestWith(

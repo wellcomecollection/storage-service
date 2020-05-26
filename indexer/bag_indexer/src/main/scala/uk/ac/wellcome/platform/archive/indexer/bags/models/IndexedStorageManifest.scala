@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.archive.indexer.bags.models
 import java.time.Instant
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageManifestFile}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  StorageManifest,
+  StorageManifestFile
+}
 import uk.ac.wellcome.platform.archive.indexer.bags.services.FileSuffixCounter
 
 case class IndexedSuffixTally(
@@ -12,7 +15,7 @@ case class IndexedSuffixTally(
 )
 
 object IndexedSuffixTally {
-  def apply(tuple: (String, Int)):IndexedSuffixTally =
+  def apply(tuple: (String, Int)): IndexedSuffixTally =
     IndexedSuffixTally(tuple._1, tuple._2)
 }
 
@@ -59,7 +62,8 @@ object IndexedStorageManifest {
     val fileSuffixTally = FileSuffixCounter.count(storageManifestFiles)
     val indexedSuffixTally = fileSuffixTally
       .map(IndexedSuffixTally(_))
-      .toList.sortBy(_.suffix)
+      .toList
+      .sortBy(_.suffix)
 
     val payloadStats = IndexedPayloadStats(
       fileCount = storageManifestFiles.length,
@@ -73,9 +77,7 @@ object IndexedStorageManifest {
       version = storageManifest.version.underlying,
       createdDate = storageManifest.createdDate,
       payloadFiles = payloadFiles,
-      payloadStats = payloadStats,
+      payloadStats = payloadStats
     )
   }
 }
-
-

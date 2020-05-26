@@ -11,7 +11,7 @@ import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
 import scala.util.Random
 
 trait StorageManifestGenerators
-  extends BagInfoGenerators
+    extends BagInfoGenerators
     with StorageSpaceGenerators
     with StorageLocationGenerators {
 
@@ -19,7 +19,6 @@ trait StorageManifestGenerators
 
   def createStorageManifestFile: StorageManifestFile = {
     val path = createBagPath
-
 
     StorageManifestFile(
       checksum = randomChecksumValue,
@@ -30,10 +29,10 @@ trait StorageManifestGenerators
   }
 
   def createStorageManifestFileWith(
-                                     pathPrefix: String = randomAlphanumeric,
-                                     name: String = randomAlphanumeric,
-                                     size: Long = Random.nextLong().abs
-                                   ): StorageManifestFile = {
+    pathPrefix: String = randomAlphanumeric,
+    name: String = randomAlphanumeric,
+    size: Long = Random.nextLong().abs
+  ): StorageManifestFile = {
 
     val path = createBagPathWithPrefix(pathPrefix, name)
 
@@ -46,14 +45,14 @@ trait StorageManifestGenerators
   }
 
   def createStorageManifestWith(
-                                 ingestId: IngestID = createIngestID,
-                                 space: StorageSpace = createStorageSpace,
-                                 bagInfo: BagInfo = createBagInfo,
-                                 version: BagVersion = createBagVersion,
-                                 fileCount: Int = 3,
-                                 createdDate: Instant = Instant.now,
-                                 files: List[StorageManifestFile] = Nil
-                               ): StorageManifest = {
+    ingestId: IngestID = createIngestID,
+    space: StorageSpace = createStorageSpace,
+    bagInfo: BagInfo = createBagInfo,
+    version: BagVersion = createBagVersion,
+    fileCount: Int = 3,
+    createdDate: Instant = Instant.now,
+    files: List[StorageManifestFile] = Nil
+  ): StorageManifest = {
 
     val pathPrefix = DestinationBuilder
       .buildPath(

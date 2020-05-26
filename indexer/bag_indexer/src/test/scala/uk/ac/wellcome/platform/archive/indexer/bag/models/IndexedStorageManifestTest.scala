@@ -3,12 +3,20 @@ package uk.ac.wellcome.platform.archive.indexer.bag.models
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
-import uk.ac.wellcome.platform.archive.common.generators.{IngestGenerators, StorageManifestGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  IngestGenerators,
+  StorageManifestGenerators
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
-import uk.ac.wellcome.platform.archive.indexer.bags.models.{IndexedFileFields, IndexedPayloadStats, IndexedStorageManifest, IndexedSuffixTally}
+import uk.ac.wellcome.platform.archive.indexer.bags.models.{
+  IndexedFileFields,
+  IndexedPayloadStats,
+  IndexedStorageManifest,
+  IndexedSuffixTally
+}
 
 class IndexedStorageManifestTest
-  extends AnyFunSpec
+    extends AnyFunSpec
     with Matchers
     with IngestGenerators
     with StorageManifestGenerators {
@@ -68,7 +76,7 @@ class IndexedStorageManifestTest
         pathPrefix = v2pathPrefix,
         name = v2TwoFileName,
         size = v2TwoFileSize
-      ),
+      )
     )
 
     val v3OneFileSize = 654L
@@ -79,7 +87,7 @@ class IndexedStorageManifestTest
         pathPrefix = v3pathPrefix,
         name = v3OneFileName,
         size = v3OneFileSize
-      ),
+      )
     )
 
     val files = v1Files ++ v2Files ++ v3Files
@@ -100,11 +108,12 @@ class IndexedStorageManifestTest
       fileSuffixTally = List(
         IndexedSuffixTally("gif", 2),
         IndexedSuffixTally("png", 1),
-        IndexedSuffixTally("txt", 1),
+        IndexedSuffixTally("txt", 1)
       )
     )
 
-    indexedManifest.payloadFiles shouldBe storageManifest.manifest.files.map(IndexedFileFields(_))
+    indexedManifest.payloadFiles shouldBe storageManifest.manifest.files
+      .map(IndexedFileFields(_))
     indexedManifest.payloadStats shouldBe expectedPayloadStats
   }
 }
