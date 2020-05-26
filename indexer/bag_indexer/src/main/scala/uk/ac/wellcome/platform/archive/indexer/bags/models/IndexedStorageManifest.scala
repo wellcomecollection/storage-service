@@ -4,12 +4,17 @@ import java.time.Instant
 
 import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageManifestFile}
-import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
+import uk.ac.wellcome.platform.archive.indexer.bags.services.FileSuffixCounter
 
 case class IndexedSuffixTally(
   suffix: String,
   count: Int
 )
+
+object IndexedSuffixTally {
+  def apply(tuple: (String, Int)):IndexedSuffixTally =
+    IndexedSuffixTally(tuple._1, tuple._2)
+}
 
 case class IndexedPayloadStats(
   fileCount: Int,
@@ -43,41 +48,24 @@ case class IndexedStorageManifest(
   createdDate: Instant,
   payloadFiles: Seq[IndexedFileFields],
   payloadStats: IndexedPayloadStats,
-  newPayloadStats: IndexedPayloadStats,
   @JsonKey("type") ontologyType: String = "Bag"
 )
 
 object IndexedStorageManifest {
   def apply(storageManifest: StorageManifest): IndexedStorageManifest = {
-    val payloadFiles = storageManifest.manifest.files.map(IndexedFileFields(_))
+    val storageManifestFiles = storageManifest.manifest.files
+    val payloadFiles = storageManifestFiles.map(IndexedFileFields(_))
+
+    val fileSuffixTally = FileSuffixCounter.count(storageManifestFiles)
+    val indexedSuffixTally = fileSuffixTally
+      .map(IndexedSuffixTally(_))
+      .toList.sortBy(_.suffix)
 
     val payloadStats = IndexedPayloadStats(
-      fileCount = 0,
-      fileSize = 0,
-      fileSuffixTally = Nil
+      fileCount = storageManifestFiles.length,
+      fileSize = storageManifestFiles.map(_.size).sum,
+      fileSuffixTally = indexedSuffixTally
     )
-
-    val newPayloadStats = IndexedPayloadStats(
-      fileCount = 0,
-      fileSize = 0,
-      fileSuffixTally = Nil
-    )
-
-    val expectedDestinationBuilder = new DestinationBuilder("unused")
-
-    val expectedDestination = expectedDestinationBuilder.buildDestination(
-      storageManifest.space,
-      storageManifest.info.externalIdentifier,
-      storageManifest.version
-    )
-
-    val expectedCurrentPath = expectedDestination.path
-
-    val currentVersionFiles = storageManifest.manifest.files.partition { file =>
-      file.path.startsWith(expectedCurrentPath)
-    }
-
-    println(currentVersionFiles)
 
     IndexedStorageManifest(
       id = storageManifest.id.toString,
@@ -86,7 +74,8 @@ object IndexedStorageManifest {
       createdDate = storageManifest.createdDate,
       payloadFiles = payloadFiles,
       payloadStats = payloadStats,
-      newPayloadStats = newPayloadStats
     )
   }
 }
+
+

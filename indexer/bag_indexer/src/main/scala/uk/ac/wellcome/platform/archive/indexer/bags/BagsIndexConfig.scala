@@ -37,7 +37,6 @@ object BagsIndexConfig extends IndexConfig {
       dateField("createdDate"),
       objectField("payloadFiles").fields(fileFields),
       objectField("payloadStats").fields(payloadStatsFields),
-      objectField("newPayloadStats").fields(payloadStatsFields),
       keywordField("type")
     )
 }

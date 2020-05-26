@@ -18,48 +18,41 @@ class DestinationBuilderTest
   it("uses the given namespace") {
     val namespace = createNamespace
 
-    val builder = new DestinationBuilder(
-      namespace = namespace
-    )
-
-    val location = builder.buildDestination(
-      storageSpace = createStorageSpace,
-      externalIdentifier = createExternalIdentifier,
-      version = createBagVersion
+    val location = DestinationBuilder.buildDestination(
+      namespace = namespace,
+      createStorageSpace,
+      createExternalIdentifier,
+      createBagVersion
     )
 
     location.namespace shouldBe namespace
   }
 
   it("constructs the correct path") {
-    val builder = new DestinationBuilder(
-      namespace = createNamespace
-    )
+    val namespace = createNamespace
 
     val storageSpace = createStorageSpace
     val externalIdentifier = createExternalIdentifier
     val version = createBagVersion
 
-    val location = builder.buildDestination(
-      storageSpace = storageSpace,
-      externalIdentifier = externalIdentifier,
-      version = version
+    val location = DestinationBuilder.buildDestination(
+      namespace = namespace,
+      storageSpace,
+      externalIdentifier,
+      version
     )
 
     location.path shouldBe s"${storageSpace.underlying}/${externalIdentifier.toString}/$version"
   }
 
   it("uses slashes in the external identifier to build a hierarchy") {
-    val builder = new DestinationBuilder(
-      namespace = createNamespace
-    )
-
+    val namespace = createNamespace
     val version = createBagVersion
-
-    val location = builder.buildDestination(
-      storageSpace = StorageSpace("alfa"),
-      externalIdentifier = ExternalIdentifier("bravo/charlie"),
-      version = version
+    val location = DestinationBuilder.buildDestination(
+      namespace = namespace,
+      StorageSpace("alfa"),
+      ExternalIdentifier("bravo/charlie"),
+      version
     )
 
     location.path shouldBe s"alfa/bravo/charlie/$version"

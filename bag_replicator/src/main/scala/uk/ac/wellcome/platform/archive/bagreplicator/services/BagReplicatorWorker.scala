@@ -54,10 +54,6 @@ class BagReplicatorWorker[
     ] {
   override val visibilityTimeout = 180
 
-  val destinationBuilder = new DestinationBuilder(
-    namespace = destinationConfig.namespace
-  )
-
   def processMessage(
     payload: VersionedBagRootPayload
   ): Try[IngestStepResult[BagReplicationSummary[_]]] =
@@ -66,10 +62,11 @@ class BagReplicatorWorker[
 
       srcPrefix = payload.bagRoot
 
-      dstPrefix = destinationBuilder.buildDestination(
-        storageSpace = payload.storageSpace,
-        externalIdentifier = payload.externalIdentifier,
-        version = payload.version
+      dstPrefix = DestinationBuilder.buildDestination(
+        namespace = destinationConfig.namespace,
+        payload.storageSpace,
+        payload.externalIdentifier,
+        payload.version
       )
 
       replicationRequest = destinationConfig.requestBuilder(

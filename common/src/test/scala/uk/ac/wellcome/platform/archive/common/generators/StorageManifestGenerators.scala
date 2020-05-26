@@ -11,7 +11,7 @@ import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
 import scala.util.Random
 
 trait StorageManifestGenerators
-    extends BagInfoGenerators
+  extends BagInfoGenerators
     with StorageSpaceGenerators
     with StorageLocationGenerators {
 
@@ -30,38 +30,44 @@ trait StorageManifestGenerators
   }
 
   def createStorageManifestFileWith(
-    pathPrefix: String
-  ): StorageManifestFile = {
+                                     pathPrefix: String = randomAlphanumeric,
+                                     name: String = randomAlphanumeric,
+                                     size: Long = Random.nextLong().abs
+                                   ): StorageManifestFile = {
 
-    val name  = randomAlphanumeric
     val path = createBagPathWithPrefix(pathPrefix, name)
 
     StorageManifestFile(
       checksum = randomChecksumValue,
       name = name,
       path = path.value,
-      size = Random.nextLong().abs
+      size = size
     )
   }
 
   def createStorageManifestWith(
-    ingestId: IngestID = createIngestID,
-    space: StorageSpace = createStorageSpace,
-    bagInfo: BagInfo = createBagInfo,
-    version: BagVersion = createBagVersion,
-    fileCount: Int = 3,
-    createdDate: Instant = Instant.now
-  ): StorageManifest = {
+                                 ingestId: IngestID = createIngestID,
+                                 space: StorageSpace = createStorageSpace,
+                                 bagInfo: BagInfo = createBagInfo,
+                                 version: BagVersion = createBagVersion,
+                                 fileCount: Int = 3,
+                                 createdDate: Instant = Instant.now,
+                                 files: List[StorageManifestFile] = Nil
+                               ): StorageManifest = {
 
-    val destinationBuilder = new DestinationBuilder(randomAlphanumeric)
+    val pathPrefix = DestinationBuilder
+      .buildPath(
+        space,
+        bagInfo.externalIdentifier,
+        version
+      )
 
-    val destination = destinationBuilder.buildDestination(
-      storageSpace=space,
-      externalIdentifier = bagInfo.externalIdentifier,
-      version = version
-    )
-
-    val pathPrefix = destination.path
+    val fileManifestFiles = if (files.isEmpty) {
+      (1 to fileCount)
+        .map(_ => createStorageManifestFileWith(pathPrefix))
+    } else {
+      files
+    }
 
     StorageManifest(
       space = space,
@@ -69,8 +75,7 @@ trait StorageManifestGenerators
       version = version,
       manifest = FileManifest(
         checksumAlgorithm,
-        files = (1 to fileCount)
-          .map(_ => createStorageManifestFileWith(pathPrefix))
+        files = fileManifestFiles
       ),
       tagManifest = FileManifest(
         checksumAlgorithm,
