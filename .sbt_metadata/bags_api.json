@@ -2,6 +2,7 @@
   "id" : "bags_api",
   "folder" : "bags_api",
   "dependencyIds" : [
-    "display"
+    "display",
+    "bag_tracker"
   ]
 }

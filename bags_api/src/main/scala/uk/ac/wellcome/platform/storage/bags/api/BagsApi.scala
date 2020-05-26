@@ -1,23 +1,25 @@
 package uk.ac.wellcome.platform.storage.bags.api
 
-import java.net.{URL, URLDecoder}
+import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
-import akka.http.scaladsl.model.{StatusCodes, Uri}
+import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
+import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagId,
   ExternalIdentifier
 }
 import uk.ac.wellcome.platform.archive.common.storage.LargeResponses
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.storage.services.S3ObjectExists
 import uk.ac.wellcome.platform.storage.bags.api.responses.{
   LookupBag,
   LookupBagVersions
 }
+import uk.ac.wellcome.storage.ObjectLocation
+
+import scala.concurrent.duration._
 
 trait BagsApi extends LargeResponses with LookupBag with LookupBagVersions {
   private val routes: Route = pathPrefix("bags") {
@@ -30,17 +32,60 @@ trait BagsApi extends LargeResponses with LookupBag with LookupBagVersions {
       // slash appended!
       //
       pathSuffix("versions" /) {
-        path(Segment / Remaining) { (space, remaining) =>
-          val bagId = BagId(
-            space = StorageSpace(space),
-            externalIdentifier = decodeExternalIdentifier(remaining)
-          )
+        path(Segment / Remaining) {
+          (space, remaining) =>
+            val bagId = BagId(
+              space = StorageSpace(space),
+              externalIdentifier = decodeExternalIdentifier(remaining)
+            )
 
-          get {
-            parameter('before.as[String] ?) { maybeBefore =>
-              lookupVersions(bagId = bagId, maybeBefore = maybeBefore)
+            val chemistAndDruggist = BagId(
+              space = StorageSpace("digitised"),
+              externalIdentifier = ExternalIdentifier("b19974760")
+            )
+
+            get {
+              parameter('before.as[String] ?) {
+                maybeBefore =>
+                  // This is some special casing to handle Chemist & Druggist, which
+                  // is enormous.  If somebody tries to retrieve it, direct them straight
+                  // to the cached response.
+                  //
+                  // We should fix the bags API so retrieving this API doesn't cause the
+                  // app to run out of heap space/memory.
+                  //
+                  // See https://github.com/wellcomecollection/platform/issues/4549
+                  bagId match {
+                    case id if id == chemistAndDruggist =>
+                      val url = s3Uploader
+                        .getPresignedGetURL(
+                          location = ObjectLocation(
+                            namespace =
+                              "wellcomecollection-storage-prod-large-response-cache",
+                            path = "responses/digitised/b19974760/v1"
+                          ),
+                          expiryLength = 1 days
+                        )
+                        .right
+                        .get
+
+                      complete(
+                        HttpResponse(
+                          status = StatusCodes.TemporaryRedirect,
+                          headers = Location(url.toExternalForm) :: Nil
+                        )
+                      )
+
+                    case _ =>
+                      withFuture {
+                        lookupVersions(
+                          bagId = bagId,
+                          maybeBeforeString = maybeBefore
+                        )
+                      }
+                  }
+              }
             }
-          }
         }
       },
       // Look up a single manifest.
@@ -51,57 +96,14 @@ trait BagsApi extends LargeResponses with LookupBag with LookupBagVersions {
         )
 
         get {
-          parameter('version.as[String] ?) {
-            case None => getLatestBag(bagId = bagId)
-            case Some(versionString) =>
-              getBag(bagId = bagId, versionString = versionString)
+          parameter('version.as[String] ?) { maybeVersionString =>
+            withFuture {
+              lookupBag(bagId = bagId, maybeVersionString = maybeVersionString)
+            }
           }
         }
       }
     )
-  }
-
-  private def getLatestBag(bagId: BagId): Route =
-    getLatestVersion(bagId) match {
-      case Left(route) => route
-      case Right(latestVersion) =>
-        getBag(bagId, versionString = latestVersion.toString)
-    }
-
-  /** Some of the bags are very large (Chemist & Druggist is ~180MB for the manifest
-    * alone).  If we've already cached a copy of this bag in S3, we know this bag
-    * is big and we won't be able to return it in time.  Return a pre-signed URL
-    * for the cached response.
-    *
-    * If the response hasn't been cached yet, fetch a response directly from VHS.
-    *
-    */
-  private def getBag(bagId: BagId, versionString: String): Route = {
-    val etag = createEtag(bagId = bagId, versionString = versionString)
-
-    val cacheLocation = prefix.asLocation(etag.value.replace("\"", ""))
-
-    implicit val s3Client: AmazonS3 = s3Uploader.s3Client
-    import S3ObjectExists._
-
-    cacheLocation.exists match {
-      case Right(true) =>
-        s3Uploader.getPresignedGetURL(
-          location = cacheLocation,
-          expiryLength = cacheDuration
-        ) match {
-          case Right(url: URL) =>
-            redirect(
-              uri = Uri(url.toString),
-              redirectionType = StatusCodes.TemporaryRedirect
-            )
-
-          case Left(_) =>
-            lookupBag(bagId = bagId, versionString = versionString)
-        }
-
-      case _ => lookupBag(bagId = bagId, versionString = versionString)
-    }
   }
 
   private def decodeExternalIdentifier(

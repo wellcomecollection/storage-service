@@ -7,6 +7,8 @@ import com.amazonaws.services.s3.AmazonS3
 import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
+import uk.ac.wellcome.platform.archive.bag_tracker.client.BagTrackerClient
+import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.platform.archive.common.fixtures.{
@@ -40,7 +42,8 @@ trait BagsApiFixture
     with ScalaFutures
     with StorageManifestVHSFixture
     with S3Fixtures
-    with HttpFixtures {
+    with HttpFixtures
+    with BagTrackerFixtures {
 
   override val metricsName = "BagsApiFixture"
 
@@ -52,42 +55,45 @@ trait BagsApiFixture
     metrics: MemoryMetrics[Unit],
     maxResponseByteLength: Long,
     locationPrefix: ObjectLocationPrefix,
-    storageManifestDaoTest: StorageManifestDao,
+    storageManifestDao: StorageManifestDao,
     uploader: S3Uploader
   )(testWith: TestWith[WellcomeHttpApp, R]): R =
     withActorSystem { implicit actorSystem =>
       withMaterializer(actorSystem) { implicit mat =>
-        val httpMetrics = new HttpMetrics(
-          name = metricsName,
-          metrics = metrics
-        )
+        withBagTrackerClient(storageManifestDao) { trackerClient =>
+          val httpMetrics = new HttpMetrics(
+            name = metricsName,
+            metrics = metrics
+          )
 
-        lazy val router: BagsApi = new BagsApi {
-          override val httpServerConfig: HTTPServerConfig = httpServerConfigTest
-          override implicit val ec: ExecutionContext = global
-          override val contextURL: URL = contextURLTest
-          override val storageManifestDao: StorageManifestDao =
-            storageManifestDaoTest
+          lazy val router: BagsApi = new BagsApi {
+            override val httpServerConfig: HTTPServerConfig =
+              httpServerConfigTest
+            override implicit val ec: ExecutionContext = global
+            override val contextURL: URL = contextURLTest
 
-          override val s3Uploader: S3Uploader = uploader
-          override val cacheDuration: Duration = 1 days
-          override val prefix: ObjectLocationPrefix = locationPrefix
+            override val bagTrackerClient: BagTrackerClient = trackerClient
 
-          override implicit val materializer: Materializer = mat
-          override val maximumResponseByteLength: Long = maxResponseByteLength
+            override val s3Uploader: S3Uploader = uploader
+            override val cacheDuration: Duration = 1 days
+            override val prefix: ObjectLocationPrefix = locationPrefix
+
+            override implicit val materializer: Materializer = mat
+            override val maximumResponseByteLength: Long = maxResponseByteLength
+          }
+
+          val app = new WellcomeHttpApp(
+            routes = router.bags,
+            httpMetrics = httpMetrics,
+            httpServerConfig = httpServerConfigTest,
+            contextURL = contextURLTest,
+            appName = metricsName
+          )
+
+          app.run()
+
+          testWith(app)
         }
-
-        val app = new WellcomeHttpApp(
-          routes = router.bags,
-          httpMetrics = httpMetrics,
-          httpServerConfig = httpServerConfigTest,
-          contextURL = contextURLTest,
-          appName = metricsName
-        )
-
-        app.run()
-
-        testWith(app)
       }
     }
 
@@ -111,7 +117,7 @@ trait BagsApiFixture
       metrics = metrics,
       maxResponseByteLength = maxResponseByteLength,
       locationPrefix = locationPrefix,
-      storageManifestDaoTest = dao,
+      storageManifestDao = dao,
       uploader = uploader
     ) { _ =>
       testWith((dao, metrics, httpServerConfigTest.externalBaseURL))
@@ -129,9 +135,6 @@ trait BagsApiFixture
     )
 
     val brokenDao = new MemoryStorageManifestDao(versionedStore) {
-      override def getLatestVersion(id: BagId): Either[ReadError, BagVersion] =
-        Left(StoreReadError(new Throwable("BOOM!")))
-
       override def getLatest(
         id: BagId
       ): scala.Either[ReadError, StorageManifest] =
@@ -143,8 +146,9 @@ trait BagsApiFixture
       ): Either[ReadError, StorageManifest] =
         Left(StoreReadError(new Throwable("BOOM!")))
 
-      override def listAllVersions(
-        bagId: BagId
+      override def listVersions(
+        bagId: BagId,
+        before: Option[BagVersion]
       ): Either[ReadError, Seq[StorageManifest]] =
         Left(StoreReadError(new Throwable("BOOM!")))
     }
