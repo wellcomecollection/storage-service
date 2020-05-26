@@ -17,10 +17,7 @@ import uk.ac.wellcome.platform.archive.common.http.{
   HttpMetrics,
   WellcomeHttpApp
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  S3Uploader,
-  StorageManifestDao
-}
+import uk.ac.wellcome.platform.archive.common.storage.services.S3Uploader
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
@@ -70,8 +67,6 @@ object Main extends WellcomeTypesafeApp {
         HTTPServerBuilder.buildHTTPServerConfig(config)
       override implicit val ec: ExecutionContext = ecMain
       override val contextURL: URL = contextURLMain
-      override val storageManifestDao: StorageManifestDao =
-        StorageManifestDaoBuilder.build(config)
 
       override val bagTrackerClient: BagTrackerClient = new AkkaBagTrackerClient(
         trackerHost = config.required[String]("bags.tracker.host")

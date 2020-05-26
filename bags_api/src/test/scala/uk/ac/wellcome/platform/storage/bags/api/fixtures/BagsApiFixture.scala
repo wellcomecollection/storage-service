@@ -58,12 +58,12 @@ trait BagsApiFixture
     metrics: MemoryMetrics[Unit],
     maxResponseByteLength: Long,
     locationPrefix: ObjectLocationPrefix,
-    storageManifestDaoTest: StorageManifestDao,
+    storageManifestDao: StorageManifestDao,
     uploader: S3Uploader
   )(testWith: TestWith[WellcomeHttpApp, R]): R =
     withActorSystem { implicit actorSystem =>
       withMaterializer(actorSystem) { implicit mat =>
-        withBagTrackerClient(storageManifestDaoTest) { trackerClient =>
+        withBagTrackerClient(storageManifestDao) { trackerClient =>
           val httpMetrics = new HttpMetrics(
             name = metricsName,
             metrics = metrics
@@ -73,8 +73,6 @@ trait BagsApiFixture
             override val httpServerConfig: HTTPServerConfig = httpServerConfigTest
             override implicit val ec: ExecutionContext = global
             override val contextURL: URL = contextURLTest
-            override val storageManifestDao: StorageManifestDao =
-              storageManifestDaoTest
 
             override val bagTrackerClient: BagTrackerClient = trackerClient
 
@@ -121,7 +119,7 @@ trait BagsApiFixture
       metrics = metrics,
       maxResponseByteLength = maxResponseByteLength,
       locationPrefix = locationPrefix,
-      storageManifestDaoTest = dao,
+      storageManifestDao = dao,
       uploader = uploader
     ) { _ =>
       testWith((dao, metrics, httpServerConfigTest.externalBaseURL))
@@ -139,9 +137,6 @@ trait BagsApiFixture
     )
 
     val brokenDao = new MemoryStorageManifestDao(versionedStore) {
-      override def getLatestVersion(id: BagId): Either[ReadError, BagVersion] =
-        Left(StoreReadError(new Throwable("BOOM!")))
-
       override def getLatest(
         id: BagId
       ): scala.Either[ReadError, StorageManifest] =
@@ -154,11 +149,6 @@ trait BagsApiFixture
         Left(StoreReadError(new Throwable("BOOM!")))
 
       override def listVersions(bagId: BagId, before: Option[BagVersion]): Either[ReadError, Seq[StorageManifest]] =
-        Left(StoreReadError(new Throwable("BOOM!")))
-
-      override def listAllVersions(
-        bagId: BagId
-      ): Either[ReadError, Seq[StorageManifest]] =
         Left(StoreReadError(new Throwable("BOOM!")))
     }
 
