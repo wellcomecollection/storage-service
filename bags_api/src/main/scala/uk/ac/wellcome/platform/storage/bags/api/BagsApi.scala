@@ -3,6 +3,8 @@ package uk.ac.wellcome.platform.storage.bags.api
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
+import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
+import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
@@ -15,6 +17,9 @@ import uk.ac.wellcome.platform.storage.bags.api.responses.{
   LookupBag,
   LookupBagVersions
 }
+import uk.ac.wellcome.storage.ObjectLocation
+
+import scala.concurrent.duration._
 
 trait BagsApi extends LargeResponses with LookupBag with LookupBagVersions {
   private val routes: Route = pathPrefix("bags") {
@@ -33,10 +38,43 @@ trait BagsApi extends LargeResponses with LookupBag with LookupBagVersions {
             externalIdentifier = decodeExternalIdentifier(remaining)
           )
 
+          val chemistAndDruggist = BagId(
+            space = StorageSpace("digitised"),
+            externalIdentifier = ExternalIdentifier("b19974760")
+          )
+
           get {
             parameter('before.as[String] ?) { maybeBefore =>
-              withFuture {
-                lookupVersions(bagId = bagId, maybeBeforeString = maybeBefore)
+
+              // This is some special casing to handle Chemist & Druggist, which
+              // is enormous.  If somebody tries to retrieve it, direct them straight
+              // to the cached response.
+              //
+              // We should fix the bags API so retrieving this API doesn't cause the
+              // app to run out of heap space/memory.
+              //
+              // See https://github.com/wellcomecollection/platform/issues/4549
+              bagId match {
+                case id if id == chemistAndDruggist =>
+                  val url = s3Uploader.getPresignedGetURL(
+                    location = ObjectLocation(
+                      namespace = "wellcomecollection-storage-prod-large-response-cache",
+                      path = "responses/digitised/b19974760/v1"
+                    ),
+                    expiryLength = 1 days
+                  ).right.get
+
+                  complete(
+                    HttpResponse(
+                      status = StatusCodes.TemporaryRedirect,
+                      headers = Location(url.toExternalForm) :: Nil
+                    )
+                  )
+
+                case _ =>
+                  withFuture {
+                    lookupVersions(bagId = bagId, maybeBeforeString = maybeBefore)
+                  }
               }
             }
           }
