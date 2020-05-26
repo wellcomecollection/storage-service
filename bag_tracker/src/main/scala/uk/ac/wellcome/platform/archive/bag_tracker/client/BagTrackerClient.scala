@@ -18,21 +18,21 @@ import scala.concurrent.{ExecutionContext, Future}
 trait BagTrackerClient {
   def createBag(
     storageManifest: StorageManifest
-  ): Future[Either[BagTrackerError, Unit]]
+  ): Future[Either[BagTrackerCreateError, Unit]]
 
   def getLatestBag(
     bagId: BagId
-  ): Future[Either[BagTrackerError, StorageManifest]]
+  ): Future[Either[BagTrackerGetError, StorageManifest]]
 
   def getBag(
     bagId: BagId,
     version: BagVersion
-  ): Future[Either[BagTrackerError, StorageManifest]]
+  ): Future[Either[BagTrackerGetError, StorageManifest]]
 
   def listVersionsOf(
     bagId: BagId,
     maybeBefore: Option[BagVersion]
-  ): Future[Either[BagTrackerError, BagVersionList]]
+  ): Future[Either[BagTrackerListVersionsError, BagVersionList]]
 }
 
 class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem)

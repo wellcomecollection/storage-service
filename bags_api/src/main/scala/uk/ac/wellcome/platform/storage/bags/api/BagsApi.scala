@@ -38,7 +38,9 @@ trait BagsApi extends LargeResponses with LookupBag with LookupBagVersions {
 
           get {
             parameter('before.as[String] ?) { maybeBefore =>
-              lookupVersions(bagId = bagId, maybeBefore = maybeBefore)
+              withFuture {
+                lookupVersions(bagId = bagId, maybeBeforeString = maybeBefore)
+              }
             }
           }
         }
