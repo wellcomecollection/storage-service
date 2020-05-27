@@ -32,23 +32,22 @@ trait BagsApi extends LargeResponses with LookupBag with LookupBagVersions {
       // slash appended!
       //
       pathSuffix("versions" /) {
-        path(Segment / Remaining) {
-          (space, remaining) =>
-            val bagId = BagId(
-              space = StorageSpace(space),
-              externalIdentifier = decodeExternalIdentifier(remaining)
-            )
+        path(Segment / Remaining) { (space, remaining) =>
+          val bagId = BagId(
+            space = StorageSpace(space),
+            externalIdentifier = decodeExternalIdentifier(remaining)
+          )
 
-            get {
-              parameter('before.as[String] ?) { maybeBefore =>
-                withFuture {
-                  lookupVersions(
-                    bagId = bagId,
-                    maybeBeforeString = maybeBefore
-                  )
-                }
+          get {
+            parameter('before.as[String] ?) { maybeBefore =>
+              withFuture {
+                lookupVersions(
+                  bagId = bagId,
+                  maybeBeforeString = maybeBefore
+                )
               }
             }
+          }
         }
       },
       // Look up a single manifest.
@@ -95,7 +94,10 @@ trait BagsApi extends LargeResponses with LookupBag with LookupBagVersions {
             case _ =>
               parameter('version.as[String] ?) { maybeVersionString =>
                 withFuture {
-                  lookupBag(bagId = bagId, maybeVersionString = maybeVersionString)
+                  lookupBag(
+                    bagId = bagId,
+                    maybeVersionString = maybeVersionString
+                  )
                 }
               }
           }
