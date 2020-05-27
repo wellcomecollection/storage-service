@@ -135,6 +135,7 @@ module "bags_api" {
     vhs_table_name        = var.vhs_manifests_table_name
     metrics_namespace     = local.bags_api_service_name
     responses_bucket_name = aws_s3_bucket.large_response_cache.id
+    bags_tracker_host     = "http://localhost:8080"
   }
 
   tracker_environment = {
