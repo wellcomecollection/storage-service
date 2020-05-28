@@ -21,7 +21,7 @@ module "critical" {
     "arn:aws:iam::653428163053:user/echo-fs",
   ]
 
-  replica_glacier_read_principals = []
+  inventory_bucket = "wellcomecollection-storage-infra"
 
   # This gives us another layer of protection for the S3 buckets.
   #

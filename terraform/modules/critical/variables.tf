@@ -10,11 +10,10 @@ variable "replica_primary_read_principals" {
   default = []
 }
 
-variable "replica_glacier_read_principals" {
-  type    = list(string)
-  default = []
-}
-
 variable "enable_s3_versioning" {
   type = bool
+}
+
+variable "inventory_bucket" {
+  type = string
 }

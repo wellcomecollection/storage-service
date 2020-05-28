@@ -16,29 +16,21 @@ resource "aws_s3_bucket" "replica_glacier" {
   }
 }
 
-resource "aws_s3_bucket_policy" "replica_glacier_read" {
-  count = length(var.replica_glacier_read_principals) == 0 ? 0 : 1
-
+resource "aws_s3_bucket_inventory" "replica_glacier" {
   bucket = aws_s3_bucket.replica_glacier.id
-  policy = data.aws_iam_policy_document.replica_glacier_readonly.json
-}
+  name   = "ReplicaGlacierWeekly"
 
-data "aws_iam_policy_document" "replica_glacier_readonly" {
-  statement {
-    actions = [
-      "s3:List*",
-      "s3:Get*",
-    ]
+  included_object_versions = "All"
 
-    resources = [
-      "${aws_s3_bucket.replica_glacier.arn}",
-      "${aws_s3_bucket.replica_glacier.arn}/*",
-    ]
+  schedule {
+    frequency = "Weekly"
+  }
 
-    principals {
-      type = "AWS"
-
-      identifiers = sort(var.replica_glacier_read_principals)
+  destination {
+    bucket {
+      format     = "CSV"
+      bucket_arn = "arn:aws:s3:::${var.inventory_bucket}"
+      prefix     = "s3_inventory/${aws_s3_bucket.replica_glacier.id}"
     }
   }
 }
