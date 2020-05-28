@@ -71,9 +71,9 @@ class BagReplicatorWorker[
 
       dstPrefix = DestinationBuilder.buildDestination(
         namespace = destinationConfig.namespace,
-        payload.storageSpace,
-        payload.externalIdentifier,
-        payload.version
+        storageSpace = payload.storageSpace,
+        externalIdentifier = payload.externalIdentifier,
+        version = payload.version
       )
 
       replicationRequest = destinationConfig.requestBuilder(

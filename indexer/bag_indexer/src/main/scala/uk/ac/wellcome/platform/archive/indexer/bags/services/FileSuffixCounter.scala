@@ -7,7 +7,7 @@ object FileSuffixCounter {
     files
       .map(_.name.split("\\."))
       .filter(_.length > 1)
-      .map(_.reverse.head)
+      .map(_.last.toLowerCase)
       .groupBy(identity)
       .mapValues(_.size)
   }

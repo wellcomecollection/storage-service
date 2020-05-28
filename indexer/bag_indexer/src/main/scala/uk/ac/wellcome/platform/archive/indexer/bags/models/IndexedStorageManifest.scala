@@ -63,7 +63,8 @@ object IndexedStorageManifest {
     val indexedSuffixTally = fileSuffixTally
       .map(IndexedSuffixTally(_))
       .toList
-      .sortBy(_.suffix)
+      // sort highest value first
+      .sortBy(_.count)(Ordering.Int.reverse)
 
     val payloadStats = IndexedPayloadStats(
       fileCount = storageManifestFiles.length,

@@ -23,9 +23,9 @@ class DestinationBuilderTest
 
     val location = DestinationBuilder.buildDestination(
       namespace = namespace,
-      createStorageSpace,
-      createExternalIdentifier,
-      createBagVersion
+      storageSpace = createStorageSpace,
+      externalIdentifier = createExternalIdentifier,
+      version = createBagVersion
     )
 
     location.namespace shouldBe namespace
@@ -40,9 +40,9 @@ class DestinationBuilderTest
 
     val location = DestinationBuilder.buildDestination(
       namespace = namespace,
-      storageSpace,
-      externalIdentifier,
-      version
+      storageSpace = storageSpace,
+      externalIdentifier = externalIdentifier,
+      version = version
     )
 
     location.path shouldBe s"${storageSpace.underlying}/${externalIdentifier.toString}/$version"
@@ -53,9 +53,9 @@ class DestinationBuilderTest
     val version = createBagVersion
     val location = DestinationBuilder.buildDestination(
       namespace = namespace,
-      StorageSpace("alfa"),
-      ExternalIdentifier("bravo/charlie"),
-      version
+      storageSpace = StorageSpace("alfa"),
+      externalIdentifier = ExternalIdentifier("bravo/charlie"),
+      version = version
     )
 
     location.path shouldBe s"alfa/bravo/charlie/$version"

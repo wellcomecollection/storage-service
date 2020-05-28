@@ -2,10 +2,8 @@ package uk.ac.wellcome.platform.archive.indexer.bag.services
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.generators.{
-  IngestGenerators,
-  StorageManifestGenerators
-}
+import uk.ac.wellcome.platform.archive.common.generators.{IngestGenerators, StorageManifestGenerators}
+import uk.ac.wellcome.platform.archive.indexer.bags.services.FileSuffixCounter
 
 class FileSuffixCounterTest
     extends AnyFunSpec
@@ -13,31 +11,10 @@ class FileSuffixCounterTest
     with IngestGenerators
     with StorageManifestGenerators {
 
-  val files = List(
-    createStorageManifestFileWith(
-      name = "foo.txt"
-    ),
-    createStorageManifestFileWith(
-      name = "bar.txt"
-    ),
-    createStorageManifestFileWith(
-      name = "bat.png"
-    ),
-    createStorageManifestFileWith(
-      name = "mysteryfile"
-    ),
-    createStorageManifestFileWith(
-      name = "bad..bmp"
-    ),
-    createStorageManifestFileWith(
-      name = "worse.jif."
-    ),
-    createStorageManifestFileWith(
-      name = "file.with.full.stops.scala"
-    )
-  )
+  val names = Seq("foo.TXT", "bar.txt", "bat.png", "mystery file", "bad..bmp", "worse.jif.", "file.with.full.stops.scala")
+  val files = names.map { createStorageManifestFileWith(_) }
 
-  it("works") {
+  it("tallies the file suffixes correctly") {
     val suffixMap = FileSuffixCounter.count(files)
 
     suffixMap shouldBe Map(

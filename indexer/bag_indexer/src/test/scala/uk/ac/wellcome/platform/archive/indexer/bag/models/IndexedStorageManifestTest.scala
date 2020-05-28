@@ -61,7 +61,7 @@ class IndexedStorageManifestTest
     )
 
     val v2OneFileSize = 321L
-    val v2OneFileName = "v2_1.gif"
+    val v2OneFileName = "v2_1.GIF"
 
     val v2TwoFileSize = 456L
     val v2TwoFileName = "v2_2.txt"
@@ -112,6 +112,8 @@ class IndexedStorageManifestTest
       )
     )
 
+    indexedManifest.id shouldBe storageManifest.id.toString
+    indexedManifest.space shouldBe storageManifest.space.toString
     indexedManifest.payloadFiles shouldBe storageManifest.manifest.files
       .map(IndexedFileFields(_))
     indexedManifest.payloadStats shouldBe expectedPayloadStats
