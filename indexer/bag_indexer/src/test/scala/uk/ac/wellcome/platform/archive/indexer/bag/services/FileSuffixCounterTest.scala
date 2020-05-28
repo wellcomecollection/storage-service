@@ -25,7 +25,6 @@ class FileSuffixCounterTest
   )
   private val files = names.map { createStorageManifestFileWith(_) }
 
-
   it("tallies the file suffixes correctly") {
     val suffixMap = FileSuffixCounter.count(files)
 
