@@ -14,7 +14,7 @@ class FileSuffixCounterTest
     with IngestGenerators
     with StorageManifestGenerators {
 
-  val names = Seq(
+  private val names = Seq(
     "foo.TXT",
     "bar.txt",
     "bat.png",
@@ -23,7 +23,8 @@ class FileSuffixCounterTest
     "worse.jif.",
     "file.with.full.stops.scala"
   )
-  val files = names.map { createStorageManifestFileWith(_) }
+  private val files = names.map { createStorageManifestFileWith(_) }
+
 
   it("tallies the file suffixes correctly") {
     val suffixMap = FileSuffixCounter.count(files)
