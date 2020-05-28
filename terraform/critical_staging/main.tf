@@ -21,8 +21,6 @@ module "critical" {
     "arn:aws:iam::653428163053:user/echo-fs",
   ]
 
-  replica_glacier_read_principals = []
-
   inventory_bucket = "wellcomecollection-storage-infra"
 
   # The staging service shouldn't be the only copy of any important data, so
