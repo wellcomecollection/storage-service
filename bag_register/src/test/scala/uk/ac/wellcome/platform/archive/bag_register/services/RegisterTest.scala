@@ -1,10 +1,11 @@
 package uk.ac.wellcome.platform.archive.bag_register.services
 
-import org.scalatest.TryValues
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
+import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
@@ -25,6 +26,8 @@ import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class RegisterTest
     extends AnyFunSpec
     with Matchers
@@ -32,9 +35,11 @@ class RegisterTest
     with StorageSpaceGenerators
     with StorageLocationGenerators
     with StringNamespaceFixtures
-    with TryValues {
+    with BagTrackerFixtures
+    with ScalaFutures
+    with IntegrationPatience {
 
-  describe("registering a bag with primary and secondary locations") {
+  it("registers a bag with primary and secondary locations") {
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =
       MemoryStreamStore[ObjectLocation]()
 
@@ -45,12 +50,6 @@ class RegisterTest
     )
 
     val storageManifestDao = createStorageManifestDao()
-
-    val register = new Register(
-      bagReader = bagReader,
-      storageManifestDao,
-      storageManifestService = storageManifestService
-    )
 
     val space = createStorageSpace
     val version = createBagVersion
@@ -72,50 +71,54 @@ class RegisterTest
 
     val ingestId = createIngestID
 
-    val result = register.update(
-      ingestId = ingestId,
-      location = primaryLocation,
-      replicas = replicas,
-      version = version,
-      space = space
+    withBagTrackerClient(storageManifestDao) { bagTrackerClient =>
+      val register = new Register(
+        bagReader = bagReader,
+        bagTrackerClient = bagTrackerClient,
+        storageManifestService = storageManifestService
+      )
+
+      val future = register.update(
+        ingestId = ingestId,
+        location = primaryLocation,
+        replicas = replicas,
+        version = version,
+        space = space
+      )
+
+      whenReady(future) { result =>
+        result shouldBe a[IngestCompleted[_]]
+
+        val summary = result.asInstanceOf[IngestCompleted[_]].summary
+        summary.asInstanceOf[RegistrationSummary].ingestId shouldBe ingestId
+      }
+    }
+
+    // Check it stores all the locations on the bag.
+    val bagId = BagId(
+      space = space,
+      externalIdentifier = bagInfo.externalIdentifier
     )
 
-    it("succeeds") {
-      result.success.value shouldBe a[IngestCompleted[_]]
-    }
+    val manifest =
+      storageManifestDao.getLatest(id = bagId).right.value
 
-    it("uses the ingest ID in the summary") {
-      val summary =
-        result.success.value.asInstanceOf[IngestCompleted[_]].summary
-      summary.asInstanceOf[RegistrationSummary].ingestId shouldBe ingestId
-    }
+    manifest.location shouldBe primaryLocation.copy(
+      prefix = bagRoot
+        .copy(
+          path = bagRoot.path.stripSuffix(s"/$version")
+        )
+    )
 
-    it("stores all the locations in the dao") {
-      val bagId = BagId(
-        space = space,
-        externalIdentifier = bagInfo.externalIdentifier
-      )
+    manifest.replicaLocations shouldBe
+      replicas.map { secondaryLocation =>
+        val prefix = secondaryLocation.prefix
 
-      val manifest =
-        storageManifestDao.getLatest(id = bagId).right.value
-
-      manifest.location shouldBe primaryLocation.copy(
-        prefix = bagRoot
-          .copy(
-            path = bagRoot.path.stripSuffix(s"/$version")
-          )
-      )
-
-      manifest.replicaLocations shouldBe
-        replicas.map { secondaryLocation =>
-          val prefix = secondaryLocation.prefix
-
-          secondaryLocation.copy(
-            prefix = prefix
-              .copy(path = prefix.path.stripSuffix(s"/$version"))
-          )
-        }
-    }
+        secondaryLocation.copy(
+          prefix = prefix
+            .copy(path = prefix.path.stripSuffix(s"/$version"))
+        )
+      }
   }
 
   it(
@@ -137,12 +140,6 @@ class RegisterTest
     val version = createBagVersion
 
     val storageManifestDao = createStorageManifestDao()
-
-    val register = new Register(
-      bagReader = bagReader,
-      storageManifestDao,
-      storageManifestService = storageManifestService
-    )
 
     val (bagObjects, bagRoot, _) =
       withNamespace { implicit namespace =>
@@ -169,19 +166,29 @@ class RegisterTest
         )
     )
 
-    val result = register.update(
-      ingestId = createIngestID,
-      location = location,
-      replicas = Seq.empty,
-      version = version,
-      space = space
-    )
+    withBagTrackerClient(storageManifestDao) { bagTrackerClient =>
+      val register = new Register(
+        bagReader = bagReader,
+        bagTrackerClient = bagTrackerClient,
+        storageManifestService = storageManifestService
+      )
 
-    result.success.value shouldBe a[IngestFailed[_]]
-    val ingestFailed = result.success.value.asInstanceOf[IngestFailed[_]]
+      val future = register.update(
+        ingestId = createIngestID,
+        location = location,
+        replicas = Seq.empty,
+        version = version,
+        space = space
+      )
 
-    ingestFailed.e shouldBe a[BadFetchLocationException]
-    ingestFailed.maybeUserFacingMessage.get should fullyMatch regex
-      """Fetch entry for data/[0-9A-Za-z/]+ refers to a file in the wrong namespace: [0-9A-Za-z/]+"""
+      whenReady(future) { result =>
+        result shouldBe a[IngestFailed[_]]
+
+        val ingestFailed = result.asInstanceOf[IngestFailed[_]]
+        ingestFailed.e shouldBe a[BadFetchLocationException]
+        ingestFailed.maybeUserFacingMessage.get should fullyMatch regex
+          """Fetch entry for data/[0-9A-Za-z/]+ refers to a file in the wrong namespace: [0-9A-Za-z/]+"""
+      }
+    }
   }
 }

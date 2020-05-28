@@ -2,6 +2,7 @@
   "id" : "bag_register",
   "folder" : "bag_register",
   "dependencyIds" : [
-    "common"
+    "common",
+    "bag_tracker"
   ]
 }
