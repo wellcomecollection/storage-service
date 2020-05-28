@@ -7,10 +7,22 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageManifest,
   StorageManifestFile
 }
+import uk.ac.wellcome.platform.archive.indexer.bags.services.FileSuffixCounter
 
 case class IndexedSuffixTally(
   suffix: String,
   count: Int
+)
+
+object IndexedSuffixTally {
+  def apply(tuple: (String, Int)): IndexedSuffixTally =
+    IndexedSuffixTally(tuple._1, tuple._2)
+}
+
+case class IndexedPayloadStats(
+  fileCount: Int,
+  fileSize: Long,
+  fileSuffixTally: Seq[IndexedSuffixTally]
 )
 
 case class IndexedFileFields(
@@ -38,18 +50,27 @@ case class IndexedStorageManifest(
   version: Int,
   createdDate: Instant,
   payloadFiles: Seq[IndexedFileFields],
-  payloadFileCount: Int,
-  payloadFileSize: Long,
-  payloadFileSuffixTally: Seq[IndexedSuffixTally],
-  newPayloadFileCount: Int,
-  newPayloadFileSize: Long,
-  newPayloadFileSuffixTally: Seq[IndexedSuffixTally],
+  payloadStats: IndexedPayloadStats,
   @JsonKey("type") ontologyType: String = "Bag"
 )
 
 object IndexedStorageManifest {
   def apply(storageManifest: StorageManifest): IndexedStorageManifest = {
-    val payloadFiles = storageManifest.manifest.files.map(IndexedFileFields(_))
+    val storageManifestFiles = storageManifest.manifest.files
+    val payloadFiles = storageManifestFiles.map(IndexedFileFields(_))
+
+    val fileSuffixTally = FileSuffixCounter.count(storageManifestFiles)
+    val indexedSuffixTally = fileSuffixTally
+      .map(IndexedSuffixTally(_))
+      .toList
+      // sort highest value first
+      .sortBy(_.count)(Ordering.Int.reverse)
+
+    val payloadStats = IndexedPayloadStats(
+      fileCount = storageManifestFiles.length,
+      fileSize = storageManifestFiles.map(_.size).sum,
+      fileSuffixTally = indexedSuffixTally
+    )
 
     IndexedStorageManifest(
       id = storageManifest.id.toString,
@@ -57,12 +78,7 @@ object IndexedStorageManifest {
       version = storageManifest.version.underlying,
       createdDate = storageManifest.createdDate,
       payloadFiles = payloadFiles,
-      payloadFileCount = 0,
-      payloadFileSize = 0,
-      payloadFileSuffixTally = Nil,
-      newPayloadFileCount = 0,
-      newPayloadFileSize = 0,
-      newPayloadFileSuffixTally = Nil
+      payloadStats = payloadStats
     )
   }
 }

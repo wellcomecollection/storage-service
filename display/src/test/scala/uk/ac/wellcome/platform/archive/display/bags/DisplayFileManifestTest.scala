@@ -41,9 +41,9 @@ class DisplayFileManifestTest
   it("sorts the files in the manifest by name order") {
     val manifest = createFileManifestWith(
       files = Seq(
-        createStorageManifestFileWith("data/bob.txt"),
-        createStorageManifestFileWith("data/alice.txt"),
-        createStorageManifestFileWith("data/carol.txt")
+        createStorageManifestFileWithName("data/bob.txt"),
+        createStorageManifestFileWithName("data/alice.txt"),
+        createStorageManifestFileWithName("data/carol.txt")
       )
     )
 
@@ -57,7 +57,9 @@ class DisplayFileManifestTest
     )
   }
 
-  private def createStorageManifestFileWith(name: String): StorageManifestFile =
+  private def createStorageManifestFileWithName(
+    name: String
+  ): StorageManifestFile =
     createStorageManifestFile.copy(name = name)
 
   private def createFileManifestWith(

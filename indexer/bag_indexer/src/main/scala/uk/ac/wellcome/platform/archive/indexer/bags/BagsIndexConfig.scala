@@ -21,6 +21,13 @@ object BagsIndexConfig extends IndexConfig {
       keywordField("type")
     )
 
+  private val payloadStatsFields: Seq[FieldDefinition] =
+    Seq(
+      objectField("fileSuffixTally").fields(suffixTallyFields),
+      intField("fileCount"),
+      longField("fileSize")
+    )
+
   override protected val fields: Seq[FieldDefinition] =
     Seq(
       keywordField("id"),
@@ -29,12 +36,7 @@ object BagsIndexConfig extends IndexConfig {
       intField("version"),
       dateField("createdDate"),
       objectField("payloadFiles").fields(fileFields),
-      objectField("payloadFileSuffixTally").fields(suffixTallyFields),
-      intField("payloadFileCount"),
-      longField("payloadFileSize"),
-      objectField("newPayloadFileSuffixTally").fields(suffixTallyFields),
-      intField("newPayloadFileCount"),
-      longField("newPayloadFileSize"),
+      objectField("payloadStats").fields(payloadStatsFields),
       keywordField("type")
     )
 }

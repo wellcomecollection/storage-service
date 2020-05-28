@@ -18,6 +18,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models._
+import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
 import uk.ac.wellcome.platform.archive.common.{
   ReplicaResultPayload,
   VersionedBagRootPayload
@@ -60,10 +61,6 @@ class BagReplicatorWorker[
     ] {
   override val visibilityTimeout = 180
 
-  val destinationBuilder = new DestinationBuilder(
-    namespace = destinationConfig.namespace
-  )
-
   def processMessage(
     payload: VersionedBagRootPayload
   ): Try[IngestStepResult[BagReplicationSummary[_]]] =
@@ -72,7 +69,8 @@ class BagReplicatorWorker[
 
       srcPrefix = payload.bagRoot
 
-      dstPrefix = destinationBuilder.buildDestination(
+      dstPrefix = DestinationBuilder.buildDestination(
+        namespace = destinationConfig.namespace,
         storageSpace = payload.storageSpace,
         externalIdentifier = payload.externalIdentifier,
         version = payload.version

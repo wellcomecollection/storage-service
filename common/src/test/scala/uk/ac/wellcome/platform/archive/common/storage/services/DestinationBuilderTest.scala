@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.services
+package uk.ac.wellcome.platform.archive.common.storage.services
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
@@ -21,11 +21,8 @@ class DestinationBuilderTest
   it("uses the given namespace") {
     val namespace = createNamespace
 
-    val builder = new DestinationBuilder(
-      namespace = namespace
-    )
-
-    val location = builder.buildDestination(
+    val location = DestinationBuilder.buildDestination(
+      namespace = namespace,
       storageSpace = createStorageSpace,
       externalIdentifier = createExternalIdentifier,
       version = createBagVersion
@@ -35,15 +32,14 @@ class DestinationBuilderTest
   }
 
   it("constructs the correct path") {
-    val builder = new DestinationBuilder(
-      namespace = createNamespace
-    )
+    val namespace = createNamespace
 
     val storageSpace = createStorageSpace
     val externalIdentifier = createExternalIdentifier
     val version = createBagVersion
 
-    val location = builder.buildDestination(
+    val location = DestinationBuilder.buildDestination(
+      namespace = namespace,
       storageSpace = storageSpace,
       externalIdentifier = externalIdentifier,
       version = version
@@ -53,13 +49,10 @@ class DestinationBuilderTest
   }
 
   it("uses slashes in the external identifier to build a hierarchy") {
-    val builder = new DestinationBuilder(
-      namespace = createNamespace
-    )
-
+    val namespace = createNamespace
     val version = createBagVersion
-
-    val location = builder.buildDestination(
+    val location = DestinationBuilder.buildDestination(
+      namespace = namespace,
       storageSpace = StorageSpace("alfa"),
       externalIdentifier = ExternalIdentifier("bravo/charlie"),
       version = version
