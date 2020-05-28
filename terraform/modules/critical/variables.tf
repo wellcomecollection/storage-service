@@ -18,3 +18,7 @@ variable "replica_glacier_read_principals" {
 variable "enable_s3_versioning" {
   type = bool
 }
+
+variable "inventory_bucket" {
+  type = string
+}

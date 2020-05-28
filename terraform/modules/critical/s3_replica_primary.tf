@@ -88,3 +88,22 @@ data "aws_iam_policy_document" "replica_primary_read" {
     }
   }
 }
+
+resource "aws_s3_bucket_inventory" "replica_primary" {
+  bucket = aws_s3_bucket.replica_primary.id
+  name   = "ReplicaPrimaryWeekly"
+
+  included_object_versions = "All"
+
+  schedule {
+    frequency = "Weekly"
+  }
+
+  destination {
+    bucket {
+      format     = "CSV"
+      bucket_arn = "arn:aws:s3:::${var.inventory_bucket}"
+      prefix     = "s3_inventory/${aws_s3_bucket.replica_primary.id}"
+    }
+  }
+}

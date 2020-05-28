@@ -42,3 +42,22 @@ data "aws_iam_policy_document" "replica_glacier_readonly" {
     }
   }
 }
+
+resource "aws_s3_bucket_inventory" "replica_glacier" {
+  bucket = aws_s3_bucket.replica_glacier.id
+  name   = "ReplicaGlacierWeekly"
+
+  included_object_versions = "All"
+
+  schedule {
+    frequency = "Weekly"
+  }
+
+  destination {
+    bucket {
+      format     = "CSV"
+      bucket_arn = "arn:aws:s3:::${var.inventory_bucket}"
+      prefix     = "s3_inventory/${aws_s3_bucket.replica_glacier.id}"
+    }
+  }
+}
