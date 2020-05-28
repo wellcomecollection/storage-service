@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.bag_register.services
 
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
@@ -36,7 +36,8 @@ class RegisterTest
     with StorageLocationGenerators
     with StringNamespaceFixtures
     with BagTrackerFixtures
-    with ScalaFutures {
+    with ScalaFutures
+    with IntegrationPatience {
 
   it("registers a bag with primary and secondary locations") {
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =
