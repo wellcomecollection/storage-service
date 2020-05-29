@@ -176,7 +176,7 @@ data "aws_iam_policy_document" "bag_register_output_cross_account_subscription" 
     }
 
     resources = [
-      "${module.bag_register_output_topic.arn}",
+      module.bag_register_output_topic.arn,
     ]
 
     sid = "__default_statement_ID"

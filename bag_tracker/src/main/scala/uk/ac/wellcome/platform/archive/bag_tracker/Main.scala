@@ -11,8 +11,19 @@ object Main extends WellcomeTypesafeApp {
     implicit val actorSystem: ActorSystem =
       AkkaBuilder.buildActorSystem()
 
-    new BagTrackerApi(
-      storageManifestDao = StorageManifestDaoBuilder.build(config)
-    )(host = "localhost", port = 8080)
+    // We need to bind to 0.0.0.0, not localhost, so the API listens for connections
+    // from other services.
+    //
+    // If you bind to localhost, the API is only available to containers within
+    // the same task definition in ECS.
+    val host = "0.0.0.0"
+    val port = 8080
+
+    val storageManifestDao = StorageManifestDaoBuilder.build(config)
+
+    new BagTrackerApi(storageManifestDao = storageManifestDao)(
+      host = host,
+      port = port
+    )
   }
 }
