@@ -37,9 +37,7 @@ def get_total_ingests(table_name):
         "dynamodb", role_arn="arn:aws:iam::975596993436:role/storage-read_only"
     )
 
-    resp = dynamodb_client.describe_table(
-        TableName=table_name
-    )
+    resp = dynamodb_client.describe_table(TableName=table_name)
 
     return resp["Table"]["ItemCount"]
 
@@ -104,7 +102,7 @@ def send_sns_notifications(all_ingests, topic_arn, ingest_count):
         return sns_client.publish(
             TopicArn=topic_arn,
             Subject=f"Sent by {__file__} (user {getpass.getuser()})",
-            Message=json.dumps(ingest)
+            Message=json.dumps(ingest),
         )
 
     # This code parallelises publication, to make ingests go faster.
@@ -134,23 +132,21 @@ def send_sns_notifications(all_ingests, topic_arn, ingest_count):
                 # Schedule the next set of futures.  We don't want more than N futures
                 # in the pool at a time, to keep memory consumption down.
                 for ingest in itertools.islice(all_ingests, len(done)):
-                    futures.add(
-                        executor.submit(publish, ingest)
-                    )
+                    futures.add(executor.submit(publish, ingest))
 
 
 def send_ingests_to_sns(table_name, topic_arn):
     send_sns_notifications(
         all_ingests=get_ingests(table_name=table_name),
         topic_arn=topic_arn,
-        ingest_count=get_total_ingests(table_name=table_name)
+        ingest_count=get_total_ingests(table_name=table_name),
     )
 
 
 if __name__ == "__main__":
     send_ingests_to_sns(
         table_name="storage-staging-ingests",
-        topic_arn="arn:aws:sns:eu-west-1:975596993436:storage_staging_updated_ingests"
+        topic_arn="arn:aws:sns:eu-west-1:975596993436:storage_staging_updated_ingests",
     )
 
     # send_ingests_to_sns(
