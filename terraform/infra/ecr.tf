@@ -2,10 +2,6 @@ resource "aws_ecr_repository" "bags_api" {
   name = "uk.ac.wellcome/bags_api"
 }
 
-resource "aws_ecr_repository" "ingests" {
-  name = "uk.ac.wellcome/ingests"
-}
-
 resource "aws_ecr_repository" "ingests_api" {
   name = "uk.ac.wellcome/ingests_api"
 }
@@ -32,10 +28,6 @@ resource "aws_ecr_repository" "bag_unpacker" {
 
 resource "aws_ecr_repository" "bag_register" {
   name = "uk.ac.wellcome/bags"
-}
-
-resource "aws_ecr_repository" "bag_auditor" {
-  name = "uk.ac.wellcome/bag_auditor"
 }
 
 resource "aws_ecr_repository" "bag_indexer" {
