@@ -4,13 +4,12 @@ This script will send every bag in the storage service to the bags indexer
 to be re-indexed in Elasticsearch.
 """
 
-import boto3
-import uuid
 import json
+import uuid
+
+import boto3
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
-
-from pprint import pprint
 
 
 def scan_table(dynamo_client, *, TableName, **kwargs):
@@ -189,3 +188,4 @@ if __name__ == "__main__":
     not_indexed = confirm_indexed(elastic_client, published_bags)
 
     print(not_indexed)
+
