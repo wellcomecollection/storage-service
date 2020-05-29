@@ -1,6 +1,6 @@
 provider "aws" {
   assume_role {
-    role_arn = "arn:aws:iam::975596993436:role/storage-developer"
+    role_arn = "arn:aws:iam::975596993436:role/storage-admin"
   }
 
   region  = var.aws_region
