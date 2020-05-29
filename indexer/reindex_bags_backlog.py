@@ -82,8 +82,8 @@ def fake_known_replicas_payload(space, externalIdentifier, version):
                     "type": "AmazonS3StorageProvider"
                 },
                 'prefix': {
-                    "namespace": "go3dmZxK",
-                    "path": "XrLuVFbL"
+                    "namespace": f"sent by {__file__}",
+                    "path": f"sent by {__file__}"
                 }
             },
             'replicas': []
