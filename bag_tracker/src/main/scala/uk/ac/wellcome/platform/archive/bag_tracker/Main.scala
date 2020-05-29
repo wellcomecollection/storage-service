@@ -21,6 +21,9 @@ object Main extends WellcomeTypesafeApp {
 
     val storageManifestDao = StorageManifestDaoBuilder.build(config)
 
-    new BagTrackerApi(storageManifestDao = storageManifestDao)(host = host, port = port)
+    new BagTrackerApi(storageManifestDao = storageManifestDao)(
+      host = host,
+      port = port
+    )
   }
 }
