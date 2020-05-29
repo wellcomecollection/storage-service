@@ -4,6 +4,9 @@ This script will send every bag in the storage service to the bags indexer
 to be re-indexed in Elasticsearch.
 """
 
+import concurrent.futures
+import itertools
+import getpass
 import json
 import math
 import uuid
@@ -91,14 +94,6 @@ def fake_known_replicas_payload(space, externalIdentifier, version):
 
     }
 
-def publish_payload(sns_client, topic_arn, payload):
-    json_payload = json.dumps(payload)
-
-    return sns_client.publish(
-        TopicArn=topic_arn,
-        Message=json_payload
-    )
-
 def get_total_bags(dynamodb_client, table_name):
     resp = dynamodb_client.describe_table(TableName=table_name)
     return resp["Table"]["ItemCount"]
@@ -130,22 +125,56 @@ def publish_bags(sns_client, topic_arn, bags, dry_run=False):
     published_bags = []
     unique_bags = len(bags)
 
-    print(f"\nPublishing notifications to {topic_arn}")
-
+    print(f"\nGenerating notifications")
+    payloads = []
     for (dynamo_id, version) in tqdm(bags.items(), total = unique_bags):
         space, external_id = dynamo_id.split("/", 1)
-        published_bags.append(dynamo_id)
-
         payload = fake_known_replicas_payload(space, external_id, version)
+        payloads.append(payload)
 
+    print(f"Prepared notifications for {len(payloads)} bags.\n")
+
+    # This code parallelises publication, to make bags go faster.
+    # https://alexwlchan.net/2019/10/adventures-with-concurrent-futures/
+    max_parallel_notifications = 10
+
+    def publish(payload):
         if(not dry_run):
-            publish_payload(sns_client, topic_arn,  payload)
+            return sns_client.publish(
+                TopicArn=topic_arn,
+                Subject=f"Sent by {__file__} (user {getpass.getuser()})",
+                Message=json.dumps(payload)
+            )
+        else:
+            return True
 
-        publish_count = len(published_bags)
+    print(f"\nPublishing notifications to {topic_arn}")
+    with tqdm(total=len(payloads)) as progress_bar:
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            # Schedule the first N futures.  We don't want to schedule them all
+            # at once, to avoid consuming excessive amounts of memory.
+            futures = {
+                executor.submit(publish, payload)
+                for payload in itertools.islice(payloads, max_parallel_notifications)
+            }
+
+            while futures:
+                # Wait for the next future to complete.
+                done, futures = concurrent.futures.wait(
+                    futures, return_when=concurrent.futures.FIRST_COMPLETED
+                )
+
+                for fut in done:
+                    fut.result()
+
+                progress_bar.update(len(done))
+
+                # Schedule the next set of futures.  We don't want more than N futures
+                # in the pool at a time, to keep memory consumption down.
+                for payload in itertools.islice(payloads, len(done)):
+                    futures.add(executor.submit(publish, payload))
 
     print(f"Published notifications for {len(published_bags)} bags.\n")
-
-    return published_bags
 
 def confirm_indexed(elastic_client, published_bags, index):
     print(f"\nConfirm indexed to {index}")
