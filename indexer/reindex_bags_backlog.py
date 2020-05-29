@@ -5,11 +5,14 @@ to be re-indexed in Elasticsearch.
 """
 
 import json
+import math
 import uuid
 
 import boto3
+import click
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
+from tqdm import tqdm
 
 
 def scan_table(dynamo_client, *, TableName, **kwargs):
@@ -83,25 +86,22 @@ def get_total_bags(dynamodb_client, table_name):
 def get_latest_bags(dynamodb_client, table_name):
     total_bags = get_total_bags(dynamodb_client, table_name)
 
-    print(f"total_bags: {total_bags}")
+    print(f"\nGetting latest version of bags from {table_name}")
 
     bags = {}
     seen_bags = 0
 
-    for item in scan_table(dynamodb_client, TableName=table_name):
+    for item in tqdm(scan_table(dynamodb_client, TableName=table_name), total = total_bags):
         dynamo_id = item['id']['S']
         version = int(item['version']['N'])
         stored_version = bags.get(dynamo_id, -1)
 
         seen_bags = seen_bags + 1
 
-        if(seen_bags % 10 == 0 or seen_bags > (total_bags - 10)):
-            print(f"{seen_bags}/{total_bags}")
-
         if(version > stored_version):
             bags[dynamo_id] = version
 
-    print(f"latest_bags: {len(bags)}")
+    print(f"Found {len(bags)} bags.\n")
 
     return bags
 
@@ -110,7 +110,9 @@ def publish_bags(sns_client, topic_arn, bags):
     published_bags = []
     unique_bags = len(bags)
 
-    for (dynamo_id, version) in bags.items():
+    print(f"\nPublishing notifications to {topic_arn}")
+
+    for (dynamo_id, version) in tqdm(bags.items(), total = unique_bags):
         space, external_id = dynamo_id.split("/", 1)
         published_bags.append(dynamo_id)
 
@@ -118,14 +120,13 @@ def publish_bags(sns_client, topic_arn, bags):
         #publish_payload(sns_client, topic_arn,  payload)
         publish_count = len(published_bags)
 
-        if(publish_count % 10 == 0 or publish_count > (unique_bags - 10)):
-            print(f"{publish_count}/{unique_bags}")
-
-    print(f"published_bags: {len(published_bags)}")
+    print(f"Published notifications for {len(published_bags)} bags.\n")
 
     return published_bags
 
-def confirm_indexed(elastic_client, published_bags):
+def confirm_indexed(elastic_client, published_bags, index):
+    print(f"\nConfirm indexed to {index}")
+
     def _chunks(big_list, chunk_length):
         for i in range(0, len(big_list), chunk_length):
             yield big_list[i:i + chunk_length]
@@ -139,14 +140,22 @@ def confirm_indexed(elastic_client, published_bags):
             }
         }
 
-        s = Search(index="storage_stage_bags").using(elastic_client).update_from_dict(query_body)
+        s = Search(index=index).using(elastic_client).update_from_dict(query_body)
 
         found_ids = [hit.id for hit in s.scan()]
 
         return set(ids).difference(found_ids)
 
-    diff_list = [_query(chunk) for chunk in _chunks(published_bags, 50)]
+    chunk_length = 50
+    chunk_count = math.ceil(len(published_bags) / chunk_length)
+
+    diff_list = []
+    for chunk in tqdm(_chunks(published_bags, chunk_length), total = chunk_count):
+        diff_list.append(_query(chunk))
+
     flat_list = [item for sublist in diff_list for item in sublist]
+
+    print(f"Found {len(flat_list)} not indexed.\n")
 
     return flat_list
 
@@ -168,10 +177,12 @@ def create_elastic_client(role_arn, es_secrets):
     )
 
 if __name__ == "__main__":
+
+    publish = False
+    confirm = True
+    stage = None
+
     role_arn = 'arn:aws:iam::975596993436:role/storage-developer'
-    table_name = 'vhs-storage-staging-manifests'
-    #table_name = 'vhs-storage-manifests'
-    topic_arn = 'arn:aws:sns:eu-west-1:975596993436:storage_staging_bag_register_output'
 
     es_secrets = {
         'username': 'storage_bags_reindex_script/es_username',
@@ -179,13 +190,34 @@ if __name__ == "__main__":
         'hostname': 'storage_bags_reindex_script/es_hostname',
     }
 
+    stage_config = {
+        'table_name': 'vhs-storage-staging-manifests',
+        'topic_arn': 'arn:aws:sns:eu-west-1:975596993436:storage_staging_bag_register_output',
+        'es_index': 'storage_stage_bags',
+    }
+
+    prod_config = {
+        'table_name': 'vhs-storage-manifests',
+        'topic_arn': 'arn:aws:sns:eu-west-1:975596993436:storage_staging_bag_register_output',
+        'es_index': 'storage_bags',
+    }
+
+    if(stage == 'prod'):
+        config = prod_config
+    else:
+        config = stage_config
+
     dynamodb_client = create_client("dynamodb", role_arn)
     sns_client = create_client("sns", role_arn)
     elastic_client = create_elastic_client(role_arn, es_secrets)
 
-    bags_to_publish = get_latest_bags(dynamodb_client, table_name)
-    published_bags = publish_bags(sns_client, topic_arn, bags_to_publish)
-    not_indexed = confirm_indexed(elastic_client, published_bags)
+    bags_to_publish = get_latest_bags(dynamodb_client, config['table_name'])
 
-    print(not_indexed)
+    if(publish):
+        published_bags = publish_bags(sns_client, config['topic_arn'], bags_to_publish)
+
+    if(confirm):
+        bags_to_confirm = [key for (key, value) in bags_to_publish.items()]
+        not_indexed = confirm_indexed(elastic_client, bags_to_confirm, config['es_index'])
+        print(f"NOT INDEXED: {not_indexed}")
 
