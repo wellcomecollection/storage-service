@@ -15,7 +15,7 @@ from elasticsearch_dsl import Search
 from tqdm import tqdm
 
 
-def scan_table(dynamo_client, *, TableName, **kwargs):
+def scan_table(dynamodb_client, *, TableName, **kwargs):
     paginator = dynamodb_client.get_paginator("scan")
 
     for page in paginator.paginate(TableName=TableName, **kwargs):
@@ -176,48 +176,65 @@ def create_elastic_client(role_arn, es_secrets):
         port=9243,
     )
 
-if __name__ == "__main__":
+ROLE_ARN = 'arn:aws:iam::975596993436:role/storage-developer'
 
-    publish = False
-    confirm = True
-    stage = None
+ES_SECRETS = {
+    'username': 'storage_bags_reindex_script/es_username',
+    'password': 'storage_bags_reindex_script/es_password',
+    'hostname': 'storage_bags_reindex_script/es_hostname',
+}
 
-    role_arn = 'arn:aws:iam::975596993436:role/storage-developer'
+STAGE_CONFIG = {
+    'table_name': 'vhs-storage-staging-manifests',
+    'topic_arn': 'arn:aws:sns:eu-west-1:975596993436:storage_staging_bag_register_output',
+    'es_index': 'storage_stage_bags',
+}
 
-    es_secrets = {
-        'username': 'storage_bags_reindex_script/es_username',
-        'password': 'storage_bags_reindex_script/es_password',
-        'hostname': 'storage_bags_reindex_script/es_hostname',
-    }
+PROD_CONFIG = {
+    'table_name': 'vhs-storage-manifests',
+    'topic_arn': 'arn:aws:sns:eu-west-1:975596993436:storage_staging_bag_register_output',
+    'es_index': 'storage_bags',
+}
 
-    stage_config = {
-        'table_name': 'vhs-storage-staging-manifests',
-        'topic_arn': 'arn:aws:sns:eu-west-1:975596993436:storage_staging_bag_register_output',
-        'es_index': 'storage_stage_bags',
-    }
-
-    prod_config = {
-        'table_name': 'vhs-storage-manifests',
-        'topic_arn': 'arn:aws:sns:eu-west-1:975596993436:storage_staging_bag_register_output',
-        'es_index': 'storage_bags',
-    }
-
-    if(stage == 'prod'):
-        config = prod_config
+def get_config(env):
+    if(env == 'prod'):
+        return PROD_CONFIG
     else:
-        config = stage_config
+        return STAGE_CONFIG
+
+@click.group()
+def cli():
+    pass
+
+@click.command()
+@click.option('--env', default='stage', help='Environment to run against (prod|stage)')
+@click.option('--role_arn', default=ROLE_ARN, help='AWS Role ARN to run this script with')
+def publish(env, role_arn):
+    config = get_config(env)
 
     dynamodb_client = create_client("dynamodb", role_arn)
     sns_client = create_client("sns", role_arn)
-    elastic_client = create_elastic_client(role_arn, es_secrets)
 
     bags_to_publish = get_latest_bags(dynamodb_client, config['table_name'])
+    publish_bags(sns_client, config['topic_arn'], bags_to_publish)
 
-    if(publish):
-        published_bags = publish_bags(sns_client, config['topic_arn'], bags_to_publish)
+@click.command()
+@click.option('--env', default='stage', help='Environment to run against (prod|stage)')
+@click.option('--role_arn', default=ROLE_ARN, help='AWS Role ARN to run this script with')
+def confirm(env, role_arn):
+    config = get_config(env)
 
-    if(confirm):
-        bags_to_confirm = [key for (key, value) in bags_to_publish.items()]
-        not_indexed = confirm_indexed(elastic_client, bags_to_confirm, config['es_index'])
-        print(f"NOT INDEXED: {not_indexed}")
+    dynamodb_client = create_client("dynamodb", role_arn)
+    elastic_client = create_elastic_client(role_arn, ES_SECRETS)
 
+    bags_to_publish = get_latest_bags(dynamodb_client, config['table_name'])
+    bags_to_confirm = [key for (key, value) in bags_to_publish.items()]
+
+    not_indexed = confirm_indexed(elastic_client, bags_to_confirm, config['es_index'])
+    print(f"NOT INDEXED: {not_indexed}")
+
+cli.add_command(publish)
+cli.add_command(confirm)
+
+if __name__ == "__main__":
+    cli()
