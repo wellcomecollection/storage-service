@@ -349,10 +349,10 @@ resource "aws_sns_topic_policy" "bag_register_output_topic_cross_account_subscri
   policy = data.aws_iam_policy_document.bag_register_output_cross_account_subscription.json
 }
 
-module "bag_reindexer_topic" {
+module "bag_reindexer_output_topic" {
   source = "../topic"
 
-  name = "${var.namespace}_bag_register_output"
+  name = "${var.namespace}_bag_reindexer_output_topic"
 
   role_names = []
 }
@@ -363,7 +363,7 @@ module "bag_register_output_queue" {
   name = "${var.namespace}_bag_register_output"
 
   topic_arns = [
-    module.bag_reindexer_topic.arn,
+    module.bag_reindexer_output_topic.arn,
     module.bag_register_output_topic.arn
   ]
 

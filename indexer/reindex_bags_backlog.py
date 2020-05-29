@@ -15,6 +15,26 @@ from elasticsearch_dsl import Search
 from tqdm import tqdm
 
 
+ROLE_ARN = 'arn:aws:iam::975596993436:role/storage-developer'
+
+ES_SECRETS = {
+    'username': 'storage_bags_reindex_script/es_username',
+    'password': 'storage_bags_reindex_script/es_password',
+    'hostname': 'storage_bags_reindex_script/es_hostname',
+}
+
+STAGE_CONFIG = {
+    'table_name': 'vhs-storage-staging-manifests',
+    'topic_arn': 'arn:aws:sns:eu-west-1:975596993436:storage_staging_bag_reindexer_output_topic',
+    'es_index': 'storage_stage_bags',
+}
+
+PROD_CONFIG = {
+    'table_name': 'vhs-storage-manifests',
+    'topic_arn': 'arn:aws:sns:eu-west-1:975596993436:storage_prod_bag_reindexer_output_topic',
+    'es_index': 'storage_bags',
+}
+
 def scan_table(dynamodb_client, *, TableName, **kwargs):
     paginator = dynamodb_client.get_paginator("scan")
 
@@ -175,26 +195,6 @@ def create_elastic_client(role_arn, es_secrets):
         scheme="https",
         port=9243,
     )
-
-ROLE_ARN = 'arn:aws:iam::975596993436:role/storage-developer'
-
-ES_SECRETS = {
-    'username': 'storage_bags_reindex_script/es_username',
-    'password': 'storage_bags_reindex_script/es_password',
-    'hostname': 'storage_bags_reindex_script/es_hostname',
-}
-
-STAGE_CONFIG = {
-    'table_name': 'vhs-storage-staging-manifests',
-    'topic_arn': 'arn:aws:sns:eu-west-1:975596993436:storage_staging_bag_register_output',
-    'es_index': 'storage_stage_bags',
-}
-
-PROD_CONFIG = {
-    'table_name': 'vhs-storage-manifests',
-    'topic_arn': 'arn:aws:sns:eu-west-1:975596993436:storage_staging_bag_register_output',
-    'es_index': 'storage_bags',
-}
 
 def get_config(env):
     if(env == 'prod'):
