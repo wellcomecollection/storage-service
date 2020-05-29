@@ -126,7 +126,7 @@ def get_latest_bags(dynamodb_client, table_name):
     return bags
 
 
-def publish_bags(sns_client, topic_arn, bags):
+def publish_bags(sns_client, topic_arn, bags, dry_run=False):
     published_bags = []
     unique_bags = len(bags)
 
@@ -137,7 +137,10 @@ def publish_bags(sns_client, topic_arn, bags):
         published_bags.append(dynamo_id)
 
         payload = fake_known_replicas_payload(space, external_id, version)
-        #publish_payload(sns_client, topic_arn,  payload)
+
+        if(not dry_run):
+            publish_payload(sns_client, topic_arn,  payload)
+
         publish_count = len(published_bags)
 
     print(f"Published notifications for {len(published_bags)} bags.\n")
@@ -208,15 +211,16 @@ def cli():
 
 @click.command()
 @click.option('--env', default='stage', help='Environment to run against (prod|stage)')
+@click.option('--dry_run', default=False, is_flag=True, help='Do not publish messages')
 @click.option('--role_arn', default=ROLE_ARN, help='AWS Role ARN to run this script with')
-def publish(env, role_arn):
+def publish(env, dry_run, role_arn):
     config = get_config(env)
 
     dynamodb_client = create_client("dynamodb", role_arn)
     sns_client = create_client("sns", role_arn)
 
     bags_to_publish = get_latest_bags(dynamodb_client, config['table_name'])
-    publish_bags(sns_client, config['topic_arn'], bags_to_publish)
+    publish_bags(sns_client, config['topic_arn'], bags_to_publish, dry_run)
 
 @click.command()
 @click.option('--env', default='stage', help='Environment to run against (prod|stage)')
