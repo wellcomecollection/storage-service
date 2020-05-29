@@ -61,6 +61,14 @@ module "tracker_container" {
 
   image = var.tracker_container_image
 
+  port_mappings = [
+    {
+      containerPort = 8080
+      hostPort      = 8080
+      protocol      = "tcp"
+    }
+  ]
+
   environment = var.tracker_environment
 
   log_configuration = module.base.log_configuration

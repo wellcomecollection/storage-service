@@ -472,10 +472,9 @@ module "bag_register" {
     archive_bucket    = var.replica_primary_bucket_name
     ongoing_topic_arn = module.bag_register_output_topic.arn
     ingest_topic_arn  = module.ingests_topic.arn
-    vhs_bucket_name   = var.vhs_manifests_bucket_name
-    vhs_table_name    = var.vhs_manifests_table_name
     metrics_namespace = local.bag_register_service_name
     operation_name    = "register"
+    bags_tracker_host = "http://${module.bags_api.name}.${var.namespace}:8080"
     JAVA_OPTS         = local.java_opts_heap_size
   }
 
@@ -483,6 +482,11 @@ module "bag_register" {
   max_capacity = var.max_capacity
 
   container_image = local.image_ids["bag_register"]
+
+  security_group_ids = [
+    aws_security_group.interservice.id,
+    aws_security_group.service_egress.id,
+  ]
 
   use_fargate_spot = true
 
