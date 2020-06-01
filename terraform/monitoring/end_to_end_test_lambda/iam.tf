@@ -9,7 +9,6 @@ data "aws_secretsmanager_secret_version" "client_secret" {
   secret_id = "end_to_end_bag_tester/client_secret"
 }
 
-
 data "aws_iam_policy_document" "read_end_to_end_secrets" {
   statement {
     actions = [

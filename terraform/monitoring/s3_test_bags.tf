@@ -14,6 +14,8 @@ module "bag_with_one_text_file" {
   test_bag_prefix = local.test_bag_prefix
 
   filename = "bag_with_one_text_file.tar.gz"
+
+  tags = local.default_tags
 }
 
 module "bag_with_fetch_file_stage" {
@@ -23,6 +25,8 @@ module "bag_with_fetch_file_stage" {
   test_bag_prefix = local.test_bag_prefix
 
   filename = "bag_with_fetch_file_stage.tar.gz"
+
+  tags = local.default_tags
 }
 
 module "bag_with_fetch_file_prod" {
@@ -32,6 +36,8 @@ module "bag_with_fetch_file_prod" {
   test_bag_prefix = local.test_bag_prefix
 
   filename = "bag_with_fetch_file_prod.tar.gz"
+
+  tags = local.default_tags
 }
 
 # Give the unpacker tasks permission to read all of the test bags.

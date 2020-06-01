@@ -9,3 +9,7 @@ variable "description" {
 variable "environment" {
   type = map(string)
 }
+
+variable "tags" {
+  type = map(string)
+}

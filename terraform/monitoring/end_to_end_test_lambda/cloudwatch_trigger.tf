@@ -5,6 +5,8 @@
 resource "aws_cloudwatch_event_rule" "every_day_at_9pm" {
   name                = "trigger-${var.name}"
   schedule_expression = "cron(* 21 * * ? *)"
+
+  tags = var.tags
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch_trigger" {
