@@ -4,7 +4,11 @@ import java.time.{Instant, LocalDate}
 
 import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
-import uk.ac.wellcome.platform.archive.common.storage.models.{StorageLocation, StorageManifest, StorageManifestFile}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  StorageLocation,
+  StorageManifest,
+  StorageManifestFile
+}
 import uk.ac.wellcome.platform.archive.indexer.bags.services.FileSuffix
 
 case class IndexedFileFields(
@@ -48,7 +52,7 @@ object IndexedBagInfo {
       sourceOrganisation = info.sourceOrganisation.map(_.toString),
       externalDescription = info.externalDescription.map(_.toString),
       internalSenderIdentifier = info.internalSenderIdentifier.map(_.toString),
-      internalSenderDescription = info.internalSenderDescription.map(_.toString),
+      internalSenderDescription = info.internalSenderDescription.map(_.toString)
     )
 }
 
@@ -69,24 +73,25 @@ object IndexedLocation {
 }
 
 case class IndexedStorageManifest(
-                                   id: String,
-                                   space: String,
-                                   version: Int,
-                                   createdDate: Instant,
-                                   info: IndexedBagInfo,
-                                   location: IndexedLocation,
-                                   replicaLocations: Seq[IndexedLocation],
-                                   files: Seq[IndexedFileFields],
-                                   filesCount: Int,
-                                   filesTotalSize: Long,
-                                   @JsonKey("type") ontologyType: String = "Bag"
+  id: String,
+  space: String,
+  version: Int,
+  createdDate: Instant,
+  info: IndexedBagInfo,
+  location: IndexedLocation,
+  replicaLocations: Seq[IndexedLocation],
+  files: Seq[IndexedFileFields],
+  filesCount: Int,
+  filesTotalSize: Long,
+  @JsonKey("type") ontologyType: String = "Bag"
 )
 
 object IndexedStorageManifest {
   def apply(storageManifest: StorageManifest): IndexedStorageManifest = {
     val storageManifestFiles = storageManifest.manifest.files
     val payloadFiles = storageManifestFiles.map(IndexedFileFields(_))
-    val replicaLocations = storageManifest.replicaLocations.map(IndexedLocation(_))
+    val replicaLocations =
+      storageManifest.replicaLocations.map(IndexedLocation(_))
 
     IndexedStorageManifest(
       id = storageManifest.id.toString,
@@ -98,7 +103,7 @@ object IndexedStorageManifest {
       replicaLocations = replicaLocations,
       files = payloadFiles,
       filesCount = storageManifestFiles.length,
-      filesTotalSize = storageManifestFiles.map(_.size).sum,
+      filesTotalSize = storageManifestFiles.map(_.size).sum
     )
   }
 }
