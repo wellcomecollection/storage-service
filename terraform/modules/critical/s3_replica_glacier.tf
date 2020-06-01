@@ -26,6 +26,13 @@ resource "aws_s3_bucket_inventory" "replica_glacier" {
     frequency = "Weekly"
   }
 
+  optional_fields = [
+    "Size",
+    "LastModifiedDate",
+    "StorageClass",
+    "ETag",
+  ]
+
   destination {
     bucket {
       format     = "CSV"
