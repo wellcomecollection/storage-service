@@ -7,6 +7,7 @@ locals {
 resource "aws_secretsmanager_secret" "catalogue_client_id" {
   name        = "mets_adapter/mets_adapter/client_id"
   description = local.description
+  tags        = local.default_tags
 }
 
 resource "aws_secretsmanager_secret_version" "catalogue_client_id" {
@@ -17,6 +18,7 @@ resource "aws_secretsmanager_secret_version" "catalogue_client_id" {
 resource "aws_secretsmanager_secret" "catalogue_client_secret" {
   name        = "mets_adapter/mets_adapter/secret"
   description = local.description
+  tags        = local.default_tags
 }
 
 resource "aws_secretsmanager_secret_version" "catalogue_client_secret" {
@@ -31,6 +33,7 @@ resource "aws_secretsmanager_secret" "end_to_end_client_id" {
 
   name        = "end_to_end_bag_tester/client_id"
   description = local.description
+  tags        = local.default_tags
 }
 
 resource "aws_secretsmanager_secret_version" "end_to_end_client_id" {
@@ -45,6 +48,7 @@ resource "aws_secretsmanager_secret" "end_to_end_client_secret" {
 
   name        = "end_to_end_bag_tester/client_secret"
   description = local.description
+  tags        = local.default_tags
 }
 
 resource "aws_secretsmanager_secret_version" "end_to_end_client_secret" {
