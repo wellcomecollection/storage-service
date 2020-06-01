@@ -6,9 +6,9 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   IngestGenerators,
   StorageManifestGenerators
 }
-import uk.ac.wellcome.platform.archive.indexer.bags.services.FileSuffixCounter
+import uk.ac.wellcome.platform.archive.indexer.bags.services.FileSuffix
 
-class FileSuffixCounterTest
+class FileSuffixTest
     extends AnyFunSpec
     with Matchers
     with IngestGenerators
@@ -20,23 +20,25 @@ class FileSuffixCounterTest
     "bat.png",
     "mystery file",
     "bad..bmp",
+    "nosuffix",
+    "",
     "worse.jif.",
     "file.with.full.stops.scala"
   )
 
-  private val files = names.map { name =>
-    createStorageManifestFileWith(name = name)
-  }
+  it("extracts the file suffixes correctly") {
+    val suffixes = names.map(FileSuffix.getSuffix)
 
-  it("tallies the file suffixes correctly") {
-    val suffixMap = FileSuffixCounter.count(files)
-
-    suffixMap shouldBe Map(
-      "png" -> 1,
-      "bmp" -> 1,
-      "txt" -> 2,
-      "jif" -> 1,
-      "scala" -> 1
+    suffixes shouldBe List(
+      Some("txt"),
+      Some("txt"),
+      Some("png"),
+      None,
+      Some("bmp"),
+      None,
+      None,
+      Some("jif"),
+      Some("scala")
     )
   }
 }

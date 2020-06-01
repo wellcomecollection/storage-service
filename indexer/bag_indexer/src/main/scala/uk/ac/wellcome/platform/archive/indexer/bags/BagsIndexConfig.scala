@@ -2,41 +2,52 @@ package uk.ac.wellcome.platform.archive.indexer.bags
 
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.requests.mappings.FieldDefinition
+
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.IndexConfig
 
 object BagsIndexConfig extends IndexConfig {
-  private val suffixTallyFields: Seq[FieldDefinition] =
-    Seq(
-      keywordField("suffix"),
-      intField("count")
-    )
 
   private val fileFields: Seq[FieldDefinition] =
     Seq(
       keywordField("path"),
       keywordField("name"),
-      keywordField("name"),
+      keywordField("suffix"),
       longField("size"),
       keywordField("checksum"),
       keywordField("type")
     )
 
-  private val payloadStatsFields: Seq[FieldDefinition] =
-    Seq(
-      objectField("fileSuffixTally").fields(suffixTallyFields),
-      intField("fileCount"),
-      longField("fileSize")
-    )
+  private val infoFields: Seq[FieldDefinition] = Seq(
+    keywordField("externalIdentifier"),
+    keywordField("payloadOxum"),
+    dateField("baggingDate"),
+    keywordField("sourceOrganisation"),
+    keywordField("externalDescription"),
+    keywordField("internalSenderIdentifier"),
+    keywordField("internalSenderDescription"),
+    keywordField("type")
+  )
+
+  private val locationFields: Seq[FieldDefinition] = Seq(
+    keywordField("provider"),
+    keywordField("bucket"),
+    keywordField("path"),
+    keywordField("type")
+  )
 
   override protected val fields: Seq[FieldDefinition] =
     Seq(
       keywordField("id"),
       keywordField("space"),
-      keywordField("externalIdentifier"),
       intField("version"),
       dateField("createdDate"),
-      objectField("payloadFiles").fields(fileFields),
-      objectField("payloadStats").fields(payloadStatsFields),
+      objectField("info").fields(infoFields),
+      objectField("location").fields(locationFields),
+      objectField("replicaLocations").fields(locationFields),
+      objectField("files").fields(fileFields),
+      intField("filesCount"),
+      longField("filesTotalSize"),
       keywordField("type")
     )
+
 }

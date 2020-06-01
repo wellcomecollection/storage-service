@@ -10,9 +10,7 @@ import uk.ac.wellcome.platform.archive.common.generators.{
 import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
 import uk.ac.wellcome.platform.archive.indexer.bags.models.{
   IndexedFileFields,
-  IndexedPayloadStats,
-  IndexedStorageManifest,
-  IndexedSuffixTally
+  IndexedStorageManifest
 }
 
 class IndexedStorageManifestTest
@@ -102,20 +100,14 @@ class IndexedStorageManifestTest
 
     val indexedManifest = IndexedStorageManifest(storageManifest)
 
-    val expectedPayloadStats = IndexedPayloadStats(
-      fileCount = v1Files.length + v2Files.length + v3Files.length,
-      fileSize = v1OneFileSize + v2OneFileSize + v2TwoFileSize + v3OneFileSize,
-      fileSuffixTally = List(
-        IndexedSuffixTally("gif", 2),
-        IndexedSuffixTally("png", 1),
-        IndexedSuffixTally("txt", 1)
-      )
-    )
+    val expectedFileCount = v1Files.length + v2Files.length + v3Files.length
+    val expectedFilesTotalSize = v1OneFileSize + v2OneFileSize + v2TwoFileSize + v3OneFileSize
 
     indexedManifest.id shouldBe storageManifest.id.toString
     indexedManifest.space shouldBe storageManifest.space.toString
-    indexedManifest.payloadFiles shouldBe storageManifest.manifest.files
+    indexedManifest.files shouldBe storageManifest.manifest.files
       .map(IndexedFileFields(_))
-    indexedManifest.payloadStats shouldBe expectedPayloadStats
+    indexedManifest.filesCount shouldBe expectedFileCount
+    indexedManifest.filesTotalSize shouldBe expectedFilesTotalSize
   }
 }
