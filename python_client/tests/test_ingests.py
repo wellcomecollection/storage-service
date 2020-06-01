@@ -24,10 +24,10 @@ def test_5xx_response_becomes_servererror(client):
 
 def test_can_create_and_retrieve_ingest(client):
     location = client.create_s3_ingest(
-        space_id="digitised",
+        space="digitised",
+        external_identifier="b12345",
         s3_bucket="testing-bucket",
         s3_key="bagit.zip",
-        external_identifier="b12345",
     )
 
     resp = client.get_ingest_from_location(location)
@@ -41,10 +41,10 @@ def test_can_create_and_retrieve_ingest(client):
 
 def test_can_create_ingest_with_callback(client):
     location = client.create_s3_ingest(
-        space_id="digitised",
+        space="digitised",
+        external_identifier="b12345",
         s3_bucket="testing-bucket",
         s3_key="bagit.zip",
-        external_identifier="b12345",
         callback_url="https://example.org/callback/bagit.zip",
     )
 
@@ -54,10 +54,10 @@ def test_can_create_ingest_with_callback(client):
 
 def test_default_ingest_type_is_create(client):
     location = client.create_s3_ingest(
-        space_id="digitised",
+        space="digitised",
+        external_identifier="b12345",
         s3_bucket="testing-bucket",
         s3_key="bagit.zip",
-        external_identifier="b12345",
     )
 
     resp = client.get_ingest_from_location(location)
@@ -67,11 +67,11 @@ def test_default_ingest_type_is_create(client):
 @pytest.mark.parametrize("ingest_type", ["create", "update"])
 def test_can_specify_ingest_type(client, ingest_type):
     location = client.create_s3_ingest(
-        space_id="digitised",
+        space="digitised",
+        external_identifier="b12345",
         s3_bucket="testing-bucket",
         s3_key="bagit.zip",
         ingest_type=ingest_type,
-        external_identifier="b12345",
     )
 
     resp = client.get_ingest_from_location(location)
@@ -81,11 +81,21 @@ def test_can_specify_ingest_type(client, ingest_type):
 def test_it_includes_the_external_identifier(client):
     external_identifier = "b12345"
     location = client.create_s3_ingest(
-        space_id="digitised",
+        space="digitised",
+        external_identifier=external_identifier,
         s3_bucket="testing-bucket",
         s3_key="bagit.zip",
-        external_identifier=external_identifier,
     )
 
     resp = client.get_ingest_from_location(location)
     assert resp["bag"]["info"]["externalIdentifier"] == external_identifier
+
+
+def test_it_wraps_a_4xx_as_a_usererror(client):
+    with pytest.raises(UserError, match="Bad Request: Invalid value at .space.id: must not contain slashes."):
+        client.create_s3_ingest(
+            space="space/with/a/slash",
+            external_identifier="b12345",
+            s3_bucket="testing-bucket",
+            s3_key="bagit.zip",
+        )

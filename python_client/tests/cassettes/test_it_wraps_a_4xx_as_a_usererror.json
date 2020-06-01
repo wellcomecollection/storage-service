@@ -1,0 +1,210 @@
+{
+  "http_interactions": [
+    {
+      "recorded_at": "2020-06-01T12:34:42",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "grant_type=client_credentials"
+        },
+        "headers": {
+          "Accept": [
+            "application/json"
+          ],
+          "Accept-Encoding": [
+            "gzip, deflate"
+          ],
+          "Authorization": [
+            "<AUTH_TOKEN>"
+          ],
+          "Connection": [
+            "keep-alive"
+          ],
+          "Content-Length": [
+            "29"
+          ],
+          "Content-Type": [
+            "application/x-www-form-urlencoded;charset=UTF-8"
+          ],
+          "User-Agent": [
+            "python-requests/2.21.0"
+          ]
+        },
+        "method": "POST",
+        "uri": "https://auth.wellcomecollection.org/oauth2/token"
+      },
+      "response": {
+        "body": {
+          "encoding": "UTF-8",
+          "string": "{\"access_token\":\"<ACCESS_TOKEN_37>\",\"expires_in\":3600,\"token_type\":\"Bearer\"}"
+        },
+        "headers": {
+          "Cache-Control": [
+            "no-cache, no-store, max-age=0, must-revalidate"
+          ],
+          "Connection": [
+            "keep-alive"
+          ],
+          "Content-Type": [
+            "application/json;charset=UTF-8"
+          ],
+          "Date": [
+            "Mon, 01 Jun 2020 12:34:41 GMT"
+          ],
+          "Expires": [
+            "0"
+          ],
+          "Pragma": [
+            "no-cache"
+          ],
+          "Server": [
+            "Server"
+          ],
+          "Set-Cookie": [
+            "XSRF-TOKEN=44f2e68a-db7c-4842-a542-53adeda1f47c; Path=/; Secure; HttpOnly; SameSite=Lax"
+          ],
+          "Strict-Transport-Security": [
+            "max-age=31536000 ; includeSubDomains"
+          ],
+          "Transfer-Encoding": [
+            "chunked"
+          ],
+          "Via": [
+            "1.1 1c140222cf7df6d0df745770e90c311a.cloudfront.net (CloudFront)"
+          ],
+          "X-Amz-Cf-Id": [
+            "Gwhh_Nl7FkDphT-dJvTEwTrT47T_USUiP-lE1ZQAca5J_OPzN8dmfA=="
+          ],
+          "X-Amz-Cf-Pop": [
+            "WAW50-C1"
+          ],
+          "X-Application-Context": [
+            "application:prod:8443"
+          ],
+          "X-Cache": [
+            "Miss from cloudfront"
+          ],
+          "X-Content-Type-Options": [
+            "nosniff"
+          ],
+          "X-Frame-Options": [
+            "DENY"
+          ],
+          "X-XSS-Protection": [
+            "1; mode=block"
+          ],
+          "x-amz-cognito-request-id": [
+            "6aee0040-e696-42af-b60c-6f5e0da320cb"
+          ]
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://auth.wellcomecollection.org/oauth2/token"
+      }
+    },
+    {
+      "recorded_at": "2020-06-01T12:34:42",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "{\"bag\": {\"info\": {\"externalIdentifier\": \"b12345\", \"type\": \"BagInfo\"}, \"type\": \"Bag\"}, \"sourceLocation\": {\"bucket\": \"testing-bucket\", \"path\": \"bagit.zip\", \"provider\": {\"id\": \"amazon-s3\", \"type\": \"Provider\"}, \"type\": \"Location\"}, \"space\": {\"id\": \"space/with/a/slash\", \"type\": \"Space\"}, \"ingestType\": {\"id\": \"create\", \"type\": \"IngestType\"}, \"type\": \"Ingest\"}"
+        },
+        "headers": {
+          "Accept": [
+            "*/*"
+          ],
+          "Accept-Encoding": [
+            "gzip, deflate"
+          ],
+          "Authorization": [
+            "Bearer <ACCESS_TOKEN_37>"
+          ],
+          "Connection": [
+            "keep-alive"
+          ],
+          "Content-Length": [
+            "355"
+          ],
+          "Content-Type": [
+            "application/json"
+          ],
+          "User-Agent": [
+            "python-requests/2.21.0"
+          ]
+        },
+        "method": "POST",
+        "uri": "https://api.wellcomecollection.org/storage/v1/ingests"
+      },
+      "response": {
+        "body": {
+          "encoding": null,
+          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"httpStatus\":400,\"description\":\"Invalid value at .space.id: must not contain slashes.\",\"label\":\"Bad Request\",\"type\":\"Error\"}"
+        },
+        "headers": {
+          "Access-Control-Allow-Credentials": [
+            "true"
+          ],
+          "Access-Control-Allow-Headers": [
+            "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type"
+          ],
+          "Access-Control-Allow-Methods": [
+            "GET, POST, OPTIONS"
+          ],
+          "Access-Control-Allow-Origin": [
+            "*"
+          ],
+          "Connection": [
+            "keep-alive"
+          ],
+          "Content-Length": [
+            "186"
+          ],
+          "Content-Type": [
+            "application/json"
+          ],
+          "Date": [
+            "Mon, 01 Jun 2020 12:34:42 GMT"
+          ],
+          "Via": [
+            "1.1 c35525724b74ec2ec80741ffbf1ff218.cloudfront.net (CloudFront)"
+          ],
+          "X-Amz-Cf-Id": [
+            "3CdeCDWPA9k6jhGQa4nI-6ipleonWoK24I0s5pMkwdvZZnop2-93hQ=="
+          ],
+          "X-Amz-Cf-Pop": [
+            "WAW50-C1"
+          ],
+          "X-Cache": [
+            "Error from cloudfront"
+          ],
+          "x-amz-apigw-id": [
+            "NctbaGm8DoEF55A="
+          ],
+          "x-amzn-Remapped-Connection": [
+            "keep-alive"
+          ],
+          "x-amzn-Remapped-Content-Length": [
+            "186"
+          ],
+          "x-amzn-Remapped-Date": [
+            "Mon, 01 Jun 2020 12:34:42 GMT"
+          ],
+          "x-amzn-Remapped-Server": [
+            "nginx"
+          ],
+          "x-amzn-RequestId": [
+            "aee62bad-1d2f-4d4a-9dcb-f6a575fc65aa"
+          ]
+        },
+        "status": {
+          "code": 400,
+          "message": "Bad Request"
+        },
+        "url": "https://api.wellcomecollection.org/storage/v1/ingests"
+      }
+    }
+  ],
+  "recorded_with": "betamax/0.8.1"
+}
