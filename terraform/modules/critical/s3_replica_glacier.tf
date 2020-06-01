@@ -26,11 +26,18 @@ resource "aws_s3_bucket_inventory" "replica_glacier" {
     frequency = "Weekly"
   }
 
+  optional_fields = [
+    "Size",
+    "LastModifiedDate",
+    "StorageClass",
+    "ETag",
+  ]
+
   destination {
     bucket {
       format     = "CSV"
       bucket_arn = "arn:aws:s3:::${var.inventory_bucket}"
-      prefix     = "s3_inventory/${aws_s3_bucket.replica_glacier.id}"
+      prefix     = "s3_inventory"
     }
   }
 }

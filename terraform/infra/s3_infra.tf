@@ -9,6 +9,30 @@ resource "aws_s3_bucket" "infra" {
   versioning {
     enabled = true
   }
+
+  # We use S3 Inventory to write an inventory for our storage buckets to the
+  # infra bucket.  We don't need to keep inventories forever, so delete them
+  # after 90 days.
+  lifecycle_rule {
+    id      = "expire_old_inventory"
+    enabled = true
+
+    prefix = "s3_inventory/"
+
+    transition {
+      days          = 30
+      storage_class = "STANDARD_IA"
+    }
+
+    transition {
+      days          = 60
+      storage_class = "GLACIER"
+    }
+
+    expiration {
+      days = 90
+    }
+  }
 }
 
 data "aws_iam_policy_document" "infra_bucket_policy" {
