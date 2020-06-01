@@ -92,7 +92,10 @@ def test_it_includes_the_external_identifier(client):
 
 
 def test_it_wraps_a_4xx_as_a_usererror(client):
-    with pytest.raises(UserError, match="Bad Request: Invalid value at .space.id: must not contain slashes."):
+    with pytest.raises(
+        UserError,
+        match="Bad Request: Invalid value at .space.id: must not contain slashes.",
+    ):
         client.create_s3_ingest(
             space="space/with/a/slash",
             external_identifier="b12345",

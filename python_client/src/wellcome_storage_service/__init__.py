@@ -26,6 +26,7 @@ class StorageServiceClientBase(object):
     """
     Client for the Wellcome Storage Service API.
     """
+
     def __init__(self, api_url):
         self.api_url = api_url
 
@@ -81,9 +82,14 @@ class StorageServiceClientBase(object):
         status_code, body = self._http_get(bags_url)
         if status_code == 404:
             if version:
-                raise BagNotFound("Bags API returned 404 for bag %s/%s with version %s" % (space, external_identifier, version))
+                raise BagNotFound(
+                    "Bags API returned 404 for bag %s/%s with version %s"
+                    % (space, external_identifier, version)
+                )
             else:
-                raise BagNotFound("Bags API returned 404 for bag %s/%s" % (space, external_identifier))
+                raise BagNotFound(
+                    "Bags API returned 404 for bag %s/%s" % (space, external_identifier)
+                )
         else:
             return json.loads(body)
 
@@ -135,7 +141,6 @@ class StorageServiceClientBase(object):
             raise ServerError()
 
 
-
 class RequestsStorageServiceClient(StorageServiceClientBase):
     def __init__(self, api_url, sess):
         self.sess = sess
@@ -179,7 +184,9 @@ class RequestsOAuthStorageServiceClient(RequestsStorageServiceClient):
         client = BackendApplicationClient(client_id=client_id)
         sess = OAuth2Session(client=client)
 
-        super(RequestsOAuthStorageServiceClient, self).__init__(api_url=api_url, sess=sess)
+        super(RequestsOAuthStorageServiceClient, self).__init__(
+            api_url=api_url, sess=sess
+        )
 
     @needs_token
     def _http_get(self, url):
