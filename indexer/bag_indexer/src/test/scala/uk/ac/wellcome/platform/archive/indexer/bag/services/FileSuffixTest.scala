@@ -20,6 +20,8 @@ class FileSuffixTest
     "bat.png",
     "mystery file",
     "bad..bmp",
+    "nosuffix",
+    "",
     "worse.jif.",
     "file.with.full.stops.scala"
   )
@@ -27,12 +29,16 @@ class FileSuffixTest
   it("extracts the file suffixes correctly") {
     val suffixes = names.map(FileSuffix.getSuffix)
 
-    suffixes shouldBe Seq(
-      "png",
-      "bmp",
-      "txt",
-      "jif",
-      "scala"
+    suffixes shouldBe List(
+      Some("txt"),
+      Some("txt"),
+      Some("png"),
+      None,
+      Some("bmp"),
+      None,
+      None,
+      Some("jif"),
+      Some("scala")
     )
   }
 }

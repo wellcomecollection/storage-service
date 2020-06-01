@@ -33,6 +33,7 @@ object BagsIndexConfig extends IndexConfig {
     keywordField("provider"),
     keywordField("bucket"),
     keywordField("path"),
+    keywordField("type")
   )
 
   override protected val fields: Seq[FieldDefinition] =
@@ -45,6 +46,8 @@ object BagsIndexConfig extends IndexConfig {
       objectField("location").fields(locationFields),
       objectField("replicaLocations").fields(locationFields),
       objectField("files").fields(fileFields),
+      intField("filesCount"),
+      longField("filesTotalSize"),
       keywordField("type")
     )
 
