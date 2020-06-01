@@ -8,6 +8,8 @@ module "daily_reporter_lambda" {
   s3_key    = "lambdas/monitoring/daily_reporter.zip"
 
   timeout = 30
+
+  tags = local.default_tags
 }
 
 data "aws_secretsmanager_secret_version" "storage_service_reporter_slack_webhook" {
@@ -56,6 +58,7 @@ resource "aws_iam_role_policy" "allow_reporter_to_read_es_secrets" {
 resource "aws_cloudwatch_event_rule" "every_day_at_6am" {
   name                = "trigger_daily_reporter"
   schedule_expression = "cron(0 6 * * ? *)"
+  tags                = local.default_tags
 }
 
 resource "aws_lambda_permission" "allow_reporter_cloudwatch_trigger" {
