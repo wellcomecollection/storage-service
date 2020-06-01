@@ -103,7 +103,7 @@ resource "aws_s3_bucket_inventory" "replica_primary" {
     bucket {
       format     = "CSV"
       bucket_arn = "arn:aws:s3:::${var.inventory_bucket}"
-      prefix     = "s3_inventory/${aws_s3_bucket.replica_primary.id}"
+      prefix     = "s3_inventory"
     }
   }
 }
