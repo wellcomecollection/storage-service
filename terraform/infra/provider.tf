@@ -1,3 +1,10 @@
+locals {
+  default_tags = {
+    TerraformConfigurationURL = "https://github.com/wellcomecollection/storage-service/tree/master/terraform/infra"
+  }
+}
+
+
 provider "aws" {
   assume_role {
     role_arn = "arn:aws:iam::975596993436:role/storage-admin"
@@ -6,4 +13,3 @@ provider "aws" {
   region  = var.aws_region
   version = "2.34.0"
 }
-
