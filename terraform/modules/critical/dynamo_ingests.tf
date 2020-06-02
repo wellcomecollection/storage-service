@@ -19,4 +19,6 @@ resource "aws_dynamodb_table" "ingests" {
       write_capacity,
     ]
   }
+
+  tags = var.tags
 }

@@ -23,6 +23,8 @@ module "critical" {
 
   inventory_bucket = "wellcomecollection-storage-infra"
 
+  tags = local.default_tags
+
   # This gives us another layer of protection for the S3 buckets.
   #
   # In theory, every object is written once and exactly once:

@@ -23,6 +23,8 @@ module "critical" {
 
   inventory_bucket = "wellcomecollection-storage-infra"
 
+  tags = local.default_tags
+
   # The staging service shouldn't be the only copy of any important data, so
   # we don't need S3 versioning.
   enable_s3_versioning = false

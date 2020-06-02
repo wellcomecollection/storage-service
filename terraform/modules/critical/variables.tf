@@ -17,3 +17,7 @@ variable "enable_s3_versioning" {
 variable "inventory_bucket" {
   type = string
 }
+
+variable "tags" {
+  type = map(string)
+}

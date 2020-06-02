@@ -14,6 +14,8 @@ resource "aws_s3_bucket" "replica_primary" {
       storage_class = "STANDARD_IA"
     }
   }
+
+  tags = var.tags
 }
 
 resource "aws_s3_bucket_policy" "replica_primary_read" {

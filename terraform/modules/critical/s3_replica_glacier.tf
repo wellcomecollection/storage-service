@@ -14,6 +14,8 @@ resource "aws_s3_bucket" "replica_glacier" {
       storage_class = "DEEP_ARCHIVE"
     }
   }
+
+  tags = var.tags
 }
 
 resource "aws_s3_bucket_inventory" "replica_glacier" {
