@@ -24,3 +24,8 @@ To upload a new version:
 5. Enter the PyPI username (``wellcomedigitalplatform``) and password (see Keybase).
 
 6. Celebrate your new release. 🎉✨
+
+Python 2.7 support
+******************
+
+Although we use Python 3 everywhere else in the platform, Archivematica still uses Python 2.7 and this client library.

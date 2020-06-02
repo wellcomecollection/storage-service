@@ -8,7 +8,7 @@ from betamax.cassette import cassette
 from betamax_serializers.pretty_json import PrettyJSONSerializer
 import pytest
 
-from wellcome_storage_service import StorageServiceClient
+from wellcome_storage_service import RequestsOAuthStorageServiceClient
 
 
 # Remove our OAuth authorization token from betamax recordings.  This is
@@ -54,7 +54,7 @@ def client(request):
     config.define_cassette_placeholder("<CLIENT_ID>", client_id)
     config.define_cassette_placeholder("<CLIENT_SECRET>", client_secret)
 
-    ss_client = StorageServiceClient(
+    ss_client = RequestsOAuthStorageServiceClient(
         api_url="https://api.wellcomecollection.org/storage/v1",
         client_id=client_id,
         client_secret=client_secret,
