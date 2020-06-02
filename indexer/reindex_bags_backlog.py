@@ -178,7 +178,7 @@ def publish_bags(sns_client, topic_arn, bags, dry_run=False):
                 for payload in itertools.islice(payloads, len(done)):
                     futures.add(executor.submit(publish, payload))
 
-    print(f"Published notifications for {len(published_bags)} bags.\n")
+    print(f"Published notifications for {payloads_length} bags.\n")
 
 
 def confirm_indexed(elastic_client, published_bags, index):
@@ -209,7 +209,6 @@ def confirm_indexed(elastic_client, published_bags, index):
     print(f"Found {len(flat_list)} not indexed.\n")
 
     return flat_list
-
 
 def create_elastic_client(role_arn, es_secrets):
     secretsmanager_client = create_client("secretsmanager", role_arn)
