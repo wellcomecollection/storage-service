@@ -5,14 +5,12 @@ import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
-import uk.ac.wellcome.platform.archive.bag_tracker.client.{BagTrackerClient, BagTrackerGetError, BagTrackerUnknownGetError}
+import uk.ac.wellcome.platform.archive.bag_tracker.client.{BagTrackerClient, BagTrackerUnknownGetError}
 import uk.ac.wellcome.platform.archive.common.KnownReplicasPayload
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{FatalIndexingError, Indexer, IndexerWorker, IndexerWorkerError, RetryableIndexingError}
-import uk.ac.wellcome.storage._
 
 import scala.concurrent.Future
 

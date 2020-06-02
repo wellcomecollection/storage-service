@@ -9,7 +9,6 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.bag_tracker.client.AkkaBagTrackerClient
-import uk.ac.wellcome.platform.archive.common.config.builders.StorageManifestDaoBuilder
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.ElasticsearchIndexCreator
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.config.ElasticClientBuilder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
