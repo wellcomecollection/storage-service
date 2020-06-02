@@ -79,5 +79,7 @@ module "stack_staging" {
   # staging service doesn't make the same guarantees of uptime and this
   # saves us money.
   use_fargate_spot_for_api = true
+
+  tags = local.default_tags
 }
 

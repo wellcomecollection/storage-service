@@ -19,5 +19,8 @@ locals {
   workflow_staging_bucket_name = "wellcomecollection-workflow-export-bagit-stage"
 
   archivematica_ingests_bucket = data.terraform_remote_state.archivematica_infra.outputs.ingests_bucket_arn
-}
 
+  default_tags = {
+    TerraformConfigurationURL = "https://github.com/wellcomecollection/storage-service/tree/master/terraform/stack_staging"
+  }
+}

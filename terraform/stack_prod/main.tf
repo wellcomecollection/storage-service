@@ -74,5 +74,7 @@ module "stack_prod" {
 
   archivematica_ingests_bucket             = data.terraform_remote_state.archivematica_infra.outputs.ingests_bucket_arn
   bag_register_output_subscribe_principals = [local.catalogue_pipeline_account_principal]
+
+  tags = local.default_tags
 }
 
