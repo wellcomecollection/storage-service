@@ -6,39 +6,20 @@ import io.circe.Decoder
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS
-import uk.ac.wellcome.messaging.worker.models.{
-  DeterministicFailure,
-  NonDeterministicFailure
-}
+import uk.ac.wellcome.messaging.worker.models.{DeterministicFailure, NonDeterministicFailure}
+import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageManifestVHSFixture
-import uk.ac.wellcome.platform.archive.common.generators.{
-  IngestGenerators,
-  PayloadGenerators,
-  StorageManifestGenerators
-}
+import uk.ac.wellcome.platform.archive.common.generators.{IngestGenerators, PayloadGenerators, StorageManifestGenerators}
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  EmptyMetadata,
-  StorageManifestDao
-}
-import uk.ac.wellcome.platform.archive.common.{
-  KnownReplicasPayload,
-  PipelineContext
-}
+import uk.ac.wellcome.platform.archive.common.storage.services.{EmptyMetadata, StorageManifestDao}
+import uk.ac.wellcome.platform.archive.common.{KnownReplicasPayload, PipelineContext}
 import uk.ac.wellcome.platform.archive.indexer.IndexerWorkerTestCases
 import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
-import uk.ac.wellcome.platform.archive.indexer.bags.{
-  BagIndexer,
-  BagIndexerWorker,
-  BagsIndexConfig
-}
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
-  Indexer,
-  IndexerWorker
-}
+import uk.ac.wellcome.platform.archive.indexer.bags.{BagIndexer, BagIndexerWorker, BagsIndexConfig}
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{Indexer, IndexerWorker}
 import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 import uk.ac.wellcome.storage.{DoesNotExistError, ReadError, StoreReadError}
@@ -51,10 +32,11 @@ class BagIndexerWorkerTest
       StorageManifest,
       IndexedStorageManifest
     ]
-    with StorageManifestGenerators
-    with PayloadGenerators
-    with IngestGenerators
-    with StorageManifestVHSFixture {
+      with StorageManifestGenerators
+      with PayloadGenerators
+      with IngestGenerators
+      with StorageManifestVHSFixture
+      with BagTrackerFixtures {
 
   override val mapping: MappingDefinition = BagsIndexConfig.mapping
 
@@ -112,20 +94,24 @@ class BagIndexerWorkerTest
   )(implicit decoder: Decoder[KnownReplicasPayload]): R = {
     withActorSystem { implicit actorSystem =>
       withFakeMonitoringClient() { implicit monitoringClient =>
-        val storageManifestDao: StorageManifestDao = createStorageManifestDao()
 
+        val storageManifestDao: StorageManifestDao = createStorageManifestDao()
         val result = storageManifestDao.put(storageManifest)
 
-        assert(result.isRight)
+        withBagTrackerClient(storageManifestDao) { trackerClient =>
 
-        val worker = new BagIndexerWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
-          indexer = createIndexer(index),
-          metricsNamespace = "indexer",
-          storageManifestDao = storageManifestDao
-        )
 
-        testWith(worker)
+          assert(result.isRight)
+
+          val worker = new BagIndexerWorker(
+            config = createAlpakkaSQSWorkerConfig(queue),
+            indexer = createIndexer(index),
+            metricsNamespace = "indexer",
+            bagTrackerClient = trackerClient
+          )
+
+          testWith(worker)
+        }
       }
     }
   }
@@ -152,21 +138,24 @@ class BagIndexerWorkerTest
             )
           ) {
             override def get(
-              id: BagId,
-              version: BagVersion
-            ): Either[ReadError, StorageManifest] = {
+                              id: BagId,
+                              version: BagVersion
+                            ): Either[ReadError, StorageManifest] = {
               Left(StoreReadError(new Exception("BOOM!")))
             }
           }
+        withBagTrackerClient(storageManifestDao) { trackerClient =>
 
-        val worker = new BagIndexerWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
-          indexer = createIndexer(index),
-          metricsNamespace = "indexer",
-          storageManifestDao = storageManifestDao
-        )
 
-        testWith(worker)
+          val worker = new BagIndexerWorker(
+            config = createAlpakkaSQSWorkerConfig(queue),
+            indexer = createIndexer(index),
+            metricsNamespace = "indexer",
+            bagTrackerClient = trackerClient
+          )
+
+          testWith(worker)
+        }
       }
     }
   }
@@ -193,21 +182,22 @@ class BagIndexerWorkerTest
             )
           ) {
             override def get(
-              id: BagId,
-              version: BagVersion
-            ): Either[ReadError, StorageManifest] = {
+                              id: BagId,
+                              version: BagVersion
+                            ): Either[ReadError, StorageManifest] = {
               Left(DoesNotExistError(new Exception("BOOM!")))
             }
           }
+        withBagTrackerClient(storageManifestDao) { trackerClient =>
+          val worker = new BagIndexerWorker(
+            config = createAlpakkaSQSWorkerConfig(queue),
+            indexer = createIndexer(index),
+            metricsNamespace = "indexer",
+            bagTrackerClient = trackerClient
+          )
 
-        val worker = new BagIndexerWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
-          indexer = createIndexer(index),
-          metricsNamespace = "indexer",
-          storageManifestDao = storageManifestDao
-        )
-
-        testWith(worker)
+          testWith(worker)
+        }
       }
     }
   }

@@ -6,31 +6,18 @@ import io.circe.Decoder
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
-import uk.ac.wellcome.platform.archive.common.{
-  KnownReplicasPayload,
-  PipelineContext
-}
+import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagInfo, BagVersion}
+import uk.ac.wellcome.platform.archive.common.{KnownReplicasPayload, PipelineContext}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageManifestVHSFixture
-import uk.ac.wellcome.platform.archive.common.generators.{
-  IngestGenerators,
-  PayloadGenerators,
-  StorageManifestGenerators
-}
+import uk.ac.wellcome.platform.archive.common.generators.{IngestGenerators, PayloadGenerators, StorageManifestGenerators}
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.platform.archive.indexer.IndexerFeatureTestCases
 import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
-import uk.ac.wellcome.platform.archive.indexer.bags.{
-  BagIndexer,
-  BagIndexerWorker,
-  BagsIndexConfig
-}
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
-  Indexer,
-  IndexerWorker
-}
+import uk.ac.wellcome.platform.archive.indexer.bags.{BagIndexer, BagIndexerWorker, BagsIndexConfig}
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{Indexer, IndexerWorker}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -40,10 +27,11 @@ class BagIndexerFeatureTest
       StorageManifest,
       IndexedStorageManifest
     ]
-    with StorageManifestGenerators
-    with PayloadGenerators
-    with IngestGenerators
-    with StorageManifestVHSFixture {
+      with StorageManifestGenerators
+      with PayloadGenerators
+      with IngestGenerators
+      with StorageManifestVHSFixture
+      with BagTrackerFixtures{
 
   def createIndexer(
     index: Index
@@ -59,7 +47,7 @@ class BagIndexerFeatureTest
   val ingest: Ingest = createIngestWith(version = Some(version))
   val pipelineContext: PipelineContext = PipelineContext(ingest)
 
-  val bagInfo = createBagInfoWith(
+  val bagInfo: BagInfo = createBagInfoWith(
     externalIdentifier = ingest.externalIdentifier
   )
 
@@ -107,14 +95,17 @@ class BagIndexerFeatureTest
 
         assert(result.isRight)
 
-        val worker = new BagIndexerWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
-          indexer = createIndexer(index),
-          metricsNamespace = "indexer",
-          storageManifestDao = storageManifestDao
-        )
+        withBagTrackerClient(storageManifestDao) { trackerClient =>
 
-        testWith(worker)
+          val worker = new BagIndexerWorker(
+            config = createAlpakkaSQSWorkerConfig(queue),
+            indexer = createIndexer(index),
+            metricsNamespace = "indexer",
+            bagTrackerClient = trackerClient
+          )
+
+          testWith(worker)
+        }
       }
     }
   }
