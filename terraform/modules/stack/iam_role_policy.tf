@@ -29,9 +29,9 @@ resource "aws_iam_role_policy" "s3_large_response_cache" {
 
 # bag_indexer
 
-resource "aws_iam_role_policy" "bag_indexer_vhs_manifests_readwrite" {
+resource "aws_iam_role_policy" "bag_indexer_vhs_manifests_readonly" {
   role   = module.bag_indexer.task_role_name
-  policy = var.vhs_manifests_readwrite_policy
+  policy = var.vhs_manifests_readonly_policy
 }
 
 resource "aws_iam_role_policy" "bag_indexer_metrics" {

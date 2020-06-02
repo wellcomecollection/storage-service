@@ -29,4 +29,6 @@ resource "aws_dynamodb_table" "versioner_versions_table" {
     hash_key        = "ingestId"
     projection_type = "ALL"
   }
+
+  tags = var.tags
 }
