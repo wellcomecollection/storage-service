@@ -14,7 +14,7 @@ resource "aws_iam_role_policy" "bag_register_metrics" {
 
 resource "aws_iam_role_policy" "bags_api_vhs_manifests_readonly" {
   role   = module.bags_api.task_role_name
-  policy = var.vhs_manifests_readonly_policy
+  policy = var.vhs_manifests_readwrite_policy
 }
 
 resource "aws_iam_role_policy" "bags_api_metrics" {
