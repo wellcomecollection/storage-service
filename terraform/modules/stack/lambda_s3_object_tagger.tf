@@ -9,6 +9,8 @@ module "s3_object_tagger" {
   s3_key    = "lambdas/s3_object_tagger.zip"
 
   timeout = 10
+
+  tags = var.tags
 }
 
 data "aws_iam_policy_document" "allow_put_object_tag" {

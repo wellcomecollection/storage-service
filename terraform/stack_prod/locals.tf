@@ -20,5 +20,9 @@ locals {
 
   workflow_bucket_name                 = "wellcomecollection-workflow-export-bagit"
   catalogue_pipeline_account_principal = "arn:aws:iam::760097843905:root"
+
+  default_tags = {
+    TerraformConfigurationURL = "https://github.com/wellcomecollection/storage-service/tree/master/terraform/stack_prod"
+  }
 }
 
