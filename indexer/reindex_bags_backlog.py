@@ -210,6 +210,7 @@ def confirm_indexed(elastic_client, published_bags, index):
 
     return flat_list
 
+
 def create_elastic_client(role_arn, es_secrets):
     secretsmanager_client = create_client("secretsmanager", role_arn)
 
