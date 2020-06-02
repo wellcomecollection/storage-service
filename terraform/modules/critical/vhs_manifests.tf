@@ -1,5 +1,5 @@
 module "vhs_manifests" {
-  source = "git::github.com/wellcomecollection/terraform-aws-vhs.git//hash-range-store?ref=v3.2.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-vhs.git//hash-range-store?ref=v3.2.1"
   name   = "${var.namespace}-manifests"
 
   tags = var.tags
