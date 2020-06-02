@@ -123,7 +123,6 @@ def get_latest_bags(dynamodb_client, table_name):
 
 
 def publish_bags(sns_client, topic_arn, bags, dry_run=False):
-    published_bags = []
     unique_bags = len(bags)
 
     print(f"\nGenerating notifications for {unique_bags} bags.")
