@@ -27,16 +27,16 @@ import uk.ac.wellcome.storage.{DoesNotExistError, ReadError, StoreReadError}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class BagIndexerWorkerTest
-    extends IndexerWorkerTestCases[
-      KnownReplicasPayload,
-      StorageManifest,
-      IndexedStorageManifest
-    ]
-      with StorageManifestGenerators
-      with PayloadGenerators
-      with IngestGenerators
-      with StorageManifestVHSFixture
-      with BagTrackerFixtures {
+  extends IndexerWorkerTestCases[
+    KnownReplicasPayload,
+    StorageManifest,
+    IndexedStorageManifest
+  ]
+    with StorageManifestGenerators
+    with PayloadGenerators
+    with IngestGenerators
+    with StorageManifestVHSFixture
+    with BagTrackerFixtures {
 
   override val mapping: MappingDefinition = BagsIndexConfig.mapping
 
@@ -69,16 +69,16 @@ class BagIndexerWorkerTest
   }
 
   def createIndexer(
-    index: Index
-  ): Indexer[StorageManifest, IndexedStorageManifest] =
+                     index: Index
+                   ): Indexer[StorageManifest, IndexedStorageManifest] =
     new BagIndexer(
       client = elasticClient,
       index = index
     )
 
   override def convertToIndexed(
-    payload: KnownReplicasPayload
-  ): IndexedStorageManifest = {
+                                 payload: KnownReplicasPayload
+                               ): IndexedStorageManifest = {
     IndexedStorageManifest(storageManifest)
   }
 
@@ -208,14 +208,11 @@ class BagIndexerWorkerTest
     val (t, _) = createT
     withLocalElasticsearchIndex(mapping) { index =>
       withLocalSqsQueue() { queue =>
-        val future =
-          withStoreReadErrorIndexerWorker(index, queue) {
-            _.process(t)
+          withStoreReadErrorIndexerWorker(index, queue) { worker =>
+            whenReady(worker.process(t)) {
+              _ shouldBe a[NonDeterministicFailure[_]]
+            }
           }
-
-        whenReady(future) {
-          _ shouldBe a[NonDeterministicFailure[_]]
-        }
       }
     }
   }
@@ -226,13 +223,10 @@ class BagIndexerWorkerTest
     val (t, _) = createT
     withLocalElasticsearchIndex(mapping) { index =>
       withLocalSqsQueue() { queue =>
-        val future =
-          withDoesNotExistErrorIndexerWorker(index, queue) {
-            _.process(t)
+        withDoesNotExistErrorIndexerWorker(index, queue) { worker =>
+          whenReady(worker.process(t)) {
+            _ shouldBe a[DeterministicFailure[_]]
           }
-
-        whenReady(future) {
-          _ shouldBe a[DeterministicFailure[_]]
         }
       }
     }
