@@ -14,31 +14,22 @@ class FileSuffixTest
     with IngestGenerators
     with StorageManifestGenerators {
 
-  private val names = Seq(
-    "foo.TXT",
-    "bar.txt",
-    "bat.png",
-    "mystery file",
-    "bad..bmp",
-    "nosuffix",
-    "",
-    "worse.jif.",
-    "file.with.full.stops.scala"
+  private val names = Map(
+    "foo.JAR" -> Some("jar"),
+    "bar.txt" -> Some("txt"),
+    "bat.png" -> Some("png"),
+    "a.b.log" -> Some("log"),
+    "no..bmp" -> Some("bmp"),
+    "ab.jif." -> None,
+    ".abcdef" -> None,
+    "sp aces" -> None,
+    "without" -> None,
+    "" -> None,
   )
 
   it("extracts the file suffixes correctly") {
-    val suffixes = names.map(FileSuffix.getSuffix)
+    val suffixes = names.keys.toList.map(FileSuffix.getSuffix)
 
-    suffixes shouldBe List(
-      Some("txt"),
-      Some("txt"),
-      Some("png"),
-      None,
-      Some("bmp"),
-      None,
-      None,
-      Some("jif"),
-      Some("scala")
-    )
+    suffixes shouldBe names.values.toList
   }
 }

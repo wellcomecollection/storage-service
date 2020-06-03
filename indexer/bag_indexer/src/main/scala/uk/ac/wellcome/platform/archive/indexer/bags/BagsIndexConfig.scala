@@ -44,7 +44,7 @@ object BagsIndexConfig extends IndexConfig {
       objectField("info").fields(infoFields),
       objectField("location").fields(locationFields),
       objectField("replicaLocations").fields(locationFields),
-      objectField("files").fields(fileFields),
+      nestedField("files").fields(fileFields),
       intField("filesCount"),
       longField("filesTotalSize"),
       keywordField("type")

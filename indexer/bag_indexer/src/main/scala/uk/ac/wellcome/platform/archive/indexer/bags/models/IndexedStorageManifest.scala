@@ -66,7 +66,7 @@ case class IndexedLocation(
 object IndexedLocation {
   def apply(location: StorageLocation): IndexedLocation =
     IndexedLocation(
-      provider = location.provider.toString,
+      provider = location.provider.id,
       bucket = location.prefix.namespace,
       path = location.prefix.path
     )
