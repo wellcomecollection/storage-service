@@ -8,7 +8,7 @@ def choose_tags(*, bucket, key):
     """
     storage_space, *_ = key.split("/")
 
-    tags = []
+    tags = {}
 
     # Add a tag to MXF files in the "digitised" space.
     #
@@ -20,6 +20,6 @@ def choose_tags(*, bucket, key):
     _, file_extension = os.path.splitext(key)
 
     if storage_space == "digitised" and file_extension.lower() == ".mxf":
-        tags.append(("Content-Type", "application/mxf"))
+        tags["Content-Type"] = "application/mxf"
 
     return tags

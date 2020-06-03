@@ -7,13 +7,13 @@ from tag_chooser import choose_tags
     "key, expected_tags",
     [
         # MXF video masters get a tag
-        ("digitised/b1234/v1/cats.mxf", [("Content-Type", "application/mxf")]),
+        ("digitised/b1234/v1/cats.mxf", {"Content-Type": "application/mxf"}),
         # If the file extension is uppercase, it gets tagged
-        ("digitised/b1234/v1/cats.MXF", [("Content-Type", "application/mxf")]),
+        ("digitised/b1234/v1/cats.MXF", {"Content-Type": "application/mxf"}),
         # Files with a different extension don't get tagged
-        ("digitised/b1234/v1/cats.mp4", []),
+        ("digitised/b1234/v1/cats.mp4", {}),
         # MXF files in a different space don't get tagged
-        ("born-digital/CA/TS/v1/cats.MXF", []),
+        ("born-digital/CA/TS/v1/cats.MXF", {}),
     ],
 )
 def test_choose_tags(key, expected_tags):

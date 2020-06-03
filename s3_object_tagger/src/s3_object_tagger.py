@@ -31,9 +31,9 @@ def get_objects(event):
         yield (s3_obj["bucket"]["name"], s3_obj["object"]["key"])
 
 
-def apply_tags(s3_client, *, bucket, key, tags):
+def add_tags(s3_client, *, bucket, key, tags):
     """
-    Apply a given set of tags to an object in S3.
+    Add a given set of tags to an object in S3.
     """
     s3_uri = f"s3://{bucket}/{key}"
 
@@ -41,16 +41,20 @@ def apply_tags(s3_client, *, bucket, key, tags):
         print(f"{s3_uri}: no tags to apply")
         return
 
-    print(f"{s3_uri}: applying tags {tags}")
-    s3_client.put_object_tagging(
-        Bucket=bucket,
-        Key=key,
-        Tagging={
-            "TagSet": [
-                {"Key": tag_key, "Value": tag_value} for tag_key, tag_value in tags
-            ]
-        },
-    )
+    # There is no "UpdateTags" API for S3, so we have to read the existing
+    # tags, then add the new tags and Put all of them back.
+    #
+    # Otherwise any existing tags will be deleted.
+    existing_tag_resp = s3_client.get_object_tagging(Bucket=bucket, Key=key)
+    tag_set = existing_tag_resp["TagSet"]
+    print(f"{s3_uri}: existing tags are {tag_set}")
+
+    for tag_key, tag_value in tags.items():
+        tag_set.append({"Key": tag_key, "Value": tag_value})
+
+    print(f"{s3_uri}: setting tags to {tags}")
+
+    s3_client.put_object_tagging(Bucket=bucket, Key=key, Tagging={"TagSet": tag_set})
 
 
 def main(event, *args):
@@ -58,4 +62,4 @@ def main(event, *args):
 
     for bucket, key in get_objects(event):
         tags = choose_tags(bucket=bucket, key=key)
-        apply_tags(s3_client, bucket=bucket, key=key, tags=tags)
+        add_tags(s3_client, bucket=bucket, key=key, tags=tags)
