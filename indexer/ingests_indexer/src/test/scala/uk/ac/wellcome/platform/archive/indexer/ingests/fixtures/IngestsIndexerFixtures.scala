@@ -24,7 +24,7 @@ import uk.ac.wellcome.platform.archive.indexer.ingests.models.IndexedIngest
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait IngestsIndexerFixtures
-  extends IndexerFixtures[Ingest, Ingest, IndexedIngest]
+    extends IndexerFixtures[Ingest, Ingest, IndexedIngest]
     with IngestGenerators { this: Suite =>
   val mapping: MappingDefinition = IngestsIndexConfig.mapping
 

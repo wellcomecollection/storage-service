@@ -37,7 +37,11 @@ import uk.ac.wellcome.platform.archive.indexer.fixtures.IndexerFixtures
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait BagIndexerFixtures
-  extends IndexerFixtures[KnownReplicasPayload, StorageManifest, IndexedStorageManifest]
+    extends IndexerFixtures[
+      KnownReplicasPayload,
+      StorageManifest,
+      IndexedStorageManifest
+    ]
     with IngestGenerators
     with StorageManifestGenerators
     with StorageManifestDaoFixture
@@ -86,9 +90,9 @@ trait BagIndexerFixtures
         KnownReplicasPayload,
         StorageManifest,
         IndexedStorageManifest
-        ],
+      ],
       R
-      ]
+    ]
   )(implicit decoder: Decoder[KnownReplicasPayload]): R = {
     withActorSystem { implicit actorSystem =>
       withFakeMonitoringClient() { implicit monitoringClient =>
