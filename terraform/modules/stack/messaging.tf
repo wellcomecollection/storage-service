@@ -411,7 +411,7 @@ module "bag_reindexer_output_topic" {
 module "bag_indexer_input_queue" {
   source = "../queue"
 
-  name = "${var.namespace}_bag_register_output"
+  name = "${var.namespace}_bag_indexer_input_queue"
 
   topic_arns = [
     module.bag_register_output_topic.arn,
