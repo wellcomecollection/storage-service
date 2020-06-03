@@ -36,6 +36,7 @@ def add_tags(s3_client, *, bucket, key, tags):
     Add a given set of tags to an object in S3.
     """
     s3_uri = f"s3://{bucket}/{key}"
+    print(f"{s3_uri}: adding tags {tags}")
 
     if not tags:
         print(f"{s3_uri}: no tags to apply")
@@ -49,6 +50,31 @@ def add_tags(s3_client, *, bucket, key, tags):
     tag_set = existing_tag_resp["TagSet"]
     print(f"{s3_uri}: existing tags are {tag_set}")
 
+    # Now work out if there are any tags that are already applied; if so,
+    # we can skip adding them a second time.
+    for existing_tag in tag_set:
+        existing_key = existing_tag["Key"]
+        existing_value = existing_tag["Value"]
+
+        try:
+            new_value = tags[existing_key]
+        except KeyError:
+            pass
+        else:
+            if new_value == existing_value:
+                del tags[existing_key]
+            else:
+                raise ValueError(
+                    f"Conflict: {existing_key} already has value {existing_value!r}, "
+                    f"cannot be set to {new_value!r}"
+                )
+
+    if not tags:
+        print(f"{s3_uri}: no new tags to apply")
+        return
+
+    # We have some tags that aren't already present.  Make an API call to
+    # add them.
     for tag_key, tag_value in tags.items():
         tag_set.append({"Key": tag_key, "Value": tag_value})
 

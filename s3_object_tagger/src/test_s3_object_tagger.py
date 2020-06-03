@@ -72,3 +72,41 @@ def test_does_not_replace_existing_tags(s3_bucket, s3_client):
     body, tags = _get_s3_object(s3_client, bucket=s3_bucket, key="example.txt")
     assert body == b"Hello world"
     assert tags == [("Language", "English"), ("Content-Type", "text/plain")]
+
+
+def test_skips_adding_duplicate_tags(s3_bucket, s3_client):
+    s3_client.put_object(
+        Bucket=s3_bucket,
+        Key="example.txt",
+        Body=b"Hello world",
+        Tagging="Language=English",
+    )
+
+    add_tags(
+        s3_client, bucket=s3_bucket, key="example.txt", tags={"Language": "English"}
+    )
+
+    body, tags = _get_s3_object(s3_client, bucket=s3_bucket, key="example.txt")
+    assert body == b"Hello world"
+    assert tags == [("Language", "English")]
+
+
+def test_does_not_override_tags(s3_bucket, s3_client):
+    s3_client.put_object(
+        Bucket=s3_bucket,
+        Key="example.txt",
+        Body=b"Hello world",
+        Tagging="Language=English",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="Conflict: Language already has value 'English', cannot be set to 'German'",
+    ):
+        add_tags(
+            s3_client, bucket=s3_bucket, key="example.txt", tags={"Language": "German"}
+        )
+
+    body, tags = _get_s3_object(s3_client, bucket=s3_bucket, key="example.txt")
+    assert body == b"Hello world"
+    assert tags == [("Language", "English")]
