@@ -3,6 +3,7 @@
   "folder" : "indexer/bag_indexer",
   "dependencyIds" : [
     "display",
-    "indexer_common"
+    "indexer_common",
+    "bag_tracker"
   ]
 }

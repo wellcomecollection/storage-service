@@ -26,7 +26,9 @@ abstract class IndexerWorkerTestCases[SourceT, T, IndexedT](
   // If this code is shared with the catalogue we should add those.
 
   val mapping: MappingDefinition
+
   def createT: (SourceT, String)
+
   def convertToIndexed(t: SourceT): IndexedT
 
   protected val badMapping: MappingDefinition = properties(
@@ -36,19 +38,15 @@ abstract class IndexerWorkerTestCases[SourceT, T, IndexedT](
   it("processes a single message") {
     val (t, id) = createT
     withLocalElasticsearchIndex(mapping) { index =>
-      val future =
-        withIndexerWorker(index) {
-          _.process(t)
+      withIndexerWorker(index) { indexerWorker =>
+        whenReady(indexerWorker.process(t)) { result =>
+          result shouldBe a[Successful[_]]
+          val expectedIndexedT = convertToIndexed(t)
+          val actualIndexedT = getT[IndexedT](index, id)
+
+          actualIndexedT shouldBe expectedIndexedT
         }
-
-      whenReady(future) {
-        _ shouldBe a[Successful[_]]
       }
-
-      val expectedIndexedT = convertToIndexed(t)
-      val actualIndexedT = getT[IndexedT](index, id)
-
-      actualIndexedT shouldBe expectedIndexedT
     }
   }
 
@@ -56,13 +54,10 @@ abstract class IndexerWorkerTestCases[SourceT, T, IndexedT](
     val (t, _) = createT
 
     withLocalElasticsearchIndex(badMapping) { index =>
-      val future =
-        withIndexerWorker(index) {
-          _.process(t)
+      withIndexerWorker(index) { worker =>
+        whenReady(worker.process(t)) {
+          _ shouldBe a[NonDeterministicFailure[_]]
         }
-
-      whenReady(future) {
-        _ shouldBe a[NonDeterministicFailure[_]]
       }
     }
   }

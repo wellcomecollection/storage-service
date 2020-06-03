@@ -10,6 +10,7 @@ import uk.ac.wellcome.messaging.worker.models.{
   DeterministicFailure,
   NonDeterministicFailure
 }
+import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageManifestVHSFixture
 import uk.ac.wellcome.platform.archive.common.generators.{
@@ -54,7 +55,8 @@ class BagIndexerWorkerTest
     with StorageManifestGenerators
     with PayloadGenerators
     with IngestGenerators
-    with StorageManifestVHSFixture {
+    with StorageManifestVHSFixture
+    with BagTrackerFixtures {
 
   override val mapping: MappingDefinition = BagsIndexConfig.mapping
 
@@ -113,19 +115,20 @@ class BagIndexerWorkerTest
     withActorSystem { implicit actorSystem =>
       withFakeMonitoringClient() { implicit monitoringClient =>
         val storageManifestDao: StorageManifestDao = createStorageManifestDao()
-
         val result = storageManifestDao.put(storageManifest)
 
-        assert(result.isRight)
+        withBagTrackerClient(storageManifestDao) { trackerClient =>
+          assert(result.isRight)
 
-        val worker = new BagIndexerWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
-          indexer = createIndexer(index),
-          metricsNamespace = "indexer",
-          storageManifestDao = storageManifestDao
-        )
+          val worker = new BagIndexerWorker(
+            config = createAlpakkaSQSWorkerConfig(queue),
+            indexer = createIndexer(index),
+            metricsNamespace = "indexer",
+            bagTrackerClient = trackerClient
+          )
 
-        testWith(worker)
+          testWith(worker)
+        }
       }
     }
   }
@@ -158,15 +161,16 @@ class BagIndexerWorkerTest
               Left(StoreReadError(new Exception("BOOM!")))
             }
           }
+        withBagTrackerClient(storageManifestDao) { trackerClient =>
+          val worker = new BagIndexerWorker(
+            config = createAlpakkaSQSWorkerConfig(queue),
+            indexer = createIndexer(index),
+            metricsNamespace = "indexer",
+            bagTrackerClient = trackerClient
+          )
 
-        val worker = new BagIndexerWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
-          indexer = createIndexer(index),
-          metricsNamespace = "indexer",
-          storageManifestDao = storageManifestDao
-        )
-
-        testWith(worker)
+          testWith(worker)
+        }
       }
     }
   }
@@ -199,15 +203,16 @@ class BagIndexerWorkerTest
               Left(DoesNotExistError(new Exception("BOOM!")))
             }
           }
+        withBagTrackerClient(storageManifestDao) { trackerClient =>
+          val worker = new BagIndexerWorker(
+            config = createAlpakkaSQSWorkerConfig(queue),
+            indexer = createIndexer(index),
+            metricsNamespace = "indexer",
+            bagTrackerClient = trackerClient
+          )
 
-        val worker = new BagIndexerWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
-          indexer = createIndexer(index),
-          metricsNamespace = "indexer",
-          storageManifestDao = storageManifestDao
-        )
-
-        testWith(worker)
+          testWith(worker)
+        }
       }
     }
   }
@@ -218,13 +223,10 @@ class BagIndexerWorkerTest
     val (t, _) = createT
     withLocalElasticsearchIndex(mapping) { index =>
       withLocalSqsQueue() { queue =>
-        val future =
-          withStoreReadErrorIndexerWorker(index, queue) {
-            _.process(t)
+        withStoreReadErrorIndexerWorker(index, queue) { worker =>
+          whenReady(worker.process(t)) {
+            _ shouldBe a[NonDeterministicFailure[_]]
           }
-
-        whenReady(future) {
-          _ shouldBe a[NonDeterministicFailure[_]]
         }
       }
     }
@@ -236,13 +238,10 @@ class BagIndexerWorkerTest
     val (t, _) = createT
     withLocalElasticsearchIndex(mapping) { index =>
       withLocalSqsQueue() { queue =>
-        val future =
-          withDoesNotExistErrorIndexerWorker(index, queue) {
-            _.process(t)
+        withDoesNotExistErrorIndexerWorker(index, queue) { worker =>
+          whenReady(worker.process(t)) {
+            _ shouldBe a[DeterministicFailure[_]]
           }
-
-        whenReady(future) {
-          _ shouldBe a[DeterministicFailure[_]]
         }
       }
     }

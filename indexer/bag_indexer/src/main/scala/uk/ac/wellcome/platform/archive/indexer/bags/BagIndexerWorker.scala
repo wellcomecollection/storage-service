@@ -5,10 +5,13 @@ import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
+import uk.ac.wellcome.platform.archive.bag_tracker.client.{
+  BagTrackerClient,
+  BagTrackerUnknownGetError
+}
 import uk.ac.wellcome.platform.archive.common.KnownReplicasPayload
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
   FatalIndexingError,
@@ -17,15 +20,14 @@ import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
   IndexerWorkerError,
   RetryableIndexingError
 }
-import uk.ac.wellcome.storage._
 
 import scala.concurrent.Future
 
 class BagIndexerWorker(
   val config: AlpakkaSQSWorkerConfig,
   val indexer: Indexer[StorageManifest, IndexedStorageManifest],
-  val metricsNamespace: String,
-  storageManifestDao: StorageManifestDao
+  val bagTrackerClient: BagTrackerClient,
+  val metricsNamespace: String
 )(
   implicit
   val actorSystem: ActorSystem,
@@ -41,19 +43,16 @@ class BagIndexerWorker(
   def load(
     source: KnownReplicasPayload
   ): Future[Either[IndexerWorkerError, StorageManifest]] =
-    Future {
-      storageManifestDao.get(
-        id = BagId(
-          space = source.storageSpace,
-          externalIdentifier = source.externalIdentifier
-        ),
-        version = source.version
-      )
-    } map {
+    bagTrackerClient.getBag(
+      bagId = BagId(
+        space = source.storageSpace,
+        externalIdentifier = source.externalIdentifier
+      ),
+      version = source.version
+    ) map {
       case Right(manifest) => Right(manifest)
-      // StoreReadError indicates a backend issue like timeout, which may be temporary
-      case Left(StoreReadError(e)) =>
-        warn(f"StoreReadError: Failed to load $source, got $e")
+      case Left(BagTrackerUnknownGetError(e)) =>
+        warn(f"BagTrackerUnknownGetError: Failed to load $source, got $e")
         Left(
           RetryableIndexingError(
             payload = source,

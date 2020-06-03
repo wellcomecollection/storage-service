@@ -38,6 +38,7 @@ trait BagTrackerClient {
 class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem)
     extends BagTrackerClient
     with Logging {
+
   implicit val ec: ExecutionContext = actorSystem.dispatcher
 
   override def createBag(

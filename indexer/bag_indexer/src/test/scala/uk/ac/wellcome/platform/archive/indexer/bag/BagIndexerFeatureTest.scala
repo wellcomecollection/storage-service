@@ -6,7 +6,12 @@ import io.circe.Decoder
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
+import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagId,
+  BagInfo,
+  BagVersion
+}
 import uk.ac.wellcome.platform.archive.common.{
   KnownReplicasPayload,
   PipelineContext
@@ -43,7 +48,8 @@ class BagIndexerFeatureTest
     with StorageManifestGenerators
     with PayloadGenerators
     with IngestGenerators
-    with StorageManifestVHSFixture {
+    with StorageManifestVHSFixture
+    with BagTrackerFixtures {
 
   def createIndexer(
     index: Index
@@ -59,7 +65,7 @@ class BagIndexerFeatureTest
   val ingest: Ingest = createIngestWith(version = Some(version))
   val pipelineContext: PipelineContext = PipelineContext(ingest)
 
-  val bagInfo = createBagInfoWith(
+  val bagInfo: BagInfo = createBagInfoWith(
     externalIdentifier = ingest.externalIdentifier
   )
 
@@ -107,14 +113,16 @@ class BagIndexerFeatureTest
 
         assert(result.isRight)
 
-        val worker = new BagIndexerWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
-          indexer = createIndexer(index),
-          metricsNamespace = "indexer",
-          storageManifestDao = storageManifestDao
-        )
+        withBagTrackerClient(storageManifestDao) { trackerClient =>
+          val worker = new BagIndexerWorker(
+            config = createAlpakkaSQSWorkerConfig(queue),
+            indexer = createIndexer(index),
+            metricsNamespace = "indexer",
+            bagTrackerClient = trackerClient
+          )
 
-        testWith(worker)
+          testWith(worker)
+        }
       }
     }
   }
