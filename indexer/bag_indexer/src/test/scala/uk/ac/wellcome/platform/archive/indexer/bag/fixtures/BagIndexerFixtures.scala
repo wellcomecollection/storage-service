@@ -8,40 +8,36 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
-import uk.ac.wellcome.platform.archive.common.{
-  KnownReplicasPayload,
-  PipelineContext
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
 }
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageManifestDaoFixture
 import uk.ac.wellcome.platform.archive.common.generators.{
   IngestGenerators,
   PayloadGenerators,
   StorageManifestGenerators
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  StorageManifest,
+  StorageSpace
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
+import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
+import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
 import uk.ac.wellcome.platform.archive.indexer.bags.{
   BagIndexer,
   BagIndexerWorker,
   BagsIndexConfig
 }
-import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
-  Indexer,
-  IndexerWorker
-}
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{Indexer, IndexerWorker}
 import uk.ac.wellcome.platform.archive.indexer.fixtures.IndexerFixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait BagIndexerFixtures
-    extends IndexerFixtures[
-      KnownReplicasPayload,
-      StorageManifest,
-      IndexedStorageManifest
-    ]
+  extends IndexerFixtures[
+      BagRegistrationNotification, StorageManifest, IndexedStorageManifest]
     with IngestGenerators
     with StorageManifestGenerators
     with StorageManifestDaoFixture
@@ -55,45 +51,39 @@ trait BagIndexerFixtures
 
   val mapping: MappingDefinition = BagsIndexConfig.mapping
 
+  val space: StorageSpace = createStorageSpace
+  val externalIdentifier: ExternalIdentifier = createExternalIdentifier
   val version: BagVersion = BagVersion(1)
-  val ingest: Ingest = createIngestWith(version = Some(version))
-  val pipelineContext: PipelineContext = PipelineContext(ingest)
 
   val storageManifest: StorageManifest = createStorageManifestWith(
-    ingestId = ingest.id,
-    space = ingest.space,
+    space = space,
     version = version,
     bagInfo = createBagInfoWith(
-      externalIdentifier = ingest.externalIdentifier
+      externalIdentifier = externalIdentifier
     )
   )
-  val payload: KnownReplicasPayload = createKnownReplicasPayloadWith(
-    context = pipelineContext,
+  val payload: BagRegistrationNotification = BagRegistrationNotification(
+    space = space,
+    externalIdentifier = externalIdentifier,
     version = version
   )
 
-  def createT: (KnownReplicasPayload, String) = {
-    val bagId = BagId(
-      space = payload.storageSpace,
-      externalIdentifier = payload.externalIdentifier
-    )
+  def createT: (BagRegistrationNotification, String) =
+    (payload, storageManifest.id.toString)
 
-    (payload, bagId.toString)
-  }
-
-  def convertToIndexedT(payload: KnownReplicasPayload): IndexedStorageManifest =
+  def convertToIndexedT(notification: BagRegistrationNotification): IndexedStorageManifest =
     IndexedStorageManifest(storageManifest)
 
-  override def withIndexerWorker[R](index: Index, queue: SQS.Queue)(
+  def withIndexerWorker[R](index: Index, queue: SQS.Queue)(
     testWith: TestWith[
       IndexerWorker[
-        KnownReplicasPayload,
+        BagRegistrationNotification,
         StorageManifest,
         IndexedStorageManifest
       ],
       R
     ]
-  )(implicit decoder: Decoder[KnownReplicasPayload]): R = {
+  )(implicit decoder: Decoder[BagRegistrationNotification]): R =
     withActorSystem { implicit actorSystem =>
       withFakeMonitoringClient() { implicit monitoringClient =>
         val storageManifestDao: StorageManifestDao = createStorageManifestDao()
@@ -114,5 +104,4 @@ trait BagIndexerFixtures
         }
       }
     }
-  }
 }
