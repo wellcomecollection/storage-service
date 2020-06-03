@@ -374,7 +374,7 @@ module "bag_register_output_queue" {
   name = "${var.namespace}_bag_register_output"
 
   topic_arns = [
-    module.bag_reindexer_output_topic.arn
+    module.bag_register_output_topic.arn,
   ]
 
   role_names = [module.bag_indexer.task_role_name]
