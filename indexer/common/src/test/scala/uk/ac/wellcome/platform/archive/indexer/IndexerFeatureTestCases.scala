@@ -18,7 +18,7 @@ abstract class IndexerFeatureTestCases[SourceT, T, IndexedT](
 
   val mapping: MappingDefinition
 
-  def convertIndexedT(t: SourceT): IndexedT
+  def convertToIndexedT(sourceT: SourceT): IndexedT
 
   def createT: (SourceT, String)
 
@@ -35,7 +35,7 @@ abstract class IndexerFeatureTestCases[SourceT, T, IndexedT](
           eventually {
             val storedIndexedT = getT[IndexedT](index, id)
 
-            storedIndexedT shouldBe convertIndexedT(t)
+            storedIndexedT shouldBe convertToIndexedT(t)
           }
         }
       }
