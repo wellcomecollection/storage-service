@@ -8,7 +8,10 @@ import uk.ac.wellcome.platform.archive.bag_tracker.client.{
   BagTrackerClient,
   BagTrackerCreateError
 }
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
@@ -32,14 +35,17 @@ class Register(
     location: PrimaryStorageLocation,
     replicas: Seq[SecondaryStorageLocation],
     version: BagVersion,
-    space: StorageSpace
+    space: StorageSpace,
+    externalIdentifier: ExternalIdentifier
   ): Future[IngestStepResult[RegistrationSummary]] = {
 
     val registration = RegistrationSummary(
       ingestId = ingestId,
       startTime = Instant.now(),
       location = location,
-      space = space
+      space = space,
+      externalIdentifier = externalIdentifier,
+      version = version
     )
 
     val result: Future[IngestStepResult[RegistrationSummary]] = for {
