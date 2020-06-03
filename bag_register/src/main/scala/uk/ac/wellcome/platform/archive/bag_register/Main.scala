@@ -9,6 +9,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
   CloudwatchMonitoringClientBuilder,
+  SNSBuilder,
   SQSBuilder
 }
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
@@ -79,10 +80,17 @@ object Main extends WellcomeTypesafeApp {
       operationName
     )
 
+    val registrationNotifications = SNSBuilder.buildSNSMessageSender(
+      config,
+      namespace = "registration-notifications",
+      subject = "Sent by the bag register"
+    )
+
     new BagRegisterWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,
+      registrationNotifications = registrationNotifications,
       register = register,
       metricsNamespace = config.required[String]("aws.metrics.namespace")
     )

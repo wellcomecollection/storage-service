@@ -3,25 +3,36 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 import akka.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
+import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.MessageSender
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
-import uk.ac.wellcome.platform.archive.common.KnownReplicasPayload
+import uk.ac.wellcome.platform.archive.common.{
+  BagRegistrationNotification,
+  KnownReplicasPayload
+}
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestCompleted,
   IngestStepResult,
   IngestStepWorker
 }
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Try}
+import scala.util.{Failure, Success, Try}
 
-class BagRegisterWorker[IngestDestination, OutgoingDestination](
+class BagRegisterWorker[
+  IngestDestination,
+  OutgoingDestination,
+  NotificationDestination
+](
   val config: AlpakkaSQSWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
+  registrationNotifications: MessageSender[NotificationDestination],
   register: Register,
   val metricsNamespace: String
 )(
@@ -51,7 +62,8 @@ class BagRegisterWorker[IngestDestination, OutgoingDestination](
         location = payload.knownReplicas.location,
         replicas = payload.knownReplicas.replicas,
         version = payload.version,
-        space = payload.storageSpace
+        space = payload.storageSpace,
+        externalIdentifier = payload.externalIdentifier
       )
 
       _ <- Future.fromTry {
@@ -67,7 +79,27 @@ class BagRegisterWorker[IngestDestination, OutgoingDestination](
           outgoing = payload
         )
       }
+
+      _ <- Future.fromTry {
+        sendRegistrationNotification(registrationSummary)
+      }
     } yield registrationSummary
+
+  private def sendRegistrationNotification(
+    result: IngestStepResult[RegistrationSummary]
+  ): Try[Unit] =
+    result match {
+      case IngestCompleted(summary) =>
+        registrationNotifications.sendT[BagRegistrationNotification](
+          BagRegistrationNotification(
+            space = summary.space,
+            externalIdentifier = summary.externalIdentifier,
+            version = summary.version
+          )
+        )
+
+      case _ => Success(())
+    }
 
   // The IngestStepWorker trait expects a processMessage() method, which returns
   // a Try[…].  That method then gets called to provide the process() method,

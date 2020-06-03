@@ -21,7 +21,10 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 }
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
 import uk.ac.wellcome.platform.archive.common.fixtures._
-import uk.ac.wellcome.platform.archive.common.generators.ExternalIdentifierGenerators
+import uk.ac.wellcome.platform.archive.common.generators.{
+  ExternalIdentifierGenerators,
+  StorageSpaceGenerators
+}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
@@ -49,7 +52,8 @@ trait BagRegisterFixtures
     with IngestUpdateAssertions
     with ExternalIdentifierGenerators
     with BagTrackerFixtures
-    with StringNamespaceFixtures {
+    with StringNamespaceFixtures
+    with StorageSpaceGenerators {
 
   override implicit val asyncSqsClient: SqsAsyncClient =
     SQSClientFactory.createAsyncClient(
@@ -60,7 +64,7 @@ trait BagRegisterFixtures
     )
 
   type Fixtures = (
-    BagRegisterWorker[String, String],
+    BagRegisterWorker[String, String, String],
     StorageManifestDao,
     MemoryMessageSender,
     MemoryMessageSender,
@@ -70,9 +74,10 @@ trait BagRegisterFixtures
   def withBagRegisterWorker[R](
     queue: Queue = dummyQueue,
     ingests: MemoryMessageSender = new MemoryMessageSender(),
+    registrationNotifications: MemoryMessageSender = new MemoryMessageSender(),
     storageManifestDao: StorageManifestDao = createStorageManifestDao()
   )(
-    testWith: TestWith[BagRegisterWorker[String, String], R]
+    testWith: TestWith[BagRegisterWorker[String, String, String], R]
   )(implicit streamStore: MemoryStreamStore[ObjectLocation]): R =
     withActorSystem { implicit actorSystem =>
       withFakeMonitoringClient() { implicit monitoringClient =>
@@ -96,6 +101,7 @@ trait BagRegisterFixtures
             ingestUpdater =
               createIngestUpdaterWith(ingests, stepName = "register"),
             outgoingPublisher = createOutgoingPublisherWith(outgoing),
+            registrationNotifications = registrationNotifications,
             register = register,
             metricsNamespace = "bag_register"
           )

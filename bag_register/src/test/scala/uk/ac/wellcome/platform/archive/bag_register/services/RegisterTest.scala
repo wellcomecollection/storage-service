@@ -83,7 +83,8 @@ class RegisterTest
         location = primaryLocation,
         replicas = replicas,
         version = version,
-        space = space
+        space = space,
+        externalIdentifier = bagInfo.externalIdentifier
       )
 
       whenReady(future) { result =>
@@ -141,7 +142,7 @@ class RegisterTest
 
     val storageManifestDao = createStorageManifestDao()
 
-    val (bagObjects, bagRoot, _) =
+    val (bagObjects, bagRoot, bagInfo) =
       withNamespace { implicit namespace =>
         BagBuilder.createBagContentsWith(
           version = version
@@ -178,7 +179,8 @@ class RegisterTest
         location = location,
         replicas = Seq.empty,
         version = version,
-        space = space
+        space = space,
+        externalIdentifier = bagInfo.externalIdentifier
       )
 
       whenReady(future) { result =>

@@ -5,8 +5,10 @@ import java.time.Instant
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
+import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
+import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagInfoGenerators,
@@ -101,6 +103,53 @@ class BagRegisterWorkerTest
     assertBagRegisterSucceeded(
       ingestId = payload.ingestId,
       ingests = ingests
+    )
+  }
+
+  it("sends a notification of a registered bag") {
+    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
+      MemoryStreamStore[ObjectLocation]()
+
+    val space = createStorageSpace
+    val version = createBagVersion
+
+    val registrationNotifications = new MemoryMessageSender()
+
+    val (bagRoot, bagInfo) = createRegisterBagWith(
+      space = space,
+      version = version
+    )
+
+    val primaryLocation = createPrimaryLocationWith(prefix = bagRoot)
+
+    val knownReplicas =
+      KnownReplicas(location = primaryLocation, replicas = List.empty)
+
+    val payload = createKnownReplicasPayloadWith(
+      context = createPipelineContextWith(
+        storageSpace = space,
+        externalIdentifier = bagInfo.externalIdentifier
+      ),
+      version = version,
+      knownReplicas = knownReplicas
+    )
+
+    withBagRegisterWorker(registrationNotifications = registrationNotifications) {
+      worker =>
+        val future = worker.processPayload(payload)
+
+        whenReady(future) {
+          _ shouldBe a[IngestCompleted[_]]
+        }
+    }
+
+    registrationNotifications
+      .getMessages[BagRegistrationNotification]() shouldBe Seq(
+      BagRegistrationNotification(
+        space = space,
+        externalIdentifier = bagInfo.externalIdentifier,
+        version = version
+      )
     )
   }
 
@@ -269,16 +318,19 @@ class BagRegisterWorkerTest
       MemoryStreamStore[ObjectLocation]()
 
     val ingests = new MemoryMessageSender()
+    val registrationNotifications = new MemoryMessageSender()
 
     // This registration will fail because when the register tries to read the
     // bag from the store, it won't find anything at the primary location
     // in this payload.
     val payload = createKnownReplicasPayload
 
-    val future =
-      withBagRegisterWorker(ingests = ingests) {
-        _.processPayload(payload)
-      }
+    val future = withBagRegisterWorker(
+      ingests = ingests,
+      registrationNotifications = registrationNotifications
+    ) {
+      _.processPayload(payload)
+    }
 
     whenReady(future) {
       _ shouldBe a[IngestFailed[_]]
@@ -288,5 +340,7 @@ class BagRegisterWorkerTest
       ingestId = payload.ingestId,
       ingests = ingests
     )
+
+    registrationNotifications.messages shouldBe empty
   }
 }
