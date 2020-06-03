@@ -6,20 +6,40 @@ import io.circe.Decoder
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS
-import uk.ac.wellcome.messaging.worker.models.{DeterministicFailure, NonDeterministicFailure}
+import uk.ac.wellcome.messaging.worker.models.{
+  DeterministicFailure,
+  NonDeterministicFailure
+}
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageManifestVHSFixture
-import uk.ac.wellcome.platform.archive.common.generators.{IngestGenerators, PayloadGenerators, StorageManifestGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  IngestGenerators,
+  PayloadGenerators,
+  StorageManifestGenerators
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
-import uk.ac.wellcome.platform.archive.common.storage.services.{EmptyMetadata, StorageManifestDao}
-import uk.ac.wellcome.platform.archive.common.{KnownReplicasPayload, PipelineContext}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  EmptyMetadata,
+  StorageManifestDao
+}
+import uk.ac.wellcome.platform.archive.common.{
+  KnownReplicasPayload,
+  PipelineContext
+}
 import uk.ac.wellcome.platform.archive.indexer.IndexerWorkerTestCases
 import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
-import uk.ac.wellcome.platform.archive.indexer.bags.{BagIndexer, BagIndexerWorker, BagsIndexConfig}
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{Indexer, IndexerWorker}
+import uk.ac.wellcome.platform.archive.indexer.bags.{
+  BagIndexer,
+  BagIndexerWorker,
+  BagsIndexConfig
+}
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
+  Indexer,
+  IndexerWorker
+}
 import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 import uk.ac.wellcome.storage.{DoesNotExistError, ReadError, StoreReadError}
@@ -27,11 +47,11 @@ import uk.ac.wellcome.storage.{DoesNotExistError, ReadError, StoreReadError}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class BagIndexerWorkerTest
-  extends IndexerWorkerTestCases[
-    KnownReplicasPayload,
-    StorageManifest,
-    IndexedStorageManifest
-  ]
+    extends IndexerWorkerTestCases[
+      KnownReplicasPayload,
+      StorageManifest,
+      IndexedStorageManifest
+    ]
     with StorageManifestGenerators
     with PayloadGenerators
     with IngestGenerators
@@ -69,16 +89,16 @@ class BagIndexerWorkerTest
   }
 
   def createIndexer(
-                     index: Index
-                   ): Indexer[StorageManifest, IndexedStorageManifest] =
+    index: Index
+  ): Indexer[StorageManifest, IndexedStorageManifest] =
     new BagIndexer(
       client = elasticClient,
       index = index
     )
 
   override def convertToIndexed(
-                                 payload: KnownReplicasPayload
-                               ): IndexedStorageManifest = {
+    payload: KnownReplicasPayload
+  ): IndexedStorageManifest = {
     IndexedStorageManifest(storageManifest)
   }
 
@@ -94,13 +114,10 @@ class BagIndexerWorkerTest
   )(implicit decoder: Decoder[KnownReplicasPayload]): R = {
     withActorSystem { implicit actorSystem =>
       withFakeMonitoringClient() { implicit monitoringClient =>
-
         val storageManifestDao: StorageManifestDao = createStorageManifestDao()
         val result = storageManifestDao.put(storageManifest)
 
         withBagTrackerClient(storageManifestDao) { trackerClient =>
-
-
           assert(result.isRight)
 
           val worker = new BagIndexerWorker(
@@ -138,15 +155,13 @@ class BagIndexerWorkerTest
             )
           ) {
             override def get(
-                              id: BagId,
-                              version: BagVersion
-                            ): Either[ReadError, StorageManifest] = {
+              id: BagId,
+              version: BagVersion
+            ): Either[ReadError, StorageManifest] = {
               Left(StoreReadError(new Exception("BOOM!")))
             }
           }
         withBagTrackerClient(storageManifestDao) { trackerClient =>
-
-
           val worker = new BagIndexerWorker(
             config = createAlpakkaSQSWorkerConfig(queue),
             indexer = createIndexer(index),
@@ -182,9 +197,9 @@ class BagIndexerWorkerTest
             )
           ) {
             override def get(
-                              id: BagId,
-                              version: BagVersion
-                            ): Either[ReadError, StorageManifest] = {
+              id: BagId,
+              version: BagVersion
+            ): Either[ReadError, StorageManifest] = {
               Left(DoesNotExistError(new Exception("BOOM!")))
             }
           }
@@ -208,11 +223,11 @@ class BagIndexerWorkerTest
     val (t, _) = createT
     withLocalElasticsearchIndex(mapping) { index =>
       withLocalSqsQueue() { queue =>
-          withStoreReadErrorIndexerWorker(index, queue) { worker =>
-            whenReady(worker.process(t)) {
-              _ shouldBe a[NonDeterministicFailure[_]]
-            }
+        withStoreReadErrorIndexerWorker(index, queue) { worker =>
+          whenReady(worker.process(t)) {
+            _ shouldBe a[NonDeterministicFailure[_]]
           }
+        }
       }
     }
   }

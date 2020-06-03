@@ -5,12 +5,21 @@ import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
-import uk.ac.wellcome.platform.archive.bag_tracker.client.{BagTrackerClient, BagTrackerUnknownGetError}
+import uk.ac.wellcome.platform.archive.bag_tracker.client.{
+  BagTrackerClient,
+  BagTrackerUnknownGetError
+}
 import uk.ac.wellcome.platform.archive.common.KnownReplicasPayload
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{FatalIndexingError, Indexer, IndexerWorker, IndexerWorkerError, RetryableIndexingError}
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
+  FatalIndexingError,
+  Indexer,
+  IndexerWorker,
+  IndexerWorkerError,
+  RetryableIndexingError
+}
 
 import scala.concurrent.Future
 
@@ -18,7 +27,7 @@ class BagIndexerWorker(
   val config: AlpakkaSQSWorkerConfig,
   val indexer: Indexer[StorageManifest, IndexedStorageManifest],
   val bagTrackerClient: BagTrackerClient,
-  val metricsNamespace: String,
+  val metricsNamespace: String
 )(
   implicit
   val actorSystem: ActorSystem,
@@ -34,13 +43,13 @@ class BagIndexerWorker(
   def load(
     source: KnownReplicasPayload
   ): Future[Either[IndexerWorkerError, StorageManifest]] =
-      bagTrackerClient.getBag(
-        bagId = BagId(
-          space = source.storageSpace,
-          externalIdentifier = source.externalIdentifier
-        ),
-        version = source.version
-      ) map {
+    bagTrackerClient.getBag(
+      bagId = BagId(
+        space = source.storageSpace,
+        externalIdentifier = source.externalIdentifier
+      ),
+      version = source.version
+    ) map {
       case Right(manifest) => Right(manifest)
       case Left(BagTrackerUnknownGetError(e)) =>
         warn(f"BagTrackerUnknownGetError: Failed to load $source, got $e")

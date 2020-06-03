@@ -6,18 +6,20 @@ import io.circe.Decoder
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Successful}
+import uk.ac.wellcome.messaging.worker.models.{
+  NonDeterministicFailure,
+  Successful
+}
 import uk.ac.wellcome.platform.archive.indexer.fixtures.IndexerFixtures
 
-
 abstract class IndexerWorkerTestCases[SourceT, T, IndexedT](
-                                                             implicit
-                                                             decoderT: Decoder[SourceT],
-                                                             decoderIT: Decoder[IndexedT]
-                                                           ) extends AnyFunSpec
-  with Matchers
-  with EitherValues
-  with IndexerFixtures[SourceT, T, IndexedT] {
+  implicit
+  decoderT: Decoder[SourceT],
+  decoderIT: Decoder[IndexedT]
+) extends AnyFunSpec
+    with Matchers
+    with EitherValues
+    with IndexerFixtures[SourceT, T, IndexedT] {
 
   // TODO: Cover the code path where "load" is called
   // We should have tests to test failure modes in load

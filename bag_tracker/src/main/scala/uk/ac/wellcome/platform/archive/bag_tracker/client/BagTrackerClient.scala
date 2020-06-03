@@ -15,7 +15,6 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 
 import scala.concurrent.{ExecutionContext, Future}
 
-
 trait BagTrackerClient {
   def createBag(
     storageManifest: StorageManifest
