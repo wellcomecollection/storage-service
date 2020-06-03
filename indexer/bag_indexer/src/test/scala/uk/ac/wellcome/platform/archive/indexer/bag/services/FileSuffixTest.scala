@@ -24,7 +24,7 @@ class FileSuffixTest
     ".abcdef" -> None,
     "sp aces" -> None,
     "without" -> None,
-    "" -> None,
+    "" -> None
   )
 
   it("extracts the file suffixes correctly") {
