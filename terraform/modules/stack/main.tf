@@ -468,14 +468,15 @@ module "bag_register" {
   service_name = "${var.namespace}-bag_register"
 
   environment = {
-    queue_url         = module.bag_register_input_queue.url
-    archive_bucket    = var.replica_primary_bucket_name
-    ongoing_topic_arn = module.bag_register_output_topic.arn
-    ingest_topic_arn  = module.ingests_topic.arn
-    metrics_namespace = local.bag_register_service_name
-    operation_name    = "register"
-    bags_tracker_host = "http://${module.bags_api.name}.${var.namespace}:8080"
-    JAVA_OPTS         = local.java_opts_heap_size
+    queue_url               = module.bag_register_input_queue.url
+    archive_bucket          = var.replica_primary_bucket_name
+    ongoing_topic_arn       = module.bag_register_output_topic.arn
+    ingest_topic_arn        = module.ingests_topic.arn
+    registrations_topic_arn = module.registered_bag_notifications_topic.arn
+    metrics_namespace       = local.bag_register_service_name
+    operation_name          = "register"
+    bags_tracker_host       = "http://${module.bags_api.name}.${var.namespace}:8080"
+    JAVA_OPTS               = local.java_opts_heap_size
   }
 
   min_capacity = var.min_capacity
