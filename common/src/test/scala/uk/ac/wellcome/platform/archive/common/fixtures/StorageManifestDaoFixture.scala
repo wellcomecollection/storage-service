@@ -15,7 +15,7 @@ import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.HybridIndexedStoreEntry
 import uk.ac.wellcome.storage.store.memory._
 
-trait StorageManifestVHSFixture extends EitherValues {
+trait StorageManifestDaoFixture extends EitherValues {
   type StoreEntry = HybridIndexedStoreEntry[String, Map[String, String]]
 
   type StorageManifestIndex =

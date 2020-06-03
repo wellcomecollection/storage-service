@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   HttpFixtures,
-  StorageManifestVHSFixture,
+  StorageManifestDaoFixture,
   StorageRandomThings
 }
 import uk.ac.wellcome.platform.archive.common.http.{
@@ -40,7 +40,7 @@ import scala.concurrent.duration._
 trait BagsApiFixture
     extends StorageRandomThings
     with ScalaFutures
-    with StorageManifestVHSFixture
+    with StorageManifestDaoFixture
     with S3Fixtures
     with HttpFixtures
     with BagTrackerFixtures {

@@ -29,7 +29,7 @@ abstract class IndexerWorkerTestCases[SourceT, T, IndexedT](
 
   def createT: (SourceT, String)
 
-  def convertToIndexed(t: SourceT): IndexedT
+  def convertToIndexedT(sourceT: SourceT): IndexedT
 
   protected val badMapping: MappingDefinition = properties(
     Seq(textField("name"))
@@ -41,12 +41,17 @@ abstract class IndexerWorkerTestCases[SourceT, T, IndexedT](
       withIndexerWorker(index) { indexerWorker =>
         whenReady(indexerWorker.process(t)) { result =>
           result shouldBe a[Successful[_]]
-          val expectedIndexedT = convertToIndexed(t)
+          val expectedIndexedT = convertToIndexedT(t)
           val actualIndexedT = getT[IndexedT](index, id)
 
           actualIndexedT shouldBe expectedIndexedT
         }
       }
+
+      val expectedIndexedT = convertToIndexedT(t)
+      val actualIndexedT = getT[IndexedT](index, id)
+
+      actualIndexedT shouldBe expectedIndexedT
     }
   }
 

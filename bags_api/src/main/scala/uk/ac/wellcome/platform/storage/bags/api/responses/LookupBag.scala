@@ -44,7 +44,7 @@ trait LookupBag extends Logging with ResponseBase {
         )
 
       case Some(versionString) =>
-        parseVersion(versionString) match {
+        BagVersion.fromString(versionString) match {
           case Success(version) =>
             lookupTrackerBag(
               bagId = bagId,
