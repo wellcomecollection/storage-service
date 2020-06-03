@@ -15,7 +15,13 @@ module "s3_object_tagger" {
 
 data "aws_iam_policy_document" "allow_put_object_tag" {
   statement {
+    # A PutObjectTag API call completely replaces the tags on an object,
+    # so the Lambda has to read the existing tags first, add the new tags,
+    # and Put the complete set back.
+    #
+    # Thus, it needs both Get- and PutObjectTagging.
     actions = [
+      "s3:GetObjectTagging",
       "s3:PutObjectTagging",
     ]
 
