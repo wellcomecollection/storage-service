@@ -16,7 +16,7 @@ import uk.ac.wellcome.platform.archive.common.{
   KnownReplicasPayload,
   PipelineContext
 }
-import uk.ac.wellcome.platform.archive.common.fixtures.StorageManifestVHSFixture
+import uk.ac.wellcome.platform.archive.common.fixtures.StorageManifestDaoFixture
 import uk.ac.wellcome.platform.archive.common.generators.{
   IngestGenerators,
   PayloadGenerators,
@@ -48,7 +48,7 @@ class BagIndexerFeatureTest
     with StorageManifestGenerators
     with PayloadGenerators
     with IngestGenerators
-    with StorageManifestVHSFixture
+    with StorageManifestDaoFixture
     with BagTrackerFixtures {
 
   def createIndexer(

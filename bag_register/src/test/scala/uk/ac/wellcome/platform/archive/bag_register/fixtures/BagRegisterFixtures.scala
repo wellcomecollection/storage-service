@@ -48,7 +48,7 @@ trait BagRegisterFixtures
     with Akka
     with AlpakkaSQSWorkerFixtures
     with OperationFixtures
-    with StorageManifestVHSFixture
+    with StorageManifestDaoFixture
     with IngestUpdateAssertions
     with ExternalIdentifierGenerators
     with BagTrackerFixtures

@@ -12,7 +12,7 @@ import uk.ac.wellcome.messaging.worker.models.{
 }
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
-import uk.ac.wellcome.platform.archive.common.fixtures.StorageManifestVHSFixture
+import uk.ac.wellcome.platform.archive.common.fixtures.StorageManifestDaoFixture
 import uk.ac.wellcome.platform.archive.common.generators.{
   IngestGenerators,
   PayloadGenerators,
@@ -55,7 +55,7 @@ class BagIndexerWorkerTest
     with StorageManifestGenerators
     with PayloadGenerators
     with IngestGenerators
-    with StorageManifestVHSFixture
+    with StorageManifestDaoFixture
     with BagTrackerFixtures {
 
   override val mapping: MappingDefinition = BagsIndexConfig.mapping
