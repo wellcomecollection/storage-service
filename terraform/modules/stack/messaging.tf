@@ -374,7 +374,7 @@ module "bag_register_output_queue" {
   name = "${var.namespace}_bag_register_output"
 
   topic_arns = [
-    module.bag_register_output_topic.arn
+    module.bag_register_output_topic.arn,
   ]
 
   role_names = [module.bag_indexer.task_role_name]
@@ -389,7 +389,7 @@ module "registered_bag_notifications_queue" {
   name = "${var.namespace}_registered_bag_notifications"
 
   topic_arns = [
-    module.registered_bag_notifications_topic.arn,
+    module.registered_bag_notifications_topic.arn
   ]
 
   role_names = []
@@ -406,4 +406,20 @@ module "bag_reindexer_output_topic" {
   name = "${var.namespace}_bag_reindexer_output_topic"
 
   role_names = []
+}
+
+module "bag_indexer_input_queue" {
+  source = "../queue"
+
+  name = "${var.namespace}_bag_indexer_input_queue"
+
+  topic_arns = [
+    module.bag_register_output_topic.arn,
+    module.bag_reindexer_output_topic.arn
+  ]
+
+  role_names = [module.bag_indexer.task_role_name]
+
+  aws_region    = var.aws_region
+  dlq_alarm_arn = var.dlq_alarm_arn
 }

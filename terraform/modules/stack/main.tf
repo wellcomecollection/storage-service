@@ -95,7 +95,7 @@ module "bag_indexer" {
   service_name = "${var.namespace}-bag-indexer"
 
   environment = {
-    queue_url          = module.bag_register_output_queue.url
+    queue_url          = module.bag_indexer_input_queue.url
     metrics_namespace  = local.bag_indexer_service_name
     bags_tracker_host  = "http://${module.bags_api.name}.${var.namespace}:8080"
     es_bags_index_name = var.es_bags_index_name
