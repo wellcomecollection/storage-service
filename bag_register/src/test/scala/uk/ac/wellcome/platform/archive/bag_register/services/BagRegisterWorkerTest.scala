@@ -122,7 +122,8 @@ class BagRegisterWorkerTest
 
     val primaryLocation = createPrimaryLocationWith(prefix = bagRoot)
 
-    val knownReplicas = KnownReplicas(location = primaryLocation, replicas = List.empty)
+    val knownReplicas =
+      KnownReplicas(location = primaryLocation, replicas = List.empty)
 
     val payload = createKnownReplicasPayloadWith(
       context = createPipelineContextWith(
@@ -133,15 +134,17 @@ class BagRegisterWorkerTest
       knownReplicas = knownReplicas
     )
 
-    withBagRegisterWorker(registrationNotifications = registrationNotifications) { worker =>
-      val future = worker.processPayload(payload)
+    withBagRegisterWorker(registrationNotifications = registrationNotifications) {
+      worker =>
+        val future = worker.processPayload(payload)
 
-      whenReady(future) {
-        _ shouldBe a[IngestCompleted[_]]
-      }
+        whenReady(future) {
+          _ shouldBe a[IngestCompleted[_]]
+        }
     }
 
-    registrationNotifications.getMessages[BagRegistrationNotification]() shouldBe Seq(
+    registrationNotifications
+      .getMessages[BagRegistrationNotification]() shouldBe Seq(
       BagRegistrationNotification(
         space = space,
         externalIdentifier = bagInfo.externalIdentifier,

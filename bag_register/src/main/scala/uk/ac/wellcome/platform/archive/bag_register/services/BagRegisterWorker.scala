@@ -9,7 +9,10 @@ import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.models.Result
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
-import uk.ac.wellcome.platform.archive.common.{BagRegistrationNotification, KnownReplicasPayload}
+import uk.ac.wellcome.platform.archive.common.{
+  BagRegistrationNotification,
+  KnownReplicasPayload
+}
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.storage.models.{
@@ -21,7 +24,11 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-class BagRegisterWorker[IngestDestination, OutgoingDestination, NotificationDestination](
+class BagRegisterWorker[
+  IngestDestination,
+  OutgoingDestination,
+  NotificationDestination
+](
   val config: AlpakkaSQSWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
@@ -78,7 +85,9 @@ class BagRegisterWorker[IngestDestination, OutgoingDestination, NotificationDest
       }
     } yield registrationSummary
 
-  private def sendRegistrationNotification(result: IngestStepResult[RegistrationSummary]): Try[Unit] =
+  private def sendRegistrationNotification(
+    result: IngestStepResult[RegistrationSummary]
+  ): Try[Unit] =
     result match {
       case IngestCompleted(summary) =>
         registrationNotifications.sendT[BagRegistrationNotification](
