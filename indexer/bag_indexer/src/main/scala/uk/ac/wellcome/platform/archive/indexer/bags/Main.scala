@@ -51,7 +51,17 @@ object Main extends WellcomeTypesafeApp {
       index = index,
       mappingDefinition = BagsIndexConfig.mapping,
       settings = Map(
-        // The largest number of files on a bag is ~ 970,000
+        // The largest number of files on a bag is ~ 970,000 (see b19974760, aka
+        // Chemist and Druggist)
+        //
+        // If we use the default limit, we get errors from Elasticsearch:
+        //
+        //      [illegal_argument_exception] The length of [files.path] field of
+        //      [digitised/b19974760] doc of [storage_bags] index has exceeded [1000000] -
+        //      maximum allowed to be analyzed for highlighting. This maximum can be
+        //      set by changing the [index.highlight.max_analyzed_offset] index level setting.
+        //      For large texts, indexing with offsets or term vectors is recommended!
+        //
         "index.mapping.nested_objects.limit" -> 1000000
       )
     )
