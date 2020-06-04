@@ -340,13 +340,19 @@ module "bag_register_output_topic" {
   ]
 }
 
-resource "aws_sns_topic_policy" "bag_register_output_topic_cross_account_subscription" {
-  # We only need to create a policy that allows subscriptions to this topic
-  # if there are other accounts that need access.
-  count = length(var.bag_register_output_subscribe_principals) > 0 ? 1 : 0
+module "bag_register_output_queue" {
+  source = "../queue"
 
-  arn    = module.bag_register_output_topic.arn
-  policy = data.aws_iam_policy_document.bag_register_output_cross_account_subscription.json
+  name = "${var.namespace}_bag_register_output"
+
+  topic_arns = [
+    module.bag_register_output_topic.arn,
+  ]
+
+  role_names = [module.bag_indexer.task_role_name]
+
+  aws_region    = var.aws_region
+  dlq_alarm_arn = var.dlq_alarm_arn
 }
 
 module "registered_bag_notifications_topic" {
@@ -365,22 +371,7 @@ resource "aws_sns_topic_policy" "registered_bag_notifications_topic_cross_accoun
   count = length(var.bag_register_output_subscribe_principals) > 0 ? 1 : 0
 
   arn    = module.registered_bag_notifications_topic.arn
-  policy = data.aws_iam_policy_document.bag_register_output_cross_account_subscription.json
-}
-
-module "bag_register_output_queue" {
-  source = "../queue"
-
-  name = "${var.namespace}_bag_register_output"
-
-  topic_arns = [
-    module.bag_register_output_topic.arn,
-  ]
-
-  role_names = [module.bag_indexer.task_role_name]
-
-  aws_region    = var.aws_region
-  dlq_alarm_arn = var.dlq_alarm_arn
+  policy = data.aws_iam_policy_document.allow_bag_registration_notification_subscription.json
 }
 
 module "registered_bag_notifications_queue" {
