@@ -14,7 +14,6 @@ import uk.ac.wellcome.platform.archive.common.{
   KnownReplicasPayload
 }
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
-import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestCompleted,
   IngestStepResult,
@@ -24,14 +23,9 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-class BagRegisterWorker[
-  IngestDestination,
-  OutgoingDestination,
-  NotificationDestination
-](
+class BagRegisterWorker[IngestDestination, NotificationDestination](
   val config: AlpakkaSQSWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
-  outgoingPublisher: OutgoingPublisher[OutgoingDestination],
   registrationNotifications: MessageSender[NotificationDestination],
   register: Register,
   val metricsNamespace: String
@@ -70,13 +64,6 @@ class BagRegisterWorker[
         ingestUpdater.send(
           ingestId = payload.ingestId,
           step = registrationSummary
-        )
-      }
-
-      _ <- Future.fromTry {
-        outgoingPublisher.sendIfSuccessful(
-          result = registrationSummary,
-          outgoing = payload
         )
       }
 

@@ -21,8 +21,7 @@ import uk.ac.wellcome.platform.archive.bag_tracker.client.AkkaBagTrackerClient
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
-  OperationNameBuilder,
-  OutgoingPublisherBuilder
+  OperationNameBuilder
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   S3SizeFinder,
@@ -75,11 +74,6 @@ object Main extends WellcomeTypesafeApp {
       storageManifestService = storageManifestService
     )
 
-    val outgoingPublisher = OutgoingPublisherBuilder.build(
-      config,
-      operationName
-    )
-
     val registrationNotifications = SNSBuilder.buildSNSMessageSender(
       config,
       namespace = "registration-notifications",
@@ -89,7 +83,6 @@ object Main extends WellcomeTypesafeApp {
     new BagRegisterWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
       ingestUpdater = ingestUpdater,
-      outgoingPublisher = outgoingPublisher,
       registrationNotifications = registrationNotifications,
       register = register,
       metricsNamespace = config.required[String]("aws.metrics.namespace")

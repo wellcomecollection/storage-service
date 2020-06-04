@@ -64,7 +64,7 @@ trait BagRegisterFixtures
     )
 
   type Fixtures = (
-    BagRegisterWorker[String, String, String],
+    BagRegisterWorker[String, String],
     StorageManifestDao,
     MemoryMessageSender,
     MemoryMessageSender,
@@ -77,12 +77,10 @@ trait BagRegisterFixtures
     registrationNotifications: MemoryMessageSender = new MemoryMessageSender(),
     storageManifestDao: StorageManifestDao = createStorageManifestDao()
   )(
-    testWith: TestWith[BagRegisterWorker[String, String, String], R]
+    testWith: TestWith[BagRegisterWorker[String, String], R]
   )(implicit streamStore: MemoryStreamStore[ObjectLocation]): R =
     withActorSystem { implicit actorSystem =>
       withFakeMonitoringClient() { implicit monitoringClient =>
-        val outgoing = new MemoryMessageSender()
-
         val bagReader = new MemoryBagReader()
 
         val storageManifestService = new StorageManifestService(
@@ -100,7 +98,6 @@ trait BagRegisterFixtures
             config = createAlpakkaSQSWorkerConfig(queue),
             ingestUpdater =
               createIngestUpdaterWith(ingests, stepName = "register"),
-            outgoingPublisher = createOutgoingPublisherWith(outgoing),
             registrationNotifications = registrationNotifications,
             register = register,
             metricsNamespace = "bag_register"
