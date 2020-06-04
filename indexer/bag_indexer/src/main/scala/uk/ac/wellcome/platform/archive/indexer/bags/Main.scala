@@ -49,7 +49,11 @@ object Main extends WellcomeTypesafeApp {
 
     indexCreator.create(
       index = index,
-      mappingDefinition = BagsIndexConfig.mapping
+      mappingDefinition = BagsIndexConfig.mapping,
+      settings = Map(
+        // The largest number of files on a bag is ~ 970,000
+        "index.mapping.nested_objects.limit" -> 1000000
+      )
     )
 
     val bagIndexer = new BagIndexer(
