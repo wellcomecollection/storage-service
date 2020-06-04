@@ -15,11 +15,16 @@ import scala.concurrent.{ExecutionContext, Future}
 class ElasticsearchIndexCreator(elasticClient: ElasticClient)(
   implicit ec: ExecutionContext
 ) extends Logging {
-  def create(index: Index, mappingDefinition: MappingDefinition): Future[Unit] =
+  def create(
+    index: Index,
+    mappingDefinition: MappingDefinition,
+    settings: Map[String, Any] = Map.empty
+  ): Future[Unit] =
     elasticClient
       .execute {
         createIndex(index.name)
           .mapping { mappingDefinition.dynamic(DynamicMapping.Strict) }
+          .settings(settings)
       }
       .flatMap { response: Response[CreateIndexResponse] =>
         if (response.isError) {
