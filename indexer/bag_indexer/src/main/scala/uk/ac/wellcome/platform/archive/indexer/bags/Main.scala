@@ -46,9 +46,7 @@ object Main extends WellcomeTypesafeApp {
     val indexCreator = new ElasticsearchIndexCreator(
       elasticClient = elasticClient
     )
-
-    val maxExpectedFilesOnABag = 1000000
-
+    
     indexCreator.create(
       index = index,
       mappingDefinition = BagsIndexConfig.mapping,
