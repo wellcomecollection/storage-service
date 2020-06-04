@@ -398,7 +398,7 @@ module "registered_bag_notifications_queue" {
   dlq_alarm_arn = var.dlq_alarm_arn
 }
 
-# bag reindexer
+# bag indexer
 
 module "bag_reindexer_output_topic" {
   source = "../topic"

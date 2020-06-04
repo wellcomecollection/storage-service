@@ -9,7 +9,7 @@ import uk.ac.wellcome.messaging.worker.models.{
   DeterministicFailure,
   NonDeterministicFailure
 }
-import uk.ac.wellcome.platform.archive.common.KnownReplicasPayload
+import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
@@ -30,7 +30,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class BagIndexerWorkerTest
     extends IndexerWorkerTestCases[
-      KnownReplicasPayload,
+      BagRegistrationNotification,
       StorageManifest,
       IndexedStorageManifest
     ]
@@ -39,13 +39,13 @@ class BagIndexerWorkerTest
   def withStoreReadErrorIndexerWorker[R](index: Index, queue: SQS.Queue)(
     testWith: TestWith[
       IndexerWorker[
-        KnownReplicasPayload,
+        BagRegistrationNotification,
         StorageManifest,
         IndexedStorageManifest
       ],
       R
     ]
-  )(implicit decoder: Decoder[KnownReplicasPayload]): R = {
+  )(implicit decoder: Decoder[BagRegistrationNotification]): R = {
     withActorSystem { implicit actorSystem =>
       withFakeMonitoringClient() { implicit monitoringClient =>
         val storageManifestDao: StorageManifestDao =
@@ -81,13 +81,13 @@ class BagIndexerWorkerTest
   def withDoesNotExistErrorIndexerWorker[R](index: Index, queue: SQS.Queue)(
     testWith: TestWith[
       IndexerWorker[
-        KnownReplicasPayload,
+        BagRegistrationNotification,
         StorageManifest,
         IndexedStorageManifest
       ],
       R
     ]
-  )(implicit decoder: Decoder[KnownReplicasPayload]): R = {
+  )(implicit decoder: Decoder[BagRegistrationNotification]): R = {
     withActorSystem { implicit actorSystem =>
       withFakeMonitoringClient() { implicit monitoringClient =>
         val storageManifestDao: StorageManifestDao =

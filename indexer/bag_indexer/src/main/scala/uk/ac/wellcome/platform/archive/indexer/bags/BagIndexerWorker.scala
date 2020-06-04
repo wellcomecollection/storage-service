@@ -9,8 +9,8 @@ import uk.ac.wellcome.platform.archive.bag_tracker.client.{
   BagTrackerClient,
   BagTrackerUnknownGetError
 }
-import uk.ac.wellcome.platform.archive.common.KnownReplicasPayload
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
+import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
@@ -33,34 +33,43 @@ class BagIndexerWorker(
   val actorSystem: ActorSystem,
   val sqsAsync: SqsAsyncClient,
   val monitoringClient: MetricsMonitoringClient,
-  val decoder: Decoder[KnownReplicasPayload]
+  val decoder: Decoder[BagRegistrationNotification]
 ) extends IndexerWorker[
-      KnownReplicasPayload,
+      BagRegistrationNotification,
       StorageManifest,
       IndexedStorageManifest
     ](config, indexer, metricsNamespace) {
 
   def load(
-    source: KnownReplicasPayload
+    notification: BagRegistrationNotification
   ): Future[Either[IndexerWorkerError, StorageManifest]] =
-    bagTrackerClient.getBag(
+    for {
+      version <- Future.fromTry {
+        BagVersion.fromString(notification.version)
+      }
+
       bagId = BagId(
-        space = source.storageSpace,
-        externalIdentifier = source.externalIdentifier
-      ),
-      version = source.version
-    ) map {
-      case Right(manifest) => Right(manifest)
-      case Left(BagTrackerUnknownGetError(e)) =>
-        warn(f"BagTrackerUnknownGetError: Failed to load $source, got $e")
-        Left(
-          RetryableIndexingError(
-            payload = source,
-            cause = e
+        space = notification.space,
+        externalIdentifier = notification.externalIdentifier
+      )
+
+      bagLookup <- bagTrackerClient.getBag(bagId = bagId, version = version)
+
+      result = bagLookup match {
+        case Right(bag) => Right(bag)
+        case Left(BagTrackerUnknownGetError(e)) =>
+          warn(
+            f"BagTrackerUnknownGetError: Failed to load $notification, got $e"
           )
-        )
-      case Left(e) =>
-        error(new Exception(f"Failed to load $source, got $e"))
-        Left(FatalIndexingError(payload = source))
-    }
+          Left(
+            RetryableIndexingError(
+              payload = notification,
+              cause = e
+            )
+          )
+        case Left(e) =>
+          error(new Exception(f"Failed to load $notification, got $e"))
+          Left(FatalIndexingError(payload = notification))
+      }
+    } yield result
 }
