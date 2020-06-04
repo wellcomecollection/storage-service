@@ -134,6 +134,7 @@ object ExternalDependencies {
 
   val akkaDependencies: Seq[sbt.ModuleID] = Seq[ModuleID](
     "com.typesafe.akka" %% "akka-http" % versions.akkaHttp,
+    "com.typesafe.akka" %% "akka-slf4j" % "2.6.4",
     "de.heikoseeberger" %% "akka-http-circe" % versions.akkaHttpCirce,
     // We need to exclude these two HTTP clients, or we get errors from the tests:
     //
