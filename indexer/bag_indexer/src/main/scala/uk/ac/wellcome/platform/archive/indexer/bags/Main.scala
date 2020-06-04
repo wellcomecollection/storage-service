@@ -53,7 +53,7 @@ object Main extends WellcomeTypesafeApp {
       settings = Map(
         // The largest number of files on a bag is ~ 970,000 (see b19974760, aka
         // Chemist and Druggist). The default limit for nested docs is 10,000.
-        "index.mapping.nested_objects.limit" -> 1000000
+        "mapping.nested_objects.limit" -> 1000000
       )
     )
 
