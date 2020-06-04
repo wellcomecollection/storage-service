@@ -107,6 +107,8 @@ object ExternalDependencies {
     val akkaStreamAlpakka = "1.1.2"
     val akkaHttp = "10.1.10"
     val akkaHttpCirce = "1.29.1"
+    // Must match version of akka-core used
+    val akkaSl4j = "2.6.4"
   }
 
   val logbackDependencies = Seq(
@@ -134,6 +136,9 @@ object ExternalDependencies {
 
   val akkaDependencies: Seq[sbt.ModuleID] = Seq[ModuleID](
     "com.typesafe.akka" %% "akka-http" % versions.akkaHttp,
+    // Force Akka to use SL4J logging adapter
+    // https://doc.akka.io/docs/akka/current/logging.html#slf4j
+    "com.typesafe.akka" %% "akka-slf4j" % versions.akkaSl4j,
     "de.heikoseeberger" %% "akka-http-circe" % versions.akkaHttpCirce,
     // We need to exclude these two HTTP clients, or we get errors from the tests:
     //
