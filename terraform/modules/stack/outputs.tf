@@ -18,7 +18,6 @@ output "api_domain_name" {
   value = module.api.gateway_domain_name
 }
 
-output "bag_register_output_topic_arn" {
-  value = module.bag_register_output_topic.arn
+output "registered_bag_notifications_topic_arn" {
+  value = module.registered_bag_notifications_topic.arn
 }
-

@@ -139,7 +139,7 @@ data "aws_iam_policy_document" "archivematica_ingests_get" {
 # This policy document is specifically to allow subscription across account
 # boundaries.  It will only be used if there is a non-empty list of other
 # account principals to grant access to.
-data "aws_iam_policy_document" "bag_register_output_cross_account_subscription" {
+data "aws_iam_policy_document" "allow_bag_registration_notification_subscription" {
   policy_id = "__default_policy_ID"
 
   # This is the default policy that gets added to a topic when no policy is supplied
@@ -176,7 +176,7 @@ data "aws_iam_policy_document" "bag_register_output_cross_account_subscription" 
     }
 
     resources = [
-      module.bag_register_output_topic.arn,
+      module.registered_bag_notifications_topic.arn,
     ]
 
     sid = "__default_statement_ID"
@@ -190,7 +190,7 @@ data "aws_iam_policy_document" "bag_register_output_cross_account_subscription" 
       "sns:Subscribe"
     ]
 
-    resources = [module.bag_register_output_topic.arn]
+    resources = [module.registered_bag_notifications_topic.arn]
 
     principals {
       identifiers = var.bag_register_output_subscribe_principals
