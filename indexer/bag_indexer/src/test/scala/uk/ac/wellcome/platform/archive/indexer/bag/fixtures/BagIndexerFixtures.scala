@@ -30,14 +30,20 @@ import uk.ac.wellcome.platform.archive.indexer.bags.{
   BagIndexerWorker,
   BagsIndexConfig
 }
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{Indexer, IndexerWorker}
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
+  Indexer,
+  IndexerWorker
+}
 import uk.ac.wellcome.platform.archive.indexer.fixtures.IndexerFixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait BagIndexerFixtures
-  extends IndexerFixtures[
-      BagRegistrationNotification, StorageManifest, IndexedStorageManifest]
+    extends IndexerFixtures[
+      BagRegistrationNotification,
+      StorageManifest,
+      IndexedStorageManifest
+    ]
     with IngestGenerators
     with StorageManifestGenerators
     with StorageManifestDaoFixture
@@ -71,7 +77,9 @@ trait BagIndexerFixtures
   def createT: (BagRegistrationNotification, String) =
     (payload, storageManifest.id.toString)
 
-  def convertToIndexedT(notification: BagRegistrationNotification): IndexedStorageManifest =
+  def convertToIndexedT(
+    notification: BagRegistrationNotification
+  ): IndexedStorageManifest =
     IndexedStorageManifest(storageManifest)
 
   def withIndexerWorker[R](index: Index, queue: SQS.Queue)(

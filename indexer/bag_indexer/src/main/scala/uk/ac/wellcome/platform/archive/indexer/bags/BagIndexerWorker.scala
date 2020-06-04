@@ -35,38 +35,41 @@ class BagIndexerWorker(
   val monitoringClient: MetricsMonitoringClient,
   val decoder: Decoder[BagRegistrationNotification]
 ) extends IndexerWorker[
-  BagRegistrationNotification,
+      BagRegistrationNotification,
       StorageManifest,
       IndexedStorageManifest
     ](config, indexer, metricsNamespace) {
 
   def load(
     notification: BagRegistrationNotification
-  ): Future[Either[IndexerWorkerError, StorageManifest]] = for {
-    version <- Future.fromTry {
-      BagVersion.fromString(notification.version)
-    }
+  ): Future[Either[IndexerWorkerError, StorageManifest]] =
+    for {
+      version <- Future.fromTry {
+        BagVersion.fromString(notification.version)
+      }
 
-    bagId = BagId(
-      space = notification.space,
-      externalIdentifier = notification.externalIdentifier
-    )
+      bagId = BagId(
+        space = notification.space,
+        externalIdentifier = notification.externalIdentifier
+      )
 
-    bagLookup <- bagTrackerClient.getBag(bagId = bagId, version = version)
+      bagLookup <- bagTrackerClient.getBag(bagId = bagId, version = version)
 
-    result = bagLookup match {
-      case Right(bag) => Right(bag)
-      case Left(BagTrackerUnknownGetError(e)) =>
-        warn(f"BagTrackerUnknownGetError: Failed to load $notification, got $e")
-        Left(
-          RetryableIndexingError(
-            payload = notification,
-            cause = e
+      result = bagLookup match {
+        case Right(bag) => Right(bag)
+        case Left(BagTrackerUnknownGetError(e)) =>
+          warn(
+            f"BagTrackerUnknownGetError: Failed to load $notification, got $e"
           )
-        )
-      case Left(e) =>
-        error(new Exception(f"Failed to load $notification, got $e"))
-        Left(FatalIndexingError(payload = notification))
-    }
-  } yield result
+          Left(
+            RetryableIndexingError(
+              payload = notification,
+              cause = e
+            )
+          )
+        case Left(e) =>
+          error(new Exception(f"Failed to load $notification, got $e"))
+          Left(FatalIndexingError(payload = notification))
+      }
+    } yield result
 }
