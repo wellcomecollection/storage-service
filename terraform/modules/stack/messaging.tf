@@ -400,29 +400,6 @@ module "registered_bag_notifications_queue" {
 
 # bag indexer
 
-module "bag_indexer_input_queue" {
-  source = "../queue"
-
-  name = "${var.namespace}_bag_indexer_input"
-
-  topic_arns = [module.registered_bag_notifications_topic.arn]
-
-  role_names = [module.bag_indexer.task_role_name]
-
-  queue_high_actions = [
-    module.bag_indexer.scale_up_arn,
-  ]
-
-  queue_low_actions = [
-    module.bag_indexer.scale_down_arn,
-  ]
-
-  aws_region    = var.aws_region
-  dlq_alarm_arn = var.dlq_alarm_arn
-}
-
-# bag reindexer
-
 module "bag_reindexer_output_topic" {
   source = "../topic"
 
