@@ -67,13 +67,15 @@ def create_client(service_name, role_arn):
     session = _assumed_role_session(role_arn)
     return session.client(service_name)
 
+
 def fake_notification(space, externalIdentifier, version):
     return {
         "space": space,
         "externalIdentifier": externalIdentifier,
         "version": f"v{version}",
-        "type:": "RegisteredBagNotification"
+        "type:": "RegisteredBagNotification",
     }
+
 
 def get_total_bags(dynamodb_client, table_name):
     resp = dynamodb_client.describe_table(TableName=table_name)
