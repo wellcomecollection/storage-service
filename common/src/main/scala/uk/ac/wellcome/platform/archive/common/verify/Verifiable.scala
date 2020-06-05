@@ -4,5 +4,4 @@ trait Verifiable[T] {
   def create(t: T): Either[VerifiableGenerationFailed, Seq[VerifiableLocation]]
 }
 
-case class VerifiableGenerationFailed(msg: String)
-    extends Throwable(msg)
+case class VerifiableGenerationFailed(msg: String) extends Throwable(msg)
