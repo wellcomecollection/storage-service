@@ -68,27 +68,12 @@ def create_client(service_name, role_arn):
     return session.client(service_name)
 
 
-# The bag indexer only cares about space, externalIdentifier & version
-def fake_known_replicas_payload(space, externalIdentifier, version):
+def fake_notification(space, externalIdentifier, version):
     return {
-        "context": {
-            "ingestId": "8368b576-8206-4552-870c-005186f0264a",
-            "ingestType": {"id": "create"},
-            "storageSpace": space,
-            "ingestDate": "2069-11-30T03:09:31.986Z",
-            "externalIdentifier": externalIdentifier,
-        },
-        "version": version,
-        "knownReplicas": {
-            "location": {
-                "provider": {"type": "AmazonS3StorageProvider"},
-                "prefix": {
-                    "namespace": f"sent by {__file__}",
-                    "path": f"sent by {__file__}",
-                },
-            },
-            "replicas": [],
-        },
+        "space": space,
+        "externalIdentifier": externalIdentifier,
+        "version": f"v{version}",
+        "type:": "RegisteredBagNotification",
     }
 
 
@@ -129,7 +114,7 @@ def publish_bags(sns_client, topic_arn, bags, dry_run=False):
     payloads = []
     for (dynamo_id, version) in tqdm(bags.items(), total=unique_bags):
         space, external_id = dynamo_id.split("/", 1)
-        payload = fake_known_replicas_payload(space, external_id, version)
+        payload = fake_notification(space, external_id, version)
         payloads.append(payload)
 
     print(f"Prepared notifications for {len(payloads)} bags.\n")
