@@ -67,15 +67,6 @@ def create_client(service_name, role_arn):
     session = _assumed_role_session(role_arn)
     return session.client(service_name)
 
-
-# case class BagRegistrationNotification(
-#   space: StorageSpace,
-#   externalIdentifier: ExternalIdentifier,
-#   version: String,
-#   @JsonKey("type") ontologyType: String = "RegisteredBagNotification"
-# )
-
-
 # The bag indexer only cares about space, externalIdentifier & version
 def fake_notification(space, externalIdentifier, version):
     return {
