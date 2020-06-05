@@ -260,7 +260,7 @@ def confirm(env, republish, role_arn):
     bags_to_confirm = [key for (key, value) in bags_to_publish.items()]
 
     not_indexed = confirm_indexed(elastic_client, bags_to_confirm, config["es_index"])
-    if len(not_indexed) > 0:
+    if not_indexed:
         print(f"NOT INDEXED: {len(not_indexed)}")
         if republish:
             print(f"Republishing {len(not_indexed)} missing bags.")
