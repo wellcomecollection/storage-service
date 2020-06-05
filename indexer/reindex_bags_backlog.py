@@ -243,7 +243,9 @@ def publish(env, dry_run, role_arn):
 
 @click.command()
 @click.option("--env", default="stage", help="Environment to run against (prod|stage)")
-@click.option("--republish", default=False, is_flag=True, help="If not indexed, republish")
+@click.option(
+    "--republish", default=False, is_flag=True, help="If not indexed, republish"
+)
 @click.option(
     "--role_arn", default=ROLE_ARN, help="AWS Role ARN to run this script with"
 )
@@ -258,17 +260,18 @@ def confirm(env, republish, role_arn):
     bags_to_confirm = [key for (key, value) in bags_to_publish.items()]
 
     not_indexed = confirm_indexed(elastic_client, bags_to_confirm, config["es_index"])
-    if(len(not_indexed) > 0):
+    if len(not_indexed) > 0:
         print(f"NOT INDEXED: {len(not_indexed)}")
-        if(republish):
+        if republish:
             print(f"Republishing {len(not_indexed)} missing bags.")
-            bags_to_publish = { bag_id:bags_to_publish[bag_id] for bag_id in not_indexed }
+            bags_to_publish = {
+                bag_id: bags_to_publish[bag_id] for bag_id in not_indexed
+            }
             publish_bags(sns_client, config["topic_arn"], bags_to_publish)
         else:
             pprint(not_indexed)
     else:
         print(f"{len(bags_to_publish)} bags published.\n")
-
 
 
 cli.add_command(publish)
