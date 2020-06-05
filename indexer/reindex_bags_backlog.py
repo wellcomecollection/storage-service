@@ -9,6 +9,7 @@ import itertools
 import getpass
 import json
 import math
+from pprint import pprint
 import uuid
 
 import boto3
@@ -16,7 +17,6 @@ import click
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Search
 from tqdm import tqdm
-
 
 ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
 
@@ -181,7 +181,7 @@ def confirm_indexed(elastic_client, published_bags, index):
 
         return set(ids).difference(found_ids)
 
-    chunk_length = 50
+    chunk_length = 500
     chunk_count = math.ceil(len(published_bags) / chunk_length)
 
     diff_list = []
@@ -243,20 +243,32 @@ def publish(env, dry_run, role_arn):
 
 @click.command()
 @click.option("--env", default="stage", help="Environment to run against (prod|stage)")
+@click.option("--republish", default=False, is_flag=True, help="If not indexed, republish")
 @click.option(
     "--role_arn", default=ROLE_ARN, help="AWS Role ARN to run this script with"
 )
-def confirm(env, role_arn):
+def confirm(env, republish, role_arn):
     config = get_config(env)
 
     dynamodb_client = create_client("dynamodb", role_arn)
     elastic_client = create_elastic_client(role_arn, ES_SECRETS)
+    sns_client = create_client("sns", role_arn)
 
     bags_to_publish = get_latest_bags(dynamodb_client, config["table_name"])
     bags_to_confirm = [key for (key, value) in bags_to_publish.items()]
 
     not_indexed = confirm_indexed(elastic_client, bags_to_confirm, config["es_index"])
-    print(f"NOT INDEXED: {not_indexed}")
+    if(len(not_indexed) > 0):
+        print(f"NOT INDEXED: {len(not_indexed)}")
+        if(republish):
+            print(f"Republishing {len(not_indexed)} missing bags.")
+            bags_to_publish = { bag_id:bags_to_publish[bag_id] for bag_id in not_indexed }
+            publish_bags(sns_client, config["topic_arn"], bags_to_publish)
+        else:
+            pprint(not_indexed)
+    else:
+        print(f"{len(bags_to_publish)} bags published.\n")
+
 
 
 cli.add_command(publish)
