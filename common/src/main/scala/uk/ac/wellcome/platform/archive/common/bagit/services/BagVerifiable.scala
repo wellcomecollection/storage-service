@@ -15,7 +15,7 @@ class BagVerifiable(root: ObjectLocation)(
 
   override def create(
     bag: Bag
-  ): Either[VerifiableGenerationFailure, Seq[VerifiableLocation]] = {
+  ): Either[VerifiableGenerationFailed, Seq[VerifiableLocation]] = {
     debug(s"Attempting to create Seq[VerifiableLocation] for $bag")
 
     BagMatcher.correlateFetchEntries(bag) match {
