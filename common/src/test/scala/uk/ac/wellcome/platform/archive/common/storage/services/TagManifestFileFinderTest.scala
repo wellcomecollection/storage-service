@@ -15,10 +15,7 @@ import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStoreFixtures
 import uk.ac.wellcome.storage.streaming.Codec._
-import uk.ac.wellcome.storage.streaming.{
-  InputStreamWithLength,
-  InputStreamWithLengthAndMetadata
-}
+import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 class TagManifestFileFinderTest
     extends AnyFunSpec
@@ -30,17 +27,14 @@ class TagManifestFileFinderTest
 
   def withTagManifestFileFinder[R](
     entries: Map[ObjectLocation, String]
-  )(testWith: TestWith[TagManifestFileFinder[_], R]): R =
+  )(testWith: TestWith[TagManifestFileFinder, R]): R =
     withStreamStoreContext { memoryStore =>
       val initialEntries = entries
         .map {
-          case (loc, str) =>
-            val is = InputStreamWithLengthAndMetadata(
-              stringCodec.toStream(str).right.value,
-              metadata = Map.empty
-            )
+          case (location, str) =>
+            val inputStream = stringCodec.toStream(str).right.value
 
-            (loc, is)
+            (location, inputStream)
         }
 
       withMemoryStreamStoreImpl(memoryStore, initialEntries = initialEntries) {

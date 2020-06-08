@@ -11,7 +11,6 @@ import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
-import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
 
 import scala.util.Failure
 
@@ -84,10 +83,8 @@ class MemorySizeFinderTest
     location: ObjectLocation,
     contents: String
   )(implicit streamStore: MemoryStreamStore[ObjectLocation]): Unit = {
-    val is = stringCodec.toStream(contents).right.value
-    streamStore.put(location)(
-      InputStreamWithLengthAndMetadata(is, metadata = Map.empty)
-    )
+    val inputStream = stringCodec.toStream(contents).right.value
+    streamStore.put(location)(inputStream)
   }
 }
 

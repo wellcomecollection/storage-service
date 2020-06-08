@@ -105,7 +105,7 @@ class DynamoStorageManifestDao(
     val s3Results = locations.map { typedStore.get }
 
     val successes = s3Results.collect {
-      case Right(entry) => entry.identifiedT.t
+      case Right(entry) => entry.identifiedT
     }
     val errors = s3Results.collect { case Left(err) => err }
 

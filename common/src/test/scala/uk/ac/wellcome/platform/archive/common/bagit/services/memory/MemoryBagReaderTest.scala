@@ -26,7 +26,7 @@ class MemoryBagReaderTest
     )
 
   override def withBagReader[R](
-    testWith: TestWith[BagReader[_], R]
+    testWith: TestWith[BagReader, R]
   )(implicit context: MemoryStreamStore[ObjectLocation]): R =
     testWith(
       new MemoryBagReader()

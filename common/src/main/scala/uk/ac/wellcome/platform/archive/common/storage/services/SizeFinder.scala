@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 
 import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStoreEntry}
+import uk.ac.wellcome.storage.store.memory.MemoryStore
 
 import scala.util.Try
 
@@ -11,12 +11,11 @@ trait SizeFinder {
 }
 
 class MemorySizeFinder(
-  memoryStore: MemoryStore[ObjectLocation, MemoryStreamStoreEntry]
+  memoryStore: MemoryStore[ObjectLocation, Array[Byte]]
 ) extends SizeFinder {
   override def getSize(location: ObjectLocation): Try[Long] = Try {
     memoryStore.entries
       .getOrElse(location, throw new Throwable(s"No such entry $location!"))
-      .bytes
       .length
   }
 }

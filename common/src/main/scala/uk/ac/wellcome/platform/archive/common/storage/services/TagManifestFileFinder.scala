@@ -1,12 +1,10 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
-import java.io.InputStream
-
 import uk.ac.wellcome.platform.archive.common.bagit.models.UnreferencedFiles
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifestFile
 import uk.ac.wellcome.platform.archive.common.verify.{Hasher, HashingAlgorithm}
 import uk.ac.wellcome.storage.store.Readable
-import uk.ac.wellcome.storage.streaming.HasLength
+import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.{
   DoesNotExistError,
   ObjectLocation,
@@ -22,8 +20,8 @@ import scala.util.{Failure, Success, Try}
   * This class creates the `StorageManifestFile` entries for BagIt tag manifest files.
   *
   */
-class TagManifestFileFinder[IS <: InputStream with HasLength](
-  implicit streamReader: Readable[ObjectLocation, IS]
+class TagManifestFileFinder(
+  implicit streamReader: Readable[ObjectLocation, InputStreamWithLength]
 ) {
 
   def getTagManifestFiles(
@@ -70,7 +68,7 @@ class TagManifestFileFinder[IS <: InputStream with HasLength](
           )
         )
 
-      case Left(err: DoesNotExistError) => None
+      case Left(_: DoesNotExistError) => None
 
       case Left(err) =>
         throw new RuntimeException(s"Error looking up $prefix/$name: $err")

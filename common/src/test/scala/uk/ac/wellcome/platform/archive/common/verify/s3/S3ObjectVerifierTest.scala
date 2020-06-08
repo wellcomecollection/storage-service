@@ -29,7 +29,7 @@ class S3ObjectVerifierTest
     )
 
   override def withVerifier[R](
-    testWith: TestWith[Verifier[_], R]
+    testWith: TestWith[Verifier, R]
   )(implicit context: Unit): R =
     testWith(new S3ObjectVerifier())
 

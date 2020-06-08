@@ -31,7 +31,7 @@ trait StorageManifestDaoFixture extends EitherValues {
 
   def createTypedStore: StorageManifestTypedStore = {
     val memoryStoreForStreamStore =
-      new MemoryStore[String, MemoryStreamStoreEntry](Map.empty)
+      new MemoryStore[String, Array[Byte]](Map.empty)
     implicit val streamStore: MemoryStreamStore[String] =
       new MemoryStreamStore[String](memoryStoreForStreamStore)
     new MemoryTypedStore[String, StorageManifest](Map.empty)

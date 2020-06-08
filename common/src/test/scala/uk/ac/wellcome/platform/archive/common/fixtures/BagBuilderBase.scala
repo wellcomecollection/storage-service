@@ -19,7 +19,7 @@ import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.s3.S3TypedStore
-import uk.ac.wellcome.storage.store.{TypedStore, TypedStoreEntry}
+import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.streaming.Codec._
 
 import scala.util.Random
@@ -38,9 +38,7 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
     objects: Seq[BagObject]
   )(implicit typedStore: TypedStore[ObjectLocation, String]): Unit =
     objects.foreach { bagObj =>
-      typedStore.put(bagObj.location)(
-        TypedStoreEntry(bagObj.contents, metadata = Map.empty)
-      ) shouldBe a[Right[_, _]]
+      typedStore.put(bagObj.location)(bagObj.contents) shouldBe a[Right[_, _]]
     }
 
   protected def getFetchEntryCount(payloadFileCount: Int): Int =

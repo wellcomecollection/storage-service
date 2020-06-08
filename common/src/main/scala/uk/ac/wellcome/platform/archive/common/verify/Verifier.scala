@@ -1,6 +1,5 @@
 package uk.ac.wellcome.platform.archive.common.verify
 
-import java.io.InputStream
 import java.net.URI
 
 import grizzled.slf4j.Logging
@@ -12,12 +11,12 @@ import uk.ac.wellcome.platform.archive.common.storage.{
 }
 import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation}
 import uk.ac.wellcome.storage.store.StreamStore
-import uk.ac.wellcome.storage.streaming.HasLength
+import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 import scala.util.{Failure, Success}
 
-trait Verifier[IS <: InputStream with HasLength] extends Logging {
-  protected val streamStore: StreamStore[ObjectLocation, IS]
+trait Verifier extends Logging {
+  protected val streamStore: StreamStore[ObjectLocation]
 
   def locate(uri: URI): Either[LocateFailure[URI], ObjectLocation]
 
@@ -99,7 +98,7 @@ trait Verifier[IS <: InputStream with HasLength] extends Logging {
   private def verifyChecksum(
     verifiableLocation: VerifiableLocation,
     objectLocation: ObjectLocation,
-    inputStream: IS,
+    inputStream: InputStreamWithLength,
     algorithm: HashingAlgorithm
   ): VerifiedLocation =
     Checksum.create(inputStream, algorithm) match {
