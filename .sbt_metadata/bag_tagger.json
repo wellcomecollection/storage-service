@@ -1,0 +1,7 @@
+{
+  "id" : "bag_tagger",
+  "folder" : "bag_tagger",
+  "dependencyIds" : [
+    "common"
+  ]
+}
