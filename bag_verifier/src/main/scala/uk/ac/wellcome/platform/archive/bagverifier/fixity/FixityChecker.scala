@@ -44,8 +44,9 @@ trait FixityChecker extends Logging {
     val fixityTags = Map(s"Content-$algorithm" -> expectedFileFixity.checksum.value.toString)
 
     val result: Either[FileFixityError, FileFixityCorrect] = for {
-      inputStreamData <- getInputStream(expectedFileFixity)
-      (inputStream, objectLocation) = inputStreamData
+      objectLocation <- getObjectLocation(expectedFileFixity)
+
+      inputStream <- getInputStream(objectLocation, expectedFileFixity)
 
       _ <- verifySize(
         expectedFileFixity = expectedFileFixity,
@@ -75,17 +76,18 @@ trait FixityChecker extends Logging {
     }
   }
 
-  private def getInputStream(expectedFileFixity: ExpectedFileFixity):
-      Either[FileFixityError, (InputStreamWithLength, ObjectLocation)] = {
-    val lookupResult = for {
-      objectLocation <- locate(expectedFileFixity.uri) match {
-        case Right(l) => Right(l)
-        case Left(e) =>
-          Left(
-            LocationParsingError(expectedFileFixity, e.msg)
-          )
+  private def getObjectLocation(expectedFileFixity: ExpectedFileFixity): Either[FileFixityCouldNotRead, ObjectLocation] =
+    locate(expectedFileFixity.uri)
+      .left.map { locateFailure =>
+        FileFixityCouldNotRead(
+          expectedFileFixity = expectedFileFixity,
+          e = LocationParsingError(expectedFileFixity, locateFailure.msg)
+        )
       }
 
+  private def getInputStream(objectLocation: ObjectLocation, expectedFileFixity: ExpectedFileFixity):
+      Either[FileFixityError, InputStreamWithLength] = {
+    val lookupResult = for {
       inputStream <- streamStore.get(objectLocation) match {
         case Right(stream) => Right(stream.identifiedT)
 
@@ -99,7 +101,7 @@ trait FixityChecker extends Logging {
             LocationError(expectedFileFixity, storageError.e.getMessage)
           )
       }
-    } yield (inputStream, objectLocation)
+    } yield inputStream
 
     lookupResult
       .left.map { err => FileFixityCouldNotRead(expectedFileFixity, e = err) }
