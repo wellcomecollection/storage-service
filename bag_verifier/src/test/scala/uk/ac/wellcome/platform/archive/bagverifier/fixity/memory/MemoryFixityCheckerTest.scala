@@ -8,7 +8,11 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FixityChecker,
   FixityCheckerTestCases
 }
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.{
+  DoesNotExistError,
+  ObjectLocation,
+  ReadError
+}
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.tags.Tags
@@ -22,7 +26,14 @@ class MemoryFixityCheckerTest
   override def withContext[R](testWith: TestWith[MemoryContext, R]): R =
     testWith((
       MemoryStreamStore[ObjectLocation](),
-      new MemoryTags[ObjectLocation](initialTags = Map.empty)
+      new MemoryTags[ObjectLocation](initialTags = Map.empty) {
+        override def get(location: ObjectLocation): Either[ReadError, Map[String, String]] =
+          super.get(location) match {
+            case Right(tags)                => Right(tags)
+            case Left(_: DoesNotExistError) => Right(Map[String, String]())
+            case Left(err)                  => Left(err)
+          }
+      }
     ))
 
   override def putString(location: ObjectLocation, contents: String)(

@@ -28,3 +28,9 @@ case class FileFixityCouldNotRead(
   expectedFileFixity: ExpectedFileFixity,
   e: Throwable
 ) extends FileFixityError
+
+case class FileFixityCouldNotWriteTag(
+  expectedFileFixity: ExpectedFileFixity,
+  objectLocation: ObjectLocation,
+  e: Throwable
+) extends FileFixityError

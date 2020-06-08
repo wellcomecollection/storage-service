@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity
 
 import java.net.URI
 
+import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
@@ -17,6 +18,7 @@ import uk.ac.wellcome.storage.tags.Tags
 trait FixityCheckerTestCases[Namespace, Context]
     extends AnyFunSpec
     with Matchers
+    with EitherValues
     with NamespaceFixtures[ObjectLocation, Namespace]
     with StorageRandomThings
     with ObjectLocationGenerators {
@@ -262,14 +264,41 @@ trait FixityCheckerTestCases[Namespace, Context]
 
   describe("working with tags") {
     it("sets a tag upon successful verification") {
+      withContext { implicit context =>
+        withNamespace { implicit namespace =>
+          val location = createObjectLocationWith(namespace)
+
+          // md5("HelloWorld")
+          val checksum = Checksum(
+            algorithm = MD5,
+            value = ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6")
+          )
+          putString(location, contents = "HelloWorld")
+
+          val expectedFileFixity = createExpectedFileFixityWith(
+            location = location,
+            checksum = checksum
+          )
+
+          withFixityChecker {
+            _.check(expectedFileFixity)
+          } shouldBe a[FileFixityCorrect]
+
+          val storedTags = withTags { _.get(location) }.right.value
+          storedTags shouldBe Map("Content-MD5" -> "68e109f0f40ca72a15e05cc22786f8e6")
+        }
+      }
+    }
+
+    it("skips checking if the checksum tag and size are correct") {
       true shouldBe false
     }
 
-    it("skips checking if the tag is present") {
+    it("errors if the checksum tag doesn't match") {
       true shouldBe false
     }
 
-    it("errors if the tag is present and doesn't match") {
+    it("errors if the checksum tag matches but the size is wrong") {
       true shouldBe false
     }
 
