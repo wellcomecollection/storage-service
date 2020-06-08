@@ -4,35 +4,16 @@ import org.scalatest.{Assertion, OptionValues, TryValues}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityCorrect
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FailedChecksumNoMatch, FileFixityCorrect}
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
-import uk.ac.wellcome.platform.archive.bagverifier.models.{
-  VerificationFailureSummary,
-  VerificationIncompleteSummary,
-  VerificationSuccessSummary,
-  VerificationSummary
-}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagInfo,
-  BagPath,
-  ExternalIdentifier,
-  PayloadOxum
-}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{VerificationFailureSummary, VerificationIncompleteSummary, VerificationSuccessSummary, VerificationSummary}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, BagPath, ExternalIdentifier, PayloadOxum}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagUnavailable
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  S3BagBuilder,
-  S3BagBuilderBase
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.{S3BagBuilder, S3BagBuilderBase}
 import uk.ac.wellcome.platform.archive.common.generators.StorageSpaceGenerators
 import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepResult,
-  IngestStepSucceeded,
-  StorageSpace
-}
-import uk.ac.wellcome.platform.archive.common.verify.FailedChecksumNoMatch
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded, StorageSpace}
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
@@ -603,7 +584,7 @@ class BagVerifierTest
   }
 
   private def verifySuccessCount(
-    successes: List[FixityCorrect],
+    successes: List[FileFixityCorrect],
     expectedCount: Int
   ): Assertion =
     if (successes.map { _.objectLocation.path }.exists {

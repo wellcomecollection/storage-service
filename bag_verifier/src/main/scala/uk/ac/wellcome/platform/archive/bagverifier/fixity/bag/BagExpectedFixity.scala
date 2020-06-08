@@ -1,10 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity.bag
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
-  CannotCreateExpectedFixity,
-  ExpectedFixity
-}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{CannotCreateExpectedFixity, ExpectedFileFixity, ExpectedFixity}
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
 import uk.ac.wellcome.platform.archive.common.storage.{Locatable, Resolvable}
@@ -20,8 +17,8 @@ class BagExpectedFixity(root: ObjectLocation)(
 
   override def create(
     bag: Bag
-  ): Either[CannotCreateExpectedFixity, Seq[VerifiableLocation]] = {
-    debug(s"Attempting to create Seq[VerifiableLocation] for $bag")
+  ): Either[CannotCreateExpectedFixity, Seq[ExpectedFileFixity]] = {
+    debug(s"Attempting to get the fixity info for $bag")
 
     BagMatcher.correlateFetchEntries(bag) match {
       case Left(error) =>
@@ -43,7 +40,7 @@ class BagExpectedFixity(root: ObjectLocation)(
 
   private def getVerifiableLocation(
     matched: MatchedLocation
-  ): Either[Throwable, VerifiableLocation] =
+  ): Either[Throwable, ExpectedFileFixity] =
     matched match {
       case MatchedLocation(
           bagPath: BagPath,
@@ -51,7 +48,7 @@ class BagExpectedFixity(root: ObjectLocation)(
           Some(fetchEntry)
           ) =>
         Right(
-          VerifiableLocation(
+          ExpectedFileFixity(
             uri = fetchEntry.uri,
             path = bagPath,
             checksum = checksum,
@@ -64,7 +61,7 @@ class BagExpectedFixity(root: ObjectLocation)(
           case Left(e) => Left(CannotCreateExpectedFixity(e.msg))
           case Right(location) =>
             Right(
-              VerifiableLocation(
+              ExpectedFileFixity(
                 uri = resolvable.resolve(location),
                 path = bagPath,
                 checksum = checksum,

@@ -20,19 +20,19 @@ class FixityListChecker[Container](
           .map(fixityChecker.verify)
           .foldLeft[FixityListCheckingResult](FixityListAllCorrect(Nil)) {
 
-          case (FixityListAllCorrect(locations), correct: FixityCorrect) =>
+          case (FixityListAllCorrect(locations), correct: FileFixityCorrect) =>
             FixityListAllCorrect(correct :: locations)
 
-          case (FixityListAllCorrect(locations), err: FixityError) =>
+          case (FixityListAllCorrect(locations), err: FileFixityError) =>
             FixityListWithErrors(
               errors = List(err),
               correct = locations
             )
 
-          case (FixityListWithErrors(errors, correct), c: FixityCorrect) =>
+          case (FixityListWithErrors(errors, correct), c: FileFixityCorrect) =>
             FixityListWithErrors(errors, c :: correct)
 
-          case (FixityListWithErrors(errors, correct), err: FixityError) =>
+          case (FixityListWithErrors(errors, correct), err: FileFixityError) =>
             FixityListWithErrors(
               errors = err :: errors,
               correct = correct

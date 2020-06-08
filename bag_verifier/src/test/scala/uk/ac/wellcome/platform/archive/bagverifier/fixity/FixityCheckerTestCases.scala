@@ -1,19 +1,44 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity
 
+import java.net.URI
+
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.fixtures.VerifyFixtures
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
+import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
 
 trait FixityCheckerTestCases[Namespace, Context]
     extends AnyFunSpec
     with Matchers
     with NamespaceFixtures[ObjectLocation, Namespace]
-    with VerifyFixtures {
+    with StorageRandomThings
+    with ObjectLocationGenerators {
+
+  def randomChecksum = Checksum(SHA256, randomChecksumValue)
+  def badChecksum = Checksum(MD5, randomChecksumValue)
+
+  def createExpectedFileFixity: ExpectedFileFixity =
+    createExpectedFileFixityWith()
+
+  def resolve(location: ObjectLocation): URI
+
+  def createExpectedFileFixityWith(
+    location: ObjectLocation = createObjectLocation,
+    checksum: Checksum = randomChecksum,
+    length: Option[Long] = None): ExpectedFileFixity = {
+    ExpectedFileFixity(
+      uri = resolve(location),
+      path = BagPath(randomAlphanumeric),
+      checksum = checksum,
+      length = length
+    )
+  }
 
   def withContext[R](testWith: TestWith[Context, R]): R
 
@@ -41,20 +66,20 @@ trait FixityCheckerTestCases[Namespace, Context]
         val location = createObjectLocationWith(namespace)
         putString(location, contentString)
 
-        val verifiableLocation = createVerifiableLocationWith(
+        val expectedFileFixity = createExpectedFileFixityWith(
           location = location,
           checksum = checksum
         )
 
         val result =
           withFixityChecker {
-            _.verify(verifiableLocation)
+            _.verify(expectedFileFixity)
           }
 
-        result shouldBe a[FixityCorrect]
+        result shouldBe a[FileFixityCorrect]
 
-        val fixityCorrect = result.asInstanceOf[FixityCorrect]
-        fixityCorrect.verifiableLocation shouldBe verifiableLocation
+        val fixityCorrect = result.asInstanceOf[FileFixityCorrect]
+        fixityCorrect.expectedFileFixity shouldBe expectedFileFixity
         fixityCorrect.size shouldBe contentString.getBytes.length
       }
     }
@@ -67,21 +92,21 @@ trait FixityCheckerTestCases[Namespace, Context]
 
         val location = createObjectLocationWith(namespace)
 
-        val verifiableLocation = createVerifiableLocationWith(
+        val expectedFileFixity = createExpectedFileFixityWith(
           location = location,
           checksum = checksum
         )
 
         val result =
           withFixityChecker {
-            _.verify(verifiableLocation)
+            _.verify(expectedFileFixity)
           }
 
-        result shouldBe a[FixityCouldNotRead]
+        result shouldBe a[FileFixityCouldNotRead]
 
-        val fixityCouldNotRead = result.asInstanceOf[FixityCouldNotRead]
+        val fixityCouldNotRead = result.asInstanceOf[FileFixityCouldNotRead]
 
-        fixityCouldNotRead.verifiableLocation shouldBe verifiableLocation
+        fixityCouldNotRead.expectedFileFixity shouldBe expectedFileFixity
         fixityCouldNotRead.e shouldBe a[LocationNotFound[_]]
         fixityCouldNotRead.e.getMessage should include(
           "Location not available!"
@@ -98,21 +123,21 @@ trait FixityCheckerTestCases[Namespace, Context]
         val location = createObjectLocationWith(namespace)
         putString(location, randomAlphanumeric)
 
-        val verifiableLocation = createVerifiableLocationWith(
+        val expectedFileFixity = createExpectedFileFixityWith(
           location = location,
           checksum = checksum
         )
 
         val result =
           withFixityChecker {
-            _.verify(verifiableLocation)
+            _.verify(expectedFileFixity)
           }
 
-        result shouldBe a[FixityMismatch]
+        result shouldBe a[FileFixityMismatch]
 
-        val fixityMismatch = result.asInstanceOf[FixityMismatch]
+        val fixityMismatch = result.asInstanceOf[FileFixityMismatch]
 
-        fixityMismatch.verifiableLocation shouldBe verifiableLocation
+        fixityMismatch.expectedFileFixity shouldBe expectedFileFixity
         fixityMismatch.e shouldBe a[FailedChecksumNoMatch]
         fixityMismatch.e.getMessage should startWith(
           s"Checksum values do not match! Expected: $checksum"
@@ -134,7 +159,7 @@ trait FixityCheckerTestCases[Namespace, Context]
         val location = createObjectLocationWith(namespace)
         val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
-        val verifiableLocation = createVerifiableLocationWith(
+        val expectedFileFixity = createExpectedFileFixityWith(
           location = location,
           checksum = checksum,
           length = Some(contentString.getBytes().length - 1)
@@ -144,14 +169,14 @@ trait FixityCheckerTestCases[Namespace, Context]
 
         val result =
           withFixityChecker {
-            _.verify(verifiableLocation)
+            _.verify(expectedFileFixity)
           }
 
-        result shouldBe a[FixityMismatch]
+        result shouldBe a[FileFixityMismatch]
 
-        val fixityMismatch = result.asInstanceOf[FixityMismatch]
+        val fixityMismatch = result.asInstanceOf[FileFixityMismatch]
 
-        fixityMismatch.verifiableLocation shouldBe verifiableLocation
+        fixityMismatch.expectedFileFixity shouldBe expectedFileFixity
         fixityMismatch.e shouldBe a[Throwable]
         fixityMismatch.e.getMessage should startWith(
           "Lengths do not match:"
@@ -173,7 +198,7 @@ trait FixityCheckerTestCases[Namespace, Context]
         val location = createObjectLocationWith(namespace)
         val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
-        val verifiableLocation = createVerifiableLocationWith(
+        val expectedFileFixity = createExpectedFileFixityWith(
           location = location,
           checksum = checksum,
           length = Some(contentString.getBytes().length)
@@ -183,13 +208,13 @@ trait FixityCheckerTestCases[Namespace, Context]
 
         val result =
           withFixityChecker {
-            _.verify(verifiableLocation)
+            _.verify(expectedFileFixity)
           }
 
-        result shouldBe a[FixityCorrect]
+        result shouldBe a[FileFixityCorrect]
 
-        val fixityCorrect = result.asInstanceOf[FixityCorrect]
-        fixityCorrect.verifiableLocation shouldBe verifiableLocation
+        val fixityCorrect = result.asInstanceOf[FileFixityCorrect]
+        fixityCorrect.expectedFileFixity shouldBe expectedFileFixity
         fixityCorrect.size shouldBe contentString.getBytes.length
       }
     }
@@ -208,7 +233,7 @@ trait FixityCheckerTestCases[Namespace, Context]
         val location = createObjectLocationWith(namespace)
         val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
-        val verifiableLocation = createVerifiableLocationWith(
+        val expectedFileFixity = createExpectedFileFixityWith(
           location = location,
           checksum = checksum
         )
@@ -217,13 +242,13 @@ trait FixityCheckerTestCases[Namespace, Context]
 
         val result =
           withFixityChecker {
-            _.verify(verifiableLocation)
+            _.verify(expectedFileFixity)
           }
 
-        result shouldBe a[FixityCorrect]
+        result shouldBe a[FileFixityCorrect]
 
-        val fixityCorrect = result.asInstanceOf[FixityCorrect]
-        fixityCorrect.verifiableLocation shouldBe verifiableLocation
+        val fixityCorrect = result.asInstanceOf[FileFixityCorrect]
+        fixityCorrect.expectedFileFixity shouldBe expectedFileFixity
         fixityCorrect.size shouldBe contentString.getBytes.length
       }
     }

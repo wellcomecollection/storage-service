@@ -177,7 +177,7 @@ class BagVerifier(namespace: String)(
         val actualSize =
           locations
             .filter { loc =>
-              dataFilePaths.contains(loc.verifiableLocation.path)
+              dataFilePaths.contains(loc.expectedFileFixity.path)
             }
             .map { _.size }
             .sum
@@ -413,8 +413,8 @@ class BagVerifier(namespace: String)(
       case Right(result: FixityListWithErrors) =>
         val verificationFailureMessage =
           result.errors
-            .map { fixityError: FixityError =>
-              s"${ fixityError.verifiableLocation.uri}: ${fixityError.e.getMessage}"
+            .map { fixityError: FileFixityError =>
+              s"${ fixityError.expectedFileFixity.uri}: ${fixityError.e.getMessage}"
             }
             .mkString("\n")
 
@@ -422,7 +422,7 @@ class BagVerifier(namespace: String)(
 
         val errorCount = result.errors.size
         val pathList =
-          result.errors.map { _.verifiableLocation.path.value }.mkString(", ")
+          result.errors.map { _.expectedFileFixity.path.value }.mkString(", ")
 
         val userFacingMessage =
           if (errorCount == 1)
