@@ -12,7 +12,7 @@ import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.tags.Tags
-import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation, UpdateError}
+import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation}
 
 import scala.util.{Failure, Success, Try}
 
@@ -193,16 +193,18 @@ trait FixityChecker extends Logging {
             }
 
             Right(existingTags ++ fixityTags)
-          }
-          .left.map { updateError: UpdateError =>
-            FileFixityCouldNotWriteTag(
-              expectedFileFixity = expectedFileFixity,
-              objectLocation = objectLocation,
-              e = updateError.e
+          } match {
+            case Right(_)          => Right(())
+            case Left(updateError) => Left(
+              FileFixityCouldNotWriteTag(
+                expectedFileFixity = expectedFileFixity,
+                objectLocation = objectLocation,
+                e = updateError.e
+              )
             )
           }
       } match {
-        case Success(_) => Right(())
+        case Success(result) => result
         case Failure(err) =>
           Left(
             FileFixityCouldNotWriteTag(
