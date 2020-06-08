@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 import java.time.Instant
 
 import grizzled.slf4j.Logging
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityListChecker
 import uk.ac.wellcome.platform.archive.bagverifier.models._
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.bagit.services.{
@@ -12,7 +13,6 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.{
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.platform.archive.common.verify.Verification._
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
@@ -142,7 +142,10 @@ class BagVerifier(namespace: String)(
     implicit val bagVerifiable: BagVerifiable =
       new BagVerifiable(root.asLocation())
 
-    Try { bag.verify } match {
+    implicit val fixityListChecker: FixityListChecker[Bag] =
+      new FixityListChecker()
+
+    Try { fixityListChecker.verify(bag) } match {
       case Failure(err: Throwable) => Left(BagVerifierError(err))
       case Success(result)         => Right(result)
     }
