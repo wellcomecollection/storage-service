@@ -37,13 +37,7 @@ trait FixityCheckerTestCases[Namespace, Context]
   it("returns a success if the checksum is correct") {
     withContext { implicit context =>
       withNamespace { implicit namespace =>
-        val contentHashingAlgorithm = MD5
-        val contentString = "HelloWorld"
-        // md5("HelloWorld")
-        val contentStringChecksum = ChecksumValue(
-          "68e109f0f40ca72a15e05cc22786f8e6"
-        )
-        val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
+        val (contentString, checksum) = createStringChecksumPair
 
         val location = createObjectLocationWith(namespace)
         putString(location, contentString)
@@ -170,54 +164,14 @@ trait FixityCheckerTestCases[Namespace, Context]
   it("succeeds if the checksum is correct and the lengths match") {
     withContext { implicit context =>
       withNamespace { implicit namespace =>
-        val contentHashingAlgorithm = MD5
-        val contentString = "HelloWorld"
-        // md5("HelloWorld")
-        val contentStringChecksum = ChecksumValue(
-          "68e109f0f40ca72a15e05cc22786f8e6"
-        )
+        val (contentString, checksum) = createStringChecksumPair
 
         val location = createObjectLocationWith(namespace)
-        val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
         val expectedFileFixity = createExpectedFileFixityWith(
           location = location,
           checksum = checksum,
           length = Some(contentString.getBytes().length)
-        )
-
-        putString(location, contentString)
-
-        val result =
-          withFixityChecker {
-            _.check(expectedFileFixity)
-          }
-
-        result shouldBe a[FileFixityCorrect]
-
-        val fixityCorrect = result.asInstanceOf[FileFixityCorrect]
-        fixityCorrect.expectedFileFixity shouldBe expectedFileFixity
-        fixityCorrect.size shouldBe contentString.getBytes.length
-      }
-    }
-  }
-
-  it("supports different checksum algorithms") {
-    withContext { implicit context =>
-      withNamespace { implicit namespace =>
-        val contentHashingAlgorithm = SHA256
-        val contentString = "HelloWorld"
-        // sha256("HelloWorld")
-        val contentStringChecksum = ChecksumValue(
-          "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
-        )
-
-        val location = createObjectLocationWith(namespace)
-        val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
-
-        val expectedFileFixity = createExpectedFileFixityWith(
-          location = location,
-          checksum = checksum
         )
 
         putString(location, contentString)
@@ -242,12 +196,8 @@ trait FixityCheckerTestCases[Namespace, Context]
         withNamespace { implicit namespace =>
           val location = createObjectLocationWith(namespace)
 
-          // md5("HelloWorld")
-          val checksum = Checksum(
-            algorithm = MD5,
-            value = ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6")
-          )
-          putString(location, contents = "HelloWorld")
+          val (contents, checksum) = createStringChecksumPair
+          putString(location, contents = contents)
 
           val expectedFileFixity = createExpectedFileFixityWith(
             location = location,
@@ -259,7 +209,7 @@ trait FixityCheckerTestCases[Namespace, Context]
           } shouldBe a[FileFixityCorrect]
 
           val storedTags = withTags { _.get(location) }.right.value
-          storedTags shouldBe Map("Content-MD5" -> "68e109f0f40ca72a15e05cc22786f8e6")
+          storedTags shouldBe Map(s"Content-${checksum.algorithm}" -> checksum.value.toString)
         }
       }
     }

@@ -7,7 +7,6 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.memory.MemoryFixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.generators.FixityGenerators
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, MD5}
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 import uk.ac.wellcome.storage.streaming.Codec.stringCodec
@@ -35,12 +34,8 @@ class FixityCheckerTest
 
       val location = createObjectLocation
 
-      // md5("HelloWorld")
-      val checksum = Checksum(
-        algorithm = MD5,
-        value = ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6")
-      )
-      val inputStream = stringCodec.toStream("HelloWorld").right.value
+      val (content, checksum) = createStringChecksumPair
+      val inputStream = stringCodec.toStream(content).right.value
       streamStore.put(location)(inputStream) shouldBe a[Right[_, _]]
 
       val fixityChecker = new MemoryFixityChecker(
