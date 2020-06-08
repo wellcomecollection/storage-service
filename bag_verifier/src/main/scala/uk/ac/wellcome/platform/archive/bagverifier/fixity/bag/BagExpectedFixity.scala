@@ -1,21 +1,26 @@
-package uk.ac.wellcome.platform.archive.common.bagit.services
+package uk.ac.wellcome.platform.archive.bagverifier.fixity.bag
 
 import grizzled.slf4j.Logging
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  CannotCreateExpectedFixity,
+  ExpectedFixity
+}
 import uk.ac.wellcome.platform.archive.common.bagit.models._
+import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
 import uk.ac.wellcome.platform.archive.common.storage.{Locatable, Resolvable}
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
 
-class BagVerifiable(root: ObjectLocation)(
+class BagExpectedFixity(root: ObjectLocation)(
   implicit resolvable: Resolvable[ObjectLocation]
-) extends Verifiable[Bag]
+) extends ExpectedFixity[Bag]
     with Logging {
 
   import Locatable._
 
   override def create(
     bag: Bag
-  ): Either[VerifiableGenerationFailed, Seq[VerifiableLocation]] = {
+  ): Either[CannotCreateExpectedFixity, Seq[VerifiableLocation]] = {
     debug(s"Attempting to create Seq[VerifiableLocation] for $bag")
 
     BagMatcher.correlateFetchEntries(bag) match {
@@ -56,7 +61,7 @@ class BagVerifiable(root: ObjectLocation)(
 
       case MatchedLocation(bagPath: BagPath, checksum: Checksum, None) =>
         bagPath.locateWith(root) match {
-          case Left(e) => Left(VerifiableGenerationFailed(e.msg))
+          case Left(e) => Left(CannotCreateExpectedFixity(e.msg))
           case Right(location) =>
             Right(
               VerifiableLocation(
@@ -70,5 +75,5 @@ class BagVerifiable(root: ObjectLocation)(
     }
 
   private def combine(errors: Seq[Throwable]) =
-    VerifiableGenerationFailed(errors.map(_.getMessage).mkString("\n"))
+    CannotCreateExpectedFixity(errors.map(_.getMessage).mkString("\n"))
 }

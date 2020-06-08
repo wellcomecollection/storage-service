@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.common.verify._
   */
 class FixityListChecker[Container](
   implicit
-  verifiable: Verifiable[Container],
+  verifiable: ExpectedFixity[Container],
   fixityChecker: FixityChecker
 ) extends Logging {
   def verify(container: Container): VerificationResult = {
