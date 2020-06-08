@@ -51,11 +51,11 @@ trait FixityCheckerTestCases[Namespace, Context]
             _.verify(verifiableLocation)
           }
 
-        result shouldBe a[VerifiedSuccess]
+        result shouldBe a[FixityCorrect]
 
-        val verifiedSuccess = result.asInstanceOf[VerifiedSuccess]
-        verifiedSuccess.verifiableLocation shouldBe verifiableLocation
-        verifiedSuccess.size shouldBe contentString.getBytes.size
+        val fixityCorrect = result.asInstanceOf[FixityCorrect]
+        fixityCorrect.verifiableLocation shouldBe verifiableLocation
+        fixityCorrect.size shouldBe contentString.getBytes.length
       }
     }
   }
@@ -77,13 +77,13 @@ trait FixityCheckerTestCases[Namespace, Context]
             _.verify(verifiableLocation)
           }
 
-        result shouldBe a[VerifiedFailure]
+        result shouldBe a[FixityCouldNotRead]
 
-        val verifiedFailure = result.asInstanceOf[VerifiedFailure]
+        val fixityCouldNotRead = result.asInstanceOf[FixityCouldNotRead]
 
-        verifiedFailure.verifiableLocation shouldBe verifiableLocation
-        verifiedFailure.e shouldBe a[LocationNotFound[_]]
-        verifiedFailure.e.getMessage should include(
+        fixityCouldNotRead.verifiableLocation shouldBe verifiableLocation
+        fixityCouldNotRead.e shouldBe a[LocationNotFound[_]]
+        fixityCouldNotRead.e.getMessage should include(
           "Location not available!"
         )
       }
@@ -108,13 +108,13 @@ trait FixityCheckerTestCases[Namespace, Context]
             _.verify(verifiableLocation)
           }
 
-        result shouldBe a[VerifiedFailure]
+        result shouldBe a[FixityMismatch]
 
-        val verifiedFailure = result.asInstanceOf[VerifiedFailure]
+        val fixityMismatch = result.asInstanceOf[FixityMismatch]
 
-        verifiedFailure.verifiableLocation shouldBe verifiableLocation
-        verifiedFailure.e shouldBe a[FailedChecksumNoMatch]
-        verifiedFailure.e.getMessage should startWith(
+        fixityMismatch.verifiableLocation shouldBe verifiableLocation
+        fixityMismatch.e shouldBe a[FailedChecksumNoMatch]
+        fixityMismatch.e.getMessage should startWith(
           s"Checksum values do not match! Expected: $checksum"
         )
       }
@@ -147,13 +147,13 @@ trait FixityCheckerTestCases[Namespace, Context]
             _.verify(verifiableLocation)
           }
 
-        result shouldBe a[VerifiedFailure]
+        result shouldBe a[FixityMismatch]
 
-        val verifiedFailure = result.asInstanceOf[VerifiedFailure]
+        val fixityMismatch = result.asInstanceOf[FixityMismatch]
 
-        verifiedFailure.verifiableLocation shouldBe verifiableLocation
-        verifiedFailure.e shouldBe a[Throwable]
-        verifiedFailure.e.getMessage should startWith(
+        fixityMismatch.verifiableLocation shouldBe verifiableLocation
+        fixityMismatch.e shouldBe a[Throwable]
+        fixityMismatch.e.getMessage should startWith(
           "Lengths do not match:"
         )
       }
@@ -186,11 +186,11 @@ trait FixityCheckerTestCases[Namespace, Context]
             _.verify(verifiableLocation)
           }
 
-        result shouldBe a[VerifiedSuccess]
+        result shouldBe a[FixityCorrect]
 
-        val verifiedSuccess = result.asInstanceOf[VerifiedSuccess]
-        verifiedSuccess.verifiableLocation shouldBe verifiableLocation
-        verifiedSuccess.size shouldBe contentString.getBytes.size
+        val fixityCorrect = result.asInstanceOf[FixityCorrect]
+        fixityCorrect.verifiableLocation shouldBe verifiableLocation
+        fixityCorrect.size shouldBe contentString.getBytes.length
       }
     }
   }
@@ -220,11 +220,11 @@ trait FixityCheckerTestCases[Namespace, Context]
             _.verify(verifiableLocation)
           }
 
-        result shouldBe a[VerifiedSuccess]
+        result shouldBe a[FixityCorrect]
 
-        val verifiedSuccess = result.asInstanceOf[VerifiedSuccess]
-        verifiedSuccess.verifiableLocation shouldBe verifiableLocation
-        verifiedSuccess.size shouldBe contentString.getBytes.size
+        val fixityCorrect = result.asInstanceOf[FixityCorrect]
+        fixityCorrect.verifiableLocation shouldBe verifiableLocation
+        fixityCorrect.size shouldBe contentString.getBytes.length
       }
     }
   }

@@ -5,11 +5,11 @@ import java.net.URI
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FixityChecker,
-  FixityCheckerTestCases
+  FixityCheckerTestCases,
+  FixityCouldNotRead
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.S3Resolvable
 import uk.ac.wellcome.platform.archive.common.storage.{LocationError, LocationNotFound}
-import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.fixtures.BucketNamespaceFixtures
@@ -58,13 +58,13 @@ class S3FixityCheckerTest
         _.verify(verifiableLocation)
       }
 
-    result shouldBe a[VerifiedFailure]
+    result shouldBe a[FixityCouldNotRead]
 
-    val verifiedFailure = result.asInstanceOf[VerifiedFailure]
+    val fixityCouldNotRead = result.asInstanceOf[FixityCouldNotRead]
 
-    verifiedFailure.verifiableLocation shouldBe verifiableLocation
-    verifiedFailure.e shouldBe a[LocationNotFound[_]]
-    verifiedFailure.e.getMessage should include(
+    fixityCouldNotRead.verifiableLocation shouldBe verifiableLocation
+    fixityCouldNotRead.e shouldBe a[LocationNotFound[_]]
+    fixityCouldNotRead.e.getMessage should include(
       "Location not available!"
     )
   }
@@ -84,13 +84,13 @@ class S3FixityCheckerTest
         _.verify(verifiableLocation)
       }
 
-    result shouldBe a[VerifiedFailure]
+    result shouldBe a[FixityCouldNotRead]
 
-    val verifiedFailure = result.asInstanceOf[VerifiedFailure]
+    val fixityCouldNotRead = result.asInstanceOf[FixityCouldNotRead]
 
-    verifiedFailure.verifiableLocation shouldBe verifiableLocation
-    verifiedFailure.e shouldBe a[LocationError[_]]
-    verifiedFailure.e.getMessage should include(
+    fixityCouldNotRead.verifiableLocation shouldBe verifiableLocation
+    fixityCouldNotRead.e shouldBe a[LocationError[_]]
+    fixityCouldNotRead.e.getMessage should include(
       "The specified bucket is not valid"
     )
   }
@@ -111,13 +111,13 @@ class S3FixityCheckerTest
           _.verify(verifiableLocation)
         }
 
-      result shouldBe a[VerifiedFailure]
+      result shouldBe a[FixityCouldNotRead]
 
-      val verifiedFailure = result.asInstanceOf[VerifiedFailure]
+      val fixityCouldNotRead = result.asInstanceOf[FixityCouldNotRead]
 
-      verifiedFailure.verifiableLocation shouldBe verifiableLocation
-      verifiedFailure.e shouldBe a[LocationNotFound[_]]
-      verifiedFailure.e.getMessage should include(
+      fixityCouldNotRead.verifiableLocation shouldBe verifiableLocation
+      fixityCouldNotRead.e shouldBe a[LocationNotFound[_]]
+      fixityCouldNotRead.e.getMessage should include(
         "Location not available!"
       )
     }

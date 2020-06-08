@@ -18,7 +18,7 @@ trait FixityChecker extends Logging {
 
   def locate(uri: URI): Either[LocateFailure[URI], ObjectLocation]
 
-  def verify(verifiableLocation: VerifiableLocation): VerifiedLocation = {
+  def verify(verifiableLocation: VerifiableLocation): FixityResult = {
     debug(s"Attempting to verify: $verifiableLocation")
 
     val algorithm = verifiableLocation.checksum.algorithm
@@ -48,7 +48,7 @@ trait FixityChecker extends Logging {
     } yield (inputStream, objectLocation)
 
     val result = eitherInputStream match {
-      case Left(e) => VerifiedFailure(verifiableLocation, e = e)
+      case Left(e) => FixityCouldNotRead(verifiableLocation, e = e)
 
       case Right((inputStream, objectLocation)) =>
         val verifiedLocation = verifiableLocation.length match {
@@ -65,10 +65,10 @@ trait FixityChecker extends Logging {
                 algorithm = algorithm
               )
             } else {
-              VerifiedFailure(
-                verifiableLocation,
-                objectLocation,
-                new Throwable(
+              FixityMismatch(
+                verifiableLocation = verifiableLocation,
+                objectLocation = objectLocation,
+                e = new Throwable(
                   "" +
                     s"Lengths do not match: $expectedLength != ${inputStream.available()}"
                 )
@@ -98,31 +98,31 @@ trait FixityChecker extends Logging {
     objectLocation: ObjectLocation,
     inputStream: InputStreamWithLength,
     algorithm: HashingAlgorithm
-  ): VerifiedLocation =
+  ): FixityResult =
     Checksum.create(inputStream, algorithm) match {
       // Failure to create a checksum (parsing/algorithm)
       case Failure(e) =>
-        VerifiedFailure(
-          verifiableLocation,
-          objectLocation,
-          FailedChecksumCreation(algorithm, e)
+        FixityMismatch(
+          verifiableLocation = verifiableLocation,
+          objectLocation = objectLocation,
+          e = FailedChecksumCreation(algorithm, e)
         )
 
       // Checksum does not match that provided
       case Success(checksum) =>
         if (checksum != verifiableLocation.checksum)
-          VerifiedFailure(
-            verifiableLocation,
-            objectLocation,
-            FailedChecksumNoMatch(
+          FixityMismatch(
+            verifiableLocation = verifiableLocation,
+            objectLocation = objectLocation,
+            e = FailedChecksumNoMatch(
               actual = checksum,
               expected = verifiableLocation.checksum
             )
           )
         else
-          VerifiedSuccess(
-            verifiableLocation,
-            objectLocation,
+          FixityCorrect(
+            verifiableLocation = verifiableLocation,
+            objectLocation = objectLocation,
             size = inputStream.length
           )
     }
