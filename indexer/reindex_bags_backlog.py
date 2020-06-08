@@ -118,9 +118,9 @@ def get_bag(dynamodb_client, table_name, bag_id):
         }
     )
 
-    items = response['Items']
+    max_version = max(int(item["version"]["N"]) for item in response["Items"])
 
-    return { bag_id:int(item['version']['N']) for item in items }
+    return { bag_id: max_version }
 
 
 def publish_bags(sns_client, topic_arn, bags, dry_run=False):
