@@ -9,9 +9,15 @@ import grizzled.slf4j.Logging
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.Message
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+  AlpakkaSQSWorker,
+  AlpakkaSQSWorkerConfig
+}
 import uk.ac.wellcome.messaging.worker.models.{Result, Successful}
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.{MetricsMonitoringClient, MetricsMonitoringProcessor}
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.{
+  MetricsMonitoringClient,
+  MetricsMonitoringProcessor
+}
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -29,19 +35,24 @@ class BagTaggerWorker(
   val as: ActorSystem,
   val sc: SqsAsyncClient,
   val wd: Decoder[BagRegistrationNotification]
-) extends Runnable with Logging {
+) extends Runnable
+    with Logging {
 
   implicit val ec = as.dispatcher
 
-  def process(sourceT: BagRegistrationNotification): Future[Result[Unit]] = Future {
-    Successful(None)
-  }
+  def process(sourceT: BagRegistrationNotification): Future[Result[Unit]] =
+    Future {
+      Successful(None)
+    }
 
-  val worker: AlpakkaSQSWorker[BagRegistrationNotification, Instant, Instant, Unit] =
+  val worker
+    : AlpakkaSQSWorker[BagRegistrationNotification, Instant, Instant, Unit] =
     new AlpakkaSQSWorker[BagRegistrationNotification, Instant, Instant, Unit](
       config,
       monitoringProcessorBuilder = (ec: ExecutionContext) =>
-        new MetricsMonitoringProcessor[BagRegistrationNotification](metricsNamespace)(mc, ec)
+        new MetricsMonitoringProcessor[BagRegistrationNotification](
+          metricsNamespace
+        )(mc, ec)
     )(process) {
       override val retryAction: Message => sqs.MessageAction =
         (message: Message) =>

@@ -22,7 +22,7 @@ trait BagTaggerFixtures
 
   def withWorkerService[R](
     queue: Queue,
-    outgoing: MemoryMessageSender,
+    outgoing: MemoryMessageSender
   )(
     testWith: TestWith[BagTaggerWorker, R]
   )(implicit decoder: Decoder[BagRegistrationNotification]): R =

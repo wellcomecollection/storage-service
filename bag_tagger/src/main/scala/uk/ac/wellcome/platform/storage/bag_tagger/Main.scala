@@ -4,7 +4,11 @@ import akka.actor.ActorSystem
 import akka.stream.Materializer
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.typesafe.{
+  AlpakkaSqsWorkerConfigBuilder,
+  CloudwatchMonitoringClientBuilder,
+  SQSBuilder
+}
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
 import uk.ac.wellcome.platform.storage.bag_tagger.services.BagTaggerWorker
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp

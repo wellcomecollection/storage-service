@@ -264,8 +264,8 @@ module "bag_tagger" {
   service_name = local.bag_tagger_service_name
 
   environment = {
-    queue_url          = module.bag_tagger_input_queue.url
-    metrics_namespace  = local.bag_tagger_service_name
+    queue_url         = module.bag_tagger_input_queue.url
+    metrics_namespace = local.bag_tagger_service_name
   }
 
   cpu    = 512

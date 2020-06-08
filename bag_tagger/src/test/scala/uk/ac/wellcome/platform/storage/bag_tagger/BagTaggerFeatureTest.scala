@@ -8,10 +8,10 @@ import uk.ac.wellcome.platform.storage.bag_tagger.fixtures.BagTaggerFixtures
 import uk.ac.wellcome.json.JsonUtil._
 
 class BagTaggerFeatureTest
-  extends AnyFunSpec
-  with BagTaggerFixtures
-  with Eventually
-  with Matchers {
+    extends AnyFunSpec
+    with BagTaggerFixtures
+    with Eventually
+    with Matchers {
 
   it("should consume messages") {
     withLocalSqsQueue() { queue =>
@@ -20,7 +20,6 @@ class BagTaggerFeatureTest
         queue,
         outgoing
       ) { _ =>
-
         eventually {
           assertQueueEmpty(queue)
         }
