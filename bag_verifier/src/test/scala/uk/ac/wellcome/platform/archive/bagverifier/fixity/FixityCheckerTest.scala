@@ -61,7 +61,45 @@ class FixityCheckerTest
     }
 
     it("errors if a new tag is written between initial read and write") {
-      true shouldBe false
+      val brokenTags = new MemoryTags[ObjectLocation](initialTags = Map.empty) {
+        private var calls: Int = 0
+
+        override def get(location: ObjectLocation): Either[ReadError, Map[String, String]] = {
+          if (calls == 0) {
+            calls += 1
+            Right(Map[String, String]())
+          } else {
+            Right(Map(
+              "Content-MD5" -> "md5.wrong",
+              "Content-SHA1" -> "sha1.wrong",
+              "Content-SHA256" -> "sha256.wrong",
+            ))
+          }
+        }
+      }
+
+      val streamStore = MemoryStreamStore[ObjectLocation]()
+
+      val location = createObjectLocation
+
+      val (content, checksum) = createStringChecksumPair
+      val inputStream = stringCodec.toStream(content).right.value
+      streamStore.put(location)(inputStream) shouldBe a[Right[_, _]]
+
+      val fixityChecker = new MemoryFixityChecker(
+        streamStore = streamStore,
+        tags = brokenTags
+      )
+
+      val expectedFileFixity = createExpectedFileFixityWith(
+        location = location,
+        checksum = checksum
+      )
+
+      val result = fixityChecker.check(expectedFileFixity)
+
+      result shouldBe a[FileFixityCouldNotWriteTag]
+      result.asInstanceOf[FileFixityCouldNotWriteTag].e shouldBe a[AssertionError]
     }
   }
 }
