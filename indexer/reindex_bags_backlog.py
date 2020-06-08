@@ -265,12 +265,12 @@ def publish(env, ids, dry_run, role_arn):
     dynamodb_client = create_client("dynamodb", role_arn)
     sns_client = create_client("sns", role_arn)
 
-    if(not ids):
+    if not ids:
         bags_to_publish = get_latest_bags(dynamodb_client, config["table_name"])
-        publish_bags(sns_client, config["topic_arn"], bags_to_publish, dry_run)
     else:
         bags_to_publish = gather_bags(dynamodb_client, config["table_name"], ids)
-        publish_bags(sns_client, config["topic_arn"], bags_to_publish, dry_run)
+
+    publish_bags(sns_client, config["topic_arn"], bags_to_publish, dry_run)
 
 
 @click.command()
