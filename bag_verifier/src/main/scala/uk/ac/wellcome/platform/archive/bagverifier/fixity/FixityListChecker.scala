@@ -11,13 +11,13 @@ class FixityListChecker[Container](
   verifiable: ExpectedFixity[Container],
   fixityChecker: FixityChecker
 ) extends Logging {
-  def verify(container: Container): FixityListResult = {
+  def check(container: Container): FixityListResult = {
     debug(s"Checking the fixity info for $container")
     verifiable.create(container) match {
       case Left(err) => CouldNotCreateExpectedFixityList(err.msg)
       case Right(verifiableLocations) =>
         verifiableLocations
-          .map(fixityChecker.verify)
+          .map(fixityChecker.check)
           .foldLeft[FixityListCheckingResult](FixityListAllCorrect(Nil)) {
 
           case (FixityListAllCorrect(locations), correct: FileFixityCorrect) =>

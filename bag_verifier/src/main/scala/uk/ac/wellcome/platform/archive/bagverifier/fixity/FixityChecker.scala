@@ -18,7 +18,7 @@ trait FixityChecker extends Logging {
 
   def locate(uri: URI): Either[LocateFailure[URI], ObjectLocation]
 
-  def verify(expectedFileFixity: ExpectedFileFixity): FileFixityResult = {
+  def check(expectedFileFixity: ExpectedFileFixity): FileFixityResult = {
     debug(s"Attempting to verify: $expectedFileFixity")
 
     val algorithm = expectedFileFixity.checksum.algorithm

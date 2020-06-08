@@ -55,7 +55,7 @@ class S3FixityCheckerTest
 
     val result =
       withFixityChecker {
-        _.verify(expectedFileFixity)
+        _.check(expectedFileFixity)
       }
 
     result shouldBe a[FileFixityCouldNotRead]
@@ -81,7 +81,7 @@ class S3FixityCheckerTest
 
     val result =
       withFixityChecker {
-        _.verify(expectedFileFixity)
+        _.check(expectedFileFixity)
       }
 
     result shouldBe a[FileFixityCouldNotRead]
@@ -108,7 +108,7 @@ class S3FixityCheckerTest
 
       val result =
         withFixityChecker {
-          _.verify(expectedFileFixity)
+          _.check(expectedFileFixity)
         }
 
       result shouldBe a[FileFixityCouldNotRead]

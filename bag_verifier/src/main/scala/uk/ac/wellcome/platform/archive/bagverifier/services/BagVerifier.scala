@@ -58,7 +58,7 @@ class BagVerifier(namespace: String)(
             )
           )
 
-          verificationResult <- verifyChecksums(
+          verificationResult <- verifyChecksumAndSize(
             root = root,
             bag = bag
           )
@@ -132,7 +132,7 @@ class BagVerifier(namespace: String)(
       Right(())
     }
 
-  private def verifyChecksums(
+  private def verifyChecksumAndSize(
     root: ObjectLocationPrefix,
     bag: Bag
   ): InternalResult[FixityListResult] = {
@@ -142,7 +142,7 @@ class BagVerifier(namespace: String)(
     implicit val fixityListChecker: FixityListChecker[Bag] =
       new FixityListChecker()
 
-    Try { fixityListChecker.verify(bag) } match {
+    Try { fixityListChecker.check(bag) } match {
       case Failure(err: Throwable) => Left(BagVerifierError(err))
       case Success(result)         => Right(result)
     }

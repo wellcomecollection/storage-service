@@ -73,7 +73,7 @@ trait FixityCheckerTestCases[Namespace, Context]
 
         val result =
           withFixityChecker {
-            _.verify(expectedFileFixity)
+            _.check(expectedFileFixity)
           }
 
         result shouldBe a[FileFixityCorrect]
@@ -99,7 +99,7 @@ trait FixityCheckerTestCases[Namespace, Context]
 
         val result =
           withFixityChecker {
-            _.verify(expectedFileFixity)
+            _.check(expectedFileFixity)
           }
 
         result shouldBe a[FileFixityCouldNotRead]
@@ -130,7 +130,7 @@ trait FixityCheckerTestCases[Namespace, Context]
 
         val result =
           withFixityChecker {
-            _.verify(expectedFileFixity)
+            _.check(expectedFileFixity)
           }
 
         result shouldBe a[FileFixityMismatch]
@@ -169,7 +169,7 @@ trait FixityCheckerTestCases[Namespace, Context]
 
         val result =
           withFixityChecker {
-            _.verify(expectedFileFixity)
+            _.check(expectedFileFixity)
           }
 
         result shouldBe a[FileFixityMismatch]
@@ -208,7 +208,7 @@ trait FixityCheckerTestCases[Namespace, Context]
 
         val result =
           withFixityChecker {
-            _.verify(expectedFileFixity)
+            _.check(expectedFileFixity)
           }
 
         result shouldBe a[FileFixityCorrect]
@@ -242,7 +242,7 @@ trait FixityCheckerTestCases[Namespace, Context]
 
         val result =
           withFixityChecker {
-            _.verify(expectedFileFixity)
+            _.check(expectedFileFixity)
           }
 
         result shouldBe a[FileFixityCorrect]
