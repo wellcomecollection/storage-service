@@ -28,6 +28,13 @@ class FixityCheckerTest
             Map[String, String] => Either[UpdateFunctionError, Map[String, String]]):
           Either[UpdateError, Map[String, String]] =
           Left(UpdateWriteError(StoreWriteError(new Throwable("BOOM!"))))
+
+        override def get(location: ObjectLocation): Either[ReadError, Map[String, String]] =
+          super.get(location) match {
+            case Right(tags)                => Right(tags)
+            case Left(_: DoesNotExistError) => Right(Map[String, String]())
+            case Left(err)                  => Left(err)
+          }
       }
 
       val streamStore = MemoryStreamStore[ObjectLocation]()

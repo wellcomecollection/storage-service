@@ -53,9 +53,12 @@ trait FixityChecker extends Logging {
 
       existingTags <- tags.get(objectLocation) match {
         case Right(tagSet)   => Right(tagSet)
-        case Left(readError) => Left(
-          FileFixityCouldNotRead(expectedFileFixity, e = readError.e)
-        )
+        case Left(readError) => {
+          debug(s"Could not read tags for $objectLocation: $readError")
+          Left(
+            FileFixityCouldNotRead(expectedFileFixity, e = readError.e)
+          )
+        }
       }
       _ = debug(s"Existing tags on $objectLocation: $existingTags")
 
@@ -63,6 +66,7 @@ trait FixityChecker extends Logging {
         expectedFileFixity = expectedFileFixity,
         objectLocation = objectLocation
       )
+      _ = debug(s"Size of $objectLocation is $size")
 
       checksumResult <- verifyChecksum(
         expectedFileFixity = expectedFileFixity,
@@ -74,7 +78,7 @@ trait FixityChecker extends Logging {
         size = size
       )
 
-      _ = debug(s"@@AWLC checksum result == $checksumResult")
+      _ = debug(s"Checksum result for $objectLocation is $checksumResult")
 
       _ <- writeChecksumTag(
         expectedFileFixity = expectedFileFixity,
@@ -129,12 +133,15 @@ trait FixityChecker extends Logging {
     for {
       actualLength <- sizeFinder.getSize(objectLocation) match {
         case Success(size) => Right(size)
-        case Failure(_)  => Left(
-          FileFixityCouldNotRead(
-            expectedFileFixity,
-            e = LocationNotFound(expectedFileFixity, "Location not available!")
+        case Failure(err)  => {
+          debug(s"Unable to get size of $objectLocation: $err")
+          Left(
+            FileFixityCouldNotRead(
+              expectedFileFixity,
+              e = LocationNotFound(expectedFileFixity, "Location not available!")
+            )
           )
-        )
+        }
       }
 
       _ <- expectedFileFixity.length match {
@@ -174,7 +181,6 @@ trait FixityChecker extends Logging {
         )
 
       case Some(storedValue) if storedValue == fixityTagValue => {
-        debug(s"@@AWLC boo wrong branch in verifyChecksum(!")
         Right(
           FileFixityCorrect(
             expectedFileFixity = expectedFileFixity,

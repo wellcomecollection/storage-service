@@ -226,7 +226,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
           } shouldBe a[FileFixityCorrect]
 
           val storedTags = withTags { _.get(location) }.right.value
-          storedTags shouldBe Map(s"Content-${checksum.algorithm}" -> checksum.value.toString)
+          storedTags shouldBe Map(s"Content-${checksum.algorithm.pathRepr.toUpperCase}" -> checksum.value.toString)
         }
       }
     }
