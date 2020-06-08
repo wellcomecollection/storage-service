@@ -107,6 +107,18 @@ def get_latest_bags(dynamodb_client, table_name):
     return bags
 
 
+def get_bag(dynamodb_client, table_name, bag_id):
+    response = dynamodb_client.query(
+        TableName=table_name,
+        KeyConditionExpression="id = :bag_id",
+        ExpressionAttributeValues={":bag_id": {"S": bag_id}},
+    )
+
+    max_version = max(int(item["version"]["N"]) for item in response["Items"])
+
+    return {bag_id: max_version}
+
+
 def publish_bags(sns_client, topic_arn, bags, dry_run=False):
     unique_bags = len(bags)
 
@@ -220,6 +232,17 @@ def get_config(env):
         return STAGE_CONFIG
 
 
+def gather_bags(dynamodb_client, table_name, bag_ids):
+    split_bag_ids = bag_ids.split(",")
+    bags = [get_bag(dynamodb_client, table_name, bag_id) for bag_id in split_bag_ids]
+
+    bags_to_publish = {}
+    for bag in bags:
+        bags_to_publish.update(bag)
+
+    return bags_to_publish
+
+
 @click.group()
 def cli():
     pass
@@ -227,51 +250,64 @@ def cli():
 
 @click.command()
 @click.option("--env", default="stage", help="Environment to run against (prod|stage)")
+@click.option(
+    "--ids", default=[], help="Specific Bag to reindex (will not scan for all bags)"
+)
 @click.option("--dry_run", default=False, is_flag=True, help="Do not publish messages")
 @click.option(
     "--role_arn", default=ROLE_ARN, help="AWS Role ARN to run this script with"
 )
-def publish(env, dry_run, role_arn):
+def publish(env, ids, dry_run, role_arn):
     config = get_config(env)
 
     dynamodb_client = create_client("dynamodb", role_arn)
     sns_client = create_client("sns", role_arn)
 
-    bags_to_publish = get_latest_bags(dynamodb_client, config["table_name"])
+    if not ids:
+        bags_to_publish = get_latest_bags(dynamodb_client, config["table_name"])
+    else:
+        bags_to_publish = gather_bags(dynamodb_client, config["table_name"], ids)
+
     publish_bags(sns_client, config["topic_arn"], bags_to_publish, dry_run)
 
 
 @click.command()
 @click.option("--env", default="stage", help="Environment to run against (prod|stage)")
 @click.option(
+    "--ids", default=[], help="Specific Bag to confirm (will not scan for all bags)"
+)
+@click.option(
     "--republish", default=False, is_flag=True, help="If not indexed, republish"
 )
 @click.option(
     "--role_arn", default=ROLE_ARN, help="AWS Role ARN to run this script with"
 )
-def confirm(env, republish, role_arn):
+def confirm(env, ids, republish, role_arn):
     config = get_config(env)
 
     dynamodb_client = create_client("dynamodb", role_arn)
     elastic_client = create_elastic_client(role_arn, ES_SECRETS)
     sns_client = create_client("sns", role_arn)
 
-    bags_to_publish = get_latest_bags(dynamodb_client, config["table_name"])
-    bags_to_confirm = [key for (key, value) in bags_to_publish.items()]
+    if not ids:
+        latest_bags = get_latest_bags(dynamodb_client, config["table_name"])
+    else:
+        latest_bags = gather_bags(dynamodb_client, config["table_name"], ids)
+
+    bags_to_confirm = [key for (key, value) in latest_bags.items()]
 
     not_indexed = confirm_indexed(elastic_client, bags_to_confirm, config["es_index"])
+
     if not_indexed:
         print(f"NOT INDEXED: {len(not_indexed)}")
         if republish:
             print(f"Republishing {len(not_indexed)} missing bags.")
-            bags_to_publish = {
-                bag_id: bags_to_publish[bag_id] for bag_id in not_indexed
-            }
-            publish_bags(sns_client, config["topic_arn"], bags_to_publish)
+            latest_bags = {bag_id: latest_bags[bag_id] for bag_id in not_indexed}
+            publish_bags(sns_client, config["topic_arn"], latest_bags)
         else:
             pprint(not_indexed)
     else:
-        print(f"{len(bags_to_publish)} bags published.\n")
+        print(f"{len(latest_bags)} bags published.\n")
 
 
 cli.add_command(publish)
