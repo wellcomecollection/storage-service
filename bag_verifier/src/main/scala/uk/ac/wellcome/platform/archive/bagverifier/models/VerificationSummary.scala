@@ -2,19 +2,14 @@ package uk.ac.wellcome.platform.archive.bagverifier.models
 
 import java.time.Instant
 
+import uk.ac.wellcome.platform.archive.bagverifier.fixity._
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
-import uk.ac.wellcome.platform.archive.common.verify.{
-  VerificationFailure,
-  VerificationIncomplete,
-  VerificationResult,
-  VerificationSuccess
-}
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 
 sealed trait VerificationSummary extends Summary {
   val rootLocation: ObjectLocationPrefix
-  val verification: Option[VerificationResult]
+  val fixityListResult: Option[FixityListResult]
 
   val endTime: Instant
   override val maybeEndTime: Option[Instant] = Some(endTime)
@@ -22,24 +17,24 @@ sealed trait VerificationSummary extends Summary {
   override val fieldsToLog: Seq[(String, Any)] = {
     val baseFields = Seq(("root", rootLocation))
 
-    verification match {
-      case Some(VerificationIncomplete(message)) =>
+    fixityListResult match {
+      case Some(CouldNotCreateExpectedFixityList(message)) =>
         baseFields ++ Seq(
           ("status", "incomplete"),
           ("message", message)
         )
 
-      case Some(VerificationFailure(failed, succeeded)) =>
+      case Some(FixityListWithErrors(errors, correct)) =>
         baseFields ++ Seq(
           ("status", "failure"),
-          ("verified", succeeded.size),
-          ("failed", failed.size)
+          ("correct", correct.size),
+          ("errors", errors.size)
         )
 
-      case Some(VerificationSuccess(succeeded)) =>
+      case Some(FixityListAllCorrect(correct)) =>
         baseFields ++ Seq(
           ("status", "success"),
-          ("verified", succeeded.size)
+          ("correct", correct.size)
         )
 
       case _ =>
@@ -68,10 +63,10 @@ object VerificationSummary {
   def create(
     ingestId: IngestID,
     root: ObjectLocationPrefix,
-    v: VerificationResult,
+    v: FixityListResult,
     t: Instant
   ): VerificationSummary = v match {
-    case i @ VerificationIncomplete(_) =>
+    case i @ CouldNotCreateExpectedFixityList(_) =>
       VerificationIncompleteSummary(
         ingestId = ingestId,
         rootLocation = root,
@@ -79,19 +74,19 @@ object VerificationSummary {
         startTime = t,
         endTime = Instant.now()
       )
-    case f @ VerificationFailure(_, _) =>
+    case f @ FixityListWithErrors(_, _) =>
       VerificationFailureSummary(
         ingestId = ingestId,
         rootLocation = root,
-        verification = Some(f),
+        fixityListResult = Some(f),
         startTime = t,
         endTime = Instant.now()
       )
-    case s @ VerificationSuccess(_) =>
+    case s @ FixityListAllCorrect(_) =>
       VerificationSuccessSummary(
         ingestId = ingestId,
         rootLocation = root,
-        verification = Some(s),
+        fixityListResult = Some(s),
         startTime = t,
         endTime = Instant.now()
       )
@@ -104,13 +99,13 @@ case class VerificationIncompleteSummary(
   e: Throwable,
   startTime: Instant,
   endTime: Instant,
-  verification: Option[VerificationResult] = None
+  fixityListResult: Option[FixityListResult] = None
 ) extends VerificationSummary
 
 case class VerificationSuccessSummary(
   ingestId: IngestID,
   rootLocation: ObjectLocationPrefix,
-  verification: Some[VerificationSuccess],
+  fixityListResult: Some[FixityListAllCorrect],
   startTime: Instant,
   endTime: Instant
 ) extends VerificationSummary
@@ -118,7 +113,7 @@ case class VerificationSuccessSummary(
 case class VerificationFailureSummary(
   ingestId: IngestID,
   rootLocation: ObjectLocationPrefix,
-  verification: Option[VerificationFailure],
+  fixityListResult: Option[FixityListWithErrors],
   startTime: Instant,
   endTime: Instant
 ) extends VerificationSummary

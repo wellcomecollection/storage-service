@@ -1,18 +1,45 @@
-package uk.ac.wellcome.platform.archive.common.verify
+package uk.ac.wellcome.platform.archive.bagverifier.fixity
+
+import java.net.URI
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.fixtures.VerifyFixtures
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
+import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
+import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
 
-trait VerifierTestCases[Namespace, Context]
+trait FixityCheckerTestCases[Namespace, Context]
     extends AnyFunSpec
     with Matchers
     with NamespaceFixtures[ObjectLocation, Namespace]
-    with VerifyFixtures {
+    with StorageRandomThings
+    with ObjectLocationGenerators {
+
+  def randomChecksum = Checksum(SHA256, randomChecksumValue)
+  def badChecksum = Checksum(MD5, randomChecksumValue)
+
+  def createExpectedFileFixity: ExpectedFileFixity =
+    createExpectedFileFixityWith()
+
+  def resolve(location: ObjectLocation): URI
+
+  def createExpectedFileFixityWith(
+    location: ObjectLocation = createObjectLocation,
+    checksum: Checksum = randomChecksum,
+    length: Option[Long] = None
+  ): ExpectedFileFixity = {
+    ExpectedFileFixity(
+      uri = resolve(location),
+      path = BagPath(randomAlphanumeric),
+      checksum = checksum,
+      length = length
+    )
+  }
 
   def withContext[R](testWith: TestWith[Context, R]): R
 
@@ -22,7 +49,7 @@ trait VerifierTestCases[Namespace, Context]
     implicit context: Context
   ): Unit
 
-  def withVerifier[R](testWith: TestWith[Verifier, R])(
+  def withFixityChecker[R](testWith: TestWith[FixityChecker, R])(
     implicit context: Context
   ): R
 
@@ -40,21 +67,21 @@ trait VerifierTestCases[Namespace, Context]
         val location = createObjectLocationWith(namespace)
         putString(location, contentString)
 
-        val verifiableLocation = createVerifiableLocationWith(
+        val expectedFileFixity = createExpectedFileFixityWith(
           location = location,
           checksum = checksum
         )
 
         val result =
-          withVerifier {
-            _.verify(verifiableLocation)
+          withFixityChecker {
+            _.check(expectedFileFixity)
           }
 
-        result shouldBe a[VerifiedSuccess]
+        result shouldBe a[FileFixityCorrect]
 
-        val verifiedSuccess = result.asInstanceOf[VerifiedSuccess]
-        verifiedSuccess.verifiableLocation shouldBe verifiableLocation
-        verifiedSuccess.size shouldBe contentString.getBytes.size
+        val fixityCorrect = result.asInstanceOf[FileFixityCorrect]
+        fixityCorrect.expectedFileFixity shouldBe expectedFileFixity
+        fixityCorrect.size shouldBe contentString.getBytes.length
       }
     }
   }
@@ -66,23 +93,23 @@ trait VerifierTestCases[Namespace, Context]
 
         val location = createObjectLocationWith(namespace)
 
-        val verifiableLocation = createVerifiableLocationWith(
+        val expectedFileFixity = createExpectedFileFixityWith(
           location = location,
           checksum = checksum
         )
 
         val result =
-          withVerifier {
-            _.verify(verifiableLocation)
+          withFixityChecker {
+            _.check(expectedFileFixity)
           }
 
-        result shouldBe a[VerifiedFailure]
+        result shouldBe a[FileFixityCouldNotRead]
 
-        val verifiedFailure = result.asInstanceOf[VerifiedFailure]
+        val fixityCouldNotRead = result.asInstanceOf[FileFixityCouldNotRead]
 
-        verifiedFailure.verifiableLocation shouldBe verifiableLocation
-        verifiedFailure.e shouldBe a[LocationNotFound[_]]
-        verifiedFailure.e.getMessage should include(
+        fixityCouldNotRead.expectedFileFixity shouldBe expectedFileFixity
+        fixityCouldNotRead.e shouldBe a[LocationNotFound[_]]
+        fixityCouldNotRead.e.getMessage should include(
           "Location not available!"
         )
       }
@@ -97,23 +124,23 @@ trait VerifierTestCases[Namespace, Context]
         val location = createObjectLocationWith(namespace)
         putString(location, randomAlphanumeric)
 
-        val verifiableLocation = createVerifiableLocationWith(
+        val expectedFileFixity = createExpectedFileFixityWith(
           location = location,
           checksum = checksum
         )
 
         val result =
-          withVerifier {
-            _.verify(verifiableLocation)
+          withFixityChecker {
+            _.check(expectedFileFixity)
           }
 
-        result shouldBe a[VerifiedFailure]
+        result shouldBe a[FileFixityMismatch]
 
-        val verifiedFailure = result.asInstanceOf[VerifiedFailure]
+        val fixityMismatch = result.asInstanceOf[FileFixityMismatch]
 
-        verifiedFailure.verifiableLocation shouldBe verifiableLocation
-        verifiedFailure.e shouldBe a[FailedChecksumNoMatch]
-        verifiedFailure.e.getMessage should startWith(
+        fixityMismatch.expectedFileFixity shouldBe expectedFileFixity
+        fixityMismatch.e shouldBe a[FailedChecksumNoMatch]
+        fixityMismatch.e.getMessage should startWith(
           s"Checksum values do not match! Expected: $checksum"
         )
       }
@@ -133,7 +160,7 @@ trait VerifierTestCases[Namespace, Context]
         val location = createObjectLocationWith(namespace)
         val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
-        val verifiableLocation = createVerifiableLocationWith(
+        val expectedFileFixity = createExpectedFileFixityWith(
           location = location,
           checksum = checksum,
           length = Some(contentString.getBytes().length - 1)
@@ -142,17 +169,17 @@ trait VerifierTestCases[Namespace, Context]
         putString(location, contentString)
 
         val result =
-          withVerifier {
-            _.verify(verifiableLocation)
+          withFixityChecker {
+            _.check(expectedFileFixity)
           }
 
-        result shouldBe a[VerifiedFailure]
+        result shouldBe a[FileFixityMismatch]
 
-        val verifiedFailure = result.asInstanceOf[VerifiedFailure]
+        val fixityMismatch = result.asInstanceOf[FileFixityMismatch]
 
-        verifiedFailure.verifiableLocation shouldBe verifiableLocation
-        verifiedFailure.e shouldBe a[Throwable]
-        verifiedFailure.e.getMessage should startWith(
+        fixityMismatch.expectedFileFixity shouldBe expectedFileFixity
+        fixityMismatch.e shouldBe a[Throwable]
+        fixityMismatch.e.getMessage should startWith(
           "Lengths do not match:"
         )
       }
@@ -172,7 +199,7 @@ trait VerifierTestCases[Namespace, Context]
         val location = createObjectLocationWith(namespace)
         val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
-        val verifiableLocation = createVerifiableLocationWith(
+        val expectedFileFixity = createExpectedFileFixityWith(
           location = location,
           checksum = checksum,
           length = Some(contentString.getBytes().length)
@@ -181,15 +208,15 @@ trait VerifierTestCases[Namespace, Context]
         putString(location, contentString)
 
         val result =
-          withVerifier {
-            _.verify(verifiableLocation)
+          withFixityChecker {
+            _.check(expectedFileFixity)
           }
 
-        result shouldBe a[VerifiedSuccess]
+        result shouldBe a[FileFixityCorrect]
 
-        val verifiedSuccess = result.asInstanceOf[VerifiedSuccess]
-        verifiedSuccess.verifiableLocation shouldBe verifiableLocation
-        verifiedSuccess.size shouldBe contentString.getBytes.size
+        val fixityCorrect = result.asInstanceOf[FileFixityCorrect]
+        fixityCorrect.expectedFileFixity shouldBe expectedFileFixity
+        fixityCorrect.size shouldBe contentString.getBytes.length
       }
     }
   }
@@ -207,7 +234,7 @@ trait VerifierTestCases[Namespace, Context]
         val location = createObjectLocationWith(namespace)
         val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
-        val verifiableLocation = createVerifiableLocationWith(
+        val expectedFileFixity = createExpectedFileFixityWith(
           location = location,
           checksum = checksum
         )
@@ -215,15 +242,15 @@ trait VerifierTestCases[Namespace, Context]
         putString(location, contentString)
 
         val result =
-          withVerifier {
-            _.verify(verifiableLocation)
+          withFixityChecker {
+            _.check(expectedFileFixity)
           }
 
-        result shouldBe a[VerifiedSuccess]
+        result shouldBe a[FileFixityCorrect]
 
-        val verifiedSuccess = result.asInstanceOf[VerifiedSuccess]
-        verifiedSuccess.verifiableLocation shouldBe verifiableLocation
-        verifiedSuccess.size shouldBe contentString.getBytes.size
+        val fixityCorrect = result.asInstanceOf[FileFixityCorrect]
+        fixityCorrect.expectedFileFixity shouldBe expectedFileFixity
+        fixityCorrect.size shouldBe contentString.getBytes.length
       }
     }
   }

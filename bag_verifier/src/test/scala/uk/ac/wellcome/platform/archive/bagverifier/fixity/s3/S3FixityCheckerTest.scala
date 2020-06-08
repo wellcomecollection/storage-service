@@ -1,20 +1,24 @@
-package uk.ac.wellcome.platform.archive.common.verify.s3
+package uk.ac.wellcome.platform.archive.bagverifier.fixity.s3
 
 import java.net.URI
 
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  FileFixityCouldNotRead,
+  FixityChecker,
+  FixityCheckerTestCases
+}
+import uk.ac.wellcome.platform.archive.common.storage.services.S3Resolvable
 import uk.ac.wellcome.platform.archive.common.storage.{
   LocationError,
   LocationNotFound
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.S3Resolvable
-import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.fixtures.BucketNamespaceFixtures
 
-class S3ObjectVerifierTest
-    extends VerifierTestCases[Bucket, Unit]
+class S3FixityCheckerTest
+    extends FixityCheckerTestCases[Bucket, Unit]
     with BucketNamespaceFixtures {
   override def withContext[R](testWith: TestWith[Unit, R]): R =
     testWith(())
@@ -28,10 +32,10 @@ class S3ObjectVerifierTest
       contents
     )
 
-  override def withVerifier[R](
-    testWith: TestWith[Verifier, R]
+  override def withFixityChecker[R](
+    testWith: TestWith[FixityChecker, R]
   )(implicit context: Unit): R =
-    testWith(new S3ObjectVerifier())
+    testWith(new S3FixityChecker())
 
   implicit val context: Unit = ()
 
@@ -47,23 +51,23 @@ class S3ObjectVerifierTest
 
     val location = createObjectLocationWith(bucket = createBucket)
 
-    val verifiableLocation = createVerifiableLocationWith(
+    val expectedFileFixity = createExpectedFileFixityWith(
       location = location,
       checksum = checksum
     )
 
     val result =
-      withVerifier {
-        _.verify(verifiableLocation)
+      withFixityChecker {
+        _.check(expectedFileFixity)
       }
 
-    result shouldBe a[VerifiedFailure]
+    result shouldBe a[FileFixityCouldNotRead]
 
-    val verifiedFailure = result.asInstanceOf[VerifiedFailure]
+    val fixityCouldNotRead = result.asInstanceOf[FileFixityCouldNotRead]
 
-    verifiedFailure.verifiableLocation shouldBe verifiableLocation
-    verifiedFailure.e shouldBe a[LocationNotFound[_]]
-    verifiedFailure.e.getMessage should include(
+    fixityCouldNotRead.expectedFileFixity shouldBe expectedFileFixity
+    fixityCouldNotRead.e shouldBe a[LocationNotFound[_]]
+    fixityCouldNotRead.e.getMessage should include(
       "Location not available!"
     )
   }
@@ -73,23 +77,23 @@ class S3ObjectVerifierTest
 
     val location = createObjectLocationWith(namespace = "ABCD")
 
-    val verifiableLocation = createVerifiableLocationWith(
+    val expectedFileFixity = createExpectedFileFixityWith(
       location = location,
       checksum = checksum
     )
 
     val result =
-      withVerifier {
-        _.verify(verifiableLocation)
+      withFixityChecker {
+        _.check(expectedFileFixity)
       }
 
-    result shouldBe a[VerifiedFailure]
+    result shouldBe a[FileFixityCouldNotRead]
 
-    val verifiedFailure = result.asInstanceOf[VerifiedFailure]
+    val fixityCouldNotRead = result.asInstanceOf[FileFixityCouldNotRead]
 
-    verifiedFailure.verifiableLocation shouldBe verifiableLocation
-    verifiedFailure.e shouldBe a[LocationError[_]]
-    verifiedFailure.e.getMessage should include(
+    fixityCouldNotRead.expectedFileFixity shouldBe expectedFileFixity
+    fixityCouldNotRead.e shouldBe a[LocationError[_]]
+    fixityCouldNotRead.e.getMessage should include(
       "The specified bucket is not valid"
     )
   }
@@ -100,23 +104,23 @@ class S3ObjectVerifierTest
 
       val location = createObjectLocationWith(bucket)
 
-      val verifiableLocation = createVerifiableLocationWith(
+      val expectedFileFixity = createExpectedFileFixityWith(
         location = location,
         checksum = checksum
       )
 
       val result =
-        withVerifier {
-          _.verify(verifiableLocation)
+        withFixityChecker {
+          _.check(expectedFileFixity)
         }
 
-      result shouldBe a[VerifiedFailure]
+      result shouldBe a[FileFixityCouldNotRead]
 
-      val verifiedFailure = result.asInstanceOf[VerifiedFailure]
+      val fixityCouldNotRead = result.asInstanceOf[FileFixityCouldNotRead]
 
-      verifiedFailure.verifiableLocation shouldBe verifiableLocation
-      verifiedFailure.e shouldBe a[LocationNotFound[_]]
-      verifiedFailure.e.getMessage should include(
+      fixityCouldNotRead.expectedFileFixity shouldBe expectedFileFixity
+      fixityCouldNotRead.e shouldBe a[LocationNotFound[_]]
+      fixityCouldNotRead.e.getMessage should include(
         "Location not available!"
       )
     }

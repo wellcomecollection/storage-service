@@ -4,6 +4,10 @@ import org.scalatest.{Assertion, OptionValues, TryValues}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  FailedChecksumNoMatch,
+  FileFixityCorrect
+}
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
 import uk.ac.wellcome.platform.archive.bagverifier.models.{
   VerificationFailureSummary,
@@ -30,10 +34,6 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepResult,
   IngestStepSucceeded,
   StorageSpace
-}
-import uk.ac.wellcome.platform.archive.common.verify.{
-  FailedChecksumNoMatch,
-  VerifiedSuccess
 }
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
@@ -83,10 +83,10 @@ class BagVerifierTest
 
       val summary = result.summary
         .asInstanceOf[VerificationSuccessSummary]
-      val verification = summary.verification.value
+      val fixityListResult = summary.fixityListResult.value
 
       verifySuccessCount(
-        verification.locations,
+        fixityListResult.locations,
         expectedCount = expectedFileCount
       )
     }
@@ -104,16 +104,16 @@ class BagVerifierTest
 
     assertBagFails(badBuilder) {
       case (ingestFailed, summary) =>
-        val verification = summary.verification.value
+        val fixityListResult = summary.fixityListResult.value
 
         verifySuccessCount(
-          verification.success,
+          fixityListResult.correct,
           expectedCount = expectedFileCount - 1
         )
-        verification.failure should have size 1
+        fixityListResult.errors should have size 1
 
-        val location = verification.failure.head
-        val error = location.e
+        val fixityError = fixityListResult.errors.head
+        val error = fixityError.e
 
         error shouldBe a[FailedChecksumNoMatch]
         error.getMessage should include("Checksum values do not match!")
@@ -136,16 +136,16 @@ class BagVerifierTest
 
     assertBagFails(badBuilder) {
       case (_, summary) =>
-        val verification = summary.verification.value
+        val fixityListResult = summary.fixityListResult.value
 
         verifySuccessCount(
-          verification.success,
+          fixityListResult.correct,
           expectedCount = expectedFileCount - 1
         )
-        verification.failure should have size 1
+        fixityListResult.errors should have size 1
 
-        val location = verification.failure.head
-        val error = location.e
+        val fixityError = fixityListResult.errors.head
+        val error = fixityError.e
 
         error shouldBe a[FailedChecksumNoMatch]
         error.getMessage should include("Checksum values do not match!")
@@ -190,16 +190,16 @@ class BagVerifierTest
 
     assertBagFails(badBuilder) {
       case (_, summary) =>
-        val verification = summary.verification.value
+        val fixityListResult = summary.fixityListResult.value
 
         verifySuccessCount(
-          verification.success,
+          fixityListResult.correct,
           expectedCount = expectedFileCount - 1
         )
-        verification.failure should have size 1
+        fixityListResult.errors should have size 1
 
-        val location = verification.failure.head
-        val error = location.e
+        val fixityError = fixityListResult.errors.head
+        val error = fixityError.e
 
         error shouldBe a[LocationNotFound[_]]
         error.getMessage should startWith("Location not available!")
@@ -605,7 +605,7 @@ class BagVerifierTest
   }
 
   private def verifySuccessCount(
-    successes: List[VerifiedSuccess],
+    successes: List[FileFixityCorrect],
     expectedCount: Int
   ): Assertion =
     if (successes.map { _.objectLocation.path }.exists {

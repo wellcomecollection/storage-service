@@ -1,9 +1,10 @@
-package uk.ac.wellcome.platform.archive.common.bagit.services
+package uk.ac.wellcome.platform.archive.bagverifier.fixity.bag
 
 import java.net.URI
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.ExpectedFileFixity
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagFetchMetadata,
   BagPath
@@ -16,13 +17,12 @@ import uk.ac.wellcome.platform.archive.common.storage.Resolvable
 import uk.ac.wellcome.platform.archive.common.verify.{
   Checksum,
   ChecksumValue,
-  HashingAlgorithm,
-  VerifiableLocation
+  HashingAlgorithm
 }
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
-class BagVerifiableTest
+class BagExpectedFixityTest
     extends AnyFunSpec
     with Matchers
     with BagGenerators
@@ -32,15 +32,15 @@ class BagVerifiableTest
     (t: ObjectLocation) => new URI(s"example://${t.namespace}/${t.path}")
 
   val root: ObjectLocation = createObjectLocation
-  val bagVerifiable = new BagVerifiable(root)
+  val bagExpectedFixity = new BagExpectedFixity(root)
 
   describe("creates the correct list of VerifiableLocation") {
     it("for an empty bag") {
       val bag = createBag
 
-      val bagVerifiable = new BagVerifiable(root)
+      val bagExpectedFixity = new BagExpectedFixity(root)
 
-      bagVerifiable.create(bag) shouldBe Right(List.empty)
+      bagExpectedFixity.create(bag) shouldBe Right(List.empty)
     }
 
     it("for a bag that just has manifest files") {
@@ -56,7 +56,7 @@ class BagVerifiableTest
         manifestChecksumAlgorithm = manifestChecksumAlgorithm
       )
 
-      bagVerifiable.create(bag).right.get should contain theSameElementsAs
+      bagExpectedFixity.create(bag).right.get should contain theSameElementsAs
         getExpectedLocations(
           manifestEntries = manifestEntries,
           checksumAlgorithm = manifestChecksumAlgorithm
@@ -76,7 +76,7 @@ class BagVerifiableTest
         tagManifestChecksumAlgorithm = tagManifestChecksumAlgorithm
       )
 
-      bagVerifiable.create(bag).right.get should contain theSameElementsAs
+      bagExpectedFixity.create(bag).right.get should contain theSameElementsAs
         getExpectedLocations(
           manifestEntries = tagManifestEntries,
           checksumAlgorithm = tagManifestChecksumAlgorithm
@@ -103,7 +103,7 @@ class BagVerifiableTest
         tagManifestChecksumAlgorithm = checksumAlgorithm
       )
 
-      bagVerifiable.create(bag).right.get should contain theSameElementsAs
+      bagExpectedFixity.create(bag).right.get should contain theSameElementsAs
         getExpectedLocations(
           manifestEntries = manifestEntries ++ tagManifestEntries,
           checksumAlgorithm = checksumAlgorithm
@@ -144,7 +144,7 @@ class BagVerifiableTest
             fetchEntries = fetchEntries
           )
 
-      bagVerifiable.create(bag).right.get should contain theSameElementsAs
+      bagExpectedFixity.create(bag).right.get should contain theSameElementsAs
         expectedLocations
     }
   }
@@ -159,7 +159,7 @@ class BagVerifiableTest
 
       val bag = createBagWith(fetchEntries = fetchEntries)
 
-      val result = bagVerifiable.create(bag)
+      val result = bagExpectedFixity.create(bag)
       result shouldBe a[Left[_, _]]
       result.left.get.msg shouldBe "fetch.txt refers to paths that aren't in the bag manifest: example.txt"
     }
@@ -176,7 +176,7 @@ class BagVerifiableTest
 
       val bag = createBagWith(fetchEntries = fetchEntries)
 
-      val result = bagVerifiable.create(bag)
+      val result = bagExpectedFixity.create(bag)
       result shouldBe a[Left[_, _]]
       result.left.get.msg shouldBe
         "fetch.txt refers to paths that aren't in the bag manifest: example.txt"
@@ -189,10 +189,10 @@ class BagVerifiableTest
   def getExpectedLocations(
     manifestEntries: Map[BagPath, ChecksumValue],
     checksumAlgorithm: HashingAlgorithm
-  ): Seq[VerifiableLocation] =
+  ): Seq[ExpectedFileFixity] =
     manifestEntries.map {
       case (bagPath, checksumValue) =>
-        VerifiableLocation(
+        ExpectedFileFixity(
           path = bagPath,
           uri = new URI(
             s"example://${root.namespace}/${root.path}/$bagPath"
@@ -209,12 +209,12 @@ class BagVerifiableTest
     manifestEntries: Map[BagPath, ChecksumValue],
     checksumAlgorithm: HashingAlgorithm,
     fetchEntries: Map[BagPath, BagFetchMetadata]
-  ): Seq[VerifiableLocation] =
+  ): Seq[ExpectedFileFixity] =
     manifestEntries.map {
       case (bagPath, checksumValue) =>
         val fetchMetadata = fetchEntries(bagPath)
 
-        VerifiableLocation(
+        ExpectedFileFixity(
           uri = fetchMetadata.uri,
           path = bagPath,
           checksum = Checksum(

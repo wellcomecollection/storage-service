@@ -1,22 +1,28 @@
-package uk.ac.wellcome.platform.archive.common.bagit.services
+package uk.ac.wellcome.platform.archive.bagverifier.fixity.bag
 
 import grizzled.slf4j.Logging
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  CannotCreateExpectedFixity,
+  ExpectedFileFixity,
+  ExpectedFixity
+}
 import uk.ac.wellcome.platform.archive.common.bagit.models._
+import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
 import uk.ac.wellcome.platform.archive.common.storage.{Locatable, Resolvable}
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
 
-class BagVerifiable(root: ObjectLocation)(
+class BagExpectedFixity(root: ObjectLocation)(
   implicit resolvable: Resolvable[ObjectLocation]
-) extends Verifiable[Bag]
+) extends ExpectedFixity[Bag]
     with Logging {
 
   import Locatable._
 
   override def create(
     bag: Bag
-  ): Either[VerifiableGenerationFailed, Seq[VerifiableLocation]] = {
-    debug(s"Attempting to create Seq[VerifiableLocation] for $bag")
+  ): Either[CannotCreateExpectedFixity, Seq[ExpectedFileFixity]] = {
+    debug(s"Attempting to get the fixity info for $bag")
 
     BagMatcher.correlateFetchEntries(bag) match {
       case Left(error) =>
@@ -38,7 +44,7 @@ class BagVerifiable(root: ObjectLocation)(
 
   private def getVerifiableLocation(
     matched: MatchedLocation
-  ): Either[Throwable, VerifiableLocation] =
+  ): Either[Throwable, ExpectedFileFixity] =
     matched match {
       case MatchedLocation(
           bagPath: BagPath,
@@ -46,7 +52,7 @@ class BagVerifiable(root: ObjectLocation)(
           Some(fetchEntry)
           ) =>
         Right(
-          VerifiableLocation(
+          ExpectedFileFixity(
             uri = fetchEntry.uri,
             path = bagPath,
             checksum = checksum,
@@ -56,10 +62,10 @@ class BagVerifiable(root: ObjectLocation)(
 
       case MatchedLocation(bagPath: BagPath, checksum: Checksum, None) =>
         bagPath.locateWith(root) match {
-          case Left(e) => Left(VerifiableGenerationFailed(e.msg))
+          case Left(e) => Left(CannotCreateExpectedFixity(e.msg))
           case Right(location) =>
             Right(
-              VerifiableLocation(
+              ExpectedFileFixity(
                 uri = resolvable.resolve(location),
                 path = bagPath,
                 checksum = checksum,
@@ -70,5 +76,5 @@ class BagVerifiable(root: ObjectLocation)(
     }
 
   private def combine(errors: Seq[Throwable]) =
-    VerifiableGenerationFailed(errors.map(_.getMessage).mkString("\n"))
+    CannotCreateExpectedFixity(errors.map(_.getMessage).mkString("\n"))
 }

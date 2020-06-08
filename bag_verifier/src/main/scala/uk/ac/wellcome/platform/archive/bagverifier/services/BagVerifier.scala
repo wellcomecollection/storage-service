@@ -3,17 +3,14 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 import java.time.Instant
 
 import grizzled.slf4j.Logging
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.bag.BagExpectedFixity
+import uk.ac.wellcome.platform.archive.bagverifier.fixity._
 import uk.ac.wellcome.platform.archive.bagverifier.models._
 import uk.ac.wellcome.platform.archive.common.bagit.models._
-import uk.ac.wellcome.platform.archive.common.bagit.services.{
-  BagReader,
-  BagVerifiable
-}
+import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.platform.archive.common.verify.Verification._
-import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
@@ -22,7 +19,7 @@ import scala.util.{Failure, Success, Try}
 class BagVerifier(namespace: String)(
   implicit bagReader: BagReader,
   resolvable: Resolvable[ObjectLocation],
-  verifier: Verifier,
+  fixityChecker: FixityChecker,
   listing: Listing[ObjectLocationPrefix, ObjectLocation]
 ) extends Logging {
 
@@ -61,7 +58,7 @@ class BagVerifier(namespace: String)(
             )
           )
 
-          verificationResult <- verifyChecksums(
+          verificationResult <- verifyChecksumAndSize(
             root = root,
             bag = bag
           )
@@ -135,14 +132,17 @@ class BagVerifier(namespace: String)(
       Right(())
     }
 
-  private def verifyChecksums(
+  private def verifyChecksumAndSize(
     root: ObjectLocationPrefix,
     bag: Bag
-  ): InternalResult[VerificationResult] = {
-    implicit val bagVerifiable: BagVerifiable =
-      new BagVerifiable(root.asLocation())
+  ): InternalResult[FixityListResult] = {
+    implicit val bagExpectedFixity: BagExpectedFixity =
+      new BagExpectedFixity(root.asLocation())
 
-    Try { bag.verify } match {
+    implicit val fixityListChecker: FixityListChecker[Bag] =
+      new FixityListChecker()
+
+    Try { fixityListChecker.check(bag) } match {
       case Failure(err: Throwable) => Left(BagVerifierError(err))
       case Success(result)         => Right(result)
     }
@@ -165,10 +165,10 @@ class BagVerifier(namespace: String)(
 
   private def verifyPayloadOxumFileSize(
     bag: Bag,
-    verificationResult: VerificationResult
+    verificationResult: FixityListResult
   ): InternalResult[Unit] =
     verificationResult match {
-      case VerificationSuccess(locations) =>
+      case FixityListAllCorrect(locations) =>
         // The Payload-Oxum octetstream sum only counts the size of files in the payload,
         // not manifest files such as the bag-info.txt file.
         // We need to filter those out.
@@ -177,7 +177,7 @@ class BagVerifier(namespace: String)(
         val actualSize =
           locations
             .filter { loc =>
-              dataFilePaths.contains(loc.verifiableLocation.path)
+              dataFilePaths.contains(loc.expectedFileFixity.path)
             }
             .map { _.size }
             .sum
@@ -253,10 +253,10 @@ class BagVerifier(namespace: String)(
     bag: Bag,
     root: ObjectLocationPrefix,
     actualLocations: Seq[ObjectLocation],
-    verificationResult: VerificationResult
+    verificationResult: FixityListResult
   ): InternalResult[Unit] =
     verificationResult match {
-      case VerificationSuccess(_) =>
+      case FixityListAllCorrect(_) =>
         val bagFetchLocations = bag.fetch match {
           case Some(bagFetch) =>
             bagFetch.paths
@@ -315,10 +315,10 @@ class BagVerifier(namespace: String)(
   private def verifyNoUnreferencedFiles(
     root: ObjectLocationPrefix,
     actualLocations: Seq[ObjectLocation],
-    verificationResult: VerificationResult
+    verificationResult: FixityListResult
   ): InternalResult[Unit] =
     verificationResult match {
-      case VerificationSuccess(locations) =>
+      case FixityListAllCorrect(locations) =>
         val expectedLocations = locations.map { _.objectLocation }
 
         debug(s"Expecting the bag to contain: $expectedLocations")
@@ -369,7 +369,7 @@ class BagVerifier(namespace: String)(
 
   private def buildStepResult(
     ingestId: IngestID,
-    internalResult: InternalResult[VerificationResult],
+    internalResult: InternalResult[FixityListResult],
     root: ObjectLocationPrefix,
     startTime: Instant
   ): IngestStepResult[VerificationSummary] =
@@ -386,43 +386,43 @@ class BagVerifier(namespace: String)(
           maybeUserFacingMessage = error.userMessage
         )
 
-      case Right(incomplete: VerificationIncomplete) =>
+      case Right(creationError: CouldNotCreateExpectedFixityList) =>
         IngestFailed(
           summary = VerificationIncompleteSummary(
             ingestId = ingestId,
             rootLocation = root,
-            e = incomplete,
+            e = creationError,
             startTime = startTime,
             endTime = Instant.now()
           ),
-          e = incomplete,
-          maybeUserFacingMessage = Some(incomplete.getMessage)
+          e = creationError,
+          maybeUserFacingMessage = Some(creationError.getMessage)
         )
 
-      case Right(success: VerificationSuccess) =>
+      case Right(success: FixityListAllCorrect) =>
         IngestStepSucceeded(
           VerificationSuccessSummary(
             ingestId = ingestId,
             rootLocation = root,
-            verification = Some(success),
+            fixityListResult = Some(success),
             startTime = startTime,
             endTime = Instant.now()
           )
         )
 
-      case Right(result: VerificationFailure) =>
+      case Right(result: FixityListWithErrors) =>
         val verificationFailureMessage =
-          result.failure
-            .map { verifiedFailure =>
-              s"${verifiedFailure.verifiableLocation.uri}: ${verifiedFailure.e.getMessage}"
+          result.errors
+            .map { fixityError: FileFixityError =>
+              s"${fixityError.expectedFileFixity.uri}: ${fixityError.e.getMessage}"
             }
             .mkString("\n")
 
         warn(s"Errors verifying $root:\n$verificationFailureMessage")
 
-        val errorCount = result.failure.size
+        val errorCount = result.errors.size
         val pathList =
-          result.failure.map { _.verifiableLocation.path.value }.mkString(", ")
+          result.errors.map { _.expectedFileFixity.path.value }.mkString(", ")
 
         val userFacingMessage =
           if (errorCount == 1)
@@ -434,7 +434,7 @@ class BagVerifier(namespace: String)(
           summary = VerificationFailureSummary(
             ingestId = ingestId,
             rootLocation = root,
-            verification = Some(result),
+            fixityListResult = Some(result),
             startTime = startTime,
             endTime = Instant.now()
           ),
