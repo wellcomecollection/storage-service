@@ -20,9 +20,9 @@ import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import scala.util.{Failure, Success, Try}
 
 class BagVerifier(namespace: String)(
-  implicit bagReader: BagReader[_],
+  implicit bagReader: BagReader,
   resolvable: Resolvable[ObjectLocation],
-  verifier: Verifier[_],
+  verifier: Verifier,
   listing: Listing[ObjectLocationPrefix, ObjectLocation]
 ) extends Logging {
 
