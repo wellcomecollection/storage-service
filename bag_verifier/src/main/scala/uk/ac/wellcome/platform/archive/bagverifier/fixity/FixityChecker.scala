@@ -48,8 +48,6 @@ trait FixityChecker extends Logging {
     val result: Either[FileFixityError, FileFixityCorrect] = for {
       objectLocation <- getObjectLocation(expectedFileFixity)
 
-      inputStream <- getInputStream(objectLocation, expectedFileFixity)
-
       _ <- verifySize(
         expectedFileFixity = expectedFileFixity,
         objectLocation = objectLocation
@@ -57,7 +55,6 @@ trait FixityChecker extends Logging {
 
       result <- verifyChecksum(
         expectedFileFixity = expectedFileFixity,
-        inputStream = inputStream,
         objectLocation = objectLocation,
         algorithm = algorithm
       )
@@ -147,43 +144,47 @@ trait FixityChecker extends Logging {
 
   private def verifyChecksum(
     expectedFileFixity: ExpectedFileFixity,
-    inputStream: InputStreamWithLength,
     objectLocation: ObjectLocation,
     algorithm: HashingAlgorithm
   ): Either[FileFixityError, FileFixityCorrect] =
-    Checksum.create(inputStream, algorithm) match {
-      // Failure to create a checksum (parsing/algorithm)
-      case Failure(e) =>
-        Left(
-          FileFixityMismatch(
-            expectedFileFixity = expectedFileFixity,
-            objectLocation = objectLocation,
-            e = FailedChecksumCreation(algorithm, e)
-          )
-        )
+    for {
+      inputStream <- getInputStream(objectLocation, expectedFileFixity)
 
-      // Checksum does not match that provided
-      case Success(checksum) =>
-        if (checksum != expectedFileFixity.checksum)
+      result <- Checksum.create(inputStream, algorithm) match {
+        // Failure to create a checksum (parsing/algorithm)
+        case Failure(e) =>
           Left(
             FileFixityMismatch(
               expectedFileFixity = expectedFileFixity,
               objectLocation = objectLocation,
-              e = FailedChecksumNoMatch(
-                actual = checksum,
-                expected = expectedFileFixity.checksum
+              e = FailedChecksumCreation(algorithm, e)
+            )
+          )
+
+        // Checksum does not match that provided
+        case Success(checksum) =>
+          if (checksum != expectedFileFixity.checksum)
+            Left(
+              FileFixityMismatch(
+                expectedFileFixity = expectedFileFixity,
+                objectLocation = objectLocation,
+                e = FailedChecksumNoMatch(
+                  actual = checksum,
+                  expected = expectedFileFixity.checksum
+                )
               )
             )
-          )
-        else
-          Right(
-            FileFixityCorrect(
-              expectedFileFixity = expectedFileFixity,
-              objectLocation = objectLocation,
-              size = inputStream.length
+          else
+            Right(
+              FileFixityCorrect(
+                expectedFileFixity = expectedFileFixity,
+                objectLocation = objectLocation,
+                size = inputStream.length
+              )
             )
-          )
-    }
+      }
+    } yield result
+
 
   private def writeChecksumTag(
     expectedFileFixity: ExpectedFileFixity,
