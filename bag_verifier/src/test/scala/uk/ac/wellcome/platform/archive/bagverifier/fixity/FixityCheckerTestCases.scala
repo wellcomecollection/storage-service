@@ -259,4 +259,26 @@ trait FixityCheckerTestCases[Namespace, Context]
       }
     }
   }
+
+  describe("working with tags") {
+    it("sets a tag upon successful verification") {
+      true shouldBe false
+    }
+
+    it("skips checking if the tag is present") {
+      true shouldBe false
+    }
+
+    it("errors if the tag is present and doesn't match") {
+      true shouldBe false
+    }
+
+    it("doesn't set a tag upon a successful verification") {
+      true shouldBe false
+    }
+
+    it("adds one tag per checksum algorithm") {
+      true shouldBe false
+    }
+  }
 }
