@@ -414,7 +414,7 @@ class BagVerifier(namespace: String)(
         val verificationFailureMessage =
           result.errors
             .map { fixityError: FileFixityError =>
-              s"${ fixityError.expectedFileFixity.uri}: ${fixityError.e.getMessage}"
+              s"${fixityError.expectedFileFixity.uri}: ${fixityError.e.getMessage}"
             }
             .mkString("\n")
 

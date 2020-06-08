@@ -1,7 +1,11 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity.bag
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{CannotCreateExpectedFixity, ExpectedFileFixity, ExpectedFixity}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  CannotCreateExpectedFixity,
+  ExpectedFileFixity,
+  ExpectedFixity
+}
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
 import uk.ac.wellcome.platform.archive.common.storage.{Locatable, Resolvable}

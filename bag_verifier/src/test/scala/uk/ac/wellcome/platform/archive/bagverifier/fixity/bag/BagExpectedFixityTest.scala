@@ -5,10 +5,20 @@ import java.net.URI
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.ExpectedFileFixity
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFetchMetadata, BagPath}
-import uk.ac.wellcome.platform.archive.common.generators.{BagGenerators, FetchMetadataGenerators}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagFetchMetadata,
+  BagPath
+}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagGenerators,
+  FetchMetadataGenerators
+}
 import uk.ac.wellcome.platform.archive.common.storage.Resolvable
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, HashingAlgorithm}
+import uk.ac.wellcome.platform.archive.common.verify.{
+  Checksum,
+  ChecksumValue,
+  HashingAlgorithm
+}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 

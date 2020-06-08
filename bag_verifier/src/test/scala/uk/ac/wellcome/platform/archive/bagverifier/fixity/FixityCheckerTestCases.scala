@@ -31,7 +31,8 @@ trait FixityCheckerTestCases[Namespace, Context]
   def createExpectedFileFixityWith(
     location: ObjectLocation = createObjectLocation,
     checksum: Checksum = randomChecksum,
-    length: Option[Long] = None): ExpectedFileFixity = {
+    length: Option[Long] = None
+  ): ExpectedFileFixity = {
     ExpectedFileFixity(
       uri = resolve(location),
       path = BagPath(randomAlphanumeric),

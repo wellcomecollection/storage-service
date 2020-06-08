@@ -5,7 +5,9 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity
   *
   */
 trait ExpectedFixity[Container] {
-  def create(container: Container): Either[CannotCreateExpectedFixity, Seq[ExpectedFileFixity]]
+  def create(
+    container: Container
+  ): Either[CannotCreateExpectedFixity, Seq[ExpectedFileFixity]]
 }
 
 case class CannotCreateExpectedFixity(msg: String) extends Throwable(msg)

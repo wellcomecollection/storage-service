@@ -13,7 +13,6 @@ sealed trait FileFixityError extends FileFixityResult {
 case class FileFixityCorrect(
   expectedFileFixity: ExpectedFileFixity,
   objectLocation: ObjectLocation,
-
   // We record the size of the files as we verify them, so we can verify
   // the Payload-Oxum in the bag metadata.
   size: Long

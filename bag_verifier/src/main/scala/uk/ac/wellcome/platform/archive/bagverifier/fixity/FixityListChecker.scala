@@ -20,24 +20,33 @@ class FixityListChecker[Container](
           .map(fixityChecker.check)
           .foldLeft[FixityListCheckingResult](FixityListAllCorrect(Nil)) {
 
-          case (FixityListAllCorrect(locations), correct: FileFixityCorrect) =>
-            FixityListAllCorrect(correct :: locations)
+            case (
+                FixityListAllCorrect(locations),
+                correct: FileFixityCorrect
+                ) =>
+              FixityListAllCorrect(correct :: locations)
 
-          case (FixityListAllCorrect(locations), err: FileFixityError) =>
-            FixityListWithErrors(
-              errors = List(err),
-              correct = locations
-            )
+            case (FixityListAllCorrect(locations), err: FileFixityError) =>
+              FixityListWithErrors(
+                errors = List(err),
+                correct = locations
+              )
 
-          case (FixityListWithErrors(errors, correct), c: FileFixityCorrect) =>
-            FixityListWithErrors(errors, c :: correct)
+            case (
+                FixityListWithErrors(errors, correct),
+                c: FileFixityCorrect
+                ) =>
+              FixityListWithErrors(errors, c :: correct)
 
-          case (FixityListWithErrors(errors, correct), err: FileFixityError) =>
-            FixityListWithErrors(
-              errors = err :: errors,
-              correct = correct
-            )
-        }
+            case (
+                FixityListWithErrors(errors, correct),
+                err: FileFixityError
+                ) =>
+              FixityListWithErrors(
+                errors = err :: errors,
+                correct = correct
+              )
+          }
     }
   }
 }

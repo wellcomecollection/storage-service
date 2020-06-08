@@ -10,7 +10,9 @@ case class FixityListAllCorrect(locations: List[FileFixityCorrect])
 case class FixityListWithErrors(
   errors: List[FileFixityError],
   correct: List[FileFixityCorrect]
-) extends Throwable("Some files don't have the expected fixity (size/checksum)!")
+) extends Throwable(
+      "Some files don't have the expected fixity (size/checksum)!"
+    )
     with FixityListCheckingResult
 
 case class CouldNotCreateExpectedFixityList(msg: String)

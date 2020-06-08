@@ -4,12 +4,15 @@ import java.net.URI
 
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  FileFixityCouldNotRead,
   FixityChecker,
-  FixityCheckerTestCases,
-  FileFixityCouldNotRead
+  FixityCheckerTestCases
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.S3Resolvable
-import uk.ac.wellcome.platform.archive.common.storage.{LocationError, LocationNotFound}
+import uk.ac.wellcome.platform.archive.common.storage.{
+  LocationError,
+  LocationNotFound
+}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.fixtures.BucketNamespaceFixtures
