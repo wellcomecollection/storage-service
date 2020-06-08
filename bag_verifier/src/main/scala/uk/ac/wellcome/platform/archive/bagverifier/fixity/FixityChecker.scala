@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity
 import java.net.URI
 
 import grizzled.slf4j.Logging
+import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
 import uk.ac.wellcome.platform.archive.common.storage.{
   LocateFailure,
   LocationError,
@@ -22,6 +23,7 @@ import scala.util.{Failure, Success, Try}
 trait FixityChecker extends Logging {
   protected val streamStore: StreamStore[ObjectLocation]
   protected val tags: Tags[ObjectLocation]
+  protected val sizeFinder: SizeFinder
 
   def locate(uri: URI): Either[LocateFailure[URI], ObjectLocation]
 
@@ -50,7 +52,6 @@ trait FixityChecker extends Logging {
 
       _ <- verifySize(
         expectedFileFixity = expectedFileFixity,
-        inputStream = inputStream,
         objectLocation = objectLocation
       )
 
@@ -109,7 +110,6 @@ trait FixityChecker extends Logging {
 
   private def verifySize(
     expectedFileFixity: ExpectedFileFixity,
-    inputStream: InputStreamWithLength,
     objectLocation: ObjectLocation
   ): Either[FileFixityError, Unit] =
     expectedFileFixity.length match {
@@ -118,19 +118,28 @@ trait FixityChecker extends Logging {
           "Location specifies an expected length, checking it's correct"
         )
 
-        if (expectedLength == inputStream.length) {
-          Right(())
-        } else {
-          Left(
-            FileFixityMismatch(
-              expectedFileFixity = expectedFileFixity,
-              objectLocation = objectLocation,
-              e = new Throwable(
-                "" +
-                  s"Lengths do not match: $expectedLength != ${inputStream.available()}"
+        sizeFinder.getSize(objectLocation) match {
+          case Success(actualLength) if actualLength == expectedLength =>
+            Right(())
+
+          case Success(actualLength) =>
+            Left(
+              FileFixityMismatch(
+                expectedFileFixity = expectedFileFixity,
+                objectLocation = objectLocation,
+                e = new Throwable(
+                  s"Lengths do not match: $expectedLength (expected) != $actualLength (actual)"
+                )
               )
             )
-          )
+
+          case _ =>
+            Left(
+              FileFixityCouldNotRead(
+                expectedFileFixity,
+                e = LocationNotFound(expectedFileFixity, "Location not available!")
+              )
+            )
         }
 
       case _ => Right(())
