@@ -12,6 +12,7 @@ import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
+import uk.ac.wellcome.storage.tags.Tags
 
 trait FixityCheckerTestCases[Namespace, Context]
     extends AnyFunSpec
@@ -50,6 +51,10 @@ trait FixityCheckerTestCases[Namespace, Context]
   ): Unit
 
   def withFixityChecker[R](testWith: TestWith[FixityChecker, R])(
+    implicit context: Context
+  ): R
+
+  def withTags[R](testWith: TestWith[Tags[ObjectLocation], R])(
     implicit context: Context
   ): R
 

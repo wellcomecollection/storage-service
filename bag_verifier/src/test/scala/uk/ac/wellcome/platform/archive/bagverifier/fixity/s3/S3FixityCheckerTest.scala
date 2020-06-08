@@ -16,6 +16,8 @@ import uk.ac.wellcome.platform.archive.common.storage.{
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.fixtures.BucketNamespaceFixtures
+import uk.ac.wellcome.storage.tags.Tags
+import uk.ac.wellcome.storage.tags.s3.S3Tags
 
 class S3FixityCheckerTest
     extends FixityCheckerTestCases[Bucket, Unit]
@@ -36,6 +38,11 @@ class S3FixityCheckerTest
     testWith: TestWith[FixityChecker, R]
   )(implicit context: Unit): R =
     testWith(new S3FixityChecker())
+
+  override def withTags[R](testWith: TestWith[Tags[ObjectLocation], R])(
+    implicit context: Unit
+  ): R =
+    testWith(new S3Tags())
 
   implicit val context: Unit = ()
 
