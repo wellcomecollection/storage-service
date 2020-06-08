@@ -57,6 +57,9 @@ lazy val bag_versioner =
 lazy val bag_root_finder =
   setupProject(project, "bag_root_finder", localDependencies = Seq(common))
 
+lazy val bag_tagger =
+  setupProject(project, "bag_tagger", localDependencies = Seq(common))
+
 lazy val bag_register = setupProject(
   project,
   "bag_register",

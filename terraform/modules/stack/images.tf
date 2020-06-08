@@ -8,6 +8,7 @@ locals {
     "notifier",
     "bag_versioner",
     "bag_register",
+    "bag_tagger",
     "bag_replicator",
     "bag_root_finder",
     "bag_tracker",

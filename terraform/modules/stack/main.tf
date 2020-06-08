@@ -247,6 +247,40 @@ module "bag_root_finder" {
   service_discovery_namespace_id = local.service_discovery_namespace_id
 }
 
+# bag tagger
+
+module "bag_tagger" {
+  source = "../service/worker"
+
+  security_group_ids = [
+    aws_security_group.interservice.id,
+    aws_security_group.service_egress.id,
+  ]
+
+  cluster_name = aws_ecs_cluster.cluster.name
+  cluster_arn  = aws_ecs_cluster.cluster.arn
+
+  subnets      = var.private_subnets
+  service_name = local.bag_tagger_service_name
+
+  environment = {
+    queue_url         = module.bag_tagger_input_queue.url
+    metrics_namespace = local.bag_tagger_service_name
+  }
+
+  cpu    = 512
+  memory = 1024
+
+  min_capacity = var.min_capacity
+  max_capacity = var.max_capacity
+
+  container_image = local.image_ids["bag_tagger"]
+
+  use_fargate_spot = true
+
+  service_discovery_namespace_id = local.service_discovery_namespace_id
+}
+
 # bag_verifier
 
 module "bag_verifier_pre_replication" {
