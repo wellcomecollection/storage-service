@@ -394,7 +394,7 @@ module "registered_bag_notifications_queue" {
 module "bag_reindexer_output_topic" {
   source = "../topic"
 
-  name = "${var.namespace}_bag_reindexer_output_topic"
+  name = "${var.namespace}_bag_reindexer_output"
 
   role_names = []
 }
@@ -402,10 +402,10 @@ module "bag_reindexer_output_topic" {
 module "bag_indexer_input_queue" {
   source = "../queue"
 
-  name = "${var.namespace}_bag_indexer_input_queue"
+  name = "${var.namespace}_bag_indexer_input"
 
   topic_arns = [
-    module.bag_register_output_topic.arn,
+    module.registered_bag_notifications_topic.arn,
     module.bag_reindexer_output_topic.arn
   ]
 

@@ -28,13 +28,13 @@ ES_SECRETS = {
 
 STAGE_CONFIG = {
     "table_name": "vhs-storage-staging-manifests",
-    "topic_arn": "arn:aws:sns:eu-west-1:975596993436:storage_staging_bag_reindexer_output_topic",
+    "topic_arn": "arn:aws:sns:eu-west-1:975596993436:storage_staging_bag_reindexer_output",
     "es_index": "storage_stage_bags",
 }
 
 PROD_CONFIG = {
     "table_name": "vhs-storage-manifests",
-    "topic_arn": "arn:aws:sns:eu-west-1:975596993436:storage_prod_bag_reindexer_output_topic",
+    "topic_arn": "arn:aws:sns:eu-west-1:975596993436:storage_prod_bag_reindexer_output",
     "es_index": "storage_bags",
 }
 
