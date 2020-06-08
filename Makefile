@@ -15,6 +15,7 @@ STACK_ROOT 	= .
 SBT_APPS = notifier \
            bags_api \
            bag_register \
+           bag_tagger \
            bag_replicator \
 		   bag_root_finder \
            bag_verifier \

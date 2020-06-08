@@ -414,3 +414,20 @@ module "bag_indexer_input_queue" {
   aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 }
+
+# bag tagger
+
+module "bag_tagger_input_queue" {
+  source = "../queue"
+
+  name = "${var.namespace}_bag_tagger_input"
+
+  topic_arns = [
+    module.registered_bag_notifications_topic.arn,
+  ]
+
+  role_names = [module.bag_tagger.task_role_name]
+
+  aws_region    = var.aws_region
+  dlq_alarm_arn = var.dlq_alarm_arn
+}

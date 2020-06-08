@@ -23,6 +23,11 @@ resource "aws_ecr_repository" "bag_root_finder" {
   tags = local.default_tags
 }
 
+resource "aws_ecr_repository" "bag_tagger" {
+  name = "uk.ac.wellcome/bag_tagger"
+  tags = local.default_tags
+}
+
 resource "aws_ecr_repository" "bag_tracker" {
   name = "uk.ac.wellcome/bag_tracker"
   tags = local.default_tags
