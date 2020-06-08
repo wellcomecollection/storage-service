@@ -1,14 +1,14 @@
-package uk.ac.wellcome.platform.archive.common.verify.memory
+package uk.ac.wellcome.platform.archive.bagverifier.fixity.memory
 
 import java.net.URI
 
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityChecker
 import uk.ac.wellcome.platform.archive.common.storage.LocateFailure
-import uk.ac.wellcome.platform.archive.common.verify.Verifier
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
-class MemoryVerifier(val streamStore: MemoryStreamStore[ObjectLocation])
-    extends Verifier {
+class MemoryFixityChecker(val streamStore: MemoryStreamStore[ObjectLocation])
+    extends FixityChecker {
   override def locate(uri: URI): Either[LocateFailure[URI], ObjectLocation] =
     Right(
       ObjectLocation(

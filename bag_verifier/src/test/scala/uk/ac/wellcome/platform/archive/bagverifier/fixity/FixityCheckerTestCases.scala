@@ -1,14 +1,15 @@
-package uk.ac.wellcome.platform.archive.common.verify
+package uk.ac.wellcome.platform.archive.bagverifier.fixity
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.VerifyFixtures
 import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
+import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
 
-trait VerifierTestCases[Namespace, Context]
+trait FixityCheckerTestCases[Namespace, Context]
     extends AnyFunSpec
     with Matchers
     with NamespaceFixtures[ObjectLocation, Namespace]
@@ -22,7 +23,7 @@ trait VerifierTestCases[Namespace, Context]
     implicit context: Context
   ): Unit
 
-  def withVerifier[R](testWith: TestWith[Verifier, R])(
+  def withFixityChecker[R](testWith: TestWith[FixityChecker, R])(
     implicit context: Context
   ): R
 
@@ -46,7 +47,7 @@ trait VerifierTestCases[Namespace, Context]
         )
 
         val result =
-          withVerifier {
+          withFixityChecker {
             _.verify(verifiableLocation)
           }
 
@@ -72,7 +73,7 @@ trait VerifierTestCases[Namespace, Context]
         )
 
         val result =
-          withVerifier {
+          withFixityChecker {
             _.verify(verifiableLocation)
           }
 
@@ -103,7 +104,7 @@ trait VerifierTestCases[Namespace, Context]
         )
 
         val result =
-          withVerifier {
+          withFixityChecker {
             _.verify(verifiableLocation)
           }
 
@@ -142,7 +143,7 @@ trait VerifierTestCases[Namespace, Context]
         putString(location, contentString)
 
         val result =
-          withVerifier {
+          withFixityChecker {
             _.verify(verifiableLocation)
           }
 
@@ -181,7 +182,7 @@ trait VerifierTestCases[Namespace, Context]
         putString(location, contentString)
 
         val result =
-          withVerifier {
+          withFixityChecker {
             _.verify(verifiableLocation)
           }
 
@@ -215,7 +216,7 @@ trait VerifierTestCases[Namespace, Context]
         putString(location, contentString)
 
         val result =
-          withVerifier {
+          withFixityChecker {
             _.verify(verifiableLocation)
           }
 

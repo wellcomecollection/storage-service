@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 import java.time.Instant
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityListChecker
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FixityChecker, FixityListChecker}
 import uk.ac.wellcome.platform.archive.bagverifier.models._
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.bagit.services.{
@@ -22,7 +22,7 @@ import scala.util.{Failure, Success, Try}
 class BagVerifier(namespace: String)(
   implicit bagReader: BagReader,
   resolvable: Resolvable[ObjectLocation],
-  verifier: Verifier,
+  fixityChecker: FixityChecker,
   listing: Listing[ObjectLocationPrefix, ObjectLocation]
 ) extends Logging {
 

@@ -1,19 +1,19 @@
-package uk.ac.wellcome.platform.archive.common.verify.memory
+package uk.ac.wellcome.platform.archive.bagverifier.fixity.memory
 
 import java.net.URI
 
 import org.scalatest.EitherValues
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.verify.{
-  Verifier,
-  VerifierTestCases
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  FixityChecker,
+  FixityCheckerTestCases
 }
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
 
-class MemoryVerifierTest
-    extends VerifierTestCases[String, MemoryStreamStore[ObjectLocation]]
+class MemoryFixityCheckerTest
+    extends FixityCheckerTestCases[String, MemoryStreamStore[ObjectLocation]]
     with EitherValues {
   override def withContext[R](
     testWith: TestWith[MemoryStreamStore[ObjectLocation], R]
@@ -29,11 +29,11 @@ class MemoryVerifierTest
     streamStore.put(location)(inputStream) shouldBe a[Right[_, _]]
   }
 
-  override def withVerifier[R](
-    testWith: TestWith[Verifier, R]
+  override def withFixityChecker[R](
+    testWith: TestWith[FixityChecker, R]
   )(implicit streamStore: MemoryStreamStore[ObjectLocation]): R =
     testWith(
-      new MemoryVerifier(streamStore)
+      new MemoryFixityChecker(streamStore)
     )
 
   override def createObjectLocationWith(namespace: String): ObjectLocation =

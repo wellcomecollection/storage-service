@@ -1,21 +1,19 @@
-package uk.ac.wellcome.platform.archive.common.verify
-
+package uk.ac.wellcome.platform.archive.bagverifier.fixity
 import java.net.URI
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.storage.{
-  LocateFailure,
-  LocationError,
-  LocationNotFound,
-  LocationParsingError
-}
-import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation}
+import uk.ac.wellcome.platform.archive.common.storage.{LocateFailure, LocationError, LocationNotFound, LocationParsingError}
+import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
+import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation}
 
 import scala.util.{Failure, Success}
 
-trait Verifier extends Logging {
+/** Look up and check the fixity info (checksum, size) on an individual file.
+  *
+  */
+trait FixityChecker extends Logging {
   protected val streamStore: StreamStore[ObjectLocation]
 
   def locate(uri: URI): Either[LocateFailure[URI], ObjectLocation]

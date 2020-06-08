@@ -1,20 +1,21 @@
-package uk.ac.wellcome.platform.archive.common.verify.s3
+package uk.ac.wellcome.platform.archive.bagverifier.fixity.s3
 
 import java.net.URI
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.storage.{
-  LocationError,
-  LocationNotFound
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  FixityChecker,
+  FixityCheckerTestCases
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.S3Resolvable
+import uk.ac.wellcome.platform.archive.common.storage.{LocationError, LocationNotFound}
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.fixtures.BucketNamespaceFixtures
 
-class S3ObjectVerifierTest
-    extends VerifierTestCases[Bucket, Unit]
+class S3FixityCheckerTest
+    extends FixityCheckerTestCases[Bucket, Unit]
     with BucketNamespaceFixtures {
   override def withContext[R](testWith: TestWith[Unit, R]): R =
     testWith(())
@@ -28,10 +29,10 @@ class S3ObjectVerifierTest
       contents
     )
 
-  override def withVerifier[R](
-    testWith: TestWith[Verifier, R]
+  override def withFixityChecker[R](
+    testWith: TestWith[FixityChecker, R]
   )(implicit context: Unit): R =
-    testWith(new S3ObjectVerifier())
+    testWith(new S3FixityChecker())
 
   implicit val context: Unit = ()
 
@@ -53,7 +54,7 @@ class S3ObjectVerifierTest
     )
 
     val result =
-      withVerifier {
+      withFixityChecker {
         _.verify(verifiableLocation)
       }
 
@@ -79,7 +80,7 @@ class S3ObjectVerifierTest
     )
 
     val result =
-      withVerifier {
+      withFixityChecker {
         _.verify(verifiableLocation)
       }
 
@@ -106,7 +107,7 @@ class S3ObjectVerifierTest
       )
 
       val result =
-        withVerifier {
+        withFixityChecker {
           _.verify(verifiableLocation)
         }
 

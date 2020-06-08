@@ -12,6 +12,7 @@ import uk.ac.wellcome.messaging.typesafe.{
   SQSBuilder
 }
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.s3.S3FixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.services.{
   BagVerifier,
   BagVerifierWorker
@@ -24,7 +25,6 @@ import uk.ac.wellcome.platform.archive.common.config.builders.{
   OutgoingPublisherBuilder
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.S3Resolvable
-import uk.ac.wellcome.platform.archive.common.verify.s3.S3ObjectVerifier
 import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
 import uk.ac.wellcome.storage.typesafe.S3Builder
@@ -55,8 +55,8 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: SqsAsyncClient =
       SQSBuilder.buildSQSAsyncClient(config)
 
-    implicit val s3ObjectVerifier: S3ObjectVerifier =
-      new S3ObjectVerifier()
+    implicit val s3FixityChecker: S3FixityChecker =
+      new S3FixityChecker()
 
     implicit val bagReader: BagReader =
       new S3BagReader()

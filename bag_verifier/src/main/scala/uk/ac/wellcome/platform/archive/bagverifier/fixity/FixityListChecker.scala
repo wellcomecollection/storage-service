@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.common.verify._
 class FixityListChecker[Container](
   implicit
   verifiable: Verifiable[Container],
-  verifier: Verifier
+  fixityChecker: FixityChecker
 ) extends Logging {
   def verify(container: Container): VerificationResult = {
     debug(s"Checking the fixity info for $container")
@@ -18,7 +18,7 @@ class FixityListChecker[Container](
       case Left(e) => VerificationIncomplete(e.msg)
       case Right(verifiableLocations) =>
         verifiableLocations
-          .map(verifier.verify)
+          .map(fixityChecker.verify)
           .foldLeft[VerificationResult](VerificationSuccess(Nil)) {
 
           case (VerificationSuccess(sl), s @ VerifiedSuccess(_, _, _)) =>

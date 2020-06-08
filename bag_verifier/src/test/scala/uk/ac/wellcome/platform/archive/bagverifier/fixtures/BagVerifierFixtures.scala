@@ -7,6 +7,7 @@ import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.s3.S3FixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.services.{
   BagVerifier,
   BagVerifierWorker
@@ -16,7 +17,6 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.archive.common.storage.services.S3Resolvable
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
-import uk.ac.wellcome.platform.archive.common.verify.s3.S3ObjectVerifier
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
 
@@ -63,8 +63,8 @@ trait BagVerifierFixtures
       implicit val _bagReader: BagReader =
         new S3BagReader()
 
-      implicit val _s3ObjectVerifier: S3ObjectVerifier =
-        new S3ObjectVerifier()
+      implicit val s3FixityChecker: S3FixityChecker =
+        new S3FixityChecker()
 
       implicit val _s3Resolvable: S3Resolvable =
         new S3Resolvable()
