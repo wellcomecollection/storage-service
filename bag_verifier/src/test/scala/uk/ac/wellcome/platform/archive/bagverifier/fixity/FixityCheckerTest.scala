@@ -40,7 +40,7 @@ class FixityCheckerTest
         algorithm = MD5,
         value = ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6")
       )
-      val inputStream = stringCodec.toStream("Hello world").right.value
+      val inputStream = stringCodec.toStream("HelloWorld").right.value
       streamStore.put(location)(inputStream) shouldBe a[Right[_, _]]
 
       val fixityChecker = new MemoryFixityChecker(
