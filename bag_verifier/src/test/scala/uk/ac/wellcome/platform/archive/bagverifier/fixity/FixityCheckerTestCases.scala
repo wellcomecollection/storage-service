@@ -273,7 +273,7 @@ trait FixityCheckerTestCases[Namespace, Context]
       true shouldBe false
     }
 
-    it("doesn't set a tag upon a successful verification") {
+    it("doesn't set a tag upon if the verification fails") {
       true shouldBe false
     }
 
