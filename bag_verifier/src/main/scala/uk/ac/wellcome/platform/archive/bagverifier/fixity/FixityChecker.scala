@@ -11,6 +11,7 @@ import uk.ac.wellcome.platform.archive.common.storage.{
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
+import uk.ac.wellcome.storage.tags.Tags
 import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation}
 
 import scala.util.{Failure, Success}
@@ -20,6 +21,7 @@ import scala.util.{Failure, Success}
   */
 trait FixityChecker extends Logging {
   protected val streamStore: StreamStore[ObjectLocation]
+  protected val tags: Tags[ObjectLocation]
 
   def locate(uri: URI): Either[LocateFailure[URI], ObjectLocation]
 
