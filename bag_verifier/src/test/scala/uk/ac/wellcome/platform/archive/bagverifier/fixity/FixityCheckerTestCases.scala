@@ -1,5 +1,8 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity
 
+import org.mockito.Matchers.any
+import org.mockito.Mockito
+import org.mockito.Mockito._
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
@@ -8,10 +11,11 @@ import uk.ac.wellcome.platform.archive.bagverifier.generators.FixityGenerators
 import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
 import uk.ac.wellcome.storage.tags.Tags
 
-trait FixityCheckerTestCases[Namespace, Context]
+trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[ObjectLocation]]
     extends AnyFunSpec
     with Matchers
     with EitherValues
@@ -26,13 +30,26 @@ trait FixityCheckerTestCases[Namespace, Context]
     implicit context: Context
   ): Unit
 
-  def withFixityChecker[R](testWith: TestWith[FixityChecker, R])(
+  def withFixityChecker[R](streamStore: StreamStoreImpl)(testWith: TestWith[FixityChecker, R])(
+    implicit context: Context
+  ): R
+
+  def withStreamStoreImpl[R](testWith: TestWith[StreamStoreImpl, R])(
     implicit context: Context
   ): R
 
   def withTags[R](testWith: TestWith[Tags[ObjectLocation], R])(
     implicit context: Context
   ): R
+
+  def withFixityChecker[R](testWith: TestWith[FixityChecker, R])(
+    implicit context: Context
+  ): R =
+    withStreamStoreImpl { streamStore =>
+      withFixityChecker(streamStore) { fixityChecker =>
+        testWith(fixityChecker)
+      }
+    }
 
   it("returns a success if the checksum is correct") {
     withContext { implicit context =>
@@ -214,19 +231,114 @@ trait FixityCheckerTestCases[Namespace, Context]
       }
     }
 
-    it("skips checking if the checksum tag and size are correct") {
-      true shouldBe false
+    it("skips checking if the checksum tag has been cached from a previous run") {
+      withContext { implicit context =>
+        withNamespace { implicit namespace =>
+          val location = createObjectLocationWith(namespace)
+
+          val (contents, checksum) = createStringChecksumPair
+          putString(location, contents = contents)
+
+          val expectedFileFixity = createExpectedFileFixityWith(
+            location = location,
+            checksum = checksum
+          )
+
+          withStreamStoreImpl { streamStore =>
+            val spyStore = Mockito.spy(streamStore)
+
+            val result1 = withFixityChecker(streamStore = spyStore) {
+              _.check(expectedFileFixity)
+            }
+
+            verify(spyStore, times(1)).get(any[ObjectLocation])
+
+            val result2 = withFixityChecker(streamStore = spyStore) {
+              _.check(expectedFileFixity)
+            }
+
+            verify(spyStore, times(1)).get(any[ObjectLocation])
+
+            result1 shouldBe a[FileFixityCorrect]
+            result1 shouldBe result2
+          }
+        }
+      }
     }
 
     it("errors if the checksum tag doesn't match") {
-      true shouldBe false
+      withContext { implicit context =>
+        withNamespace { implicit namespace =>
+          val location = createObjectLocationWith(namespace)
+
+          val (contents, checksum) = createStringChecksumPair
+          putString(location, contents = contents)
+
+          val expectedFileFixity = createExpectedFileFixityWith(
+            location = location,
+            checksum = checksum
+          )
+
+          // First we verify the fixity with the correct checksum, which
+          // will write a Content-Type tag to the tag store.
+          withFixityChecker {
+            _.check(expectedFileFixity)
+          }
+
+          val storedTags1 = withTags { _.get(location) }.right.value
+
+          val badExpectedFileFixity = expectedFileFixity.copy(
+            checksum = checksum.copy(
+              value = randomChecksumValue
+            )
+          )
+
+          val result = withFixityChecker {
+            _.check(badExpectedFileFixity)
+          }
+
+          result shouldBe a[FileFixityMismatch]
+
+          // Check the tags weren't overridden with the bad value.
+          val storedTags2 = withTags { _.get(location) }.right.value
+          storedTags1 shouldBe storedTags2
+        }
+      }
     }
 
     it("errors if the checksum tag matches but the size is wrong") {
-      true shouldBe false
+      withContext { implicit context =>
+        withNamespace { implicit namespace =>
+          val location = createObjectLocationWith(namespace)
+
+          val (contents, checksum) = createStringChecksumPair
+          putString(location, contents = contents)
+
+          val expectedFileFixity = createExpectedFileFixityWith(
+            location = location,
+            checksum = checksum
+          )
+
+          // First we verify the fixity with the correct checksum, which
+          // will write a Content-Type tag to the tag store.
+          withFixityChecker {
+            _.check(expectedFileFixity)
+          }
+
+          val badExpectedFileFixity = expectedFileFixity.copy(
+            length = Some(contents.length + 1)
+          )
+
+          val result = withFixityChecker {
+            _.check(badExpectedFileFixity)
+          }
+
+          result shouldBe a[FileFixityMismatch]
+        }
+      }
     }
 
-    it("doesn't set a tag upon if the verification fails") {
+    it("doesn't set a tag if the verification fails") {
       true shouldBe false
     }
 

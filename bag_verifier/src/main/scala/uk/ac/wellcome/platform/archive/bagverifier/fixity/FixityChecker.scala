@@ -43,28 +43,45 @@ trait FixityChecker extends Logging {
     //    2.  Allows us to cycle objects to Glacier/cold storage tiers if they're very
     //        large, and we don't need to unfreeze them to verify new versions of the bag
     //
-    val fixityTags = Map(s"Content-$algorithm" -> expectedFileFixity.checksum.value.toString)
+    val fixityTagName = s"Content-$algorithm"
+    val fixityTagValue = expectedFileFixity.checksum.value.toString
+    val fixityTags = Map(fixityTagName -> fixityTagValue)
 
     val result: Either[FileFixityError, FileFixityCorrect] = for {
       objectLocation <- getObjectLocation(expectedFileFixity)
+      _ = debug(s"ObjectLocation for URI ${expectedFileFixity.uri} is $objectLocation")
 
-      _ <- verifySize(
+      existingTags <- tags.get(objectLocation) match {
+        case Right(tagSet)   => Right(tagSet)
+        case Left(readError) => Left(
+          FileFixityCouldNotRead(expectedFileFixity, e = readError.e)
+        )
+      }
+      _ = debug(s"Existing tags on $objectLocation: $existingTags")
+
+      size <- verifySize(
         expectedFileFixity = expectedFileFixity,
         objectLocation = objectLocation
       )
 
-      result <- verifyChecksum(
+      checksumResult <- verifyChecksum(
         expectedFileFixity = expectedFileFixity,
+        existingTags = existingTags,
+        fixityTagName = fixityTagName,
+        fixityTagValue = fixityTagValue,
         objectLocation = objectLocation,
-        algorithm = algorithm
+        algorithm = algorithm,
+        size = size
       )
+
+      _ = debug(s"@@AWLC checksum result == $checksumResult")
 
       _ <- writeChecksumTag(
         expectedFileFixity = expectedFileFixity,
         objectLocation = objectLocation,
         fixityTags = fixityTags
       )
-    } yield result
+    } yield checksumResult
 
     debug(s"Got: $result")
 
@@ -108,44 +125,82 @@ trait FixityChecker extends Logging {
   private def verifySize(
     expectedFileFixity: ExpectedFileFixity,
     objectLocation: ObjectLocation
-  ): Either[FileFixityError, Unit] =
-    expectedFileFixity.length match {
-      case Some(expectedLength) =>
-        debug(
-          "Location specifies an expected length, checking it's correct"
+  ): Either[FileFixityError, Long] =
+    for {
+      actualLength <- sizeFinder.getSize(objectLocation) match {
+        case Success(size) => Right(size)
+        case Failure(_)  => Left(
+          FileFixityCouldNotRead(
+            expectedFileFixity,
+            e = LocationNotFound(expectedFileFixity, "Location not available!")
+          )
         )
+      }
 
-        sizeFinder.getSize(objectLocation) match {
-          case Success(actualLength) if actualLength == expectedLength =>
-            Right(())
-
-          case Success(actualLength) =>
-            Left(
-              FileFixityMismatch(
-                expectedFileFixity = expectedFileFixity,
-                objectLocation = objectLocation,
-                e = new Throwable(
-                  s"Lengths do not match: $expectedLength (expected) != $actualLength (actual)"
-                )
+      _ <- expectedFileFixity.length match {
+        case Some(expectedLength) if expectedLength != actualLength =>
+          Left(
+            FileFixityMismatch(
+              expectedFileFixity = expectedFileFixity,
+              objectLocation = objectLocation,
+              e = new Throwable(
+                s"Lengths do not match: $expectedLength (expected) != $actualLength (actual)"
               )
             )
+          )
 
-          case _ =>
-            Left(
-              FileFixityCouldNotRead(
-                expectedFileFixity,
-                e = LocationNotFound(expectedFileFixity, "Location not available!")
-              )
-            )
-        }
-
-      case _ => Right(())
-    }
+        case _ => Right(())
+      }
+    } yield actualLength
 
   private def verifyChecksum(
     expectedFileFixity: ExpectedFileFixity,
     objectLocation: ObjectLocation,
-    algorithm: HashingAlgorithm
+    existingTags: Map[String, String],
+    fixityTagName: String,
+    fixityTagValue: String,
+    algorithm: HashingAlgorithm,
+    size: Long
+  ): Either[FileFixityError, FileFixityCorrect] =
+    // We start by looking for an existing fixity tag on the object: if it's
+    // already there, we can skip reading the entire object a second time.
+    existingTags.get(fixityTagName) match {
+      case None =>
+        verifyChecksumByReadingObject(
+          expectedFileFixity = expectedFileFixity,
+          objectLocation = objectLocation,
+          algorithm = algorithm,
+          size = size
+        )
+
+      case Some(storedValue) if storedValue == fixityTagValue => {
+        debug(s"@@AWLC boo wrong branch in verifyChecksum(!")
+        Right(
+          FileFixityCorrect(
+            expectedFileFixity = expectedFileFixity,
+            objectLocation = objectLocation,
+            size = size
+          )
+        )
+      }
+
+      case Some(storedValue) =>
+        Left(
+          FileFixityMismatch(
+            expectedFileFixity = expectedFileFixity,
+            objectLocation = objectLocation,
+            e = new Throwable(
+              s"Checksum mismatch: object tags ($storedValue) does not match manifest checksum (${expectedFileFixity.checksum})"
+            )
+          )
+        )
+    }
+
+  private def verifyChecksumByReadingObject(
+    expectedFileFixity: ExpectedFileFixity,
+    objectLocation: ObjectLocation,
+    algorithm: HashingAlgorithm,
+    size: Long
   ): Either[FileFixityError, FileFixityCorrect] =
     for {
       inputStream <- getInputStream(objectLocation, expectedFileFixity)
@@ -163,7 +218,7 @@ trait FixityChecker extends Logging {
 
         // Checksum does not match that provided
         case Success(checksum) =>
-          if (checksum != expectedFileFixity.checksum)
+          if (checksum != expectedFileFixity.checksum) {
             Left(
               FileFixityMismatch(
                 expectedFileFixity = expectedFileFixity,
@@ -174,7 +229,11 @@ trait FixityChecker extends Logging {
                 )
               )
             )
-          else
+          }
+
+          // Checksum is correct
+          else {
+            assert(inputStream.length == size)
             Right(
               FileFixityCorrect(
                 expectedFileFixity = expectedFileFixity,
@@ -182,9 +241,9 @@ trait FixityChecker extends Logging {
                 size = inputStream.length
               )
             )
+          }
       }
     } yield result
-
 
   private def writeChecksumTag(
     expectedFileFixity: ExpectedFileFixity,

@@ -3,24 +3,18 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity.s3
 import java.net.URI
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
-  FileFixityCouldNotRead,
-  FixityChecker,
-  FixityCheckerTestCases
-}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FileFixityCouldNotRead, FixityChecker, FixityCheckerTestCases}
 import uk.ac.wellcome.platform.archive.common.storage.services.S3Resolvable
-import uk.ac.wellcome.platform.archive.common.storage.{
-  LocationError,
-  LocationNotFound
-}
+import uk.ac.wellcome.platform.archive.common.storage.{LocationError, LocationNotFound}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.fixtures.BucketNamespaceFixtures
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.tags.Tags
 import uk.ac.wellcome.storage.tags.s3.S3Tags
 
 class S3FixityCheckerTest
-    extends FixityCheckerTestCases[Bucket, Unit]
+    extends FixityCheckerTestCases[Bucket, Unit, S3StreamStore]
     with BucketNamespaceFixtures {
   override def withContext[R](testWith: TestWith[Unit, R]): R =
     testWith(())
@@ -33,11 +27,6 @@ class S3FixityCheckerTest
       location.path,
       contents
     )
-
-  override def withFixityChecker[R](
-    testWith: TestWith[FixityChecker, R]
-  )(implicit context: Unit): R =
-    testWith(new S3FixityChecker())
 
   override def withTags[R](testWith: TestWith[Tags[ObjectLocation], R])(
     implicit context: Unit
@@ -132,4 +121,14 @@ class S3FixityCheckerTest
       )
     }
   }
+
+  override def withFixityChecker[R](customStreamStore: S3StreamStore)(testWith: TestWith[FixityChecker, R])(implicit context: Unit): R =
+    testWith(
+      new S3FixityChecker() {
+        override val streamStore: S3StreamStore = customStreamStore
+      }
+    )
+
+  override def withStreamStoreImpl[R](testWith: TestWith[S3StreamStore, R])(implicit context:  Unit): R =
+    testWith(new S3StreamStore())
 }
