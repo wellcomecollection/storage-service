@@ -16,10 +16,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
-import uk.ac.wellcome.storage.streaming.{
-  InputStreamWithLength,
-  StreamAssertions
-}
+import uk.ac.wellcome.storage.streaming.StreamAssertions
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 import scala.util.Random
@@ -34,9 +31,7 @@ trait UnpackerTestCases[Namespace]
 
   def withNamespace[R](testWith: TestWith[Namespace, R]): R
 
-  def withStreamStore[R](
-    testWith: TestWith[StreamStore[ObjectLocation, InputStreamWithLength], R]
-  ): R
+  def withStreamStore[R](testWith: TestWith[StreamStore[ObjectLocation], R]): R
 
   it("unpacks a tgz archive") {
     val (archiveFile, filesInArchive, _) = createTgzArchiveWithRandomFiles()
@@ -206,7 +201,7 @@ trait UnpackerTestCases[Namespace]
   }
 
   def assertEqual(prefix: ObjectLocationPrefix, expectedFiles: Seq[File])(
-    implicit store: StreamStore[ObjectLocation, InputStreamWithLength]
+    implicit store: StreamStore[ObjectLocation]
   ): Seq[Assertion] = {
     expectedFiles.map { file =>
       val name = Paths

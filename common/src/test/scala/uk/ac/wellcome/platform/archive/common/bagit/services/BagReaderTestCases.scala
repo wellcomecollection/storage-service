@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   StorageRandomThings
 }
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
-import uk.ac.wellcome.storage.store.{TypedStore, TypedStoreEntry}
+import uk.ac.wellcome.storage.store.TypedStore
 
 trait BagReaderTestCases[Context, Namespace]
     extends AnyFunSpec
@@ -22,7 +22,7 @@ trait BagReaderTestCases[Context, Namespace]
     testWith: TestWith[TypedStore[ObjectLocation, String], R]
   )(implicit context: Context): R
 
-  def withBagReader[R](testWith: TestWith[BagReader[_], R])(
+  def withBagReader[R](testWith: TestWith[BagReader, R])(
     implicit context: Context
   ): R
 
@@ -35,9 +35,9 @@ trait BagReaderTestCases[Context, Namespace]
   def scrambleFile(root: ObjectLocationPrefix, path: String)(
     implicit typedStore: TypedStore[ObjectLocation, String]
   ): Assertion =
-    typedStore.put(root.asLocation(path))(
-      TypedStoreEntry(randomAlphanumeric, metadata = Map.empty)
-    ) shouldBe a[Right[_, _]]
+    typedStore.put(root.asLocation(path))(randomAlphanumeric) shouldBe a[
+      Right[_, _]
+    ]
 
   def withFixtures[R](
     testWith: TestWith[

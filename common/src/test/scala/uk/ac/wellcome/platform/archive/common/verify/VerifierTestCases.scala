@@ -22,7 +22,7 @@ trait VerifierTestCases[Namespace, Context]
     implicit context: Context
   ): Unit
 
-  def withVerifier[R](testWith: TestWith[Verifier[_], R])(
+  def withVerifier[R](testWith: TestWith[Verifier, R])(
     implicit context: Context
   ): R
 

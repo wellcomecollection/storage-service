@@ -5,7 +5,7 @@ import grizzled.slf4j.Logging
 object Verification extends Logging {
   implicit class Verify[Container](container: Container)(
     implicit verifiable: Verifiable[Container],
-    verifier: Verifier[_]
+    verifier: Verifier
   ) {
     def verify: VerificationResult = {
       debug(s"Verification: Attempting to verify $container")

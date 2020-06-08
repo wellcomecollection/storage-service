@@ -11,7 +11,6 @@ import uk.ac.wellcome.platform.archive.common.verify.{
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
-import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
 
 class MemoryVerifierTest
     extends VerifierTestCases[String, MemoryStreamStore[ObjectLocation]]
@@ -25,16 +24,13 @@ class MemoryVerifierTest
 
   override def putString(location: ObjectLocation, contents: String)(
     implicit streamStore: MemoryStreamStore[ObjectLocation]
-  ): Unit =
-    streamStore.put(location)(
-      InputStreamWithLengthAndMetadata(
-        stringCodec.toStream(contents).right.value,
-        metadata = Map.empty
-      )
-    ) shouldBe a[Right[_, _]]
+  ): Unit = {
+    val inputStream = stringCodec.toStream(contents).right.value
+    streamStore.put(location)(inputStream) shouldBe a[Right[_, _]]
+  }
 
   override def withVerifier[R](
-    testWith: TestWith[Verifier[_], R]
+    testWith: TestWith[Verifier, R]
   )(implicit streamStore: MemoryStreamStore[ObjectLocation]): R =
     testWith(
       new MemoryVerifier(streamStore)

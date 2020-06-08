@@ -5,7 +5,7 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.generators.RandomThings
-import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
+import uk.ac.wellcome.storage.streaming.Codec
 import uk.ac.wellcome.storage.{ObjectLocation, StorageError}
 
 class S3ObjectExistsTest
@@ -22,17 +22,9 @@ class S3ObjectExistsTest
       it("returns true") {
         withLocalS3Bucket { bucket =>
           val objectLocation = createObjectLocationWith(bucket.name)
-          val byteLength = randomInt(100, 200)
-          val randomData = randomInputStream(byteLength)
+          val inputStream = Codec.bytesCodec.toStream(randomBytes()).right.value
 
-          putStream(
-            objectLocation,
-            new InputStreamWithLengthAndMetadata(
-              randomData,
-              byteLength,
-              Map.empty
-            )
-          )
+          putStream(location = objectLocation, inputStream = inputStream)
 
           objectLocation.exists.right.value shouldBe true
         }

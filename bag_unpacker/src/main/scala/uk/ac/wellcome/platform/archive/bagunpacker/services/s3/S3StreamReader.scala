@@ -1,20 +1,16 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services.s3
+
 import java.io.{ByteArrayInputStream, InputStream, SequenceInputStream}
 import java.util
 
 import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.{
-  AmazonS3Exception,
-  GetObjectRequest,
-  ObjectMetadata
-}
+import com.amazonaws.services.s3.model.{AmazonS3Exception, GetObjectRequest}
 import grizzled.slf4j.Logging
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.Readable
-import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
+import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
-import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
 /** If you hold open an S3ObjectInputStream for a long time, eventually the
@@ -35,7 +31,7 @@ import scala.util.{Failure, Success, Try}
   *
   */
 class S3StreamReader(bufferSize: Long)(implicit s3Client: AmazonS3)
-    extends Readable[ObjectLocation, InputStreamWithLengthAndMetadata]
+    extends Readable[ObjectLocation, InputStreamWithLength]
     with Logging {
 
   private class S3StreamEnumeration(
@@ -115,10 +111,9 @@ class S3StreamReader(bufferSize: Long)(implicit s3Client: AmazonS3)
         bufferSize = bufferSize
       )
 
-      new InputStreamWithLengthAndMetadata(
+      new InputStreamWithLength(
         new SequenceInputStream(streams),
-        length = contentLength,
-        metadata = prepareMetadata(metadata)
+        length = contentLength
       )
     } match {
       case Success(inputStream) => Right(Identified(location, inputStream))
@@ -140,18 +135,4 @@ class S3StreamReader(bufferSize: Long)(implicit s3Client: AmazonS3)
         StoreReadError(exc)
       case _ => StoreReadError(throwable)
     }
-
-  private def prepareMetadata(metadata: ObjectMetadata): Map[String, String] = {
-    val userMetadata = metadata.getUserMetadata
-
-    // We get a mutable.Map from the S3 SDK, but we want an immutable Map to pass
-    // out to the codebase, hence this slightly odd construction!
-    userMetadata
-      .keySet()
-      .asScala
-      .map { k =>
-        (k, userMetadata.get(k))
-      }
-      .toMap
-  }
 }

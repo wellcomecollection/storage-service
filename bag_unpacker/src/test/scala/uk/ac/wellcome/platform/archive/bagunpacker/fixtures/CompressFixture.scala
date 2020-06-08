@@ -36,7 +36,7 @@ trait CompressFixture[Namespace]
     namespace: Namespace,
     archiveFile: File
   )(testWith: TestWith[ObjectLocation, R])(
-    implicit streamStore: StreamStore[ObjectLocation, InputStreamWithLength]
+    implicit streamStore: StreamStore[ObjectLocation]
   ): R = {
     val location = createObjectLocationWith(
       namespace = namespace,

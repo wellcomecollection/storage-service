@@ -23,9 +23,9 @@ import uk.ac.wellcome.platform.archive.common.storage.services.{
 import scala.concurrent.{ExecutionContext, Future}
 
 class Register(
-  bagReader: BagReader[_],
+  bagReader: BagReader,
   bagTrackerClient: BagTrackerClient,
-  storageManifestService: StorageManifestService[_]
+  storageManifestService: StorageManifestService
 )(
   implicit ec: ExecutionContext
 ) extends Logging {

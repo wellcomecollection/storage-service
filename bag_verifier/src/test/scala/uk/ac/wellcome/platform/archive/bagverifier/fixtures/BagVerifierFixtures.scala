@@ -60,7 +60,7 @@ trait BagVerifierFixtures
 
   def withVerifier[R](bucket: Bucket)(testWith: TestWith[BagVerifier, R]): R =
     withMaterializer { implicit mat =>
-      implicit val _bagReader: BagReader[_] =
+      implicit val _bagReader: BagReader =
         new S3BagReader()
 
       implicit val _s3ObjectVerifier: S3ObjectVerifier =

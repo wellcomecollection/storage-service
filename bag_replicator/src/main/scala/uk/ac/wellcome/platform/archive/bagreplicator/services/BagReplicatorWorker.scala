@@ -29,7 +29,6 @@ import uk.ac.wellcome.storage.locking.{
   LockingService
 }
 import uk.ac.wellcome.storage.store.StreamStore
-import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
 import uk.ac.wellcome.storage.{Identified, ObjectLocation, ObjectLocationPrefix}
 
 import scala.util.Try
@@ -54,7 +53,7 @@ class BagReplicatorWorker[
   val as: ActorSystem,
   val sc: SqsAsyncClient,
   val wd: Decoder[VersionedBagRootPayload],
-  streamStore: StreamStore[ObjectLocation, InputStreamWithLengthAndMetadata]
+  streamStore: StreamStore[ObjectLocation]
 ) extends IngestStepWorker[
       VersionedBagRootPayload,
       BagReplicationSummary[_]

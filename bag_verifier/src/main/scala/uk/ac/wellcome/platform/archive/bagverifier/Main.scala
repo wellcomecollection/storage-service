@@ -58,7 +58,7 @@ object Main extends WellcomeTypesafeApp {
     implicit val s3ObjectVerifier: S3ObjectVerifier =
       new S3ObjectVerifier()
 
-    implicit val bagReader: BagReader[_] =
+    implicit val bagReader: BagReader =
       new S3BagReader()
 
     implicit val s3Resolvable: S3Resolvable =

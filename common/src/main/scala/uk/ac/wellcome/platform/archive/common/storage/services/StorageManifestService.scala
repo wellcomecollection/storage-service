@@ -1,6 +1,5 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
-import java.io.InputStream
 import java.time.Instant
 
 import grizzled.slf4j.Logging
@@ -15,7 +14,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.store.Readable
-import uk.ac.wellcome.storage.streaming.HasLength
+import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 import scala.util.{Failure, Success, Try}
@@ -26,12 +25,12 @@ class StorageManifestException(message: String)
 class BadFetchLocationException(message: String)
     extends StorageManifestException(message)
 
-class StorageManifestService[IS <: InputStream with HasLength](
+class StorageManifestService(
   sizeFinder: SizeFinder
 )(
-  implicit streamReader: Readable[ObjectLocation, IS]
+  implicit streamReader: Readable[ObjectLocation, InputStreamWithLength]
 ) extends Logging {
-  private val tagManifestFileFinder = new TagManifestFileFinder[IS]()
+  private val tagManifestFileFinder = new TagManifestFileFinder()
 
   def createManifest(
     ingestId: IngestID,

@@ -10,7 +10,7 @@ import akka.stream.Materializer
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.storage.services.S3Uploader
 import uk.ac.wellcome.storage.ObjectLocationPrefix
-import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
+import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 import scala.concurrent.duration.Duration
 
@@ -51,10 +51,9 @@ trait LargeResponses extends Logging {
           .getDataBytes()
           .runWith(converter, materializer)
 
-        val content = new InputStreamWithLengthAndMetadata(
+        val content = new InputStreamWithLength(
           inputStream = inputStream,
-          length = length,
-          metadata = Map.empty
+          length = length
         )
 
         val uploaded = s3Uploader.uploadAndGetURL(

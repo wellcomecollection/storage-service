@@ -8,7 +8,7 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.streaming.Codec.stringCodec
-import uk.ac.wellcome.storage.streaming.InputStreamWithLengthAndMetadata
+import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage._
 
 import scala.concurrent.duration.Duration
@@ -29,7 +29,7 @@ class S3Uploader(implicit val s3Client: AmazonS3) {
   // overwriting existing content will change what previously generated URLs return
   def uploadAndGetURL(
     location: ObjectLocation,
-    content: InputStreamWithLengthAndMetadata,
+    content: InputStreamWithLength,
     expiryLength: Duration,
     checkExists: Boolean
   ): Either[StorageError, URL] =
@@ -55,8 +55,7 @@ class S3Uploader(implicit val s3Client: AmazonS3) {
       inputStream <- stringCodec.toStream(content)
       result <- uploadAndGetURL(
         location = location,
-        content =
-          InputStreamWithLengthAndMetadata(inputStream, metadata = Map.empty),
+        content = inputStream,
         expiryLength = expiryLength,
         checkExists = checkExists
       )

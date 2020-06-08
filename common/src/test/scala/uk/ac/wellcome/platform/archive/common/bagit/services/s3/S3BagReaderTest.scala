@@ -36,7 +36,7 @@ class S3BagReaderTest extends BagReaderTestCases[Unit, Bucket] with S3Fixtures {
   override def withContext[R](testWith: TestWith[Unit, R]): R = testWith(())
 
   override def withBagReader[R](
-    testWith: TestWith[BagReader[_], R]
+    testWith: TestWith[BagReader, R]
   )(implicit context: Unit): R =
     testWith(new S3BagReader())
 

@@ -12,10 +12,7 @@ import uk.ac.wellcome.platform.archive.bagunpacker.services.{
 }
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.streaming.{
-  InputStreamWithLength,
-  InputStreamWithLengthAndMetadata
-}
+import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 class S3Unpacker(
   bufferSize: Long = 128 * FileUtils.ONE_MB
@@ -34,9 +31,7 @@ class S3Unpacker(
     location: ObjectLocation
   )(inputStream: InputStreamWithLength): Either[StorageError, Unit] =
     s3StreamStore
-      .put(location)(
-        InputStreamWithLengthAndMetadata(inputStream, metadata = Map.empty)
-      )
+      .put(location)(inputStream)
       .map { _ =>
         ()
       }
