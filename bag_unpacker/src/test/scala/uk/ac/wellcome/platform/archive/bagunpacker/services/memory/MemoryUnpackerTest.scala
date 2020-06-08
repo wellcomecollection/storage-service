@@ -8,10 +8,7 @@ import uk.ac.wellcome.platform.archive.bagunpacker.services.{
 import uk.ac.wellcome.storage.{Identified, ObjectLocation}
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
-import uk.ac.wellcome.storage.streaming.{
-  InputStreamWithLength,
-  InputStreamWithLengthAndMetadata
-}
+import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 class MemoryUnpackerTest extends UnpackerTestCases[String] {
   implicit val streamStore: MemoryStreamStore[ObjectLocation] =
@@ -21,11 +18,10 @@ class MemoryUnpackerTest extends UnpackerTestCases[String] {
   override def withNamespace[R](testWith: TestWith[String, R]): R =
     testWith(randomAlphanumeric)
 
-  // TODO: Add covariance to StreamStore
   override def withStreamStore[R](
-    testWith: TestWith[StreamStore[ObjectLocation, InputStreamWithLength], R]
+    testWith: TestWith[StreamStore[ObjectLocation], R]
   ): R = {
-    val store = new StreamStore[ObjectLocation, InputStreamWithLength] {
+    val store = new StreamStore[ObjectLocation] {
       override def get(location: ObjectLocation): ReadEither =
         streamStore
           .get(location)
@@ -41,22 +37,17 @@ class MemoryUnpackerTest extends UnpackerTestCases[String] {
 
       override def put(
         location: ObjectLocation
-      )(is: InputStreamWithLength): WriteEither =
+      )(inputStream: InputStreamWithLength): WriteEither =
         streamStore
-          .put(location)(
-            new InputStreamWithLengthAndMetadata(
-              is,
-              length = is.length,
-              metadata = Map.empty
-            )
-          )
-          .map { is =>
-            is.copy(
-              identifiedT = new InputStreamWithLength(
-                is.identifiedT,
-                length = is.identifiedT.length
+          .put(location)(inputStream)
+          .map {
+            identified: Identified[ObjectLocation, InputStreamWithLength] =>
+              identified.copy(
+                identifiedT = new InputStreamWithLength(
+                  identified.identifiedT,
+                  length = identified.identifiedT.length
+                )
               )
-            )
           }
     }
 

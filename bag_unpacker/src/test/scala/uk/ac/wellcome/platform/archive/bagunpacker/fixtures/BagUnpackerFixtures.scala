@@ -15,10 +15,7 @@ import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.streaming.{
-  InputStreamWithLength,
-  InputStreamWithLengthAndMetadata
-}
+import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.{Identified, ObjectLocation}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -94,11 +91,11 @@ trait BagUnpackerFixtures
 
   // TODO: Add covariance to StreamStore
   def withStreamStore[R](
-    testWith: TestWith[StreamStore[ObjectLocation, InputStreamWithLength], R]
+    testWith: TestWith[StreamStore[ObjectLocation], R]
   ): R = {
     val s3StreamStore = new S3StreamStore()
 
-    val store = new StreamStore[ObjectLocation, InputStreamWithLength] {
+    val store = new StreamStore[ObjectLocation] {
       override def get(location: ObjectLocation): ReadEither =
         s3StreamStore
           .get(location)
@@ -114,22 +111,17 @@ trait BagUnpackerFixtures
 
       override def put(
         location: ObjectLocation
-      )(is: InputStreamWithLength): WriteEither =
+      )(inputStream: InputStreamWithLength): WriteEither =
         s3StreamStore
-          .put(location)(
-            new InputStreamWithLengthAndMetadata(
-              is,
-              length = is.length,
-              metadata = Map.empty
-            )
-          )
-          .map { is =>
-            is.copy(
-              identifiedT = new InputStreamWithLength(
-                is.identifiedT,
-                length = is.identifiedT.length
+          .put(location)(inputStream)
+          .map {
+            identified: Identified[ObjectLocation, InputStreamWithLength] =>
+              identified.copy(
+                identifiedT = new InputStreamWithLength(
+                  identified.identifiedT,
+                  length = identified.identifiedT.length
+                )
               )
-            )
           }
     }
 
