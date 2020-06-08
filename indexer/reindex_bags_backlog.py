@@ -289,12 +289,12 @@ def confirm(env, ids, republish, role_arn):
     elastic_client = create_elastic_client(role_arn, ES_SECRETS)
     sns_client = create_client("sns", role_arn)
 
-    if(not ids):
+    if not ids:
         latest_bags = get_latest_bags(dynamodb_client, config["table_name"])
-        bags_to_confirm = [key for (key, value) in latest_bags.items()]
     else:
         latest_bags = gather_bags(dynamodb_client, config["table_name"], ids)
-        bags_to_confirm = [key for (key, value) in latest_bags.items()]
+
+    bags_to_confirm = [key for (key, value) in latest_bags.items()]
 
     not_indexed = confirm_indexed(elastic_client, bags_to_confirm, config["es_index"])
 
