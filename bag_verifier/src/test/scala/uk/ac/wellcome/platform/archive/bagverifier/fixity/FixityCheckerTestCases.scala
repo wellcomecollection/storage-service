@@ -15,8 +15,9 @@ import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
 import uk.ac.wellcome.storage.tags.Tags
 
-trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[ObjectLocation]]
-    extends AnyFunSpec
+trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
+  ObjectLocation
+]] extends AnyFunSpec
     with Matchers
     with EitherValues
     with NamespaceFixtures[ObjectLocation, Namespace]
@@ -30,7 +31,9 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
     implicit context: Context
   ): Unit
 
-  def withFixityChecker[R](streamStore: StreamStoreImpl)(testWith: TestWith[FixityChecker, R])(
+  def withFixityChecker[R](streamStore: StreamStoreImpl)(
+    testWith: TestWith[FixityChecker, R]
+  )(
     implicit context: Context
   ): R
 
@@ -226,7 +229,9 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
           } shouldBe a[FileFixityCorrect]
 
           val storedTags = withTags { _.get(location) }.right.value
-          storedTags shouldBe Map(s"Content-${checksum.algorithm.pathRepr.toUpperCase}" -> checksum.value.toString)
+          storedTags shouldBe Map(
+            s"Content-${checksum.algorithm.pathRepr.toUpperCase}" -> checksum.value.toString
+          )
         }
       }
     }
@@ -370,8 +375,16 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
           val content = "HelloWorld"
           val helloWorldChecksums = Seq(
             Checksum(MD5, ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6")),
-            Checksum(SHA1, ChecksumValue("db8ac1c259eb89d4a131b253bacfca5f319d54f2")),
-            Checksum(SHA256, ChecksumValue("872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4")),
+            Checksum(
+              SHA1,
+              ChecksumValue("db8ac1c259eb89d4a131b253bacfca5f319d54f2")
+            ),
+            Checksum(
+              SHA256,
+              ChecksumValue(
+                "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
+              )
+            )
           )
 
           val location = createObjectLocationWith(namespace)
@@ -383,14 +396,16 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
               checksum = checksum
             )
 
-            withFixityChecker { _.check(expectedFileFixity) } shouldBe a[FileFixityCorrect]
+            withFixityChecker { _.check(expectedFileFixity) } shouldBe a[
+              FileFixityCorrect
+            ]
           }
 
           val storedTags = withTags { _.get(location) }.right.value
           storedTags shouldBe Map(
             "Content-MD5" -> "68e109f0f40ca72a15e05cc22786f8e6",
             "Content-SHA1" -> "db8ac1c259eb89d4a131b253bacfca5f319d54f2",
-            "Content-SHA256" -> "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4",
+            "Content-SHA256" -> "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
           )
         }
       }

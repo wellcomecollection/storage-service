@@ -3,9 +3,16 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity.s3
 import java.net.URI
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FileFixityCouldNotRead, FixityChecker, FixityCheckerTestCases}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  FileFixityCouldNotRead,
+  FixityChecker,
+  FixityCheckerTestCases
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.S3Resolvable
-import uk.ac.wellcome.platform.archive.common.storage.{LocationError, LocationNotFound}
+import uk.ac.wellcome.platform.archive.common.storage.{
+  LocationError,
+  LocationNotFound
+}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.fixtures.BucketNamespaceFixtures
@@ -122,13 +129,17 @@ class S3FixityCheckerTest
     }
   }
 
-  override def withFixityChecker[R](customStreamStore: S3StreamStore)(testWith: TestWith[FixityChecker, R])(implicit context: Unit): R =
+  override def withFixityChecker[R](
+    customStreamStore: S3StreamStore
+  )(testWith: TestWith[FixityChecker, R])(implicit context: Unit): R =
     testWith(
       new S3FixityChecker() {
         override val streamStore: S3StreamStore = customStreamStore
       }
     )
 
-  override def withStreamStoreImpl[R](testWith: TestWith[S3StreamStore, R])(implicit context:  Unit): R =
+  override def withStreamStoreImpl[R](
+    testWith: TestWith[S3StreamStore, R]
+  )(implicit context: Unit): R =
     testWith(new S3StreamStore())
 }

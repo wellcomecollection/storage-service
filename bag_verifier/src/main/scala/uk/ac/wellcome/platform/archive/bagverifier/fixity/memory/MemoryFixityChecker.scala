@@ -4,15 +4,18 @@ import java.net.URI
 
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityChecker
 import uk.ac.wellcome.platform.archive.common.storage.LocateFailure
-import uk.ac.wellcome.platform.archive.common.storage.services.{MemorySizeFinder, SizeFinder}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  MemorySizeFinder,
+  SizeFinder
+}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 import uk.ac.wellcome.storage.tags.memory.MemoryTags
 
 class MemoryFixityChecker(
   val streamStore: MemoryStreamStore[ObjectLocation],
-  val tags: MemoryTags[ObjectLocation])
-    extends FixityChecker {
+  val tags: MemoryTags[ObjectLocation]
+) extends FixityChecker {
   override protected val sizeFinder: SizeFinder =
     new MemorySizeFinder(streamStore.memoryStore)
 

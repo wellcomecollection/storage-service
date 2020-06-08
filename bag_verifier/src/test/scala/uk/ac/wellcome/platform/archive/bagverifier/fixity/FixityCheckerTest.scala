@@ -13,7 +13,7 @@ import uk.ac.wellcome.storage.streaming.Codec.stringCodec
 import uk.ac.wellcome.storage.tags.memory.MemoryTags
 
 class FixityCheckerTest
-  extends AnyFunSpec
+    extends AnyFunSpec
     with Matchers
     with EitherValues
     with FixityGenerators {
@@ -24,12 +24,16 @@ class FixityCheckerTest
     it("errors if it cannot write tags") {
       val brokenTags = new MemoryTags[ObjectLocation](initialTags = Map.empty) {
         override def update(location: ObjectLocation)(
-          updateFunction:
-            Map[String, String] => Either[UpdateFunctionError, Map[String, String]]):
-          Either[UpdateError, Map[String, String]] =
+          updateFunction: Map[String, String] => Either[
+            UpdateFunctionError,
+            Map[String, String]
+          ]
+        ): Either[UpdateError, Map[String, String]] =
           Left(UpdateWriteError(StoreWriteError(new Throwable("BOOM!"))))
 
-        override def get(location: ObjectLocation): Either[ReadError, Map[String, String]] =
+        override def get(
+          location: ObjectLocation
+        ): Either[ReadError, Map[String, String]] =
           super.get(location) match {
             case Right(tags)                => Right(tags)
             case Left(_: DoesNotExistError) => Right(Map[String, String]())
@@ -64,16 +68,20 @@ class FixityCheckerTest
       val brokenTags = new MemoryTags[ObjectLocation](initialTags = Map.empty) {
         private var calls: Int = 0
 
-        override def get(location: ObjectLocation): Either[ReadError, Map[String, String]] = {
+        override def get(
+          location: ObjectLocation
+        ): Either[ReadError, Map[String, String]] = {
           if (calls == 0) {
             calls += 1
             Right(Map[String, String]())
           } else {
-            Right(Map(
-              "Content-MD5" -> "md5.wrong",
-              "Content-SHA1" -> "sha1.wrong",
-              "Content-SHA256" -> "sha256.wrong",
-            ))
+            Right(
+              Map(
+                "Content-MD5" -> "md5.wrong",
+                "Content-SHA1" -> "sha1.wrong",
+                "Content-SHA256" -> "sha256.wrong"
+              )
+            )
           }
         }
       }
@@ -99,7 +107,9 @@ class FixityCheckerTest
       val result = fixityChecker.check(expectedFileFixity)
 
       result shouldBe a[FileFixityCouldNotWriteTag]
-      result.asInstanceOf[FileFixityCouldNotWriteTag].e shouldBe a[AssertionError]
+      result
+        .asInstanceOf[FileFixityCouldNotWriteTag]
+        .e shouldBe a[AssertionError]
     }
   }
 }

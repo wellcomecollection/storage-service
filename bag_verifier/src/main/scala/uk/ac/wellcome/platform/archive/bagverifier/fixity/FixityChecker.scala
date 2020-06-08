@@ -49,10 +49,12 @@ trait FixityChecker extends Logging {
 
     val result: Either[FileFixityError, FileFixityCorrect] = for {
       objectLocation <- getObjectLocation(expectedFileFixity)
-      _ = debug(s"ObjectLocation for URI ${expectedFileFixity.uri} is $objectLocation")
+      _ = debug(
+        s"ObjectLocation for URI ${expectedFileFixity.uri} is $objectLocation"
+      )
 
       existingTags <- tags.get(objectLocation) match {
-        case Right(tagSet)   => Right(tagSet)
+        case Right(tagSet) => Right(tagSet)
         case Left(readError) => {
           debug(s"Could not read tags for $objectLocation: $readError")
           Left(
@@ -95,17 +97,20 @@ trait FixityChecker extends Logging {
     }
   }
 
-  private def getObjectLocation(expectedFileFixity: ExpectedFileFixity): Either[FileFixityCouldNotRead, ObjectLocation] =
-    locate(expectedFileFixity.uri)
-      .left.map { locateFailure =>
-        FileFixityCouldNotRead(
-          expectedFileFixity = expectedFileFixity,
-          e = LocationParsingError(expectedFileFixity, locateFailure.msg)
-        )
-      }
+  private def getObjectLocation(
+    expectedFileFixity: ExpectedFileFixity
+  ): Either[FileFixityCouldNotRead, ObjectLocation] =
+    locate(expectedFileFixity.uri).left.map { locateFailure =>
+      FileFixityCouldNotRead(
+        expectedFileFixity = expectedFileFixity,
+        e = LocationParsingError(expectedFileFixity, locateFailure.msg)
+      )
+    }
 
-  private def getInputStream(objectLocation: ObjectLocation, expectedFileFixity: ExpectedFileFixity):
-      Either[FileFixityError, InputStreamWithLength] = {
+  private def getInputStream(
+    objectLocation: ObjectLocation,
+    expectedFileFixity: ExpectedFileFixity
+  ): Either[FileFixityError, InputStreamWithLength] = {
     val lookupResult = for {
       inputStream <- streamStore.get(objectLocation) match {
         case Right(stream) => Right(stream.identifiedT)
@@ -122,8 +127,9 @@ trait FixityChecker extends Logging {
       }
     } yield inputStream
 
-    lookupResult
-      .left.map { err => FileFixityCouldNotRead(expectedFileFixity, e = err) }
+    lookupResult.left.map { err =>
+      FileFixityCouldNotRead(expectedFileFixity, e = err)
+    }
   }
 
   private def verifySize(
@@ -133,12 +139,13 @@ trait FixityChecker extends Logging {
     for {
       actualLength <- sizeFinder.getSize(objectLocation) match {
         case Success(size) => Right(size)
-        case Failure(err)  => {
+        case Failure(err) => {
           debug(s"Unable to get size of $objectLocation: $err")
           Left(
             FileFixityCouldNotRead(
               expectedFileFixity,
-              e = LocationNotFound(expectedFileFixity, "Location not available!")
+              e =
+                LocationNotFound(expectedFileFixity, "Location not available!")
             )
           )
         }
@@ -254,41 +261,44 @@ trait FixityChecker extends Logging {
   private def writeChecksumTag(
     expectedFileFixity: ExpectedFileFixity,
     objectLocation: ObjectLocation,
-    fixityTags: Map[String, String]): Either[FileFixityCouldNotWriteTag, Unit] =
-      Try {
-        debug(s"Adding tags $fixityTags to $objectLocation")
-        tags
-          .update(objectLocation) { existingTags =>
-            // We've already checked the tags on this object once, so we shouldn't
-            // see conflicting values here.  Check we're not about to blat the tags
-            // just in case.
-            fixityTags.foreach { case (key, value) =>
+    fixityTags: Map[String, String]
+  ): Either[FileFixityCouldNotWriteTag, Unit] =
+    Try {
+      debug(s"Adding tags $fixityTags to $objectLocation")
+      tags
+        .update(objectLocation) { existingTags =>
+          // We've already checked the tags on this object once, so we shouldn't
+          // see conflicting values here.  Check we're not about to blat the tags
+          // just in case.
+          fixityTags.foreach {
+            case (key, value) =>
               assert(
                 existingTags.getOrElse(key, value) == value,
                 s"Trying to write $fixityTags to $objectLocation; existing tags conflict: $existingTags"
               )
-            }
-
-            Right(existingTags ++ fixityTags)
-          } match {
-            case Right(_)          => Right(())
-            case Left(updateError) => Left(
-              FileFixityCouldNotWriteTag(
-                expectedFileFixity = expectedFileFixity,
-                objectLocation = objectLocation,
-                e = updateError.e
-              )
-            )
           }
-      } match {
-        case Success(result) => result
-        case Failure(err) =>
+
+          Right(existingTags ++ fixityTags)
+        } match {
+        case Right(_) => Right(())
+        case Left(updateError) =>
           Left(
             FileFixityCouldNotWriteTag(
               expectedFileFixity = expectedFileFixity,
               objectLocation = objectLocation,
-              e = err
+              e = updateError.e
             )
           )
       }
+    } match {
+      case Success(result) => result
+      case Failure(err) =>
+        Left(
+          FileFixityCouldNotWriteTag(
+            expectedFileFixity = expectedFileFixity,
+            objectLocation = objectLocation,
+            e = err
+          )
+        )
+    }
 }

@@ -8,33 +8,38 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FixityChecker,
   FixityCheckerTestCases
 }
-import uk.ac.wellcome.storage.{
-  DoesNotExistError,
-  ObjectLocation,
-  ReadError
-}
+import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation, ReadError}
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.tags.Tags
 import uk.ac.wellcome.storage.tags.memory.MemoryTags
 
 class MemoryFixityCheckerTest
-    extends FixityCheckerTestCases[String, (MemoryStreamStore[ObjectLocation], MemoryTags[ObjectLocation]), MemoryStreamStore[ObjectLocation]]
+    extends FixityCheckerTestCases[
+      String,
+      (MemoryStreamStore[ObjectLocation], MemoryTags[ObjectLocation]),
+      MemoryStreamStore[ObjectLocation]
+    ]
     with EitherValues {
-  type MemoryContext = (MemoryStreamStore[ObjectLocation], MemoryTags[ObjectLocation])
+  type MemoryContext =
+    (MemoryStreamStore[ObjectLocation], MemoryTags[ObjectLocation])
 
   override def withContext[R](testWith: TestWith[MemoryContext, R]): R =
-    testWith((
-      MemoryStreamStore[ObjectLocation](),
-      new MemoryTags[ObjectLocation](initialTags = Map.empty) {
-        override def get(location: ObjectLocation): Either[ReadError, Map[String, String]] =
-          super.get(location) match {
-            case Right(tags)                => Right(tags)
-            case Left(_: DoesNotExistError) => Right(Map[String, String]())
-            case Left(err)                  => Left(err)
-          }
-      }
-    ))
+    testWith(
+      (
+        MemoryStreamStore[ObjectLocation](),
+        new MemoryTags[ObjectLocation](initialTags = Map.empty) {
+          override def get(
+            location: ObjectLocation
+          ): Either[ReadError, Map[String, String]] =
+            super.get(location) match {
+              case Right(tags)                => Right(tags)
+              case Left(_: DoesNotExistError) => Right(Map[String, String]())
+              case Left(err)                  => Left(err)
+            }
+        }
+      )
+    )
 
   override def putString(location: ObjectLocation, contents: String)(
     implicit context: MemoryContext
@@ -67,9 +72,13 @@ class MemoryFixityCheckerTest
     new URI(s"mem://${location.namespace}/${location.path}")
 
   override def withFixityChecker[R](
-    streamStore: MemoryStreamStore[ObjectLocation])(
-    testWith: TestWith[FixityChecker, R])(
-    implicit context: (MemoryStreamStore[ObjectLocation], MemoryTags[ObjectLocation])): R = {
+    streamStore: MemoryStreamStore[ObjectLocation]
+  )(testWith: TestWith[FixityChecker, R])(
+    implicit context: (
+      MemoryStreamStore[ObjectLocation],
+      MemoryTags[ObjectLocation]
+    )
+  ): R = {
     val (_, tags) = context
 
     testWith(
@@ -78,8 +87,8 @@ class MemoryFixityCheckerTest
   }
 
   override def withStreamStoreImpl[R](
-    testWith: TestWith[MemoryStreamStore[ObjectLocation], R])(
-    implicit context: MemoryContext): R = {
+    testWith: TestWith[MemoryStreamStore[ObjectLocation], R]
+  )(implicit context: MemoryContext): R = {
     val (streamStore, _) = context
     testWith(streamStore)
   }
