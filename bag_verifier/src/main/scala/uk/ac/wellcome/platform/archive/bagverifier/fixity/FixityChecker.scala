@@ -43,7 +43,7 @@ trait FixityChecker extends Logging {
     //    2.  Allows us to cycle objects to Glacier/cold storage tiers if they're very
     //        large, and we don't need to unfreeze them to verify new versions of the bag
     //
-    val fixityTagName = s"Content-$algorithm"
+    val fixityTagName = s"Content-${algorithm.pathRepr.toUpperCase}"
     val fixityTagValue = expectedFileFixity.checksum.value.toString
     val fixityTags = Map(fixityTagName -> fixityTagValue)
 

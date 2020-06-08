@@ -339,11 +339,61 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
     }
 
     it("doesn't set a tag if the verification fails") {
-      true shouldBe false
+      withContext { implicit context =>
+        withNamespace { implicit namespace =>
+          val checksum = randomChecksum
+
+          val location = createObjectLocationWith(namespace)
+          putString(location, randomAlphanumeric)
+
+          val expectedFileFixity = createExpectedFileFixityWith(
+            location = location,
+            checksum = checksum
+          )
+
+          val result =
+            withFixityChecker {
+              _.check(expectedFileFixity)
+            }
+
+          result shouldBe a[FileFixityMismatch]
+
+          val storedTags = withTags { _.get(location) }.right.value
+          storedTags shouldBe empty
+        }
+      }
     }
 
     it("adds one tag per checksum algorithm") {
-      true shouldBe false
+      withContext { implicit context =>
+        withNamespace { implicit namespace =>
+          val content = "HelloWorld"
+          val helloWorldChecksums = Seq(
+            Checksum(MD5, ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6")),
+            Checksum(SHA1, ChecksumValue("db8ac1c259eb89d4a131b253bacfca5f319d54f2")),
+            Checksum(SHA256, ChecksumValue("872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4")),
+          )
+
+          val location = createObjectLocationWith(namespace)
+          putString(location, content)
+
+          helloWorldChecksums.foreach { checksum =>
+            val expectedFileFixity = createExpectedFileFixityWith(
+              location = location,
+              checksum = checksum
+            )
+
+            withFixityChecker { _.check(expectedFileFixity) } shouldBe a[FileFixityCorrect]
+          }
+
+          val storedTags = withTags { _.get(location) }.right.value
+          storedTags shouldBe Map(
+            "Content-MD5" -> "68e109f0f40ca72a15e05cc22786f8e6",
+            "Content-SHA1" -> "db8ac1c259eb89d4a131b253bacfca5f319d54f2",
+            "Content-SHA256" -> "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4",
+          )
+        }
+      }
     }
   }
 }
