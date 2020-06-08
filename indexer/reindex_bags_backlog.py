@@ -111,16 +111,12 @@ def get_bag(dynamodb_client, table_name, bag_id):
     response = dynamodb_client.query(
         TableName=table_name,
         KeyConditionExpression="id = :bag_id",
-        ExpressionAttributeValues={
-            ":bag_id":{
-                "S":bag_id
-            }
-        }
+        ExpressionAttributeValues={":bag_id": {"S": bag_id}},
     )
 
     max_version = max(int(item["version"]["N"]) for item in response["Items"])
 
-    return { bag_id: max_version }
+    return {bag_id: max_version}
 
 
 def publish_bags(sns_client, topic_arn, bags, dry_run=False):
@@ -238,7 +234,7 @@ def get_config(env):
 
 def gather_bags(dynamodb_client, table_name, bag_ids):
     split_bag_ids = bag_ids.split(",")
-    bags = [ get_bag(dynamodb_client, table_name, bag_id) for bag_id in split_bag_ids ]
+    bags = [get_bag(dynamodb_client, table_name, bag_id) for bag_id in split_bag_ids]
 
     bags_to_publish = {}
     for bag in bags:
@@ -254,7 +250,9 @@ def cli():
 
 @click.command()
 @click.option("--env", default="stage", help="Environment to run against (prod|stage)")
-@click.option("--ids", default=[], help="Specific Bag to reindex (will not scan for all bags)")
+@click.option(
+    "--ids", default=[], help="Specific Bag to reindex (will not scan for all bags)"
+)
 @click.option("--dry_run", default=False, is_flag=True, help="Do not publish messages")
 @click.option(
     "--role_arn", default=ROLE_ARN, help="AWS Role ARN to run this script with"
@@ -275,7 +273,9 @@ def publish(env, ids, dry_run, role_arn):
 
 @click.command()
 @click.option("--env", default="stage", help="Environment to run against (prod|stage)")
-@click.option("--ids", default=[], help="Specific Bag to confirm (will not scan for all bags)")
+@click.option(
+    "--ids", default=[], help="Specific Bag to confirm (will not scan for all bags)"
+)
 @click.option(
     "--republish", default=False, is_flag=True, help="If not indexed, republish"
 )
@@ -302,9 +302,7 @@ def confirm(env, ids, republish, role_arn):
         print(f"NOT INDEXED: {len(not_indexed)}")
         if republish:
             print(f"Republishing {len(not_indexed)} missing bags.")
-            latest_bags = {
-                bag_id: latest_bags[bag_id] for bag_id in not_indexed
-            }
+            latest_bags = {bag_id: latest_bags[bag_id] for bag_id in not_indexed}
             publish_bags(sns_client, config["topic_arn"], latest_bags)
         else:
             pprint(not_indexed)
