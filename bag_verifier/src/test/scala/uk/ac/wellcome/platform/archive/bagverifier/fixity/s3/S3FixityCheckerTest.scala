@@ -15,10 +15,12 @@ import uk.ac.wellcome.platform.archive.common.storage.{
 }
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.fixtures.BucketNamespaceFixtures
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
 
 class S3FixityCheckerTest
-    extends FixityCheckerTestCases[Bucket, Unit]
+    extends FixityCheckerTestCases[Bucket, Unit, S3StreamStore]
     with BucketNamespaceFixtures {
   override def withContext[R](testWith: TestWith[Unit, R]): R =
     testWith(())
@@ -32,10 +34,21 @@ class S3FixityCheckerTest
       contents
     )
 
+  override def withStreamStore[R](
+    testWith: TestWith[S3StreamStore, R]
+  )(implicit context: Unit): R =
+    testWith(
+      new S3StreamStore()
+    )
+
   override def withFixityChecker[R](
+    s3Store: S3StreamStore
+  )(
     testWith: TestWith[FixityChecker, R]
   )(implicit context: Unit): R =
-    testWith(new S3FixityChecker())
+    testWith(new S3FixityChecker() {
+      override val streamStore: StreamStore[ObjectLocation] = s3Store
+    })
 
   implicit val context: Unit = ()
 

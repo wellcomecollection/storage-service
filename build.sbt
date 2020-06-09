@@ -75,8 +75,12 @@ lazy val bag_tracker = setupProject(
   localDependencies = Seq(common)
 )
 
-lazy val bag_verifier =
-  setupProject(project, "bag_verifier", localDependencies = Seq(common))
+lazy val bag_verifier = setupProject(
+  project,
+  folder = "bag_verifier",
+  localDependencies = Seq(common),
+  externalDependencies = ExternalDependencies.mockitoDependencies
+)
 
 lazy val bag_unpacker = setupProject(
   project,

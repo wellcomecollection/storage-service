@@ -12,6 +12,7 @@ import uk.ac.wellcome.platform.archive.common.storage.{
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
+import uk.ac.wellcome.storage.tags.Tags
 import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation, ReadError}
 
 import scala.util.{Failure, Success}
@@ -22,6 +23,7 @@ import scala.util.{Failure, Success}
 trait FixityChecker extends Logging {
   protected val streamStore: StreamStore[ObjectLocation]
   protected val sizeFinder: SizeFinder
+  val tags: Tags[ObjectLocation]
 
   def locate(uri: URI): Either[LocateFailure[URI], ObjectLocation]
 
@@ -30,23 +32,37 @@ trait FixityChecker extends Logging {
 
     val algorithm = expectedFileFixity.checksum.algorithm
 
+    // The verifier writes a tag to the storage location after it's verified.
+    //
+    // If it tries to verify a location and finds the correct tag, it skips
+    // re-reading the entire file.
+    //
+    // This means re-verifying the same content (e.g. a new version of a bag that
+    // refers back to files in an older version):
+    //
+    //    1.  Is faster than reading the entire object again
+    //    2.  Works even if the objects have been cycled to Glacier/cold storage
+    //        (e.g. if they're very large and infrequently accessed)
+
     val fixityResult = for {
       location <- parseLocation(expectedFileFixity)
       _ = debug(s"Parsed location for ${expectedFileFixity.uri} as $location")
 
-      inputStream <- openInputStream(expectedFileFixity, location)
-      _ = debug(s"Opened input stream for $location")
+      existingTags <- getExistingTags(expectedFileFixity, location)
+      _ = debug(s"Got existing tags for $location: $existingTags")
 
       size <- verifySize(expectedFileFixity, location)
       _ = debug(s"Checked the size of $location is correct")
 
-      result <- verifyChecksumFromInputStream(
+      result <- verifyChecksum(
         expectedFileFixity = expectedFileFixity,
         location = location,
-        inputStream = inputStream,
+        existingTags = existingTags,
         algorithm = algorithm,
         size = size
       )
+
+      _ <- writeFixityTags(expectedFileFixity, location)
     } yield result
 
     debug(s"Fixity check result for ${expectedFileFixity.uri}: $fixityResult")
@@ -70,6 +86,15 @@ trait FixityChecker extends Logging {
           )
         )
     }
+
+  private def getExistingTags(
+    expectedFileFixity: ExpectedFileFixity,
+    location: ObjectLocation
+  ): Either[FileFixityCouldNotRead, Map[String, String]] =
+    handleReadErrors(
+      tags.get(location),
+      expectedFileFixity = expectedFileFixity
+    )
 
   private def openInputStream(
     expectedFileFixity: ExpectedFileFixity,
@@ -105,6 +130,49 @@ trait FixityChecker extends Logging {
         case _ => Right(())
       }
     } yield actualLength
+
+  private def verifyChecksum(
+    expectedFileFixity: ExpectedFileFixity,
+    location: ObjectLocation,
+    existingTags: Map[String, String],
+    algorithm: HashingAlgorithm,
+    size: Long
+  ): Either[FileFixityError, FileFixityCorrect] =
+    existingTags.get(fixityTagName(expectedFileFixity)) match {
+      case Some(cachedFixityValue)
+          if cachedFixityValue == fixityTagValue(expectedFileFixity) =>
+        Right(
+          FileFixityCorrect(
+            expectedFileFixity = expectedFileFixity,
+            objectLocation = location,
+            size = size
+          )
+        )
+
+      case Some(_) =>
+        Left(
+          FileFixityMismatch(
+            expectedFileFixity = expectedFileFixity,
+            objectLocation = location,
+            e = new Throwable(
+              s"Cached verification tag doesn't match expected checksum for $location: $existingTags (${expectedFileFixity.checksum})"
+            )
+          )
+        )
+
+      case None =>
+        openInputStream(expectedFileFixity, location) match {
+          case Left(err) => Left(err)
+          case Right(inputStream) =>
+            verifyChecksumFromInputStream(
+              expectedFileFixity = expectedFileFixity,
+              location = location,
+              inputStream = inputStream,
+              algorithm = algorithm,
+              size = size
+            )
+        }
+    }
 
   private def verifyChecksumFromInputStream(
     expectedFileFixity: ExpectedFileFixity,
@@ -164,6 +232,49 @@ trait FixityChecker extends Logging {
 
     fixityResult
   }
+
+  private def writeFixityTags(
+    expectedFileFixity: ExpectedFileFixity,
+    location: ObjectLocation
+  ): Either[FileFixityCouldNotWriteTag, Unit] =
+    tags
+      .update(location) { existingTags =>
+        val tagName = fixityTagName(expectedFileFixity)
+        val tagValue = fixityTagValue(expectedFileFixity)
+
+        val fixityTags = Map(tagName -> tagValue)
+
+        // We've already checked the tags on this location once, so we shouldn't
+        // see conflicting values here.  Check we're not about to blat some existing
+        // tags just in case.  If we do see conflicting tags here, there's something
+        // badly wrong with the storage service.
+        //
+        // Note: this is a fairly weak guarantee, because tags aren't locked during
+        // an update operation.
+        assert(
+          existingTags.getOrElse(tagName, tagValue) == tagValue,
+          s"Trying to write $fixityTags to $location; existing tags conflict: $existingTags"
+        )
+
+        Right(existingTags ++ fixityTags)
+      } match {
+      case Right(_) => Right(())
+      case Left(writeError) =>
+        Left(
+          FileFixityCouldNotWriteTag(
+            expectedFileFixity = expectedFileFixity,
+            objectLocation = location,
+            e = writeError.e
+          )
+        )
+    }
+
+  // e.g. Content-MD5, Content-SHA256
+  private def fixityTagName(expectedFileFixity: ExpectedFileFixity): String =
+    s"Content-${expectedFileFixity.checksum.algorithm.pathRepr.toUpperCase}"
+
+  private def fixityTagValue(expectedFileFixity: ExpectedFileFixity): String =
+    expectedFileFixity.checksum.value.toString
 
   private def handleReadErrors[T](
     t: Either[ReadError, T],
