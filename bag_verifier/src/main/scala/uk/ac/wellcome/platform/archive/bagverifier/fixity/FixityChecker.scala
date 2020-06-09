@@ -28,107 +28,133 @@ trait FixityChecker extends Logging {
 
     val algorithm = expectedFileFixity.checksum.algorithm
 
-    val eitherInputStream = for {
-      objectLocation <- locate(expectedFileFixity.uri) match {
-        case Right(l) => Right(l)
-        case Left(e) =>
-          Left(
-            LocationParsingError(expectedFileFixity, e.msg)
-          )
-      }
+    val fixityResult = for {
+      location <- parseLocation(expectedFileFixity)
+      _ = debug(s"Parsed location for ${expectedFileFixity.uri} as $location")
 
-      inputStream <- streamStore.get(objectLocation) match {
-        case Right(stream) => Right(stream.identifiedT)
+      inputStream <- openInputStream(expectedFileFixity, location)
+      _ = debug(s"Opened input stream for $location")
 
-        case Left(_: DoesNotExistError) =>
-          Left(
-            LocationNotFound(expectedFileFixity, "Location not available!")
-          )
+      _ <- verifySize(expectedFileFixity, location, inputStream)
+      _ = debug(s"Checked the size of $location is correct")
 
-        case Left(storageError) =>
-          Left(
-            LocationError(expectedFileFixity, storageError.e.getMessage)
-          )
-      }
-    } yield (inputStream, objectLocation)
+      result <- verifyChecksumFromInputStream(
+        expectedFileFixity = expectedFileFixity,
+        location = location,
+        inputStream = inputStream,
+        algorithm = algorithm
+      )
+    } yield result
 
-    val result = eitherInputStream match {
-      case Left(e) => FileFixityCouldNotRead(expectedFileFixity, e = e)
+    debug(s"Fixity check result for ${expectedFileFixity.uri}: $fixityResult")
 
-      case Right((inputStream, objectLocation)) =>
-        val verifiedLocation = expectedFileFixity.length match {
-          case Some(expectedLength) =>
-            debug(
-              "Location specifies an expected length, checking it's correct"
-            )
-
-            if (expectedLength == inputStream.length) {
-              verifyChecksum(
-                expectedFileFixity = expectedFileFixity,
-                objectLocation = objectLocation,
-                inputStream = inputStream,
-                algorithm = algorithm
-              )
-            } else {
-              FileFixityMismatch(
-                expectedFileFixity = expectedFileFixity,
-                objectLocation = objectLocation,
-                e = new Throwable(
-                  "" +
-                    s"Lengths do not match: $expectedLength != ${inputStream.available()}"
-                )
-              )
-            }
-
-          case None =>
-            verifyChecksum(
-              expectedFileFixity = expectedFileFixity,
-              objectLocation = objectLocation,
-              inputStream = inputStream,
-              algorithm = algorithm
-            )
-        }
-
-        inputStream.close()
-
-        verifiedLocation
+    fixityResult match {
+      case Right(fixityCorrect) => fixityCorrect
+      case Left(fixityError)    => fixityError
     }
-
-    debug(s"Got: $result")
-    result
   }
 
-  private def verifyChecksum(
+  private def parseLocation(
+    expectedFileFixity: ExpectedFileFixity
+  ): Either[FileFixityCouldNotRead, ObjectLocation] =
+    locate(expectedFileFixity.uri) match {
+      case Right(location) => Right(location)
+      case Left(locateError) =>
+        Left(
+          FileFixityCouldNotRead(
+            expectedFileFixity = expectedFileFixity,
+            e = LocationParsingError(expectedFileFixity, locateError.msg)
+          )
+        )
+    }
+
+  private def openInputStream(
     expectedFileFixity: ExpectedFileFixity,
-    objectLocation: ObjectLocation,
-    inputStream: InputStreamWithLength,
-    algorithm: HashingAlgorithm
-  ): FileFixityResult =
-    Checksum.create(inputStream, algorithm) match {
-      // Failure to create a checksum (parsing/algorithm)
-      case Failure(e) =>
-        FileFixityMismatch(
-          expectedFileFixity = expectedFileFixity,
-          objectLocation = objectLocation,
-          e = FailedChecksumCreation(algorithm, e)
+    location: ObjectLocation
+  ): Either[FileFixityCouldNotRead, InputStreamWithLength] =
+    streamStore.get(location) match {
+      case Right(stream) => Right(stream.identifiedT)
+
+      case Left(_: DoesNotExistError) =>
+        Left(
+          FileFixityCouldNotRead(
+            expectedFileFixity = expectedFileFixity,
+            e = LocationNotFound(expectedFileFixity, "Location not available!")
+          )
         )
 
-      // Checksum does not match that provided
-      case Success(checksum) =>
-        if (checksum != expectedFileFixity.checksum)
+      case Left(readError) =>
+        Left(
+          FileFixityCouldNotRead(
+            expectedFileFixity = expectedFileFixity,
+            e = LocationError(expectedFileFixity, readError.e.getMessage)
+          )
+        )
+    }
+
+  private def verifySize(
+    expectedFileFixity: ExpectedFileFixity,
+    location: ObjectLocation,
+    inputStream: InputStreamWithLength
+  ): Either[FileFixityMismatch, Unit] =
+    expectedFileFixity.length match {
+      case Some(expectedLength) if expectedLength != inputStream.length =>
+        Left(
           FileFixityMismatch(
             expectedFileFixity = expectedFileFixity,
-            objectLocation = objectLocation,
+            objectLocation = location,
+            e = new Throwable(
+              s"Lengths do not match: $expectedLength (expected) != ${inputStream.length} (actual)"
+            )
+          )
+        )
+
+      case _ => Right(())
+    }
+
+  private def verifyChecksumFromInputStream(
+    expectedFileFixity: ExpectedFileFixity,
+    location: ObjectLocation,
+    inputStream: InputStreamWithLength,
+    algorithm: HashingAlgorithm
+  ): Either[FileFixityError, FileFixityCorrect] = {
+    val fixityResult = Checksum.create(inputStream, algorithm) match {
+      case Failure(e) =>
+        Left(
+          FileFixityCouldNotGetChecksum(
+            expectedFileFixity = expectedFileFixity,
+            objectLocation = location,
+            e = FailedChecksumCreation(algorithm, e)
+          )
+        )
+
+      case Success(checksum) if checksum == expectedFileFixity.checksum =>
+        Right(
+          FileFixityCorrect(
+            expectedFileFixity = expectedFileFixity,
+            objectLocation = location,
+            size = inputStream.length
+          )
+        )
+
+      case Success(checksum) =>
+        Left(
+          FileFixityMismatch(
+            expectedFileFixity = expectedFileFixity,
+            objectLocation = location,
             e = FailedChecksumNoMatch(
               actual = checksum,
               expected = expectedFileFixity.checksum
             )
           )
-        else
-          FileFixityCorrect(
-            expectedFileFixity = expectedFileFixity,
-            objectLocation = objectLocation,
-            size = inputStream.length
-          )
+        )
     }
+
+    // Remember to close the InputStream when we're done, whatever the result.
+    // If we don't, the verifier will accumulate open streams and run out of
+    // either memory or file descriptors.
+    inputStream.close()
+
+    fixityResult
+  }
 }

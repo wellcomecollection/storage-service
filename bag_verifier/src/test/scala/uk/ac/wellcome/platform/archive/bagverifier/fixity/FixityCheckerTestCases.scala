@@ -1,45 +1,19 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity
 
-import java.net.URI
-
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
-import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
+import uk.ac.wellcome.platform.archive.bagverifier.generators.FixityGenerators
 import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
 
 trait FixityCheckerTestCases[Namespace, Context]
     extends AnyFunSpec
     with Matchers
     with NamespaceFixtures[ObjectLocation, Namespace]
-    with StorageRandomThings
-    with ObjectLocationGenerators {
-
-  def randomChecksum = Checksum(SHA256, randomChecksumValue)
-  def badChecksum = Checksum(MD5, randomChecksumValue)
-
-  def createExpectedFileFixity: ExpectedFileFixity =
-    createExpectedFileFixityWith()
-
-  def resolve(location: ObjectLocation): URI
-
-  def createExpectedFileFixityWith(
-    location: ObjectLocation = createObjectLocation,
-    checksum: Checksum = randomChecksum,
-    length: Option[Long] = None
-  ): ExpectedFileFixity = {
-    ExpectedFileFixity(
-      uri = resolve(location),
-      path = BagPath(randomAlphanumeric),
-      checksum = checksum,
-      length = length
-    )
-  }
+    with FixityGenerators {
 
   def withContext[R](testWith: TestWith[Context, R]): R
 

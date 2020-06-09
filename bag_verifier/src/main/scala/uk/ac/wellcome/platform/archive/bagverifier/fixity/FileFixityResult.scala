@@ -28,3 +28,9 @@ case class FileFixityCouldNotRead(
   expectedFileFixity: ExpectedFileFixity,
   e: Throwable
 ) extends FileFixityError
+
+case class FileFixityCouldNotGetChecksum(
+  expectedFileFixity: ExpectedFileFixity,
+  objectLocation: ObjectLocation,
+  e: Throwable
+) extends FileFixityError
