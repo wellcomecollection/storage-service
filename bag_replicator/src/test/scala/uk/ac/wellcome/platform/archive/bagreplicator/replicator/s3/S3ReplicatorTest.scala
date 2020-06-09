@@ -9,8 +9,9 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
   ReplicationSucceeded
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.tags.s3.S3Tags
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 class S3ReplicatorTest
     extends AnyFunSpec
@@ -132,5 +133,44 @@ class S3ReplicatorTest
     failure.e.getMessage should startWith(
       "The specified bucket does not exist"
     )
+  }
+
+  // The verifier will write a Content-SHA256 checksum tag to objects when it
+  // verifies them.  If an object is then replicated to a new location, any existing
+  // verification tags should be removed.
+  it("doesn't copy tags from the existing objects") {
+    val s3Tags = new S3Tags()
+
+    withLocalS3Bucket { srcBucket =>
+      withLocalS3Bucket { dstBucket =>
+        val location = createObjectLocationWith(srcBucket)
+
+        s3Client.putObject(
+          location.namespace,
+          location.path,
+          randomAlphanumeric
+        )
+        s3Tags.update(location) { existingTags =>
+          Right(existingTags ++ Map("Content-SHA256" -> "abcdef"))
+        }
+
+        val request = ReplicationRequest(
+          srcPrefix =
+            ObjectLocationPrefix(namespace = srcBucket.name, path = ""),
+          dstPrefix =
+            ObjectLocationPrefix(namespace = dstBucket.name, path = "")
+        )
+
+        val result = new S3Replicator().replicate(
+          ingestId = createIngestID,
+          request = request
+        )
+
+        result shouldBe a[ReplicationSucceeded]
+
+        val dstLocation = location.copy(namespace = dstBucket.name)
+        s3Tags.get(dstLocation).right.value shouldBe Map.empty
+      }
+    }
   }
 }
