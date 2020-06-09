@@ -9,8 +9,15 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.memory.MemoryFixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.generators.FixityGenerators
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
-import uk.ac.wellcome.platform.archive.common.storage.{LocateFailure, LocationParsingError}
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, MD5}
+import uk.ac.wellcome.platform.archive.common.storage.{
+  LocateFailure,
+  LocationParsingError
+}
+import uk.ac.wellcome.platform.archive.common.verify.{
+  Checksum,
+  ChecksumValue,
+  MD5
+}
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore}
 import uk.ac.wellcome.storage.streaming.Codec.stringCodec
@@ -81,21 +88,27 @@ class FixityCheckerTests
       val streamStore = MemoryStreamStore[ObjectLocation]()
 
       val tags = new MemoryTags[ObjectLocation](initialTags = Map.empty) {
-        override def get(location: ObjectLocation): Either[ReadError, Map[String, String]] =
+        override def get(
+          location: ObjectLocation
+        ): Either[ReadError, Map[String, String]] =
           super.get(location) match {
-            case Right(t)                => Right(t)
+            case Right(t)                   => Right(t)
             case Left(_: DoesNotExistError) => Right(Map[String, String]())
             case Left(err)                  => Left(err)
           }
 
-        override protected def put(location: ObjectLocation, tags: Map[String, String]): Either[WriteError, Map[String, String]] =
+        override protected def put(
+          location: ObjectLocation,
+          tags: Map[String, String]
+        ): Either[WriteError, Map[String, String]] =
           Left(
             StoreWriteError(new Throwable("BOOM!"))
           )
       }
 
       val contentString = "HelloWorld"
-      val checksum = Checksum(MD5, ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6"))
+      val checksum =
+        Checksum(MD5, ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6"))
 
       val location = createObjectLocation
 
@@ -103,7 +116,8 @@ class FixityCheckerTests
       streamStore.put(location)(inputStream) shouldBe a[Right[_, _]]
 
       val expectedFileFixity = createExpectedFileFixityWith(
-        location = location, checksum = checksum
+        location = location,
+        checksum = checksum
       )
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
@@ -198,7 +212,9 @@ class FixityCheckerTests
 
   def createMemoryTags: MemoryTags[ObjectLocation] =
     new MemoryTags[ObjectLocation](initialTags = Map.empty) {
-      override def get(location: ObjectLocation): Either[ReadError, Map[String, String]] =
+      override def get(
+        location: ObjectLocation
+      ): Either[ReadError, Map[String, String]] =
         super.get(location) match {
           case Right(tags)                => Right(tags)
           case Left(_: DoesNotExistError) => Right(Map[String, String]())

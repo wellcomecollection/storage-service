@@ -13,8 +13,9 @@ import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
 
-trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[ObjectLocation]]
-    extends AnyFunSpec
+trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
+  ObjectLocation
+]] extends AnyFunSpec
     with Matchers
     with EitherValues
     with NamespaceFixtures[ObjectLocation, Namespace]
@@ -28,13 +29,15 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
     implicit context: Context
   ): Unit
 
-  def withFixityChecker[R](
-    streamStore: StreamStoreImpl)(
-    testWith: TestWith[FixityChecker, R])(
+  def withFixityChecker[R](streamStore: StreamStoreImpl)(
+    testWith: TestWith[FixityChecker, R]
+  )(
     implicit context: Context
   ): R
 
-  def withStreamStore[R](testWith: TestWith[StreamStoreImpl, R])(implicit context: Context): R
+  def withStreamStore[R](testWith: TestWith[StreamStoreImpl, R])(
+    implicit context: Context
+  ): R
 
   def withFixityChecker[R](testWith: TestWith[FixityChecker, R])(
     implicit context: Context
@@ -264,7 +267,9 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
           )
 
           withFixityChecker { fixityChecker =>
-            fixityChecker.check(expectedFileFixity) shouldBe a[FileFixityCorrect]
+            fixityChecker.check(expectedFileFixity) shouldBe a[
+              FileFixityCorrect
+            ]
 
             fixityChecker.tags.get(location).right.value shouldBe Map(
               "Content-MD5" -> checksumString
@@ -289,7 +294,9 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
             val spyStore: StreamStoreImpl = Mockito.spy(streamStore)
 
             withFixityChecker(spyStore) { fixityChecker =>
-              fixityChecker.check(expectedFileFixity) shouldBe a[FileFixityCorrect]
+              fixityChecker.check(expectedFileFixity) shouldBe a[
+                FileFixityCorrect
+              ]
 
               // StreamStore.get() should have been called to read the object so
               // it can be verified.
@@ -297,7 +304,9 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
 
               // It shouldn't be read a second time, because we see the tag written by
               // the previous verification.
-              fixityChecker.check(expectedFileFixity) shouldBe a[FileFixityCorrect]
+              fixityChecker.check(expectedFileFixity) shouldBe a[
+                FileFixityCorrect
+              ]
               verify(spyStore, times(1)).get(location)
             }
           }
@@ -326,7 +335,9 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
             val spyStore: StreamStoreImpl = Mockito.spy(streamStore)
 
             withFixityChecker(spyStore) { fixityChecker =>
-              fixityChecker.check(expectedFileFixity) shouldBe a[FileFixityCorrect]
+              fixityChecker.check(expectedFileFixity) shouldBe a[
+                FileFixityCorrect
+              ]
 
               // StreamStore.get() should have been called to read the object so
               // it can be verified.
@@ -336,7 +347,12 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
               // the previous verification.
               val result = fixityChecker.check(badExpectedFixity)
               result shouldBe a[FileFixityMismatch]
-              result.asInstanceOf[FileFixityMismatch].e.getMessage should startWith("Cached verification tag doesn't match expected checksum")
+              result
+                .asInstanceOf[FileFixityMismatch]
+                .e
+                .getMessage should startWith(
+                "Cached verification tag doesn't match expected checksum"
+              )
               verify(spyStore, times(1)).get(location)
             }
           }
@@ -363,7 +379,9 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
             val spyStore: StreamStoreImpl = Mockito.spy(streamStore)
 
             withFixityChecker(spyStore) { fixityChecker =>
-              fixityChecker.check(expectedFileFixity) shouldBe a[FileFixityCorrect]
+              fixityChecker.check(expectedFileFixity) shouldBe a[
+                FileFixityCorrect
+              ]
 
               // StreamStore.get() should have been called to read the object so
               // it can be verified.
@@ -373,7 +391,10 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
               // the previous verification.
               val result = fixityChecker.check(badExpectedFixity)
               result shouldBe a[FileFixityMismatch]
-              result.asInstanceOf[FileFixityMismatch].e.getMessage should startWith("Lengths do not match")
+              result
+                .asInstanceOf[FileFixityMismatch]
+                .e
+                .getMessage should startWith("Lengths do not match")
               verify(spyStore, times(1)).get(location)
             }
           }
@@ -392,7 +413,9 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
           )
 
           withFixityChecker { fixityChecker =>
-            fixityChecker.check(expectedFileFixity) shouldBe a[FileFixityMismatch]
+            fixityChecker.check(expectedFileFixity) shouldBe a[
+              FileFixityMismatch
+            ]
 
             fixityChecker.tags.get(location).right.value shouldBe Map.empty
           }
@@ -405,8 +428,16 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
 
       val allChecksums = Seq(
         Checksum(MD5, ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6")),
-        Checksum(SHA1, ChecksumValue("db8ac1c259eb89d4a131b253bacfca5f319d54f2")),
-        Checksum(SHA256, ChecksumValue("872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4")),
+        Checksum(
+          SHA1,
+          ChecksumValue("db8ac1c259eb89d4a131b253bacfca5f319d54f2")
+        ),
+        Checksum(
+          SHA256,
+          ChecksumValue(
+            "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
+          )
+        )
       )
 
       withContext { implicit context =>
@@ -421,7 +452,9 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
                 checksum = checksum
               )
 
-              fixityChecker.check(expectedFileFixity) shouldBe a[FileFixityCorrect]
+              fixityChecker.check(expectedFileFixity) shouldBe a[
+                FileFixityCorrect
+              ]
             }
 
             fixityChecker.tags.get(location).right.value shouldBe Map(

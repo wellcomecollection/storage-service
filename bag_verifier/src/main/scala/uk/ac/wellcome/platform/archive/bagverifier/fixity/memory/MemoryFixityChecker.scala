@@ -14,8 +14,8 @@ import uk.ac.wellcome.storage.tags.memory.MemoryTags
 
 class MemoryFixityChecker(
   val streamStore: MemoryStreamStore[ObjectLocation],
-  val tags: MemoryTags[ObjectLocation])
-    extends FixityChecker {
+  val tags: MemoryTags[ObjectLocation]
+) extends FixityChecker {
 
   override protected val sizeFinder: SizeFinder =
     new MemorySizeFinder(streamStore.memoryStore)

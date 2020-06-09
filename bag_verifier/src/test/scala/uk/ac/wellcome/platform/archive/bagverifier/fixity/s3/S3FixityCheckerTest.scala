@@ -34,7 +34,9 @@ class S3FixityCheckerTest
       contents
     )
 
-  override def withStreamStore[R](testWith: TestWith[S3StreamStore, R])(implicit context: Unit): R =
+  override def withStreamStore[R](
+    testWith: TestWith[S3StreamStore, R]
+  )(implicit context: Unit): R =
     testWith(
       new S3StreamStore()
     )

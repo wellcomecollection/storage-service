@@ -89,7 +89,8 @@ trait FixityChecker extends Logging {
 
   private def getExistingTags(
     expectedFileFixity: ExpectedFileFixity,
-    location: ObjectLocation): Either[FileFixityCouldNotRead, Map[String, String]] =
+    location: ObjectLocation
+  ): Either[FileFixityCouldNotRead, Map[String, String]] =
     handleReadErrors(
       tags.get(location),
       expectedFileFixity = expectedFileFixity
@@ -138,7 +139,8 @@ trait FixityChecker extends Logging {
     size: Long
   ): Either[FileFixityError, FileFixityCorrect] =
     existingTags.get(fixityTagName(expectedFileFixity)) match {
-      case Some(cachedFixityValue) if cachedFixityValue == fixityTagValue(expectedFileFixity) =>
+      case Some(cachedFixityValue)
+          if cachedFixityValue == fixityTagValue(expectedFileFixity) =>
         Right(
           FileFixityCorrect(
             expectedFileFixity = expectedFileFixity,
@@ -256,15 +258,16 @@ trait FixityChecker extends Logging {
 
         Right(existingTags ++ fixityTags)
       } match {
-        case Right(_)         => Right(())
-        case Left(writeError) => Left(
+      case Right(_) => Right(())
+      case Left(writeError) =>
+        Left(
           FileFixityCouldNotWriteTag(
             expectedFileFixity = expectedFileFixity,
             objectLocation = location,
             e = writeError.e
           )
         )
-      }
+    }
 
   // e.g. Content-MD5, Content-SHA256
   private def fixityTagName(expectedFileFixity: ExpectedFileFixity): String =
