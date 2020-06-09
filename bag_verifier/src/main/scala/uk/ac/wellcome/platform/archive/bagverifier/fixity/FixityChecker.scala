@@ -12,6 +12,7 @@ import uk.ac.wellcome.platform.archive.common.storage.{
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
+import uk.ac.wellcome.storage.tags.Tags
 import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation, ReadError}
 
 import scala.util.{Failure, Success}
@@ -22,6 +23,7 @@ import scala.util.{Failure, Success}
 trait FixityChecker extends Logging {
   protected val streamStore: StreamStore[ObjectLocation]
   protected val sizeFinder: SizeFinder
+  val tags: Tags[ObjectLocation]
 
   def locate(uri: URI): Either[LocateFailure[URI], ObjectLocation]
 
@@ -29,6 +31,24 @@ trait FixityChecker extends Logging {
     debug(s"Attempting to verify: $expectedFileFixity")
 
     val algorithm = expectedFileFixity.checksum.algorithm
+
+    // The verifier writes a tag to the storage location after it's verified.
+    //
+    // If it tries to verify a location and finds the correct tag, it skips
+    // re-reading the entire file.
+    //
+    // This means re-verifying the same content (e.g. a new version of a bag that
+    // refers back to files in an older version):
+    //
+    //    1.  Is faster than reading the entire object again
+    //    2.  Works even if the objects have been cycled to Glacier/cold storage
+    //        (e.g. if they're very large and infrequently accessed)
+
+    // e.g. Content-MD5, Content-SHA256
+//    val fixityTagName = s"Content-${algorithm.pathRepr.toUpperCase}"
+
+//    val fixityTagValue = expectedFileFixity.checksum.toString
+//    val fixityTags = Map(fixityTagName -> fixityTagValue)
 
     val fixityResult = for {
       location <- parseLocation(expectedFileFixity)

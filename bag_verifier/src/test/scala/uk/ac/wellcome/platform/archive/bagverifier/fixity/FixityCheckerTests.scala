@@ -20,6 +20,7 @@ import uk.ac.wellcome.platform.archive.common.verify.{
 import uk.ac.wellcome.storage.{Identified, ObjectLocation}
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore}
 import uk.ac.wellcome.storage.streaming.{Codec, InputStreamWithLength}
+import uk.ac.wellcome.storage.tags.memory.MemoryTags
 
 class FixityCheckerTests
     extends AnyFunSpec
@@ -31,8 +32,9 @@ class FixityCheckerTests
   describe("handles errors correctly") {
     it("turns an error in locate() into a FileFixityCouldNotRead") {
       val streamStore = MemoryStreamStore[ObjectLocation]()
+      val tags = new MemoryTags[ObjectLocation](initialTags = Map.empty)
 
-      val brokenChecker = new MemoryFixityChecker(streamStore) {
+      val brokenChecker = new MemoryFixityChecker(streamStore, tags) {
         override def locate(
           uri: URI
         ): Either[LocateFailure[URI], ObjectLocation] =
@@ -67,7 +69,9 @@ class FixityCheckerTests
 
       val expectedFileFixity = createExpectedFileFixityWith(length = None)
 
-      val checker = new MemoryFixityChecker(streamStore) {
+      val tags = new MemoryTags[ObjectLocation](initialTags = Map.empty)
+
+      val checker = new MemoryFixityChecker(streamStore, tags) {
         override protected val sizeFinder: SizeFinder =
           (_: ObjectLocation) => Right(closedStream.length)
       }
@@ -110,7 +114,9 @@ class FixityCheckerTests
 
       val expectedFileFixity = createExpectedFileFixityWith(checksum = checksum)
 
-      val checker = new MemoryFixityChecker(streamStore) {
+      val tags = new MemoryTags[ObjectLocation](initialTags = Map.empty)
+
+      val checker = new MemoryFixityChecker(streamStore, tags) {
         override protected val sizeFinder: SizeFinder =
           (_: ObjectLocation) => Right(inputStream.length)
       }
@@ -144,7 +150,9 @@ class FixityCheckerTests
 
       val expectedFileFixity = createExpectedFileFixity
 
-      val checker = new MemoryFixityChecker(streamStore) {
+      val tags = new MemoryTags[ObjectLocation](initialTags = Map.empty)
+
+      val checker = new MemoryFixityChecker(streamStore, tags) {
         override protected val sizeFinder: SizeFinder =
           (_: ObjectLocation) => Right(inputStream.length)
       }

@@ -10,8 +10,11 @@ import uk.ac.wellcome.platform.archive.common.storage.services.{
 }
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
+import uk.ac.wellcome.storage.tags.memory.MemoryTags
 
-class MemoryFixityChecker(val streamStore: MemoryStreamStore[ObjectLocation])
+class MemoryFixityChecker(
+  val streamStore: MemoryStreamStore[ObjectLocation],
+  val tags: MemoryTags[ObjectLocation])
     extends FixityChecker {
 
   override protected val sizeFinder: SizeFinder =

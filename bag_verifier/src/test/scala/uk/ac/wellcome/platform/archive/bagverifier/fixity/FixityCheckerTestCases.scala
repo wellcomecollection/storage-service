@@ -228,4 +228,30 @@ trait FixityCheckerTestCases[Namespace, Context]
       }
     }
   }
+
+  describe("handles tags") {
+    it("sets a tag on a successfully-verified object") {
+      true shouldBe false
+    }
+
+    it("skips checking if there's a matching tag from a previous verification") {
+      true shouldBe false
+    }
+
+    it("errors if there's a mismatched tag from a previous verification") {
+      true shouldBe false
+    }
+
+    it("errors if there's a matching tag but the size is wrong") {
+      true shouldBe false
+    }
+
+    it("doesn't set a tag if the verification fails") {
+      true shouldBe false
+    }
+
+    it("adds one tag per checksum algorithm") {
+      true shouldBe false
+    }
+  }
 }

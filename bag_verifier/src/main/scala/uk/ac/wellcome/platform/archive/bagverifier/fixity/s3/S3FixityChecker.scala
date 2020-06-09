@@ -13,6 +13,8 @@ import uk.ac.wellcome.platform.archive.common.storage.services.{
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
+import uk.ac.wellcome.storage.tags.Tags
+import uk.ac.wellcome.storage.tags.s3.S3Tags
 
 class S3FixityChecker(implicit s3Client: AmazonS3)
     extends FixityChecker
@@ -25,6 +27,8 @@ class S3FixityChecker(implicit s3Client: AmazonS3)
     new S3StreamStore()
 
   override protected val sizeFinder: SizeFinder = new S3SizeFinder()
+
+  override val tags: Tags[ObjectLocation] = new S3Tags()
 
   override def locate(uri: URI): Either[LocateFailure[URI], ObjectLocation] =
     uri.locate
