@@ -248,10 +248,11 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
   }
 
   describe("handles tags") {
-    it("sets a tag on a successfully-verified object") {
-      val contentString = "HelloWorld"
-      val checksum = Checksum(MD5, ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6"))
+    val contentString = "HelloWorld"
+    val checksumString = "68e109f0f40ca72a15e05cc22786f8e6"
+    val checksum = Checksum(MD5, ChecksumValue(checksumString))
 
+    it("sets a tag on a successfully-verified object") {
       withContext { implicit context =>
         withNamespace { implicit namespace =>
           val location = createObjectLocationWith(namespace)
@@ -266,7 +267,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
             fixityChecker.check(expectedFileFixity) shouldBe a[FileFixityCorrect]
 
             fixityChecker.tags.get(location).right.value shouldBe Map(
-              "Content-MD5" -> "68e109f0f40ca72a15e05cc22786f8e6"
+              "Content-MD5" -> checksumString
             )
           }
         }
@@ -274,9 +275,6 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
     }
 
     it("skips checking if there's a matching tag from a previous verification") {
-      val contentString = "HelloWorld"
-      val checksum = Checksum(MD5, ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6"))
-
       withContext { implicit context =>
         withNamespace { implicit namespace =>
           val location = createObjectLocationWith(namespace)
@@ -308,7 +306,43 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
     }
 
     it("errors if there's a mismatched tag from a previous verification") {
-      true shouldBe false
+      withContext { implicit context =>
+        withNamespace { implicit namespace =>
+          val location = createObjectLocationWith(namespace)
+          putString(location, contentString)
+
+          val expectedFileFixity = createExpectedFileFixityWith(
+            location = location,
+            checksum = checksum
+          )
+
+          val badExpectedFixity = createExpectedFileFixityWith(
+            location = location,
+            checksum = checksum.copy(
+              value = randomChecksumValue
+            )
+          )
+
+          withStreamStore { streamStore =>
+            val spyStore: StreamStoreImpl = Mockito.spy(streamStore)
+
+            withFixityChecker(spyStore) { fixityChecker =>
+              fixityChecker.check(expectedFileFixity) shouldBe a[FileFixityCorrect]
+
+              // StreamStore.get() should have been called to read the object so
+              // it can be verified.
+              verify(spyStore, times(1)).get(location)
+
+              // It shouldn't be read a second time, because we see the tag written by
+              // the previous verification.
+              val result = fixityChecker.check(badExpectedFixity)
+              result shouldBe a[FileFixityMismatch]
+              result.asInstanceOf[FileFixityMismatch].e.getMessage should startWith("Cached verification tag doesn't match expected checksum")
+              verify(spyStore, times(1)).get(location)
+            }
+          }
+        }
+      }
     }
 
     it("errors if there's a matching tag but the size is wrong") {
