@@ -7,6 +7,7 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.memory.MemoryFixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.generators.FixityGenerators
+import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
 import uk.ac.wellcome.platform.archive.common.storage.{
   LocateFailure,
   LocationParsingError
@@ -66,7 +67,10 @@ class FixityCheckerTests
 
       val expectedFileFixity = createExpectedFileFixityWith(length = None)
 
-      val checker = new MemoryFixityChecker(streamStore)
+      val checker = new MemoryFixityChecker(streamStore) {
+        override protected val sizeFinder: SizeFinder =
+          (_: ObjectLocation) => Right(closedStream.length)
+      }
 
       checker.check(expectedFileFixity) shouldBe a[
         FileFixityCouldNotGetChecksum
@@ -106,7 +110,10 @@ class FixityCheckerTests
 
       val expectedFileFixity = createExpectedFileFixityWith(checksum = checksum)
 
-      val checker = new MemoryFixityChecker(streamStore)
+      val checker = new MemoryFixityChecker(streamStore) {
+        override protected val sizeFinder: SizeFinder =
+          (_: ObjectLocation) => Right(inputStream.length)
+      }
 
       checker.check(expectedFileFixity) shouldBe a[FileFixityCorrect]
 
@@ -137,7 +144,10 @@ class FixityCheckerTests
 
       val expectedFileFixity = createExpectedFileFixity
 
-      val checker = new MemoryFixityChecker(streamStore)
+      val checker = new MemoryFixityChecker(streamStore) {
+        override protected val sizeFinder: SizeFinder =
+          (_: ObjectLocation) => Right(inputStream.length)
+      }
 
       checker.check(expectedFileFixity) shouldBe a[FileFixityMismatch]
 
