@@ -7,13 +7,23 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.memory.MemoryFixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.generators.FixityGenerators
-import uk.ac.wellcome.platform.archive.common.storage.{LocateFailure, LocationParsingError}
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, MD5}
+import uk.ac.wellcome.platform.archive.common.storage.{
+  LocateFailure,
+  LocationParsingError
+}
+import uk.ac.wellcome.platform.archive.common.verify.{
+  Checksum,
+  ChecksumValue,
+  MD5
+}
 import uk.ac.wellcome.storage.{Identified, ObjectLocation}
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore}
 import uk.ac.wellcome.storage.streaming.{Codec, InputStreamWithLength}
 
-class FixityCheckerTests extends AnyFunSpec with Matchers with FixityGenerators {
+class FixityCheckerTests
+    extends AnyFunSpec
+    with Matchers
+    with FixityGenerators {
   override def resolve(location: ObjectLocation): URI =
     new URI(s"mem://${location.namespace}/${location.path}")
 
@@ -22,7 +32,9 @@ class FixityCheckerTests extends AnyFunSpec with Matchers with FixityGenerators 
       val streamStore = MemoryStreamStore[ObjectLocation]()
 
       val brokenChecker = new MemoryFixityChecker(streamStore) {
-        override def locate(uri: URI): Either[LocateFailure[URI], ObjectLocation] =
+        override def locate(
+          uri: URI
+        ): Either[LocateFailure[URI], ObjectLocation] =
           Left(LocationParsingError(uri, msg = "BOOM!"))
       }
 
@@ -44,7 +56,9 @@ class FixityCheckerTests extends AnyFunSpec with Matchers with FixityGenerators 
       closedStream.close()
 
       val streamStore = new MemoryStreamStore[ObjectLocation](
-        memoryStore = new MemoryStore[ObjectLocation, Array[Byte]](initialEntries = Map.empty)
+        memoryStore = new MemoryStore[ObjectLocation, Array[Byte]](
+          initialEntries = Map.empty
+        )
       ) {
         override def get(location: ObjectLocation): this.ReadEither =
           Right(Identified(location, closedStream))
@@ -54,7 +68,9 @@ class FixityCheckerTests extends AnyFunSpec with Matchers with FixityGenerators 
 
       val checker = new MemoryFixityChecker(streamStore)
 
-      checker.check(expectedFileFixity) shouldBe a[FileFixityCouldNotGetChecksum]
+      checker.check(expectedFileFixity) shouldBe a[
+        FileFixityCouldNotGetChecksum
+      ]
     }
   }
 
@@ -63,7 +79,8 @@ class FixityCheckerTests extends AnyFunSpec with Matchers with FixityGenerators 
       val contentHashingAlgorithm = MD5
       val contentString = "HelloWorld"
       // md5("HelloWorld")
-      val contentStringChecksum = ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6")
+      val contentStringChecksum =
+        ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6")
       val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
       var isClosed: Boolean = false
@@ -79,7 +96,9 @@ class FixityCheckerTests extends AnyFunSpec with Matchers with FixityGenerators 
       }
 
       val streamStore = new MemoryStreamStore[ObjectLocation](
-        memoryStore = new MemoryStore[ObjectLocation, Array[Byte]](initialEntries = Map.empty)
+        memoryStore = new MemoryStore[ObjectLocation, Array[Byte]](
+          initialEntries = Map.empty
+        )
       ) {
         override def get(location: ObjectLocation): this.ReadEither =
           Right(Identified(location, inputStream))
@@ -108,7 +127,9 @@ class FixityCheckerTests extends AnyFunSpec with Matchers with FixityGenerators 
       }
 
       val streamStore = new MemoryStreamStore[ObjectLocation](
-        memoryStore = new MemoryStore[ObjectLocation, Array[Byte]](initialEntries = Map.empty)
+        memoryStore = new MemoryStore[ObjectLocation, Array[Byte]](
+          initialEntries = Map.empty
+        )
       ) {
         override def get(location: ObjectLocation): this.ReadEither =
           Right(Identified(location, inputStream))

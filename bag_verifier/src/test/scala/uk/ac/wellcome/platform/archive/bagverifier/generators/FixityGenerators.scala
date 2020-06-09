@@ -9,7 +9,9 @@ import uk.ac.wellcome.platform.archive.common.verify.{Checksum, MD5, SHA256}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
-trait FixityGenerators extends ObjectLocationGenerators with StorageRandomThings {
+trait FixityGenerators
+    extends ObjectLocationGenerators
+    with StorageRandomThings {
   def randomChecksum = Checksum(SHA256, randomChecksumValue)
   def badChecksum = Checksum(MD5, randomChecksumValue)
 

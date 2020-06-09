@@ -54,7 +54,9 @@ trait FixityChecker extends Logging {
     }
   }
 
-  private def parseLocation(expectedFileFixity: ExpectedFileFixity): Either[FileFixityCouldNotRead, ObjectLocation] =
+  private def parseLocation(
+    expectedFileFixity: ExpectedFileFixity
+  ): Either[FileFixityCouldNotRead, ObjectLocation] =
     locate(expectedFileFixity.uri) match {
       case Right(location) => Right(location)
       case Left(locateError) =>
@@ -66,7 +68,10 @@ trait FixityChecker extends Logging {
         )
     }
 
-  private def openInputStream(expectedFileFixity: ExpectedFileFixity, location: ObjectLocation): Either[FileFixityCouldNotRead, InputStreamWithLength] =
+  private def openInputStream(
+    expectedFileFixity: ExpectedFileFixity,
+    location: ObjectLocation
+  ): Either[FileFixityCouldNotRead, InputStreamWithLength] =
     streamStore.get(location) match {
       case Right(stream) => Right(stream.identifiedT)
 
@@ -90,7 +95,8 @@ trait FixityChecker extends Logging {
   private def verifySize(
     expectedFileFixity: ExpectedFileFixity,
     location: ObjectLocation,
-    inputStream: InputStreamWithLength): Either[FileFixityMismatch, Unit] =
+    inputStream: InputStreamWithLength
+  ): Either[FileFixityMismatch, Unit] =
     expectedFileFixity.length match {
       case Some(expectedLength) if expectedLength != inputStream.length =>
         Left(
