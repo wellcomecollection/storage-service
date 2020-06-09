@@ -24,9 +24,14 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageSpace
 }
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.{
+  ObjectLocation,
+  ObjectLocationPrefix,
+  ReadError,
+  StoreReadError
+}
 
-import scala.util.{Failure, Random, Success, Try}
+import scala.util.Random
 
 class StorageManifestServiceTest
     extends AnyFunSpec
@@ -429,8 +434,8 @@ class StorageManifestServiceTest
       val err = new Throwable("BOOM!")
 
       val brokenSizeFinder = new SizeFinder {
-        override def getSize(location: ObjectLocation): Try[Long] =
-          Failure(err)
+        override def getSize(location: ObjectLocation): Either[ReadError, Long] =
+          Left(StoreReadError(err))
       }
 
       implicit val streamStore: MemoryStreamStore[ObjectLocation] =
@@ -474,9 +479,9 @@ class StorageManifestServiceTest
       var sizeCache: Map[ObjectLocation, Long] = Map.empty
 
       val cachingSizeFinder = new SizeFinder {
-        override def getSize(location: ObjectLocation): Try[Long] = Try {
+        override def getSize(location: ObjectLocation): Either[ReadError, Long] = {
           sizeCache = sizeCache + (location -> Random.nextLong())
-          sizeCache(location)
+          Right(sizeCache(location))
         }
       }
 
@@ -530,8 +535,8 @@ class StorageManifestServiceTest
       val location = createPrimaryLocationWith(prefix = bagRoot)
 
       val brokenSizeFinder = new SizeFinder {
-        override def getSize(location: ObjectLocation): Try[Long] =
-          Failure(new Throwable("This should never be called!"))
+        override def getSize(location: ObjectLocation): Either[ReadError, Long] =
+          Left(StoreReadError(new Throwable("This should never be called!")))
       }
 
       val storageManifest = createManifest(
@@ -621,8 +626,8 @@ class StorageManifestServiceTest
     replicas: Seq[SecondaryStorageLocation] = Seq.empty,
     space: StorageSpace = createStorageSpace,
     version: BagVersion,
-    sizeFinder: SizeFinder = (location: ObjectLocation) =>
-      Success(Random.nextLong().abs)
+    sizeFinder: SizeFinder = (_: ObjectLocation) =>
+      Right(Random.nextLong().abs)
   )(
     implicit streamStore: MemoryStreamStore[ObjectLocation]
   ): StorageManifest = {
@@ -675,7 +680,7 @@ class StorageManifestServiceTest
     version: BagVersion = BagVersion(1)
   )(assertError: Throwable => Assertion): Assertion = {
     val sizeFinder = new SizeFinder {
-      override def getSize(location: ObjectLocation): Try[Long] = Success(1)
+      override def getSize(location: ObjectLocation): Either[ReadError, Long] = Right(1)
     }
 
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =

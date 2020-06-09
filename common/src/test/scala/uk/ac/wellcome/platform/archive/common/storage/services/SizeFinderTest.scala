@@ -1,23 +1,21 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
 import com.amazonaws.services.s3.model.AmazonS3Exception
-import org.scalatest.{EitherValues, TryValues}
+import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
 
-import scala.util.Failure
-
 trait SizeFinderTestCases[Context]
     extends AnyFunSpec
     with Matchers
-    with TryValues {
+    with EitherValues {
   def withContext[R](testWith: TestWith[Context, R]): R
 
   def withSizeFinder[R](testWith: TestWith[SizeFinder, R])(
@@ -40,11 +38,11 @@ trait SizeFinderTestCases[Context]
           _.getSize(location)
         }
 
-        result.success.value shouldBe 19L
+        result.right.value shouldBe 19L
       }
     }
 
-    it("returns an empty list if there's nothing under the prefix") {
+    it("returns a DoesNotExistError if the object doesn't exist") {
       withContext { implicit context =>
         val location = createLocation
 
@@ -52,7 +50,7 @@ trait SizeFinderTestCases[Context]
           _.getSize(location)
         }
 
-        result shouldBe a[Failure[_]]
+        result.left.value shouldBe a[DoesNotExistError]
       }
     }
   }
@@ -120,6 +118,6 @@ class S3SizeFinderTest
 
     val result = finder.getSize(createObjectLocation)
 
-    result.failed.get shouldBe a[AmazonS3Exception]
+    result.left.value.e shouldBe a[AmazonS3Exception]
   }
 }
