@@ -190,30 +190,6 @@ trait FixityChecker extends Logging {
     fixityResult
   }
 
-  private def handleReadErrors[T](
-    t: Either[ReadError, T],
-    expectedFileFixity: ExpectedFileFixity
-  ): Either[FileFixityCouldNotRead, T] =
-    t match {
-      case Right(value) => Right(value)
-
-      case Left(_: DoesNotExistError) =>
-        Left(
-          FileFixityCouldNotRead(
-            expectedFileFixity = expectedFileFixity,
-            e = LocationNotFound(expectedFileFixity, "Location not available!")
-          )
-        )
-
-      case Left(readError) =>
-        Left(
-          FileFixityCouldNotRead(
-            expectedFileFixity = expectedFileFixity,
-            e = LocationError(expectedFileFixity, readError.e.getMessage)
-          )
-        )
-    }
-
   private def writeFixityTags(
     expectedFileFixity: ExpectedFileFixity,
     location: ObjectLocation,
@@ -247,4 +223,28 @@ trait FixityChecker extends Logging {
           )
         )
       }
+
+  private def handleReadErrors[T](
+    t: Either[ReadError, T],
+    expectedFileFixity: ExpectedFileFixity
+  ): Either[FileFixityCouldNotRead, T] =
+    t match {
+      case Right(value) => Right(value)
+
+      case Left(_: DoesNotExistError) =>
+        Left(
+          FileFixityCouldNotRead(
+            expectedFileFixity = expectedFileFixity,
+            e = LocationNotFound(expectedFileFixity, "Location not available!")
+          )
+        )
+
+      case Left(readError) =>
+        Left(
+          FileFixityCouldNotRead(
+            expectedFileFixity = expectedFileFixity,
+            e = LocationError(expectedFileFixity, readError.e.getMessage)
+          )
+        )
+    }
 }
