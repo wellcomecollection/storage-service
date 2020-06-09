@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity
 
+import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
@@ -12,6 +13,7 @@ import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
 trait FixityCheckerTestCases[Namespace, Context]
     extends AnyFunSpec
     with Matchers
+    with EitherValues
     with NamespaceFixtures[ObjectLocation, Namespace]
     with FixityGenerators {
 
@@ -231,7 +233,28 @@ trait FixityCheckerTestCases[Namespace, Context]
 
   describe("handles tags") {
     it("sets a tag on a successfully-verified object") {
-      true shouldBe false
+      val contentString = "HelloWorld"
+      val checksum = Checksum(MD5, ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6"))
+
+      withContext { implicit context =>
+        withNamespace { implicit namespace =>
+          val location = createObjectLocationWith(namespace)
+          putString(location, contentString)
+
+          val expectedFileFixity = createExpectedFileFixityWith(
+            location = location,
+            checksum = checksum
+          )
+
+          withFixityChecker { fixityChecker =>
+            fixityChecker.check(expectedFileFixity) shouldBe a[FileFixityCorrect]
+
+            fixityChecker.tags.get(location).right.value shouldBe Map(
+              "Content-MD5" -> "68e109f0f40ca72a15e05cc22786f8e6"
+            )
+          }
+        }
+      }
     }
 
     it("skips checking if there's a matching tag from a previous verification") {

@@ -8,16 +8,9 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.memory.MemoryFixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.generators.FixityGenerators
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
-import uk.ac.wellcome.platform.archive.common.storage.{
-  LocateFailure,
-  LocationParsingError
-}
-import uk.ac.wellcome.platform.archive.common.verify.{
-  Checksum,
-  ChecksumValue,
-  MD5
-}
-import uk.ac.wellcome.storage.{Identified, ObjectLocation}
+import uk.ac.wellcome.platform.archive.common.storage.{LocateFailure, LocationParsingError}
+import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, MD5}
+import uk.ac.wellcome.storage.{DoesNotExistError, Identified, ObjectLocation, ReadError}
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore}
 import uk.ac.wellcome.storage.streaming.{Codec, InputStreamWithLength}
 import uk.ac.wellcome.storage.tags.memory.MemoryTags
@@ -32,7 +25,7 @@ class FixityCheckerTests
   describe("handles errors correctly") {
     it("turns an error in locate() into a FileFixityCouldNotRead") {
       val streamStore = MemoryStreamStore[ObjectLocation]()
-      val tags = new MemoryTags[ObjectLocation](initialTags = Map.empty)
+      val tags = createMemoryTags
 
       val brokenChecker = new MemoryFixityChecker(streamStore, tags) {
         override def locate(
@@ -69,7 +62,7 @@ class FixityCheckerTests
 
       val expectedFileFixity = createExpectedFileFixityWith(length = None)
 
-      val tags = new MemoryTags[ObjectLocation](initialTags = Map.empty)
+      val tags = createMemoryTags
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
         override protected val sizeFinder: SizeFinder =
@@ -114,7 +107,7 @@ class FixityCheckerTests
 
       val expectedFileFixity = createExpectedFileFixityWith(checksum = checksum)
 
-      val tags = new MemoryTags[ObjectLocation](initialTags = Map.empty)
+      val tags = createMemoryTags
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
         override protected val sizeFinder: SizeFinder =
@@ -150,7 +143,7 @@ class FixityCheckerTests
 
       val expectedFileFixity = createExpectedFileFixity
 
-      val tags = new MemoryTags[ObjectLocation](initialTags = Map.empty)
+      val tags = createMemoryTags
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
         override protected val sizeFinder: SizeFinder =
@@ -162,4 +155,14 @@ class FixityCheckerTests
       isClosed shouldBe true
     }
   }
+
+  def createMemoryTags: MemoryTags[ObjectLocation] =
+    new MemoryTags[ObjectLocation](initialTags = Map.empty) {
+      override def get(location: ObjectLocation): Either[ReadError, Map[String, String]] =
+        super.get(location) match {
+          case Right(tags)                => Right(tags)
+          case Left(_: DoesNotExistError) => Right(Map[String, String]())
+          case Left(err)                  => Left(err)
+        }
+    }
 }

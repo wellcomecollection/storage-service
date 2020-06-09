@@ -45,10 +45,8 @@ trait FixityChecker extends Logging {
     //        (e.g. if they're very large and infrequently accessed)
 
     // e.g. Content-MD5, Content-SHA256
-//    val fixityTagName = s"Content-${algorithm.pathRepr.toUpperCase}"
-
-//    val fixityTagValue = expectedFileFixity.checksum.toString
-//    val fixityTags = Map(fixityTagName -> fixityTagValue)
+    val fixityTagName = s"Content-${algorithm.pathRepr.toUpperCase}"
+    val fixityTagValue = expectedFileFixity.checksum.value.toString
 
     val fixityResult = for {
       location <- parseLocation(expectedFileFixity)
@@ -66,6 +64,13 @@ trait FixityChecker extends Logging {
         inputStream = inputStream,
         algorithm = algorithm,
         size = size
+      )
+
+      _ <- writeFixityTags(
+        expectedFileFixity = expectedFileFixity,
+        location = location,
+        fixityTagName = fixityTagName,
+        fixityTagValue = fixityTagValue
       )
     } yield result
 
@@ -208,4 +213,38 @@ trait FixityChecker extends Logging {
           )
         )
     }
+
+  private def writeFixityTags(
+    expectedFileFixity: ExpectedFileFixity,
+    location: ObjectLocation,
+    fixityTagName: String,
+    fixityTagValue: String
+  ): Either[FileFixityCouldNotWriteTag, Unit] =
+    tags
+      .update(location) { existingTags =>
+        val fixityTags = Map(fixityTagName -> fixityTagValue)
+
+        // We've already checked the tags on this location once, so we shouldn't
+        // see conflicting values here.  Check we're not about to blat some existing
+        // tags just in case.  If we do see conflicting tags here, there's something
+        // badly wrong with the storage service.
+        //
+        // Note: this is a fairly weak guarantee, because tags aren't locked during
+        // an update operation.
+        assert(
+          existingTags.getOrElse(fixityTagName, fixityTagValue) == fixityTagValue,
+          s"Trying to write $fixityTags to $location; existing tags conflict: $existingTags"
+        )
+
+        Right(existingTags ++ fixityTags)
+      } match {
+        case Right(_)         => Right(())
+        case Left(writeError) => Left(
+          FileFixityCouldNotWriteTag(
+            expectedFileFixity = expectedFileFixity,
+            objectLocation = location,
+            e = writeError.e
+          )
+        )
+      }
 }
