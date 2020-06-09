@@ -111,9 +111,8 @@ trait FixityChecker extends Logging {
     location: ObjectLocation,
     inputStream: InputStreamWithLength,
     algorithm: HashingAlgorithm
-  ): Either[FileFixityError, FileFixityCorrect] =
-    Checksum.create(inputStream, algorithm) match {
-      // Failure to create a checksum (parsing/algorithm)
+  ): Either[FileFixityError, FileFixityCorrect] = {
+    val fixityResult = Checksum.create(inputStream, algorithm) match {
       case Failure(e) =>
         Left(
           FileFixityCouldNotGetChecksum(
@@ -123,26 +122,33 @@ trait FixityChecker extends Logging {
           )
         )
 
-      // Checksum does not match that provided
+      case Success(checksum) if checksum == expectedFileFixity.checksum =>
+        Right(
+          FileFixityCorrect(
+            expectedFileFixity = expectedFileFixity,
+            objectLocation = location,
+            size = inputStream.length
+          )
+        )
+
       case Success(checksum) =>
-        if (checksum != expectedFileFixity.checksum)
-          Left(
-            FileFixityMismatch(
-              expectedFileFixity = expectedFileFixity,
-              objectLocation = location,
-              e = FailedChecksumNoMatch(
-                actual = checksum,
-                expected = expectedFileFixity.checksum
-              )
+        Left(
+          FileFixityMismatch(
+            expectedFileFixity = expectedFileFixity,
+            objectLocation = location,
+            e = FailedChecksumNoMatch(
+              actual = checksum,
+              expected = expectedFileFixity.checksum
             )
           )
-        else
-          Right(
-            FileFixityCorrect(
-              expectedFileFixity = expectedFileFixity,
-              objectLocation = location,
-              size = inputStream.length
-            )
-          )
+        )
     }
+
+    // Remember to close the InputStream when we're done, whatever the result.
+    // If we don't, the verifier will accumulate open streams and run out of
+    // either memory or file descriptors.
+    inputStream.close()
+
+    fixityResult
+  }
 }
