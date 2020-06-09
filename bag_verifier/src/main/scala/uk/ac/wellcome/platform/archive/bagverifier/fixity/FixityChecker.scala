@@ -37,14 +37,15 @@ trait FixityChecker extends Logging {
       inputStream <- openInputStream(expectedFileFixity, location)
       _ = debug(s"Opened input stream for $location")
 
-      _ <- verifySize(expectedFileFixity, location)
+      size <- verifySize(expectedFileFixity, location)
       _ = debug(s"Checked the size of $location is correct")
 
       result <- verifyChecksumFromInputStream(
         expectedFileFixity = expectedFileFixity,
         location = location,
         inputStream = inputStream,
-        algorithm = algorithm
+        algorithm = algorithm,
+        size = size
       )
     } yield result
 
@@ -109,8 +110,21 @@ trait FixityChecker extends Logging {
     expectedFileFixity: ExpectedFileFixity,
     location: ObjectLocation,
     inputStream: InputStreamWithLength,
-    algorithm: HashingAlgorithm
+    algorithm: HashingAlgorithm,
+    size: Long
   ): Either[FileFixityError, FileFixityCorrect] = {
+    // This assertion should never fire in practice -- if it does, it means
+    // an object is changing under our feet.  If that's the case, there's something
+    // badly wrong with the storage service.
+    //
+    // There's nothing sensible we can do to recover, so throw immediately and wait
+    // for a human to come and inspect the issue.
+    assert(
+      size == inputStream.length,
+      message =
+        s"The size of $location has changed!  Before: $size, after: ${inputStream.length}"
+    )
+
     val fixityResult = Checksum.create(inputStream, algorithm) match {
       case Failure(e) =>
         Left(

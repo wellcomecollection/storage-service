@@ -69,7 +69,7 @@ class FixityCheckerTests
 
       val checker = new MemoryFixityChecker(streamStore) {
         override protected val sizeFinder: SizeFinder =
-          (_: ObjectLocation) => Right(1)
+          (_: ObjectLocation) => Right(closedStream.length)
       }
 
       checker.check(expectedFileFixity) shouldBe a[
