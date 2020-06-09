@@ -218,10 +218,10 @@ class StorageManifestService(
           case Some(s) => s
           case None =>
             sizeFinder.getSize(location) match {
-              case Success(value) => value
-              case Failure(err) =>
+              case Right(value) => value
+              case Left(readError) =>
                 throw new StorageManifestException(
-                  s"Error getting size of $location: $err"
+                  s"Error getting size of $location: ${readError.e}"
                 )
             }
         }
