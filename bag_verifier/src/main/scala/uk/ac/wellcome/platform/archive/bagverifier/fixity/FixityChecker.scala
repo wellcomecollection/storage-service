@@ -34,44 +34,21 @@ trait FixityChecker extends Logging {
 
       inputStream <- openInputStream(expectedFileFixity, location)
       _ = debug(s"Opened input stream for $location")
+
+      _ <- verifySize(expectedFileFixity, location, inputStream)
+      _ = debug(s"Checked the size of $location is correct")
     } yield (inputStream, location)
 
     val result = eitherInputStream match {
       case Left(couldNotRead) => couldNotRead
 
       case Right((inputStream, objectLocation)) =>
-        val verifiedLocation = expectedFileFixity.length match {
-          case Some(expectedLength) =>
-            debug(
-              "Location specifies an expected length, checking it's correct"
-            )
-
-            if (expectedLength == inputStream.length) {
-              verifyChecksum(
-                expectedFileFixity = expectedFileFixity,
-                objectLocation = objectLocation,
-                inputStream = inputStream,
-                algorithm = algorithm
-              )
-            } else {
-              FileFixityMismatch(
-                expectedFileFixity = expectedFileFixity,
-                objectLocation = objectLocation,
-                e = new Throwable(
-                  "" +
-                    s"Lengths do not match: $expectedLength != ${inputStream.available()}"
-                )
-              )
-            }
-
-          case None =>
-            verifyChecksum(
-              expectedFileFixity = expectedFileFixity,
-              objectLocation = objectLocation,
-              inputStream = inputStream,
-              algorithm = algorithm
-            )
-        }
+        val verifiedLocation = verifyChecksum(
+          expectedFileFixity = expectedFileFixity,
+          objectLocation = objectLocation,
+          inputStream = inputStream,
+          algorithm = algorithm
+        )
 
         inputStream.close()
 
@@ -113,6 +90,25 @@ trait FixityChecker extends Logging {
             e = LocationError(expectedFileFixity, readError.e.getMessage)
           )
         )
+    }
+
+  private def verifySize(
+    expectedFileFixity: ExpectedFileFixity,
+    location: ObjectLocation,
+    inputStream: InputStreamWithLength): Either[FileFixityMismatch, Unit] =
+    expectedFileFixity.length match {
+      case Some(expectedLength) if expectedLength != inputStream.length =>
+        Left(
+          FileFixityMismatch(
+            expectedFileFixity = expectedFileFixity,
+            objectLocation = location,
+            e = new Throwable(
+              s"Lengths do not match: $expectedLength (expected) != ${inputStream.length} (actual)"
+            )
+          )
+        )
+
+      case _ => Right(())
     }
 
   private def verifyChecksum(
