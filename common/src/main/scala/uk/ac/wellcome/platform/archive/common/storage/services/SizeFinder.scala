@@ -4,7 +4,12 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import uk.ac.wellcome.storage.s3.S3Get
 import uk.ac.wellcome.storage.store.memory.MemoryStore
-import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation, ReadError, StoreReadError}
+import uk.ac.wellcome.storage.{
+  DoesNotExistError,
+  ObjectLocation,
+  ReadError,
+  StoreReadError
+}
 
 trait SizeFinder {
   def getSize(location: ObjectLocation): Either[ReadError, Long]
@@ -16,7 +21,8 @@ class MemorySizeFinder(
   override def getSize(location: ObjectLocation): Either[ReadError, Long] =
     memoryStore.entries.get(location) match {
       case Some(entry) => Right(entry.length)
-      case None        => Left(DoesNotExistError(new Throwable(s"No such entry $location!")))
+      case None =>
+        Left(DoesNotExistError(new Throwable(s"No such entry $location!")))
     }
 }
 
@@ -35,7 +41,8 @@ class S3SizeFinder(implicit s3Client: AmazonS3) extends SizeFinder {
     //
     // TODO: Upstream this change into scala-storage.
     result match {
-      case Left(StoreReadError(exc: AmazonS3Exception)) if exc.getMessage.startsWith("Not Found") =>
+      case Left(StoreReadError(exc: AmazonS3Exception))
+          if exc.getMessage.startsWith("Not Found") =>
         Left(DoesNotExistError(exc))
 
       case other => other

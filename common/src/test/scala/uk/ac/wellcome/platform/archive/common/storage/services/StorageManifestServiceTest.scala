@@ -434,7 +434,9 @@ class StorageManifestServiceTest
       val err = new Throwable("BOOM!")
 
       val brokenSizeFinder = new SizeFinder {
-        override def getSize(location: ObjectLocation): Either[ReadError, Long] =
+        override def getSize(
+          location: ObjectLocation
+        ): Either[ReadError, Long] =
           Left(StoreReadError(err))
       }
 
@@ -479,7 +481,9 @@ class StorageManifestServiceTest
       var sizeCache: Map[ObjectLocation, Long] = Map.empty
 
       val cachingSizeFinder = new SizeFinder {
-        override def getSize(location: ObjectLocation): Either[ReadError, Long] = {
+        override def getSize(
+          location: ObjectLocation
+        ): Either[ReadError, Long] = {
           sizeCache = sizeCache + (location -> Random.nextLong())
           Right(sizeCache(location))
         }
@@ -535,7 +539,9 @@ class StorageManifestServiceTest
       val location = createPrimaryLocationWith(prefix = bagRoot)
 
       val brokenSizeFinder = new SizeFinder {
-        override def getSize(location: ObjectLocation): Either[ReadError, Long] =
+        override def getSize(
+          location: ObjectLocation
+        ): Either[ReadError, Long] =
           Left(StoreReadError(new Throwable("This should never be called!")))
       }
 
@@ -626,8 +632,7 @@ class StorageManifestServiceTest
     replicas: Seq[SecondaryStorageLocation] = Seq.empty,
     space: StorageSpace = createStorageSpace,
     version: BagVersion,
-    sizeFinder: SizeFinder = (_: ObjectLocation) =>
-      Right(Random.nextLong().abs)
+    sizeFinder: SizeFinder = (_: ObjectLocation) => Right(Random.nextLong().abs)
   )(
     implicit streamStore: MemoryStreamStore[ObjectLocation]
   ): StorageManifest = {
@@ -680,7 +685,8 @@ class StorageManifestServiceTest
     version: BagVersion = BagVersion(1)
   )(assertError: Throwable => Assertion): Assertion = {
     val sizeFinder = new SizeFinder {
-      override def getSize(location: ObjectLocation): Either[ReadError, Long] = Right(1)
+      override def getSize(location: ObjectLocation): Either[ReadError, Long] =
+        Right(1)
     }
 
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =
