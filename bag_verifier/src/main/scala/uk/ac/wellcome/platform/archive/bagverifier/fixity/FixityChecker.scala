@@ -29,31 +29,15 @@ trait FixityChecker extends Logging {
     val algorithm = expectedFileFixity.checksum.algorithm
 
     val eitherInputStream = for {
-      objectLocation <- locate(expectedFileFixity.uri) match {
-        case Right(l) => Right(l)
-        case Left(e) =>
-          Left(
-            LocationParsingError(expectedFileFixity, e.msg)
-          )
-      }
+      location <- parseLocation(expectedFileFixity)
+      _ = debug(s"Parsed location for ${expectedFileFixity.uri} as $location")
 
-      inputStream <- streamStore.get(objectLocation) match {
-        case Right(stream) => Right(stream.identifiedT)
-
-        case Left(_: DoesNotExistError) =>
-          Left(
-            LocationNotFound(expectedFileFixity, "Location not available!")
-          )
-
-        case Left(storageError) =>
-          Left(
-            LocationError(expectedFileFixity, storageError.e.getMessage)
-          )
-      }
-    } yield (inputStream, objectLocation)
+      inputStream <- openInputStream(expectedFileFixity, location)
+      _ = debug(s"Opened input stream for $location")
+    } yield (inputStream, location)
 
     val result = eitherInputStream match {
-      case Left(e) => FileFixityCouldNotRead(expectedFileFixity, e = e)
+      case Left(couldNotRead) => couldNotRead
 
       case Right((inputStream, objectLocation)) =>
         val verifiedLocation = expectedFileFixity.length match {
@@ -97,6 +81,39 @@ trait FixityChecker extends Logging {
     debug(s"Got: $result")
     result
   }
+
+  private def parseLocation(expectedFileFixity: ExpectedFileFixity): Either[FileFixityCouldNotRead, ObjectLocation] =
+    locate(expectedFileFixity.uri) match {
+      case Right(location) => Right(location)
+      case Left(locateError) =>
+        Left(
+          FileFixityCouldNotRead(
+            expectedFileFixity = expectedFileFixity,
+            e = LocationParsingError(expectedFileFixity, locateError.msg)
+          )
+        )
+    }
+
+  private def openInputStream(expectedFileFixity: ExpectedFileFixity, location: ObjectLocation): Either[FileFixityCouldNotRead, InputStreamWithLength] =
+    streamStore.get(location) match {
+      case Right(stream) => Right(stream.identifiedT)
+
+      case Left(_: DoesNotExistError) =>
+        Left(
+          FileFixityCouldNotRead(
+            expectedFileFixity = expectedFileFixity,
+            e = LocationNotFound(expectedFileFixity, "Location not available!")
+          )
+        )
+
+      case Left(readError) =>
+        Left(
+          FileFixityCouldNotRead(
+            expectedFileFixity = expectedFileFixity,
+            e = LocationError(expectedFileFixity, readError.e.getMessage)
+          )
+        )
+    }
 
   private def verifyChecksum(
     expectedFileFixity: ExpectedFileFixity,
