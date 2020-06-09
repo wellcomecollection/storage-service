@@ -64,6 +64,18 @@ data "aws_iam_policy_document" "unpacked_bags_bucket_readonly" {
   }
 }
 
+data "aws_iam_policy_document" "unpacked_bags_bucket_put_tags" {
+  statement {
+    actions = [
+      "s3:PutObjectTagging",
+    ]
+
+    resources = [
+      "${aws_s3_bucket.unpacked_bags.arn}/*",
+    ]
+  }
+}
+
 data "aws_iam_policy_document" "unpacked_bags_bucket_readwrite" {
   statement {
     actions = [
@@ -73,6 +85,18 @@ data "aws_iam_policy_document" "unpacked_bags_bucket_readwrite" {
 
     resources = [
       "${aws_s3_bucket.unpacked_bags.arn}/*",
+    ]
+  }
+}
+
+data "aws_iam_policy_document" "primary_replica_put_tags" {
+  statement {
+    actions = [
+      "s3:PutObjectTagging",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${var.replica_primary_bucket_name}/*",
     ]
   }
 }
