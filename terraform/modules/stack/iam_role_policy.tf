@@ -111,6 +111,11 @@ resource "aws_iam_role_policy" "bag_verifier_pre_repl_unpacked_bags_bucket_reado
   policy = data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json
 }
 
+resource "aws_iam_role_policy" "bag_verifier_pre_repl_unpacked_bags_bucket_put_tags" {
+  role   = module.bag_verifier_pre_replication.task_role_name
+  policy = data.aws_iam_policy_document.unpacked_bags_bucket_put_tags.json
+}
+
 resource "aws_iam_role_policy" "bag_verifier_pre_repl_metrics" {
   role   = module.bag_verifier_pre_replication.task_role_name
   policy = data.aws_iam_policy_document.cloudwatch_putmetrics.json
@@ -121,6 +126,13 @@ resource "aws_iam_role_policy" "bag_verifier_pre_repl_metrics" {
 resource "aws_iam_role_policy" "bag_verifier_pre_repl_replica_primary_readonly" {
   role   = module.bag_verifier_pre_replication.task_role_name
   policy = data.aws_iam_policy_document.replica_primary_readonly.json
+}
+
+# It also needs to be able to tag objects in the primary bucket, although
+# eventually we should backfill the tags and do away with the need for this.
+resource "aws_iam_role_policy" "bag_verifier_pre_repl_primary_replica_put_tags" {
+  role   = module.bag_verifier_pre_replication.task_role_name
+  policy = data.aws_iam_policy_document.primary_replica_put_tags.json
 }
 
 # bag_unpacker

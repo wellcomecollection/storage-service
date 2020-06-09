@@ -18,6 +18,16 @@ data "aws_iam_policy_document" "bucket_read" {
       "arn:aws:s3:::${var.bucket_name}/*",
     ]
   }
+
+  statement {
+    actions = [
+      "s3:PutObjectTagging",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${var.bucket_name}/*",
+    ]
+  }
 }
 
 resource "aws_iam_role_policy" "bag_verifier_read" {
@@ -26,7 +36,7 @@ resource "aws_iam_role_policy" "bag_verifier_read" {
 }
 
 # The fetch.txt entry may refer to locations in the primary bucket, so we need
-# to give verifier read permissions on that bucket as well.
+# to give verifier permissions on that bucket as well.
 
 data "aws_iam_policy_document" "primary_bucket_read" {
   statement {
@@ -36,6 +46,16 @@ data "aws_iam_policy_document" "primary_bucket_read" {
 
     resources = [
       "arn:aws:s3:::${var.primary_bucket_name}",
+      "arn:aws:s3:::${var.primary_bucket_name}/*",
+    ]
+  }
+
+  statement {
+    actions = [
+      "s3:PutObjectTagging",
+    ]
+
+    resources = [
       "arn:aws:s3:::${var.primary_bucket_name}/*",
     ]
   }
