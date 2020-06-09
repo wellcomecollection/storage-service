@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity
 import java.io.FilterInputStream
 import java.net.URI
 
+import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.memory.MemoryFixityChecker
@@ -10,14 +11,16 @@ import uk.ac.wellcome.platform.archive.bagverifier.generators.FixityGenerators
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
 import uk.ac.wellcome.platform.archive.common.storage.{LocateFailure, LocationParsingError}
 import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, MD5}
-import uk.ac.wellcome.storage.{DoesNotExistError, Identified, ObjectLocation, ReadError}
+import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore}
+import uk.ac.wellcome.storage.streaming.Codec.stringCodec
 import uk.ac.wellcome.storage.streaming.{Codec, InputStreamWithLength}
 import uk.ac.wellcome.storage.tags.memory.MemoryTags
 
 class FixityCheckerTests
     extends AnyFunSpec
     with Matchers
+    with EitherValues
     with FixityGenerators {
   override def resolve(location: ObjectLocation): URI =
     new URI(s"mem://${location.namespace}/${location.path}")
@@ -72,6 +75,43 @@ class FixityCheckerTests
       checker.check(expectedFileFixity) shouldBe a[
         FileFixityCouldNotGetChecksum
       ]
+    }
+
+    it("if it can't write the fixity tags") {
+      val streamStore = MemoryStreamStore[ObjectLocation]()
+
+      val tags = new MemoryTags[ObjectLocation](initialTags = Map.empty) {
+        override def get(location: ObjectLocation): Either[ReadError, Map[String, String]] =
+          super.get(location) match {
+            case Right(t)                => Right(t)
+            case Left(_: DoesNotExistError) => Right(Map[String, String]())
+            case Left(err)                  => Left(err)
+          }
+
+        override protected def put(location: ObjectLocation, tags: Map[String, String]): Either[WriteError, Map[String, String]] =
+          Left(
+            StoreWriteError(new Throwable("BOOM!"))
+          )
+      }
+
+      val contentString = "HelloWorld"
+      val checksum = Checksum(MD5, ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6"))
+
+      val location = createObjectLocation
+
+      val inputStream = stringCodec.toStream(contentString).right.value
+      streamStore.put(location)(inputStream) shouldBe a[Right[_, _]]
+
+      val expectedFileFixity = createExpectedFileFixityWith(
+        location = location, checksum = checksum
+      )
+
+      val checker = new MemoryFixityChecker(streamStore, tags) {
+        override protected val sizeFinder: SizeFinder =
+          (_: ObjectLocation) => Right(contentString.length)
+      }
+
+      checker.check(expectedFileFixity) shouldBe a[FileFixityCouldNotWriteTag]
     }
   }
 
