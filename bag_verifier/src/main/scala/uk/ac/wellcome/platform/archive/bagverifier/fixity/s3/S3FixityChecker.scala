@@ -6,7 +6,10 @@ import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityChecker
 import uk.ac.wellcome.platform.archive.common.storage.LocateFailure
-import uk.ac.wellcome.platform.archive.common.storage.services.{S3SizeFinder, SizeFinder}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  S3SizeFinder,
+  SizeFinder
+}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.s3.S3StreamStore

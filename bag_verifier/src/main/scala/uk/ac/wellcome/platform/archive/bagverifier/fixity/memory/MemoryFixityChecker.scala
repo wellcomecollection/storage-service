@@ -4,7 +4,10 @@ import java.net.URI
 
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityChecker
 import uk.ac.wellcome.platform.archive.common.storage.LocateFailure
-import uk.ac.wellcome.platform.archive.common.storage.services.{MemorySizeFinder, SizeFinder}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  MemorySizeFinder,
+  SizeFinder
+}
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 

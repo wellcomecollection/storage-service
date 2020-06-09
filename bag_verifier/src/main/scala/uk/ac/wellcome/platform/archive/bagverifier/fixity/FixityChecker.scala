@@ -78,7 +78,7 @@ trait FixityChecker extends Logging {
     handleReadErrors(
       streamStore.get(location),
       expectedFileFixity = expectedFileFixity
-    ).map { _.identifiedT}
+    ).map { _.identifiedT }
 
   private def verifySize(
     expectedFileFixity: ExpectedFileFixity,
@@ -165,7 +165,10 @@ trait FixityChecker extends Logging {
     fixityResult
   }
 
-  private def handleReadErrors[T](t: Either[ReadError, T], expectedFileFixity: ExpectedFileFixity): Either[FileFixityCouldNotRead, T] =
+  private def handleReadErrors[T](
+    t: Either[ReadError, T],
+    expectedFileFixity: ExpectedFileFixity
+  ): Either[FileFixityCouldNotRead, T] =
     t match {
       case Right(value) => Right(value)
 
