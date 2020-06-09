@@ -44,34 +44,25 @@ trait FixityChecker extends Logging {
     //    2.  Works even if the objects have been cycled to Glacier/cold storage
     //        (e.g. if they're very large and infrequently accessed)
 
-    // e.g. Content-MD5, Content-SHA256
-    val fixityTagName = s"Content-${algorithm.pathRepr.toUpperCase}"
-    val fixityTagValue = expectedFileFixity.checksum.value.toString
-
     val fixityResult = for {
       location <- parseLocation(expectedFileFixity)
       _ = debug(s"Parsed location for ${expectedFileFixity.uri} as $location")
 
-      inputStream <- openInputStream(expectedFileFixity, location)
-      _ = debug(s"Opened input stream for $location")
+      existingTags <- getExistingTags(expectedFileFixity, location)
+      _ = debug(s"Got existing tags for $location: $existingTags")
 
       size <- verifySize(expectedFileFixity, location)
       _ = debug(s"Checked the size of $location is correct")
 
-      result <- verifyChecksumFromInputStream(
+      result <- verifyChecksum(
         expectedFileFixity = expectedFileFixity,
         location = location,
-        inputStream = inputStream,
+        existingTags = existingTags,
         algorithm = algorithm,
         size = size
       )
 
-      _ <- writeFixityTags(
-        expectedFileFixity = expectedFileFixity,
-        location = location,
-        fixityTagName = fixityTagName,
-        fixityTagValue = fixityTagValue
-      )
+      _ <- writeFixityTags(expectedFileFixity, location)
     } yield result
 
     debug(s"Fixity check result for ${expectedFileFixity.uri}: $fixityResult")
@@ -95,6 +86,14 @@ trait FixityChecker extends Logging {
           )
         )
     }
+
+  private def getExistingTags(
+    expectedFileFixity: ExpectedFileFixity,
+    location: ObjectLocation): Either[FileFixityCouldNotRead, Map[String, String]] =
+    handleReadErrors(
+      tags.get(location),
+      expectedFileFixity = expectedFileFixity
+    )
 
   private def openInputStream(
     expectedFileFixity: ExpectedFileFixity,
@@ -130,6 +129,48 @@ trait FixityChecker extends Logging {
         case _ => Right(())
       }
     } yield actualLength
+
+  private def verifyChecksum(
+    expectedFileFixity: ExpectedFileFixity,
+    location: ObjectLocation,
+    existingTags: Map[String, String],
+    algorithm: HashingAlgorithm,
+    size: Long
+  ): Either[FileFixityError, FileFixityCorrect] =
+    existingTags.get(fixityTagName(expectedFileFixity)) match {
+      case Some(cachedFixityValue) if cachedFixityValue == fixityTagValue(expectedFileFixity) =>
+        Right(
+          FileFixityCorrect(
+            expectedFileFixity = expectedFileFixity,
+            objectLocation = location,
+            size = size
+          )
+        )
+
+      case Some(_) =>
+        Left(
+          FileFixityMismatch(
+            expectedFileFixity = expectedFileFixity,
+            objectLocation = location,
+            e = new Throwable(
+              s"Cached verification tag doesn't match expected checksum for $location: $existingTags (${expectedFileFixity.checksum})"
+            )
+          )
+        )
+
+      case None =>
+        openInputStream(expectedFileFixity, location) match {
+          case Left(err) => Left(err)
+          case Right(inputStream) =>
+            verifyChecksumFromInputStream(
+              expectedFileFixity = expectedFileFixity,
+              location = location,
+              inputStream = inputStream,
+              algorithm = algorithm,
+              size = size
+            )
+        }
+    }
 
   private def verifyChecksumFromInputStream(
     expectedFileFixity: ExpectedFileFixity,
@@ -192,13 +233,14 @@ trait FixityChecker extends Logging {
 
   private def writeFixityTags(
     expectedFileFixity: ExpectedFileFixity,
-    location: ObjectLocation,
-    fixityTagName: String,
-    fixityTagValue: String
+    location: ObjectLocation
   ): Either[FileFixityCouldNotWriteTag, Unit] =
     tags
       .update(location) { existingTags =>
-        val fixityTags = Map(fixityTagName -> fixityTagValue)
+        val tagName = fixityTagName(expectedFileFixity)
+        val tagValue = fixityTagValue(expectedFileFixity)
+
+        val fixityTags = Map(tagName -> tagValue)
 
         // We've already checked the tags on this location once, so we shouldn't
         // see conflicting values here.  Check we're not about to blat some existing
@@ -208,7 +250,7 @@ trait FixityChecker extends Logging {
         // Note: this is a fairly weak guarantee, because tags aren't locked during
         // an update operation.
         assert(
-          existingTags.getOrElse(fixityTagName, fixityTagValue) == fixityTagValue,
+          existingTags.getOrElse(tagName, tagValue) == tagValue,
           s"Trying to write $fixityTags to $location; existing tags conflict: $existingTags"
         )
 
@@ -223,6 +265,13 @@ trait FixityChecker extends Logging {
           )
         )
       }
+
+  // e.g. Content-MD5, Content-SHA256
+  private def fixityTagName(expectedFileFixity: ExpectedFileFixity): String =
+    s"Content-${expectedFileFixity.checksum.algorithm.pathRepr.toUpperCase}"
+
+  private def fixityTagValue(expectedFileFixity: ExpectedFileFixity): String =
+    expectedFileFixity.checksum.value.toString
 
   private def handleReadErrors[T](
     t: Either[ReadError, T],

@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity
 
+import org.mockito.Mockito
+import org.mockito.Mockito._
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
@@ -8,9 +10,10 @@ import uk.ac.wellcome.platform.archive.bagverifier.generators.FixityGenerators
 import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
 
-trait FixityCheckerTestCases[Namespace, Context]
+trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[ObjectLocation]]
     extends AnyFunSpec
     with Matchers
     with EitherValues
@@ -25,9 +28,22 @@ trait FixityCheckerTestCases[Namespace, Context]
     implicit context: Context
   ): Unit
 
-  def withFixityChecker[R](testWith: TestWith[FixityChecker, R])(
+  def withFixityChecker[R](
+    streamStore: StreamStoreImpl)(
+    testWith: TestWith[FixityChecker, R])(
     implicit context: Context
   ): R
+
+  def withStreamStore[R](testWith: TestWith[StreamStoreImpl, R])(implicit context: Context): R
+
+  def withFixityChecker[R](testWith: TestWith[FixityChecker, R])(
+    implicit context: Context
+  ): R =
+    withStreamStore { streamStore =>
+      withFixityChecker(streamStore) { fixityChecker =>
+        testWith(fixityChecker)
+      }
+    }
 
   it("returns a success if the checksum is correct") {
     withContext { implicit context =>
@@ -258,7 +274,37 @@ trait FixityCheckerTestCases[Namespace, Context]
     }
 
     it("skips checking if there's a matching tag from a previous verification") {
-      true shouldBe false
+      val contentString = "HelloWorld"
+      val checksum = Checksum(MD5, ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6"))
+
+      withContext { implicit context =>
+        withNamespace { implicit namespace =>
+          val location = createObjectLocationWith(namespace)
+          putString(location, contentString)
+
+          val expectedFileFixity = createExpectedFileFixityWith(
+            location = location,
+            checksum = checksum
+          )
+
+          withStreamStore { streamStore =>
+            val spyStore: StreamStoreImpl = Mockito.spy(streamStore)
+
+            withFixityChecker(spyStore) { fixityChecker =>
+              fixityChecker.check(expectedFileFixity) shouldBe a[FileFixityCorrect]
+
+              // StreamStore.get() should have been called to read the object so
+              // it can be verified.
+              verify(spyStore, times(1)).get(location)
+
+              // It shouldn't be read a second time, because we see the tag written by
+              // the previous verification.
+              fixityChecker.check(expectedFileFixity) shouldBe a[FileFixityCorrect]
+              verify(spyStore, times(1)).get(location)
+            }
+          }
+        }
+      }
     }
 
     it("errors if there's a mismatched tag from a previous verification") {
