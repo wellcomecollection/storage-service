@@ -145,14 +145,20 @@ class S3ReplicatorTest
       withLocalS3Bucket { dstBucket =>
         val location = createObjectLocationWith(srcBucket)
 
-        s3Client.putObject(location.namespace, location.path, randomAlphanumeric)
+        s3Client.putObject(
+          location.namespace,
+          location.path,
+          randomAlphanumeric
+        )
         s3Tags.update(location) { existingTags =>
           Right(existingTags ++ Map("Content-SHA256" -> "abcdef"))
         }
 
         val request = ReplicationRequest(
-          srcPrefix = ObjectLocationPrefix(namespace = srcBucket.name, path = ""),
-          dstPrefix = ObjectLocationPrefix(namespace = dstBucket.name, path = "")
+          srcPrefix =
+            ObjectLocationPrefix(namespace = srcBucket.name, path = ""),
+          dstPrefix =
+            ObjectLocationPrefix(namespace = dstBucket.name, path = "")
         )
 
         val result = new S3Replicator().replicate(
