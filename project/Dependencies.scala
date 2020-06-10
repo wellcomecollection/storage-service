@@ -7,7 +7,7 @@ object WellcomeDependencies {
     val messaging = "9.3.0"
     val monitoring = "4.0.0"
     val storage = "8.6.0"
-    val typesafe = "2.0.0"
+    val typesafe = "3.0.0"
   }
 
   val jsonLibrary: Seq[ModuleID] = library(
@@ -72,8 +72,6 @@ object ExternalDependencies {
     val aws = "1.11.504"
     val scalatest = "3.1.1"
     val wiremock = "2.18.0"
-    val logback = "1.2.3"
-    val logstashLogback = "6.1"
 
     // This should match the version of circe used in scala-json; see
     // https://github.com/wellcomecollection/scala-json/blob/master/project/Dependencies.scala
@@ -107,16 +105,7 @@ object ExternalDependencies {
     val akkaStreamAlpakka = "1.1.2"
     val akkaHttp = "10.1.10"
     val akkaHttpCirce = "1.29.1"
-    // Must match version of akka-core used
-    val akkaSl4j = "2.6.4"
   }
-
-  val logbackDependencies = Seq(
-    "ch.qos.logback" % "logback-classic" % versions.logback,
-    "ch.qos.logback" % "logback-core" % versions.logback,
-    "ch.qos.logback" % "logback-access" % versions.logback,
-    "net.logstash.logback" % "logstash-logback-encoder" % versions.logstashLogback
-  )
 
   val commonsCompressDependencies = Seq(
     "org.apache.commons" % "commons-compress" % versions.commonsCompress
@@ -136,9 +125,6 @@ object ExternalDependencies {
 
   val akkaDependencies: Seq[sbt.ModuleID] = Seq[ModuleID](
     "com.typesafe.akka" %% "akka-http" % versions.akkaHttp,
-    // Force Akka to use SL4J logging adapter
-    // https://doc.akka.io/docs/akka/current/logging.html#slf4j
-    "com.typesafe.akka" %% "akka-slf4j" % versions.akkaSl4j,
     "de.heikoseeberger" %% "akka-http-circe" % versions.akkaHttpCirce,
     // We need to exclude these two HTTP clients, or we get errors from the tests:
     //
@@ -183,7 +169,6 @@ object StorageDependencies {
       ExternalDependencies.akkaDependencies ++
       ExternalDependencies.cloudwatchMetricsDependencies ++
       ExternalDependencies.scalatestDependencies ++
-      ExternalDependencies.logbackDependencies ++
       WellcomeDependencies.jsonLibrary ++
       WellcomeDependencies.messagingLibrary ++
       WellcomeDependencies.monitoringLibrary ++
