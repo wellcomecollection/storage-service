@@ -20,7 +20,7 @@ trait Indexer[Document, DisplayDocument] extends Logging {
   implicit val indexable: Indexable[DisplayDocument] =
     (displayDocument: DisplayDocument) => toJson(displayDocument).get
 
-  protected def id(doc: Document): String
+  def id(doc: Document): String
   protected def toDisplay(doc: Document): DisplayDocument
   protected def version(doc: Document): Long
 

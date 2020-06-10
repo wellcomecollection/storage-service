@@ -14,7 +14,7 @@ class IngestIndexer(val client: ElasticClient, val index: Index)(
   val encoder: Encoder[IndexedIngest]
 ) extends Indexer[Ingest, IndexedIngest] {
 
-  override protected def id(ingest: Ingest): String =
+  override def id(ingest: Ingest): String =
     ingest.id.underlying.toString
 
   override protected def toDisplay(ingest: Ingest): IndexedIngest =

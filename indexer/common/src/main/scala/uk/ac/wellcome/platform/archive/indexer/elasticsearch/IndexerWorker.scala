@@ -53,7 +53,7 @@ abstract class IndexerWorker[SourceT, T, IndexedT](
         Left(
           RetryableIndexingError(
             payload = t,
-            cause = new Exception(s"Error indexing $t")
+            cause = new Exception(s"Error indexing ${indexer.id(t)}")
           )
         )
     }
