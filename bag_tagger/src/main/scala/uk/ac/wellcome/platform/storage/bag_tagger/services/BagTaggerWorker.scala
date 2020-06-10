@@ -9,24 +9,22 @@ import grizzled.slf4j.Logging
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.Message
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{
-  AlpakkaSQSWorker,
-  AlpakkaSQSWorkerConfig
-}
-import uk.ac.wellcome.messaging.worker.models.{Result, Successful}
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.{
-  MetricsMonitoringClient,
-  MetricsMonitoringProcessor
-}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
+import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Result, Successful}
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.{MetricsMonitoringClient, MetricsMonitoringProcessor}
+import uk.ac.wellcome.platform.archive.bag_tracker.client.BagTrackerClient
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifestFile
+import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 
-import uk.ac.wellcome.typesafe.Runnable
-
 class BagTaggerWorker(
   val config: AlpakkaSQSWorkerConfig,
-  val metricsNamespace: String
+  val metricsNamespace: String,
+  bagTrackerClient: BagTrackerClient,
+  applyTags: ApplyTags
 )(
   implicit
   val mc: MetricsMonitoringClient,
@@ -38,10 +36,40 @@ class BagTaggerWorker(
 
   implicit val ec = as.dispatcher
 
-  def process(sourceT: BagRegistrationNotification): Future[Result[Unit]] =
-    Future {
-      Successful(None)
-    }
+  def process(notification: BagRegistrationNotification): Future[Result[Unit]] = {
+    val result: Future[Result[Unit]] = for {
+      version <- Future.fromTry {
+        BagVersion.fromString(notification.version)
+      }
+
+      bagId = BagId(
+        space = notification.space,
+        externalIdentifier = notification.externalIdentifier
+      )
+
+      manifest <- bagTrackerClient.getBag(bagId = bagId, version = version).map {
+        case Right(bag) => bag
+        case Left(err)  => throw new Throwable(s"Unable to get bag $bagId version $version from the tracker: $err")
+      }
+
+      tagsToApply: Map[StorageManifestFile, Map[String, String]] = TagRules.chooseTags(manifest)
+
+      _ <- Future.fromTry {
+        applyTags.applyTags(
+          storageLocations = Seq(manifest.location) ++ manifest.replicaLocations,
+          tagsToApply = tagsToApply
+        )
+      }
+
+      _ = info(s"Successfully applied tags for $notification")
+      result = Successful[Unit]()
+    } yield result
+
+    result
+      .recover { case err: Throwable =>
+        NonDeterministicFailure[Unit](err)
+      }
+  }
 
   val worker
     : AlpakkaSQSWorker[BagRegistrationNotification, Instant, Instant, Unit] =

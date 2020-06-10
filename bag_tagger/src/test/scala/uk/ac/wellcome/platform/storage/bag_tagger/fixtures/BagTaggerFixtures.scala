@@ -8,9 +8,12 @@ import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
-import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
-import uk.ac.wellcome.platform.storage.bag_tagger.services.BagTaggerWorker
+import uk.ac.wellcome.platform.archive.common.fixtures.{OperationFixtures, StorageManifestDaoFixture}
+import uk.ac.wellcome.platform.storage.bag_tagger.services.{ApplyTags, BagTaggerWorker}
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.tags.s3.S3Tags
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -18,6 +21,9 @@ trait BagTaggerFixtures
     extends OperationFixtures
     with Akka
     with SQS
+    with S3Fixtures
+    with BagTrackerFixtures
+    with StorageManifestDaoFixture
     with AlpakkaSQSWorkerFixtures { this: Suite =>
 
   def withWorkerService[R](
@@ -28,12 +34,16 @@ trait BagTaggerFixtures
   )(implicit decoder: Decoder[BagRegistrationNotification]): R =
     withActorSystem { implicit actorSystem =>
       withFakeMonitoringClient() { implicit monitoringClient =>
-        val worker = new BagTaggerWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
-          metricsNamespace = "bag_tagger"
-        )
+        withBagTrackerClient(storageManifestDao = createStorageManifestDao()) { trackerClient =>
+          val worker = new BagTaggerWorker(
+            config = createAlpakkaSQSWorkerConfig(queue),
+            metricsNamespace = "bag_tagger",
+            bagTrackerClient = trackerClient,
+            applyTags = new ApplyTags(s3Tags = new S3Tags())
+          )
 
-        testWith(worker)
+          testWith(worker)
+        }
       }
     }
 }
