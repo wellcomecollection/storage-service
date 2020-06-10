@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.storage.bag_tagger.services
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 
@@ -10,24 +9,28 @@ class TagRulesTest extends AnyFunSpec with Matchers with StorageManifestGenerato
   describe("Content-Type=application/mxf for MXF video masters") {
     describe("it applies a tag") {
       it("for MXFs in the digitised space") {
+        val mxfFile = createStorageManifestFileWith(name = "b1234.mxf")
+
         val manifest = createStorageManifestWith(
           space = StorageSpace("digitised"),
-          files = Seq(createStorageManifestFileWith(name = "b1234.mxf"))
+          files = Seq(mxfFile)
         )
 
         TagRules.chooseTags(manifest) shouldBe Map(
-          BagPath("b1234.mxf") -> Map("Content-Type" -> "application/mxf")
+          mxfFile -> Map("Content-Type" -> "application/mxf")
         )
       }
 
       it("whose file extension is uppercase") {
+        val mxfFile = createStorageManifestFileWith(name = "b1234.MXF")
+
         val manifest = createStorageManifestWith(
           space = StorageSpace("digitised"),
-          files = Seq(createStorageManifestFileWith(name = "b1234.MXF"))
+          files = Seq(mxfFile)
         )
 
         TagRules.chooseTags(manifest) shouldBe Map(
-          BagPath("b1234.MXF") -> Map("Content-Type" -> "application/mxf")
+          mxfFile -> Map("Content-Type" -> "application/mxf")
         )
       }
     }
