@@ -14,7 +14,7 @@ class BagIndexer(val client: ElasticClient, val index: Index)(
   val encoder: Encoder[IndexedStorageManifest]
 ) extends Indexer[StorageManifest, IndexedStorageManifest] {
 
-  override protected def id(storageManifest: StorageManifest): String =
+  override def id(storageManifest: StorageManifest): String =
     storageManifest.id.toString
 
   override protected def toDisplay(
