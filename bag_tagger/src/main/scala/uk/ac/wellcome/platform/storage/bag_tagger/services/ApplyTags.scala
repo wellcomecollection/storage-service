@@ -26,7 +26,7 @@ class ApplyTags(s3Tags: S3Tags) extends Logging {
 
       if (failures.nonEmpty) {
         warn(s"Failures applying tags to $storageLocations: $failures")
-        throw new Throwable(s"Could not successfully apply tags!")
+        throw new Throwable("Could not successfully apply tags!")
       } else {
         ()
       }
@@ -40,7 +40,14 @@ class ApplyTags(s3Tags: S3Tags) extends Logging {
         val location = prefix.asLocation(storageManifestFile.path)
 
         val result = tags.update(location) { existingTags =>
-          Right(existingTags ++ newTags)
+
+          // The bag tagger runs after the bag verifier, which means we should see
+          // a Content-SHA256 tag here.  If not, we should abort -- either the storage
+          // service is broken, or we're waiting for something to happen with S3 consistency.
+          existingTags.get("Content-SHA256") match {
+            case Some(_) => Right(existingTags ++ newTags)
+            case None    => throw new Throwable(s"No Content-SHA256 tag on $location")
+          }
         }
         debug(s"Result of applying tags: $result")
 
