@@ -24,8 +24,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import uk.ac.wellcome.typesafe.Runnable
 
-case class BagTaggerOutput(foo: String)
-
 class BagTaggerWorker(
   val config: AlpakkaSQSWorkerConfig,
   val metricsNamespace: String
