@@ -5,7 +5,10 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 
-class TagRulesTest extends AnyFunSpec with Matchers with StorageManifestGenerators {
+class TagRulesTest
+    extends AnyFunSpec
+    with Matchers
+    with StorageManifestGenerators {
   describe("Content-Type=application/mxf for MXF video masters") {
     describe("it applies a tag") {
       it("for MXFs in the digitised space") {
