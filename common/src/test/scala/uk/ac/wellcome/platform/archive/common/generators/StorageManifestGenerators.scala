@@ -51,7 +51,7 @@ trait StorageManifestGenerators
     version: BagVersion = createBagVersion,
     fileCount: Int = 3,
     createdDate: Instant = Instant.now,
-    files: List[StorageManifestFile] = Nil
+    files: Seq[StorageManifestFile] = Nil
   ): StorageManifest = {
 
     val pathPrefix = DestinationBuilder
