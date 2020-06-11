@@ -7,11 +7,26 @@ resource "aws_s3_bucket" "replica_primary" {
   }
 
   lifecycle_rule {
+    id      = "transition_objects_to_standard_ia"
     enabled = true
 
     transition {
       days          = 30
       storage_class = "STANDARD_IA"
+    }
+  }
+
+  lifecycle_rule {
+    id      = "move_mxf_objects_to_glacier"
+    enabled = true
+
+    tags = {
+      "Content-Type" = "application/mxf"
+    }
+
+    transition {
+      days          = 90
+      storage_class = "GLACIER"
     }
   }
 
