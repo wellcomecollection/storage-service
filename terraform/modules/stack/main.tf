@@ -282,6 +282,41 @@ module "bag_tagger" {
   service_discovery_namespace_id = local.service_discovery_namespace_id
 }
 
+# bag retagger - for adding checksum tags
+
+module "bag_retagger" {
+  source = "../service/worker"
+
+  service_name    = "${var.namespace}-bag-retagger"
+  container_image = "busybox"
+
+  environment = {
+    queue_url         = module.bag_retagger_input_queue.url
+    metrics_namespace = "${var.namespace}-bag-retagger"
+    bags_tracker_host = "http://${module.bags_api.name}.${var.namespace}:8080"
+  }
+
+  cpu    = 512
+  memory = 1024
+
+  min_capacity = var.min_capacity
+  max_capacity = var.max_capacity
+
+  cluster_name = aws_ecs_cluster.cluster.name
+  cluster_arn  = aws_ecs_cluster.cluster.arn
+
+  security_group_ids = [
+    aws_security_group.interservice.id,
+    aws_security_group.service_egress.id,
+  ]
+
+  subnets = var.private_subnets
+
+  use_fargate_spot = true
+
+  service_discovery_namespace_id = local.service_discovery_namespace_id
+}
+
 # bag_verifier
 
 module "bag_verifier_pre_replication" {

@@ -431,3 +431,28 @@ module "bag_tagger_input_queue" {
   aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 }
+
+# bag retagger
+
+module "bag_retagger_script_output_topic" {
+  source = "../topic"
+
+  name = "${var.namespace}_retag_bags_script_output"
+
+  role_names = []
+}
+
+module "bag_retagger_input_queue" {
+  source = "../queue"
+
+  name = "${var.namespace}_bag_retagger_input"
+
+  topic_arns = [
+    module.registered_bag_notifications_topic.arn,
+  ]
+
+  role_names = [module.bag_retagger.task_role_name]
+
+  aws_region    = var.aws_region
+  dlq_alarm_arn = var.dlq_alarm_arn
+}
