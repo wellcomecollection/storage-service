@@ -11,7 +11,7 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
 import uk.ac.wellcome.platform.archive.common.fixtures.{OperationFixtures, StorageManifestDaoFixture}
-import uk.ac.wellcome.platform.storage.bag_tagger.services.{ApplyTags, BagTaggerWorker}
+import uk.ac.wellcome.platform.storage.bag_tagger.services.{ApplyTags, BagTaggerWorker, TagRules}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.tags.s3.S3Tags
 
@@ -39,7 +39,8 @@ trait BagTaggerFixtures
             config = createAlpakkaSQSWorkerConfig(queue),
             metricsNamespace = "bag_tagger",
             bagTrackerClient = trackerClient,
-            applyTags = new ApplyTags(s3Tags = new S3Tags())
+            applyTags = new ApplyTags(s3Tags = new S3Tags()),
+            tagRules = TagRules.chooseTags
           )
 
           testWith(worker)

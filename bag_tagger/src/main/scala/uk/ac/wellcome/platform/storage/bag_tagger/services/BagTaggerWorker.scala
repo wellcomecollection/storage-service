@@ -15,7 +15,7 @@ import uk.ac.wellcome.messaging.worker.monitoring.metrics.{MetricsMonitoringClie
 import uk.ac.wellcome.platform.archive.bag_tracker.client.BagTrackerClient
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifestFile
+import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageManifestFile}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -24,7 +24,8 @@ class BagTaggerWorker(
   val config: AlpakkaSQSWorkerConfig,
   val metricsNamespace: String,
   bagTrackerClient: BagTrackerClient,
-  applyTags: ApplyTags
+  applyTags: ApplyTags,
+  tagRules: StorageManifest => Map[StorageManifestFile, Map[String, String]]
 )(
   implicit
   val mc: MetricsMonitoringClient,
@@ -52,7 +53,7 @@ class BagTaggerWorker(
         case Left(err)  => throw new Throwable(s"Unable to get bag $bagId version $version from the tracker: $err")
       }
 
-      tagsToApply: Map[StorageManifestFile, Map[String, String]] = TagRules.chooseTags(manifest)
+      tagsToApply = tagRules(manifest)
 
       _ <- Future.fromTry {
         applyTags.applyTags(
@@ -65,6 +66,8 @@ class BagTaggerWorker(
       result = Successful[Unit]()
     } yield result
 
+    // We can't be sure what the error is here.  The cost of retrying it is
+    // very cheap, so assume it's a flaky error and can be retried.
     result
       .recover { case err: Throwable =>
         NonDeterministicFailure[Unit](err)
