@@ -7,6 +7,7 @@ resource "aws_s3_bucket" "replica_glacier" {
   }
 
   lifecycle_rule {
+    id      = "transition_objects_to_deep_archive"
     enabled = true
 
     transition {

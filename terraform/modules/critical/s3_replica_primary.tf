@@ -7,6 +7,7 @@ resource "aws_s3_bucket" "replica_primary" {
   }
 
   lifecycle_rule {
+    id      = "transition_objects_to_standard_ia"
     enabled = true
 
     transition {
@@ -15,12 +16,8 @@ resource "aws_s3_bucket" "replica_primary" {
     }
   }
 
-  # Any large MXF files (the video masters from A/V digitisation) get cycled
-  # to Glacier storage because we don't need to access them regularly.
-  #
-  # We use Glacier rather than Deep Archive because we want to be able to
-  # do expedited retrievals.
   lifecycle_rule {
+    id      = "move_mxf_objects_to_glacier"
     enabled = true
 
     tags = {
