@@ -20,7 +20,7 @@ class BagVersionTest extends AnyFunSpec with Matchers with TryValues {
   it("fails to parse something that isn't a version") {
     val err = BagVersion.fromString("vX").failed.get
 
-    err shouldBe a[Throwable]
+    err shouldBe a[IllegalArgumentException]
     err.getMessage shouldBe "Could not parse version string: vX"
   }
 }
