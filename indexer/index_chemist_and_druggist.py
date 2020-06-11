@@ -78,10 +78,9 @@ def get_chemist_and_druggist_payload():
     )
 
     s3_obj = s3_client.get_object(
-        Bucket="wellcomecollection-storage-infra",
-        Key="b19974760_indexed.json"
+        Bucket="wellcomecollection-storage-infra", Key="b19974760_indexed.json"
     )
-    
+
     return json.load(s3_obj["Body"])
 
 
