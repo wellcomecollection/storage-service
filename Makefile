@@ -28,7 +28,7 @@ SBT_DOCKER_LIBRARIES    = common
 SBT_NO_DOCKER_LIBRARIES = bags_common display
 
 PYTHON_APPS =
-LAMBDAS 	= s3_object_tagger
+LAMBDAS 	=
 
 TF_NAME = storage
 TF_PATH = $(STACK_ROOT)/terraform
