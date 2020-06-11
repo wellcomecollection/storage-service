@@ -252,20 +252,13 @@ module "bag_root_finder" {
 module "bag_tagger" {
   source = "../service/worker"
 
-  security_group_ids = [
-    aws_security_group.interservice.id,
-    aws_security_group.service_egress.id,
-  ]
-
-  cluster_name = aws_ecs_cluster.cluster.name
-  cluster_arn  = aws_ecs_cluster.cluster.arn
-
-  subnets      = var.private_subnets
-  service_name = local.bag_tagger_service_name
+  service_name    = local.bag_tagger_service_name
+  container_image = local.image_ids["bag_tagger"]
 
   environment = {
     queue_url         = module.bag_tagger_input_queue.url
     metrics_namespace = local.bag_tagger_service_name
+    bags_tracker_host = "http://${module.bags_api.name}.${var.namespace}:8080"
   }
 
   cpu    = 512
@@ -274,7 +267,15 @@ module "bag_tagger" {
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
 
-  container_image = local.image_ids["bag_tagger"]
+  cluster_name = aws_ecs_cluster.cluster.name
+  cluster_arn  = aws_ecs_cluster.cluster.arn
+
+  security_group_ids = [
+    aws_security_group.interservice.id,
+    aws_security_group.service_egress.id,
+  ]
+
+  subnets      = var.private_subnets
 
   use_fargate_spot = true
 

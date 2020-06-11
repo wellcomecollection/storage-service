@@ -160,6 +160,26 @@ data "aws_iam_policy_document" "archivematica_ingests_get" {
   }
 }
 
+data "aws_iam_policy_document" "allow_tagging_objects" {
+  statement {
+    actions = [
+      "s3:GetObjectTagging",
+      "s3:PutObjectTagging",
+    ]
+
+    # The prefix restriction reflects the fact that the current bag tagger
+    # should only be applying tags to objects in the digitised prefix.
+    # It should never try to tag born-digital objects; if it does something
+    # has gone wrong that we should investigate.
+    #
+    # If we change the rule set, we should expand these permissions.
+    resources = [
+      "arn:aws:s3:::${var.replica_primary_bucket_name}/digitised/*",
+      "arn:aws:s3:::${var.replica_glacier_bucket_name}/digitised/*",
+    ]
+  }
+}
+
 # This policy document is specifically to allow subscription across account
 # boundaries.  It will only be used if there is a non-empty list of other
 # account principals to grant access to.

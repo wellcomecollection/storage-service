@@ -46,6 +46,11 @@ resource "aws_iam_role_policy" "bag_tagger_metrics" {
   policy = data.aws_iam_policy_document.cloudwatch_putmetrics.json
 }
 
+resource "aws_iam_role_policy" "bag_tagger_can_tag_objects" {
+  role   = module.bag_tagger.task_role_name
+  policy = data.aws_iam_policy_document.allow_tagging_objects.json
+}
+
 # ingests_indexer
 
 resource "aws_iam_role_policy" "ingests_indexer_metrics" {
