@@ -27,6 +27,7 @@ object TagRules {
       case "digitised" =>
         manifest.manifest.files
           .map { manifestFile: StorageManifestFile =>
+            // code adapted from bag_verifier FixityChecker
             val algorithm = manifest.manifest.checksumAlgorithm
             val checksum = manifestFile.checksum
 
