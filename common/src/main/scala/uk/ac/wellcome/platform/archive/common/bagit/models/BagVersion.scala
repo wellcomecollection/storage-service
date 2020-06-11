@@ -25,7 +25,9 @@ object BagVersion {
         )
       case None =>
         Failure(
-          new Throwable(s"Could not parse version string: $versionString")
+          new IllegalArgumentException(
+            s"Could not parse version string: $versionString"
+          )
         )
     }
 

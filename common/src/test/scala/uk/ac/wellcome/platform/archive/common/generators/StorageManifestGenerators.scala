@@ -50,6 +50,11 @@ trait StorageManifestGenerators
     bagInfo: BagInfo = createBagInfo,
     version: BagVersion = createBagVersion,
     fileCount: Int = 3,
+    location: PrimaryStorageLocation = createPrimaryLocation,
+    replicaLocations: Seq[SecondaryStorageLocation] = (1 to randomInt(0, 5))
+      .map { _ =>
+        createSecondaryLocation
+      },
     createdDate: Instant = Instant.now,
     files: Seq[StorageManifestFile] = Nil
   ): StorageManifest = {
@@ -84,11 +89,8 @@ trait StorageManifestGenerators
           createStorageManifestFileWith(pathPrefix)
         )
       ),
-      location = createPrimaryLocation,
-      replicaLocations = (1 to randomInt(0, 5))
-        .map { _ =>
-          createSecondaryLocation
-        },
+      location = location,
+      replicaLocations = replicaLocations,
       createdDate = createdDate,
       ingestId = ingestId
     )
