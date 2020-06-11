@@ -275,7 +275,7 @@ module "bag_tagger" {
     aws_security_group.service_egress.id,
   ]
 
-  subnets      = var.private_subnets
+  subnets = var.private_subnets
 
   use_fargate_spot = true
 
