@@ -50,6 +50,8 @@ trait BagTaggerFixtures
             tagRules = tagRules
           )
 
+          worker.run()
+
           testWith(worker)
         }
       }
