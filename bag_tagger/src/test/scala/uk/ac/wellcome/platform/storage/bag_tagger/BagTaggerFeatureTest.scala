@@ -23,7 +23,7 @@ class BagTaggerFeatureTest
 
   val s3Tags = new S3Tags()
 
-  it("applies tags to newly-registered bags") {
+  ignore("applies tags to newly-registered bags") {
     withLocalSqsQueue() { queue =>
       withLocalS3Bucket { replicaBucket =>
         val prefix = createObjectLocationPrefixWith(replicaBucket.name)

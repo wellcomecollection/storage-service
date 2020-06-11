@@ -11,7 +11,7 @@ class TagRulesTest
     with StorageManifestGenerators {
   describe("Content-Type=application/mxf for MXF video masters") {
     describe("it applies a tag") {
-      it("for MXFs in the digitised space") {
+      ignore("for MXFs in the digitised space") {
         val mxfFile = createStorageManifestFileWith(name = "b1234.mxf")
 
         val manifest = createStorageManifestWith(
@@ -24,7 +24,7 @@ class TagRulesTest
         )
       }
 
-      it("whose file extension is uppercase") {
+      ignore("whose file extension is uppercase") {
         val mxfFile = createStorageManifestFileWith(name = "b1234.MXF")
 
         val manifest = createStorageManifestWith(
@@ -39,7 +39,7 @@ class TagRulesTest
     }
 
     describe("it does not apply a tag") {
-      it("to non-MXF files") {
+      ignore("to non-MXF files") {
         val manifest = createStorageManifestWith(
           space = StorageSpace("digitised"),
           files = Seq(createStorageManifestFileWith(name = "b1234.mp4"))
@@ -48,7 +48,7 @@ class TagRulesTest
         TagRules.chooseTags(manifest) shouldBe empty
       }
 
-      it("to MXF files outside the digitised space") {
+      ignore("to MXF files outside the digitised space") {
         val manifest = createStorageManifestWith(
           space = StorageSpace("born-digital"),
           files = Seq(createStorageManifestFileWith(name = "b1234.mxf"))

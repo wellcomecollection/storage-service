@@ -44,7 +44,7 @@ class BagTaggerWorkerTest
       }.toMap
 
   describe("applies tags") {
-    it("to a single location") {
+    ignore("to a single location") {
       withLocalS3Bucket { replicaBucket =>
         val prefix = createObjectLocationPrefixWith(replicaBucket.name)
 
@@ -90,7 +90,7 @@ class BagTaggerWorkerTest
       }
     }
 
-    it("to every location on a bag") {
+    ignore("to every location on a bag") {
       withLocalS3Bucket { replicaBucket =>
         val primaryPrefix = createObjectLocationPrefixWith(replicaBucket.name)
         val replicaPrefixes = (1 to 3).map { _ =>
@@ -147,7 +147,7 @@ class BagTaggerWorkerTest
       }
     }
 
-    it("based on the supplied rules") {
+    ignore("based on the supplied rules") {
       withLocalS3Bucket { replicaBucket =>
         val prefix = createObjectLocationPrefixWith(replicaBucket.name)
 
@@ -213,7 +213,7 @@ class BagTaggerWorkerTest
   }
 
   describe("handles errors") {
-    it("if it can't read the version string as a bag version") {
+    ignore("if it can't read the version string as a bag version") {
       val badNotification = BagRegistrationNotification(
         space = createStorageSpace,
         externalIdentifier = createExternalIdentifier,
@@ -231,7 +231,7 @@ class BagTaggerWorkerTest
       }
     }
 
-    it("if it can't get the bag from the tracker") {
+    ignore("if it can't get the bag from the tracker") {
       val brokenDao =
         new MemoryStorageManifestDao(
           MemoryVersionedStore[BagId, HybridStoreEntry[
@@ -265,7 +265,7 @@ class BagTaggerWorkerTest
       }
     }
 
-    it("if it can't apply the tags") {
+    ignore("if it can't apply the tags") {
       withLocalS3Bucket { replicaBucket =>
         val manifest = createStorageManifest
 
