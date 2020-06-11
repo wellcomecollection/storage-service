@@ -9,13 +9,26 @@ import grizzled.slf4j.Logging
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.Message
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{AlpakkaSQSWorker, AlpakkaSQSWorkerConfig}
-import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Result, Successful}
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.{MetricsMonitoringClient, MetricsMonitoringProcessor}
+import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+  AlpakkaSQSWorker,
+  AlpakkaSQSWorkerConfig
+}
+import uk.ac.wellcome.messaging.worker.models.{
+  NonDeterministicFailure,
+  Result,
+  Successful
+}
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.{
+  MetricsMonitoringClient,
+  MetricsMonitoringProcessor
+}
 import uk.ac.wellcome.platform.archive.bag_tracker.client.BagTrackerClient
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
-import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageManifestFile}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  StorageManifest,
+  StorageManifestFile
+}
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -37,7 +50,9 @@ class BagTaggerWorker(
 
   implicit val ec = as.dispatcher
 
-  def process(notification: BagRegistrationNotification): Future[Result[Unit]] = {
+  def process(
+    notification: BagRegistrationNotification
+  ): Future[Result[Unit]] = {
     val result: Future[Result[Unit]] = for {
       version <- Future.fromTry {
         BagVersion.fromString(notification.version)
@@ -48,10 +63,15 @@ class BagTaggerWorker(
         externalIdentifier = notification.externalIdentifier
       )
 
-      manifest <- bagTrackerClient.getBag(bagId = bagId, version = version).map {
-        case Right(bag) => bag
-        case Left(err)  => throw new Throwable(s"Unable to get bag $bagId version $version from the tracker: $err")
-      }
+      manifest <- bagTrackerClient
+        .getBag(bagId = bagId, version = version)
+        .map {
+          case Right(bag) => bag
+          case Left(err) =>
+            throw new Throwable(
+              s"Unable to get bag $bagId version $version from the tracker: $err"
+            )
+        }
 
       tagsToApply = tagRules(manifest)
 
@@ -69,8 +89,9 @@ class BagTaggerWorker(
     // We can't be sure what the error is here.  The cost of retrying it is
     // very cheap, so assume it's a flaky error and can be retried.
     result
-      .recover { case err: Throwable =>
-        NonDeterministicFailure[Unit](err)
+      .recover {
+        case err: Throwable =>
+          NonDeterministicFailure[Unit](err)
       }
   }
 

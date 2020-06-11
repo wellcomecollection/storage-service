@@ -4,7 +4,10 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Successful}
+import uk.ac.wellcome.messaging.worker.models.{
+  NonDeterministicFailure,
+  Successful
+}
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
@@ -20,16 +23,25 @@ import uk.ac.wellcome.storage.tags.s3.S3Tags
 
 import scala.util.{Failure, Try}
 
-class BagTaggerWorkerTest extends AnyFunSpec with Matchers with ScalaFutures with IntegrationPatience with BagTaggerFixtures with StorageManifestGenerators {
+class BagTaggerWorkerTest
+    extends AnyFunSpec
+    with Matchers
+    with ScalaFutures
+    with IntegrationPatience
+    with BagTaggerFixtures
+    with StorageManifestGenerators {
   val s3Tags = new S3Tags()
 
-  val contentSha256Tags: Map[String, String] = Map("Content-SHA256" -> "4a5a41ebcf5e2c24c")
+  val contentSha256Tags: Map[String, String] = Map(
+    "Content-SHA256" -> "4a5a41ebcf5e2c24c"
+  )
   val workerTestTags: Map[String, String] = Map("TagName1" -> "TagValue1")
-  val tagEverythingRule: StorageManifest => Map[StorageManifestFile, Map[String, String]] =
+  val tagEverythingRule
+    : StorageManifest => Map[StorageManifestFile, Map[String, String]] =
     (manifest: StorageManifest) =>
-      manifest.manifest.files
-        .map { f => f -> workerTestTags }
-        .toMap
+      manifest.manifest.files.map { f =>
+        f -> workerTestTags
+      }.toMap
 
   describe("applies tags") {
     it("to a single location") {
@@ -43,7 +55,10 @@ class BagTaggerWorkerTest extends AnyFunSpec with Matchers with ScalaFutures wit
           ),
           replicaLocations = Seq.empty,
           files = Seq(
-            createStorageManifestFileWith(pathPrefix = "digitised/b1234", name = "b1234.mxf")
+            createStorageManifestFileWith(
+              pathPrefix = "digitised/b1234",
+              name = "b1234.mxf"
+            )
           )
         )
 
@@ -59,13 +74,19 @@ class BagTaggerWorkerTest extends AnyFunSpec with Matchers with ScalaFutures wit
           version = manifest.version
         )
 
-        withWorkerService(storageManifestDao = dao, tagRules = tagEverythingRule) { worker =>
+        withWorkerService(
+          storageManifestDao = dao,
+          tagRules = tagEverythingRule
+        ) { worker =>
           whenReady(worker.process(notification)) {
             _ shouldBe Successful(None)
           }
         }
 
-        s3Tags.get(location).right.value shouldBe contentSha256Tags ++ workerTestTags
+        s3Tags
+          .get(location)
+          .right
+          .value shouldBe contentSha256Tags ++ workerTestTags
       }
     }
 
@@ -88,7 +109,10 @@ class BagTaggerWorkerTest extends AnyFunSpec with Matchers with ScalaFutures wit
             )
           },
           files = Seq(
-            createStorageManifestFileWith(pathPrefix = "digitised/b1234", name = "b1234.mxf")
+            createStorageManifestFileWith(
+              pathPrefix = "digitised/b1234",
+              name = "b1234.mxf"
+            )
           )
         )
 
@@ -108,7 +132,10 @@ class BagTaggerWorkerTest extends AnyFunSpec with Matchers with ScalaFutures wit
           version = manifest.version
         )
 
-        withWorkerService(storageManifestDao = dao, tagRules = tagEverythingRule) { worker =>
+        withWorkerService(
+          storageManifestDao = dao,
+          tagRules = tagEverythingRule
+        ) { worker =>
           whenReady(worker.process(notification)) {
             _ shouldBe Successful(None)
           }
@@ -131,8 +158,14 @@ class BagTaggerWorkerTest extends AnyFunSpec with Matchers with ScalaFutures wit
           ),
           replicaLocations = Seq.empty,
           files = Seq(
-            createStorageManifestFileWith(pathPrefix = "digitised/b1234", name = "b1234.mxf"),
-            createStorageManifestFileWith(pathPrefix = "digitised/b5678", name = "b5678.mxf")
+            createStorageManifestFileWith(
+              pathPrefix = "digitised/b1234",
+              name = "b1234.mxf"
+            ),
+            createStorageManifestFileWith(
+              pathPrefix = "digitised/b5678",
+              name = "b5678.mxf"
+            )
           )
         )
 
@@ -151,27 +184,30 @@ class BagTaggerWorkerTest extends AnyFunSpec with Matchers with ScalaFutures wit
         )
 
         val rules = (manifest: StorageManifest) =>
-          manifest.manifest.files
-            .map { file =>
-              val tags =
-                if (file.name.endsWith("b1234.mxf")) {
-                  Map("b-number" -> "b1234")
-                } else {
-                  Map("b-number" -> "b5678")
-                }
+          manifest.manifest.files.map { file =>
+            val tags =
+              if (file.name.endsWith("b1234.mxf")) {
+                Map("b-number" -> "b1234")
+              } else {
+                Map("b-number" -> "b5678")
+              }
 
-              file -> tags
+            file -> tags
+          }.toMap
+
+        withWorkerService(storageManifestDao = dao, tagRules = rules) {
+          worker =>
+            whenReady(worker.process(notification)) {
+              _ shouldBe Successful(None)
             }
-            .toMap
-
-        withWorkerService(storageManifestDao = dao, tagRules = rules) { worker =>
-          whenReady(worker.process(notification)) {
-            _ shouldBe Successful(None)
-          }
         }
 
-        s3Tags.get(location1234).right.value shouldBe contentSha256Tags ++ Map("b-number" -> "b1234")
-        s3Tags.get(location5678).right.value shouldBe contentSha256Tags ++ Map("b-number" -> "b5678")
+        s3Tags.get(location1234).right.value shouldBe contentSha256Tags ++ Map(
+          "b-number" -> "b1234"
+        )
+        s3Tags.get(location5678).right.value shouldBe contentSha256Tags ++ Map(
+          "b-number" -> "b5678"
+        )
       }
     }
   }
@@ -201,11 +237,14 @@ class BagTaggerWorkerTest extends AnyFunSpec with Matchers with ScalaFutures wit
           MemoryVersionedStore[BagId, HybridStoreEntry[
             StorageManifest,
             EmptyMetadata
-            ]](
+          ]](
             initialEntries = Map.empty
           )
         ) {
-          override def get(id: BagId, version: BagVersion): Either[ReadError, StorageManifest] =
+          override def get(
+            id: BagId,
+            version: BagVersion
+          ): Either[ReadError, StorageManifest] =
             Left(StoreReadError(new Throwable("BOOM!")))
         }
 
@@ -244,7 +283,8 @@ class BagTaggerWorkerTest extends AnyFunSpec with Matchers with ScalaFutures wit
         val brokenApplyTags = new ApplyTags(s3Tags) {
           override def applyTags(
             storageLocations: Seq[StorageLocation],
-            tagsToApply: Map[StorageManifestFile, Map[String, String]]): Try[Unit] =
+            tagsToApply: Map[StorageManifestFile, Map[String, String]]
+          ): Try[Unit] =
             Failure(applyError)
         }
 
@@ -256,7 +296,9 @@ class BagTaggerWorkerTest extends AnyFunSpec with Matchers with ScalaFutures wit
           whenReady(worker.process(notification)) { result =>
             result shouldBe a[NonDeterministicFailure[_]]
 
-            result.asInstanceOf[NonDeterministicFailure[_]].failure shouldBe applyError
+            result
+              .asInstanceOf[NonDeterministicFailure[_]]
+              .failure shouldBe applyError
           }
         }
       }
@@ -264,7 +306,13 @@ class BagTaggerWorkerTest extends AnyFunSpec with Matchers with ScalaFutures wit
   }
 
   def createObject(location: ObjectLocation): Unit = {
-    s3Client.putObject(location.namespace, location.path, "<test file contents>")
-    s3Tags.update(location) { _ => Right(contentSha256Tags) }
+    s3Client.putObject(
+      location.namespace,
+      location.path,
+      "<test file contents>"
+    )
+    s3Tags.update(location) { _ =>
+      Right(contentSha256Tags)
+    }
   }
 }

@@ -4,14 +4,22 @@ import org.scalatest.TryValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{AmazonS3StorageProvider, AzureBlobStorageProvider}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  AmazonS3StorageProvider,
+  AzureBlobStorageProvider
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryStorageLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.tags.s3.S3Tags
 
 import scala.util.Success
 
-class ApplyTagsTest extends AnyFunSpec with Matchers with TryValues with S3Fixtures with StorageManifestGenerators {
+class ApplyTagsTest
+    extends AnyFunSpec
+    with Matchers
+    with TryValues
+    with S3Fixtures
+    with StorageManifestGenerators {
   val s3Tags = new S3Tags()
   val applyTags = new ApplyTags(s3Tags = s3Tags)
 
@@ -27,7 +35,11 @@ class ApplyTagsTest extends AnyFunSpec with Matchers with TryValues with S3Fixtu
 
         val location = prefix.asLocation(file.path)
 
-        s3Client.putObject(location.namespace, location.path, "<MXF file contents>")
+        s3Client.putObject(
+          location.namespace,
+          location.path,
+          "<MXF file contents>"
+        )
         s3Tags.update(location) { _ =>
           Right(Map("Content-SHA256" -> "4a5a41ebcf5e2c24c"))
         }
@@ -104,7 +116,11 @@ class ApplyTagsTest extends AnyFunSpec with Matchers with TryValues with S3Fixtu
 
         val location = prefix.asLocation(file.path)
 
-        s3Client.putObject(location.namespace, location.path, "<MXF file contents>")
+        s3Client.putObject(
+          location.namespace,
+          location.path,
+          "<MXF file contents>"
+        )
 
         val result = applyTags.applyTags(
           storageLocations = Seq(

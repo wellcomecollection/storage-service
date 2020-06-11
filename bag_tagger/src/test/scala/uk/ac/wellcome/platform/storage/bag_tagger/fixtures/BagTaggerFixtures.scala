@@ -9,10 +9,20 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
-import uk.ac.wellcome.platform.archive.common.fixtures.{OperationFixtures, StorageManifestDaoFixture}
-import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageManifestFile}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  OperationFixtures,
+  StorageManifestDaoFixture
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  StorageManifest,
+  StorageManifestFile
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
-import uk.ac.wellcome.platform.storage.bag_tagger.services.{ApplyTags, BagTaggerWorker, TagRules}
+import uk.ac.wellcome.platform.storage.bag_tagger.services.{
+  ApplyTags,
+  BagTaggerWorker,
+  TagRules
+}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.tags.s3.S3Tags
 
@@ -35,24 +45,26 @@ trait BagTaggerFixtures
     ),
     storageManifestDao: StorageManifestDao = createStorageManifestDao(),
     applyTags: ApplyTags = new ApplyTags(s3Tags = new S3Tags()),
-    tagRules: StorageManifest => Map[StorageManifestFile, Map[String, String]] = TagRules.chooseTags
+    tagRules: StorageManifest => Map[StorageManifestFile, Map[String, String]] =
+      TagRules.chooseTags
   )(
     testWith: TestWith[BagTaggerWorker, R]
   )(implicit decoder: Decoder[BagRegistrationNotification]): R =
     withActorSystem { implicit actorSystem =>
       withFakeMonitoringClient() { implicit monitoringClient =>
-        withBagTrackerClient(storageManifestDao = storageManifestDao) { trackerClient =>
-          val worker = new BagTaggerWorker(
-            config = createAlpakkaSQSWorkerConfig(queue),
-            metricsNamespace = "bag_tagger",
-            bagTrackerClient = trackerClient,
-            applyTags = applyTags,
-            tagRules = tagRules
-          )
+        withBagTrackerClient(storageManifestDao = storageManifestDao) {
+          trackerClient =>
+            val worker = new BagTaggerWorker(
+              config = createAlpakkaSQSWorkerConfig(queue),
+              metricsNamespace = "bag_tagger",
+              bagTrackerClient = trackerClient,
+              applyTags = applyTags,
+              tagRules = tagRules
+            )
 
-          worker.run()
+            worker.run()
 
-          testWith(worker)
+            testWith(worker)
         }
       }
     }

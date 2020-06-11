@@ -8,7 +8,10 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.AmazonS3StorageProvider
-import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryStorageLocation, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  PrimaryStorageLocation,
+  StorageSpace
+}
 import uk.ac.wellcome.storage.tags.s3.S3Tags
 
 class BagTaggerFeatureTest
@@ -33,13 +36,22 @@ class BagTaggerFeatureTest
           ),
           replicaLocations = Seq.empty,
           files = Seq(
-            createStorageManifestFileWith(pathPrefix = "digitised/b1234", name = "b1234.mxf")
+            createStorageManifestFileWith(
+              pathPrefix = "digitised/b1234",
+              name = "b1234.mxf"
+            )
           )
         )
 
         val location = prefix.asLocation("digitised/b1234", "b1234.mxf")
-        s3Client.putObject(location.namespace, location.path, "<test file contents>")
-        s3Tags.update(location) { _ => Right(Map("Content-SHA256" -> "4a5a41ebcf5e2c24c")) }
+        s3Client.putObject(
+          location.namespace,
+          location.path,
+          "<test file contents>"
+        )
+        s3Tags.update(location) { _ =>
+          Right(Map("Content-SHA256" -> "4a5a41ebcf5e2c24c"))
+        }
 
         val dao = createStorageManifestDao()
         dao.put(manifest) shouldBe a[Right[_, _]]
