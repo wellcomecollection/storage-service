@@ -62,13 +62,12 @@ class ApplyTags(s3Tags: S3Tags) extends Logging {
           val location = prefix.asLocation(storageManifestFile.path)
 
           val result = tags.update(location) { existingTags =>
-
             // If the file already has Content-SHA256 tag, don't modify it, but if not assume it can be overwritten
             // Saves overwriting any MXF tags we may have
             // (we don't actually have any right now, but if this code is resurrected in the future this is safer).
             existingTags.get("Content-SHA256") match {
               case Some(_) => Right(existingTags)
-              case None => Right(existingTags ++ newTags)
+              case None    => Right(existingTags ++ newTags)
             }
           }
 

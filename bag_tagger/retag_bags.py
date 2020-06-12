@@ -214,6 +214,7 @@ def publish(env, ids, dry_run, role_arn):
 
     publish_bags(sns_client, config["topic_arn"], bags_to_publish, dry_run)
 
+
 cli.add_command(publish)
 
 if __name__ == "__main__":
