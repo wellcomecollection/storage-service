@@ -448,7 +448,7 @@ module "bag_retagger_input_queue" {
   name = "${var.namespace}_bag_retagger_input"
 
   topic_arns = [
-    module.registered_bag_notifications_topic.arn,
+    module.bag_retagger_script_output_topic.arn,
   ]
 
   role_names = [module.bag_retagger.task_role_name]

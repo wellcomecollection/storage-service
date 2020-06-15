@@ -287,7 +287,7 @@ module "bag_tagger" {
 module "bag_retagger" {
   source = "../service/worker"
 
-  service_name    = "${var.namespace}-bag-retagger"
+  service_name    = "${var.namespace}-bag-retagger-foo"
   container_image = "975596993436.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/bag_tagger:retagger"
 
   environment = {
