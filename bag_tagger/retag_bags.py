@@ -74,12 +74,12 @@ def get_total_bags(dynamodb_client, table_name):
     return resp["Table"]["ItemCount"]
 
 
-def get_latest_bags(dynamodb_client, table_name):
+def get_all_bags(dynamodb_client, table_name):
     total_bags = get_total_bags(dynamodb_client, table_name)
 
-    print(f"\nGetting latest version of bags from {table_name}")
+    print(f"\nGetting all versions of bags from {table_name}")
 
-    bags = {}
+    bags = []
     seen_bags = 0
 
     for item in tqdm(
@@ -87,28 +87,25 @@ def get_latest_bags(dynamodb_client, table_name):
     ):
         dynamo_id = item["id"]["S"]
         version = int(item["version"]["N"])
-        stored_version = bags.get(dynamo_id, -1)
-
         seen_bags = seen_bags + 1
 
-        if version > stored_version:
-            bags[dynamo_id] = version
+        bags.append({"dynamo_id": dynamo_id, "version": version})
 
     print(f"Found {len(bags)} bags.\n")
 
     return bags
 
 
-def get_bag(dynamodb_client, table_name, bag_id):
+def get_bags(dynamodb_client, table_name, bag_id):
     response = dynamodb_client.query(
         TableName=table_name,
         KeyConditionExpression="id = :bag_id",
         ExpressionAttributeValues={":bag_id": {"S": bag_id}},
     )
 
-    max_version = max(int(item["version"]["N"]) for item in response["Items"])
+    bags = [ {"dynamo_id": bag_id, "version": int(item["version"]["N"]) } for item in response["Items"] ]
 
-    return {bag_id: max_version}
+    return bags
 
 
 def publish_bags(sns_client, topic_arn, bags, dry_run=False):
@@ -116,7 +113,10 @@ def publish_bags(sns_client, topic_arn, bags, dry_run=False):
 
     print(f"\nGenerating notifications for {unique_bags} bags.")
     payloads = []
-    for (dynamo_id, version) in tqdm(bags.items(), total=unique_bags):
+    for bag in tqdm(bags, total=unique_bags):
+        dynamo_id = bag["dynamo_id"]
+        version = bag["version"]
+
         space, external_id = dynamo_id.split("/", 1)
         payload = fake_notification(space, external_id, version)
         payloads.append(payload)
@@ -178,7 +178,7 @@ def get_config(env):
 
 def gather_bags(dynamodb_client, table_name, bag_ids):
     split_bag_ids = bag_ids.split(",")
-    bags = [get_bag(dynamodb_client, table_name, bag_id) for bag_id in split_bag_ids]
+    bags = [get_bags(dynamodb_client, table_name, bag_id) for bag_id in split_bag_ids]
 
     bags_to_publish = {}
     for bag in bags:
@@ -208,7 +208,7 @@ def publish(env, ids, dry_run, role_arn):
     sns_client = create_client("sns", role_arn)
 
     if not ids:
-        bags_to_publish = get_latest_bags(dynamodb_client, config["table_name"])
+        bags_to_publish = get_all_bags(dynamodb_client, config["table_name"])
     else:
         bags_to_publish = gather_bags(dynamodb_client, config["table_name"], ids)
 

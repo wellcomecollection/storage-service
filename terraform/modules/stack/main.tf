@@ -287,11 +287,11 @@ module "bag_tagger" {
 module "bag_retagger" {
   source = "../service/worker"
 
-  service_name    = "${var.namespace}-bag-retagger-foo"
+  service_name    = "${var.namespace}-bag-retagger-temp"
   container_image = "975596993436.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/bag_tagger:retagger"
 
   environment = {
-    queue_url         = module.bag_retagger_input_queue.url
+    queue_url         = "https://sqs.eu-west-1.amazonaws.com/975596993436/storage_staging_bag_retagger_input"
     metrics_namespace = "${var.namespace}-bag-retagger"
     bags_tracker_host = "http://${module.bags_api.name}.${var.namespace}:8080"
   }
