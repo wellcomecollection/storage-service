@@ -183,9 +183,9 @@ def gather_bags(dynamodb_client, table_name, bag_ids):
     split_bag_ids = bag_ids.split(",")
     bags = [get_bags(dynamodb_client, table_name, bag_id) for bag_id in split_bag_ids]
 
-    bags_to_publish = {}
+    bags_to_publish = []
     for bag in bags:
-        bags_to_publish.update(bag)
+        bags_to_publish.append(bag)
 
     return bags_to_publish
 

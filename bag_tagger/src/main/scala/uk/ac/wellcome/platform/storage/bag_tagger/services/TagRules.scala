@@ -29,7 +29,7 @@ object TagRules {
     manifest: StorageManifest
   ): Map[StorageManifestFile, Map[String, String]] = {
     val files = manifest.manifest.files ++ manifest.tagManifest.files
-    
+
     files.map { manifestFile: StorageManifestFile =>
       // code adapted from bag_verifier FixityChecker
       val algorithm = manifest.manifest.checksumAlgorithm
