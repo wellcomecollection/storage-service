@@ -27,22 +27,20 @@ object TagRules {
 
   private def fixityTagger(
     manifest: StorageManifest
-  ): Map[StorageManifestFile, Map[String, String]] =
-    manifest.space.underlying match {
-      case "digitised" =>
-        manifest.manifest.files.map { manifestFile: StorageManifestFile =>
-          // code adapted from bag_verifier FixityChecker
-          val algorithm = manifest.manifest.checksumAlgorithm
-          val checksum = manifestFile.checksum
+  ): Map[StorageManifestFile, Map[String, String]] = {
+    val files = manifest.manifest.files ++ manifest.tagManifest.files
+    
+    files.map { manifestFile: StorageManifestFile =>
+      // code adapted from bag_verifier FixityChecker
+      val algorithm = manifest.manifest.checksumAlgorithm
+      val checksum = manifestFile.checksum
 
-          val tagName = fixityTagName(algorithm)
-          val tagValue = fixityTagValue(checksum)
+      val tagName = fixityTagName(algorithm)
+      val tagValue = fixityTagValue(checksum)
 
-          val fixityTags = Map(tagName -> tagValue)
+      val fixityTags = Map(tagName -> tagValue)
 
-          manifestFile -> fixityTags
-        }.toMap
-
-      case _ => Map.empty
-    }
+      manifestFile -> fixityTags
+    }.toMap
+  }
 }
