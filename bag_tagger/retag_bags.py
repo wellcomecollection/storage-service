@@ -103,7 +103,10 @@ def get_bags(dynamodb_client, table_name, bag_id):
         ExpressionAttributeValues={":bag_id": {"S": bag_id}},
     )
 
-    bags = [ {"dynamo_id": bag_id, "version": int(item["version"]["N"]) } for item in response["Items"] ]
+    bags = [
+        {"dynamo_id": bag_id, "version": int(item["version"]["N"])}
+        for item in response["Items"]
+    ]
 
     return bags
 
