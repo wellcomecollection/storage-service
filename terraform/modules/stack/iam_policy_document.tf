@@ -175,8 +175,8 @@ data "aws_iam_policy_document" "allow_tagging_objects" {
     #
     # If we change the rule set, we should expand these permissions.
     resources = [
-      "arn:aws:s3:::${var.replica_primary_bucket_name}/digitised/*",
-      "arn:aws:s3:::${var.replica_glacier_bucket_name}/digitised/*",
+      "arn:aws:s3:::${var.replica_primary_bucket_name}/*",
+      "arn:aws:s3:::${var.replica_glacier_bucket_name}/*",
     ]
   }
 }
