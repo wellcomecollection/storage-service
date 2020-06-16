@@ -163,6 +163,7 @@ data "aws_iam_policy_document" "archivematica_ingests_get" {
 data "aws_iam_policy_document" "allow_tagging_objects" {
   statement {
     actions = [
+      "s3:Get*",
       "s3:GetObjectTagging",
       "s3:PutObjectTagging",
     ]

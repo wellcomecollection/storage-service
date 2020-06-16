@@ -142,7 +142,7 @@ module "bags_api" {
   }
 
   cpu    = 1024
-  memory = 2048
+  memory = 8192
 
   load_balancer_arn           = module.api.loadbalancer_arn
   load_balancer_listener_port = local.bags_listener_port
@@ -296,8 +296,8 @@ module "bag_retagger" {
     bags_tracker_host = "http://${module.bags_api.name}.${var.namespace}:8080"
   }
 
-  cpu    = 512
-  memory = 1024
+  cpu    = 1024
+  memory = 8192
 
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
