@@ -1,13 +1,15 @@
 import sbt._
 
 object WellcomeDependencies {
+  lazy val defaultVersion = "10.0.2"
+
   lazy val versions = new {
-    val fixtures = "1.2.0"
-    val json = "2.3.0"
-    val messaging = "9.3.0"
-    val monitoring = "4.0.0"
-    val storage = "8.6.0"
-    val typesafe = "3.0.0"
+    val fixtures = defaultVersion
+    val json = defaultVersion
+    val messaging = defaultVersion
+    val monitoring = defaultVersion
+    val storage = defaultVersion
+    val typesafe = defaultVersion
   }
 
   val jsonLibrary: Seq[ModuleID] = library(
@@ -36,7 +38,7 @@ object WellcomeDependencies {
   )
 
   val typesafeLibrary: Seq[ModuleID] = library(
-    name = "typesafe-app",
+    name = "typesafe_app",
     version = versions.typesafe
   ) ++ fixturesLibrary
 
