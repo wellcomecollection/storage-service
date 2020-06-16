@@ -291,7 +291,7 @@ module "bag_retagger" {
   container_image = "975596993436.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/bag_tagger:retagger"
 
   environment = {
-    queue_url         = "https://sqs.eu-west-1.amazonaws.com/975596993436/storage_staging_bag_retagger_input"
+    queue_url         = module.bag_retagger_input_queue.url
     metrics_namespace = "${var.namespace}-bag-retagger"
     bags_tracker_host = "http://${module.bags_api.name}.${var.namespace}:8080"
   }
@@ -618,4 +618,3 @@ module "api" {
 
   static_content_bucket_name = var.static_content_bucket_name
 }
-
