@@ -453,6 +453,14 @@ module "bag_retagger_input_queue" {
 
   role_names = [module.bag_retagger.task_role_name]
 
+  queue_high_actions = [
+    module.bag_retagger.scale_up_arn,
+  ]
+
+  queue_low_actions = [
+    module.bag_retagger.scale_down_arn,
+  ]
+
   aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 }
