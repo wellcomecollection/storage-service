@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.AmazonS3Exception
-import uk.ac.wellcome.storage.s3.S3Get
+import uk.ac.wellcome.storage.s3.S3Errors
 import uk.ac.wellcome.storage.store.memory.MemoryStore
 import uk.ac.wellcome.storage.{
   DoesNotExistError,
@@ -10,6 +10,8 @@ import uk.ac.wellcome.storage.{
   ReadError,
   StoreReadError
 }
+
+import scala.util.{Failure, Success, Try}
 
 trait SizeFinder {
   def getSize(location: ObjectLocation): Either[ReadError, Long]
@@ -28,13 +30,17 @@ class MemorySizeFinder(
 
 class S3SizeFinder(implicit s3Client: AmazonS3) extends SizeFinder {
   def getSize(location: ObjectLocation): Either[ReadError, Long] = {
-    val result =
-      S3Get
-        .get(location, maxRetries = 3) { location: ObjectLocation =>
-          s3Client
-            .getObjectMetadata(location.namespace, location.path)
-            .getContentLength
-        }
+
+    // TODO: Consider this being a "metadata readable"
+    // note this used to retry
+    val result = Try {
+      s3Client
+        .getObjectMetadata(location.namespace, location.path)
+        .getContentLength
+    } match {
+      case Success(value)     => Right(value)
+      case Failure(exception) => Left(S3Errors.readErrors(exception))
+    }
 
     // The "Not Found" error message from GetObjectMetadata is different from
     // that for GetObject, so S3Get doesn't know to wrap it as a DoesNotExistError.
