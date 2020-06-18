@@ -2,58 +2,53 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.AmazonS3Exception
+import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.s3.S3Errors
+import uk.ac.wellcome.storage.store.RetryableReadable
 import uk.ac.wellcome.storage.store.memory.MemoryStore
-import uk.ac.wellcome.storage.{
-  DoesNotExistError,
-  ObjectLocation,
-  ReadError,
-  StoreReadError
-}
 
-import scala.util.{Failure, Success, Try}
+trait SizeFinder extends RetryableReadable[Long] {
+  override val maxRetries: Int = 3
 
-trait SizeFinder {
-  def getSize(location: ObjectLocation): Either[ReadError, Long]
+  def getSize(location: ObjectLocation): Either[ReadError, Long] = {
+    get(location) match {
+      case Right(Identified(_, size)) => Right(size)
+      case Left(err)                  => Left(err)
+    }
+  }
 }
 
 class MemorySizeFinder(
   memoryStore: MemoryStore[ObjectLocation, Array[Byte]]
 ) extends SizeFinder {
-  override def getSize(location: ObjectLocation): Either[ReadError, Long] =
+
+  override def retryableGetFunction(location: ObjectLocation): Long =
     memoryStore.entries.get(location) match {
-      case Some(entry) => Right(entry.length)
-      case None =>
-        Left(DoesNotExistError(new Throwable(s"No such entry $location!")))
+      case Some(entry) => entry.length
+      case None        => throw new Throwable(s"No such entry $location!")
+    }
+
+  override def buildGetError(throwable: Throwable): ReadError =
+    throwable.getMessage match {
+      case msg if msg.startsWith("No such entry") =>
+        DoesNotExistError(throwable)
+      case _ => StoreReadError(throwable)
     }
 }
 
-
-
 class S3SizeFinder(implicit s3Client: AmazonS3) extends SizeFinder {
-  def getSize(location: ObjectLocation): Either[ReadError, Long] = {
+  override def retryableGetFunction(location: ObjectLocation): Long = {
+    s3Client
+      .getObjectMetadata(location.namespace, location.path)
+      .getContentLength
+  }
 
-    // TODO: Consider this being a "metadata readable"
-    // note this used to retry
-    val result = Try {
-      s3Client
-        .getObjectMetadata(location.namespace, location.path)
-        .getContentLength
-    } match {
-      case Success(value)     => Right(value)
-      case Failure(exception) => Left(S3Errors.readErrors(exception))
-    }
-
-    // The "Not Found" error message from GetObjectMetadata is different from
-    // that for GetObject, so S3Get doesn't know to wrap it as a DoesNotExistError.
-    //
-    // TODO: Upstream this change into scala-storage.
-    result match {
-      case Left(StoreReadError(exc: AmazonS3Exception))
-          if exc.getMessage.startsWith("Not Found") =>
-        Left(DoesNotExistError(exc))
+  override def buildGetError(throwable: Throwable): ReadError =
+    S3Errors.readErrors(throwable) match {
+      case StoreReadError(exc: AmazonS3Exception)
+        if exc.getMessage.startsWith("Not Found") =>
+        DoesNotExistError(exc)
 
       case other => other
     }
-  }
 }
