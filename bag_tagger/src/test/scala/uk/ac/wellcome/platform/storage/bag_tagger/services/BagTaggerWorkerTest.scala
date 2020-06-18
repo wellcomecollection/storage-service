@@ -4,7 +4,10 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Successful}
+import uk.ac.wellcome.messaging.worker.models.{
+  NonDeterministicFailure,
+  Successful
+}
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
@@ -13,7 +16,12 @@ import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.EmptyMetadata
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.storage.bag_tagger.fixtures.BagTaggerFixtures
-import uk.ac.wellcome.storage.{Identified, ObjectLocation, ReadError, StoreReadError}
+import uk.ac.wellcome.storage.{
+  Identified,
+  ObjectLocation,
+  ReadError,
+  StoreReadError
+}
 import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 import uk.ac.wellcome.storage.tags.s3.S3Tags
@@ -84,9 +92,9 @@ class BagTaggerWorkerTest
           .get(location)
           .right
           .value shouldBe Identified(
-            id = location,
-            identifiedT = contentSha256Tags ++ workerTestTags
-          )
+          id = location,
+          identifiedT = contentSha256Tags ++ workerTestTags
+        )
       }
     }
 
@@ -205,12 +213,16 @@ class BagTaggerWorkerTest
             }
         }
 
-        s3Tags.get(location1234).right.value shouldBe Identified(location1234, contentSha256Tags ++ Map(
-          "b-number" -> "b1234")
+        s3Tags.get(location1234).right.value shouldBe Identified(
+          location1234,
+          contentSha256Tags ++ Map("b-number" -> "b1234")
         )
-        s3Tags.get(location5678).right.value shouldBe Identified(location5678, contentSha256Tags ++ Map(
-          "b-number" -> "b5678"
-        ))
+        s3Tags.get(location5678).right.value shouldBe Identified(
+          location5678,
+          contentSha256Tags ++ Map(
+            "b-number" -> "b5678"
+          )
+        )
       }
     }
   }

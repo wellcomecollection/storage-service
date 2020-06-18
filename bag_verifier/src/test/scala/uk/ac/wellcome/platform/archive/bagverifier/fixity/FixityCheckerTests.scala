@@ -92,12 +92,16 @@ class FixityCheckerTests
           location: ObjectLocation
         ): Either[ReadError, Identified[ObjectLocation, Map[String, String]]] =
           super.get(location) match {
-            case Right(t)                     => Right(t)
-            case Left(_: DoesNotExistError) => Right(Identified(location, Map[String, String]()))
-            case Left(err)                  => Left(err)
+            case Right(t) => Right(t)
+            case Left(_: DoesNotExistError) =>
+              Right(Identified(location, Map[String, String]()))
+            case Left(err) => Left(err)
           }
 
-        override protected def writeTags(id: ObjectLocation, tags: Map[String, String]): Either[WriteError, Map[String, String]] = {
+        override protected def writeTags(
+          id: ObjectLocation,
+          tags: Map[String, String]
+        ): Either[WriteError, Map[String, String]] = {
           Left(
             StoreWriteError(new Throwable("BOOM!"))
           )
@@ -214,9 +218,10 @@ class FixityCheckerTests
         location: ObjectLocation
       ): Either[ReadError, Identified[ObjectLocation, Map[String, String]]] =
         super.get(location) match {
-          case Right(tags)                => Right(tags)
-          case Left(_: DoesNotExistError) => Right(Identified(location, Map[String, String]()))
-          case Left(err)                  => Left(err)
+          case Right(tags) => Right(tags)
+          case Left(_: DoesNotExistError) =>
+            Right(Identified(location, Map[String, String]()))
+          case Left(err) => Left(err)
         }
     }
 }

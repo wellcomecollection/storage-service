@@ -4,8 +4,16 @@ import java.net.URI
 
 import org.scalatest.EitherValues
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FixityChecker, FixityCheckerTestCases}
-import uk.ac.wellcome.storage.{DoesNotExistError, Identified, ObjectLocation, ReadError}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  FixityChecker,
+  FixityCheckerTestCases
+}
+import uk.ac.wellcome.storage.{
+  DoesNotExistError,
+  Identified,
+  ObjectLocation,
+  ReadError
+}
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.tags.memory.MemoryTags
@@ -26,9 +34,10 @@ class MemoryFixityCheckerTest
         location: ObjectLocation
       ): Either[ReadError, Identified[ObjectLocation, Map[String, String]]] =
         super.get(location) match {
-          case Right(tags)                => Right(tags)
-          case Left(_: DoesNotExistError) => Right(Identified(location, Map[String, String]()))
-          case Left(err)                  => Left(err)
+          case Right(tags) => Right(tags)
+          case Left(_: DoesNotExistError) =>
+            Right(Identified(location, Map[String, String]()))
+          case Left(err) => Left(err)
         }
     }
 
