@@ -46,7 +46,7 @@ class S3SizeFinder(implicit s3Client: AmazonS3) extends SizeFinder {
   override def buildGetError(throwable: Throwable): ReadError =
     S3Errors.readErrors(throwable) match {
       case StoreReadError(exc: AmazonS3Exception)
-        if exc.getMessage.startsWith("Not Found") =>
+          if exc.getMessage.startsWith("Not Found") =>
         DoesNotExistError(exc)
 
       case other => other

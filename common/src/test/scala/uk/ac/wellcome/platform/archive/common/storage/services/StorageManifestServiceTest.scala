@@ -434,8 +434,10 @@ class StorageManifestServiceTest
       val err = new Throwable("BOOM!")
 
       val brokenSizeFinder = new SizeFinder {
-        override def retryableGetFunction(location: ObjectLocation): Long = throw err
-        override def buildGetError(throwable: Throwable): ReadError = StoreReadError(throwable)
+        override def retryableGetFunction(location: ObjectLocation): Long =
+          throw err
+        override def buildGetError(throwable: Throwable): ReadError =
+          StoreReadError(throwable)
       }
 
       implicit val streamStore: MemoryStreamStore[ObjectLocation] =
@@ -539,8 +541,10 @@ class StorageManifestServiceTest
       val err = new Throwable("This should never be called!")
 
       val brokenSizeFinder = new SizeFinder {
-        override def retryableGetFunction(location: ObjectLocation): Long = throw err
-        override def buildGetError(throwable: Throwable): ReadError = StoreReadError(throwable)
+        override def retryableGetFunction(location: ObjectLocation): Long =
+          throw err
+        override def buildGetError(throwable: Throwable): ReadError =
+          StoreReadError(throwable)
       }
 
       val storageManifest = createManifest(
@@ -631,7 +635,8 @@ class StorageManifestServiceTest
     space: StorageSpace = createStorageSpace,
     version: BagVersion,
     sizeFinder: SizeFinder = new SizeFinder {
-      override def retryableGetFunction(location: ObjectLocation): Long = Random.nextLong().abs
+      override def retryableGetFunction(location: ObjectLocation): Long =
+        Random.nextLong().abs
 
       override def buildGetError(throwable: Throwable): ReadError =
         StoreReadError(throwable)
@@ -687,7 +692,7 @@ class StorageManifestServiceTest
     replicas: Seq[SecondaryStorageLocation] = Seq.empty,
     version: BagVersion = BagVersion(1)
   )(assertError: Throwable => Assertion): Assertion = {
-    val sizeFinder =  new SizeFinder {
+    val sizeFinder = new SizeFinder {
       override def retryableGetFunction(location: ObjectLocation): Long = 1
 
       override def buildGetError(throwable: Throwable): ReadError =

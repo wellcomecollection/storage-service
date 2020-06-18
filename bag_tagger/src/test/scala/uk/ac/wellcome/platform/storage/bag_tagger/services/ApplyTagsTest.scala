@@ -4,7 +4,10 @@ import org.scalatest.TryValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{AmazonS3StorageProvider, AzureBlobStorageProvider}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  AmazonS3StorageProvider,
+  AzureBlobStorageProvider
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryStorageLocation
 import uk.ac.wellcome.storage.Identified
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
@@ -54,10 +57,13 @@ class ApplyTagsTest
 
         result shouldBe Success(())
 
-        s3Tags.get(location).right.value shouldBe Identified(location, Map(
-          "Content-SHA256" -> "4a5a41ebcf5e2c24c",
-          "Content-Type" -> "application/mxf"
-        ))
+        s3Tags.get(location).right.value shouldBe Identified(
+          location,
+          Map(
+            "Content-SHA256" -> "4a5a41ebcf5e2c24c",
+            "Content-Type" -> "application/mxf"
+          )
+        )
       }
     }
   }
