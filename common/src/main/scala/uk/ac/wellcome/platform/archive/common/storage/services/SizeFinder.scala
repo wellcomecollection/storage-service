@@ -28,6 +28,8 @@ class MemorySizeFinder(
     }
 }
 
+
+
 class S3SizeFinder(implicit s3Client: AmazonS3) extends SizeFinder {
   def getSize(location: ObjectLocation): Either[ReadError, Long] = {
 

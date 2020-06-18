@@ -90,20 +90,18 @@ class FixityCheckerTests
       val tags = new MemoryTags[ObjectLocation](initialTags = Map.empty) {
         override def get(
           location: ObjectLocation
-        ): Either[ReadError, Map[String, String]] =
+        ): Either[ReadError, Identified[ObjectLocation, Map[String, String]]] =
           super.get(location) match {
-            case Right(t)                   => Right(t)
-            case Left(_: DoesNotExistError) => Right(Map[String, String]())
+            case Right(t)                     => Right(t)
+            case Left(_: DoesNotExistError) => Right(Identified(location, Map[String, String]()))
             case Left(err)                  => Left(err)
           }
 
-        override protected def put(
-          location: ObjectLocation,
-          tags: Map[String, String]
-        ): Either[WriteError, Map[String, String]] =
+        override protected def writeTags(id: ObjectLocation, tags: Map[String, String]): Either[WriteError, Map[String, String]] = {
           Left(
             StoreWriteError(new Throwable("BOOM!"))
           )
+        }
       }
 
       val contentString = "HelloWorld"
@@ -214,10 +212,10 @@ class FixityCheckerTests
     new MemoryTags[ObjectLocation](initialTags = Map.empty) {
       override def get(
         location: ObjectLocation
-      ): Either[ReadError, Map[String, String]] =
+      ): Either[ReadError, Identified[ObjectLocation, Map[String, String]]] =
         super.get(location) match {
           case Right(tags)                => Right(tags)
-          case Left(_: DoesNotExistError) => Right(Map[String, String]())
+          case Left(_: DoesNotExistError) => Right(Identified(location, Map[String, String]()))
           case Left(err)                  => Left(err)
         }
     }
