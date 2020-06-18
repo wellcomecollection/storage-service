@@ -75,8 +75,11 @@ class FixityCheckerTests
       val tags = createMemoryTags
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
-        override protected val sizeFinder: SizeFinder =
-          (_: ObjectLocation) => Right(closedStream.length)
+        override protected val sizeFinder: SizeFinder = new SizeFinder {
+          override def retryableGetFunction(location: ObjectLocation): Long = closedStream.length
+
+          override def buildGetError(throwable: Throwable): ReadError = StoreReadError(throwable)
+        }
       }
 
       checker.check(expectedFileFixity) shouldBe a[
@@ -119,8 +122,11 @@ class FixityCheckerTests
       )
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
-        override protected val sizeFinder: SizeFinder =
-          (_: ObjectLocation) => Right(contentString.length)
+        override protected val sizeFinder: SizeFinder = new SizeFinder {
+          override def retryableGetFunction(location: ObjectLocation): Long = contentString.length
+
+          override def buildGetError(throwable: Throwable): ReadError = StoreReadError(throwable)
+        }
       }
 
       checker.check(expectedFileFixity) shouldBe a[FileFixityCouldNotWriteTag]
@@ -162,8 +168,11 @@ class FixityCheckerTests
       val tags = createMemoryTags
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
-        override protected val sizeFinder: SizeFinder =
-          (_: ObjectLocation) => Right(inputStream.length)
+        override protected val sizeFinder: SizeFinder =new SizeFinder {
+          override def retryableGetFunction(location: ObjectLocation): Long = inputStream.length
+
+          override def buildGetError(throwable: Throwable): ReadError = StoreReadError(throwable)
+        }
       }
 
       checker.check(expectedFileFixity) shouldBe a[FileFixityCorrect]
@@ -198,8 +207,11 @@ class FixityCheckerTests
       val tags = createMemoryTags
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
-        override protected val sizeFinder: SizeFinder =
-          (_: ObjectLocation) => Right(inputStream.length)
+        override protected val sizeFinder: SizeFinder = new SizeFinder {
+          override def retryableGetFunction(location: ObjectLocation): Long = inputStream.length
+
+          override def buildGetError(throwable: Throwable): ReadError = StoreReadError(throwable)
+        }
       }
 
       checker.check(expectedFileFixity) shouldBe a[FileFixityMismatch]
