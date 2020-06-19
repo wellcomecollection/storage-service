@@ -9,6 +9,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   AzureBlobStorageProvider
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryStorageLocation
+import uk.ac.wellcome.storage.Identified
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.tags.s3.S3Tags
 
@@ -56,9 +57,12 @@ class ApplyTagsTest
 
         result shouldBe Success(())
 
-        s3Tags.get(location).right.value shouldBe Map(
-          "Content-SHA256" -> "4a5a41ebcf5e2c24c",
-          "Content-Type" -> "application/mxf"
+        s3Tags.get(location).right.value shouldBe Identified(
+          location,
+          Map(
+            "Content-SHA256" -> "4a5a41ebcf5e2c24c",
+            "Content-Type" -> "application/mxf"
+          )
         )
       }
     }

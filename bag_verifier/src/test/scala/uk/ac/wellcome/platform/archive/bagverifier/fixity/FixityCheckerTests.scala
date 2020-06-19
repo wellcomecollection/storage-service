@@ -75,8 +75,13 @@ class FixityCheckerTests
       val tags = createMemoryTags
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
-        override protected val sizeFinder: SizeFinder =
-          (_: ObjectLocation) => Right(closedStream.length)
+        override protected val sizeFinder: SizeFinder = new SizeFinder {
+          override def retryableGetFunction(location: ObjectLocation): Long =
+            closedStream.length
+
+          override def buildGetError(throwable: Throwable): ReadError =
+            StoreReadError(throwable)
+        }
       }
 
       checker.check(expectedFileFixity) shouldBe a[
@@ -90,20 +95,22 @@ class FixityCheckerTests
       val tags = new MemoryTags[ObjectLocation](initialTags = Map.empty) {
         override def get(
           location: ObjectLocation
-        ): Either[ReadError, Map[String, String]] =
+        ): Either[ReadError, Identified[ObjectLocation, Map[String, String]]] =
           super.get(location) match {
-            case Right(t)                   => Right(t)
-            case Left(_: DoesNotExistError) => Right(Map[String, String]())
-            case Left(err)                  => Left(err)
+            case Right(t) => Right(t)
+            case Left(_: DoesNotExistError) =>
+              Right(Identified(location, Map[String, String]()))
+            case Left(err) => Left(err)
           }
 
-        override protected def put(
-          location: ObjectLocation,
+        override protected def writeTags(
+          id: ObjectLocation,
           tags: Map[String, String]
-        ): Either[WriteError, Map[String, String]] =
+        ): Either[WriteError, Map[String, String]] = {
           Left(
             StoreWriteError(new Throwable("BOOM!"))
           )
+        }
       }
 
       val contentString = "HelloWorld"
@@ -121,8 +128,13 @@ class FixityCheckerTests
       )
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
-        override protected val sizeFinder: SizeFinder =
-          (_: ObjectLocation) => Right(contentString.length)
+        override protected val sizeFinder: SizeFinder = new SizeFinder {
+          override def retryableGetFunction(location: ObjectLocation): Long =
+            contentString.length
+
+          override def buildGetError(throwable: Throwable): ReadError =
+            StoreReadError(throwable)
+        }
       }
 
       checker.check(expectedFileFixity) shouldBe a[FileFixityCouldNotWriteTag]
@@ -164,8 +176,13 @@ class FixityCheckerTests
       val tags = createMemoryTags
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
-        override protected val sizeFinder: SizeFinder =
-          (_: ObjectLocation) => Right(inputStream.length)
+        override protected val sizeFinder: SizeFinder = new SizeFinder {
+          override def retryableGetFunction(location: ObjectLocation): Long =
+            inputStream.length
+
+          override def buildGetError(throwable: Throwable): ReadError =
+            StoreReadError(throwable)
+        }
       }
 
       checker.check(expectedFileFixity) shouldBe a[FileFixityCorrect]
@@ -200,8 +217,13 @@ class FixityCheckerTests
       val tags = createMemoryTags
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
-        override protected val sizeFinder: SizeFinder =
-          (_: ObjectLocation) => Right(inputStream.length)
+        override protected val sizeFinder: SizeFinder = new SizeFinder {
+          override def retryableGetFunction(location: ObjectLocation): Long =
+            inputStream.length
+
+          override def buildGetError(throwable: Throwable): ReadError =
+            StoreReadError(throwable)
+        }
       }
 
       checker.check(expectedFileFixity) shouldBe a[FileFixityMismatch]
@@ -214,11 +236,12 @@ class FixityCheckerTests
     new MemoryTags[ObjectLocation](initialTags = Map.empty) {
       override def get(
         location: ObjectLocation
-      ): Either[ReadError, Map[String, String]] =
+      ): Either[ReadError, Identified[ObjectLocation, Map[String, String]]] =
         super.get(location) match {
-          case Right(tags)                => Right(tags)
-          case Left(_: DoesNotExistError) => Right(Map[String, String]())
-          case Left(err)                  => Left(err)
+          case Right(tags) => Right(tags)
+          case Left(_: DoesNotExistError) =>
+            Right(Identified(location, Map[String, String]()))
+          case Left(err) => Left(err)
         }
     }
 }

@@ -92,7 +92,7 @@ trait FixityChecker extends Logging {
     location: ObjectLocation
   ): Either[FileFixityCouldNotRead, Map[String, String]] =
     handleReadErrors(
-      tags.get(location),
+      tags.get(location).map(_.identifiedT),
       expectedFileFixity = expectedFileFixity
     )
 

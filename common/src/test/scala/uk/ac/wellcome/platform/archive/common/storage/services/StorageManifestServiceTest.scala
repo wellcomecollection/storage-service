@@ -414,7 +414,7 @@ class StorageManifestServiceTest
     it("sets a recent createdDate") {
       // This test takes longer when running on a Mac, not in CI, so allow some
       // flex on the definition of "recent".
-      assertRecent(storageManifest.createdDate, recentSeconds = 30)
+      assertRecent(storageManifest.createdDate, recentSeconds = 45)
     }
   }
 
@@ -434,10 +434,10 @@ class StorageManifestServiceTest
       val err = new Throwable("BOOM!")
 
       val brokenSizeFinder = new SizeFinder {
-        override def getSize(
-          location: ObjectLocation
-        ): Either[ReadError, Long] =
-          Left(StoreReadError(err))
+        override def retryableGetFunction(location: ObjectLocation): Long =
+          throw err
+        override def buildGetError(throwable: Throwable): ReadError =
+          StoreReadError(throwable)
       }
 
       implicit val streamStore: MemoryStreamStore[ObjectLocation] =
@@ -479,14 +479,14 @@ class StorageManifestServiceTest
       val location = createPrimaryLocationWith(prefix = bagRoot)
 
       var sizeCache: Map[ObjectLocation, Long] = Map.empty
-
       val cachingSizeFinder = new SizeFinder {
-        override def getSize(
-          location: ObjectLocation
-        ): Either[ReadError, Long] = {
+        override def retryableGetFunction(location: ObjectLocation): Long = {
           sizeCache = sizeCache + (location -> Random.nextLong())
-          Right(sizeCache(location))
+          sizeCache(location)
         }
+
+        override def buildGetError(throwable: Throwable): ReadError =
+          StoreReadError(throwable)
       }
 
       val storageManifest = createManifest(
@@ -538,11 +538,13 @@ class StorageManifestServiceTest
 
       val location = createPrimaryLocationWith(prefix = bagRoot)
 
+      val err = new Throwable("This should never be called!")
+
       val brokenSizeFinder = new SizeFinder {
-        override def getSize(
-          location: ObjectLocation
-        ): Either[ReadError, Long] =
-          Left(StoreReadError(new Throwable("This should never be called!")))
+        override def retryableGetFunction(location: ObjectLocation): Long =
+          throw err
+        override def buildGetError(throwable: Throwable): ReadError =
+          StoreReadError(throwable)
       }
 
       val storageManifest = createManifest(
@@ -632,7 +634,13 @@ class StorageManifestServiceTest
     replicas: Seq[SecondaryStorageLocation] = Seq.empty,
     space: StorageSpace = createStorageSpace,
     version: BagVersion,
-    sizeFinder: SizeFinder = (_: ObjectLocation) => Right(Random.nextLong().abs)
+    sizeFinder: SizeFinder = new SizeFinder {
+      override def retryableGetFunction(location: ObjectLocation): Long =
+        Random.nextLong().abs
+
+      override def buildGetError(throwable: Throwable): ReadError =
+        StoreReadError(throwable)
+    }
   )(
     implicit streamStore: MemoryStreamStore[ObjectLocation]
   ): StorageManifest = {
@@ -685,8 +693,10 @@ class StorageManifestServiceTest
     version: BagVersion = BagVersion(1)
   )(assertError: Throwable => Assertion): Assertion = {
     val sizeFinder = new SizeFinder {
-      override def getSize(location: ObjectLocation): Either[ReadError, Long] =
-        Right(1)
+      override def retryableGetFunction(location: ObjectLocation): Long = 1
+
+      override def buildGetError(throwable: Throwable): ReadError =
+        StoreReadError(throwable)
     }
 
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =

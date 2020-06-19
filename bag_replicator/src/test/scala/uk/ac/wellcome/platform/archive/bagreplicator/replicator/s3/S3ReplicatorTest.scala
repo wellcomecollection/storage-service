@@ -11,7 +11,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.tags.s3.S3Tags
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.{Identified, ObjectLocation, ObjectLocationPrefix}
 
 class S3ReplicatorTest
     extends AnyFunSpec
@@ -169,7 +169,10 @@ class S3ReplicatorTest
         result shouldBe a[ReplicationSucceeded]
 
         val dstLocation = location.copy(namespace = dstBucket.name)
-        s3Tags.get(dstLocation).right.value shouldBe Map.empty
+        s3Tags.get(dstLocation).right.value shouldBe Identified(
+          dstLocation,
+          Map.empty
+        )
       }
     }
   }
