@@ -165,7 +165,7 @@ class S3ReplicatorTest
         result shouldBe a[ReplicationSucceeded]
 
         val dstLocation = location.copy(namespace = dstBucket.name)
-        s3Tags.get(dstLocation).right.value shouldBe  Identified(location, Map.empty)
+        s3Tags.get(dstLocation).right.value shouldBe  Identified(dstLocation, Map.empty)
       }
     }
   }
