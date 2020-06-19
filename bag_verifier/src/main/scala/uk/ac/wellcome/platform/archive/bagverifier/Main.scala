@@ -68,7 +68,7 @@ object Main extends WellcomeTypesafeApp {
       S3ObjectLocationListing()
 
     val verifier = new BagVerifier(
-      namespace = config.required[String]("bag-verifier.primary-storage-bucket")
+      namespace = config.requireString("bag-verifier.primary-storage-bucket")
     )
 
     val operationName =
@@ -85,7 +85,7 @@ object Main extends WellcomeTypesafeApp {
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,
       verifier = verifier,
-      metricsNamespace = config.required[String]("aws.metrics.namespace")
+      metricsNamespace = config.requireString("aws.metrics.namespace")
     )
   }
 }

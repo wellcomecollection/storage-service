@@ -39,7 +39,7 @@ object Main extends WellcomeTypesafeApp {
     val contextURLMain = HTTPServerBuilder.buildContextURL(config)
 
     val ingestTrackerHost = Uri(
-      config.required[String]("ingests.tracker.host")
+      config.requireString("ingests.tracker.host")
     )
 
     val router = new IngestsApi[SNSConfig] {

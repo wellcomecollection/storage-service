@@ -18,7 +18,7 @@ case class ReplicatorDestinationConfig(
 
 case object ReplicatorDestinationConfig {
   def buildDestinationConfig(config: Config): ReplicatorDestinationConfig = {
-    val replicaType = config.required[String]("bag-replicator.replicaType")
+    val replicaType = config.requireString("bag-replicator.replicaType")
 
     val requestBuilder: (ReplicationRequest => BagReplicationRequest) =
       replicaType match {
@@ -32,9 +32,9 @@ case object ReplicatorDestinationConfig {
 
     ReplicatorDestinationConfig(
       namespace =
-        config.required[String]("bag-replicator.storage.destination.bucket"),
+        config.requireString("bag-replicator.storage.destination.bucket"),
       provider = StorageProvider(
-        config.required[String]("bag-replicator.provider")
+        config.requireString("bag-replicator.provider")
       ),
       requestBuilder = requestBuilder
     )

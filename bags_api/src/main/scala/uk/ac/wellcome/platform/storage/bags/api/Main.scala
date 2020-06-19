@@ -70,7 +70,7 @@ object Main extends WellcomeTypesafeApp {
 
       override val bagTrackerClient: BagTrackerClient =
         new AkkaBagTrackerClient(
-          trackerHost = config.required[String]("bags.tracker.host")
+          trackerHost = config.requireString("bags.tracker.host")
         )
 
       override val s3Uploader: S3Uploader = uploader

@@ -41,7 +41,7 @@ object Main extends WellcomeTypesafeApp {
       SQSBuilder.buildSQSAsyncClient(config)
 
     val bagTrackerClient = new AkkaBagTrackerClient(
-      trackerHost = config.required[String]("bags.tracker.host")
+      trackerHost = config.requireString("bags.tracker.host")
     )
 
     implicit val s3Client: AmazonS3 =
@@ -49,7 +49,7 @@ object Main extends WellcomeTypesafeApp {
 
     new BagTaggerWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
-      metricsNamespace = config.required[String]("aws.metrics.namespace"),
+      metricsNamespace = config.requireString("aws.metrics.namespace"),
       bagTrackerClient = bagTrackerClient,
       applyTags = new ApplyTags(
         s3Tags = new S3Tags()

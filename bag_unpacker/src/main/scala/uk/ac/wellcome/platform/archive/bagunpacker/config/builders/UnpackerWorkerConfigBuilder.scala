@@ -6,7 +6,7 @@ import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 object UnpackerWorkerConfigBuilder {
   def build(config: Config): BagUnpackerWorkerConfig = {
-    val namespace = config.required[String]("destination.namespace")
+    val namespace = config.requireString("destination.namespace")
     BagUnpackerWorkerConfig(namespace)
   }
 }
