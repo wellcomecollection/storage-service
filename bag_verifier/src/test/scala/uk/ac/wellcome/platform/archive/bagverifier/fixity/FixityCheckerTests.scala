@@ -76,9 +76,11 @@ class FixityCheckerTests
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
         override protected val sizeFinder: SizeFinder = new SizeFinder {
-          override def retryableGetFunction(location: ObjectLocation): Long = closedStream.length
+          override def retryableGetFunction(location: ObjectLocation): Long =
+            closedStream.length
 
-          override def buildGetError(throwable: Throwable): ReadError = StoreReadError(throwable)
+          override def buildGetError(throwable: Throwable): ReadError =
+            StoreReadError(throwable)
         }
       }
 
@@ -127,9 +129,11 @@ class FixityCheckerTests
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
         override protected val sizeFinder: SizeFinder = new SizeFinder {
-          override def retryableGetFunction(location: ObjectLocation): Long = contentString.length
+          override def retryableGetFunction(location: ObjectLocation): Long =
+            contentString.length
 
-          override def buildGetError(throwable: Throwable): ReadError = StoreReadError(throwable)
+          override def buildGetError(throwable: Throwable): ReadError =
+            StoreReadError(throwable)
         }
       }
 
@@ -172,10 +176,12 @@ class FixityCheckerTests
       val tags = createMemoryTags
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
-        override protected val sizeFinder: SizeFinder =new SizeFinder {
-          override def retryableGetFunction(location: ObjectLocation): Long = inputStream.length
+        override protected val sizeFinder: SizeFinder = new SizeFinder {
+          override def retryableGetFunction(location: ObjectLocation): Long =
+            inputStream.length
 
-          override def buildGetError(throwable: Throwable): ReadError = StoreReadError(throwable)
+          override def buildGetError(throwable: Throwable): ReadError =
+            StoreReadError(throwable)
         }
       }
 
@@ -212,9 +218,11 @@ class FixityCheckerTests
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
         override protected val sizeFinder: SizeFinder = new SizeFinder {
-          override def retryableGetFunction(location: ObjectLocation): Long = inputStream.length
+          override def retryableGetFunction(location: ObjectLocation): Long =
+            inputStream.length
 
-          override def buildGetError(throwable: Throwable): ReadError = StoreReadError(throwable)
+          override def buildGetError(throwable: Throwable): ReadError =
+            StoreReadError(throwable)
         }
       }
 
