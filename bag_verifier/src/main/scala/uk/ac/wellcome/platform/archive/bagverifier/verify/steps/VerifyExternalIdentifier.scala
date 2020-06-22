@@ -8,14 +8,10 @@ trait VerifyExternalIdentifier extends Step {
     externalIdentifier: ExternalIdentifier
   ): InternalResult[Unit] =
     if (bag.info.externalIdentifier != externalIdentifier) {
-      val message =
-        "External identifier in bag-info.txt does not match request: " +
-          s"${bag.info.externalIdentifier.underlying} is not ${externalIdentifier.underlying}"
-
       Left(
         BagVerifierError(
-          e = new Throwable(message),
-          userMessage = Some(message)
+          "External identifier in bag-info.txt does not match request: " +
+            s"${bag.info.externalIdentifier.underlying} is not ${externalIdentifier.underlying}"
         )
       )
     } else {

@@ -6,5 +6,13 @@ trait Step {
     userMessage: Option[String] = None
   )
 
+  case object BagVerifierError {
+    def apply(message: String): BagVerifierError =
+      BagVerifierError(
+        e = new Throwable(message),
+        userMessage = Some(message)
+      )
+  }
+
   type InternalResult[T] = Either[BagVerifierError, T]
 }

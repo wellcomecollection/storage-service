@@ -128,10 +128,10 @@ class BagVerifier(namespace: String)(
     val manifestCount = bag.manifest.entries.size
 
     if (payloadOxumCount != bag.manifest.entries.size) {
-      val message =
-        s"Payload-Oxum has the wrong number of payload files: $payloadOxumCount, but bag manifest has $manifestCount"
       Left(
-        BagVerifierError(new Throwable(message), userMessage = Some(message))
+        BagVerifierError(
+          s"Payload-Oxum has the wrong number of payload files: $payloadOxumCount, but bag manifest has $manifestCount"
+        )
       )
     } else {
       Right(())
@@ -162,12 +162,9 @@ class BagVerifier(namespace: String)(
         if (actualSize == expectedSize) {
           Right(())
         } else {
-          val message =
-            s"Payload-Oxum has the wrong octetstream sum: $expectedSize bytes, but bag actually contains $actualSize bytes"
           Left(
             BagVerifierError(
-              new Throwable(message),
-              userMessage = Some(message)
+              s"Payload-Oxum has the wrong octetstream sum: $expectedSize bytes, but bag actually contains $actualSize bytes"
             )
           )
         }
@@ -210,13 +207,9 @@ class BagVerifier(namespace: String)(
         mismatchedPaths match {
           case Nil => Right(())
           case _ =>
-            val message =
-              s"fetch.txt refers to paths in a mismatched prefix: ${mismatchedPaths.mkString(", ")}"
-
             Left(
               BagVerifierError(
-                e = new Throwable(message),
-                userMessage = Some(message)
+                s"fetch.txt refers to paths in a mismatched prefix: ${mismatchedPaths.mkString(", ")}"
               )
             )
         }
