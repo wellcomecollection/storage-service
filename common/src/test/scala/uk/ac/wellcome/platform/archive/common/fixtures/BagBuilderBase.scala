@@ -3,40 +3,34 @@ package uk.ac.wellcome.platform.archive.common.fixtures
 import java.security.MessageDigest
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagInfo,
-  BagPath,
-  BagVersion,
-  ExternalIdentifier,
-  PayloadOxum
-}
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagInfoGenerators,
-  StorageSpaceGenerators
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, BagPath, BagVersion, ExternalIdentifier, PayloadOxum}
+import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, StorageSpaceGenerators}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.{Location, Prefix}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.s3.S3TypedStore
 import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.streaming.Codec._
 
 import scala.util.Random
 
-case class BagObject(
-  location: ObjectLocation,
+case class BagObject[BagLocation <: Location](
+  location: BagLocation,
   contents: String
 )
 
-trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
+trait BagBuilderBase[BagLocation <: Location, BagLocationPrefix <: Prefix[BagLocation]]
+  extends StorageSpaceGenerators
+    with BagInfoGenerators {
   case class PayloadEntry(bagPath: BagPath, path: String, contents: String)
 
   case class ManifestFile(name: String, contents: String)
 
   def uploadBagObjects(
-    objects: Seq[BagObject]
-  )(implicit typedStore: TypedStore[ObjectLocation, String]): Unit =
+    objects: Seq[BagObject[BagLocation]]
+  )(implicit typedStore: TypedStore[BagLocation, String]): Unit =
     objects.foreach { bagObj =>
       typedStore.put(bagObj.location)(bagObj.contents) shouldBe a[Right[_, _]]
     }
@@ -51,7 +45,7 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
     payloadFileCount: Int = randomInt(from = 5, to = 50)
   )(
     implicit namespace: String
-  ): (Seq[BagObject], ObjectLocationPrefix, BagInfo) = {
+  ): (Seq[BagObject[BagLocation]], BagLocationPrefix, BagInfo) = {
     val fetchEntryCount = getFetchEntryCount(payloadFileCount)
 
     val payloadFiles = createPayloadFiles(
@@ -122,7 +116,7 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
 
     val bagRootPath = createBagRoot(space, externalIdentifier, version)
 
-    val bagRoot = ObjectLocationPrefix(
+    val bagRoot = createPrefix(
       namespace = namespace,
       path = bagRootPath
     )
@@ -138,13 +132,17 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
     val payloadObjects =
       (payloadFiles ++ fetchEntries).map { payloadEntry =>
         BagObject(
-          location = bagRoot.copy(path = payloadEntry.path).asLocation(),
+          location = createLocation(bagRoot, path = payloadEntry.path),
           contents = payloadEntry.contents
         )
       }
 
     (manifestObjects ++ payloadObjects, bagRoot, bagInfo)
   }
+
+  protected def createPrefix(namespace: String, path: String): BagLocationPrefix
+
+  protected def createLocation(prefix: BagLocationPrefix, path: String): BagLocation
 
   protected def createFetchFile(
     entries: Seq[PayloadEntry]
@@ -276,15 +274,16 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
       }
 }
 
-object BagBuilder extends BagBuilderBase
-
-trait S3BagBuilderBase extends BagBuilderBase with S3Fixtures with Logging {
+trait S3BagBuilderBase
+  extends BagBuilderBase[S3ObjectLocation, S3ObjectLocationPrefix]
+    with S3Fixtures
+    with Logging {
   def createS3BagWith(
     bucket: Bucket,
     space: StorageSpace = createStorageSpace,
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     payloadFileCount: Int = randomInt(from = 5, to = 50)
-  ): (ObjectLocationPrefix, BagInfo) = {
+  ): (S3ObjectLocationPrefix, BagInfo) = {
     implicit val namespace: String = bucket.name
 
     val (bagObjects, bagRoot, bagInfo) = createBagContentsWith(
@@ -307,6 +306,12 @@ trait S3BagBuilderBase extends BagBuilderBase with S3Fixtures with Logging {
 
     s"""s3://$namespace/${entry.path} $displaySize ${entry.bagPath}"""
   }
+
+  override protected def createPrefix(bucket: String, keyPrefix: String): S3ObjectLocationPrefix =
+    S3ObjectLocationPrefix(bucket = bucket, keyPrefix = keyPrefix)
+
+  protected def createLocation(prefix: S3ObjectLocationPrefix, key: String): S3ObjectLocation =
+    S3ObjectLocation(bucket = prefix.bucket, key = key)
 }
 
 object S3BagBuilder extends S3BagBuilderBase

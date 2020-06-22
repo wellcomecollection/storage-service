@@ -2,7 +2,7 @@ package uk.ac.wellcome.storage
 
 import java.nio.file.Paths
 
-case class ObjectLocation(namespace: String, path: String) {
+case class ObjectLocation(namespace: String, path: String) extends Location {
   override def toString = s"$namespace/$path"
 
   def join(parts: String*): ObjectLocation = this.copy(
@@ -16,7 +16,7 @@ case class ObjectLocation(namespace: String, path: String) {
     )
 }
 
-case class ObjectLocationPrefix(namespace: String, path: String) {
+case class ObjectLocationPrefix(namespace: String, path: String) extends Prefix[ObjectLocation] {
   override def toString = s"$namespace/$path"
 
   def asLocation(parts: String*): ObjectLocation =

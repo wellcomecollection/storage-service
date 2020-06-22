@@ -10,17 +10,16 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   PayloadManifest,
   TagManifest
 }
-import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
-import uk.ac.wellcome.storage.{
-  DoesNotExistError,
-  ObjectLocation,
-  ObjectLocationPrefix
+import uk.ac.wellcome.platform.archive.common.verify.{
+  HashingAlgorithm,
+  SHA256
 }
+import uk.ac.wellcome.storage.{DoesNotExistError, Location, Prefix}
 import uk.ac.wellcome.storage.store.StreamStore
 
 import scala.util.{Failure, Success, Try}
 
-trait BagReader {
+trait BagReader[BagLocation <: Location, BagLocationPrefix <: Prefix[BagLocation]] {
   protected val bagFetch = BagPath("fetch.txt")
   protected val bagInfo = BagPath("bag-info.txt")
   protected val fileManifest =
@@ -28,11 +27,11 @@ trait BagReader {
   protected val tagManifest =
     (a: HashingAlgorithm) => BagPath(s"tagmanifest-${a.pathRepr}.txt")
 
-  implicit val streamStore: StreamStore[ObjectLocation]
+  implicit val streamStore: StreamStore[BagLocation]
 
   type Stream[T] = InputStream => Try[T]
 
-  def get(bagRoot: ObjectLocationPrefix): Either[BagUnavailable, Bag] =
+  def get(bagRoot: BagLocationPrefix): Either[BagUnavailable, Bag] =
     for {
       bagInfo <- loadRequired[BagInfo](bagRoot)(bagInfo)(BagInfoParser.create)
 
@@ -51,7 +50,7 @@ trait BagReader {
     } yield Bag(bagInfo, fileManifest, tagManifest, bagFetch)
 
   private def loadOptional[T](
-    root: ObjectLocationPrefix
+    root: BagLocationPrefix
   )(path: BagPath)(f: Stream[T]): Either[BagUnavailable, Option[T]] = {
     val location = root.asLocation(path.value)
 
@@ -74,7 +73,7 @@ trait BagReader {
   }
 
   private def loadRequired[T](
-    root: ObjectLocationPrefix
+    root: BagLocationPrefix
   )(path: BagPath)(f: Stream[T]): Either[BagUnavailable, T] =
     loadOptional[T](root)(path)(f) match {
       case Right(Some(result)) => Right(result)

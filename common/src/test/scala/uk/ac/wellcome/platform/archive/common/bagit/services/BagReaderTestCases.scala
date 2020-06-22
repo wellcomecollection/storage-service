@@ -1,39 +1,37 @@
 package uk.ac.wellcome.platform.archive.common.bagit.services
 
-import org.scalatest.{Assertion, EitherValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.{Assertion, EitherValues}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagBuilder,
-  StorageRandomThings
-}
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagBuilderBase, StorageRandomThings}
 import uk.ac.wellcome.storage.store.TypedStore
+import uk.ac.wellcome.storage.{Location, Prefix}
 
-trait BagReaderTestCases[Context, Namespace]
+trait BagReaderTestCases[Context, Namespace, BagLocation <: Location, BagLocationPrefix <: Prefix[BagLocation]]
     extends AnyFunSpec
     with Matchers
     with EitherValues
-    with StorageRandomThings {
+    with StorageRandomThings
+    with BagBuilderBase[BagLocation, BagLocationPrefix] {
   def withContext[R](testWith: TestWith[Context, R]): R
   def withTypedStore[R](
-    testWith: TestWith[TypedStore[ObjectLocation, String], R]
+    testWith: TestWith[TypedStore[BagLocation, String], R]
   )(implicit context: Context): R
 
-  def withBagReader[R](testWith: TestWith[BagReader, R])(
+  def withBagReader[R](testWith: TestWith[BagReader[BagLocation, BagLocationPrefix], R])(
     implicit context: Context
   ): R
 
   def withNamespace[R](testWith: TestWith[Namespace, R]): R
 
-  def deleteFile(root: ObjectLocationPrefix, path: String)(
+  def deleteFile(root: BagLocationPrefix, path: String)(
     implicit context: Context
   )
 
-  def scrambleFile(root: ObjectLocationPrefix, path: String)(
-    implicit typedStore: TypedStore[ObjectLocation, String]
+  def scrambleFile(root: BagLocationPrefix, path: String)(
+    implicit typedStore: TypedStore[BagLocation, String]
   ): Assertion =
     typedStore.put(root.asLocation(path))(randomAlphanumeric) shouldBe a[
       Right[_, _]
@@ -41,7 +39,7 @@ trait BagReaderTestCases[Context, Namespace]
 
   def withFixtures[R](
     testWith: TestWith[
-      (Context, TypedStore[ObjectLocation, String], Namespace),
+      (Context, TypedStore[BagLocation, String], Namespace),
       R
     ]
   ): R =
@@ -190,13 +188,13 @@ trait BagReaderTestCases[Context, Namespace]
   protected def createBag()(
     implicit
     ns: Namespace,
-    typedStore: TypedStore[ObjectLocation, String]
-  ): (ObjectLocationPrefix, BagInfo) = {
+    typedStore: TypedStore[BagLocation, String]
+  ): (BagLocationPrefix, BagInfo) = {
     implicit val namespace: String = toString(ns)
 
-    val (bagObjects, bagRoot, bagInfo) = BagBuilder.createBagContentsWith()
+    val (bagObjects, bagRoot, bagInfo) = createBagContentsWith()
 
-    BagBuilder.uploadBagObjects(bagObjects)
+    uploadBagObjects(bagObjects)
 
     (bagRoot, bagInfo)
   }

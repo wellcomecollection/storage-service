@@ -10,28 +10,12 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  EmptyMetadata,
-  StorageManifestDao
-}
-import uk.ac.wellcome.storage.{
-  ObjectLocation,
-  ObjectLocationPrefix,
-  ReadError,
-  StoreReadError
-}
+import uk.ac.wellcome.platform.archive.common.storage.services.{EmptyMetadata, StorageManifestDao}
+import uk.ac.wellcome.storage.{ReadError, StoreReadError}
 import uk.ac.wellcome.storage.dynamo.{DynamoConfig, DynamoHashRangeEntry}
-import uk.ac.wellcome.storage.s3.S3Config
-import uk.ac.wellcome.storage.store.{
-  HybridIndexedStoreEntry,
-  HybridStoreEntry,
-  VersionedStore
-}
-import uk.ac.wellcome.storage.store.dynamo.{
-  DynamoHashRangeStore,
-  DynamoHybridStoreWithMaxima,
-  DynamoVersionedHybridStore
-}
+import uk.ac.wellcome.storage.s3.{S3Config, S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.store.{HybridIndexedStoreEntry, HybridStoreEntry, VersionedStore}
+import uk.ac.wellcome.storage.store.dynamo.{DynamoHashRangeStore, DynamoHybridStoreWithMaxima, DynamoVersionedHybridStore}
 import uk.ac.wellcome.storage.store.s3.{S3StreamStore, S3TypedStore}
 import uk.ac.wellcome.storage.streaming.Codec._
 
@@ -46,7 +30,7 @@ class DynamoStorageManifestDao(
   s3Client: AmazonS3
 ) extends StorageManifestDao {
   type DynamoStoreEntry =
-    HybridIndexedStoreEntry[ObjectLocation, EmptyMetadata]
+    HybridIndexedStoreEntry[S3ObjectLocation, EmptyMetadata]
 
   implicit val evidence: DynamoFormat[EmptyMetadata] =
     new DynamoFormat[EmptyMetadata] {
@@ -55,7 +39,7 @@ class DynamoStorageManifestDao(
       ): scala.Either[DynamoReadError, EmptyMetadata] =
         Right(EmptyMetadata())
 
-      override def write(t: EmptyMetadata): DynamoValue =
+      override def write(metadata: EmptyMetadata): DynamoValue =
         DynamoValue.fromMap(Map.empty)
     }
 
@@ -78,9 +62,9 @@ class DynamoStorageManifestDao(
         StorageManifest,
         EmptyMetadata
       ](
-        prefix = ObjectLocationPrefix(
-          namespace = s3Config.bucketName,
-          path = ""
+        prefix = S3ObjectLocationPrefix(
+          bucket = s3Config.bucketName,
+          keyPrefix = ""
         )
       )
     )
@@ -100,7 +84,7 @@ class DynamoStorageManifestDao(
   private def getManifests(
     bagId: BagId,
     before: Option[BagVersion],
-    locations: Seq[ObjectLocation]
+    locations: Seq[S3ObjectLocation]
   ): Either[StoreReadError, Seq[StorageManifest]] = {
     val s3Results = locations.map { typedStore.get }
 
@@ -124,12 +108,12 @@ class DynamoStorageManifestDao(
     bagId: BagId,
     before: Option[BagVersion]
   ): Either[StoreReadError, Seq[
-    HybridIndexedStoreEntry[ObjectLocation, EmptyMetadata]
+    HybridIndexedStoreEntry[S3ObjectLocation, EmptyMetadata]
   ]] = {
     val table = ScanamoTable[DynamoHashRangeEntry[
       BagId,
       Int,
-      HybridIndexedStoreEntry[ObjectLocation, EmptyMetadata]
+      HybridIndexedStoreEntry[S3ObjectLocation, EmptyMetadata]
     ]](dynamoConfig.tableName)
 
     val baseOps = before match {
