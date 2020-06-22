@@ -149,34 +149,32 @@ class StorageManifestServiceTest
     }
   }
 
-  describe("if there's no fetch.txt, it versions the paths") {
+  it("if there's no fetch.txt, it versions the paths") {
     object NoFetchBagBuilder extends S3BagBuilderBase {
       override protected def getFetchEntryCount(payloadFileCount: Int): Int = 0
     }
 
     val version = createBagVersion
 
-    val (bagRoot, bag) = createStorageManifestBag(
-      version = version,
-      bagBuilder = NoFetchBagBuilder
-    )
+    withLocalS3Bucket { implicit bucket =>
+      val (bagRoot, bag) = createStorageManifestBag(
+        version = version,
+        bagBuilder = NoFetchBagBuilder
+      )
 
-    val location = createPrimaryLocationWith(prefix = bagRoot)
+      val location = createPrimaryLocationWith(prefix = bagRoot)
 
-    val storageManifest = createManifest(
-      bag = bag,
-      location = location,
-      version = version
-    )
+      val storageManifest = createManifest(
+        bag = bag,
+        location = location,
+        version = version
+      )
 
-    it("manifest entries") {
       storageManifest.manifest.files
         .foreach { file =>
           file.path shouldBe s"$version/${file.name}"
         }
-    }
 
-    it("tag manifest entries") {
       storageManifest.tagManifest.files
         .foreach { file =>
           file.path shouldBe s"$version/${file.name}"
@@ -184,7 +182,7 @@ class StorageManifestServiceTest
     }
   }
 
-  describe("if there's a fetch.txt, it constructs the right paths") {
+  it("if there's a fetch.txt, it constructs the right paths") {
     object AtLeastOneFetchEntryBagBuilder extends S3BagBuilderBase {
       override protected def getFetchEntryCount(payloadFileCount: Int): Int =
         randomInt(from = 1, to = payloadFileCount)
@@ -192,22 +190,23 @@ class StorageManifestServiceTest
 
     val version = createBagVersion
 
-    val (bagRoot, bag) = createStorageManifestBag(
-      version = version,
-      bagBuilder = AtLeastOneFetchEntryBagBuilder
-    )
+    withLocalS3Bucket { implicit bucket =>
+      val (bagRoot, bag) = createStorageManifestBag(
+        version = version,
+        bagBuilder = AtLeastOneFetchEntryBagBuilder
+      )
 
-    val location = createPrimaryLocationWith(prefix = bagRoot)
+      val location = createPrimaryLocationWith(prefix = bagRoot)
 
-    val storageManifest = createManifest(
-      bag = bag,
-      location = location,
-      version = version
-    )
+      val storageManifest = createManifest(
+        bag = bag,
+        location = location,
+        version = version
+      )
 
-    val bagFetchEntries = bag.fetch.get.entries
+      val bagFetchEntries = bag.fetch.get.entries
 
-    it("puts fetched entries under a versioned path") {
+      // it puts fetched entries under a versioned path
       val fetchedFiles = storageManifest.manifest.files
         .filter { file =>
           bagFetchEntries.contains(BagPath(file.name))
@@ -230,9 +229,8 @@ class StorageManifestServiceTest
           fetchEntry.uri.toString should endWith(file.path)
           file.path.matches("^v\\d+/")
         }
-    }
 
-    it("puts non-fetched entries under the current version") {
+      // it puts non-fetched entries under the current version
       storageManifest.manifest.files
         .filterNot { file =>
           bagFetchEntries.contains(BagPath(file.name))
@@ -240,9 +238,8 @@ class StorageManifestServiceTest
         .foreach { file =>
           file.path shouldBe s"$version/${file.name}"
         }
-    }
 
-    it("tag manifest entries are always under the current version") {
+      // tag manifest entries are always under the current version
       storageManifest.tagManifest.files
         .foreach { file =>
           file.path shouldBe s"$version/${file.name}"
@@ -250,22 +247,23 @@ class StorageManifestServiceTest
     }
   }
 
-  describe("validates the checksums") {
+  it("validates the checksums") {
     val version = createBagVersion
 
-    val (bagRoot, bag) = createStorageManifestBag(
-      version = version
-    )
+    withLocalS3Bucket { implicit bucket =>
+      val (bagRoot, bag) = createStorageManifestBag(
+        version = version
+      )
 
-    val location = createPrimaryLocationWith(prefix = bagRoot)
+      val location = createPrimaryLocationWith(prefix = bagRoot)
 
-    val storageManifest = createManifest(
-      bag = bag,
-      location = location,
-      version = version
-    )
+      val storageManifest = createManifest(
+        bag = bag,
+        location = location,
+        version = version
+      )
 
-    it("uses the checksum values from the file manifest") {
+      // it uses the checksum values from the file manifest
       val storageManifestChecksums =
         storageManifest.manifest.files.map { file =>
           file.name -> file.checksum.value
@@ -276,19 +274,18 @@ class StorageManifestServiceTest
           .map { case (bagPath, checksum) => bagPath.value -> checksum.value }
 
       storageManifestChecksums shouldBe bagChecksums
-    }
 
-    it("uses the checksum values from the tag manifest") {
-      val storageManifestChecksums =
+      // it uses the checksum values from the tag manifest
+      val tagManifestChecksums =
         storageManifest.tagManifest.files.map { file =>
           file.name -> file.checksum.value
         }.toMap
 
-      val bagChecksums =
+      val bagTagChecksums =
         bag.tagManifest.entries
           .map { case (bagPath, checksum) => bagPath.value -> checksum.value }
 
-      storageManifestChecksums.filterKeys { _ != "tagmanifest-sha256.txt" } shouldBe bagChecksums
+      tagManifestChecksums.filterKeys { _ != "tagmanifest-sha256.txt" } shouldBe bagTagChecksums
     }
   }
 
