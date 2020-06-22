@@ -7,7 +7,7 @@ import uk.ac.wellcome.storage.s3.S3Errors
 import uk.ac.wellcome.storage.store.RetryableReadable
 import uk.ac.wellcome.storage.store.memory.MemoryStore
 
-trait SizeFinder extends RetryableReadable[Long] {
+trait SizeFinder extends RetryableReadable[ObjectLocation, Long] {
   override val maxRetries: Int = 3
 
   def getSize(location: ObjectLocation): Either[ReadError, Long] = {
