@@ -6,7 +6,7 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.bag.BagExpectedFixity
 import uk.ac.wellcome.platform.archive.bagverifier.fixity._
 import uk.ac.wellcome.platform.archive.bagverifier.models._
-import uk.ac.wellcome.platform.archive.bagverifier.verify.steps.VerifyExternalIdentifier
+import uk.ac.wellcome.platform.archive.bagverifier.verify.steps.{VerifyExternalIdentifier, VerifyPayloadOxum}
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
@@ -22,7 +22,10 @@ class BagVerifier(namespace: String)(
   resolvable: Resolvable[ObjectLocation],
   fixityChecker: FixityChecker,
   listing: Listing[ObjectLocationPrefix, ObjectLocation]
-) extends Logging with VerifyExternalIdentifier {
+)
+  extends Logging
+    with VerifyExternalIdentifier
+    with VerifyPayloadOxum {
 
   def verify(
     ingestId: IngestID,
@@ -122,55 +125,6 @@ class BagVerifier(namespace: String)(
       case Success(result)         => Right(result)
     }
   }
-
-  private def verifyPayloadOxumFileCount(bag: Bag): InternalResult[Unit] = {
-    val payloadOxumCount = bag.info.payloadOxum.numberOfPayloadFiles
-    val manifestCount = bag.manifest.entries.size
-
-    if (payloadOxumCount != bag.manifest.entries.size) {
-      Left(
-        BagVerifierError(
-          s"Payload-Oxum has the wrong number of payload files: $payloadOxumCount, but bag manifest has $manifestCount"
-        )
-      )
-    } else {
-      Right(())
-    }
-  }
-
-  private def verifyPayloadOxumFileSize(
-    bag: Bag,
-    verificationResult: FixityListResult
-  ): InternalResult[Unit] =
-    verificationResult match {
-      case FixityListAllCorrect(locations) =>
-        // The Payload-Oxum octetstream sum only counts the size of files in the payload,
-        // not manifest files such as the bag-info.txt file.
-        // We need to filter those out.
-        val dataFilePaths = bag.manifest.paths
-
-        val actualSize =
-          locations
-            .filter { loc =>
-              dataFilePaths.contains(loc.expectedFileFixity.path)
-            }
-            .map { _.size }
-            .sum
-
-        val expectedSize = bag.info.payloadOxum.payloadBytes
-
-        if (actualSize == expectedSize) {
-          Right(())
-        } else {
-          Left(
-            BagVerifierError(
-              s"Payload-Oxum has the wrong octetstream sum: $expectedSize bytes, but bag actually contains $actualSize bytes"
-            )
-          )
-        }
-
-      case _ => Right(())
-    }
 
   // Check the user hasn't supplied any fetch entries which are in the wrong
   // namespace or path prefix.
