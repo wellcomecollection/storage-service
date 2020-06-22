@@ -99,7 +99,7 @@ class BagVerifier(namespace: String)(
   private def getBag(
     root: ObjectLocationPrefix,
     startTime: Instant
-  ): InternalResult[Bag] =
+  ): Either[BagVerifierError, Bag] =
     bagReader.get(root) match {
       case Left(bagUnavailable) =>
         Left(
@@ -114,7 +114,7 @@ class BagVerifier(namespace: String)(
 
   private def buildStepResult(
     ingestId: IngestID,
-    internalResult: InternalResult[FixityListResult],
+    internalResult: Either[BagVerifierError, FixityListResult],
     root: ObjectLocationPrefix,
     startTime: Instant
   ): IngestStepResult[VerificationSummary] =

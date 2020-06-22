@@ -1,12 +1,13 @@
 package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 
+import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
 import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, ExternalIdentifier}
 
-trait VerifyExternalIdentifier extends Step {
+trait VerifyExternalIdentifier {
   def verifyExternalIdentifier(
     bag: Bag,
     externalIdentifier: ExternalIdentifier
-  ): InternalResult[Unit] =
+  ): Either[BagVerifierError, Unit] =
     if (bag.info.externalIdentifier != externalIdentifier) {
       Left(
         BagVerifierError(

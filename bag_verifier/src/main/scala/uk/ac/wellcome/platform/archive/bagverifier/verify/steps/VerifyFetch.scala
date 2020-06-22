@@ -1,10 +1,11 @@
 package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FixityListAllCorrect, FixityListResult}
+import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
 import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagFetch, BagFetchMetadata, BagPath}
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
-trait VerifyFetch extends Step {
+trait VerifyFetch {
 
   // Check the user hasn't supplied any fetch entries which are in the wrong
   // namespace or path prefix.
@@ -15,7 +16,7 @@ trait VerifyFetch extends Step {
   def verifyFetchPrefixes(
     bag: Bag,
     root: ObjectLocationPrefix
-  ): InternalResult[Unit] =
+  ): Either[BagVerifierError, Unit] =
     bag.fetch match {
       case None => Right(())
 
@@ -56,7 +57,7 @@ trait VerifyFetch extends Step {
     root: ObjectLocationPrefix,
     actualLocations: Seq[ObjectLocation],
     verificationResult: FixityListResult
-  ): InternalResult[Unit] =
+  ): Either[BagVerifierError, Unit] =
     verificationResult match {
       case FixityListAllCorrect(_) =>
         val bagFetchLocations = bag.fetch match {

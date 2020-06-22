@@ -2,10 +2,11 @@ package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FixityListAllCorrect, FixityListResult}
+import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
 import uk.ac.wellcome.platform.archive.common.bagit.models.UnreferencedFiles
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
-trait VerifyNoUnreferencedFiles extends Step with Logging {
+trait VerifyNoUnreferencedFiles extends Logging {
 
   // Files that it's okay not to be referenced by any other manifests/files.
   //
@@ -26,7 +27,7 @@ trait VerifyNoUnreferencedFiles extends Step with Logging {
     root: ObjectLocationPrefix,
     actualLocations: Seq[ObjectLocation],
     verificationResult: FixityListResult
-  ): InternalResult[Unit] =
+  ): Either[BagVerifierError, Unit] =
     verificationResult match {
       case FixityListAllCorrect(locations) =>
         val expectedLocations = locations.map { _.objectLocation }

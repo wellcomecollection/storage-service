@@ -1,10 +1,11 @@
 package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FixityListAllCorrect, FixityListResult}
+import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
 import uk.ac.wellcome.platform.archive.common.bagit.models.Bag
 
-trait VerifyPayloadOxum extends Step {
-  def verifyPayloadOxumFileCount(bag: Bag): InternalResult[Unit] = {
+trait VerifyPayloadOxum {
+  def verifyPayloadOxumFileCount(bag: Bag): Either[BagVerifierError, Unit] = {
     val payloadOxumCount = bag.info.payloadOxum.numberOfPayloadFiles
     val manifestCount = bag.manifest.entries.size
 
@@ -22,7 +23,7 @@ trait VerifyPayloadOxum extends Step {
   def verifyPayloadOxumFileSize(
     bag: Bag,
     verificationResult: FixityListResult
-  ): InternalResult[Unit] =
+  ): Either[BagVerifierError, Unit] =
     verificationResult match {
       case FixityListAllCorrect(locations) =>
         // The Payload-Oxum octetstream sum only counts the size of files in the payload,
