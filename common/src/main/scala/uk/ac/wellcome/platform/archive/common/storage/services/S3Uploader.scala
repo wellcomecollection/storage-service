@@ -10,6 +10,7 @@ import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.streaming.Codec.stringCodec
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
 
 import scala.concurrent.duration.Duration
 import scala.util.{Failure, Success, Try}
@@ -21,14 +22,14 @@ import scala.util.{Failure, Success, Try}
   * https://docs.aws.amazon.com/AmazonS3/latest/dev/ShareObjectPreSignedURLJavaSDK.html
   */
 class S3Uploader(implicit val s3Client: AmazonS3) {
-  import S3ObjectExists._
+  import s3.S3ObjectExists._
 
   private val s3StreamStore: S3StreamStore = new S3StreamStore()
 
   // NOTE: checkExists will allow overwriting of existing content if set to false
   // overwriting existing content will change what previously generated URLs return
   def uploadAndGetURL(
-    location: ObjectLocation,
+    location: S3ObjectLocation,
     content: InputStreamWithLength,
     expiryLength: Duration,
     checkExists: Boolean
@@ -46,7 +47,7 @@ class S3Uploader(implicit val s3Client: AmazonS3) {
     } yield url
 
   def uploadAndGetURL(
-    location: ObjectLocation,
+    location: S3ObjectLocation,
     content: String,
     expiryLength: Duration,
     checkExists: Boolean = false
@@ -62,7 +63,7 @@ class S3Uploader(implicit val s3Client: AmazonS3) {
     } yield result
 
   def getPresignedGetURL(
-    location: ObjectLocation,
+    location: S3ObjectLocation,
     expiryLength: Duration
   ): Either[ReadError, URL] = {
 
@@ -74,7 +75,7 @@ class S3Uploader(implicit val s3Client: AmazonS3) {
     val expTime = new util.Date(expTimeMillis)
 
     val request =
-      new GeneratePresignedUrlRequest(location.namespace, location.path)
+      new GeneratePresignedUrlRequest(location.bucket, location.key)
         .withMethod(HttpMethod.GET)
         .withExpiration(expTime)
 

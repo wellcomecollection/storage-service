@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 
 import java.io.IOException
 import java.net.URL
+import java.util.Date
 
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.scalatest.EitherValues
@@ -9,6 +10,7 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
 
 import scala.concurrent.duration._
 import scala.io.Source
@@ -52,12 +54,7 @@ class S3UploaderTest
         .right
         .value
 
-      val lastModified = s3Client
-        .getObjectMetadata(
-          objectLocation.namespace,
-          objectLocation.path
-        )
-        .getLastModified()
+      val lastModified = getLastModified(objectLocation)
 
       getUrl(url) shouldBe content
 
@@ -73,12 +70,7 @@ class S3UploaderTest
         .right
         .value
 
-      val newLastModified = s3Client
-        .getObjectMetadata(
-          objectLocation.namespace,
-          objectLocation.path
-        )
-        .getLastModified()
+      val newLastModified = getLastModified(objectLocation)
 
       newUrl shouldNot equal(url)
       lastModified shouldBe newLastModified
@@ -102,12 +94,7 @@ class S3UploaderTest
         .right
         .value
 
-      val lastModified = s3Client
-        .getObjectMetadata(
-          objectLocation.namespace,
-          objectLocation.path
-        )
-        .getLastModified()
+      val lastModified = getLastModified(objectLocation)
 
       getUrl(url) shouldBe content
 
@@ -122,12 +109,7 @@ class S3UploaderTest
         .right
         .value
 
-      val newLastModified = s3Client
-        .getObjectMetadata(
-          objectLocation.namespace,
-          objectLocation.path
-        )
-        .getLastModified()
+      val newLastModified = getLastModified(objectLocation)
 
       newUrl shouldNot equal(url)
 
@@ -190,4 +172,9 @@ class S3UploaderTest
 
   def getUrl(url: URL): String =
     Source.fromURL(url).mkString
+
+  def getLastModified(location: S3ObjectLocation): Date =
+    s3Client
+      .getObjectMetadata(location.bucket, location.key)
+      .getLastModified
 }
