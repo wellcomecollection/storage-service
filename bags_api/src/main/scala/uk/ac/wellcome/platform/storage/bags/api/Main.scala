@@ -75,7 +75,7 @@ object Main extends WellcomeTypesafeApp {
 
       override val s3Uploader: S3Uploader = uploader
       override val maximumResponseByteLength: Long = defaultMaxByteLength
-      override val prefix: ObjectLocationPrefix = locationPrefix
+      override val s3Prefix: ObjectLocationPrefix = locationPrefix
       override val cacheDuration: Duration = defaultCacheDuration
       override implicit val materializer: Materializer = matMain
     }

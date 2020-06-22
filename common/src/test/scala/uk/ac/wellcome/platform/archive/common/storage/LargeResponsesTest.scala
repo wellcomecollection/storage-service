@@ -184,7 +184,7 @@ class LargeResponsesTest
     val largeResponder = new LargeResponses {
       override val s3Uploader: S3Uploader = uploader
       override val maximumResponseByteLength: Long = maxBytes
-      override val prefix: ObjectLocationPrefix = objectLocationPrefix
+      override val s3Prefix: ObjectLocationPrefix = objectLocationPrefix
       override val cacheDuration: Duration = duration
       override implicit val materializer: Materializer = mat
     }
