@@ -4,16 +4,13 @@ import org.scalatest.{EitherValues, TryValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifestFile
-import uk.ac.wellcome.platform.archive.common.verify.{
-  ChecksumValue,
-  MD5,
-  SHA256
-}
-import uk.ac.wellcome.storage.{ObjectLocation, StoreReadError}
-import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
+import uk.ac.wellcome.platform.archive.common.verify.{ChecksumValue, MD5, SHA256}
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
+import uk.ac.wellcome.storage.StoreReadError
 import uk.ac.wellcome.storage.store.Readable
-import uk.ac.wellcome.storage.store.memory.MemoryStreamStoreFixtures
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
@@ -22,28 +19,26 @@ class TagManifestFileFinderTest
     with Matchers
     with EitherValues
     with TryValues
-    with ObjectLocationGenerators
-    with MemoryStreamStoreFixtures[ObjectLocation] {
+    with StorageRandomThings {
+
+  implicit val s3StreamStore: S3StreamStore =
+    new S3StreamStore()
 
   def withTagManifestFileFinder[R](
-    entries: Map[ObjectLocation, String]
-  )(testWith: TestWith[TagManifestFileFinder, R]): R =
-    withStreamStoreContext { memoryStore =>
-      val initialEntries = entries
-        .map {
-          case (location, str) =>
-            val inputStream = stringCodec.toStream(str).right.value
+    entries: Map[S3ObjectLocation, String]
+  )(testWith: TestWith[TagManifestFileFinder, R]): R = {
+    entries
+      .foreach {
+        case (location, str) =>
+          val inputStream = stringCodec.toStream(str).right.value
 
-            (location, inputStream)
-        }
-
-      withMemoryStreamStoreImpl(memoryStore, initialEntries = initialEntries) {
-        implicit streamStore =>
-          testWith(
-            new TagManifestFileFinder()
-          )
+          s3StreamStore.put(location)(inputStream) shouldBe a[Right[_, _]]
       }
-    }
+
+    testWith(
+      new TagManifestFileFinder()
+    )
+  }
 
   it("handles a bag that contains all four tag manifest files") {
     val prefix = createObjectLocationPrefix
@@ -193,12 +188,12 @@ class TagManifestFileFinderTest
     val prefix = createObjectLocationPrefix
 
     implicit val brokenReader =
-      new Readable[ObjectLocation, InputStreamWithLength] {
-        override def get(id: ObjectLocation): this.ReadEither =
+      new Readable[S3ObjectLocation, InputStreamWithLength] {
+        override def get(location: S3ObjectLocation): this.ReadEither =
           Left(StoreReadError(new Throwable("BOOM!")))
       }
 
-    val tagManifestFileFinder = new TagManifestFileFinder()
+    val tagManifestFileFinder = new TagManifestFileFinder()(brokenReader)
 
     val result = tagManifestFileFinder.getTagManifestFiles(
       prefix = prefix,
