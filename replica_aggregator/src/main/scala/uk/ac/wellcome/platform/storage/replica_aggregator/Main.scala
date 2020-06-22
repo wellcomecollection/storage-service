@@ -73,11 +73,11 @@ object Main extends WellcomeTypesafeApp {
       // TODO: Make this configurable
       replicaCounter = new ReplicaCounter(
         expectedReplicaCount =
-          config.required[String]("aggregator.expected_replica_count").toInt
+          config.requireString("aggregator.expected_replica_count").toInt
       ),
       ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
       outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName),
-      metricsNamespace = config.required[String]("aws.metrics.namespace")
+      metricsNamespace = config.requireString("aws.metrics.namespace")
     )
   }
 }

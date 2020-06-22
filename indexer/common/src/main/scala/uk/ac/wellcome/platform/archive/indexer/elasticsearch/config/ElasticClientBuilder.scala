@@ -7,15 +7,25 @@ import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 object ElasticClientBuilder {
   def buildElasticClient(config: Config): ElasticClient = {
-    val hostname = config.getOrElse[String]("es.host")(default = "localhost")
+    val hostname = config
+      .getStringOption("es.host")
+      .getOrElse("localhost")
+
     val port = config
-      .getOrElse[String]("es.port")(
-        default = "9200"
-      )
-      .toInt
-    val protocol = config.getOrElse[String]("es.protocol")(default = "http")
-    val username = config.getOrElse[String]("es.username")(default = "username")
-    val password = config.getOrElse[String]("es.password")(default = "password")
+      .getIntOption("es.port")
+      .getOrElse(9200)
+
+    val protocol = config
+      .getStringOption("es.protocol")
+      .getOrElse("http")
+
+    val username = config
+      .getStringOption("es.username")
+      .getOrElse("username")
+
+    val password = config
+      .getStringOption("es.password")
+      .getOrElse("password")
 
     ElasticClientFactory.create(
       hostname = hostname,

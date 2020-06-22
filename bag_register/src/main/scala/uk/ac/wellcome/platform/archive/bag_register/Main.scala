@@ -69,7 +69,7 @@ object Main extends WellcomeTypesafeApp {
     val register = new Register(
       bagReader = new S3BagReader(),
       bagTrackerClient = new AkkaBagTrackerClient(
-        trackerHost = config.required[String]("bags.tracker.host")
+        trackerHost = config.requireString("bags.tracker.host")
       ),
       storageManifestService = storageManifestService
     )
@@ -85,7 +85,7 @@ object Main extends WellcomeTypesafeApp {
       ingestUpdater = ingestUpdater,
       registrationNotifications = registrationNotifications,
       register = register,
-      metricsNamespace = config.required[String]("aws.metrics.namespace")
+      metricsNamespace = config.requireString("aws.metrics.namespace")
     )
   }
 }

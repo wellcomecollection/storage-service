@@ -35,12 +35,12 @@ object Main extends WellcomeTypesafeApp {
       SQSBuilder.buildSQSAsyncClient(config)
 
     val ingestTrackerHost = Uri(
-      config.required[String]("ingests.tracker.host")
+      config.requireString("ingests.tracker.host")
     )
 
     new IngestsWorkerService(
       workerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),
-      metricsNamespace = config.required[String]("aws.metrics.namespace"),
+      metricsNamespace = config.requireString("aws.metrics.namespace"),
       ingestTrackerClient = new AkkaIngestTrackerClient(ingestTrackerHost)
     )
   }

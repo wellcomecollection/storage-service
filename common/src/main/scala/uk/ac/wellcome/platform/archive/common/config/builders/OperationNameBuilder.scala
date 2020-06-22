@@ -5,5 +5,5 @@ import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 object OperationNameBuilder {
   def getName(config: Config): String =
-    config.required[String]("operation.name")
+    config.requireString("operation.name")
 }

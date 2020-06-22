@@ -36,7 +36,7 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: SqsAsyncClient =
       SQSBuilder.buildSQSAsyncClient(config)
 
-    val index = Index(name = config.required[String]("es.ingests.index-name"))
+    val index = Index(name = config.requireString("es.ingests.index-name"))
     info(s"Writing ingests to index $index")
 
     info(s"Creating the Elasticsearch index mapping")
@@ -59,7 +59,7 @@ object Main extends WellcomeTypesafeApp {
     new IngestsIndexerWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
       indexer = ingestIndexer,
-      metricsNamespace = config.required[String]("aws.metrics.namespace")
+      metricsNamespace = config.requireString("aws.metrics.namespace")
     )
   }
 }

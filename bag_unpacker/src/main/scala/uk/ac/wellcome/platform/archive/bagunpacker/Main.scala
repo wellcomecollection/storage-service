@@ -67,7 +67,7 @@ object Main extends WellcomeTypesafeApp {
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,
       unpacker = new S3Unpacker(),
-      metricsNamespace = config.required[String]("aws.metrics.namespace")
+      metricsNamespace = config.requireString("aws.metrics.namespace")
     )
   }
 }

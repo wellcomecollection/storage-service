@@ -48,7 +48,7 @@ object Main extends WellcomeTypesafeApp {
         config,
         subject = "Sent from the notifier"
       ),
-      metricsNamespace = config.required[String]("aws.metrics.namespace")
+      metricsNamespace = config.requireString("aws.metrics.namespace")
     )
   }
 }

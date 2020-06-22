@@ -84,7 +84,7 @@ object Main extends WellcomeTypesafeApp {
       destinationConfig = ReplicatorDestinationConfig
         .buildDestinationConfig(config),
       bagReplicator = new BagReplicator(replicator),
-      metricsNamespace = config.required[String]("aws.metrics.namespace")
+      metricsNamespace = config.requireString("aws.metrics.namespace")
     )
   }
 }

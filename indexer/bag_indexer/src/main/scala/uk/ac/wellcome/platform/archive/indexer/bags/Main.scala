@@ -37,7 +37,7 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: SqsAsyncClient =
       SQSBuilder.buildSQSAsyncClient(config)
 
-    val index = Index(name = config.required[String]("es.bags.index-name"))
+    val index = Index(name = config.requireString("es.bags.index-name"))
     info(s"Writing bags to index $index")
 
     info(s"Creating the Elasticsearch index mapping")
@@ -63,13 +63,13 @@ object Main extends WellcomeTypesafeApp {
     )
 
     val bagTrackerClient = new AkkaBagTrackerClient(
-      trackerHost = config.required[String]("bags.tracker.host")
+      trackerHost = config.requireString("bags.tracker.host")
     )
 
     new BagIndexerWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
       indexer = bagIndexer,
-      metricsNamespace = config.required[String]("aws.metrics.namespace"),
+      metricsNamespace = config.requireString("aws.metrics.namespace"),
       bagTrackerClient = bagTrackerClient
     )
   }
