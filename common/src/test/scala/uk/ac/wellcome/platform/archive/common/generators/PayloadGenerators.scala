@@ -40,7 +40,7 @@ trait PayloadGenerators
     createPipelineContextWith()
 
   def createSourceLocationPayloadWith(
-    sourceLocation: ObjectLocation = createObjectLocation,
+    sourceLocation: ObjectLocation = ObjectLocation(randomAlphanumeric, randomAlphanumeric),
     storageSpace: StorageSpace = createStorageSpace
   ): SourceLocationPayload =
     SourceLocationPayload(
@@ -54,7 +54,7 @@ trait PayloadGenerators
     createSourceLocationPayloadWith()
 
   def createUnpackedBagLocationPayloadWith(
-    unpackedBagLocation: ObjectLocationPrefix = createObjectLocationPrefix,
+    unpackedBagLocation: ObjectLocationPrefix = ObjectLocationPrefix(randomAlphanumeric, randomAlphanumeric),
     storageSpace: StorageSpace = createStorageSpace
   ): UnpackedBagLocationPayload =
     UnpackedBagLocationPayload(
@@ -95,7 +95,7 @@ trait PayloadGenerators
 
   def createVersionedBagRootPayloadWith(
     context: PipelineContext = createPipelineContext,
-    bagRoot: ObjectLocationPrefix = createObjectLocationPrefix,
+    bagRoot: ObjectLocationPrefix = ObjectLocationPrefix(randomAlphanumeric, randomAlphanumeric),
     version: BagVersion = createBagVersion
   ): VersionedBagRootPayload =
     VersionedBagRootPayload(
@@ -109,7 +109,7 @@ trait PayloadGenerators
 
   def createBagRootLocationPayloadWith(
     context: PipelineContext = createPipelineContext,
-    bagRoot: ObjectLocationPrefix = createObjectLocationPrefix
+    bagRoot: ObjectLocationPrefix = ObjectLocationPrefix(randomAlphanumeric, randomAlphanumeric)
   ): BagRootLocationPayload =
     BagRootLocationPayload(
       context = context,

@@ -9,11 +9,13 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.verify._
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.generators.RandomThings
+import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 
 import scala.util.Random
 
-trait StorageRandomThings extends RandomThings {
+trait StorageRandomThings extends RandomThings with S3Fixtures {
   def randomAlphanumericWithLength(length: Int = 8): String =
     Random.alphanumeric take length mkString
 
@@ -193,4 +195,8 @@ trait StorageRandomThings extends RandomThings {
 
   def createChecksum: Checksum =
     createChecksumWith()
+
+  // TODO: Upstream to scala-storage
+  def createObjectLocationPrefix: S3ObjectLocationPrefix =
+    createObjectLocationPrefixWith(bucket = createBucket)
 }

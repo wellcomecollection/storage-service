@@ -1,35 +1,24 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
+import java.nio.file.Paths
+
 import org.scalatest.{Assertion, EitherValues, TryValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  Bag,
-  BagPath,
-  BagVersion,
-  ExternalIdentifier
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagPath, BagVersion, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagBuilder,
-  BagBuilderBase
-}
+import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagBuilderBase, S3BagBuilder, S3BagBuilderBase}
 import uk.ac.wellcome.platform.archive.common.generators._
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  PrimaryStorageLocation,
-  SecondaryStorageLocation,
-  StorageManifest,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryStorageLocation, SecondaryStorageLocation, StorageManifest, StorageSpace}
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
-import uk.ac.wellcome.storage.{
-  ObjectLocation,
-  ObjectLocationPrefix,
-  ReadError,
-  StoreReadError
-}
+import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
 
 import scala.util.Random
 
@@ -41,8 +30,10 @@ class StorageManifestServiceTest
     with StorageLocationGenerators
     with StorageSpaceGenerators
     with TimeTestFixture
-    with EitherValues
+    with S3Fixtures
     with TryValues {
+
+  implicit val s3StreamStore: S3StreamStore = new S3StreamStore()
 
   describe("checks the replica root paths") {
     describe("primary location") {
@@ -54,7 +45,7 @@ class StorageManifestServiceTest
 
         assertIsError(location = location, version = version) { err =>
           err shouldBe a[StorageManifestException]
-          err.getMessage shouldBe s"Malformed bag root: ${location.prefix.namespace}/${location.prefix.path} (expected suffix /$version)"
+          err.getMessage shouldBe s"Malformed bag root: ${location.prefix.bucket}/${location.prefix.keyPrefix} (expected suffix /$version)"
         }
       }
 
@@ -64,7 +55,7 @@ class StorageManifestServiceTest
 
         assertIsError(location = location, version = version) { err =>
           err shouldBe a[StorageManifestException]
-          err.getMessage shouldBe s"Malformed bag root: ${location.prefix.namespace}/${location.prefix.path} (expected suffix /$version)"
+          err.getMessage shouldBe s"Malformed bag root: ${location.prefix.bucket}/${location.prefix.keyPrefix} (expected suffix /$version)"
         }
       }
     }
@@ -106,60 +97,62 @@ class StorageManifestServiceTest
   describe("sets the locations and replicaLocations correctly") {
     val version = createBagVersion
 
-    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
-      MemoryStreamStore[ObjectLocation]()
-
-    val (bagRoot, bag) = createStorageManifestBag(version = version)
-
-    val location = createPrimaryLocationWith(
-      prefix = bagRoot
-    )
-
-    val replicas = collectionOf(max = 10) {
-      createSecondaryLocationWith(version)
-    }
-
-    val storageManifest = createManifest(
-      bag = bag,
-      location = location,
-      replicas = replicas,
-      version = version
-    )
-
-    it("sets the correct provider on the primary location") {
-      storageManifest.location.provider shouldBe location.provider
-    }
-
-    it("sets the correct prefix on the primary location") {
-      storageManifest.location.prefix shouldBe bagRoot.copy(
-        path = bagRoot.path.stripSuffix(s"/$version")
+    withLocalS3Bucket { implicit bucket =>
+      val (bagRoot, bag) = createStorageManifestBag(
+        version = version,
+        bagBuilder = S3BagBuilder
       )
-    }
 
-    it("uses the correct providers on the replica locations") {
-      val expectedProviders = replicas.map { _.provider }
-      val actualProviders = storageManifest.replicaLocations.map { _.provider }
+      val location = createPrimaryLocationWith(
+        prefix = bagRoot
+      )
 
-      actualProviders shouldBe expectedProviders
-    }
+      val replicas = collectionOf(max = 10) {
+        createSecondaryLocationWith(version)
+      }
 
-    it("uses the correct roots on the replica locations") {
-      val expectedPrefixes = replicas
-        .map { _.prefix }
-        .map { prefix =>
-          prefix.copy(
-            path = prefix.path.stripSuffix(s"/$version")
-          )
-        }
+      val storageManifest = createManifest(
+        bag = bag,
+        location = location,
+        replicas = replicas,
+        version = version
+      )
 
-      val actualPrefixes = storageManifest.replicaLocations.map { _.prefix }
+      it("sets the correct provider on the primary location") {
+        storageManifest.location.provider shouldBe location.provider
+      }
 
-      actualPrefixes shouldBe expectedPrefixes
+      it("sets the correct prefix on the primary location") {
+        storageManifest.location.prefix shouldBe bagRoot.copy(
+          keyPrefix = bagRoot.keyPrefix.stripSuffix(s"/$version")
+        )
+      }
+
+      it("uses the correct providers on the replica locations") {
+        val expectedProviders = replicas.map { _.provider }
+        val actualProviders = storageManifest.replicaLocations.map { _.provider }
+
+        actualProviders shouldBe expectedProviders
+      }
+
+      it("uses the correct roots on the replica locations") {
+        val expectedPrefixes = replicas
+          .map { _.prefix }
+          .map { prefix =>
+            prefix.copy(
+              keyPrefix = prefix.keyPrefix.stripSuffix(s"/$version")
+            )
+          }
+
+        val actualPrefixes = storageManifest.replicaLocations.map { _.prefix }
+
+        actualPrefixes shouldBe expectedPrefixes
+      }
     }
   }
 
   describe("if there's no fetch.txt, it versions the paths") {
-    object NoFetchBagBuilder extends BagBuilderBase {
+    object NoFetchBagBuilder extends S3BagBuilderBase {
       override protected def getFetchEntryCount(payloadFileCount: Int): Int = 0
     }
 
@@ -197,7 +190,7 @@ class StorageManifestServiceTest
   }
 
   describe("if there's a fetch.txt, it constructs the right paths") {
-    object AtLeastOneFetchEntryBagBuilder extends BagBuilderBase {
+    object AtLeastOneFetchEntryBagBuilder extends S3BagBuilderBase {
       override protected def getFetchEntryCount(payloadFileCount: Int): Int =
         randomInt(from = 1, to = payloadFileCount)
     }
@@ -360,7 +353,7 @@ class StorageManifestServiceTest
 
       val fetchEntries = Map(
         BagPath("data/file1.txt") -> createFetchMetadataWith(
-          uri = s"s3://${location.prefix.namespace}/file1.txt"
+          uri = s"s3://${location.prefix.bucket}/file1.txt"
         )
       )
 
@@ -433,9 +426,10 @@ class StorageManifestServiceTest
 
       val err = new Throwable("BOOM!")
 
-      val brokenSizeFinder = new SizeFinder {
-        override def retryableGetFunction(location: ObjectLocation): Long =
+      val brokenSizeFinder = new SizeFinder[S3ObjectLocation] {
+        override def retryableGetFunction(location: S3ObjectLocation): Long =
           throw err
+
         override def buildGetError(throwable: Throwable): ReadError =
           StoreReadError(throwable)
       }
@@ -461,7 +455,7 @@ class StorageManifestServiceTest
     }
 
     it("uses the size finder to get sizes") {
-      object NoFetchBagBuilder extends BagBuilderBase {
+      object NoFetchBagBuilder extends S3BagBuilderBase {
         override protected def getFetchEntryCount(payloadFileCount: Int): Int =
           0
       }
@@ -479,8 +473,10 @@ class StorageManifestServiceTest
       val location = createPrimaryLocationWith(prefix = bagRoot)
 
       var sizeCache: Map[ObjectLocation, Long] = Map.empty
-      val cachingSizeFinder = new SizeFinder {
-        override def retryableGetFunction(location: ObjectLocation): Long = {
+      val cachingSizeFinder = new SizeFinder[S3ObjectLocation] {
+        var sizeCache: Map[S3ObjectLocation, Long] = Map.empty
+
+        override def retryableGetFunction(location: S3ObjectLocation): Long = {
           sizeCache = sizeCache + (location -> Random.nextLong())
           sizeCache(location)
         }
@@ -516,7 +512,7 @@ class StorageManifestServiceTest
     it("uses the size from the fetch file") {
       // Always create a fetch.txt entry rather than a concrete file, always
       // include the size in the fetch.txt.
-      object ConcreteFetchEntryBagBuilder extends BagBuilderBase {
+      object ConcreteFetchEntryBagBuilder extends S3BagBuilderBase {
         override protected def getFetchEntryCount(payloadFileCount: Int): Int =
           payloadFileCount
 
@@ -540,8 +536,8 @@ class StorageManifestServiceTest
 
       val err = new Throwable("This should never be called!")
 
-      val brokenSizeFinder = new SizeFinder {
-        override def retryableGetFunction(location: ObjectLocation): Long =
+      val brokenSizeFinder = new SizeFinder[S3ObjectLocation] {
+        override def retryableGetFunction(location: S3ObjectLocation): Long =
           throw err
         override def buildGetError(throwable: Throwable): ReadError =
           StoreReadError(throwable)
@@ -574,25 +570,21 @@ class StorageManifestServiceTest
     space: StorageSpace = createStorageSpace,
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     version: BagVersion,
-    bagBuilder: BagBuilderBase = BagBuilder
+    bagBuilder: S3BagBuilderBase = S3BagBuilder
   )(
     implicit
-    namespace: String = randomAlphanumeric,
-    streamStore: MemoryStreamStore[ObjectLocation]
-  ): (ObjectLocationPrefix, Bag) = {
-    implicit val typedStore: MemoryTypedStore[ObjectLocation, String] =
-      new MemoryTypedStore[ObjectLocation, String]()
-
-    val (bagObjects, bagRoot, _) =
-      bagBuilder.createBagContentsWith(
+    bucket: Bucket = createBucket,
+    streamStore: S3StreamStore
+  ): (S3ObjectLocationPrefix, Bag) = {
+    val (bagRoot, bagInfo) =
+      bagBuilder.createS3BagWith(
+        bucket = bucket,
         space = space,
         externalIdentifier = externalIdentifier,
         version = version
       )
 
-    bagBuilder.uploadBagObjects(bagObjects)
-
-    (bagRoot, new MemoryBagReader().get(bagRoot).right.value)
+    (bagRoot, new S3BagReader().get(bagRoot).right.value)
   }
 
   describe(
@@ -634,15 +626,15 @@ class StorageManifestServiceTest
     replicas: Seq[SecondaryStorageLocation] = Seq.empty,
     space: StorageSpace = createStorageSpace,
     version: BagVersion,
-    sizeFinder: SizeFinder = new SizeFinder {
-      override def retryableGetFunction(location: ObjectLocation): Long =
+    sizeFinder: SizeFinder[S3ObjectLocation] = new SizeFinder[S3ObjectLocation] {
+      override def retryableGetFunction(location: S3ObjectLocation): Long =
         Random.nextLong().abs
 
       override def buildGetError(throwable: Throwable): ReadError =
         StoreReadError(throwable)
     }
   )(
-    implicit streamStore: MemoryStreamStore[ObjectLocation]
+    implicit streamStore: S3StreamStore
   ): StorageManifest = {
     val service = new StorageManifestService(sizeFinder)
 
@@ -669,18 +661,25 @@ class StorageManifestServiceTest
     )
 
   def createPrimaryLocationWith(
-    bagRoot: ObjectLocation,
+    bagRoot: S3ObjectLocation,
     version: BagVersion
   ): PrimaryStorageLocation =
     createPrimaryLocationWith(
-      prefix = bagRoot.join(version.toString).asPrefix
+      prefix = S3ObjectLocationPrefix(
+        bucket = bagRoot.bucket,
+        keyPrefix = Joiner.join(bagRoot, version.toString).key
+      )
     )
 
   def createSecondaryLocationWith(
     version: BagVersion
   ): SecondaryStorageLocation =
     createSecondaryLocationWith(
-      prefix = createObjectLocation.join(version.toString).asPrefix
+      prefix =
+        S3ObjectLocationPrefix(
+          bucket = createBucketName,
+          keyPrefix = Paths.get(randomAlphanumeric, version.toString).normalize().toString
+        )
     )
 
   private def assertIsError(
@@ -692,8 +691,8 @@ class StorageManifestServiceTest
     replicas: Seq[SecondaryStorageLocation] = Seq.empty,
     version: BagVersion = BagVersion(1)
   )(assertError: Throwable => Assertion): Assertion = {
-    val sizeFinder = new SizeFinder {
-      override def retryableGetFunction(location: ObjectLocation): Long = 1
+    val sizeFinder = new SizeFinder[S3ObjectLocation] {
+      override def retryableGetFunction(location: S3ObjectLocation): Long = 1
 
       override def buildGetError(throwable: Throwable): ReadError =
         StoreReadError(throwable)

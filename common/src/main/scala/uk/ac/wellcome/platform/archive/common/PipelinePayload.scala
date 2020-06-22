@@ -73,5 +73,9 @@ case class ReplicaResultPayload(
   version: BagVersion
 ) extends BagRootPayload {
   val bagRoot: ObjectLocationPrefix =
-    replicaResult.storageLocation.prefix
+    ObjectLocationPrefix(
+      namespace = replicaResult.storageLocation.prefix.bucket,
+      path = replicaResult.storageLocation.prefix.keyPrefix
+    )
+
 }

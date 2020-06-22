@@ -3,13 +3,10 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import uk.ac.wellcome.platform.archive.common.bagit.models.UnreferencedFiles
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifestFile
 import uk.ac.wellcome.platform.archive.common.verify.{Hasher, HashingAlgorithm}
+import uk.ac.wellcome.storage.DoesNotExistError
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
-import uk.ac.wellcome.storage.{
-  DoesNotExistError,
-  ObjectLocation,
-  ObjectLocationPrefix
-}
 
 import scala.util.{Failure, Success, Try}
 
@@ -21,11 +18,11 @@ import scala.util.{Failure, Success, Try}
   *
   */
 class TagManifestFileFinder(
-  implicit streamReader: Readable[ObjectLocation, InputStreamWithLength]
+  implicit streamReader: Readable[S3ObjectLocation, InputStreamWithLength]
 ) {
 
   def getTagManifestFiles(
-    prefix: ObjectLocationPrefix,
+    prefix: S3ObjectLocationPrefix,
     algorithm: HashingAlgorithm
   ): Try[Seq[StorageManifestFile]] = Try {
     val entries: Seq[StorageManifestFile] =
@@ -42,7 +39,7 @@ class TagManifestFileFinder(
 
   private def findIndividualTagManifestFile(
     name: String,
-    prefix: ObjectLocationPrefix,
+    prefix: S3ObjectLocationPrefix,
     algorithm: HashingAlgorithm
   ): Option[StorageManifestFile] =
     streamReader.get(prefix.asLocation(name)) match {

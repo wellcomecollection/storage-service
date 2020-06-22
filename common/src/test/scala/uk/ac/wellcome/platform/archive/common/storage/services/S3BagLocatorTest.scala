@@ -102,7 +102,7 @@ class S3BagLocatorTest extends AnyFunSpec with Matchers with S3Fixtures {
     }
 
     it("fails if the bucket does not exist") {
-      val prefix = createObjectLocationPrefixWith("doesnotexist")
+      val prefix = ObjectLocationPrefix("doesnotexist", path = randomAlphanumeric)
       assertFailsToFindBagIn(prefix)
     }
   }

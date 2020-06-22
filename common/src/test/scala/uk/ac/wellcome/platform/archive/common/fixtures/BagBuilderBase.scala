@@ -282,6 +282,7 @@ trait S3BagBuilderBase
     bucket: Bucket,
     space: StorageSpace = createStorageSpace,
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
+    version: BagVersion = BagVersion(randomInt(from = 2, to = 10)),
     payloadFileCount: Int = randomInt(from = 5, to = 50)
   ): (S3ObjectLocationPrefix, BagInfo) = {
     implicit val namespace: String = bucket.name
@@ -289,6 +290,7 @@ trait S3BagBuilderBase
     val (bagObjects, bagRoot, bagInfo) = createBagContentsWith(
       space = space,
       externalIdentifier = externalIdentifier,
+      version = version,
       payloadFileCount = payloadFileCount
     )
 

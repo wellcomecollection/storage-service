@@ -2,16 +2,11 @@ package uk.ac.wellcome.platform.archive.common.generators
 
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.ingests.models.StorageProvider
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  PrimaryStorageLocation,
-  SecondaryStorageLocation
-}
-import uk.ac.wellcome.storage.ObjectLocationPrefix
-import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
+import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryStorageLocation, SecondaryStorageLocation}
+import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 
 trait StorageLocationGenerators
-    extends ObjectLocationGenerators
-    with StorageRandomThings {
+    extends StorageRandomThings {
   def createProvider: StorageProvider =
     StorageProvider(
       id = chooseFrom(StorageProvider.allowedValues)
@@ -22,7 +17,7 @@ trait StorageLocationGenerators
 
   def createPrimaryLocationWith(
     provider: StorageProvider = createProvider,
-    prefix: ObjectLocationPrefix = createObjectLocationPrefix
+    prefix: S3ObjectLocationPrefix = createObjectLocationPrefix
   ) =
     PrimaryStorageLocation(
       provider = provider,
@@ -34,7 +29,7 @@ trait StorageLocationGenerators
 
   def createSecondaryLocationWith(
     provider: StorageProvider = createProvider,
-    prefix: ObjectLocationPrefix = createObjectLocationPrefix
+    prefix: S3ObjectLocationPrefix = createObjectLocationPrefix
   ) =
     SecondaryStorageLocation(
       provider = provider,

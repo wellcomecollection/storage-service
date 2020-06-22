@@ -2,6 +2,8 @@ package uk.ac.wellcome.storage
 
 import java.nio.file.Paths
 
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
+
 case class ObjectLocation(namespace: String, path: String) extends Location {
   override def toString = s"$namespace/$path"
 
@@ -21,4 +23,13 @@ case class ObjectLocationPrefix(namespace: String, path: String) extends Prefix[
 
   def asLocation(parts: String*): ObjectLocation =
     ObjectLocation(namespace, path).join(parts: _*)
+}
+
+// TODO: Move this into scala-storage
+object Joiner {
+  def join(s3ObjectLocation: S3ObjectLocation, path: String): S3ObjectLocation =
+    S3ObjectLocation(
+      bucket = s3ObjectLocation.bucket,
+      key = Paths.get(s3ObjectLocation.key, path).normalize().toString
+    )
 }

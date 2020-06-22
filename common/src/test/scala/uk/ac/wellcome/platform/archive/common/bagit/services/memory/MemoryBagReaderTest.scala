@@ -10,7 +10,7 @@ import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
 
 class MemoryBagReaderTest
-    extends BagReaderTestCases[MemoryStreamStore[ObjectLocation], String] {
+    extends BagReaderTestCases[MemoryStreamStore[ObjectLocation], String, ObjectLocation, ObjectLocationPrefix] {
   override def withContext[R](
     testWith: TestWith[MemoryStreamStore[ObjectLocation], R]
   ): R =
@@ -26,7 +26,7 @@ class MemoryBagReaderTest
     )
 
   override def withBagReader[R](
-    testWith: TestWith[BagReader, R]
+    testWith: TestWith[BagReader[ObjectLocation, ObjectLocationPrefix], R]
   )(implicit context: MemoryStreamStore[ObjectLocation]): R =
     testWith(
       new MemoryBagReader()
@@ -41,4 +41,10 @@ class MemoryBagReaderTest
     context.memoryStore.entries = context.memoryStore.entries.filter {
       case (location, _) => location != root.asLocation(path)
     }
+
+  override protected def createPrefix(namespace: String, path: String): ObjectLocationPrefix =
+    ObjectLocationPrefix(namespace, path)
+
+  override protected def createLocation(prefix: ObjectLocationPrefix, path: String): ObjectLocation =
+    ObjectLocation(namespace = prefix.namespace, path = path)
 }

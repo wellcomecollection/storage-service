@@ -4,24 +4,20 @@ import java.time.Instant
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.generators.{
-  ExternalIdentifierGenerators,
-  StorageSpaceGenerators
-}
+import uk.ac.wellcome.platform.archive.common.generators.{ExternalIdentifierGenerators, StorageSpaceGenerators}
 import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
+import uk.ac.wellcome.storage.ObjectLocation
 
 class SourceLocationPayloadTest
     extends AnyFunSpec
     with Matchers
     with ExternalIdentifierGenerators
-    with ObjectLocationGenerators
     with StorageSpaceGenerators {
 
   it("creates a payload from an ingest") {
     val ingestId = createIngestID
     val ingestType = CreateIngestType
-    val sourceLocation = createObjectLocation
+    val sourceLocation = ObjectLocation(randomAlphanumeric, randomAlphanumeric)
     val space = createStorageSpace
     val ingestDate = Instant.now()
     val externalIdentifier = createExternalIdentifier

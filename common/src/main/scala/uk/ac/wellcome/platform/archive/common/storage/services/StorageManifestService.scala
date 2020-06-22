@@ -3,19 +3,13 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import java.time.Instant
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  Bag,
-  BagManifest,
-  BagPath,
-  BagVersion,
-  MatchedLocation
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagManifest, BagPath, BagVersion, MatchedLocation}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 import scala.util.{Failure, Success, Try}
 
@@ -26,9 +20,9 @@ class BadFetchLocationException(message: String)
     extends StorageManifestException(message)
 
 class StorageManifestService(
-  sizeFinder: SizeFinder
+  sizeFinder: SizeFinder[S3ObjectLocation]
 )(
-  implicit streamReader: Readable[ObjectLocation, InputStreamWithLength]
+  implicit streamReader: Readable[S3ObjectLocation, InputStreamWithLength]
 ) extends Logging {
   private val tagManifestFileFinder = new TagManifestFileFinder()
 
@@ -106,20 +100,20 @@ class StorageManifestService(
     *
     */
   private def getBagRoot(
-    replicaRoot: ObjectLocationPrefix,
+    replicaRoot: S3ObjectLocationPrefix,
     version: BagVersion
-  ): Try[ObjectLocationPrefix] =
-    if (replicaRoot.path.endsWith(s"/$version")) {
+  ): Try[S3ObjectLocationPrefix] =
+    if (replicaRoot.keyPrefix.endsWith(s"/$version")) {
       Success(
         replicaRoot.copy(
-          path = replicaRoot.path.stripSuffix(s"/$version")
+          keyPrefix = replicaRoot.keyPrefix.stripSuffix(s"/$version")
         )
       )
     } else {
       Failure(
         new StorageManifestException(
           // TODO: Move the toString method for ObjectLocationPrefix into scala-storage
-          s"Malformed bag root: ${replicaRoot.namespace}/${replicaRoot.path} (expected suffix /$version)"
+          s"Malformed bag root: ${replicaRoot.bucket}/${replicaRoot.keyPrefix} (expected suffix /$version)"
         )
       )
     }
@@ -137,9 +131,9 @@ class StorageManifestService(
 
   private def getSizeAndLocation(
     matchedLocation: MatchedLocation,
-    bagRoot: ObjectLocationPrefix,
+    bagRoot: S3ObjectLocationPrefix,
     version: BagVersion
-  ): (ObjectLocation, Option[Long]) =
+  ): (S3ObjectLocation, Option[Long]) =
     matchedLocation.fetchMetadata match {
       // This is a concrete file inside the replicated bag,
       // so it's inside the versioned replica directory.
@@ -153,21 +147,21 @@ class StorageManifestService(
       // We need to check it's in another versioned directory
       // for this bag.
       case Some(fetchMetadata) =>
-        val fetchLocation = ObjectLocation(
-          namespace = fetchMetadata.uri.getHost,
-          path = fetchMetadata.uri.getPath.stripPrefix("/")
+        val fetchLocation = S3ObjectLocation(
+          bucket = fetchMetadata.uri.getHost,
+          key = fetchMetadata.uri.getPath.stripPrefix("/")
         )
 
-        if (fetchLocation.namespace != bagRoot.namespace) {
+        if (fetchLocation.bucket != bagRoot.bucket) {
           throw new BadFetchLocationException(
-            s"Fetch entry for ${matchedLocation.bagPath} refers to a file in the wrong namespace: ${fetchLocation.namespace}"
+            s"Fetch entry for ${matchedLocation.bagPath} refers to a file in the wrong namespace: ${fetchLocation.bucket}"
           )
         }
 
         // TODO: This check could actually look for a /v1, /v2, etc.
-        if (!fetchLocation.path.startsWith(bagRoot.path + "/")) {
+        if (!fetchLocation.key.startsWith(bagRoot.keyPrefix + "/")) {
           throw new BadFetchLocationException(
-            s"Fetch entry for ${matchedLocation.bagPath} refers to a file in the wrong path: /${fetchLocation.path}"
+            s"Fetch entry for ${matchedLocation.bagPath} refers to a file in the wrong path: /${fetchLocation.key}"
           )
         }
 
@@ -187,9 +181,9 @@ class StorageManifestService(
     */
   private def createPathLocationMap(
     matchedLocations: Seq[MatchedLocation],
-    bagRoot: ObjectLocationPrefix,
+    bagRoot: S3ObjectLocationPrefix,
     version: BagVersion
-  ): Try[Map[BagPath, (ObjectLocation, Option[Long])]] =
+  ): Try[Map[BagPath, (S3ObjectLocation, Option[Long])]] =
     Try {
       matchedLocations.map { matchedLoc =>
         (
@@ -201,8 +195,8 @@ class StorageManifestService(
 
   private def createManifestFiles(
     manifest: BagManifest,
-    entries: Map[BagPath, (ObjectLocation, Option[Long])],
-    bagRoot: ObjectLocationPrefix
+    entries: Map[BagPath, (S3ObjectLocation, Option[Long])],
+    bagRoot: S3ObjectLocationPrefix
   ): Try[Seq[StorageManifestFile]] = Try {
     manifest.entries.map {
       case (bagPath, checksumValue) =>
@@ -212,7 +206,7 @@ class StorageManifestService(
         // We wrap it in a Try block just in case, but this should never
         // throw in practice.
         val (location, maybeSize) = entries(bagPath)
-        val path = location.path.stripPrefix(bagRoot.path + "/")
+        val path = location.key.stripPrefix(bagRoot.keyPrefix + "/")
 
         val size = maybeSize match {
           case Some(s) => s
@@ -242,13 +236,15 @@ class StorageManifestService(
   // are the only unreferenced files.
   //
   private def getUnreferencedFiles(
-    bagRoot: ObjectLocationPrefix,
+    bagRoot: S3ObjectLocationPrefix,
     version: BagVersion,
     tagManifest: BagManifest
   ): Try[Seq[StorageManifestFile]] =
     tagManifestFileFinder
       .getTagManifestFiles(
-        prefix = bagRoot.asLocation(version.toString).asPrefix,
+        prefix = bagRoot.copy(
+          keyPrefix = bagRoot.asLocation(version.toString).key
+        ),
         algorithm = tagManifest.checksumAlgorithm
       )
       .map {

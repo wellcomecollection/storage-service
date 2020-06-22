@@ -3,15 +3,15 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.s3.S3Errors
+import uk.ac.wellcome.storage.s3.{S3Errors, S3ObjectLocation}
 import uk.ac.wellcome.storage.store.RetryableReadable
 import uk.ac.wellcome.storage.store.memory.MemoryStore
 
-trait SizeFinder extends RetryableReadable[ObjectLocation, Long] {
+trait SizeFinder[Ident] extends RetryableReadable[Ident, Long] {
   override val maxRetries: Int = 3
 
-  def getSize(location: ObjectLocation): Either[ReadError, Long] = {
-    get(location) match {
+  def getSize(ident: Ident): Either[ReadError, Long] = {
+    get(ident) match {
       case Right(Identified(_, size)) => Right(size)
       case Left(err)                  => Left(err)
     }
@@ -20,7 +20,7 @@ trait SizeFinder extends RetryableReadable[ObjectLocation, Long] {
 
 class MemorySizeFinder(
   memoryStore: MemoryStore[ObjectLocation, Array[Byte]]
-) extends SizeFinder {
+) extends SizeFinder[ObjectLocation] {
 
   override def retryableGetFunction(location: ObjectLocation): Long =
     memoryStore.entries.get(location) match {
@@ -36,10 +36,10 @@ class MemorySizeFinder(
     }
 }
 
-class S3SizeFinder(implicit s3Client: AmazonS3) extends SizeFinder {
-  override def retryableGetFunction(location: ObjectLocation): Long = {
+class S3SizeFinder(implicit s3Client: AmazonS3) extends SizeFinder[S3ObjectLocation] {
+  override def retryableGetFunction(location: S3ObjectLocation): Long = {
     s3Client
-      .getObjectMetadata(location.namespace, location.path)
+      .getObjectMetadata(location.bucket, location.key)
       .getContentLength
   }
 
