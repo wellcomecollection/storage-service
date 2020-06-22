@@ -21,8 +21,7 @@ class BagVerifier(namespace: String)(
   val resolvable: Resolvable[ObjectLocation],
   val fixityChecker: FixityChecker,
   listing: Listing[ObjectLocationPrefix, ObjectLocation]
-)
-  extends Logging
+) extends Logging
     with VerifyChecksumAndSize
     with VerifyExternalIdentifier
     with VerifyFetch

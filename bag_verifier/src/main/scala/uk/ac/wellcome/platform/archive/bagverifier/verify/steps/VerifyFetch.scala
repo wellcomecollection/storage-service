@@ -1,8 +1,16 @@
 package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FixityListAllCorrect, FixityListResult}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  FixityListAllCorrect,
+  FixityListResult
+}
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
-import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagFetch, BagFetchMetadata, BagPath}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  Bag,
+  BagFetch,
+  BagFetchMetadata,
+  BagPath
+}
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 trait VerifyFetch {
@@ -33,8 +41,8 @@ trait VerifyFetch {
                 // TODO: This could verify the version prefix as well.
                 // TODO: Hard-coding the expected scheme here isn't ideal
                 fetchMetadata.uri.getScheme == "s3" &&
-                  fetchLocation.namespace == root.namespace &&
-                  fetchLocation.path.startsWith(s"${root.path}/")
+                fetchLocation.namespace == root.namespace &&
+                fetchLocation.path.startsWith(s"${root.path}/")
             }
 
         val mismatchedPaths = mismatchedEntries.keys.toSeq

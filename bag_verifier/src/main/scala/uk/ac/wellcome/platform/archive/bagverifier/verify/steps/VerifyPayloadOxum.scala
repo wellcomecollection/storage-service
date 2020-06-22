@@ -1,6 +1,9 @@
 package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FixityListAllCorrect, FixityListResult}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  FixityListAllCorrect,
+  FixityListResult
+}
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
 import uk.ac.wellcome.platform.archive.common.bagit.models.Bag
 

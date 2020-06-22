@@ -1,7 +1,10 @@
 package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
-import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  Bag,
+  ExternalIdentifier
+}
 
 trait VerifyExternalIdentifier {
   def verifyExternalIdentifier(

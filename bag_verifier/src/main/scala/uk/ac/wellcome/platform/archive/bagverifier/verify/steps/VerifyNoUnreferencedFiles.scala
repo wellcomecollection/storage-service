@@ -1,7 +1,10 @@
 package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FixityListAllCorrect, FixityListResult}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  FixityListAllCorrect,
+  FixityListResult
+}
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
 import uk.ac.wellcome.platform.archive.common.bagit.models.UnreferencedFiles
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
@@ -56,11 +59,11 @@ trait VerifyNoUnreferencedFiles extends Logging {
           //    unreferenced1.txt, ...
           //
           val messagePrefix =
-          if (unreferencedFiles.size == 1) {
-            "Bag contains a file which is not referenced in the manifest: "
-          } else {
-            s"Bag contains ${unreferencedFiles.size} files which are not referenced in the manifest: "
-          }
+            if (unreferencedFiles.size == 1) {
+              "Bag contains a file which is not referenced in the manifest: "
+            } else {
+              s"Bag contains ${unreferencedFiles.size} files which are not referenced in the manifest: "
+            }
 
           val userMessage = messagePrefix +
             unreferencedFiles
