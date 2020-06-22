@@ -6,6 +6,7 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.bag.BagExpectedFixity
 import uk.ac.wellcome.platform.archive.bagverifier.fixity._
 import uk.ac.wellcome.platform.archive.bagverifier.models._
+import uk.ac.wellcome.platform.archive.bagverifier.verify.steps.VerifyExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
@@ -21,14 +22,7 @@ class BagVerifier(namespace: String)(
   resolvable: Resolvable[ObjectLocation],
   fixityChecker: FixityChecker,
   listing: Listing[ObjectLocationPrefix, ObjectLocation]
-) extends Logging {
-
-  case class BagVerifierError(
-    e: Throwable,
-    userMessage: Option[String] = None
-  )
-
-  type InternalResult[T] = Either[BagVerifierError, T]
+) extends Logging with VerifyExternalIdentifier {
 
   def verify(
     ingestId: IngestID,
@@ -113,25 +107,6 @@ class BagVerifier(namespace: String)(
       case Right(bag) => Right(bag)
     }
 
-  private def verifyExternalIdentifier(
-    bag: Bag,
-    externalIdentifier: ExternalIdentifier
-  ): InternalResult[Unit] =
-    if (bag.info.externalIdentifier != externalIdentifier) {
-      val message =
-        "External identifier in bag-info.txt does not match request: " +
-          s"${bag.info.externalIdentifier.underlying} is not ${externalIdentifier.underlying}"
-
-      Left(
-        BagVerifierError(
-          e = new Throwable(message),
-          userMessage = Some(message)
-        )
-      )
-    } else {
-      Right(())
-    }
-
   private def verifyChecksumAndSize(
     root: ObjectLocationPrefix,
     bag: Bag
@@ -200,7 +175,7 @@ class BagVerifier(namespace: String)(
       case _ => Right(())
     }
 
-  // Check the user hasn't supplied any fetch entries whcih are in the wrong
+  // Check the user hasn't supplied any fetch entries which are in the wrong
   // namespace or path prefix.
   //
   // We only allow fetch entries to refer to previous versions of the same bag; this
