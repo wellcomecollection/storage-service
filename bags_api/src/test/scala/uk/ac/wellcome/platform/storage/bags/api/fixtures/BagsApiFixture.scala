@@ -76,7 +76,7 @@ trait BagsApiFixture
 
             override val s3Uploader: S3Uploader = uploader
             override val cacheDuration: Duration = 1 days
-            override val prefix: ObjectLocationPrefix = locationPrefix
+            override val s3Prefix: ObjectLocationPrefix = locationPrefix
 
             override implicit val materializer: Materializer = mat
             override val maximumResponseByteLength: Long = maxResponseByteLength

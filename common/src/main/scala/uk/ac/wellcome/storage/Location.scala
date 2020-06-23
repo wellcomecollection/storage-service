@@ -1,6 +1,11 @@
 package uk.ac.wellcome.storage
+import java.nio.file.Paths
 
 trait Location
+
+trait Prefix[OfLocation <: Location] {
+  def asLocation(parts: String*): OfLocation
+}
 
 case class S3ObjectLocation(
   bucket: String,
@@ -20,3 +25,14 @@ case object S3ObjectLocation {
       key = location.path
     )
 }
+
+case class S3ObjectLocationPrefix(
+  bucket: String,
+  keyPrefix: String
+) extends Prefix[S3ObjectLocation] {
+    override def asLocation(parts: String*): S3ObjectLocation =
+      S3ObjectLocation(
+        bucket = bucket,
+        key = Paths.get(keyPrefix, parts: _*).normalize().toString
+      )
+  }

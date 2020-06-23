@@ -19,7 +19,7 @@ import org.scalatest.funspec.AnyFunSpec
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3Uploader
-import uk.ac.wellcome.storage.ObjectLocationPrefix
+import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.generators.RandomThings
@@ -176,15 +176,17 @@ class LargeResponsesTest
 
     val uploader = new S3Uploader()
 
-    val objectLocationPrefix =
-      ObjectLocationPrefix(bucket.name, prefix)
-
     val duration = 30 seconds
 
     val largeResponder = new LargeResponses {
       override val s3Uploader: S3Uploader = uploader
+      override val s3Prefix: S3ObjectLocationPrefix =
+        S3ObjectLocationPrefix(
+          bucket = bucket.name,
+          keyPrefix = prefix
+        )
+
       override val maximumResponseByteLength: Long = maxBytes
-      override val prefix: ObjectLocationPrefix = objectLocationPrefix
       override val cacheDuration: Duration = duration
       override implicit val materializer: Materializer = mat
     }
