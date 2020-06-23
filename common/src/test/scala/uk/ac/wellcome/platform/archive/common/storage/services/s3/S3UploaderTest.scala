@@ -13,10 +13,7 @@ import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
 import scala.concurrent.duration._
 import scala.io.Source
 
-class S3UploaderTest
-    extends AnyFunSpec
-    with Matchers
-    with NewS3Fixtures {
+class S3UploaderTest extends AnyFunSpec with Matchers with NewS3Fixtures {
   val uploader = new S3Uploader()
 
   it("creates a pre-signed URL for an object") {
@@ -35,8 +32,6 @@ class S3UploaderTest
       getUrl(url) shouldBe content
     }
   }
-
-
 
   it("will not update an existing stored object if instructed so") {
     val content = randomAlphanumeric

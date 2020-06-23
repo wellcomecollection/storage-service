@@ -5,10 +5,7 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.storage.StorageError
 import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
 
-class S3ObjectExistsTest
-    extends AnyFunSpec
-    with Matchers
-    with NewS3Fixtures {
+class S3ObjectExistsTest extends AnyFunSpec with Matchers with NewS3Fixtures {
 
   import S3ObjectExists._
 
@@ -50,9 +47,9 @@ class S3ObjectExistsTest
       it("with a broken s3 client") {
         val location = createS3ObjectLocation
 
-        val existsCheck = new S3ObjectExists
-          .S3ObjectExistsImplicit(location)(brokenS3Client)
-          .exists
+        val existsCheck = new S3ObjectExists.S3ObjectExistsImplicit(location)(
+          brokenS3Client
+        ).exists
 
         existsCheck.left.value shouldBe a[StorageError]
       }

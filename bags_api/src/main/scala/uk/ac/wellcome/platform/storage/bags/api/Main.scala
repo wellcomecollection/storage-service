@@ -13,7 +13,10 @@ import uk.ac.wellcome.platform.archive.bag_tracker.client.{
 }
 import uk.ac.wellcome.platform.archive.common.config.builders._
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
-import uk.ac.wellcome.platform.archive.common.http.{HttpMetrics, WellcomeHttpApp}
+import uk.ac.wellcome.platform.archive.common.http.{
+  HttpMetrics,
+  WellcomeHttpApp
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3Uploader
 import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.typesafe.S3Builder

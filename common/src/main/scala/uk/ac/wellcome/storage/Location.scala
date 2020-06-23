@@ -30,9 +30,9 @@ case class S3ObjectLocationPrefix(
   bucket: String,
   keyPrefix: String
 ) extends Prefix[S3ObjectLocation] {
-    override def asLocation(parts: String*): S3ObjectLocation =
-      S3ObjectLocation(
-        bucket = bucket,
-        key = Paths.get(keyPrefix, parts: _*).normalize().toString
-      )
-  }
+  override def asLocation(parts: String*): S3ObjectLocation =
+    S3ObjectLocation(
+      bucket = bucket,
+      key = Paths.get(keyPrefix, parts: _*).normalize().toString
+    )
+}

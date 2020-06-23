@@ -13,7 +13,10 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.LargeResponses
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.storage.bags.api.responses.{LookupBag, LookupBagVersions}
+import uk.ac.wellcome.platform.storage.bags.api.responses.{
+  LookupBag,
+  LookupBagVersions
+}
 import uk.ac.wellcome.storage.S3ObjectLocation
 
 import scala.concurrent.duration._

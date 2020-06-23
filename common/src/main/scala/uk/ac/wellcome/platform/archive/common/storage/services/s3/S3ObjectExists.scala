@@ -6,8 +6,11 @@ import uk.ac.wellcome.storage.{S3ObjectLocation, StoreReadError}
 
 import scala.util.{Failure, Success, Try}
 
-class S3ObjectExists(s3Client: AmazonS3) extends ObjectExists[S3ObjectLocation] {
-  override def exists(location: S3ObjectLocation): Either[StoreReadError, Boolean] =
+class S3ObjectExists(s3Client: AmazonS3)
+    extends ObjectExists[S3ObjectLocation] {
+  override def exists(
+    location: S3ObjectLocation
+  ): Either[StoreReadError, Boolean] =
     Try {
       s3Client.doesObjectExist(location.bucket, location.key)
     } match {
