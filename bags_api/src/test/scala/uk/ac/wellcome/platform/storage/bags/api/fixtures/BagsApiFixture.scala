@@ -22,9 +22,9 @@ import uk.ac.wellcome.platform.archive.common.http.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
+import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3Uploader
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   EmptyMetadata,
-  S3Uploader,
   StorageManifestDao
 }
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi

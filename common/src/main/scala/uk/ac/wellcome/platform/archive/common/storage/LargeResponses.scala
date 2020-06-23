@@ -8,7 +8,7 @@ import akka.http.scaladsl.server.Directives.mapResponse
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.storage.services.S3Uploader
+import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3Uploader
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 

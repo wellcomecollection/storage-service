@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.storage.services
+package uk.ac.wellcome.platform.archive.common.storage.services.s3
 
 import java.io.IOException
 import java.net.URL

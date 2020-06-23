@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.storage.services
+package uk.ac.wellcome.platform.archive.common.storage.services.s3
 
 import java.net.URL
 import java.util
@@ -6,10 +6,11 @@ import java.util
 import com.amazonaws.HttpMethod
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
+import uk.ac.wellcome.platform.archive.common.storage.services.s3
+import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.streaming.Codec.stringCodec
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
-import uk.ac.wellcome.storage._
 
 import scala.concurrent.duration.Duration
 import scala.util.{Failure, Success, Try}
