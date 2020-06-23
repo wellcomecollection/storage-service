@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.storage
+package uk.ac.wellcome.platform.archive.bagverifier.storage
 
 import java.net.URI
 

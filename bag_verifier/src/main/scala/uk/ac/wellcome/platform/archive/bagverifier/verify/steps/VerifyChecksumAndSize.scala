@@ -7,8 +7,8 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
 }
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.bag.BagExpectedFixity
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
+import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable
 import uk.ac.wellcome.platform.archive.common.bagit.models.Bag
-import uk.ac.wellcome.platform.archive.common.storage.Resolvable
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 import scala.util.{Failure, Success, Try}

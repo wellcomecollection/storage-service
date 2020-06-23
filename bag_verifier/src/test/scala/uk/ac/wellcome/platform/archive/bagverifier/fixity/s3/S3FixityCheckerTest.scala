@@ -8,7 +8,8 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FixityChecker,
   FixityCheckerTestCases
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.S3Resolvable
+import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable._
+import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.S3Resolvable
 import uk.ac.wellcome.platform.archive.common.storage.{
   LocationError,
   LocationNotFound
@@ -53,8 +54,6 @@ class S3FixityCheckerTest
   implicit val context: Unit = ()
 
   implicit val s3Resolvable: S3Resolvable = new S3Resolvable()
-
-  import uk.ac.wellcome.platform.archive.common.storage.Resolvable._
 
   override def resolve(location: ObjectLocation): URI =
     location.resolve
