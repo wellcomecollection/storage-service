@@ -3,12 +3,7 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import org.scalatest.{Assertion, EitherValues, TryValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  Bag,
-  BagPath,
-  BagVersion,
-  ExternalIdentifier
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagPath, BagVersion, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.memory.MemoryBagBuilder
 import uk.ac.wellcome.platform.archive.common.generators._

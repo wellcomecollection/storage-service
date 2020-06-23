@@ -72,6 +72,14 @@ case class MemoryLocation(
     )
 }
 
+case object MemoryLocation {
+  def apply(location: ObjectLocation): MemoryLocation =
+    MemoryLocation(
+      namespace = location.namespace,
+      path = location.path
+    )
+}
+
 case class MemoryLocationPrefix(
   namespace: String,
   pathPrefix: String
