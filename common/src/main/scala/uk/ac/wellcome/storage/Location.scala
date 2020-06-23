@@ -16,6 +16,12 @@ case class S3ObjectLocation(
       namespace = this.bucket,
       path = this.key
     )
+
+  def asPrefix: S3ObjectLocationPrefix =
+    S3ObjectLocationPrefix(
+      bucket = this.bucket,
+      keyPrefix = this.key
+    )
 }
 
 case object S3ObjectLocation {
@@ -34,5 +40,19 @@ case class S3ObjectLocationPrefix(
     S3ObjectLocation(
       bucket = bucket,
       key = Paths.get(keyPrefix, parts: _*).normalize().toString
+    )
+
+  def toObjectLocationPrefix: ObjectLocationPrefix =
+    ObjectLocationPrefix(
+      namespace = this.bucket,
+      path = this.keyPrefix
+    )
+}
+
+case object S3ObjectLocationPrefix {
+  def apply(location: ObjectLocationPrefix): S3ObjectLocationPrefix =
+    S3ObjectLocationPrefix(
+      bucket = location.namespace,
+      keyPrefix = location.path
     )
 }
