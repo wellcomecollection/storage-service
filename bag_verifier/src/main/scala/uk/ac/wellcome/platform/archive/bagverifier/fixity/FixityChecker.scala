@@ -22,7 +22,7 @@ import scala.util.{Failure, Success}
   */
 trait FixityChecker[BagLocation] extends Logging {
   protected val streamStore: StreamStore[ObjectLocation]
-  protected val sizeFinder: SizeFinder[ObjectLocation]
+  protected val sizeFinder: SizeFinder[BagLocation]
   val tags: Tags[ObjectLocation]
 
   def locate(uri: URI): Either[LocateFailure[URI], BagLocation]
@@ -59,7 +59,7 @@ trait FixityChecker[BagLocation] extends Logging {
       existingTags <- getExistingTags(expectedFileFixity, location)
       _ = debug(s"Got existing tags for $location: $existingTags")
 
-      size <- verifySize(expectedFileFixity, location)
+      size <- verifySize(expectedFileFixity, bagLocation)
       _ = debug(s"Checked the size of $location is correct")
 
       result <- verifyChecksum(
@@ -115,7 +115,7 @@ trait FixityChecker[BagLocation] extends Logging {
 
   private def verifySize(
     expectedFileFixity: ExpectedFileFixity,
-    location: ObjectLocation
+    location: BagLocation
   ): Either[FileFixityError, Long] =
     for {
       actualLength <- handleReadErrors(

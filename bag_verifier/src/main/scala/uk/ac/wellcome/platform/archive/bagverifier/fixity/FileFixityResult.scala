@@ -20,7 +20,9 @@ case class FileFixityCorrect(
 
 case class FileFixityMismatch(
   expectedFileFixity: ExpectedFileFixity,
-  objectLocation: ObjectLocation,
+  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
+  // See https://github.com/wellcomecollection/platform/issues/4596
+  objectLocation: Any,
   e: Throwable
 ) extends FileFixityError
 
