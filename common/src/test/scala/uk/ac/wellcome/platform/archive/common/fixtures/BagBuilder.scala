@@ -117,8 +117,6 @@ trait BagBuilder[
         )
       }
 
-    val bagRootPath = createBagRootPath(space, externalIdentifier, version)
-
     val bagRoot = createBagRoot(space, externalIdentifier, version)
 
     val manifestObjects =
