@@ -10,22 +10,24 @@ import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 trait NewS3Fixtures extends S3Fixtures {
   def createS3ObjectLocationWith(
-    bucket: Bucket = createBucket
+    bucket: Bucket = createBucket,
+    key: String = randomAlphanumeric
   ): S3ObjectLocation =
     S3ObjectLocation(
       bucket = bucket.name,
-      key = randomAlphanumeric
+      key = key
     )
 
   def createS3ObjectLocation: S3ObjectLocation =
     createS3ObjectLocationWith()
 
   def createS3ObjectLocationPrefixWith(
-    bucket: Bucket = createBucket
+    bucket: Bucket = createBucket,
+    keyPrefix: String = randomAlphanumeric
   ): S3ObjectLocationPrefix =
     S3ObjectLocationPrefix(
       bucket = bucket.name,
-      keyPrefix = randomAlphanumeric
+      keyPrefix = keyPrefix
     )
 
   def createS3ObjectLocationPrefix: S3ObjectLocationPrefix =

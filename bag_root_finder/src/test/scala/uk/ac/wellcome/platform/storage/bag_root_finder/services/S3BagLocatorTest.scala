@@ -1,15 +1,15 @@
-package uk.ac.wellcome.platform.archive.common.storage.services
+package uk.ac.wellcome.platform.storage.bag_root_finder.services
 
 import org.scalatest.Assertion
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.storage.ObjectLocationPrefix
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.{ObjectLocationPrefix, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
 import scala.util.Success
 
-class S3BagLocatorTest extends AnyFunSpec with Matchers with S3Fixtures {
+class S3BagLocatorTest extends AnyFunSpec with Matchers with NewS3Fixtures {
   describe("locateBagInfo") {
     it("locates a bag-info.txt file in the root") {
       withLocalS3Bucket { bucket =>
@@ -20,10 +20,10 @@ class S3BagLocatorTest extends AnyFunSpec with Matchers with S3Fixtures {
           "bag123/data/2.jpg"
         )
 
-        val prefix = createObjectLocationPrefixWith(bucket, "bag123")
+        val prefix = createS3ObjectLocationPrefixWith(bucket, keyPrefix = "bag123")
 
         s3BagLocator.locateBagInfo(prefix) shouldBe Success(
-          createObjectLocationWith(bucket, "bag123/bag-info.txt")
+          createS3ObjectLocationWith(bucket, key = "bag123/bag-info.txt")
         )
       }
     }
@@ -37,10 +37,10 @@ class S3BagLocatorTest extends AnyFunSpec with Matchers with S3Fixtures {
           "bag123/subdir/data/2.jpg"
         )
 
-        val prefix = createObjectLocationPrefixWith(bucket, "bag123")
+        val prefix = createS3ObjectLocationPrefixWith(bucket, keyPrefix = "bag123")
 
         s3BagLocator.locateBagInfo(prefix) shouldBe Success(
-          createObjectLocationWith(bucket, "bag123/subdir/bag-info.txt")
+          createS3ObjectLocationWith(bucket, key = "bag123/subdir/bag-info.txt")
         )
       }
     }
@@ -55,10 +55,10 @@ class S3BagLocatorTest extends AnyFunSpec with Matchers with S3Fixtures {
           "bag123/subdir/data/2.jpg"
         )
 
-        val prefix = createObjectLocationPrefixWith(bucket, "bag123")
+        val prefix = createS3ObjectLocationPrefixWith(bucket, keyPrefix = "bag123")
 
         s3BagLocator.locateBagInfo(prefix) shouldBe Success(
-          createObjectLocationWith(bucket, "bag123/bag-info.txt")
+          createS3ObjectLocationWith(bucket, key = "bag123/bag-info.txt")
         )
       }
     }
@@ -71,7 +71,7 @@ class S3BagLocatorTest extends AnyFunSpec with Matchers with S3Fixtures {
           "bag123/subdir2/bag-info.txt"
         )
 
-        val prefix = createObjectLocationPrefixWith(bucket, "bag123")
+        val prefix = createS3ObjectLocationPrefixWith(bucket, keyPrefix = "bag123")
         assertFailsToFindBagIn(prefix)
       }
     }
@@ -80,7 +80,7 @@ class S3BagLocatorTest extends AnyFunSpec with Matchers with S3Fixtures {
       withLocalS3Bucket { bucket =>
         createObjectsWith(bucket, "bag123/subdir/1.jpg", "bag123/subdir/2.jpg")
 
-        val prefix = createObjectLocationPrefixWith(bucket, "bag123")
+        val prefix = createS3ObjectLocationPrefixWith(bucket, keyPrefix = "bag123")
         assertFailsToFindBagIn(prefix)
       }
     }
@@ -89,20 +89,20 @@ class S3BagLocatorTest extends AnyFunSpec with Matchers with S3Fixtures {
       withLocalS3Bucket { bucket =>
         createObjectsWith(bucket, "bag123/subdir/nesteddir/bag-info.txt")
 
-        val prefix = createObjectLocationPrefixWith(bucket, "bag123")
+        val prefix = createS3ObjectLocationPrefixWith(bucket, keyPrefix = "bag123")
         assertFailsToFindBagIn(prefix)
       }
     }
 
     it("fails if it cannot find a bag-info.txt") {
       withLocalS3Bucket { bucket =>
-        val prefix = createObjectLocationPrefixWith(bucket, "doesnotexist")
+        val prefix = createS3ObjectLocationPrefixWith(bucket, keyPrefix = "doesnotexist")
         assertFailsToFindBagIn(prefix)
       }
     }
 
     it("fails if the bucket does not exist") {
-      val prefix = createObjectLocationPrefixWith("doesnotexist")
+      val prefix = createS3ObjectLocationPrefixWith(bucket = createBucket)
       assertFailsToFindBagIn(prefix)
     }
   }
@@ -117,7 +117,7 @@ class S3BagLocatorTest extends AnyFunSpec with Matchers with S3Fixtures {
           "bag123/data/2.jpg"
         )
 
-        val prefix = createObjectLocationPrefixWith(bucket, "bag123")
+        val prefix = createS3ObjectLocationPrefixWith(bucket, keyPrefix = "bag123")
 
         s3BagLocator.locateBagRoot(prefix) shouldBe Success(prefix)
       }
@@ -132,17 +132,17 @@ class S3BagLocatorTest extends AnyFunSpec with Matchers with S3Fixtures {
           "bag123/subdir/data/2.jpg"
         )
 
-        val prefix = createObjectLocationPrefixWith(bucket, "bag123")
+        val prefix = createS3ObjectLocationPrefixWith(bucket, keyPrefix = "bag123")
 
         s3BagLocator.locateBagRoot(prefix) shouldBe Success(
-          createObjectLocationPrefixWith(bucket, "bag123/subdir")
+          createS3ObjectLocationPrefixWith(bucket, keyPrefix = "bag123/subdir")
         )
       }
     }
 
     it("fails if it cannot find a bag-info.txt") {
       withLocalS3Bucket { bucket =>
-        val prefix = createObjectLocationPrefixWith(bucket, "doesnotexist")
+        val prefix = createS3ObjectLocationPrefixWith(bucket, keyPrefix = "doesnotexist")
 
         val result = s3BagLocator.locateBagRoot(prefix)
         result.isFailure shouldBe true
@@ -154,7 +154,7 @@ class S3BagLocatorTest extends AnyFunSpec with Matchers with S3Fixtures {
   val s3BagLocator = new S3BagLocator(s3Client)
 
   private def assertFailsToFindBagIn(
-    prefix: ObjectLocationPrefix
+    prefix: S3ObjectLocationPrefix
   ): Assertion = {
     val result = s3BagLocator.locateBagInfo(prefix)
     result.isFailure shouldBe true
