@@ -21,7 +21,7 @@ import scala.util.{Failure, Success, Try}
   * https://docs.aws.amazon.com/AmazonS3/latest/dev/ShareObjectPreSignedURLJavaSDK.html
   */
 class S3Uploader(implicit val s3Client: AmazonS3) {
-  import S3ObjectExists._
+  import s3.S3ObjectExists._
 
   private val s3StreamStore: S3StreamStore = new S3StreamStore()
 

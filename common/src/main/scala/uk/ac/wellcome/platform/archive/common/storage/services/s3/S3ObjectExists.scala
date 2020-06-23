@@ -1,13 +1,10 @@
-package uk.ac.wellcome.platform.archive.common.storage.services
+package uk.ac.wellcome.platform.archive.common.storage.services.s3
 
 import com.amazonaws.services.s3.AmazonS3
-import uk.ac.wellcome.storage.{ObjectLocation, StorageError, StoreReadError}
+import uk.ac.wellcome.platform.archive.common.storage.services.ObjectExists
+import uk.ac.wellcome.storage.{ObjectLocation, StoreReadError}
 
 import scala.util.{Failure, Success, Try}
-
-trait ObjectExists {
-  def exists(objectLocation: ObjectLocation): Either[StorageError, Boolean]
-}
 
 class S3ObjectExists(s3Client: AmazonS3) extends ObjectExists {
   override def exists(
