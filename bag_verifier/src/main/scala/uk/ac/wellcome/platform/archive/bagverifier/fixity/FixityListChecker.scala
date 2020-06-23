@@ -9,7 +9,7 @@ import grizzled.slf4j.Logging
 class FixityListChecker[Container](
   implicit
   verifiable: ExpectedFixity[Container],
-  fixityChecker: FixityChecker
+  fixityChecker: FixityChecker[_]
 ) extends Logging {
   def check(container: Container): FixityListResult = {
     debug(s"Checking the fixity info for $container")

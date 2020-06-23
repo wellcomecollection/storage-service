@@ -8,11 +8,11 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FixityChecker,
   FixityCheckerTestCases
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.S3Resolvable
-import uk.ac.wellcome.platform.archive.common.storage.{
+import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   LocationError,
   LocationNotFound
 }
+import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.S3Resolvable
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.StreamStore
@@ -44,7 +44,7 @@ class S3FixityCheckerTest
   override def withFixityChecker[R](
     s3Store: S3StreamStore
   )(
-    testWith: TestWith[FixityChecker, R]
+    testWith: TestWith[FixityChecker[_], R]
   )(implicit context: Unit): R =
     testWith(new S3FixityChecker() {
       override val streamStore: StreamStore[ObjectLocation] = s3Store
@@ -54,10 +54,8 @@ class S3FixityCheckerTest
 
   implicit val s3Resolvable: S3Resolvable = new S3Resolvable()
 
-  import uk.ac.wellcome.platform.archive.common.storage.Resolvable._
-
   override def resolve(location: ObjectLocation): URI =
-    location.resolve
+    s3Resolvable.resolve(location)
 
   it("fails if the bucket doesn't exist") {
     val checksum = randomChecksum

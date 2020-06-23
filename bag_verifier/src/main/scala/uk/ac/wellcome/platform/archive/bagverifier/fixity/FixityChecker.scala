@@ -2,13 +2,13 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity
 import java.net.URI
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
-import uk.ac.wellcome.platform.archive.common.storage.{
+import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   LocateFailure,
   LocationError,
   LocationNotFound,
   LocationParsingError
 }
+import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
@@ -20,12 +20,16 @@ import scala.util.{Failure, Success}
 /** Look up and check the fixity info (checksum, size) on an individual file.
   *
   */
-trait FixityChecker extends Logging {
+trait FixityChecker[BagLocation] extends Logging {
   protected val streamStore: StreamStore[ObjectLocation]
-  protected val sizeFinder: SizeFinder[ObjectLocation]
+  protected val sizeFinder: SizeFinder[BagLocation]
   val tags: Tags[ObjectLocation]
 
-  def locate(uri: URI): Either[LocateFailure[URI], ObjectLocation]
+  def locate(uri: URI): Either[LocateFailure[URI], BagLocation]
+
+  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
+  // See https://github.com/wellcomecollection/platform/issues/4596
+  def toLocation(bagLocation: BagLocation): ObjectLocation
 
   def check(expectedFileFixity: ExpectedFileFixity): FileFixityResult = {
     debug(s"Attempting to verify: $expectedFileFixity")
@@ -45,13 +49,19 @@ trait FixityChecker extends Logging {
     //        (e.g. if they're very large and infrequently accessed)
 
     val fixityResult = for {
-      location <- parseLocation(expectedFileFixity)
-      _ = debug(s"Parsed location for ${expectedFileFixity.uri} as $location")
+      bagLocation <- parseLocation(expectedFileFixity)
+      _ = debug(
+        s"Parsed location for ${expectedFileFixity.uri} as $bagLocation"
+      )
+
+      // TODO: Bridging code while we split ObjectLocation.  Remove this later.
+      // See https://github.com/wellcomecollection/platform/issues/4596
+      location = toLocation(bagLocation)
 
       existingTags <- getExistingTags(expectedFileFixity, location)
       _ = debug(s"Got existing tags for $location: $existingTags")
 
-      size <- verifySize(expectedFileFixity, location)
+      size <- verifySize(expectedFileFixity, bagLocation)
       _ = debug(s"Checked the size of $location is correct")
 
       result <- verifyChecksum(
@@ -75,7 +85,7 @@ trait FixityChecker extends Logging {
 
   private def parseLocation(
     expectedFileFixity: ExpectedFileFixity
-  ): Either[FileFixityCouldNotRead, ObjectLocation] =
+  ): Either[FileFixityCouldNotRead, BagLocation] =
     locate(expectedFileFixity.uri) match {
       case Right(location) => Right(location)
       case Left(locateError) =>
@@ -107,7 +117,7 @@ trait FixityChecker extends Logging {
 
   private def verifySize(
     expectedFileFixity: ExpectedFileFixity,
-    location: ObjectLocation
+    location: BagLocation
   ): Either[FileFixityError, Long] =
     for {
       actualLength <- handleReadErrors(

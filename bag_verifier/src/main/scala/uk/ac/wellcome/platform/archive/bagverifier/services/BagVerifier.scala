@@ -5,11 +5,11 @@ import java.time.Instant
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagverifier.fixity._
 import uk.ac.wellcome.platform.archive.bagverifier.models._
+import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable
 import uk.ac.wellcome.platform.archive.bagverifier.verify.steps._
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.storage.Resolvable
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
@@ -19,7 +19,7 @@ import scala.util.Try
 class BagVerifier(namespace: String)(
   implicit bagReader: BagReader,
   val resolvable: Resolvable[ObjectLocation],
-  val fixityChecker: FixityChecker,
+  val fixityChecker: FixityChecker[_],
   listing: Listing[ObjectLocationPrefix, ObjectLocation]
 ) extends Logging
     with VerifyChecksumAndSize

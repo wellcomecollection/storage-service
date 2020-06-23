@@ -7,7 +7,7 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagverifier.generators.FixityGenerators
-import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
+import uk.ac.wellcome.platform.archive.bagverifier.storage.LocationNotFound
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.{Identified, ObjectLocation}
 import uk.ac.wellcome.storage.store.StreamStore
@@ -30,7 +30,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
   ): Unit
 
   def withFixityChecker[R](streamStore: StreamStoreImpl)(
-    testWith: TestWith[FixityChecker, R]
+    testWith: TestWith[FixityChecker[_], R]
   )(
     implicit context: Context
   ): R
@@ -39,7 +39,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
     implicit context: Context
   ): R
 
-  def withFixityChecker[R](testWith: TestWith[FixityChecker, R])(
+  def withFixityChecker[R](testWith: TestWith[FixityChecker[_], R])(
     implicit context: Context
   ): R =
     withStreamStore { streamStore =>

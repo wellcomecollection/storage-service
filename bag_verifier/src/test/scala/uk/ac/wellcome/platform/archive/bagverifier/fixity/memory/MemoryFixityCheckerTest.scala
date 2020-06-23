@@ -69,7 +69,7 @@ class MemoryFixityCheckerTest
   override def withFixityChecker[R](
     streamStore: MemoryStreamStore[ObjectLocation]
   )(
-    testWith: TestWith[FixityChecker, R]
+    testWith: TestWith[FixityChecker[_], R]
   )(implicit context: MemoryContext): R = {
     val (_, tags) = context
     testWith(
