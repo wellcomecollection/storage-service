@@ -34,7 +34,7 @@ class S3Uploader(implicit val s3Client: AmazonS3) {
     checkExists: Boolean
   ): Either[StorageError, URL] =
     for {
-      exists <- location.exists
+      exists <- S3ObjectLocation(location).exists
 
       _ <- if (!exists || !checkExists) {
         s3StreamStore.put(location)(content)
