@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
-import uk.ac.wellcome.storage.{ObjectLocation, StorageError}
+import uk.ac.wellcome.storage.StorageError
 
-trait ObjectExists {
-  def exists(objectLocation: ObjectLocation): Either[StorageError, Boolean]
+trait ObjectExists[Ident] {
+  def exists(id: Ident): Either[StorageError, Boolean]
 }
