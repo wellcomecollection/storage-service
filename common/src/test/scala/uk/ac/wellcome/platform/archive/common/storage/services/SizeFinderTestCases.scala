@@ -18,7 +18,9 @@ trait SizeFinderTestCases[Ident, Context]
 
   def createIdent(implicit context: Context): Ident
 
-  def createObject(ident: Ident, contents: String)(implicit context: Context): Unit
+  def createObject(ident: Ident, contents: String)(
+    implicit context: Context
+  ): Unit
 
   describe("it behaves as a size finder") {
     it("finds the sizes of an object") {

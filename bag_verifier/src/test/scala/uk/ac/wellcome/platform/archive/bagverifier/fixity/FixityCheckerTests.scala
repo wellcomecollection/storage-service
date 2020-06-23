@@ -80,7 +80,7 @@ class FixityCheckerTests
             override def get(location: ObjectLocation): ReadEither =
               Right(Identified(location, closedStream.length))
           }
-        }
+      }
 
       checker.check(expectedFileFixity) shouldBe a[
         FileFixityCouldNotGetChecksum

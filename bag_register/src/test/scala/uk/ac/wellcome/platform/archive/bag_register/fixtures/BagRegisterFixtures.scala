@@ -84,7 +84,8 @@ trait BagRegisterFixtures
         val bagReader = new MemoryBagReader()
 
         val storageManifestService = new StorageManifestService(
-          sizeFinder = new MemorySizeFinder[ObjectLocation](streamStore.memoryStore),
+          sizeFinder =
+            new MemorySizeFinder[ObjectLocation](streamStore.memoryStore),
           toIdent = identity
         )
 

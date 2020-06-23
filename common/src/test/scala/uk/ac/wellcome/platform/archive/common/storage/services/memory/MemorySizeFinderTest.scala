@@ -4,10 +4,13 @@ import java.util.UUID
 
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.storage.services.{
-  SizeFinder, SizeFinderTestCases}
+  SizeFinder,
+  SizeFinderTestCases
+}
 import uk.ac.wellcome.storage.store.memory.MemoryStore
 
-class MemorySizeFinderTest extends SizeFinderTestCases[UUID, MemoryStore[UUID, Array[Byte]]] {
+class MemorySizeFinderTest
+    extends SizeFinderTestCases[UUID, MemoryStore[UUID, Array[Byte]]] {
   type StoreImpl = MemoryStore[UUID, Array[Byte]]
 
   override def withContext[R](testWith: TestWith[StoreImpl, R]): R =
@@ -15,8 +18,9 @@ class MemorySizeFinderTest extends SizeFinderTestCases[UUID, MemoryStore[UUID, A
       new MemoryStore[UUID, Array[Byte]](initialEntries = Map.empty)
     )
 
-  override def withSizeFinder[R](testWith: TestWith[SizeFinder[UUID], R])(
-      implicit underlyingStore: StoreImpl): R = {
+  override def withSizeFinder[R](
+    testWith: TestWith[SizeFinder[UUID], R]
+  )(implicit underlyingStore: StoreImpl): R = {
     val sizeFinder = new MemorySizeFinder[UUID](
       memoryStore = underlyingStore
     )
@@ -27,7 +31,9 @@ class MemorySizeFinderTest extends SizeFinderTestCases[UUID, MemoryStore[UUID, A
   override def createIdent(implicit underlyingStore: StoreImpl): UUID =
     UUID.randomUUID()
 
-  override def createObject(ident: UUID, contents: String)(implicit underlyingStore: StoreImpl): Unit = {
+  override def createObject(ident: UUID, contents: String)(
+    implicit underlyingStore: StoreImpl
+  ): Unit = {
     underlyingStore.put(ident)(contents.getBytes())
   }
 }

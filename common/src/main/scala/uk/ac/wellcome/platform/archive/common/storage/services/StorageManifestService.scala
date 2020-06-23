@@ -27,7 +27,6 @@ class BadFetchLocationException(message: String)
 
 class StorageManifestService[SizeIdent](
   sizeFinder: SizeFinder[SizeIdent],
-
   // TODO: Temporary while we disambiguate ObjectLocation.  Remove eventually.
   toIdent: ObjectLocation => SizeIdent
 )(

@@ -429,13 +429,15 @@ class StorageManifestServiceTest
       val err = new Throwable("BOOM!")
 
       val brokenSizeFinder = new SizeFinder[ObjectLocation] {
-        override def get(location: ObjectLocation): ReadEither = Left(StoreReadError(err))
+        override def get(location: ObjectLocation): ReadEither =
+          Left(StoreReadError(err))
       }
 
       implicit val streamStore: MemoryStreamStore[ObjectLocation] =
         MemoryStreamStore[ObjectLocation]()
 
-      val service = new StorageManifestService(brokenSizeFinder, toIdent = identity)
+      val service =
+        new StorageManifestService(brokenSizeFinder, toIdent = identity)
 
       val result = service.createManifest(
         ingestId = createIngestID,
