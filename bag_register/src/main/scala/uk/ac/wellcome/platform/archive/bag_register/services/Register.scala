@@ -25,7 +25,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class Register(
   bagReader: BagReader,
   bagTrackerClient: BagTrackerClient,
-  storageManifestService: StorageManifestService
+  storageManifestService: StorageManifestService[_]
 )(
   implicit ec: ExecutionContext
 ) extends Logging {
