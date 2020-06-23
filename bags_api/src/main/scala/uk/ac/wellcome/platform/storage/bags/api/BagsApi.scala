@@ -3,8 +3,8 @@ package uk.ac.wellcome.platform.storage.bags.api
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
-import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.model.headers.Location
+import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
@@ -17,7 +17,7 @@ import uk.ac.wellcome.platform.storage.bags.api.responses.{
   LookupBag,
   LookupBagVersions
 }
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.S3ObjectLocation
 
 import scala.concurrent.duration._
 
@@ -75,10 +75,10 @@ trait BagsApi extends LargeResponses with LookupBag with LookupBagVersions {
             case id if id == chemistAndDruggist =>
               val url = s3Uploader
                 .getPresignedGetURL(
-                  location = ObjectLocation(
-                    namespace =
+                  location = S3ObjectLocation(
+                    bucket =
                       "wellcomecollection-storage-prod-large-response-cache",
-                    path = "responses/digitised/b19974760/v1"
+                    key = "responses/digitised/b19974760/v1"
                   ),
                   expiryLength = 1 days
                 )

@@ -8,8 +8,8 @@ import akka.http.scaladsl.server.Directives.mapResponse
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.storage.services.S3Uploader
-import uk.ac.wellcome.storage.ObjectLocationPrefix
+import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3Uploader
+import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 import scala.concurrent.duration.Duration
@@ -21,8 +21,9 @@ trait LargeResponses extends Logging {
   import akka.stream.scaladsl.StreamConverters
 
   val s3Uploader: S3Uploader
+  val s3Prefix: S3ObjectLocationPrefix
+
   val maximumResponseByteLength: Long
-  val prefix: ObjectLocationPrefix
   val cacheDuration: Duration
 
   private val converter = StreamConverters.asInputStream()
@@ -45,7 +46,7 @@ trait LargeResponses extends Logging {
             s"Attempting to return large object ($length > $maximumResponseByteLength): assigning key $storageKey"
         )
 
-        val objectLocation = prefix.asLocation(storageKey)
+        val objectLocation = s3Prefix.asLocation(storageKey)
 
         val inputStream = response.entity
           .getDataBytes()

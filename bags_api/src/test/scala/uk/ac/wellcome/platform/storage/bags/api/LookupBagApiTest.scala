@@ -118,7 +118,7 @@ class LookupBagApiTest
       withLocalS3Bucket { bucket =>
         withConfiguredApp(
           initialManifests = Seq(storageManifest),
-          locationPrefix = createObjectLocationPrefixWith(bucket.name),
+          locationPrefix = createS3ObjectLocationPrefixWith(bucket),
           maxResponseByteLength = 1000
         ) {
           case (_, metrics, baseUrl) =>
@@ -154,7 +154,7 @@ class LookupBagApiTest
       withLocalS3Bucket { bucket =>
         withConfiguredApp(
           initialManifests = Seq(storageManifest),
-          locationPrefix = createObjectLocationPrefixWith(bucket.name),
+          locationPrefix = createS3ObjectLocationPrefixWith(bucket),
           maxResponseByteLength = 1000
         ) {
           case (_, metrics, baseUrl) =>

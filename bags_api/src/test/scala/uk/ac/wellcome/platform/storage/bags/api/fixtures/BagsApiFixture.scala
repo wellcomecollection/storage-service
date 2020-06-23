@@ -22,14 +22,14 @@ import uk.ac.wellcome.platform.archive.common.http.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
+import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3Uploader
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   EmptyMetadata,
-  S3Uploader,
   StorageManifestDao
 }
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
 import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
@@ -41,7 +41,7 @@ trait BagsApiFixture
     extends StorageRandomThings
     with ScalaFutures
     with StorageManifestDaoFixture
-    with S3Fixtures
+    with NewS3Fixtures
     with HttpFixtures
     with BagTrackerFixtures {
 
@@ -54,7 +54,7 @@ trait BagsApiFixture
   private def withApp[R](
     metrics: MemoryMetrics[Unit],
     maxResponseByteLength: Long,
-    locationPrefix: ObjectLocationPrefix,
+    locationPrefix: S3ObjectLocationPrefix,
     storageManifestDao: StorageManifestDao,
     uploader: S3Uploader
   )(testWith: TestWith[WellcomeHttpApp, R]): R =
@@ -75,9 +75,9 @@ trait BagsApiFixture
             override val bagTrackerClient: BagTrackerClient = trackerClient
 
             override val s3Uploader: S3Uploader = uploader
-            override val cacheDuration: Duration = 1 days
-            override val prefix: ObjectLocationPrefix = locationPrefix
+            override val s3Prefix: S3ObjectLocationPrefix = locationPrefix
 
+            override val cacheDuration: Duration = 1 days
             override implicit val materializer: Materializer = mat
             override val maximumResponseByteLength: Long = maxResponseByteLength
           }
@@ -99,7 +99,7 @@ trait BagsApiFixture
 
   def withConfiguredApp[R](
     initialManifests: Seq[StorageManifest] = Seq.empty,
-    locationPrefix: ObjectLocationPrefix = createObjectLocationPrefix,
+    locationPrefix: S3ObjectLocationPrefix = createS3ObjectLocationPrefix,
     maxResponseByteLength: Long = 1048576
   )(
     testWith: TestWith[(StorageManifestDao, MemoryMetrics[Unit], String), R]
@@ -155,7 +155,7 @@ trait BagsApiFixture
 
     val metrics = new MemoryMetrics[Unit]()
     val maxResponseByteLength = 1048576
-    val prefix = createObjectLocationPrefix
+    val prefix = createS3ObjectLocationPrefix
     val uploader = new S3Uploader()
 
     withApp(metrics, maxResponseByteLength, prefix, brokenDao, uploader) { _ =>

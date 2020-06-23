@@ -17,8 +17,8 @@ import uk.ac.wellcome.platform.archive.common.http.{
   HttpMetrics,
   WellcomeHttpApp
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.S3Uploader
-import uk.ac.wellcome.storage.ObjectLocationPrefix
+import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3Uploader
+import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -57,9 +57,9 @@ object Main extends WellcomeTypesafeApp {
       namespace = "responses"
     )
 
-    val locationPrefix = ObjectLocationPrefix(
-      s3Config.bucketName,
-      "responses"
+    val locationPrefix = S3ObjectLocationPrefix(
+      bucket = s3Config.bucketName,
+      keyPrefix = "responses"
     )
 
     val router: BagsApi = new BagsApi {
@@ -74,8 +74,9 @@ object Main extends WellcomeTypesafeApp {
         )
 
       override val s3Uploader: S3Uploader = uploader
+      override val s3Prefix: S3ObjectLocationPrefix = locationPrefix
+
       override val maximumResponseByteLength: Long = defaultMaxByteLength
-      override val prefix: ObjectLocationPrefix = locationPrefix
       override val cacheDuration: Duration = defaultCacheDuration
       override implicit val materializer: Materializer = matMain
     }
