@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.{ObjectLocation, S3ObjectLocationPrefix}
 
 trait PayloadGenerators
     extends ExternalIdentifierGenerators
@@ -56,14 +56,14 @@ trait PayloadGenerators
     createSourceLocationPayloadWith()
 
   def createUnpackedBagLocationPayloadWith(
-    unpackedBagLocation: ObjectLocationPrefix = createObjectLocationPrefix,
+    unpackedBagLocation: S3ObjectLocationPrefix = createS3ObjectLocationPrefix,
     storageSpace: StorageSpace = createStorageSpace
   ): UnpackedBagLocationPayload =
     UnpackedBagLocationPayload(
       context = createPipelineContextWith(
         storageSpace = storageSpace
       ),
-      unpackedBagLocation = unpackedBagLocation
+      unpackedBagLocation = unpackedBagLocation.toObjectLocationPrefix
     )
 
   def createKnownReplicas = KnownReplicas(
@@ -111,11 +111,11 @@ trait PayloadGenerators
 
   def createBagRootLocationPayloadWith(
     context: PipelineContext = createPipelineContext,
-    bagRoot: ObjectLocationPrefix = createObjectLocationPrefix
+    bagRoot: S3ObjectLocationPrefix = createS3ObjectLocationPrefix
   ): BagRootLocationPayload =
     BagRootLocationPayload(
       context = context,
-      bagRoot = bagRoot
+      bagRoot = bagRoot.toObjectLocationPrefix
     )
 
   def createReplicaResultPayload: ReplicaResultPayload =
