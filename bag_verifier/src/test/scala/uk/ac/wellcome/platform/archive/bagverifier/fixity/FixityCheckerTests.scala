@@ -75,14 +75,12 @@ class FixityCheckerTests
       val tags = createMemoryTags
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
-        override protected val sizeFinder: SizeFinder = new SizeFinder {
-          override def retryableGetFunction(location: ObjectLocation): Long =
-            closedStream.length
-
-          override def buildGetError(throwable: Throwable): ReadError =
-            StoreReadError(throwable)
+        override protected val sizeFinder: SizeFinder[ObjectLocation] =
+          new SizeFinder[ObjectLocation] {
+            override def get(location: ObjectLocation): ReadEither =
+              Right(Identified(location, closedStream.length))
+          }
         }
-      }
 
       checker.check(expectedFileFixity) shouldBe a[
         FileFixityCouldNotGetChecksum
@@ -128,13 +126,11 @@ class FixityCheckerTests
       )
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
-        override protected val sizeFinder: SizeFinder = new SizeFinder {
-          override def retryableGetFunction(location: ObjectLocation): Long =
-            contentString.length
-
-          override def buildGetError(throwable: Throwable): ReadError =
-            StoreReadError(throwable)
-        }
+        override protected val sizeFinder: SizeFinder[ObjectLocation] =
+          new SizeFinder[ObjectLocation] {
+            override def get(location: ObjectLocation): ReadEither =
+              Right(Identified(location, contentString.length))
+          }
       }
 
       checker.check(expectedFileFixity) shouldBe a[FileFixityCouldNotWriteTag]
@@ -167,7 +163,7 @@ class FixityCheckerTests
           initialEntries = Map.empty
         )
       ) {
-        override def get(location: ObjectLocation): this.ReadEither =
+        override def get(location: ObjectLocation): ReadEither =
           Right(Identified(location, inputStream))
       }
 
@@ -176,13 +172,11 @@ class FixityCheckerTests
       val tags = createMemoryTags
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
-        override protected val sizeFinder: SizeFinder = new SizeFinder {
-          override def retryableGetFunction(location: ObjectLocation): Long =
-            inputStream.length
-
-          override def buildGetError(throwable: Throwable): ReadError =
-            StoreReadError(throwable)
-        }
+        override protected val sizeFinder: SizeFinder[ObjectLocation] =
+          new SizeFinder[ObjectLocation] {
+            override def get(location: ObjectLocation): ReadEither =
+              Right(Identified(location, inputStream.length))
+          }
       }
 
       checker.check(expectedFileFixity) shouldBe a[FileFixityCorrect]
@@ -208,7 +202,7 @@ class FixityCheckerTests
           initialEntries = Map.empty
         )
       ) {
-        override def get(location: ObjectLocation): this.ReadEither =
+        override def get(location: ObjectLocation): ReadEither =
           Right(Identified(location, inputStream))
       }
 
@@ -217,13 +211,11 @@ class FixityCheckerTests
       val tags = createMemoryTags
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
-        override protected val sizeFinder: SizeFinder = new SizeFinder {
-          override def retryableGetFunction(location: ObjectLocation): Long =
-            inputStream.length
-
-          override def buildGetError(throwable: Throwable): ReadError =
-            StoreReadError(throwable)
-        }
+        override protected val sizeFinder: SizeFinder[ObjectLocation] =
+          new SizeFinder[ObjectLocation] {
+            override def get(location: ObjectLocation): ReadEither =
+              Right(Identified(location, inputStream.length))
+          }
       }
 
       checker.check(expectedFileFixity) shouldBe a[FileFixityMismatch]
