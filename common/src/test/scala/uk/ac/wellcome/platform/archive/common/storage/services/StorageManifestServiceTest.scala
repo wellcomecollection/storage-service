@@ -10,10 +10,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   ExternalIdentifier
 }
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagBuilder,
-  BagBuilderBase
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.memory.MemoryBagBuilder
 import uk.ac.wellcome.platform.archive.common.generators._
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
@@ -23,7 +20,10 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageManifest,
   StorageSpace
 }
-import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
+import uk.ac.wellcome.storage.store.memory.{
+  MemoryStreamStore,
+  NewMemoryTypedStore
+}
 import uk.ac.wellcome.storage._
 
 import scala.util.Random
@@ -107,7 +107,7 @@ class StorageManifestServiceTest
     val (bagRoot, bag) = createStorageManifestBag(version = version)
 
     val location = createPrimaryLocationWith(
-      prefix = bagRoot
+      prefix = bagRoot.toObjectLocationPrefix
     )
 
     val replicas = collectionOf(max = 10) {
@@ -127,8 +127,8 @@ class StorageManifestServiceTest
 
     it("sets the correct prefix on the primary location") {
       storageManifest.location.prefix shouldBe bagRoot.copy(
-        path = bagRoot.path.stripSuffix(s"/$version")
-      )
+        pathPrefix = bagRoot.pathPrefix.stripSuffix(s"/$version")
+      ).toObjectLocationPrefix
     }
 
     it("uses the correct providers on the replica locations") {
@@ -154,7 +154,7 @@ class StorageManifestServiceTest
   }
 
   describe("if there's no fetch.txt, it versions the paths") {
-    object NoFetchBagBuilder extends BagBuilderBase {
+    object NoFetchBagBuilder extends MemoryBagBuilder {
       override protected def getFetchEntryCount(payloadFileCount: Int): Int = 0
     }
 
@@ -168,7 +168,7 @@ class StorageManifestServiceTest
       bagBuilder = NoFetchBagBuilder
     )
 
-    val location = createPrimaryLocationWith(prefix = bagRoot)
+    val location = createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
 
     val storageManifest = createManifest(
       bag = bag,
@@ -192,7 +192,7 @@ class StorageManifestServiceTest
   }
 
   describe("if there's a fetch.txt, it constructs the right paths") {
-    object AtLeastOneFetchEntryBagBuilder extends BagBuilderBase {
+    object AtLeastOneFetchEntryBagBuilder extends MemoryBagBuilder {
       override protected def getFetchEntryCount(payloadFileCount: Int): Int =
         randomInt(from = 1, to = payloadFileCount)
     }
@@ -207,7 +207,7 @@ class StorageManifestServiceTest
       bagBuilder = AtLeastOneFetchEntryBagBuilder
     )
 
-    val location = createPrimaryLocationWith(prefix = bagRoot)
+    val location = createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
 
     val storageManifest = createManifest(
       bag = bag,
@@ -270,7 +270,7 @@ class StorageManifestServiceTest
       version = version
     )
 
-    val location = createPrimaryLocationWith(prefix = bagRoot)
+    val location = createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
 
     val storageManifest = createManifest(
       bag = bag,
@@ -385,7 +385,7 @@ class StorageManifestServiceTest
       version = version
     )
 
-    val location = createPrimaryLocationWith(prefix = bagRoot)
+    val location = createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
 
     val storageManifest = createManifest(
       bag = bag,
@@ -455,7 +455,7 @@ class StorageManifestServiceTest
     }
 
     it("uses the size finder to get sizes") {
-      object NoFetchBagBuilder extends BagBuilderBase {
+      object NoFetchBagBuilder extends MemoryBagBuilder {
         override protected def getFetchEntryCount(payloadFileCount: Int): Int =
           0
       }
@@ -470,7 +470,7 @@ class StorageManifestServiceTest
         bagBuilder = NoFetchBagBuilder
       )
 
-      val location = createPrimaryLocationWith(prefix = bagRoot)
+      val location = createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
 
       var sizeCache: Map[ObjectLocation, Long] = Map.empty
       val cachingSizeFinder = new SizeFinder[ObjectLocation] {
@@ -508,7 +508,7 @@ class StorageManifestServiceTest
     it("uses the size from the fetch file") {
       // Always create a fetch.txt entry rather than a concrete file, always
       // include the size in the fetch.txt.
-      object ConcreteFetchEntryBagBuilder extends BagBuilderBase {
+      object ConcreteFetchEntryBagBuilder extends MemoryBagBuilder {
         override protected def getFetchEntryCount(payloadFileCount: Int): Int =
           payloadFileCount
 
@@ -528,7 +528,7 @@ class StorageManifestServiceTest
         bagBuilder = ConcreteFetchEntryBagBuilder
       )
 
-      val location = createPrimaryLocationWith(prefix = bagRoot)
+      val location = createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
 
       val err = new Throwable("This should never be called!")
 
@@ -564,14 +564,14 @@ class StorageManifestServiceTest
     space: StorageSpace = createStorageSpace,
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     version: BagVersion,
-    bagBuilder: BagBuilderBase = BagBuilder
+    bagBuilder: MemoryBagBuilder = new MemoryBagBuilder {}
   )(
     implicit
     namespace: String = randomAlphanumeric,
     streamStore: MemoryStreamStore[ObjectLocation]
-  ): (ObjectLocationPrefix, Bag) = {
-    implicit val typedStore: MemoryTypedStore[ObjectLocation, String] =
-      new MemoryTypedStore[ObjectLocation, String]()
+  ): (MemoryLocationPrefix, Bag) = {
+    implicit val typedStore: NewMemoryTypedStore[String] =
+      new NewMemoryTypedStore[String]()
 
     val (bagObjects, bagRoot, _) =
       bagBuilder.createBagContentsWith(
@@ -582,7 +582,7 @@ class StorageManifestServiceTest
 
     bagBuilder.uploadBagObjects(bagObjects)
 
-    (bagRoot, new MemoryBagReader().get(bagRoot).right.value)
+    (bagRoot, new MemoryBagReader().get(bagRoot.toObjectLocationPrefix).right.value)
   }
 
   describe(
@@ -604,7 +604,7 @@ class StorageManifestServiceTest
 
       val manifest = createManifest(
         bag = bag,
-        location = createPrimaryLocationWith(prefix = bagRoot),
+        location = createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix),
         space = space,
         version = version
       )
