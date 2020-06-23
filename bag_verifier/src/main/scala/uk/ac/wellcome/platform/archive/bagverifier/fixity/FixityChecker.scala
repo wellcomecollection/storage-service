@@ -20,12 +20,16 @@ import scala.util.{Failure, Success}
 /** Look up and check the fixity info (checksum, size) on an individual file.
   *
   */
-trait FixityChecker extends Logging {
+trait FixityChecker[BagLocation] extends Logging {
   protected val streamStore: StreamStore[ObjectLocation]
   protected val sizeFinder: SizeFinder[ObjectLocation]
   val tags: Tags[ObjectLocation]
 
-  def locate(uri: URI): Either[LocateFailure[URI], ObjectLocation]
+  def locate(uri: URI): Either[LocateFailure[URI], BagLocation]
+
+  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
+  // See https://github.com/wellcomecollection/platform/issues/4596
+  def toLocation(bagLocation: BagLocation): ObjectLocation
 
   def check(expectedFileFixity: ExpectedFileFixity): FileFixityResult = {
     debug(s"Attempting to verify: $expectedFileFixity")
@@ -45,8 +49,12 @@ trait FixityChecker extends Logging {
     //        (e.g. if they're very large and infrequently accessed)
 
     val fixityResult = for {
-      location <- parseLocation(expectedFileFixity)
-      _ = debug(s"Parsed location for ${expectedFileFixity.uri} as $location")
+      bagLocation <- parseLocation(expectedFileFixity)
+      _ = debug(s"Parsed location for ${expectedFileFixity.uri} as $bagLocation")
+
+      // TODO: Bridging code while we split ObjectLocation.  Remove this later.
+      // See https://github.com/wellcomecollection/platform/issues/4596
+      location = toLocation(bagLocation)
 
       existingTags <- getExistingTags(expectedFileFixity, location)
       _ = debug(s"Got existing tags for $location: $existingTags")
@@ -75,7 +83,7 @@ trait FixityChecker extends Logging {
 
   private def parseLocation(
     expectedFileFixity: ExpectedFileFixity
-  ): Either[FileFixityCouldNotRead, ObjectLocation] =
+  ): Either[FileFixityCouldNotRead, BagLocation] =
     locate(expectedFileFixity.uri) match {
       case Right(location) => Right(location)
       case Left(locateError) =>

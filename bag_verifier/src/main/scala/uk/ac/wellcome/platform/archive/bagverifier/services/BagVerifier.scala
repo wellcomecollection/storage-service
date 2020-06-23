@@ -19,7 +19,7 @@ import scala.util.Try
 class BagVerifier(namespace: String)(
   implicit bagReader: BagReader,
   val resolvable: Resolvable[ObjectLocation],
-  val fixityChecker: FixityChecker,
+  val fixityChecker: FixityChecker[_],
   listing: Listing[ObjectLocationPrefix, ObjectLocation]
 ) extends Logging
     with VerifyChecksumAndSize

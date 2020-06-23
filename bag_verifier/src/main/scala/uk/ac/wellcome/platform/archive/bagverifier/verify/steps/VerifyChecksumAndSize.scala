@@ -15,7 +15,7 @@ import scala.util.{Failure, Success, Try}
 
 trait VerifyChecksumAndSize {
   implicit val resolvable: Resolvable[ObjectLocation]
-  implicit val fixityChecker: FixityChecker
+  implicit val fixityChecker: FixityChecker[_]
 
   def verifyChecksumAndSize(
     root: ObjectLocationPrefix,

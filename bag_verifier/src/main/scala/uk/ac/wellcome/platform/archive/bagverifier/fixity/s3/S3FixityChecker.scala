@@ -15,7 +15,7 @@ import uk.ac.wellcome.storage.tags.Tags
 import uk.ac.wellcome.storage.tags.s3.S3Tags
 
 class S3FixityChecker(implicit s3Client: AmazonS3)
-    extends FixityChecker
+    extends FixityChecker[S3ObjectLocation]
     with Logging {
 
   import uk.ac.wellcome.platform.archive.bagverifier.storage.Locatable._
@@ -37,6 +37,11 @@ class S3FixityChecker(implicit s3Client: AmazonS3)
 
   override val tags: Tags[ObjectLocation] = new S3Tags()
 
-  override def locate(uri: URI): Either[LocateFailure[URI], ObjectLocation] =
-    uri.locate.map { _.toObjectLocation }
+  override def locate(uri: URI): Either[LocateFailure[URI], S3ObjectLocation] =
+    uri.locate
+
+  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
+  // See https://github.com/wellcomecollection/platform/issues/4596
+  override def toLocation(s3Location: S3ObjectLocation): ObjectLocation =
+    s3Location.toObjectLocation
 }

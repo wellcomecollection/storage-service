@@ -30,7 +30,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
   ): Unit
 
   def withFixityChecker[R](streamStore: StreamStoreImpl)(
-    testWith: TestWith[FixityChecker, R]
+    testWith: TestWith[FixityChecker[_], R]
   )(
     implicit context: Context
   ): R
@@ -39,7 +39,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
     implicit context: Context
   ): R
 
-  def withFixityChecker[R](testWith: TestWith[FixityChecker, R])(
+  def withFixityChecker[R](testWith: TestWith[FixityChecker[_], R])(
     implicit context: Context
   ): R =
     withStreamStore { streamStore =>

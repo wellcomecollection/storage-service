@@ -13,7 +13,7 @@ import uk.ac.wellcome.storage.tags.memory.MemoryTags
 class MemoryFixityChecker(
   val streamStore: MemoryStreamStore[ObjectLocation],
   val tags: MemoryTags[ObjectLocation]
-) extends FixityChecker {
+) extends FixityChecker[ObjectLocation] {
 
   override protected val sizeFinder: SizeFinder[ObjectLocation] =
     new MemorySizeFinder(streamStore.memoryStore)
@@ -25,4 +25,9 @@ class MemoryFixityChecker(
         path = uri.getPath.stripPrefix("/")
       )
     )
+
+  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
+  // See https://github.com/wellcomecollection/platform/issues/4596
+  override def toLocation(location: ObjectLocation): ObjectLocation =
+    location
 }
