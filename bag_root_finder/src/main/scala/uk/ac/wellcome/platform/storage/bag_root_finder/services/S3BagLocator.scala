@@ -40,8 +40,10 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
     val bagInfoInDirectory = findBagInfoInDirectory(prefix)
 
     (bagInfoInRoot, bagInfoInDirectory) match {
-      case (Success(bagInfoKey), _) => Success(prefix.copy(keyPrefix = bagInfoKey).asLocation())
-      case (_, Success(bagInfoKey)) => Success(prefix.copy(keyPrefix = bagInfoKey).asLocation())
+      case (Success(bagInfoKey), _) =>
+        Success(prefix.copy(keyPrefix = bagInfoKey).asLocation())
+      case (_, Success(bagInfoKey)) =>
+        Success(prefix.copy(keyPrefix = bagInfoKey).asLocation())
       case (Failure(rootErr), Failure(dirError)) => {
         warn(s"Could not find bag in root: ${rootErr.getMessage}")
         warn(s"Could not find bag in subdir: ${dirError.getMessage}")
@@ -50,7 +52,9 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
     }
   }
 
-  def locateBagRoot(prefix: S3ObjectLocationPrefix): Try[S3ObjectLocationPrefix] =
+  def locateBagRoot(
+    prefix: S3ObjectLocationPrefix
+  ): Try[S3ObjectLocationPrefix] =
     locateBagInfo(prefix).map { loc =>
       loc.copy(key = loc.key.stripSuffix("/bag-info.txt")).asPrefix
     }
