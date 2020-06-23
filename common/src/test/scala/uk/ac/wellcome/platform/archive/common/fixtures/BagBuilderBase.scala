@@ -2,25 +2,14 @@ package uk.ac.wellcome.platform.archive.common.fixtures
 
 import java.security.MessageDigest
 
-import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagInfo,
-  BagPath,
-  BagVersion,
-  ExternalIdentifier,
-  PayloadOxum
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagInfoGenerators,
   StorageSpaceGenerators
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
-import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.store.s3.S3TypedStore
 import uk.ac.wellcome.storage.store.TypedStore
-import uk.ac.wellcome.storage.streaming.Codec._
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 import scala.util.Random
 
