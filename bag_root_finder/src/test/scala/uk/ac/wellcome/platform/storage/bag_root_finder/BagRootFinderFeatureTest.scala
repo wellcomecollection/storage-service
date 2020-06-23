@@ -8,10 +8,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagVersion,
   ExternalIdentifier
 }
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  S3BagBuilder,
-  S3BagBuilderBase
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
@@ -25,20 +22,20 @@ class BagRootFinderFeatureTest
     extends AnyFunSpec
     with BagRootFinderFixtures
     with IngestUpdateAssertions
-    with PayloadGenerators {
+    with PayloadGenerators
+    with S3BagBuilder {
 
   it("detects a bag in the root of the bagLocation") {
     withLocalS3Bucket { bucket =>
-      val (unpackedBagLocation, _) = S3BagBuilder.createS3BagWith(bucket)
+      val (unpackedBagRoot, _) = createS3BagWith(bucket)
 
-      // TODO: Bag root location should really be a prefix here
       val payload = createUnpackedBagLocationPayloadWith(
-        unpackedBagLocation = unpackedBagLocation
+        unpackedBagLocation = unpackedBagRoot
       )
 
       val expectedPayload = createBagRootLocationPayloadWith(
         context = payload.context,
-        bagRoot = unpackedBagLocation
+        bagRoot = unpackedBagRoot
       )
 
       withLocalSqsQueue() { queue =>
@@ -73,24 +70,27 @@ class BagRootFinderFeatureTest
 
   it("detects a bag in a subdirectory of the bagLocation") {
     withLocalS3Bucket { bucket =>
-      val builder = new S3BagBuilderBase {
-        override protected def createBagRoot(
+      val builder = new S3BagBuilder {
+        override protected def createBagRootPath(
           space: StorageSpace,
           externalIdentifier: ExternalIdentifier,
           version: BagVersion
-        ): String =
-          Seq(super.createBagRoot(space, externalIdentifier, version), "subdir")
-            .mkString("/")
+        ): String = {
+          val rootPath =
+            super.createBagRootPath(space, externalIdentifier, version)
+
+          Seq(rootPath, "subdir").mkString("/")
+        }
       }
 
-      val (unpackedBagLocation, _) = builder.createS3BagWith(bucket)
+      val (unpackedBagRoot, _) = builder.createS3BagWith(bucket)
 
-      val (parentDirectory, _) = unpackedBagLocation.path.splitAt(
-        unpackedBagLocation.path.lastIndexOf("/")
+      val (parentDirectory, _) = unpackedBagRoot.keyPrefix.splitAt(
+        unpackedBagRoot.keyPrefix.lastIndexOf("/")
       )
 
-      val parentLocation = unpackedBagLocation.copy(
-        path = parentDirectory
+      val parentLocation = unpackedBagRoot.copy(
+        keyPrefix = parentDirectory
       )
 
       val payload = createUnpackedBagLocationPayloadWith(
@@ -99,7 +99,7 @@ class BagRootFinderFeatureTest
 
       val expectedPayload = createBagRootLocationPayloadWith(
         context = payload.context,
-        bagRoot = unpackedBagLocation
+        bagRoot = unpackedBagRoot
       )
 
       withLocalSqsQueue() { queue =>
@@ -135,9 +135,9 @@ class BagRootFinderFeatureTest
 
   it("errors if the bag is nested too deep") {
     withLocalS3Bucket { bucket =>
-      val (unpackedBagLocation, _) = S3BagBuilder.createS3BagWith(bucket)
+      val (unpackedBagRoot, _) = createS3BagWith(bucket)
 
-      val bucketRootLocation = unpackedBagLocation.copy(path = "")
+      val bucketRootLocation = unpackedBagRoot.copy(keyPrefix = "")
 
       val payload =
         createUnpackedBagLocationPayloadWith(bucketRootLocation)
@@ -177,9 +177,8 @@ class BagRootFinderFeatureTest
   }
 
   it("errors if it cannot find the bag") {
-    val unpackedBagLocation = createObjectLocation
     val payload =
-      createUnpackedBagLocationPayloadWith(unpackedBagLocation.asPrefix)
+      createUnpackedBagLocationPayloadWith(createS3ObjectLocationPrefix)
 
     withLocalSqsQueue() { queue =>
       val ingests = new MemoryMessageSender()

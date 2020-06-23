@@ -8,26 +8,36 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   StorageSpaceGenerators
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import uk.ac.wellcome.storage.{Location, Prefix}
 import uk.ac.wellcome.storage.store.TypedStore
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 import scala.util.Random
 
-case class BagObject(
-  location: ObjectLocation,
-  contents: String
-)
+trait BetterBagBuilder[BagLocation <: Location, BagLocationPrefix <: Prefix[
+  BagLocation
+]] extends StorageSpaceGenerators
+    with BagInfoGenerators {
 
-trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
   case class PayloadEntry(bagPath: BagPath, path: String, contents: String)
 
   case class ManifestFile(name: String, contents: String)
 
+  def createBagRoot(
+    space: StorageSpace,
+    externalIdentifier: ExternalIdentifier,
+    version: BagVersion
+  )(
+    implicit namespace: String
+  ): BagLocationPrefix
+
+  def createBagLocation(bagRoot: BagLocationPrefix, path: String): BagLocation
+
   def uploadBagObjects(
-    objects: Seq[BagObject]
-  )(implicit typedStore: TypedStore[ObjectLocation, String]): Unit =
-    objects.foreach { bagObj =>
-      typedStore.put(bagObj.location)(bagObj.contents) shouldBe a[Right[_, _]]
+    objects: Map[BagLocation, String]
+  )(implicit typedStore: TypedStore[BagLocation, String]): Unit =
+    objects.foreach {
+      case (location, contents) =>
+        typedStore.put(location)(contents) shouldBe a[Right[_, _]]
     }
 
   protected def getFetchEntryCount(payloadFileCount: Int): Int =
@@ -40,7 +50,7 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
     payloadFileCount: Int = randomInt(from = 5, to = 50)
   )(
     implicit namespace: String
-  ): (Seq[BagObject], ObjectLocationPrefix, BagInfo) = {
+  ): (Map[BagLocation, String], BagLocationPrefix, BagInfo) = {
     val fetchEntryCount = getFetchEntryCount(payloadFileCount)
 
     val payloadFiles = createPayloadFiles(
@@ -75,9 +85,9 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
       ManifestFile(
         name = s"bagit.txt",
         contents = """
-            |BagIt-Version: 0.97
-            |Tag-File-Character-Encoding: UTF-8
-          """.stripMargin.trim
+                     |BagIt-Version: 0.97
+                     |Tag-File-Character-Encoding: UTF-8
+                   """.stripMargin.trim
       )
 
     val bagInfoFile =
@@ -101,6 +111,7 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
       payloadManifest.toList ++
         bagInfoFile.toList ++
         fetchFile.toList ++ List(bagItFile)
+
     val tagManifest = createTagManifest(tagManifestFiles)
       .map { contents =>
         ManifestFile(
@@ -109,28 +120,17 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
         )
       }
 
-    val bagRootPath = createBagRoot(space, externalIdentifier, version)
-
-    val bagRoot = ObjectLocationPrefix(
-      namespace = namespace,
-      path = bagRootPath
-    )
+    val bagRoot = createBagRoot(space, externalIdentifier, version)
 
     val manifestObjects =
       (tagManifestFiles ++ tagManifest.toList).map { manifestFile =>
-        BagObject(
-          location = bagRoot.asLocation(manifestFile.name),
-          contents = manifestFile.contents
-        )
-      }
+        bagRoot.asLocation(manifestFile.name) -> manifestFile.contents
+      }.toMap
 
     val payloadObjects =
       (payloadFiles ++ fetchEntries).map { payloadEntry =>
-        BagObject(
-          location = bagRoot.copy(path = payloadEntry.path).asLocation(),
-          contents = payloadEntry.contents
-        )
-      }
+        createBagLocation(bagRoot, path = payloadEntry.path) -> payloadEntry.contents
+      }.toMap
 
     (manifestObjects ++ payloadObjects, bagRoot, bagInfo)
   }
@@ -219,7 +219,7 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
       .map { case (name, digest) => s"""$digest  $name""" }
       .mkString("\n")
 
-  protected def createBagRoot(
+  protected def createBagRootPath(
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     version: BagVersion
@@ -233,7 +233,7 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
     version: BagVersion,
     payloadFileCount: Int
   ): Seq[PayloadEntry] = {
-    val bagRoot = createBagRoot(space, externalIdentifier, version)
+    val bagRoot = createBagRootPath(space, externalIdentifier, version)
 
     (1 to payloadFileCount).map { _ =>
       val bagPath = BagPath(s"data/$randomPath")
@@ -264,5 +264,3 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
         _ + _
       }
 }
-
-object BagBuilder extends BagBuilderBase

@@ -1,10 +1,14 @@
 package uk.ac.wellcome.storage
 import java.nio.file.Paths
 
-trait Location
+trait Location {
+  def toObjectLocation: ObjectLocation
+}
 
 trait Prefix[OfLocation <: Location] {
   def asLocation(parts: String*): OfLocation
+
+  def toObjectLocationPrefix: ObjectLocationPrefix
 }
 
 case class S3ObjectLocation(
@@ -54,5 +58,33 @@ case object S3ObjectLocationPrefix {
     S3ObjectLocationPrefix(
       bucket = location.namespace,
       keyPrefix = location.path
+    )
+}
+
+case class MemoryLocation(
+  namespace: String,
+  path: String
+) extends Location {
+  override def toObjectLocation: ObjectLocation =
+    ObjectLocation(
+      namespace = namespace,
+      path = path
+    )
+}
+
+case class MemoryLocationPrefix(
+  namespace: String,
+  pathPrefix: String
+) extends Prefix[MemoryLocation] {
+  override def asLocation(parts: String*): MemoryLocation =
+    MemoryLocation(
+      namespace = namespace,
+      path = Paths.get(pathPrefix, parts: _*).normalize().toString
+    )
+
+  override def toObjectLocationPrefix: ObjectLocationPrefix =
+    ObjectLocationPrefix(
+      namespace = namespace,
+      path = pathPrefix
     )
 }

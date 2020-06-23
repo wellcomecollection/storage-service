@@ -7,10 +7,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  S3BagBuilder,
-  S3BagBuilderBase
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
@@ -29,7 +26,8 @@ class BagVerifierFeatureTest
     with IntegrationPatience
     with IngestUpdateAssertions
     with BagVerifierFixtures
-    with PayloadGenerators {
+    with PayloadGenerators
+    with S3BagBuilder {
 
   it(
     "updates the ingests service and sends an outgoing notification if verification succeeds"
@@ -56,8 +54,7 @@ class BagVerifierFeatureTest
             stepName = "verification"
           ) { _ =>
             val space = createStorageSpace
-            val (bagRoot, bagInfo) =
-              S3BagBuilder.createS3BagWith(bucket, space = space)
+            val (bagRoot, bagInfo) = createS3BagWith(bucket, space = space)
 
             val payload = createVersionedBagRootPayloadWith(
               context = createPipelineContextWith(
@@ -105,7 +102,7 @@ class BagVerifierFeatureTest
             bucket = bucket,
             stepName = "verification"
           ) { _ =>
-            val badBuilder: S3BagBuilderBase = new S3BagBuilderBase {
+            val badBuilder: S3BagBuilder = new S3BagBuilder {
               override protected def createPayloadManifest(
                 entries: Seq[PayloadEntry]
               ): Option[String] =

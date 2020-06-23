@@ -43,4 +43,7 @@ trait NewS3Fixtures extends S3Fixtures {
 
   def createInvalidBucket: Bucket =
     Bucket(createInvalidBucketName)
+
+  def deleteObject(location: S3ObjectLocation): Unit =
+    s3Client.deleteObject(location.bucket, location.key)
 }

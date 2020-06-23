@@ -18,9 +18,8 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
   ReplicationSummary
 }
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
-import uk.ac.wellcome.platform.archive.common.fixtures.S3BagBuilder
+import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.transfer.s3.{S3PrefixTransfer, S3Transfer}
@@ -34,8 +33,8 @@ import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 class BagReplicatorTest
     extends AnyFunSpec
     with Matchers
-    with S3Fixtures
     with BagReplicatorFixtures
+    with S3BagBuilder
     with TryValues {
   val replicator: S3Replicator = new S3Replicator()
 
@@ -46,9 +45,7 @@ class BagReplicatorTest
       new BagReplicator(replicator)
 
     withLocalS3Bucket { bucket =>
-      val (bagRoot, _) = S3BagBuilder.createS3BagWith(bucket)
-
-      val srcPrefix = bagRoot
+      val (srcPrefix, _) = createS3BagWith(bucket)
 
       val dstPrefix = ObjectLocationPrefix(
         namespace = bucket.name,
@@ -57,7 +54,7 @@ class BagReplicatorTest
 
       val request = PrimaryBagReplicationRequest(
         ReplicationRequest(
-          srcPrefix = srcPrefix,
+          srcPrefix = srcPrefix.toObjectLocationPrefix,
           dstPrefix = dstPrefix
         )
       )
@@ -109,15 +106,12 @@ class BagReplicatorTest
   describe("checks the tag manifests match") {
     it("errors if there is no tag manifest") {
       withLocalS3Bucket { bucket =>
-        val (bagRoot, _) = S3BagBuilder.createS3BagWith(bucket)
+        val (srcPrefix, _) = createS3BagWith(bucket)
 
-        s3Client.deleteObject(
-          bagRoot.namespace,
-          bagRoot.asLocation("tagmanifest-sha256.txt").path
-        )
+        deleteObject(srcPrefix.asLocation("tagmanifest-sha256.txt"))
 
         assertIsFailure(
-          srcPrefix = bagRoot,
+          srcPrefix = srcPrefix.toObjectLocationPrefix,
           dstPrefix = createObjectLocationPrefixWith(bucket.name)
         ) { err =>
           err.e.getMessage should startWith(
@@ -160,16 +154,13 @@ class BagReplicatorTest
       }
 
       withLocalS3Bucket { bucket =>
-        val (bagRoot, _) = S3BagBuilder.createS3BagWith(bucket)
+        val (srcPrefix, _) = createS3BagWith(bucket)
 
-        s3Client.deleteObject(
-          bagRoot.namespace,
-          bagRoot.asLocation("tagmanifest-sha256.txt").path
-        )
+        deleteObject(srcPrefix.asLocation("tagmanifest-sha256.txt"))
 
         assertIsFailure(
           bagReplicator = new BagReplicator(badReplicator),
-          srcPrefix = bagRoot,
+          srcPrefix = srcPrefix.toObjectLocationPrefix,
           dstPrefix = createObjectLocationPrefixWith(bucket.name)
         ) { err =>
           err.e.getMessage should startWith(

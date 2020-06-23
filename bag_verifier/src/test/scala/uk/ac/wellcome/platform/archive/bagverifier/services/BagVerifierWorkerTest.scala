@@ -8,10 +8,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  S3BagBuilder,
-  S3BagBuilderBase
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
@@ -28,7 +25,8 @@ class BagVerifierWorkerTest
     with IngestUpdateAssertions
     with IntegrationPatience
     with BagVerifierFixtures
-    with PayloadGenerators {
+    with PayloadGenerators
+    with S3BagBuilder {
 
   val dataFileCount: Int = randomInt(from = 2, to = 10)
 
@@ -41,15 +39,14 @@ class BagVerifierWorkerTest
     withLocalS3Bucket { bucket =>
       val space = createStorageSpace
 
-      val (bagRootLocation, bagInfo) =
-        S3BagBuilder.createS3BagWith(bucket, space = space)
+      val (bagRoot, bagInfo) = createS3BagWith(bucket, space = space)
 
       val payload = createVersionedBagRootPayloadWith(
         context = createPipelineContextWith(
           externalIdentifier = bagInfo.externalIdentifier,
           storageSpace = space
         ),
-        bagRoot = bagRootLocation
+        bagRoot = bagRoot
       )
 
       withBagVerifierWorker(
@@ -81,15 +78,14 @@ class BagVerifierWorkerTest
 
       withLocalS3Bucket { bucket =>
         val space = createStorageSpace
-        val (bagRootLocation, bagInfo) =
-          S3BagBuilder.createS3BagWith(bucket, space = space)
+        val (bagRoot, bagInfo) = createS3BagWith(bucket, space = space)
 
         val payload = createVersionedBagRootPayloadWith(
           context = createPipelineContextWith(
             externalIdentifier = bagInfo.externalIdentifier,
             storageSpace = space
           ),
-          bagRoot = bagRootLocation
+          bagRoot = bagRoot
         )
 
         withBagVerifierWorker(
@@ -113,8 +109,7 @@ class BagVerifierWorkerTest
 
       withLocalS3Bucket { bucket =>
         val space = createStorageSpace
-        val (bagRoot, bagInfo) =
-          S3BagBuilder.createS3BagWith(bucket, space = space)
+        val (bagRoot, bagInfo) = createS3BagWith(bucket, space = space)
 
         val payload = createBagRootLocationPayloadWith(
           context = createPipelineContextWith(
@@ -143,7 +138,7 @@ class BagVerifierWorkerTest
     val outgoing = new MemoryMessageSender()
 
     withLocalS3Bucket { bucket =>
-      val badBuilder = new S3BagBuilderBase {
+      val badBuilder = new S3BagBuilder {
         override protected def createPayloadManifest(
           entries: Seq[PayloadEntry]
         ): Option[String] =
@@ -152,13 +147,13 @@ class BagVerifierWorkerTest
           )
       }
 
-      val (bagRootLocation, bagInfo) = badBuilder.createS3BagWith(bucket)
+      val (bagRoot, bagInfo) = badBuilder.createS3BagWith(bucket)
 
       val payload = createVersionedBagRootPayloadWith(
         context = createPipelineContextWith(
           externalIdentifier = bagInfo.externalIdentifier
         ),
-        bagRoot = bagRootLocation
+        bagRoot = bagRoot
       )
 
       withBagVerifierWorker(
@@ -188,20 +183,20 @@ class BagVerifierWorkerTest
     val outgoing = new MemoryMessageSender()
 
     withLocalS3Bucket { bucket =>
-      val badBuilder = new S3BagBuilderBase {
+      val badBuilder = new S3BagBuilder {
         override protected def createPayloadManifest(
           entries: Seq[PayloadEntry]
         ): Option[String] =
           None
       }
 
-      val (bagRootLocation, bagInfo) = badBuilder.createS3BagWith(bucket)
+      val (bagRoot, bagInfo) = badBuilder.createS3BagWith(bucket)
 
       val payload = createVersionedBagRootPayloadWith(
         context = createPipelineContextWith(
           externalIdentifier = bagInfo.externalIdentifier
         ),
-        bagRoot = bagRootLocation
+        bagRoot = bagRoot
       )
 
       withBagVerifierWorker(
@@ -237,7 +232,7 @@ class BagVerifierWorkerTest
       ExternalIdentifier(externalIdentifier + "_payload")
 
     withLocalS3Bucket { bucket =>
-      val (bagRootLocation, _) = S3BagBuilder.createS3BagWith(
+      val (bagRoot, _) = createS3BagWith(
         bucket,
         externalIdentifier = bagInfoExternalIdentifier
       )
@@ -246,7 +241,7 @@ class BagVerifierWorkerTest
         context = createPipelineContextWith(
           externalIdentifier = payloadExternalIdentifier
         ),
-        bagRoot = bagRootLocation
+        bagRoot = bagRoot
       )
 
       withBagVerifierWorker(
@@ -281,15 +276,14 @@ class BagVerifierWorkerTest
 
     withLocalS3Bucket { bucket =>
       val space = createStorageSpace
-      val (bagRootLocation, bagInfo) =
-        S3BagBuilder.createS3BagWith(bucket, space = space)
+      val (bagRoot, bagInfo) = createS3BagWith(bucket, space = space)
 
       val payload = createVersionedBagRootPayloadWith(
         context = createPipelineContextWith(
           externalIdentifier = bagInfo.externalIdentifier,
           storageSpace = space
         ),
-        bagRoot = bagRootLocation
+        bagRoot = bagRoot
       )
 
       withBagVerifierWorker(
