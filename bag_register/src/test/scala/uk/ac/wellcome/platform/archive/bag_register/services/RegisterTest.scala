@@ -19,9 +19,9 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   BadFetchLocationException,
-  MemorySizeFinder,
   StorageManifestService
 }
+import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemorySizeFinder
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
@@ -46,7 +46,8 @@ class RegisterTest
     val bagReader = new MemoryBagReader()
 
     val storageManifestService = new StorageManifestService(
-      sizeFinder = new MemorySizeFinder(streamStore.memoryStore)
+      sizeFinder = new MemorySizeFinder[ObjectLocation](streamStore.memoryStore),
+      toIdent = identity
     )
 
     val storageManifestDao = createStorageManifestDao()
@@ -134,7 +135,8 @@ class RegisterTest
     val bagReader = new MemoryBagReader()
 
     val storageManifestService = new StorageManifestService(
-      sizeFinder = new MemorySizeFinder(streamStore.memoryStore)
+      sizeFinder = new MemorySizeFinder[ObjectLocation](streamStore.memoryStore),
+      toIdent = identity
     )
 
     val space = createStorageSpace
