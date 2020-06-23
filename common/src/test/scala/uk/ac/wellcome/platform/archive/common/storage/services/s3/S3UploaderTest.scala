@@ -2,13 +2,13 @@ package uk.ac.wellcome.platform.archive.common.storage.services.s3
 
 import java.io.IOException
 import java.net.URL
+import java.util.Date
 
 import com.amazonaws.services.s3.model.AmazonS3Exception
-import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
 
 import scala.concurrent.duration._
 import scala.io.Source
@@ -16,8 +16,7 @@ import scala.io.Source
 class S3UploaderTest
     extends AnyFunSpec
     with Matchers
-    with S3Fixtures
-    with EitherValues {
+    with NewS3Fixtures {
   val uploader = new S3Uploader()
 
   it("creates a pre-signed URL for an object") {
@@ -26,7 +25,7 @@ class S3UploaderTest
     withLocalS3Bucket { bucket =>
       val url = uploader
         .uploadAndGetURL(
-          location = createObjectLocationWith(bucket),
+          location = createS3ObjectLocationWith(bucket),
           content = content,
           expiryLength = 5.minutes
         )
@@ -37,27 +36,24 @@ class S3UploaderTest
     }
   }
 
+
+
   it("will not update an existing stored object if instructed so") {
     val content = randomAlphanumeric
 
     withLocalS3Bucket { bucket =>
-      val objectLocation = createObjectLocationWith(bucket)
+      val location = createS3ObjectLocationWith(bucket)
 
       val url = uploader
         .uploadAndGetURL(
-          location = objectLocation,
+          location = location,
           content = content,
           expiryLength = 5.minutes
         )
         .right
         .value
 
-      val lastModified = s3Client
-        .getObjectMetadata(
-          objectLocation.namespace,
-          objectLocation.path
-        )
-        .getLastModified()
+      val lastModified = getLastModified(location)
 
       getUrl(url) shouldBe content
 
@@ -65,7 +61,7 @@ class S3UploaderTest
 
       val newUrl = uploader
         .uploadAndGetURL(
-          location = objectLocation,
+          location = location,
           content = content,
           expiryLength = 5.minutes,
           checkExists = true
@@ -73,12 +69,7 @@ class S3UploaderTest
         .right
         .value
 
-      val newLastModified = s3Client
-        .getObjectMetadata(
-          objectLocation.namespace,
-          objectLocation.path
-        )
-        .getLastModified()
+      val newLastModified = getLastModified(location)
 
       newUrl shouldNot equal(url)
       lastModified shouldBe newLastModified
@@ -91,23 +82,18 @@ class S3UploaderTest
     val content = randomAlphanumeric
 
     withLocalS3Bucket { bucket =>
-      val objectLocation = createObjectLocationWith(bucket)
+      val location = createS3ObjectLocationWith(bucket)
 
       val url = uploader
         .uploadAndGetURL(
-          location = objectLocation,
+          location = location,
           content = content,
           expiryLength = 5.minutes
         )
         .right
         .value
 
-      val lastModified = s3Client
-        .getObjectMetadata(
-          objectLocation.namespace,
-          objectLocation.path
-        )
-        .getLastModified()
+      val lastModified = getLastModified(location)
 
       getUrl(url) shouldBe content
 
@@ -115,19 +101,14 @@ class S3UploaderTest
 
       val newUrl = uploader
         .uploadAndGetURL(
-          location = objectLocation,
+          location = location,
           content = content,
           expiryLength = 5.minutes
         )
         .right
         .value
 
-      val newLastModified = s3Client
-        .getObjectMetadata(
-          objectLocation.namespace,
-          objectLocation.path
-        )
-        .getLastModified()
+      val newLastModified = getLastModified(location)
 
       newUrl shouldNot equal(url)
 
@@ -149,7 +130,7 @@ class S3UploaderTest
       // consider bumping the expiryLength.
       val url = uploader
         .uploadAndGetURL(
-          location = createObjectLocationWith(bucket),
+          location = createS3ObjectLocationWith(bucket),
           content = content,
           expiryLength = 3.seconds
         )
@@ -173,7 +154,7 @@ class S3UploaderTest
   it("fails if it cannot upload to the bucket") {
     val err = uploader
       .uploadAndGetURL(
-        location = createObjectLocationWith(createBucket),
+        location = createS3ObjectLocation,
         content = randomAlphanumeric,
         expiryLength = 5.minutes
       )
@@ -190,4 +171,12 @@ class S3UploaderTest
 
   def getUrl(url: URL): String =
     Source.fromURL(url).mkString
+
+  def getLastModified(location: S3ObjectLocation): Date =
+    s3Client
+      .getObjectMetadata(
+        location.bucket,
+        location.key
+      )
+      .getLastModified
 }

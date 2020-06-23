@@ -29,16 +29,16 @@ class S3Uploader(implicit val s3Client: AmazonS3) {
   // NOTE: checkExists will allow overwriting of existing content if set to false
   // overwriting existing content will change what previously generated URLs return
   def uploadAndGetURL(
-    location: ObjectLocation,
+    location: S3ObjectLocation,
     content: InputStreamWithLength,
     expiryLength: Duration,
     checkExists: Boolean
   ): Either[StorageError, URL] =
     for {
-      exists <- S3ObjectLocation(location).exists
+      exists <- location.exists
 
       _ <- if (!exists || !checkExists) {
-        s3StreamStore.put(location)(content)
+        s3StreamStore.put(location.toObjectLocation)(content)
       } else {
         Right(Identified(location, content))
       }
@@ -47,7 +47,7 @@ class S3Uploader(implicit val s3Client: AmazonS3) {
     } yield url
 
   def uploadAndGetURL(
-    location: ObjectLocation,
+    location: S3ObjectLocation,
     content: String,
     expiryLength: Duration,
     checkExists: Boolean = false
@@ -63,7 +63,7 @@ class S3Uploader(implicit val s3Client: AmazonS3) {
     } yield result
 
   def getPresignedGetURL(
-    location: ObjectLocation,
+    location: S3ObjectLocation,
     expiryLength: Duration
   ): Either[ReadError, URL] = {
 
@@ -75,7 +75,7 @@ class S3Uploader(implicit val s3Client: AmazonS3) {
     val expTime = new util.Date(expTimeMillis)
 
     val request =
-      new GeneratePresignedUrlRequest(location.namespace, location.path)
+      new GeneratePresignedUrlRequest(location.bucket, location.key)
         .withMethod(HttpMethod.GET)
         .withExpiration(expTime)
 
