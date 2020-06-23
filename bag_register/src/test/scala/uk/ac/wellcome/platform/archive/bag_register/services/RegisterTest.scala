@@ -8,7 +8,6 @@ import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
-import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.{
   StorageLocationGenerators,
   StorageSpaceGenerators
@@ -24,7 +23,7 @@ import uk.ac.wellcome.platform.archive.common.storage.services.{
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemorySizeFinder
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
-import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
+import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, NewMemoryTypedStore}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -130,8 +129,8 @@ class RegisterTest
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =
       MemoryStreamStore[ObjectLocation]()
 
-    implicit val typedStore: MemoryTypedStore[ObjectLocation, String] =
-      new MemoryTypedStore[ObjectLocation, String]()
+    implicit val typedStore: NewMemoryTypedStore[String] =
+      new NewMemoryTypedStore[String]()
 
     val bagReader = new MemoryBagReader()
 
@@ -147,27 +146,26 @@ class RegisterTest
 
     val (bagObjects, bagRoot, bagInfo) =
       withNamespace { implicit namespace =>
-        BagBuilder.createBagContentsWith(
+        createBagContentsWith(
           version = version
         )
       }
 
     // Actually upload the bag objects into a different namespace,
     // so the entries in the fetch.txt will be wrong.
-    val badBagObjects = bagObjects.map { bagObject =>
-      bagObject.copy(
-        location = bagObject.location.copy(
-          namespace = bagObject.location.namespace + "_wrong"
-        )
-      )
+    val badBagObjects = bagObjects.map {
+      case (objLocation, contents) =>
+        objLocation.copy(namespace = objLocation.namespace + "_wrong") -> contents
     }
-    BagBuilder.uploadBagObjects(badBagObjects)
+
+    uploadBagObjects(badBagObjects)
 
     val location = createPrimaryLocationWith(
       prefix = bagRoot
         .copy(
           namespace = bagRoot.namespace + "_wrong"
         )
+        .toObjectLocationPrefix
     )
 
     withBagTrackerClient(storageManifestDao) { bagTrackerClient =>

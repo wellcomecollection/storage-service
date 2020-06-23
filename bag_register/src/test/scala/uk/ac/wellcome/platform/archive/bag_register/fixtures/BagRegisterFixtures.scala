@@ -21,6 +21,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 }
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
 import uk.ac.wellcome.platform.archive.common.fixtures._
+import uk.ac.wellcome.platform.archive.common.fixtures.memory.MemoryBagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.{
   ExternalIdentifierGenerators,
   StorageSpaceGenerators
