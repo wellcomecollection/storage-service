@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity.memory
 import java.net.URI
 
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityChecker
-import uk.ac.wellcome.platform.archive.common.storage.LocateFailure
+import uk.ac.wellcome.platform.archive.bagverifier.storage.LocateFailure
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemorySizeFinder
 import uk.ac.wellcome.storage.ObjectLocation

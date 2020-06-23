@@ -2,13 +2,13 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity
 import java.net.URI
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
-import uk.ac.wellcome.platform.archive.common.storage.{
+import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   LocateFailure,
   LocationError,
   LocationNotFound,
   LocationParsingError
 }
+import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength

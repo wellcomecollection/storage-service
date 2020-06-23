@@ -5,7 +5,7 @@ import java.net.URI
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityChecker
-import uk.ac.wellcome.platform.archive.common.storage.LocateFailure
+import uk.ac.wellcome.platform.archive.bagverifier.storage.LocateFailure
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3SizeFinder
 import uk.ac.wellcome.storage.{Identified, ObjectLocation, S3ObjectLocation}
@@ -18,8 +18,8 @@ class S3FixityChecker(implicit s3Client: AmazonS3)
     extends FixityChecker
     with Logging {
 
-  import uk.ac.wellcome.platform.archive.common.storage.Locatable._
-  import uk.ac.wellcome.platform.archive.common.storage.services.S3LocatableInstances._
+  import uk.ac.wellcome.platform.archive.bagverifier.storage.Locatable._
+  import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.S3Locatable._
 
   override protected val streamStore: StreamStore[ObjectLocation] =
     new S3StreamStore()

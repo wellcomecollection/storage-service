@@ -9,11 +9,11 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FixityCheckerTestCases
 }
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable._
-import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.S3Resolvable
-import uk.ac.wellcome.platform.archive.common.storage.{
+import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   LocationError,
   LocationNotFound
 }
+import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.S3Resolvable
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.StreamStore

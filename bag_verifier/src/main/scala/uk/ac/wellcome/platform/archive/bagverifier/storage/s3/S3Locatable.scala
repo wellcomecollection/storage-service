@@ -1,9 +1,9 @@
-package uk.ac.wellcome.platform.archive.common.storage.services
+package uk.ac.wellcome.platform.archive.bagverifier.storage.s3
 
 import java.net.URI
 
 import com.amazonaws.services.s3.AmazonS3URI
-import uk.ac.wellcome.platform.archive.common.storage.{
+import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   Locatable,
   LocateFailure,
   LocationParsingError
@@ -12,8 +12,8 @@ import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.{Failure, Success, Try}
 
-object S3LocatableInstances {
-  implicit val s3UriLocatable = new Locatable[URI] {
+object S3Locatable {
+  implicit val s3UriLocatable: Locatable[URI] = new Locatable[URI] {
     override def locate(t: URI)(
       maybeRoot: Option[ObjectLocation]
     ): Either[LocateFailure[URI], ObjectLocation] =
@@ -41,7 +41,6 @@ object S3LocatableInstances {
           Left(
             LocationParsingError(t, s"Failed to parse S3 URI: ${e.getMessage}")
           )
-
       }
   }
 }

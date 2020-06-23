@@ -15,6 +15,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.models.{
   VerificationSuccessSummary,
   VerificationSummary
 }
+import uk.ac.wellcome.platform.archive.bagverifier.storage.LocationNotFound
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
   BagPath,
@@ -28,7 +29,6 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   S3BagBuilderBase
 }
 import uk.ac.wellcome.platform.archive.common.generators.StorageSpaceGenerators
-import uk.ac.wellcome.platform.archive.common.storage.LocationNotFound
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepResult,
