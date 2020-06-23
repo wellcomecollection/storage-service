@@ -277,36 +277,3 @@ trait BagBuilderBase extends StorageSpaceGenerators with BagInfoGenerators {
 }
 
 object BagBuilder extends BagBuilderBase
-
-trait S3BagBuilderBase extends BagBuilderBase with S3Fixtures with Logging {
-  def createS3BagWith(
-    bucket: Bucket,
-    space: StorageSpace = createStorageSpace,
-    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
-    payloadFileCount: Int = randomInt(from = 5, to = 50)
-  ): (ObjectLocationPrefix, BagInfo) = {
-    implicit val namespace: String = bucket.name
-
-    val (bagObjects, bagRoot, bagInfo) = createBagContentsWith(
-      space = space,
-      externalIdentifier = externalIdentifier,
-      payloadFileCount = payloadFileCount
-    )
-
-    implicit val typedStore: S3TypedStore[String] = S3TypedStore[String]
-    uploadBagObjects(bagObjects)
-
-    (bagRoot, bagInfo)
-  }
-
-  override protected def buildFetchEntryLine(
-    entry: PayloadEntry
-  )(implicit namespace: String): String = {
-    val displaySize =
-      if (Random.nextBoolean()) entry.contents.getBytes.length.toString else "-"
-
-    s"""s3://$namespace/${entry.path} $displaySize ${entry.bagPath}"""
-  }
-}
-
-object S3BagBuilder extends S3BagBuilderBase
