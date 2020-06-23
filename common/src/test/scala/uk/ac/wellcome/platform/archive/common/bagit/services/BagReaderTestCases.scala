@@ -5,7 +5,8 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
-import uk.ac.wellcome.platform.archive.common.fixtures.{BetterBagBuilder, StorageRandomThings}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagBuilder, StorageRandomThings}
 import uk.ac.wellcome.storage.{Location, Prefix}
 import uk.ac.wellcome.storage.store.TypedStore
 
@@ -18,7 +19,7 @@ trait BagReaderTestCases[
     with Matchers
     with EitherValues
     with StorageRandomThings
-    with BetterBagBuilder[BagLocation, BagLocationPrefix] {
+    with BagBuilder[BagLocation, BagLocationPrefix] {
   def withContext[R](testWith: TestWith[Context, R]): R
   def withTypedStore[R](
     testWith: TestWith[TypedStore[BagLocation, String], R]

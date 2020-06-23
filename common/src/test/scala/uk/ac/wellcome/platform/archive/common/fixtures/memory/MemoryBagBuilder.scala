@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.fixtures.memory
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
-import uk.ac.wellcome.platform.archive.common.fixtures.BetterBagBuilder
+import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
 import uk.ac.wellcome.storage.{MemoryLocation, MemoryLocationPrefix}
@@ -9,7 +9,7 @@ import uk.ac.wellcome.storage.{MemoryLocation, MemoryLocationPrefix}
 import scala.util.Random
 
 trait MemoryBagBuilder
-  extends BetterBagBuilder[MemoryLocation, MemoryLocationPrefix] {
+  extends BagBuilder[MemoryLocation, MemoryLocationPrefix] {
 
   override def createBagRoot(
     space: StorageSpace,
