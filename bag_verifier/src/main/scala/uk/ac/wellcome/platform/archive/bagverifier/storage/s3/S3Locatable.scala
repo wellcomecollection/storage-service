@@ -13,7 +13,7 @@ import uk.ac.wellcome.storage.ObjectLocation
 import scala.util.{Failure, Success, Try}
 
 object S3Locatable {
-  implicit val s3UriLocatable: Locatable[URI] = new Locatable[URI] {
+  implicit val s3UriLocatable: Locatable[ObjectLocation, URI] = new Locatable[ObjectLocation, URI] {
     override def locate(t: URI)(
       maybeRoot: Option[ObjectLocation]
     ): Either[LocateFailure[URI], ObjectLocation] =
