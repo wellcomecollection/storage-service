@@ -10,7 +10,7 @@ import uk.ac.wellcome.storage.store.TypedStore
 
 import scala.util.Random
 
-trait BagBuilder[
+trait BetterBagBuilder[
   BagLocation <: Location,
   BagLocationPrefix <: Prefix[BagLocation]]
     extends StorageSpaceGenerators

@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.fixtures.s3
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, BagVersion, ExternalIdentifier}
-import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
+import uk.ac.wellcome.platform.archive.common.fixtures.BetterBagBuilder
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
 import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
@@ -12,7 +12,7 @@ import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 import scala.util.Random
 
 trait S3BagBuilder
-  extends BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix]
+  extends BetterBagBuilder[S3ObjectLocation, S3ObjectLocationPrefix]
     with NewS3Fixtures {
 
   override def createBagRoot(
