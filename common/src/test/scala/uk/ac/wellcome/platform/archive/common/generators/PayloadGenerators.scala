@@ -9,12 +9,14 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix, S3ObjectLocationPrefix}
 
 trait PayloadGenerators
     extends ExternalIdentifierGenerators
     with StorageSpaceGenerators
-    with StorageLocationGenerators {
+    with StorageLocationGenerators
+    with NewS3Fixtures {
 
   def randomIngestType: IngestType =
     chooseFrom(
@@ -95,12 +97,12 @@ trait PayloadGenerators
 
   def createVersionedBagRootPayloadWith(
     context: PipelineContext = createPipelineContext,
-    bagRoot: ObjectLocationPrefix = createObjectLocationPrefix,
+    bagRoot: S3ObjectLocationPrefix = createS3ObjectLocationPrefix,
     version: BagVersion = createBagVersion
   ): VersionedBagRootPayload =
     VersionedBagRootPayload(
       context = context,
-      bagRoot = bagRoot,
+      bagRoot = bagRoot.toObjectLocationPrefix,
       version = version
     )
 

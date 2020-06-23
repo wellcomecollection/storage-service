@@ -10,7 +10,7 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.PrimaryBagReplicationRequest
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.common.ReplicaResultPayload
-import uk.ac.wellcome.platform.archive.common.fixtures.S3BagBuilder
+import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryStorageLocation
@@ -22,7 +22,8 @@ class BagReplicatorFeatureTest
     with Eventually
     with BagReplicatorFixtures
     with IngestUpdateAssertions
-    with PayloadGenerators {
+    with PayloadGenerators
+    with S3BagBuilder {
 
   it("replicates a bag successfully and updates both topics") {
     withLocalS3Bucket { srcBucket =>
@@ -32,9 +33,7 @@ class BagReplicatorFeatureTest
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
 
-        val (srcBagRoot, _) = S3BagBuilder.createS3BagWith(
-          bucket = srcBucket
-        )
+        val (srcBagRoot, _) = createS3BagWith(bucket = srcBucket)
 
         val payload = createVersionedBagRootPayloadWith(
           bagRoot = srcBagRoot
