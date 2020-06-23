@@ -3,18 +3,20 @@ package uk.ac.wellcome.platform.archive.common.fixtures
 import java.security.MessageDigest
 
 import uk.ac.wellcome.platform.archive.common.bagit.models._
-import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, StorageSpaceGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagInfoGenerators,
+  StorageSpaceGenerators
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.{Location, Prefix}
 import uk.ac.wellcome.storage.store.TypedStore
 
 import scala.util.Random
 
-trait BetterBagBuilder[
-  BagLocation <: Location,
-  BagLocationPrefix <: Prefix[BagLocation]]
-    extends StorageSpaceGenerators
-      with BagInfoGenerators {
+trait BetterBagBuilder[BagLocation <: Location, BagLocationPrefix <: Prefix[
+  BagLocation
+]] extends StorageSpaceGenerators
+    with BagInfoGenerators {
 
   case class PayloadEntry(bagPath: BagPath, path: String, contents: String)
 
@@ -33,8 +35,9 @@ trait BetterBagBuilder[
   def uploadBagObjects(
     objects: Map[BagLocation, String]
   )(implicit typedStore: TypedStore[BagLocation, String]): Unit =
-    objects.foreach { case (location, contents) =>
-      typedStore.put(location)(contents) shouldBe a[Right[_, _]]
+    objects.foreach {
+      case (location, contents) =>
+        typedStore.put(location)(contents) shouldBe a[Right[_, _]]
     }
 
   protected def getFetchEntryCount(payloadFileCount: Int): Int =
@@ -120,18 +123,14 @@ trait BetterBagBuilder[
     val bagRoot = createBagRoot(space, externalIdentifier, version)
 
     val manifestObjects =
-      (tagManifestFiles ++ tagManifest.toList)
-        .map { manifestFile =>
-          bagRoot.asLocation(manifestFile.name) -> manifestFile.contents
-        }
-        .toMap
+      (tagManifestFiles ++ tagManifest.toList).map { manifestFile =>
+        bagRoot.asLocation(manifestFile.name) -> manifestFile.contents
+      }.toMap
 
     val payloadObjects =
-      (payloadFiles ++ fetchEntries)
-        .map { payloadEntry =>
-          createBagLocation(bagRoot, path = payloadEntry.path) -> payloadEntry.contents
-        }
-        .toMap
+      (payloadFiles ++ fetchEntries).map { payloadEntry =>
+        createBagLocation(bagRoot, path = payloadEntry.path) -> payloadEntry.contents
+      }.toMap
 
     (manifestObjects ++ payloadObjects, bagRoot, bagInfo)
   }
@@ -165,8 +164,8 @@ trait BetterBagBuilder[
     )
 
   protected def createPayloadManifest(
-                                       entries: Seq[PayloadEntry]
-                                     ): Option[String] =
+    entries: Seq[PayloadEntry]
+  ): Option[String] =
     Some(
       createManifest(
         entries.map { entry =>
@@ -221,19 +220,19 @@ trait BetterBagBuilder[
       .mkString("\n")
 
   protected def createBagRootPath(
-                               space: StorageSpace,
-                               externalIdentifier: ExternalIdentifier,
-                               version: BagVersion
-                             ): String =
-  // This mimics the structure of bags stored by the replicator
+    space: StorageSpace,
+    externalIdentifier: ExternalIdentifier,
+    version: BagVersion
+  ): String =
+    // This mimics the structure of bags stored by the replicator
     s"$space/$externalIdentifier/$version"
 
   private def createPayloadFiles(
-                                  space: StorageSpace,
-                                  externalIdentifier: ExternalIdentifier,
-                                  version: BagVersion,
-                                  payloadFileCount: Int
-                                ): Seq[PayloadEntry] = {
+    space: StorageSpace,
+    externalIdentifier: ExternalIdentifier,
+    version: BagVersion,
+    payloadFileCount: Int
+  ): Seq[PayloadEntry] = {
     val bagRoot = createBagRootPath(space, externalIdentifier, version)
 
     (1 to payloadFileCount).map { _ =>

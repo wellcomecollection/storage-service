@@ -4,11 +4,17 @@ import org.scalatest.funspec.AnyFunSpec
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.BagRootPayload
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestStatusUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestStatusUpdate
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.storage.bag_root_finder.fixtures.BagRootFinderFixtures
 import uk.ac.wellcome.storage.S3ObjectLocationPrefix
@@ -73,7 +79,8 @@ class BagRootFinderFeatureTest
         )(
           implicit namespace: String
         ): S3ObjectLocationPrefix = {
-          val rootDirectory = super.createBagRoot(space, externalIdentifier, version)
+          val rootDirectory =
+            super.createBagRoot(space, externalIdentifier, version)
 
           rootDirectory.copy(
             keyPrefix = Seq(rootDirectory.keyPrefix, "subdir").mkString("/")

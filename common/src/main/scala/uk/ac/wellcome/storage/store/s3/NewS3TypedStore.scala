@@ -11,8 +11,10 @@ class NewS3TypedStore[T](
 ) extends TypedStore[S3ObjectLocation, T]
 
 object NewS3TypedStore {
-  def apply[T](implicit codec: Codec[T],
-               s3Client: AmazonS3): NewS3TypedStore[T] = {
+  def apply[T](
+    implicit codec: Codec[T],
+    s3Client: AmazonS3
+  ): NewS3TypedStore[T] = {
     implicit val streamStore: NewS3StreamStore = new NewS3StreamStore()
 
     new NewS3TypedStore[T]()

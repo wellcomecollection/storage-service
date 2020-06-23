@@ -65,22 +65,22 @@ case class MemoryLocation(
   namespace: String,
   path: String
 ) extends Location {
-    override def toObjectLocation: ObjectLocation =
-      ObjectLocation(
-        namespace = namespace,
-        path = path
-      )
+  override def toObjectLocation: ObjectLocation =
+    ObjectLocation(
+      namespace = namespace,
+      path = path
+    )
 }
 
 case class MemoryLocationPrefix(
   namespace: String,
   pathPrefix: String
 ) extends Prefix[MemoryLocation] {
-    override def asLocation(parts: String*): MemoryLocation =
-      MemoryLocation(
-        namespace = namespace,
-        path = Paths.get(pathPrefix, parts: _*).normalize().toString
-      )
+  override def asLocation(parts: String*): MemoryLocation =
+    MemoryLocation(
+      namespace = namespace,
+      path = Paths.get(pathPrefix, parts: _*).normalize().toString
+    )
 
   override def toObjectLocationPrefix: ObjectLocationPrefix =
     ObjectLocationPrefix(
