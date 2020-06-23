@@ -32,8 +32,8 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestStatusUpdate
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemorySizeFinder
 import uk.ac.wellcome.platform.archive.common.storage.services.{
-  MemorySizeFinder,
   StorageManifestDao,
   StorageManifestService
 }
@@ -84,7 +84,9 @@ trait BagRegisterFixtures
         val bagReader = new MemoryBagReader()
 
         val storageManifestService = new StorageManifestService(
-          sizeFinder = new MemorySizeFinder(streamStore.memoryStore)
+          sizeFinder =
+            new MemorySizeFinder[ObjectLocation](streamStore.memoryStore),
+          toIdent = identity
         )
 
         withBagTrackerClient(storageManifestDao) { bagTrackerClient =>

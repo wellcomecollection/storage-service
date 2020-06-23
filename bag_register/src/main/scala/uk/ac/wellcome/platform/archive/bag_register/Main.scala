@@ -23,10 +23,9 @@ import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  S3SizeFinder,
-  StorageManifestService
-}
+import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3SizeFinder
+import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
+import uk.ac.wellcome.storage.S3ObjectLocation
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
@@ -63,7 +62,8 @@ object Main extends WellcomeTypesafeApp {
     implicit val s3StreamStore: S3StreamStore = new S3StreamStore()
 
     val storageManifestService = new StorageManifestService(
-      sizeFinder = new S3SizeFinder()
+      sizeFinder = new S3SizeFinder(),
+      toIdent = S3ObjectLocation.apply
     )
 
     val register = new Register(

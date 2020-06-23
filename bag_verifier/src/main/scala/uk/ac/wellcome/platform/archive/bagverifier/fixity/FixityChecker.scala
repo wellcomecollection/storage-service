@@ -22,7 +22,7 @@ import scala.util.{Failure, Success}
   */
 trait FixityChecker extends Logging {
   protected val streamStore: StreamStore[ObjectLocation]
-  protected val sizeFinder: SizeFinder
+  protected val sizeFinder: SizeFinder[ObjectLocation]
   val tags: Tags[ObjectLocation]
 
   def locate(uri: URI): Either[LocateFailure[URI], ObjectLocation]
