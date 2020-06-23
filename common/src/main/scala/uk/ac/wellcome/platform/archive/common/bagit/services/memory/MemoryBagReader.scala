@@ -5,5 +5,5 @@ import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
 class MemoryBagReader()(
-  implicit val streamStore: MemoryStreamStore[ObjectLocation]
+  implicit val readable: MemoryStreamStore[ObjectLocation]
 ) extends BagReader

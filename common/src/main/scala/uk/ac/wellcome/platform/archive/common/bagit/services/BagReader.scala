@@ -16,7 +16,8 @@ import uk.ac.wellcome.storage.{
   ObjectLocation,
   ObjectLocationPrefix
 }
-import uk.ac.wellcome.storage.store.StreamStore
+import uk.ac.wellcome.storage.store.Readable
+import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 import scala.util.{Failure, Success, Try}
 
@@ -28,7 +29,7 @@ trait BagReader {
   protected val tagManifest =
     (a: HashingAlgorithm) => BagPath(s"tagmanifest-${a.pathRepr}.txt")
 
-  implicit val streamStore: StreamStore[ObjectLocation]
+  implicit val readable: Readable[ObjectLocation, InputStreamWithLength]
 
   type Stream[T] = InputStream => Try[T]
 
@@ -55,7 +56,7 @@ trait BagReader {
   )(path: BagPath)(f: Stream[T]): Either[BagUnavailable, Option[T]] = {
     val location = root.asLocation(path.value)
 
-    streamStore.get(location) match {
+    readable.get(location) match {
       case Right(stream) =>
         f(stream.identifiedT) match {
           case Success(r) => Right(Some(r))
