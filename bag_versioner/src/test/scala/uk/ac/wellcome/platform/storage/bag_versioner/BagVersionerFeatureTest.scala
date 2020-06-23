@@ -17,6 +17,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAsser
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.VersionedBagRootPayload
 import uk.ac.wellcome.platform.storage.bag_versioner.fixtures.BagVersionerFixtures
+import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 class BagVersionerFeatureTest
@@ -28,10 +29,11 @@ class BagVersionerFeatureTest
     with ExternalIdentifierGenerators
     with StorageSpaceGenerators
     with Eventually
-    with IntegrationPatience {
+    with IntegrationPatience
+    with NewS3Fixtures {
 
   it("assigns a version for a new bag") {
-    val bagRoot = createObjectLocationPrefix
+    val bagRoot = createS3ObjectLocationPrefix
     val storageSpace = createStorageSpace
 
     val payload = createBagRootLocationPayloadWith(
