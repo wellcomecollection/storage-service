@@ -25,8 +25,11 @@ class StorageManifestException(message: String)
 class BadFetchLocationException(message: String)
     extends StorageManifestException(message)
 
-class StorageManifestService(
-  sizeFinder: SizeFinder
+class StorageManifestService[SizeIdent](
+  sizeFinder: SizeFinder[SizeIdent],
+
+  // TODO: Temporary while we disambiguate ObjectLocation.  Remove eventually.
+  toIdent: ObjectLocation => SizeIdent
 )(
   implicit streamReader: Readable[ObjectLocation, InputStreamWithLength]
 ) extends Logging {
@@ -217,7 +220,7 @@ class StorageManifestService(
         val size = maybeSize match {
           case Some(s) => s
           case None =>
-            sizeFinder.getSize(location) match {
+            sizeFinder.getSize(toIdent(location)) match {
               case Right(value) => value
               case Left(readError) =>
                 throw new StorageManifestException(

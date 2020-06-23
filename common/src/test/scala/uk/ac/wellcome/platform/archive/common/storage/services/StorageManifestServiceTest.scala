@@ -24,12 +24,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageSpace
 }
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
-import uk.ac.wellcome.storage.{
-  ObjectLocation,
-  ObjectLocationPrefix,
-  ReadError,
-  StoreReadError
-}
+import uk.ac.wellcome.storage._
 
 import scala.util.Random
 
@@ -433,17 +428,14 @@ class StorageManifestServiceTest
 
       val err = new Throwable("BOOM!")
 
-      val brokenSizeFinder = new SizeFinder {
-        override def retryableGetFunction(location: ObjectLocation): Long =
-          throw err
-        override def buildGetError(throwable: Throwable): ReadError =
-          StoreReadError(throwable)
+      val brokenSizeFinder = new SizeFinder[ObjectLocation] {
+        override def get(location: ObjectLocation): ReadEither = Left(StoreReadError(err))
       }
 
       implicit val streamStore: MemoryStreamStore[ObjectLocation] =
         MemoryStreamStore[ObjectLocation]()
 
-      val service = new StorageManifestService(brokenSizeFinder)
+      val service = new StorageManifestService(brokenSizeFinder, toIdent = identity)
 
       val result = service.createManifest(
         ingestId = createIngestID,
@@ -479,14 +471,12 @@ class StorageManifestServiceTest
       val location = createPrimaryLocationWith(prefix = bagRoot)
 
       var sizeCache: Map[ObjectLocation, Long] = Map.empty
-      val cachingSizeFinder = new SizeFinder {
-        override def retryableGetFunction(location: ObjectLocation): Long = {
+      val cachingSizeFinder = new SizeFinder[ObjectLocation] {
+        override def get(location: ObjectLocation): ReadEither = {
           sizeCache = sizeCache + (location -> Random.nextLong())
-          sizeCache(location)
+          val size = sizeCache(location)
+          Right(Identified(location, size))
         }
-
-        override def buildGetError(throwable: Throwable): ReadError =
-          StoreReadError(throwable)
       }
 
       val storageManifest = createManifest(
@@ -540,11 +530,9 @@ class StorageManifestServiceTest
 
       val err = new Throwable("This should never be called!")
 
-      val brokenSizeFinder = new SizeFinder {
-        override def retryableGetFunction(location: ObjectLocation): Long =
-          throw err
-        override def buildGetError(throwable: Throwable): ReadError =
-          StoreReadError(throwable)
+      val brokenSizeFinder = new SizeFinder[ObjectLocation] {
+        override def get(location: ObjectLocation): ReadEither =
+          Left(StoreReadError(err))
       }
 
       val storageManifest = createManifest(
@@ -634,17 +622,14 @@ class StorageManifestServiceTest
     replicas: Seq[SecondaryStorageLocation] = Seq.empty,
     space: StorageSpace = createStorageSpace,
     version: BagVersion,
-    sizeFinder: SizeFinder = new SizeFinder {
-      override def retryableGetFunction(location: ObjectLocation): Long =
-        Random.nextLong().abs
-
-      override def buildGetError(throwable: Throwable): ReadError =
-        StoreReadError(throwable)
+    sizeFinder: SizeFinder[ObjectLocation] = new SizeFinder[ObjectLocation] {
+      override def get(location: ObjectLocation): ReadEither =
+        Right(Identified(location, Random.nextLong().abs))
     }
   )(
     implicit streamStore: MemoryStreamStore[ObjectLocation]
   ): StorageManifest = {
-    val service = new StorageManifestService(sizeFinder)
+    val service = new StorageManifestService(sizeFinder, toIdent = identity)
 
     val result = service.createManifest(
       ingestId = ingestId,
@@ -692,17 +677,15 @@ class StorageManifestServiceTest
     replicas: Seq[SecondaryStorageLocation] = Seq.empty,
     version: BagVersion = BagVersion(1)
   )(assertError: Throwable => Assertion): Assertion = {
-    val sizeFinder = new SizeFinder {
-      override def retryableGetFunction(location: ObjectLocation): Long = 1
-
-      override def buildGetError(throwable: Throwable): ReadError =
-        StoreReadError(throwable)
+    val sizeFinder = new SizeFinder[ObjectLocation] {
+      override def get(location: ObjectLocation): ReadEither =
+        Right(Identified(location, 1))
     }
 
     implicit val streamStore: MemoryStreamStore[ObjectLocation] =
       MemoryStreamStore[ObjectLocation]()
 
-    val service = new StorageManifestService(sizeFinder)
+    val service = new StorageManifestService(sizeFinder, toIdent = identity)
 
     val result = service.createManifest(
       ingestId = ingestId,
