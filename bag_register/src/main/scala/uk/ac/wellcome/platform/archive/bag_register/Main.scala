@@ -25,7 +25,7 @@ import uk.ac.wellcome.platform.archive.common.config.builders.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3SizeFinder
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
-import uk.ac.wellcome.storage.{ObjectLocation, S3ObjectLocation}
+import uk.ac.wellcome.storage.S3ObjectLocation
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
