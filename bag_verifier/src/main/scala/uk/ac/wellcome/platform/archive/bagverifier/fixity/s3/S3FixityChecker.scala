@@ -38,5 +38,5 @@ class S3FixityChecker(implicit s3Client: AmazonS3)
   override val tags: Tags[ObjectLocation] = new S3Tags()
 
   override def locate(uri: URI): Either[LocateFailure[URI], ObjectLocation] =
-    uri.locate
+    uri.locate.map { _.toObjectLocation }
 }

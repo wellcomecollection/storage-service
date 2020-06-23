@@ -8,24 +8,24 @@ import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   LocateFailure,
   LocationParsingError
 }
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.S3ObjectLocation
 
 import scala.util.{Failure, Success, Try}
 
 object S3Locatable {
-  implicit val s3UriLocatable: Locatable[ObjectLocation, URI] = new Locatable[ObjectLocation, URI] {
+  implicit val s3UriLocatable: Locatable[S3ObjectLocation, URI] = new Locatable[S3ObjectLocation, URI] {
     override def locate(t: URI)(
-      maybeRoot: Option[ObjectLocation]
-    ): Either[LocateFailure[URI], ObjectLocation] =
+      maybeRoot: Option[S3ObjectLocation]
+    ): Either[LocateFailure[URI], S3ObjectLocation] =
       Try { new AmazonS3URI(t) } match {
         case Success(s3Uri) =>
-          Right(ObjectLocation(s3Uri.getBucket, s3Uri.getKey))
+          Right(S3ObjectLocation(bucket = s3Uri.getBucket, key = s3Uri.getKey))
 
         // We are not running in AWS - manually parse URL
         case Failure(_) if t.getHost == "localhost" =>
           t.getPath.split("/").toList match {
             case _ :: head :: tail =>
-              Right(ObjectLocation(head, tail.mkString("/")))
+              Right(S3ObjectLocation(bucket = head, key = tail.mkString("/")))
             case default =>
               Left(
                 LocationParsingError(
