@@ -6,7 +6,10 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   ExpectedFileFixity,
   ExpectedFixity
 }
-import uk.ac.wellcome.platform.archive.bagverifier.storage.{Locatable, Resolvable}
+import uk.ac.wellcome.platform.archive.bagverifier.storage.{
+  Locatable,
+  Resolvable
+}
 import uk.ac.wellcome.platform.archive.bagverifier.storage.bag.BagLocatable._
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher

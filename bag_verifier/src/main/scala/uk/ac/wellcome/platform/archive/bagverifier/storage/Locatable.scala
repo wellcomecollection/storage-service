@@ -19,4 +19,3 @@ object Locatable {
       locator.locate(t)(None)
   }
 }
-

@@ -50,7 +50,9 @@ trait FixityChecker[BagLocation] extends Logging {
 
     val fixityResult = for {
       bagLocation <- parseLocation(expectedFileFixity)
-      _ = debug(s"Parsed location for ${expectedFileFixity.uri} as $bagLocation")
+      _ = debug(
+        s"Parsed location for ${expectedFileFixity.uri} as $bagLocation"
+      )
 
       // TODO: Bridging code while we split ObjectLocation.  Remove this later.
       // See https://github.com/wellcomecollection/platform/issues/4596
