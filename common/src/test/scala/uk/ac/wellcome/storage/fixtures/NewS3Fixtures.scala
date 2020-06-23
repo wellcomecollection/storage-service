@@ -1,6 +1,6 @@
 package uk.ac.wellcome.storage.fixtures
 
-import uk.ac.wellcome.storage.{ObjectLocation, S3ObjectLocation}
+import uk.ac.wellcome.storage.{ObjectLocation, S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
@@ -15,6 +15,17 @@ trait NewS3Fixtures extends S3Fixtures {
 
   def createS3ObjectLocation: S3ObjectLocation =
     createS3ObjectLocationWith()
+
+  def createS3ObjectLocationPrefixWith(
+    bucket: Bucket = createBucket
+  ): S3ObjectLocationPrefix =
+    S3ObjectLocationPrefix(
+      bucket = bucket.name,
+      keyPrefix = randomAlphanumeric
+    )
+
+  def createS3ObjectLocationPrefix: S3ObjectLocationPrefix =
+    createS3ObjectLocationPrefixWith()
 
   def putS3Object(
     location: S3ObjectLocation): Unit =
