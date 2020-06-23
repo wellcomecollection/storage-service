@@ -4,8 +4,16 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.s3.S3Errors
-import uk.ac.wellcome.storage.store.RetryableReadable
+import uk.ac.wellcome.storage.store.{Readable, RetryableReadable}
 import uk.ac.wellcome.storage.store.memory.MemoryStore
+
+trait NewSizeFinder[Ident] extends Readable[Ident, Long] {
+  def getSize(ident: Ident): Either[ReadError, Long] =
+    get(ident) match {
+      case Right(Identified(_, size)) => Right(size)
+      case Left(err)                  => Left(err)
+    }
+}
 
 trait SizeFinder extends RetryableReadable[Long] {
   override val maxRetries: Int = 3
