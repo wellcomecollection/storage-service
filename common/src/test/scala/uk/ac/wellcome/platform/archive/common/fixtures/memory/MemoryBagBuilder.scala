@@ -31,4 +31,10 @@ trait MemoryBagBuilder
 
     s"""mem://$namespace/${entry.path} $displaySize ${entry.bagPath}"""
   }
+
+  override def createBagLocation(bagRoot: MemoryLocationPrefix, path: String): MemoryLocation =
+    MemoryLocation(
+      namespace = bagRoot.namespace,
+      path = path
+    )
 }

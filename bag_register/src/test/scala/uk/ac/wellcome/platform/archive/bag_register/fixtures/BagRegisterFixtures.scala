@@ -33,13 +33,10 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemorySizeFinder
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  StorageManifestDao,
-  StorageManifestService
-}
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.platform.archive.common.storage.services.{StorageManifestDao, StorageManifestService}
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
-import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
+import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, NewMemoryTypedStore}
+import uk.ac.wellcome.storage.{MemoryLocationPrefix, ObjectLocation}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -53,7 +50,8 @@ trait BagRegisterFixtures
     with ExternalIdentifierGenerators
     with BagTrackerFixtures
     with StringNamespaceFixtures
-    with StorageSpaceGenerators {
+    with StorageSpaceGenerators
+    with MemoryBagBuilder {
 
   override implicit val asyncSqsClient: SqsAsyncClient =
     SQSClientFactory.createAsyncClient(
@@ -153,19 +151,19 @@ trait BagRegisterFixtures
     implicit
     namespace: String = randomAlphanumeric,
     streamStore: MemoryStreamStore[ObjectLocation]
-  ): (ObjectLocationPrefix, BagInfo) = {
-    implicit val typedStore: MemoryTypedStore[ObjectLocation, String] =
-      new MemoryTypedStore[ObjectLocation, String]()
+  ): (MemoryLocationPrefix, BagInfo) = {
+    implicit val typedStore: NewMemoryTypedStore[String] =
+      new NewMemoryTypedStore[String]()
 
     val (bagObjects, bagRoot, bagInfo) =
-      BagBuilder.createBagContentsWith(
+      createBagContentsWith(
         space = space,
         externalIdentifier = externalIdentifier,
         version = version,
         payloadFileCount = dataFileCount
       )
 
-    BagBuilder.uploadBagObjects(bagObjects)
+    uploadBagObjects(bagObjects)
 
     (bagRoot, bagInfo)
   }

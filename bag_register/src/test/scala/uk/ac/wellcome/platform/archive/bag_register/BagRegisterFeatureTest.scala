@@ -56,7 +56,7 @@ class BagRegisterFeatureTest
     )
 
     val primaryLocation = createPrimaryLocationWith(
-      prefix = bagRoot
+      prefix = bagRoot.toObjectLocationPrefix
     )
 
     val knownReplicas = KnownReplicas(
@@ -92,8 +92,9 @@ class BagRegisterFeatureTest
             provider = primaryLocation.provider,
             prefix = bagRoot
               .copy(
-                path = bagRoot.path.stripSuffix(s"/$version")
+                pathPrefix = bagRoot.pathPrefix.stripSuffix(s"/$version")
               )
+              .toObjectLocationPrefix
           )
 
           storageManifest.replicaLocations shouldBe empty

@@ -61,12 +61,12 @@ class RegisterTest
     )
 
     val primaryLocation = createPrimaryLocationWith(
-      prefix = bagRoot
+      prefix = bagRoot.toObjectLocationPrefix
     )
 
     val replicas = collectionOf(min = 1) {
       createSecondaryLocationWith(
-        prefix = bagRoot.copy(namespace = randomAlphanumeric)
+        prefix = bagRoot.copy(namespace = randomAlphanumeric).toObjectLocationPrefix
       )
     }
 
@@ -108,8 +108,9 @@ class RegisterTest
     manifest.location shouldBe primaryLocation.copy(
       prefix = bagRoot
         .copy(
-          path = bagRoot.path.stripSuffix(s"/$version")
+          pathPrefix = bagRoot.pathPrefix.stripSuffix(s"/$version")
         )
+        .toObjectLocationPrefix
     )
 
     manifest.replicaLocations shouldBe
