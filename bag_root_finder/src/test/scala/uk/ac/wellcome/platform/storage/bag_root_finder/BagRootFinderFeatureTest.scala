@@ -17,7 +17,6 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.storage.bag_root_finder.fixtures.BagRootFinderFixtures
-import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 
 class BagRootFinderFeatureTest
     extends AnyFunSpec
@@ -72,19 +71,15 @@ class BagRootFinderFeatureTest
   it("detects a bag in a subdirectory of the bagLocation") {
     withLocalS3Bucket { bucket =>
       val builder = new S3BagBuilder {
-        override protected def createBagRoot(
+        override protected def createBagRootPath(
           space: StorageSpace,
           externalIdentifier: ExternalIdentifier,
           version: BagVersion
-        )(
-          implicit namespace: String
-        ): S3ObjectLocationPrefix = {
-          val rootDirectory =
-            super.createBagRoot(space, externalIdentifier, version)
+        ): String = {
+          val rootPath =
+            super.createBagRootPath(space, externalIdentifier, version)
 
-          rootDirectory.copy(
-            keyPrefix = Seq(rootDirectory.keyPrefix, "subdir").mkString("/")
-          )
+          Seq(rootPath, "subdir").mkString("/")
         }
       }
 

@@ -7,7 +7,6 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.BetterBagBuilder
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
 import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.s3.NewS3TypedStore
@@ -28,8 +27,7 @@ trait S3BagBuilder
   ): S3ObjectLocationPrefix =
     S3ObjectLocationPrefix(
       bucket = namespace,
-      keyPrefix =
-        DestinationBuilder.buildPath(space, externalIdentifier, version)
+      keyPrefix = createBagRootPath(space, externalIdentifier, version)
     )
 
   def createBagLocation(
