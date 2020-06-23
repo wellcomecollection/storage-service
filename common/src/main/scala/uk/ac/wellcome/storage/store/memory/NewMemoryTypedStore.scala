@@ -14,11 +14,13 @@ class NewMemoryTypedStore[T](
   override implicit val streamStore: StreamStore[MemoryLocation] =
     new StreamStore[MemoryLocation] {
       override def get(location: MemoryLocation): ReadEither =
-    underlying
-      .get(location.toObjectLocation)
-      .map { case Identified(_, result) => Identified(location, result) }
+        underlying
+          .get(location.toObjectLocation)
+          .map { case Identified(_, result) => Identified(location, result) }
 
-      override def put(location: MemoryLocation)(inputStream: InputStreamWithLength): WriteEither =
+      override def put(
+        location: MemoryLocation
+      )(inputStream: InputStreamWithLength): WriteEither =
         underlying
           .put(location.toObjectLocation)(inputStream)
           .map { case Identified(_, result) => Identified(location, result) }

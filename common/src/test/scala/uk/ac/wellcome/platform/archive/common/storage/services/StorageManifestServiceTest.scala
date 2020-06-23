@@ -3,7 +3,12 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import org.scalatest.{Assertion, EitherValues, TryValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagPath, BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  Bag,
+  BagPath,
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.memory.MemoryBagBuilder
 import uk.ac.wellcome.platform.archive.common.generators._
@@ -121,9 +126,11 @@ class StorageManifestServiceTest
     }
 
     it("sets the correct prefix on the primary location") {
-      storageManifest.location.prefix shouldBe bagRoot.copy(
-        pathPrefix = bagRoot.pathPrefix.stripSuffix(s"/$version")
-      ).toObjectLocationPrefix
+      storageManifest.location.prefix shouldBe bagRoot
+        .copy(
+          pathPrefix = bagRoot.pathPrefix.stripSuffix(s"/$version")
+        )
+        .toObjectLocationPrefix
     }
 
     it("uses the correct providers on the replica locations") {
@@ -163,7 +170,8 @@ class StorageManifestServiceTest
       bagBuilder = NoFetchBagBuilder
     )
 
-    val location = createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
+    val location =
+      createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
 
     val storageManifest = createManifest(
       bag = bag,
@@ -202,7 +210,8 @@ class StorageManifestServiceTest
       bagBuilder = AtLeastOneFetchEntryBagBuilder
     )
 
-    val location = createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
+    val location =
+      createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
 
     val storageManifest = createManifest(
       bag = bag,
@@ -265,7 +274,8 @@ class StorageManifestServiceTest
       version = version
     )
 
-    val location = createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
+    val location =
+      createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
 
     val storageManifest = createManifest(
       bag = bag,
@@ -380,7 +390,8 @@ class StorageManifestServiceTest
       version = version
     )
 
-    val location = createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
+    val location =
+      createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
 
     val storageManifest = createManifest(
       bag = bag,
@@ -465,7 +476,8 @@ class StorageManifestServiceTest
         bagBuilder = NoFetchBagBuilder
       )
 
-      val location = createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
+      val location =
+        createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
 
       var sizeCache: Map[ObjectLocation, Long] = Map.empty
       val cachingSizeFinder = new SizeFinder[ObjectLocation] {
@@ -523,7 +535,8 @@ class StorageManifestServiceTest
         bagBuilder = ConcreteFetchEntryBagBuilder
       )
 
-      val location = createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
+      val location =
+        createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
 
       val err = new Throwable("This should never be called!")
 
@@ -577,7 +590,10 @@ class StorageManifestServiceTest
 
     bagBuilder.uploadBagObjects(bagObjects)
 
-    (bagRoot, new MemoryBagReader().get(bagRoot.toObjectLocationPrefix).right.value)
+    (
+      bagRoot,
+      new MemoryBagReader().get(bagRoot.toObjectLocationPrefix).right.value
+    )
   }
 
   describe(
@@ -599,7 +615,8 @@ class StorageManifestServiceTest
 
       val manifest = createManifest(
         bag = bag,
-        location = createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix),
+        location =
+          createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix),
         space = space,
         version = version
       )

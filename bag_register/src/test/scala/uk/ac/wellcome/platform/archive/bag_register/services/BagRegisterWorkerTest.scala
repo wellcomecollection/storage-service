@@ -121,7 +121,8 @@ class BagRegisterWorkerTest
       version = version
     )
 
-    val primaryLocation = createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
+    val primaryLocation =
+      createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
 
     val knownReplicas =
       KnownReplicas(location = primaryLocation, replicas = List.empty)
@@ -179,7 +180,8 @@ class BagRegisterWorkerTest
     )
 
     val knownReplicas1 = KnownReplicas(
-      location = createPrimaryLocationWith(prefix = bagRoot1.toObjectLocationPrefix),
+      location =
+        createPrimaryLocationWith(prefix = bagRoot1.toObjectLocationPrefix),
       replicas = List.empty
     )
 
@@ -192,7 +194,8 @@ class BagRegisterWorkerTest
     )
 
     val knownReplicas2 = KnownReplicas(
-      location = createPrimaryLocationWith(prefix = bagRoot2.toObjectLocationPrefix),
+      location =
+        createPrimaryLocationWith(prefix = bagRoot2.toObjectLocationPrefix),
       replicas = List.empty
     )
 
@@ -257,7 +260,8 @@ class BagRegisterWorkerTest
 
     val replicas = collectionOf(min = 1) {
       createSecondaryLocationWith(
-        prefix = bagRoot.copy(namespace = randomAlphanumeric).toObjectLocationPrefix
+        prefix =
+          bagRoot.copy(namespace = randomAlphanumeric).toObjectLocationPrefix
       )
     }
 

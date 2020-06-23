@@ -1,7 +1,10 @@
 package uk.ac.wellcome.platform.archive.common.bagit.services.s3
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.bagit.services.{BagReader, BagReaderTestCases}
+import uk.ac.wellcome.platform.archive.common.bagit.services.{
+  BagReader,
+  BagReaderTestCases
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.TypedStore
@@ -9,7 +12,12 @@ import uk.ac.wellcome.storage.store.s3.{NewS3StreamStore, NewS3TypedStore}
 import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 class S3BagReaderTest
-  extends BagReaderTestCases[Unit, Bucket, S3ObjectLocation, S3ObjectLocationPrefix]
+    extends BagReaderTestCases[
+      Unit,
+      Bucket,
+      S3ObjectLocation,
+      S3ObjectLocationPrefix
+    ]
     with S3BagBuilder {
 
   override def withTypedStore[R](

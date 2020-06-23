@@ -2,9 +2,20 @@ package uk.ac.wellcome.platform.archive.common.bagit.services
 
 import java.io.InputStream
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagFetch, BagInfo, BagPath, PayloadManifest, TagManifest}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  Bag,
+  BagFetch,
+  BagInfo,
+  BagPath,
+  PayloadManifest,
+  TagManifest
+}
 import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
-import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.{
+  DoesNotExistError,
+  ObjectLocation,
+  ObjectLocationPrefix
+}
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 

@@ -23,7 +23,10 @@ import uk.ac.wellcome.platform.archive.common.storage.services.{
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemorySizeFinder
 import uk.ac.wellcome.storage.ObjectLocation
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
-import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, NewMemoryTypedStore}
+import uk.ac.wellcome.storage.store.memory.{
+  MemoryStreamStore,
+  NewMemoryTypedStore
+}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -65,7 +68,8 @@ class RegisterTest
 
     val replicas = collectionOf(min = 1) {
       createSecondaryLocationWith(
-        prefix = bagRoot.copy(namespace = randomAlphanumeric).toObjectLocationPrefix
+        prefix =
+          bagRoot.copy(namespace = randomAlphanumeric).toObjectLocationPrefix
       )
     }
 

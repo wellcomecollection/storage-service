@@ -34,9 +34,15 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemorySizeFinder
-import uk.ac.wellcome.platform.archive.common.storage.services.{StorageManifestDao, StorageManifestService}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  StorageManifestDao,
+  StorageManifestService
+}
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
-import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, NewMemoryTypedStore}
+import uk.ac.wellcome.storage.store.memory.{
+  MemoryStreamStore,
+  NewMemoryTypedStore
+}
 import uk.ac.wellcome.storage.{MemoryLocationPrefix, ObjectLocation}
 
 import scala.concurrent.ExecutionContext.Implicits.global

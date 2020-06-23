@@ -1,6 +1,9 @@
 package uk.ac.wellcome.platform.archive.common.fixtures.memory
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
@@ -9,7 +12,7 @@ import uk.ac.wellcome.storage.{MemoryLocation, MemoryLocationPrefix}
 import scala.util.Random
 
 trait MemoryBagBuilder
-  extends BagBuilder[MemoryLocation, MemoryLocationPrefix] {
+    extends BagBuilder[MemoryLocation, MemoryLocationPrefix] {
 
   override def createBagRoot(
     space: StorageSpace,
@@ -20,7 +23,8 @@ trait MemoryBagBuilder
   ): MemoryLocationPrefix =
     MemoryLocationPrefix(
       namespace = namespace,
-      pathPrefix = DestinationBuilder.buildPath(space, externalIdentifier, version)
+      pathPrefix =
+        DestinationBuilder.buildPath(space, externalIdentifier, version)
     )
 
   override protected def buildFetchEntryLine(
@@ -32,7 +36,10 @@ trait MemoryBagBuilder
     s"""mem://$namespace/${entry.path} $displaySize ${entry.bagPath}"""
   }
 
-  override def createBagLocation(bagRoot: MemoryLocationPrefix, path: String): MemoryLocation =
+  override def createBagLocation(
+    bagRoot: MemoryLocationPrefix,
+    path: String
+  ): MemoryLocation =
     MemoryLocation(
       namespace = bagRoot.namespace,
       path = path
