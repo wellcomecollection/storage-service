@@ -8,7 +8,6 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FixityChecker,
   FixityCheckerTestCases
 }
-import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable._
 import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   LocationError,
   LocationNotFound
@@ -56,7 +55,7 @@ class S3FixityCheckerTest
   implicit val s3Resolvable: S3Resolvable = new S3Resolvable()
 
   override def resolve(location: ObjectLocation): URI =
-    location.resolve
+    s3Resolvable.resolve(location)
 
   it("fails if the bucket doesn't exist") {
     val checksum = randomChecksum
