@@ -4,30 +4,25 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.{
-  EmptyMetadata,
   StorageManifestDao,
   StorageManifestDaoTestCases
 }
-import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
 class MemoryStorageManifestDaoTest
     extends StorageManifestDaoTestCases[MemoryVersionedStore[
       BagId,
-      HybridStoreEntry[StorageManifest, EmptyMetadata]
+      StorageManifest
     ]] {
   type MemoryStore =
     MemoryVersionedStore[
       BagId,
-      HybridStoreEntry[StorageManifest, EmptyMetadata]
+      StorageManifest
     ]
 
   override def withContext[R](testWith: TestWith[MemoryStore, R]): R =
     testWith(
-      MemoryVersionedStore[BagId, HybridStoreEntry[
-        StorageManifest,
-        EmptyMetadata
-      ]](initialEntries = Map.empty)
+      MemoryVersionedStore[BagId, StorageManifest](initialEntries = Map.empty)
     )
 
   override def withDao[R](

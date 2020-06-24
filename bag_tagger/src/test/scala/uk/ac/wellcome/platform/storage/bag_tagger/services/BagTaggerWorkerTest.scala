@@ -22,7 +22,6 @@ import uk.ac.wellcome.storage.{
   ReadError,
   StoreReadError
 }
-import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 import uk.ac.wellcome.storage.tags.s3.S3Tags
 
@@ -249,10 +248,7 @@ class BagTaggerWorkerTest
     it("if it can't get the bag from the tracker") {
       val brokenDao =
         new MemoryStorageManifestDao(
-          MemoryVersionedStore[BagId, HybridStoreEntry[
-            StorageManifest,
-            EmptyMetadata
-          ]](
+          MemoryVersionedStore[BagId, StorageManifest](
             initialEntries = Map.empty
           )
         ) {

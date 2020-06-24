@@ -8,7 +8,6 @@ import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerato
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.EmptyMetadata
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
-import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 import uk.ac.wellcome.storage.{StoreWriteError, WriteError}
 
@@ -41,10 +40,7 @@ trait CreateBagTestCases
     }
 
     it("returns a Left[BagTrackerCreateError] if it cannot store the bag") {
-      val versionedStore = MemoryVersionedStore[BagId, HybridStoreEntry[
-        StorageManifest,
-        EmptyMetadata
-      ]](initialEntries = Map.empty)
+      val versionedStore = MemoryVersionedStore[BagId, StorageManifest](initialEntries = Map.empty)
 
       val brokenDao = new MemoryStorageManifestDao(versionedStore) {
         override def put(

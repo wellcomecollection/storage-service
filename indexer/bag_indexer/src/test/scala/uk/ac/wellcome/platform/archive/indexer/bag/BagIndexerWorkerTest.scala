@@ -22,7 +22,6 @@ import uk.ac.wellcome.platform.archive.indexer.bag.fixtures.BagIndexerFixtures
 import uk.ac.wellcome.platform.archive.indexer.bags.BagIndexerWorker
 import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.IndexerWorker
-import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 import uk.ac.wellcome.storage.{DoesNotExistError, ReadError, StoreReadError}
 
@@ -50,10 +49,7 @@ class BagIndexerWorkerTest
       withFakeMonitoringClient() { implicit monitoringClient =>
         val storageManifestDao: StorageManifestDao =
           new MemoryStorageManifestDao(
-            MemoryVersionedStore[BagId, HybridStoreEntry[
-              StorageManifest,
-              EmptyMetadata
-            ]](
+            MemoryVersionedStore[BagId, StorageManifest](
               initialEntries = Map.empty
             )
           ) {
@@ -92,10 +88,7 @@ class BagIndexerWorkerTest
       withFakeMonitoringClient() { implicit monitoringClient =>
         val storageManifestDao: StorageManifestDao =
           new MemoryStorageManifestDao(
-            MemoryVersionedStore[BagId, HybridStoreEntry[
-              StorageManifest,
-              EmptyMetadata
-            ]](
+            MemoryVersionedStore[BagId, StorageManifest](
               initialEntries = Map.empty
             )
           ) {

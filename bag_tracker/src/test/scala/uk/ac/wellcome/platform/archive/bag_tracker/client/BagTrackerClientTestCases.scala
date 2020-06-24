@@ -11,17 +11,13 @@ import uk.ac.wellcome.platform.archive.common.storage.services.{
   StorageManifestDao
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
-import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
 trait BagTrackerClientTestBase extends Matchers with BagTrackerFixtures {
   def withStorageManifestDao[R](
     initialManifests: Seq[StorageManifest]
   )(testWith: TestWith[StorageManifestDao, R]): R = {
-    val versionedStore = MemoryVersionedStore[BagId, HybridStoreEntry[
-      StorageManifest,
-      EmptyMetadata
-    ]](initialEntries = Map.empty)
+    val versionedStore = MemoryVersionedStore[BagId, StorageManifest](initialEntries = Map.empty)
 
     val dao = new MemoryStorageManifestDao(versionedStore)
 
