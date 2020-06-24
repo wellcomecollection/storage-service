@@ -13,8 +13,7 @@ import uk.ac.wellcome.storage.store.memory._
 
 trait StorageManifestDaoFixture extends EitherValues {
   type StorageManifestIndex =
-    MemoryStore[Version[String, Int], String]
-      with MemoryMaxima[String, String]
+    MemoryStore[Version[String, Int], String] with MemoryMaxima[String, String]
 
   type StorageManifestTypedStore = MemoryTypedStore[String, StorageManifest]
 

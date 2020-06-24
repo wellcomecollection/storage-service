@@ -92,7 +92,8 @@ trait GetBagTestCases
     it(
       "returns a Left[BagTrackerUnknownGetError] if the API has an unexpected error"
     ) {
-      val versionedStore = MemoryVersionedStore[BagId, StorageManifest](initialEntries = Map.empty)
+      val versionedStore =
+        MemoryVersionedStore[BagId, StorageManifest](initialEntries = Map.empty)
 
       val brokenDao = new MemoryStorageManifestDao(versionedStore) {
         override def get(

@@ -40,7 +40,8 @@ trait CreateBagTestCases
     }
 
     it("returns a Left[BagTrackerCreateError] if it cannot store the bag") {
-      val versionedStore = MemoryVersionedStore[BagId, StorageManifest](initialEntries = Map.empty)
+      val versionedStore =
+        MemoryVersionedStore[BagId, StorageManifest](initialEntries = Map.empty)
 
       val brokenDao = new MemoryStorageManifestDao(versionedStore) {
         override def put(

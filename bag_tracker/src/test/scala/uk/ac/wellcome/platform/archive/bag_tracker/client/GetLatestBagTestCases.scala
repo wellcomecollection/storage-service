@@ -63,7 +63,8 @@ trait GetLatestBagTestCases
     it(
       "returns a Left[BagTrackerUnknownGetError] if the API has an unexpected error"
     ) {
-      val versionedStore = MemoryVersionedStore[BagId, StorageManifest](initialEntries = Map.empty)
+      val versionedStore =
+        MemoryVersionedStore[BagId, StorageManifest](initialEntries = Map.empty)
 
       val brokenDao = new MemoryStorageManifestDao(versionedStore) {
         override def getLatest(id: BagId): Either[ReadError, StorageManifest] =
