@@ -53,8 +53,7 @@ class DynamoStorageManifestDao(
         DynamoValue.fromMap(Map.empty)
     }
 
-  implicit val indexedStore
-    : DynamoHashRangeStore[BagId, Int, ObjectLocation] =
+  implicit val indexedStore: DynamoHashRangeStore[BagId, Int, ObjectLocation] =
     new DynamoHashRangeStore[BagId, Int, ObjectLocation](dynamoConfig)
 
   implicit val streamStore: S3StreamStore = new S3StreamStore()
