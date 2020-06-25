@@ -18,7 +18,7 @@ STAGE_CONFIG = {
 
 PROD_CONFIG = {
     "src_table_name": "vhs-storage-manifests",
-    "dst_table_name": "vhs-storage-manifests-25062020"
+    "dst_table_name": "vhs-storage-manifests-25062020",
 }
 
 

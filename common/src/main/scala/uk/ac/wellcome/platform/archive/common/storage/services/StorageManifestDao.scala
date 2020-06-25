@@ -5,7 +5,6 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.VersionedStore
 
-
 trait StorageManifestDao {
   val vhs: VersionedStore[
     BagId,
