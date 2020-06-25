@@ -16,10 +16,7 @@ STAGE_CONFIG = {
     "dst_table_name": "vhs-storage-staging-manifests-test",
 }
 
-PROD_CONFIG = {
-    "src_table_name": "vhs-storage-manifests",
-    "dst_table_name": "",
-}
+PROD_CONFIG = {"src_table_name": "vhs-storage-manifests", "dst_table_name": ""}
 
 
 def get_config(env):
@@ -56,9 +53,7 @@ def create_session(role_arn):
 
 
 def transform(item):
-    return {
-        'payload': item['payload']['typedStoreId']
-    }
+    return {"payload": item["payload"]["typedStoreId"]}
 
 
 def parallel_scan_table(dynamo_client, *, TableName, **kwargs):
@@ -101,14 +96,14 @@ def parallel_scan_table(dynamo_client, *, TableName, **kwargs):
                 tasks_to_do.append(scan_params)
 
             for scan_params in itertools.islice(scans_to_run, len(done)):
-                futures[executor.submit(dynamo_client.scan, **scan_params)] = scan_params
+                futures[
+                    executor.submit(dynamo_client.scan, **scan_params)
+                ] = scan_params
 
 
 @click.command()
 @click.option("--env", default="stage", help="Environment to run against (prod|stage)")
-@click.option(
-    "--table_name", help="AWS Role ARN to run this script with"
-)
+@click.option("--table_name", help="AWS Role ARN to run this script with")
 @click.option(
     "--role_arn", default=ROLE_ARN, help="AWS Role ARN to run this script with"
 )
@@ -131,7 +126,7 @@ def migrate(env, table_name, role_arn):
     with dst_table.batch_writer() as batch:
         for low_level_data in scanner:
             deserializer = TypeDeserializer()
-            item = {k: deserializer.deserialize(v) for k,v in low_level_data.items()}
+            item = {k: deserializer.deserialize(v) for k, v in low_level_data.items()}
             updated_item = transform(item)
 
             batch.put_item(Item=updated_item)
@@ -145,6 +140,7 @@ def migrate(env, table_name, role_arn):
 @click.group()
 def cli():
     pass
+
 
 cli.add_command(migrate)
 
