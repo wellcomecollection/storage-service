@@ -3,8 +3,7 @@ package uk.ac.wellcome.platform.archive.common.storage.services.dynamo
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.s3.AmazonS3
 import org.scanamo.auto._
-import org.scanamo.{DynamoFormat, DynamoValue, Scanamo, Table => ScanamoTable}
-import org.scanamo.error.DynamoReadError
+import org.scanamo.{Scanamo, Table => ScanamoTable}
 import org.scanamo.syntax._
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
