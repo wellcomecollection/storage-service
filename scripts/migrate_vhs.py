@@ -2,7 +2,6 @@
 
 import concurrent.futures
 import itertools
-import sys
 import uuid
 
 import boto3
@@ -135,7 +134,7 @@ def migrate(env, table_name, role_arn):
             item = {k: deserializer.deserialize(v) for k,v in low_level_data.items()}
             updated_item = transform(item)
 
-            batch.put_item(Item=item)
+            batch.put_item(Item=updated_item)
 
     dst_table_length = get_table_length(dynamo_client, dst_table_name)
 
