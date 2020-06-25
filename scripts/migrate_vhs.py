@@ -13,10 +13,13 @@ ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
 
 STAGE_CONFIG = {
     "src_table_name": "vhs-storage-staging-manifests",
-    "dst_table_name": "vhs-storage-staging-manifests-test",
+    "dst_table_name": "vhs-storage-staging-manifests-25062020",
 }
 
-PROD_CONFIG = {"src_table_name": "vhs-storage-manifests", "dst_table_name": ""}
+PROD_CONFIG = {
+    "src_table_name": "vhs-storage-manifests",
+    "dst_table_name": "vhs-storage-manifests-25062020"
+}
 
 
 def get_config(env):
@@ -53,7 +56,10 @@ def create_session(role_arn):
 
 
 def transform(item):
-    return {"payload": item["payload"]["typedStoreId"]}
+    new_payload = item["payload"]["typedStoreId"]
+    item["payload"] = new_payload
+
+    return item
 
 
 def parallel_scan_table(dynamo_client, *, TableName, **kwargs):

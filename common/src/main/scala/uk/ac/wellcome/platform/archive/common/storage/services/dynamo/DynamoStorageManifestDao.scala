@@ -10,10 +10,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  EmptyMetadata,
-  StorageManifestDao
-}
+import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.storage.{
   ObjectLocation,
   ObjectLocationPrefix,
@@ -41,17 +38,6 @@ class DynamoStorageManifestDao(
   dynamoClient: AmazonDynamoDB,
   s3Client: AmazonS3
 ) extends StorageManifestDao {
-
-  implicit val evidence: DynamoFormat[EmptyMetadata] =
-    new DynamoFormat[EmptyMetadata] {
-      override def read(
-        av: DynamoValue
-      ): scala.Either[DynamoReadError, EmptyMetadata] =
-        Right(EmptyMetadata())
-
-      override def write(t: EmptyMetadata): DynamoValue =
-        DynamoValue.fromMap(Map.empty)
-    }
 
   implicit val indexedStore: DynamoHashRangeStore[BagId, Int, ObjectLocation] =
     new DynamoHashRangeStore[BagId, Int, ObjectLocation](dynamoConfig)
