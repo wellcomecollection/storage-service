@@ -3,17 +3,13 @@ package uk.ac.wellcome.platform.archive.common.storage.services.dynamo
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.s3.AmazonS3
 import org.scanamo.auto._
-import org.scanamo.{DynamoFormat, DynamoValue, Scanamo, Table => ScanamoTable}
-import org.scanamo.error.DynamoReadError
+import org.scanamo.{Scanamo, Table => ScanamoTable}
 import org.scanamo.syntax._
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  EmptyMetadata,
-  StorageManifestDao
-}
+import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.storage.{
   ObjectLocation,
   ObjectLocationPrefix,
@@ -22,11 +18,7 @@ import uk.ac.wellcome.storage.{
 }
 import uk.ac.wellcome.storage.dynamo.{DynamoConfig, DynamoHashRangeEntry}
 import uk.ac.wellcome.storage.s3.S3Config
-import uk.ac.wellcome.storage.store.{
-  HybridIndexedStoreEntry,
-  HybridStoreEntry,
-  VersionedStore
-}
+import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.store.dynamo.{
   DynamoHashRangeStore,
   DynamoHybridStoreWithMaxima,
@@ -45,38 +37,20 @@ class DynamoStorageManifestDao(
   dynamoClient: AmazonDynamoDB,
   s3Client: AmazonS3
 ) extends StorageManifestDao {
-  type DynamoStoreEntry =
-    HybridIndexedStoreEntry[ObjectLocation, EmptyMetadata]
 
-  implicit val evidence: DynamoFormat[EmptyMetadata] =
-    new DynamoFormat[EmptyMetadata] {
-      override def read(
-        av: DynamoValue
-      ): scala.Either[DynamoReadError, EmptyMetadata] =
-        Right(EmptyMetadata())
-
-      override def write(t: EmptyMetadata): DynamoValue =
-        DynamoValue.fromMap(Map.empty)
-    }
-
-  implicit val indexedStore
-    : DynamoHashRangeStore[BagId, Int, DynamoStoreEntry] =
-    new DynamoHashRangeStore[BagId, Int, DynamoStoreEntry](dynamoConfig)
+  implicit val indexedStore: DynamoHashRangeStore[BagId, Int, ObjectLocation] =
+    new DynamoHashRangeStore[BagId, Int, ObjectLocation](dynamoConfig)
 
   implicit val streamStore: S3StreamStore = new S3StreamStore()
   implicit val typedStore: S3TypedStore[StorageManifest] =
     new S3TypedStore[StorageManifest]()
 
-  override val vhs: VersionedStore[BagId, Int, HybridStoreEntry[
-    StorageManifest,
-    EmptyMetadata
-  ]] =
-    new DynamoVersionedHybridStore[BagId, Int, StorageManifest, EmptyMetadata](
+  override val vhs: VersionedStore[BagId, Int, StorageManifest] =
+    new DynamoVersionedHybridStore[BagId, Int, StorageManifest](
       store = new DynamoHybridStoreWithMaxima[
         BagId,
         Int,
-        StorageManifest,
-        EmptyMetadata
+        StorageManifest
       ](
         prefix = ObjectLocationPrefix(
           namespace = s3Config.bucketName,
@@ -90,11 +64,16 @@ class DynamoStorageManifestDao(
     before: Option[BagVersion]
   ): Either[ReadError, Seq[StorageManifest]] =
     for {
-      indexEntries <- getDynamoIndexEntries(bagId, before = before)
+      s3Locations <- getDynamoIndexEntries(
+        bagId = bagId,
+        before = before
+      )
 
-      s3Locations = indexEntries.map { _.typedStoreId }
-
-      manifests <- getManifests(bagId, before, locations = s3Locations)
+      manifests <- getManifests(
+        bagId = bagId,
+        before = before,
+        locations = s3Locations
+      )
     } yield manifests
 
   private def getManifests(
@@ -123,13 +102,11 @@ class DynamoStorageManifestDao(
   private def getDynamoIndexEntries(
     bagId: BagId,
     before: Option[BagVersion]
-  ): Either[StoreReadError, Seq[
-    HybridIndexedStoreEntry[ObjectLocation, EmptyMetadata]
-  ]] = {
+  ): Either[StoreReadError, Seq[ObjectLocation]] = {
     val table = ScanamoTable[DynamoHashRangeEntry[
       BagId,
       Int,
-      HybridIndexedStoreEntry[ObjectLocation, EmptyMetadata]
+      ObjectLocation
     ]](dynamoConfig.tableName)
 
     val baseOps = before match {

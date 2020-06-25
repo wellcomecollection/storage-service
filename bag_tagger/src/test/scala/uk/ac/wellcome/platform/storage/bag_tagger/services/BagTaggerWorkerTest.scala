@@ -13,7 +13,6 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.AmazonS3StorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.platform.archive.common.storage.services.EmptyMetadata
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.storage.bag_tagger.fixtures.BagTaggerFixtures
 import uk.ac.wellcome.storage.{
@@ -22,7 +21,6 @@ import uk.ac.wellcome.storage.{
   ReadError,
   StoreReadError
 }
-import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 import uk.ac.wellcome.storage.tags.s3.S3Tags
 
@@ -249,10 +247,7 @@ class BagTaggerWorkerTest
     it("if it can't get the bag from the tracker") {
       val brokenDao =
         new MemoryStorageManifestDao(
-          MemoryVersionedStore[BagId, HybridStoreEntry[
-            StorageManifest,
-            EmptyMetadata
-          ]](
+          MemoryVersionedStore[BagId, StorageManifest](
             initialEntries = Map.empty
           )
         ) {

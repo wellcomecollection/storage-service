@@ -23,14 +23,10 @@ import uk.ac.wellcome.platform.archive.common.http.{
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3Uploader
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  EmptyMetadata,
-  StorageManifestDao
-}
+import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
-import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
 import scala.concurrent.ExecutionContext
@@ -127,10 +123,7 @@ trait BagsApiFixture
   def withBrokenApp[R](
     testWith: TestWith[(MemoryMetrics[Unit], String), R]
   ): R = {
-    val versionedStore = MemoryVersionedStore[BagId, HybridStoreEntry[
-      StorageManifest,
-      EmptyMetadata
-    ]](
+    val versionedStore = MemoryVersionedStore[BagId, StorageManifest](
       initialEntries = Map.empty
     )
 

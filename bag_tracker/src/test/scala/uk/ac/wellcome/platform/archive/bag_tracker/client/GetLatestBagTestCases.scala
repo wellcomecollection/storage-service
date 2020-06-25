@@ -9,10 +9,8 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   StorageManifestGenerators
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.storage.services.EmptyMetadata
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.storage.{ReadError, StoreReadError}
-import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
 trait GetLatestBagTestCases
@@ -64,10 +62,8 @@ trait GetLatestBagTestCases
     it(
       "returns a Left[BagTrackerUnknownGetError] if the API has an unexpected error"
     ) {
-      val versionedStore = MemoryVersionedStore[BagId, HybridStoreEntry[
-        StorageManifest,
-        EmptyMetadata
-      ]](initialEntries = Map.empty)
+      val versionedStore =
+        MemoryVersionedStore[BagId, StorageManifest](initialEntries = Map.empty)
 
       val brokenDao = new MemoryStorageManifestDao(versionedStore) {
         override def getLatest(id: BagId): Either[ReadError, StorageManifest] =

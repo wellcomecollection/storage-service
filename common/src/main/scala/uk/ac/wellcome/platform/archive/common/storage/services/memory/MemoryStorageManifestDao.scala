@@ -2,19 +2,13 @@ package uk.ac.wellcome.platform.archive.common.storage.services.memory
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  EmptyMetadata,
-  StorageManifestDao
-}
+import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
+
 import uk.ac.wellcome.storage.{ReadError, Version}
-import uk.ac.wellcome.storage.store.HybridStoreEntry
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
 class MemoryStorageManifestDao(
-  val vhs: MemoryVersionedStore[
-    BagId,
-    HybridStoreEntry[StorageManifest, EmptyMetadata]
-  ]
+  val vhs: MemoryVersionedStore[BagId, StorageManifest]
 ) extends StorageManifestDao {
   override def listVersions(
     bagId: BagId,
@@ -24,15 +18,15 @@ class MemoryStorageManifestDao(
       vhs.store
         .asInstanceOf[MemoryStore[
           Version[BagId, Int],
-          HybridStoreEntry[StorageManifest, EmptyMetadata]
+          StorageManifest
         ]]
 
     Right(
       underlying.entries
         .filter {
-          case (_, HybridStoreEntry(manifest, _)) => manifest.id == bagId
+          case (_, manifest) => manifest.id == bagId
         }
-        .map { case (_, HybridStoreEntry(manifest, _)) => manifest }
+        .map { case (_, manifest) => manifest }
         .toSeq
         .filter { manifest =>
           before match {

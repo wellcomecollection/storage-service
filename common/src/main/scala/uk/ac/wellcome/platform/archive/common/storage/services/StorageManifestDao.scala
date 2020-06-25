@@ -3,36 +3,30 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.store.{HybridStoreEntry, VersionedStore}
-
-case class EmptyMetadata()
+import uk.ac.wellcome.storage.store.VersionedStore
 
 trait StorageManifestDao {
   val vhs: VersionedStore[
     BagId,
     Int,
-    HybridStoreEntry[StorageManifest, EmptyMetadata]
+    StorageManifest
   ]
 
   def getLatestVersion(id: BagId): Either[ReadError, BagVersion] =
     vhs.store.max(id).map { BagVersion(_) }
 
   def getLatest(id: BagId): Either[ReadError, StorageManifest] =
-    vhs.getLatest(id).map { _.identifiedT.t }
+    vhs.getLatest(id).map { _.identifiedT }
 
   def get(id: BagId, version: BagVersion): Either[ReadError, StorageManifest] =
-    vhs.get(Version(id, version.underlying)).map { _.identifiedT.t }
+    vhs.get(Version(id, version.underlying)).map { _.identifiedT }
 
   def put(
     storageManifest: StorageManifest
-  ): Either[WriteError, StorageManifest] =
-    vhs
-      .put(
-        id = Version(storageManifest.id, storageManifest.version.underlying)
-      )(
-        HybridStoreEntry(storageManifest, metadata = EmptyMetadata())
-      )
-      .map { _.identifiedT.t }
+  ): Either[WriteError, StorageManifest] = {
+    val id = Version(storageManifest.id, storageManifest.version.underlying)
+    vhs.put(id)(storageManifest).map { _.identifiedT }
+  }
 
   def listVersions(
     bagId: BagId,
