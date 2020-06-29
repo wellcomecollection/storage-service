@@ -21,3 +21,8 @@ variable "inventory_bucket" {
 variable "tags" {
   type = map(string)
 }
+
+variable "table_name" {
+  type = string
+  default = ""
+}

@@ -109,11 +109,10 @@ def parallel_scan_table(dynamo_client, *, TableName, **kwargs):
 
 @click.command()
 @click.option("--env", default="stage", help="Environment to run against (prod|stage)")
-@click.option("--table_name", help="AWS Role ARN to run this script with")
 @click.option(
     "--role_arn", default=ROLE_ARN, help="AWS Role ARN to run this script with"
 )
-def migrate(env, table_name, role_arn):
+def migrate(env, role_arn):
     config = get_config(env)
 
     session = create_session(role_arn)

@@ -25,6 +25,8 @@ module "critical" {
 
   tags = local.default_tags
 
+  table_name = "vhs-storage-manifests-25062020"
+
   # This gives us another layer of protection for the S3 buckets.
   #
   # In theory, every object is written once and exactly once:
@@ -44,24 +46,3 @@ module "critical" {
   # there's essentially no downside to having it enabled here.
   enable_s3_versioning = true
 }
-
-resource "aws_dynamodb_table" "new_vhs_table" {
-  name             = "vhs-storage-manifests-25062020"
-  hash_key         = "id"
-  range_key        = "version"
-  stream_enabled   = true
-  stream_view_type = "NEW_AND_OLD_IMAGES"
-
-  billing_mode = "PAY_PER_REQUEST"
-
-  attribute {
-    name = "id"
-    type = "S"
-  }
-
-  attribute {
-    name = "version"
-    type = "N"
-  }
-}
-
