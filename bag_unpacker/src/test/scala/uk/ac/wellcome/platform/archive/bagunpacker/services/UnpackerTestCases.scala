@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.archive.bagunpacker.services
 
 import java.io.{File, FileInputStream}
 import java.nio.file.Paths
-import java.time.Instant
 
 import org.scalatest.{Assertion, TryValues}
 import org.scalatest.funspec.AnyFunSpec
@@ -19,19 +18,26 @@ import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.streaming.StreamAssertions
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
-import scala.util.Random
-
-trait UnpackerTestCases[Namespace]
+trait UnpackerTestCases[StoreImpl <: StreamStore[ObjectLocation], Namespace]
     extends AnyFunSpec
     with Matchers
     with TryValues
     with CompressFixture[Namespace]
     with StreamAssertions {
-  val unpacker: Unpacker
+  def withUnpacker[R](testWith: TestWith[Unpacker, R])(
+    implicit streamStore: StoreImpl
+  ): R
+
+  private def withUnpackerAndStore[R](testWith: TestWith[Unpacker, R]): R =
+    withStreamStore { implicit streamStore =>
+      withUnpacker { unpacker =>
+        testWith(unpacker)
+      }
+    }
 
   def withNamespace[R](testWith: TestWith[Namespace, R]): R
 
-  def withStreamStore[R](testWith: TestWith[StreamStore[ObjectLocation], R]): R
+  def withStreamStore[R](testWith: TestWith[StoreImpl, R]): R
 
   it("unpacks a tgz archive") {
     val (archiveFile, filesInArchive, _) = createTgzArchiveWithRandomFiles()
@@ -43,12 +49,14 @@ trait UnpackerTestCases[Namespace]
             val dstLocation =
               createObjectLocationWith(dstNamespace, path = "unpacker").asPrefix
 
-            val summaryResult = unpacker
-              .unpack(
-                ingestId = createIngestID,
-                srcLocation = archiveLocation,
-                dstLocation = dstLocation
-              )
+            val summaryResult =
+              withUnpacker {
+                _.unpack(
+                  ingestId = createIngestID,
+                  srcLocation = archiveLocation,
+                  dstLocation = dstLocation
+                )
+              }
 
             val unpacked = summaryResult.success.value
             unpacked shouldBe a[IngestStepSucceeded[_]]
@@ -81,12 +89,14 @@ trait UnpackerTestCases[Namespace]
           withArchive(srcNamespace, archiveFile) { archiveLocation =>
             val dstLocation =
               createObjectLocationWith(dstNamespace, path = "unpacker").asPrefix
-            val summaryResult = unpacker
-              .unpack(
-                ingestId = createIngestID,
-                srcLocation = archiveLocation,
-                dstLocation = dstLocation
-              )
+            val summaryResult =
+              withUnpacker {
+                _.unpack(
+                  ingestId = createIngestID,
+                  srcLocation = archiveLocation,
+                  dstLocation = dstLocation
+                )
+              }
 
             val unpacked = summaryResult.success.value
             unpacked shouldBe a[IngestStepSucceeded[_]]
@@ -110,11 +120,13 @@ trait UnpackerTestCases[Namespace]
       val srcLocation =
         createObjectLocationWith(srcNamespace, path = randomAlphanumeric)
       val result =
-        unpacker.unpack(
-          ingestId = createIngestID,
-          srcLocation = srcLocation,
-          dstLocation = createObjectLocationPrefix
-        )
+        withUnpackerAndStore {
+          _.unpack(
+            ingestId = createIngestID,
+            srcLocation = srcLocation,
+            dstLocation = createObjectLocationPrefix
+          )
+        }
 
       val ingestResult = result.success.value
       ingestResult shouldBe a[IngestFailed[_]]
@@ -141,11 +153,13 @@ trait UnpackerTestCases[Namespace]
         ) shouldBe a[Right[_, _]]
 
         val result =
-          unpacker.unpack(
-            ingestId = createIngestID,
-            srcLocation = srcLocation,
-            dstLocation = createObjectLocationPrefix
-          )
+          withUnpacker {
+            _.unpack(
+              ingestId = createIngestID,
+              srcLocation = srcLocation,
+              dstLocation = createObjectLocationPrefix
+            )
+          }
 
         val ingestResult = result.success.value
         ingestResult shouldBe a[IngestFailed[_]]
@@ -159,45 +173,6 @@ trait UnpackerTestCases[Namespace]
         )
       }
     }
-  }
-
-  describe("creates the correct message") {
-    it("handles a single file correctly") {
-      val summary = createUnpackSummaryWith(fileCount = 1)
-
-      unpacker.createMessage(summary) should endWith("from 1 file")
-    }
-
-    it("handles multiple files correctly") {
-      val summary = createUnpackSummaryWith(fileCount = 5)
-
-      unpacker.createMessage(summary) should endWith("from 5 files")
-    }
-
-    it("adds a comma to the file counts if appropriate") {
-      val summary = createUnpackSummaryWith(fileCount = 123456789)
-
-      unpacker.createMessage(summary) should endWith("from 123,456,789 files")
-    }
-
-    it("pretty-prints the file size") {
-      val summary = createUnpackSummaryWith(bytesUnpacked = 123456789)
-
-      unpacker.createMessage(summary) should startWith("Unpacked 117 MB")
-    }
-
-    def createUnpackSummaryWith(
-      fileCount: Long = Random.nextLong(),
-      bytesUnpacked: Long = Random.nextLong()
-    ): UnpackSummary =
-      UnpackSummary(
-        ingestId = createIngestID,
-        srcLocation = createObjectLocation,
-        dstLocation = createObjectLocationPrefix,
-        fileCount = fileCount,
-        bytesUnpacked = bytesUnpacked,
-        startTime = Instant.now()
-      )
   }
 
   def assertEqual(prefix: ObjectLocationPrefix, expectedFiles: Seq[File])(

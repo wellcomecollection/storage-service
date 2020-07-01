@@ -15,8 +15,7 @@ import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.streaming.InputStreamWithLength
-import uk.ac.wellcome.storage.{Identified, ObjectLocation}
+import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -89,42 +88,8 @@ trait BagUnpackerFixtures
       }
     }
 
-  // TODO: Add covariance to StreamStore
   def withStreamStore[R](
     testWith: TestWith[StreamStore[ObjectLocation], R]
-  ): R = {
-    val s3StreamStore = new S3StreamStore()
-
-    val store = new StreamStore[ObjectLocation] {
-      override def get(location: ObjectLocation): ReadEither =
-        s3StreamStore
-          .get(location)
-          .map { is =>
-            Identified(
-              is.id,
-              new InputStreamWithLength(
-                is.identifiedT,
-                length = is.identifiedT.length
-              )
-            )
-          }
-
-      override def put(
-        location: ObjectLocation
-      )(inputStream: InputStreamWithLength): WriteEither =
-        s3StreamStore
-          .put(location)(inputStream)
-          .map {
-            identified: Identified[ObjectLocation, InputStreamWithLength] =>
-              identified.copy(
-                identifiedT = new InputStreamWithLength(
-                  identified.identifiedT,
-                  length = identified.identifiedT.length
-                )
-              )
-          }
-    }
-
-    testWith(store)
-  }
+  ): R =
+    testWith(new S3StreamStore())
 }

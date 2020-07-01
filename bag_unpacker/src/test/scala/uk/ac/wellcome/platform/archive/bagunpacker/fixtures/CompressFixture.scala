@@ -147,7 +147,7 @@ trait CompressFixture[Namespace]
       compressorOutputStream
     )
 
-    def finish() = {
+    def finish(): Unit = {
       archiveOutputStream.flush()
       archiveOutputStream.finish()
       compressorOutputStream.flush()
@@ -157,7 +157,7 @@ trait CompressFixture[Namespace]
     def addFile(
       file: File,
       entryName: String
-    ) = {
+    ): ArchiveEntry = {
       synchronized {
 
         val entry = archiveOutputStream
@@ -222,10 +222,3 @@ trait CompressFixture[Namespace]
     }
   }
 }
-
-case class TestArchive(
-  archiveFile: File,
-  containedFiles: List[File],
-  archiveEntries: Set[ArchiveEntry],
-  location: ObjectLocation
-)

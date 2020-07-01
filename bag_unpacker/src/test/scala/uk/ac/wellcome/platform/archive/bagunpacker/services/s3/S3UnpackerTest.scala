@@ -16,58 +16,27 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.S3ClientFactory
-import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.streaming.InputStreamWithLength
-import uk.ac.wellcome.storage.{Identified, ObjectLocation}
 
 import scala.util.Try
 
-class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
-  override val unpacker: Unpacker = new S3Unpacker()
+class S3UnpackerTest
+    extends UnpackerTestCases[S3StreamStore, Bucket]
+    with S3Fixtures {
+  val unpacker: Unpacker = new S3Unpacker()
+
+  override def withUnpacker[R](
+    testWith: TestWith[Unpacker, R]
+  )(implicit store: S3StreamStore): R =
+    testWith(unpacker)
 
   override def withNamespace[R](testWith: TestWith[Bucket, R]): R =
     withLocalS3Bucket { bucket =>
       testWith(bucket)
     }
 
-  override def withStreamStore[R](
-    testWith: TestWith[StreamStore[ObjectLocation], R]
-  ): R = {
-    val s3StreamStore = new S3StreamStore()
-
-    val store = new StreamStore[ObjectLocation] {
-      override def get(location: ObjectLocation): ReadEither =
-        s3StreamStore
-          .get(location)
-          .map { is =>
-            Identified(
-              is.id,
-              new InputStreamWithLength(
-                is.identifiedT,
-                length = is.identifiedT.length
-              )
-            )
-          }
-
-      override def put(
-        location: ObjectLocation
-      )(inputStream: InputStreamWithLength): WriteEither =
-        s3StreamStore
-          .put(location)(inputStream)
-          .map {
-            identified: Identified[ObjectLocation, InputStreamWithLength] =>
-              identified.copy(
-                identifiedT = new InputStreamWithLength(
-                  identified.identifiedT,
-                  length = identified.identifiedT.length
-                )
-              )
-          }
-    }
-
-    testWith(store)
-  }
+  override def withStreamStore[R](testWith: TestWith[S3StreamStore, R]): R =
+    testWith(new S3StreamStore())
 
   it("fails if asked to write to a non-existent bucket") {
     val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()
