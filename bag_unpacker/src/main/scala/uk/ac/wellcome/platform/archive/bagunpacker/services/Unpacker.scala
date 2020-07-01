@@ -14,42 +14,45 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepSucceeded
 }
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
-import uk.ac.wellcome.storage.{
-  DoesNotExistError,
-  ObjectLocation,
-  ObjectLocationPrefix,
-  StorageError
-}
+import uk.ac.wellcome.storage._
 
 import scala.util.{Failure, Success, Try}
 
-trait Unpacker extends Logging {
+trait Unpacker[
+  SrcLocation <: Location,
+  DstLocation <: Location,
+  DstPrefix <: Prefix[DstLocation]
+] extends Logging {
+
   // The unpacker asks for separate get/put methods rather than a Store
   // because it might be unpacking/uploading to different providers.
   //
   // e.g. we might unpack a package from an S3 bucket, then upload it to Azure.
   //
-  def get(location: ObjectLocation): Either[StorageError, InputStream]
-  def put(location: ObjectLocation)(
+  def get(location: SrcLocation): Either[StorageError, InputStream]
+  def put(location: DstLocation)(
     inputStream: InputStreamWithLength
   ): Either[StorageError, Unit]
 
-  def formatLocation(location: ObjectLocation): String
-
   def unpack(
     ingestId: IngestID,
-    srcLocation: ObjectLocation,
-    dstLocation: ObjectLocationPrefix
-  ): Try[IngestStepResult[UnpackSummary]] = {
+    srcLocation: SrcLocation,
+    dstPrefix: DstPrefix
+  ): Try[IngestStepResult[UnpackSummary[SrcLocation, DstPrefix]]] = {
     val unpackSummary =
-      UnpackSummary(ingestId, srcLocation, dstLocation, startTime = Instant.now)
+      UnpackSummary(
+        ingestId = ingestId,
+        srcLocation = srcLocation,
+        dstPrefix = dstPrefix,
+        startTime = Instant.now
+      )
 
     val result = for {
       srcStream <- get(srcLocation).left.map { storageError =>
         UnpackerStorageError(storageError)
       }
 
-      unpackSummary <- unpack(unpackSummary, srcStream, dstLocation)
+      unpackSummary <- unpack(unpackSummary, srcStream, dstPrefix)
     } yield unpackSummary
 
     result match {
@@ -76,26 +79,26 @@ trait Unpacker extends Logging {
   }
 
   protected def buildMessageFor(
-    srcLocation: ObjectLocation,
+    srcLocation: SrcLocation,
     error: UnpackerError
   ): Option[String] =
     error match {
       case UnpackerStorageError(_: DoesNotExistError) =>
-        Some(s"There is no archive at ${formatLocation(srcLocation)}")
+        Some(s"There is no archive at $srcLocation")
 
       case UnpackerUnarchiverError(_) =>
         Some(
-          s"Error trying to unpack the archive at ${formatLocation(srcLocation)} - is it the correct format?"
+          s"Error trying to unpack the archive at $srcLocation - is it the correct format?"
         )
 
       case _ => None
     }
 
   private def unpack(
-    unpackSummary: UnpackSummary,
+    unpackSummary: UnpackSummary[SrcLocation, DstPrefix],
     srcStream: InputStream,
-    dstLocation: ObjectLocationPrefix
-  ): Either[UnpackerError, UnpackSummary] =
+    dstPrefix: DstPrefix
+  ): Either[UnpackerError, UnpackSummary[SrcLocation, DstPrefix]] =
     Unarchiver.open(srcStream) match {
       case Left(unarchiverError) =>
         Left(UnpackerUnarchiverError(unarchiverError))
@@ -116,7 +119,7 @@ trait Unpacker extends Logging {
                 val uploadedBytes = putObject(
                   inputStream = entryStream,
                   archiveEntry = archiveEntry,
-                  destination = dstLocation
+                  dstPrefix = dstPrefix
                 )
 
                 totalFiles += 1
@@ -139,9 +142,9 @@ trait Unpacker extends Logging {
   private def putObject(
     inputStream: InputStream,
     archiveEntry: ArchiveEntry,
-    destination: ObjectLocationPrefix
+    dstPrefix: DstPrefix
   ): Long = {
-    val uploadLocation = destination.asLocation(archiveEntry.getName)
+    val uploadLocation = dstPrefix.asLocation(archiveEntry.getName)
 
     val archiveEntrySize = archiveEntry.getSize
 

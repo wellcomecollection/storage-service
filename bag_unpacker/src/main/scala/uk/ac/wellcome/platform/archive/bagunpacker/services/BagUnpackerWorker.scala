@@ -18,6 +18,7 @@ import uk.ac.wellcome.platform.archive.common.{
   SourceLocationPayload,
   UnpackedBagLocationPayload
 }
+import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.util.Try
 
@@ -26,18 +27,22 @@ class BagUnpackerWorker[IngestDestination, OutgoingDestination](
   bagUnpackerWorkerConfig: BagUnpackerWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  unpacker: Unpacker,
+  unpacker: Unpacker[
+    S3ObjectLocation,
+    S3ObjectLocation,
+    S3ObjectLocationPrefix
+  ],
   val metricsNamespace: String
 )(
   implicit val mc: MetricsMonitoringClient,
   val as: ActorSystem,
   val sc: SqsAsyncClient,
   val wd: Decoder[SourceLocationPayload]
-) extends IngestStepWorker[SourceLocationPayload, UnpackSummary] {
+) extends IngestStepWorker[SourceLocationPayload, UnpackSummary[_, _]] {
 
   def processMessage(
     payload: SourceLocationPayload
-  ): Try[IngestStepResult[UnpackSummary]] =
+  ): Try[IngestStepResult[UnpackSummary[_, _]]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
 
@@ -49,8 +54,8 @@ class BagUnpackerWorker[IngestDestination, OutgoingDestination](
 
       stepResult <- unpacker.unpack(
         ingestId = payload.ingestId,
-        srcLocation = payload.sourceLocation,
-        dstLocation = unpackedBagLocation
+        srcLocation = S3ObjectLocation(payload.sourceLocation),
+        dstPrefix = S3ObjectLocationPrefix(unpackedBagLocation)
       )
 
       _ <- ingestUpdater.send(payload.ingestId, stepResult)

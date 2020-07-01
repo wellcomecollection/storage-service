@@ -16,19 +16,25 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.streaming.StreamAssertions
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.{Location, Prefix}
 
-trait UnpackerTestCases[StoreImpl <: StreamStore[ObjectLocation], Namespace]
+trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
+  BagLocation
+], StoreImpl <: StreamStore[BagLocation], Namespace]
     extends AnyFunSpec
     with Matchers
     with TryValues
-    with CompressFixture[Namespace]
+    with CompressFixture[BagLocation, Namespace]
     with StreamAssertions {
-  def withUnpacker[R](testWith: TestWith[Unpacker, R])(
+  def withUnpacker[R](
+    testWith: TestWith[Unpacker[BagLocation, BagLocation, BagPrefix], R]
+  )(
     implicit streamStore: StoreImpl
   ): R
 
-  private def withUnpackerAndStore[R](testWith: TestWith[Unpacker, R]): R =
+  private def withUnpackerAndStore[R](
+    testWith: TestWith[Unpacker[BagLocation, BagLocation, BagPrefix], R]
+  ): R =
     withStreamStore { implicit streamStore =>
       withUnpacker { unpacker =>
         testWith(unpacker)
@@ -39,6 +45,26 @@ trait UnpackerTestCases[StoreImpl <: StreamStore[ObjectLocation], Namespace]
 
   def withStreamStore[R](testWith: TestWith[StoreImpl, R]): R
 
+  def createSrcLocationWith(
+    namespace: Namespace,
+    path: String = randomAlphanumeric
+  ): BagLocation
+  def createDstPrefixWith(
+    namespace: Namespace,
+    pathPrefix: String = randomAlphanumeric
+  ): BagPrefix
+
+  override def createLocationWith(
+    namespace: Namespace,
+    path: String
+  ): BagLocation =
+    createSrcLocationWith(namespace = namespace, path = path)
+
+  def createDstPrefix: BagPrefix =
+    withNamespace { namespace =>
+      createDstPrefixWith(namespace)
+    }
+
   it("unpacks a tgz archive") {
     val (archiveFile, filesInArchive, _) = createTgzArchiveWithRandomFiles()
 
@@ -46,15 +72,15 @@ trait UnpackerTestCases[StoreImpl <: StreamStore[ObjectLocation], Namespace]
       withNamespace { dstNamespace =>
         withStreamStore { implicit streamStore =>
           withArchive(srcNamespace, archiveFile) { archiveLocation =>
-            val dstLocation =
-              createObjectLocationWith(dstNamespace, path = "unpacker").asPrefix
+            val dstPrefix =
+              createDstPrefixWith(dstNamespace, pathPrefix = "unpacker")
 
             val summaryResult =
               withUnpacker {
                 _.unpack(
                   ingestId = createIngestID,
                   srcLocation = archiveLocation,
-                  dstLocation = dstLocation
+                  dstPrefix = dstPrefix
                 )
               }
 
@@ -68,7 +94,7 @@ trait UnpackerTestCases[StoreImpl <: StreamStore[ObjectLocation], Namespace]
             summary.fileCount shouldBe filesInArchive.size
             summary.bytesUnpacked shouldBe totalBytes(filesInArchive)
 
-            assertEqual(dstLocation, filesInArchive)
+            assertEqual(dstPrefix, filesInArchive)
           }
         }
       }
@@ -87,14 +113,14 @@ trait UnpackerTestCases[StoreImpl <: StreamStore[ObjectLocation], Namespace]
       withNamespace { dstNamespace =>
         withStreamStore { implicit streamStore =>
           withArchive(srcNamespace, archiveFile) { archiveLocation =>
-            val dstLocation =
-              createObjectLocationWith(dstNamespace, path = "unpacker").asPrefix
+            val dstPrefix =
+              createDstPrefixWith(dstNamespace, pathPrefix = "unpacker")
             val summaryResult =
               withUnpacker {
                 _.unpack(
                   ingestId = createIngestID,
                   srcLocation = archiveLocation,
-                  dstLocation = dstLocation
+                  dstPrefix = dstPrefix
                 )
               }
 
@@ -108,7 +134,7 @@ trait UnpackerTestCases[StoreImpl <: StreamStore[ObjectLocation], Namespace]
             summary.fileCount shouldBe filesInArchive.size
             summary.bytesUnpacked shouldBe totalBytes(filesInArchive)
 
-            assertEqual(dstLocation, filesInArchive)
+            assertEqual(dstPrefix, filesInArchive)
           }
         }
       }
@@ -117,14 +143,13 @@ trait UnpackerTestCases[StoreImpl <: StreamStore[ObjectLocation], Namespace]
 
   it("fails if the original archive does not exist") {
     withNamespace { srcNamespace =>
-      val srcLocation =
-        createObjectLocationWith(srcNamespace, path = randomAlphanumeric)
+      val srcLocation = createSrcLocationWith(srcNamespace)
       val result =
         withUnpackerAndStore {
           _.unpack(
             ingestId = createIngestID,
             srcLocation = srcLocation,
-            dstLocation = createObjectLocationPrefix
+            dstPrefix = createDstPrefix
           )
         }
 
@@ -133,7 +158,8 @@ trait UnpackerTestCases[StoreImpl <: StreamStore[ObjectLocation], Namespace]
       ingestResult.summary.fileCount shouldBe 0
       ingestResult.summary.bytesUnpacked shouldBe 0
 
-      val ingestFailed = ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
+      val ingestFailed =
+        ingestResult.asInstanceOf[IngestFailed[UnpackSummary[_, _]]]
       ingestFailed.maybeUserFacingMessage.get should startWith(
         "There is no archive at"
       )
@@ -143,10 +169,7 @@ trait UnpackerTestCases[StoreImpl <: StreamStore[ObjectLocation], Namespace]
   it("fails if the specified file is not in tar.gz format") {
     withNamespace { srcNamespace =>
       withStreamStore { implicit streamStore =>
-        val srcLocation = createObjectLocationWith(
-          namespace = srcNamespace,
-          path = randomAlphanumeric
-        )
+        val srcLocation = createSrcLocationWith(namespace = srcNamespace)
 
         streamStore.put(srcLocation)(
           stringCodec.toStream("hello world").right.value
@@ -157,7 +180,7 @@ trait UnpackerTestCases[StoreImpl <: StreamStore[ObjectLocation], Namespace]
             _.unpack(
               ingestId = createIngestID,
               srcLocation = srcLocation,
-              dstLocation = createObjectLocationPrefix
+              dstPrefix = createDstPrefix
             )
           }
 
@@ -167,7 +190,7 @@ trait UnpackerTestCases[StoreImpl <: StreamStore[ObjectLocation], Namespace]
         ingestResult.summary.bytesUnpacked shouldBe 0
 
         val ingestFailed =
-          ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
+          ingestResult.asInstanceOf[IngestFailed[UnpackSummary[_, _]]]
         ingestFailed.maybeUserFacingMessage.get should startWith(
           s"Error trying to unpack the archive at"
         )
@@ -175,8 +198,8 @@ trait UnpackerTestCases[StoreImpl <: StreamStore[ObjectLocation], Namespace]
     }
   }
 
-  def assertEqual(prefix: ObjectLocationPrefix, expectedFiles: Seq[File])(
-    implicit store: StreamStore[ObjectLocation]
+  def assertEqual(prefix: BagPrefix, expectedFiles: Seq[File])(
+    implicit store: StreamStore[BagLocation]
   ): Seq[Assertion] = {
     expectedFiles.map { file =>
       val name = Paths

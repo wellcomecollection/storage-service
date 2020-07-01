@@ -18,6 +18,9 @@ case class S3ObjectLocation(
   bucket: String,
   key: String
 ) extends Location {
+  override def toString: String =
+    s"s3://$bucket/$key"
+
   def toObjectLocation: ObjectLocation =
     ObjectLocation(
       namespace = this.bucket,
@@ -46,6 +49,9 @@ case class S3ObjectLocationPrefix(
   val namespace: String = bucket
   val path: String = keyPrefix
 
+  override def toString: String =
+    s"s3://$bucket/$keyPrefix"
+
   override def asLocation(parts: String*): S3ObjectLocation =
     S3ObjectLocation(
       bucket = bucket,
@@ -71,6 +77,9 @@ case class MemoryLocation(
   namespace: String,
   path: String
 ) extends Location {
+  override def toString: String =
+    s"mem://$namespace/$path"
+
   override def toObjectLocation: ObjectLocation =
     ObjectLocation(
       namespace = namespace,
@@ -91,6 +100,9 @@ case class MemoryLocationPrefix(
   pathPrefix: String
 ) extends Prefix[MemoryLocation] {
   val path: String = pathPrefix
+
+  override def toString: String =
+    s"mem://$namespace/$pathPrefix"
 
   override def asLocation(parts: String*): MemoryLocation =
     MemoryLocation(

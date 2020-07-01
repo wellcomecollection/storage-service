@@ -6,10 +6,8 @@ import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
-  BagUnpackerFixtures,
-  CompressFixture
-}
+import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.BagUnpackerFixtures
+import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.s3.S3CompressFixture
 import uk.ac.wellcome.platform.archive.common.UnpackedBagLocationPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
@@ -18,7 +16,6 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestStatusUpdate
 }
 import uk.ac.wellcome.storage.ObjectLocationPrefix
-import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
 class UnpackerFeatureTest
     extends AnyFunSpec
@@ -26,7 +23,7 @@ class UnpackerFeatureTest
     with Eventually
     with BagUnpackerFixtures
     with IntegrationPatience
-    with CompressFixture[Bucket]
+    with S3CompressFixture
     with IngestUpdateAssertions
     with PayloadGenerators {
 
@@ -38,7 +35,9 @@ class UnpackerFeatureTest
           withLocalS3Bucket { srcBucket =>
             withArchive(srcBucket, archiveFile) { archiveLocation =>
               val sourceLocationPayload =
-                createSourceLocationPayloadWith(archiveLocation)
+                createSourceLocationPayloadWith(
+                  archiveLocation.toObjectLocation
+                )
               sendNotificationToSQS(queue, sourceLocationPayload)
 
               eventually {

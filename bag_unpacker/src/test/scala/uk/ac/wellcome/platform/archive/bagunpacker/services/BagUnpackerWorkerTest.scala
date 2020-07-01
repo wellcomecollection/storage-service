@@ -9,10 +9,8 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
-  BagUnpackerFixtures,
-  CompressFixture
-}
+import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.BagUnpackerFixtures
+import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.s3.S3CompressFixture
 import uk.ac.wellcome.platform.archive.common.UnpackedBagLocationPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
@@ -27,7 +25,7 @@ class BagUnpackerWorkerTest
     extends AnyFunSpec
     with Matchers
     with BagUnpackerFixtures
-    with CompressFixture[Bucket]
+    with S3CompressFixture
     with IngestUpdateAssertions
     with PayloadGenerators
     with TryValues {
@@ -43,7 +41,7 @@ class BagUnpackerWorkerTest
         withLocalS3Bucket { dstBucket =>
           withArchive(srcBucket, archiveFile) { archiveLocation =>
             val payload =
-              createSourceLocationPayloadWith(archiveLocation)
+              createSourceLocationPayloadWith(archiveLocation.toObjectLocation)
 
             val result =
               withWorker(ingests, outgoing, dstBucket) { worker =>

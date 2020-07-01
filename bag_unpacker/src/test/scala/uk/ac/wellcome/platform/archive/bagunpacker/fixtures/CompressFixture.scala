@@ -15,30 +15,27 @@ import org.apache.commons.compress.compressors.{
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.Location
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
-trait CompressFixture[Namespace]
+trait CompressFixture[BagLocation <: Location, Namespace]
     extends StorageRandomThings
     with S3Fixtures
     with Logging {
 
   val defaultFileCount = 10
 
-  def createObjectLocationWith(
-    namespace: Namespace,
-    path: String
-  ): ObjectLocation
+  def createLocationWith(namespace: Namespace, path: String): BagLocation
 
   def withArchive[R](
     namespace: Namespace,
     archiveFile: File
-  )(testWith: TestWith[ObjectLocation, R])(
-    implicit streamStore: StreamStore[ObjectLocation]
+  )(testWith: TestWith[BagLocation, R])(
+    implicit streamStore: StreamStore[BagLocation]
   ): R = {
-    val location = createObjectLocationWith(
+    val location = createLocationWith(
       namespace = namespace,
       path = archiveFile.getName
     )
