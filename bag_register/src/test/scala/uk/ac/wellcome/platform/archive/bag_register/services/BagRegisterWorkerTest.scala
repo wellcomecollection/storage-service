@@ -16,7 +16,7 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   StorageLocationGenerators
 }
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.MemoryLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
 class BagRegisterWorkerTest
@@ -30,8 +30,8 @@ class BagRegisterWorkerTest
     with StorageLocationGenerators {
 
   it("handles a successful registration") {
-    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
-      MemoryStreamStore[ObjectLocation]()
+    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
+      MemoryStreamStore[MemoryLocation]()
 
     val createdAfterDate = Instant.now()
     val space = createStorageSpace
@@ -108,8 +108,8 @@ class BagRegisterWorkerTest
   }
 
   it("sends a notification of a registered bag") {
-    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
-      MemoryStreamStore[ObjectLocation]()
+    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
+      MemoryStreamStore[MemoryLocation]()
 
     val space = createStorageSpace
     val version = createBagVersion
@@ -156,8 +156,8 @@ class BagRegisterWorkerTest
   }
 
   it("stores multiple versions of a bag") {
-    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
-      MemoryStreamStore[ObjectLocation]()
+    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
+      MemoryStreamStore[MemoryLocation]()
 
     val version1 = createBagVersion
     val version2 = version1.increment
@@ -241,8 +241,8 @@ class BagRegisterWorkerTest
   }
 
   it("registers a bag with multiple locations") {
-    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
-      MemoryStreamStore[ObjectLocation]()
+    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
+      MemoryStreamStore[MemoryLocation]()
 
     val space = createStorageSpace
     val version = createBagVersion
@@ -320,8 +320,8 @@ class BagRegisterWorkerTest
   }
 
   it("handles a failed registration") {
-    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
-      MemoryStreamStore[ObjectLocation]()
+    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
+      MemoryStreamStore[MemoryLocation]()
 
     val ingests = new MemoryMessageSender()
     val registrationNotifications = new MemoryMessageSender()

@@ -19,7 +19,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   PrimaryStorageLocation,
   StorageManifest
 }
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.MemoryLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
 class BagRegisterFeatureTest
@@ -32,8 +32,8 @@ class BagRegisterFeatureTest
     with IntegrationPatience {
 
   it("sends an update if it registers a bag") {
-    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
-      MemoryStreamStore[ObjectLocation]()
+    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
+      MemoryStreamStore[MemoryLocation]()
 
     val ingests = new MemoryMessageSender()
 
@@ -113,8 +113,8 @@ class BagRegisterFeatureTest
   }
 
   it("handles a failed registration") {
-    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
-      MemoryStreamStore[ObjectLocation]()
+    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
+      MemoryStreamStore[MemoryLocation]()
 
     val ingests = new MemoryMessageSender()
 

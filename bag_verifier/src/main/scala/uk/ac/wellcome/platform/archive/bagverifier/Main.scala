@@ -28,7 +28,12 @@ import uk.ac.wellcome.platform.archive.common.config.builders.{
 import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
 import uk.ac.wellcome.storage.typesafe.S3Builder
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.{
+  ObjectLocation,
+  ObjectLocationPrefix,
+  S3ObjectLocation,
+  S3ObjectLocationPrefix
+}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
@@ -58,7 +63,8 @@ object Main extends WellcomeTypesafeApp {
     implicit val s3FixityChecker: S3FixityChecker =
       new S3FixityChecker()
 
-    implicit val bagReader: BagReader =
+    implicit val bagReader
+      : BagReader[S3ObjectLocation, S3ObjectLocationPrefix] =
       new S3BagReader()
 
     implicit val s3Resolvable: S3Resolvable =
@@ -67,8 +73,10 @@ object Main extends WellcomeTypesafeApp {
     implicit val s3Listing: Listing[ObjectLocationPrefix, ObjectLocation] =
       S3ObjectLocationListing()
 
-    val verifier = new BagVerifier(
-      namespace = config.requireString("bag-verifier.primary-storage-bucket")
+    val verifier = new BagVerifier[S3ObjectLocation, S3ObjectLocationPrefix](
+      namespace = config.requireString("bag-verifier.primary-storage-bucket"),
+      toLocation =
+        (prefix: ObjectLocationPrefix) => S3ObjectLocationPrefix(prefix)
     )
 
     val operationName =

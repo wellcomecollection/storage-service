@@ -21,6 +21,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageSpace
 }
 import uk.ac.wellcome.storage.store.memory.{
+  MemoryStore,
   MemoryStreamStore,
   NewMemoryTypedStore
 }
@@ -578,6 +579,31 @@ class StorageManifestServiceTest
     namespace: String = randomAlphanumeric,
     streamStore: MemoryStreamStore[ObjectLocation]
   ): (MemoryLocationPrefix, Bag) = {
+    // TODO: Temporary while we disambiguate ObjectLocation.  Remove eventually.
+
+    implicit val memoryStreamStore: MemoryStreamStore[MemoryLocation] =
+      new MemoryStreamStore[MemoryLocation](
+        memoryStore = new MemoryStore[MemoryLocation, Array[Byte]](
+          initialEntries = Map.empty
+        ) {
+          override def get(location: MemoryLocation): ReadEither =
+            streamStore.memoryStore
+              .get(location.toObjectLocation)
+              .map {
+                case Identified(_, result) => Identified(location, result)
+              }
+
+          override def put(
+            location: MemoryLocation
+          )(bytes: Array[Byte]): WriteEither =
+            streamStore.memoryStore
+              .put(location.toObjectLocation)(bytes)
+              .map {
+                case Identified(_, result) => Identified(location, result)
+              }
+        }
+      )
+
     implicit val typedStore: NewMemoryTypedStore[String] =
       new NewMemoryTypedStore[String]()
 
@@ -592,7 +618,7 @@ class StorageManifestServiceTest
 
     (
       bagRoot,
-      new MemoryBagReader().get(bagRoot.toObjectLocationPrefix).right.value
+      new MemoryBagReader().get(bagRoot).right.value
     )
   }
 

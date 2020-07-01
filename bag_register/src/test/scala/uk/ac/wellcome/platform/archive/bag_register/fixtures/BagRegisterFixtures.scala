@@ -40,10 +40,11 @@ import uk.ac.wellcome.platform.archive.common.storage.services.{
 }
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 import uk.ac.wellcome.storage.store.memory.{
+  MemoryStore,
   MemoryStreamStore,
-  NewMemoryTypedStore
+  MemoryTypedStore
 }
-import uk.ac.wellcome.storage.{MemoryLocationPrefix, ObjectLocation}
+import uk.ac.wellcome.storage._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -83,14 +84,26 @@ trait BagRegisterFixtures
     storageManifestDao: StorageManifestDao = createStorageManifestDao()
   )(
     testWith: TestWith[BagRegisterWorker[String, String], R]
-  )(implicit streamStore: MemoryStreamStore[ObjectLocation]): R =
+  )(implicit streamStore: MemoryStreamStore[MemoryLocation]): R =
     withActorSystem { implicit actorSystem =>
       withFakeMonitoringClient() { implicit monitoringClient =>
         val bagReader = new MemoryBagReader()
 
+        // TODO: Bridging code while we split ObjectLocation.  Remove this later.
+        // See https://github.com/wellcomecollection/platform/issues/4596
+        implicit val underlying =
+          new MemoryStore[ObjectLocation, Array[Byte]](
+            initialEntries = streamStore.memoryStore.entries.map {
+              case (memoryLocation, bytes) =>
+                memoryLocation.toObjectLocation -> bytes
+            }
+          )
+
+        implicit val memoryStore: MemoryStreamStore[ObjectLocation] =
+          new MemoryStreamStore[ObjectLocation](underlying)
+
         val storageManifestService = new StorageManifestService(
-          sizeFinder =
-            new MemorySizeFinder[ObjectLocation](streamStore.memoryStore),
+          sizeFinder = new MemorySizeFinder[ObjectLocation](underlying),
           toIdent = identity
         )
 
@@ -98,7 +111,9 @@ trait BagRegisterFixtures
           val register = new Register(
             bagReader = bagReader,
             bagTrackerClient = bagTrackerClient,
-            storageManifestService = storageManifestService
+            storageManifestService = storageManifestService,
+            toPrefix = (prefix: ObjectLocationPrefix) =>
+              MemoryLocationPrefix(prefix.namespace, prefix.path)
           )
 
           val service = new BagRegisterWorker(
@@ -157,10 +172,10 @@ trait BagRegisterFixtures
   )(
     implicit
     namespace: String = randomAlphanumeric,
-    streamStore: MemoryStreamStore[ObjectLocation]
+    streamStore: MemoryStreamStore[MemoryLocation]
   ): (MemoryLocationPrefix, BagInfo) = {
-    implicit val typedStore: NewMemoryTypedStore[String] =
-      new NewMemoryTypedStore[String]()
+    implicit val typedStore: MemoryTypedStore[MemoryLocation, String] =
+      new MemoryTypedStore[MemoryLocation, String]()
 
     val (bagObjects, bagRoot, bagInfo) =
       createBagContentsWith(

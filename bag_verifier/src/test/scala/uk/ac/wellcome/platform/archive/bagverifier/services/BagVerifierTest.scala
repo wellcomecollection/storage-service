@@ -507,10 +507,7 @@ class BagVerifierTest
               payloadFileCount = payloadFileCount
             )
 
-          val bag = new S3BagReader()
-            .get(bagRoot.toObjectLocationPrefix)
-            .right
-            .value
+          val bag = new S3BagReader().get(bagRoot).right.value
 
           // Write one of the fetch.txt entries as a concrete file
           val badFetchPath: BagPath = bag.fetch.get.paths.head

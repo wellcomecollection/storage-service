@@ -20,7 +20,7 @@ class BagVerifierWorker[IngestDestination, OutgoingDestination](
   val config: AlpakkaSQSWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  verifier: BagVerifier,
+  verifier: BagVerifier[_, _],
   val metricsNamespace: String
 )(
   implicit val mc: MetricsMonitoringClient,

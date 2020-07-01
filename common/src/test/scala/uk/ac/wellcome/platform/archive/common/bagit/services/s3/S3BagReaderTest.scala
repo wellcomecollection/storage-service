@@ -41,7 +41,7 @@ class S3BagReaderTest
   override def withContext[R](testWith: TestWith[Unit, R]): R = testWith(())
 
   override def withBagReader[R](
-    testWith: TestWith[BagReader, R]
+    testWith: TestWith[BagReader[S3ObjectLocation, S3ObjectLocationPrefix], R]
   )(implicit context: Unit): R =
     testWith(new S3BagReader())
 
