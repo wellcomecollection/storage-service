@@ -31,21 +31,11 @@ case class DisplayLocation(
 
 object DisplayLocation {
   def apply(location: SourceLocation): DisplayLocation =
-    location match {
-      case S3SourceLocation(prefix) =>
-        DisplayLocation(
-          provider = DisplayProvider(location.provider),
-          bucket = prefix.bucket,
-          path = prefix.keyPrefix
-        )
-
-      case AzureBlobSourceLocation(prefix) =>
-        DisplayLocation(
-          provider = DisplayProvider(location.provider),
-          bucket = prefix.container,
-          path = prefix.namePrefix
-        )
-    }
+    DisplayLocation(
+      provider = DisplayProvider(location.provider),
+      bucket = location.prefix.namespace,
+      path = location.prefix.path
+    )
 
   def apply(location: StorageLocation): DisplayLocation =
     DisplayLocation(
