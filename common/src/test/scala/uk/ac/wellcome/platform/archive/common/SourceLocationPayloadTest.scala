@@ -9,19 +9,19 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   StorageSpaceGenerators
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
+import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
 
 class SourceLocationPayloadTest
     extends AnyFunSpec
     with Matchers
     with ExternalIdentifierGenerators
-    with ObjectLocationGenerators
-    with StorageSpaceGenerators {
+    with StorageSpaceGenerators
+    with NewS3Fixtures {
 
   it("creates a payload from an ingest") {
     val ingestId = createIngestID
     val ingestType = CreateIngestType
-    val sourceLocation = createObjectLocation
+    val sourcePrefix = createS3ObjectLocationPrefix
     val space = createStorageSpace
     val ingestDate = Instant.now()
     val externalIdentifier = createExternalIdentifier
@@ -29,9 +29,8 @@ class SourceLocationPayloadTest
     val ingest = Ingest(
       id = ingestId,
       ingestType = ingestType,
-      sourceLocation = SourceLocation(
-        provider = AmazonS3StorageProvider,
-        location = sourceLocation
+      sourceLocation = S3SourceLocation(
+        prefix = sourcePrefix
       ),
       space = space,
       createdDate = ingestDate,
@@ -48,7 +47,7 @@ class SourceLocationPayloadTest
         ingestDate = ingestDate,
         externalIdentifier = externalIdentifier
       ),
-      sourceLocation = sourceLocation
+      sourceLocation = sourcePrefix.asLocation().toObjectLocation
     )
 
     SourceLocationPayload(ingest) shouldBe expectedPayload

@@ -90,8 +90,8 @@ class NotifierFeatureTest
                  |      "type": "Provider",
                  |      "id": "amazon-s3"
                  |    },
-                 |    "bucket": "${ingest.sourceLocation.location.namespace}",
-                 |    "path": "${ingest.sourceLocation.location.path}"
+                 |    "bucket": "${ingest.sourceLocation.prefix.namespace}",
+                 |    "path": "${ingest.sourceLocation.prefix.path}"
                  |  },
                  |  "callback": {
                  |    "type": "Callback",
@@ -201,8 +201,8 @@ class NotifierFeatureTest
                    |      "type": "Provider",
                    |      "id": "amazon-s3"
                    |    },
-                   |    "bucket": "${ingest.sourceLocation.location.namespace}",
-                   |    "path": "${ingest.sourceLocation.location.path}"
+                   |    "bucket": "${ingest.sourceLocation.prefix.namespace}",
+                   |    "path": "${ingest.sourceLocation.prefix.path}"
                    |  },
                    |  "callback": {
                    |    "type": "Callback",

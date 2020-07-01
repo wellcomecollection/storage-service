@@ -47,7 +47,7 @@ class IngestsTrackerApi[CallbackDestination, IngestsDestination](
             ingest =>
               ingestTracker.init(ingest) match {
                 case Right(_) =>
-                  info(s"Created ingest: ${ingest}")
+                  info(s"Created ingest: $ingest")
                   messagingService.send(ingest)
                   complete(StatusCodes.Created)
                 case Left(e: StateConflictError) =>
