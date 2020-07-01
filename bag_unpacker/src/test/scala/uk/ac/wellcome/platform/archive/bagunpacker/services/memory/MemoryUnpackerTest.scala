@@ -6,18 +6,21 @@ import uk.ac.wellcome.platform.archive.bagunpacker.services.{
   UnpackerTestCases
 }
 import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
-class MemoryUnpackerTest extends UnpackerTestCases[String] {
-  implicit val streamStore: MemoryStreamStore[ObjectLocation] =
-    MemoryStreamStore[ObjectLocation]()
-  override val unpacker: Unpacker = new MemoryUnpacker()
+class MemoryUnpackerTest
+  extends UnpackerTestCases[MemoryStreamStore[ObjectLocation], String] {
+
+  override def withUnpacker[R](testWith: TestWith[Unpacker, R])(
+    implicit streamStore: MemoryStreamStore[ObjectLocation]
+  ): R =
+    testWith(
+      new MemoryUnpacker()
+    )
 
   override def withNamespace[R](testWith: TestWith[String, R]): R =
     testWith(randomAlphanumeric)
 
-  // TODO: Should we be sharing an instance between tests?
-  override def withStreamStore[R](testWith: TestWith[StreamStore[ObjectLocation], R]): R =
-    testWith(streamStore)
+  override def withStreamStore[R](testWith: TestWith[MemoryStreamStore[ObjectLocation], R]): R =
+    testWith(MemoryStreamStore[ObjectLocation]())
 }

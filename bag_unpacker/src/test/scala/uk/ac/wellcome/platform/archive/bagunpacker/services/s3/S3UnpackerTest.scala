@@ -16,21 +16,22 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.S3ClientFactory
-import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.Try
 
-class S3UnpackerTest extends UnpackerTestCases[Bucket] with S3Fixtures {
-  override val unpacker: Unpacker = new S3Unpacker()
+class S3UnpackerTest extends UnpackerTestCases[S3StreamStore, Bucket] with S3Fixtures {
+  val unpacker: Unpacker = new S3Unpacker()
+
+  override def withUnpacker[R](testWith: TestWith[Unpacker, R])(implicit store: S3StreamStore): R =
+    testWith(unpacker)
 
   override def withNamespace[R](testWith: TestWith[Bucket, R]): R =
     withLocalS3Bucket { bucket =>
       testWith(bucket)
     }
 
-  override def withStreamStore[R](testWith: TestWith[StreamStore[ObjectLocation], R]): R =
+  override def withStreamStore[R](testWith: TestWith[S3StreamStore, R]): R =
     testWith(new S3StreamStore())
 
   it("fails if asked to write to a non-existent bucket") {
