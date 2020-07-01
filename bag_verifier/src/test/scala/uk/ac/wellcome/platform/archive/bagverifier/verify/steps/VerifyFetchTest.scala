@@ -6,12 +6,16 @@ import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFetch, BagFetchMetadata, BagPath}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagFetch,
+  BagFetchMetadata,
+  BagPath
+}
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 class VerifyFetchTest
-  extends AnyFunSpec
+    extends AnyFunSpec
     with Matchers
     with EitherValues
     with ObjectLocationGenerators {
@@ -39,9 +43,9 @@ class VerifyFetchTest
       getVerifyResult(scheme = "s3") shouldBe Right(())
 
       // Then check that it's *not* a valid fetch.txt if the URI points elsewhere
-      getVerifyResult(scheme = "https")
-        .left.value
-        .userMessage.get should startWith("fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:")
+      getVerifyResult(scheme = "https").left.value.userMessage.get should startWith(
+        "fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:"
+      )
     }
   }
 }
