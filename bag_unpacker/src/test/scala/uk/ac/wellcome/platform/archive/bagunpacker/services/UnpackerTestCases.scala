@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.archive.bagunpacker.services
 
 import java.io.{File, FileInputStream}
 import java.nio.file.Paths
-import java.time.Instant
 
 import org.scalatest.{Assertion, TryValues}
 import org.scalatest.funspec.AnyFunSpec
@@ -18,8 +17,6 @@ import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.streaming.StreamAssertions
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
-
-import scala.util.Random
 
 trait UnpackerTestCases[StoreImpl <: StreamStore[ObjectLocation], Namespace]
     extends AnyFunSpec
@@ -174,55 +171,6 @@ trait UnpackerTestCases[StoreImpl <: StreamStore[ObjectLocation], Namespace]
         )
       }
     }
-  }
-
-  describe("creates the correct message") {
-    it("handles a single file correctly") {
-      val summary = createUnpackSummaryWith(fileCount = 1)
-
-      withUnpackerAndStore {
-        _.createMessage(summary) should endWith("from 1 file")
-      }
-    }
-
-    it("handles multiple files correctly") {
-      val summary = createUnpackSummaryWith(fileCount = 5)
-
-      withUnpackerAndStore {
-        _.createMessage(summary) should endWith("from 5 files")
-      }
-    }
-
-    it("adds a comma to the file counts if appropriate") {
-      val summary = createUnpackSummaryWith(fileCount = 123456789)
-
-      withUnpackerAndStore {
-        _.createMessage(summary) should endWith("from 123,456,789 files")
-      }
-    }
-
-    it("pretty-prints the file size") {
-      val summary = createUnpackSummaryWith(bytesUnpacked = 123456789)
-
-      withStreamStore { implicit streamStore =>
-        withUnpacker {
-          _.createMessage(summary) should startWith("Unpacked 117 MB")
-        }
-      }
-    }
-
-    def createUnpackSummaryWith(
-      fileCount: Long = Random.nextLong(),
-      bytesUnpacked: Long = Random.nextLong()
-    ): UnpackSummary =
-      UnpackSummary(
-        ingestId = createIngestID,
-        srcLocation = createObjectLocation,
-        dstLocation = createObjectLocationPrefix,
-        fileCount = fileCount,
-        bytesUnpacked = bytesUnpacked,
-        startTime = Instant.now()
-      )
   }
 
   def assertEqual(prefix: ObjectLocationPrefix, expectedFiles: Seq[File])(
