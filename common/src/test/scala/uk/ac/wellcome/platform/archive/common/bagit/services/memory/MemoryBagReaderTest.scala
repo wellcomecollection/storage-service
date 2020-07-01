@@ -8,10 +8,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.{
 import uk.ac.wellcome.platform.archive.common.fixtures.memory.MemoryBagBuilder
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.TypedStore
-import uk.ac.wellcome.storage.store.memory.{
-  MemoryStreamStore,
-  MemoryTypedStore
-}
+import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
 
 class MemoryBagReaderTest
     extends BagReaderTestCases[MemoryStreamStore[MemoryLocation], String, MemoryLocation, MemoryLocationPrefix]

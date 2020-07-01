@@ -23,6 +23,6 @@ variable "tags" {
 }
 
 variable "table_name" {
-  type = string
+  type    = string
   default = ""
 }

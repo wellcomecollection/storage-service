@@ -10,8 +10,15 @@ import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.generators.{PayloadGenerators, StorageLocationGenerators}
-import uk.ac.wellcome.platform.archive.common.storage.models.{KnownReplicas, PrimaryStorageLocation, StorageManifest}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  PayloadGenerators,
+  StorageLocationGenerators
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  KnownReplicas,
+  PrimaryStorageLocation,
+  StorageManifest
+}
 import uk.ac.wellcome.storage.MemoryLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 

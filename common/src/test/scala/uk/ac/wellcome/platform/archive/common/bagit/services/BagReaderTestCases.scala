@@ -27,7 +27,9 @@ trait BagReaderTestCases[
     testWith: TestWith[TypedStore[BagLocation, String], R]
   )(implicit context: Context): R
 
-  def withBagReader[R](testWith: TestWith[BagReader[BagLocation, BagPrefix], R])(
+  def withBagReader[R](
+    testWith: TestWith[BagReader[BagLocation, BagPrefix], R]
+  )(
     implicit context: Context
   ): R
 

@@ -12,7 +12,12 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.listing.Listing
-import uk.ac.wellcome.storage.{Location, ObjectLocation, ObjectLocationPrefix, Prefix}
+import uk.ac.wellcome.storage.{
+  Location,
+  ObjectLocation,
+  ObjectLocationPrefix,
+  Prefix
+}
 
 import scala.util.Try
 
@@ -24,7 +29,7 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
   implicit bagReader: BagReader[BagLocation, BagPrefix],
   val resolvable: Resolvable[ObjectLocation],
   val fixityChecker: FixityChecker[_],
-  listing: Listing[ObjectLocationPrefix, ObjectLocation],
+  listing: Listing[ObjectLocationPrefix, ObjectLocation]
 ) extends Logging
     with VerifyChecksumAndSize
     with VerifyExternalIdentifier

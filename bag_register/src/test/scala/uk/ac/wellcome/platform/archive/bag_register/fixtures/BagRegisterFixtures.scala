@@ -9,20 +9,41 @@ import uk.ac.wellcome.messaging.fixtures.SQS.{Queue, QueuePair}
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.messaging.sqs.SQSClientFactory
-import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
+import uk.ac.wellcome.platform.archive.bag_register.services.{
+  BagRegisterWorker,
+  Register
+}
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagInfo,
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
 import uk.ac.wellcome.platform.archive.common.fixtures._
 import uk.ac.wellcome.platform.archive.common.fixtures.memory.MemoryBagBuilder
-import uk.ac.wellcome.platform.archive.common.generators.{ExternalIdentifierGenerators, StorageSpaceGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  ExternalIdentifierGenerators,
+  StorageSpaceGenerators
+}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestStatusUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestID,
+  IngestStatusUpdate
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemorySizeFinder
-import uk.ac.wellcome.platform.archive.common.storage.services.{StorageManifestDao, StorageManifestService}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  StorageManifestDao,
+  StorageManifestService
+}
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
-import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore, MemoryTypedStore}
+import uk.ac.wellcome.storage.store.memory.{
+  MemoryStore,
+  MemoryStreamStore,
+  MemoryTypedStore
+}
 import uk.ac.wellcome.storage._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -71,19 +92,22 @@ trait BagRegisterFixtures
         // TODO: Bridging code while we split ObjectLocation.  Remove this later.
         // See https://github.com/wellcomecollection/platform/issues/4596
         val underlying =
-          new MemoryStore[ObjectLocation, Array[Byte]](initialEntries = Map.empty) {
+          new MemoryStore[ObjectLocation, Array[Byte]](
+            initialEntries = Map.empty
+          ) {
             override def get(location: ObjectLocation): ReadEither =
               streamStore.memoryStore
                 .get(MemoryLocation(location))
-                .map { case Identified(_, result) => Identified(location, result) }
+                .map {
+                  case Identified(_, result) => Identified(location, result)
+                }
           }
 
         implicit val memoryStore: MemoryStreamStore[ObjectLocation] =
           new MemoryStreamStore[ObjectLocation](underlying)
 
         val storageManifestService = new StorageManifestService(
-          sizeFinder =
-            new MemorySizeFinder[ObjectLocation](underlying),
+          sizeFinder = new MemorySizeFinder[ObjectLocation](underlying),
           toIdent = identity
         )
 
@@ -92,7 +116,8 @@ trait BagRegisterFixtures
             bagReader = bagReader,
             bagTrackerClient = bagTrackerClient,
             storageManifestService = storageManifestService,
-            toPrefix = (prefix: ObjectLocationPrefix) => MemoryLocationPrefix(prefix.namespace, prefix.path)
+            toPrefix = (prefix: ObjectLocationPrefix) =>
+              MemoryLocationPrefix(prefix.namespace, prefix.path)
           )
 
           val service = new BagRegisterWorker(

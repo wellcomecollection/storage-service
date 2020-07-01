@@ -8,13 +8,26 @@ import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
-import uk.ac.wellcome.platform.archive.common.generators.{StorageLocationGenerators, StorageSpaceGenerators}
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestCompleted, IngestFailed}
-import uk.ac.wellcome.platform.archive.common.storage.services.{BadFetchLocationException, StorageManifestService}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  StorageLocationGenerators,
+  StorageSpaceGenerators
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestCompleted,
+  IngestFailed
+}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  BadFetchLocationException,
+  StorageManifestService
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemorySizeFinder
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
-import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore, MemoryTypedStore}
+import uk.ac.wellcome.storage.store.memory.{
+  MemoryStore,
+  MemoryStreamStore,
+  MemoryTypedStore
+}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -81,7 +94,8 @@ class RegisterTest
         bagReader = bagReader,
         bagTrackerClient = bagTrackerClient,
         storageManifestService = storageManifestService,
-        toPrefix = (prefix: ObjectLocationPrefix) => MemoryLocationPrefix(prefix.namespace, prefix.path)
+        toPrefix = (prefix: ObjectLocationPrefix) =>
+          MemoryLocationPrefix(prefix.namespace, prefix.path)
       )
 
       val future = register.update(
@@ -192,7 +206,8 @@ class RegisterTest
         bagReader = bagReader,
         bagTrackerClient = bagTrackerClient,
         storageManifestService = storageManifestService,
-        toPrefix = (prefix: ObjectLocationPrefix) => MemoryLocationPrefix(prefix.namespace, prefix.path)
+        toPrefix = (prefix: ObjectLocationPrefix) =>
+          MemoryLocationPrefix(prefix.namespace, prefix.path)
       )
 
       val future = register.update(

@@ -6,15 +6,30 @@ import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SNSBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.typesafe.{
+  AlpakkaSqsWorkerConfigBuilder,
+  CloudwatchMonitoringClientBuilder,
+  SNSBuilder,
+  SQSBuilder
+}
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
-import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
+import uk.ac.wellcome.platform.archive.bag_register.services.{
+  BagRegisterWorker,
+  Register
+}
 import uk.ac.wellcome.platform.archive.bag_tracker.client.AkkaBagTrackerClient
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
-import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder}
+import uk.ac.wellcome.platform.archive.common.config.builders.{
+  IngestUpdaterBuilder,
+  OperationNameBuilder
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3SizeFinder
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
-import uk.ac.wellcome.storage.{ObjectLocationPrefix, S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.{
+  ObjectLocationPrefix,
+  S3ObjectLocation,
+  S3ObjectLocationPrefix
+}
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
@@ -61,7 +76,8 @@ object Main extends WellcomeTypesafeApp {
         trackerHost = config.requireString("bags.tracker.host")
       ),
       storageManifestService = storageManifestService,
-      toPrefix = (prefix: ObjectLocationPrefix) => S3ObjectLocationPrefix(prefix)
+      toPrefix =
+        (prefix: ObjectLocationPrefix) => S3ObjectLocationPrefix(prefix)
     )
 
     val registrationNotifications = SNSBuilder.buildSNSMessageSender(

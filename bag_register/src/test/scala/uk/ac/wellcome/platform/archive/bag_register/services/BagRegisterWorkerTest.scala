@@ -10,7 +10,11 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, PayloadGenerators, StorageLocationGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagInfoGenerators,
+  PayloadGenerators,
+  StorageLocationGenerators
+}
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.MemoryLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
