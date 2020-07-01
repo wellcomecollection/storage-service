@@ -34,11 +34,11 @@ class BagUnpackerWorker[IngestDestination, OutgoingDestination](
   val as: ActorSystem,
   val sc: SqsAsyncClient,
   val wd: Decoder[SourceLocationPayload]
-) extends IngestStepWorker[SourceLocationPayload, UnpackSummary] {
+) extends IngestStepWorker[SourceLocationPayload, UnpackSummary[_, _]] {
 
   def processMessage(
     payload: SourceLocationPayload
-  ): Try[IngestStepResult[UnpackSummary]] =
+  ): Try[IngestStepResult[UnpackSummary[_, _]]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
 

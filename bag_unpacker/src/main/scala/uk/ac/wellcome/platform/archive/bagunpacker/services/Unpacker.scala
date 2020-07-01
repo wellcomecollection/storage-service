@@ -37,12 +37,12 @@ trait Unpacker[
     ingestId: IngestID,
     srcLocation: SrcLocation,
     dstPrefix: DstPrefix
-  ): Try[IngestStepResult[UnpackSummary]] = {
+  ): Try[IngestStepResult[UnpackSummary[SrcLocation, DstPrefix]]] = {
     val unpackSummary =
       UnpackSummary(
         ingestId = ingestId,
-        srcLocation = srcLocation.toObjectLocation,
-        dstLocation = dstPrefix.toObjectLocationPrefix,
+        srcLocation = srcLocation,
+        dstPrefix = dstPrefix,
         startTime = Instant.now
       )
 
@@ -94,10 +94,10 @@ trait Unpacker[
     }
 
   private def unpack(
-    unpackSummary: UnpackSummary,
+    unpackSummary: UnpackSummary[SrcLocation, DstPrefix],
     srcStream: InputStream,
     dstPrefix: DstPrefix
-  ): Either[UnpackerError, UnpackSummary] =
+  ): Either[UnpackerError, UnpackSummary[SrcLocation, DstPrefix]] =
     Unarchiver.open(srcStream) match {
       case Left(unarchiverError) =>
         Left(UnpackerUnarchiverError(unarchiverError))

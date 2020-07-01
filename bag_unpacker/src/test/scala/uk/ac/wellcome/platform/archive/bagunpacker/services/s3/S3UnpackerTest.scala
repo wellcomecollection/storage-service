@@ -59,7 +59,7 @@ class S3UnpackerTest
           ingestResult.summary.bytesUnpacked shouldBe 0
 
           val underlyingError =
-            ingestResult.asInstanceOf[IngestFailed[UnpackSummary]]
+            ingestResult.asInstanceOf[IngestFailed[UnpackSummary[_, _]]]
           underlyingError.e shouldBe a[AmazonS3Exception]
           underlyingError.e.getMessage should startWith(
             "The specified bucket does not exist"
@@ -165,7 +165,7 @@ class S3UnpackerTest
     }
   }
 
-  private def assertIsError(result: Try[IngestStepResult[UnpackSummary]])(
+  private def assertIsError(result: Try[IngestStepResult[UnpackSummary[_, _]]])(
     checkMessage: Option[String] => Assertion
   ): Assertion = {
     val ingestResult = result.success.value
