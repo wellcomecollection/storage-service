@@ -13,16 +13,14 @@ import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.display._
-import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
+import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 
 class DisplayIngestTest
     extends AnyFunSpec
     with Matchers
     with BagIdGenerators
     with TimeTestFixture
-    with IngestGenerators
-    with ObjectLocationGenerators {
+    with IngestGenerators {
 
   private val id = createIngestID
   private val callbackUrl = "http://www.example.com/callback"
@@ -40,9 +38,8 @@ class DisplayIngestTest
       val ingest: Ingest = Ingest(
         id = id,
         ingestType = CreateIngestType,
-        sourceLocation = SourceLocation(
-          provider = AmazonS3StorageProvider,
-          location = ObjectLocation("bukkit", "key.txt")
+        sourceLocation = S3SourceLocation(
+          prefix = S3ObjectLocationPrefix("bukkit", "mybag")
         ),
         space = StorageSpace(spaceId),
         callback = Some(Callback(new URI(callbackUrl))),
@@ -58,7 +55,7 @@ class DisplayIngestTest
       displayIngest.sourceLocation shouldBe DisplayLocation(
         DisplayProvider(id = "amazon-s3"),
         bucket = "bukkit",
-        path = "key.txt"
+        path = "mybag"
       )
       displayIngest.callback shouldBe Some(
         DisplayCallback(
@@ -142,9 +139,8 @@ class DisplayIngestTest
       val ingest = ingestCreateRequest.toIngest
 
       ingest.id shouldBe a[IngestID]
-      ingest.sourceLocation shouldBe SourceLocation(
-        provider = AmazonS3StorageProvider,
-        location = ObjectLocation(bucket, path)
+      ingest.sourceLocation shouldBe S3SourceLocation(
+        prefix = S3ObjectLocationPrefix(bucket, path)
       )
       ingest.callback shouldBe Some(
         Callback(URI.create(ingestCreateRequest.callback.get.url))

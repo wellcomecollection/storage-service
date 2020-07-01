@@ -10,15 +10,16 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Status
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import uk.ac.wellcome.storage.Prefix
 import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
 
 import scala.util.Random
 
 trait IngestGenerators extends BagIdGenerators with NewS3Fixtures {
 
-  def createSourceLocation: NewSourceLocation =
+  def createSourceLocation: NewSourceLocation[_ <: Prefix[_]] =
     S3SourceLocation(
-      location = createS3ObjectLocation
+      prefix = createS3ObjectLocationPrefix
     )
 
   def createIngest: Ingest = createIngestWith()
@@ -36,7 +37,7 @@ trait IngestGenerators extends BagIdGenerators with NewS3Fixtures {
   def createIngestWith(
     id: IngestID = createIngestID,
     ingestType: IngestType = CreateIngestType,
-    sourceLocation: NewSourceLocation = createSourceLocation,
+    sourceLocation: NewSourceLocation[_ <: Prefix[_]] = createSourceLocation,
     callback: Option[Callback] = Some(createCallback()),
     space: StorageSpace = createStorageSpace,
     status: Status = Ingest.Accepted,

@@ -7,11 +7,12 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   ExternalIdentifier
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import uk.ac.wellcome.storage.Prefix
 
 case class Ingest(
   id: IngestID,
   ingestType: IngestType,
-  sourceLocation: NewSourceLocation,
+  sourceLocation: NewSourceLocation[_ <: Prefix[_]],
   space: StorageSpace,
   callback: Option[Callback],
   status: Ingest.Status,
