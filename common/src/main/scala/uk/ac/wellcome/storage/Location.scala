@@ -96,3 +96,31 @@ case class MemoryLocationPrefix(
       path = pathPrefix
     )
 }
+
+case class AzureBlobItemLocation(
+  container: String,
+  name: String
+) extends Location {
+  override def toObjectLocation: ObjectLocation =
+    ObjectLocation(
+      namespace = container,
+      path = name
+    )
+}
+
+case class AzureBlobItemLocationPrefix(
+  container: String,
+  namePrefix: String
+) extends Prefix[AzureBlobItemLocation] {
+    override def asLocation(parts: String*): AzureBlobItemLocation =
+      AzureBlobItemLocation(
+        container = container,
+        name = Paths.get(namePrefix, parts: _*).normalize().toString
+      )
+
+    override def toObjectLocationPrefix: ObjectLocationPrefix =
+      ObjectLocationPrefix(
+        namespace = container,
+        path = namePrefix
+      )
+  }
