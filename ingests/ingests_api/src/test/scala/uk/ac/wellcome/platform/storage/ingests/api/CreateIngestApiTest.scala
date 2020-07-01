@@ -378,6 +378,18 @@ class CreateIngestApiTest
         )
       }
 
+      it("the provider is not Amazon S3") {
+        val badJson = root.sourceLocation.provider.obj.modify {
+          _.add("id", Json.fromString("azure-blob-storage"))
+        }
+
+        assertCatchesMalformedRequest(
+          badJson(json).noSpaces,
+          expectedMessage =
+            "Forbidden value at .sourceLocation.provider.id: only amazon-s3 is supported for new bags."
+        )
+      }
+
       it("if the bucket field is missing") {
         val badJson = root.sourceLocation.obj.modify {
           _.remove("bucket")

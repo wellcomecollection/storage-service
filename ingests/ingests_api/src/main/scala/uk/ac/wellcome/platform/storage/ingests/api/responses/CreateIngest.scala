@@ -14,7 +14,10 @@ import uk.ac.wellcome.platform.archive.common.http.models.{
   InternalServerErrorResponse,
   UserErrorResponse
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.StorageProvider
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  AmazonS3StorageProvider,
+  StorageProvider
+}
 import uk.ac.wellcome.platform.archive.display.ingests.{
   RequestDisplayIngest,
   ResponseDisplayIngest
@@ -52,9 +55,17 @@ trait CreateIngest[UnpackerDestination] extends ResponseBase with Logging {
         s"""Unrecognised value at .sourceLocation.provider.id: got "$providerId", valid values are: ${StorageProvider.recognisedValues
           .mkString(", ")}."""
       )
+    }
+    // In theory we might support unpacking bags uploaded to a different location
+    // at some point, but right now we can only unpack bags from S3.
+    //
+    // Fail immediately rather than passing unusable requests into the pipeline.
+    else if (StorageProvider.apply(providerId) != AmazonS3StorageProvider) {
+      createBadRequestResponse(
+        "Forbidden value at .sourceLocation.provider.id: only amazon-s3 is supported for new bags."
+      )
     } else {
       triggerIngestStarter(requestDisplayIngest)
-
     }
   }
 
