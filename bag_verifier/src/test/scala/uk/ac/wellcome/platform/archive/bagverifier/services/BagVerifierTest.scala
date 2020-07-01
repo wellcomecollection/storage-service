@@ -318,11 +318,11 @@ class BagVerifierTest
       assertBagIncomplete(wrongSchemeBuilder) {
         case (ingestFailed, _) =>
           ingestFailed.e.getMessage should startWith(
-            "fetch.txt refers to paths in a mismatched prefix:"
+            "fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:"
           )
 
           ingestFailed.maybeUserFacingMessage.get should startWith(
-            "fetch.txt refers to paths in a mismatched prefix:"
+            "fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:"
           )
       }
     }
@@ -341,11 +341,11 @@ class BagVerifierTest
       assertBagIncomplete(wrongBucketFetchBuilder) {
         case (ingestFailed, _) =>
           ingestFailed.e.getMessage should startWith(
-            "fetch.txt refers to paths in a mismatched prefix:"
+            "fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:"
           )
 
           ingestFailed.maybeUserFacingMessage.get should startWith(
-            "fetch.txt refers to paths in a mismatched prefix:"
+            "fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:"
           )
       }
     }
@@ -368,11 +368,11 @@ class BagVerifierTest
       assertBagIncomplete(bagSpaceFetchBuilder) {
         case (ingestFailed, _) =>
           ingestFailed.e.getMessage should startWith(
-            "fetch.txt refers to paths in a mismatched prefix:"
+            "fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:"
           )
 
           ingestFailed.maybeUserFacingMessage.get should startWith(
-            "fetch.txt refers to paths in a mismatched prefix:"
+            "fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:"
           )
       }
     }
@@ -397,11 +397,11 @@ class BagVerifierTest
       assertBagIncomplete(badExternalIdentifierFetchBuilder) {
         case (ingestFailed, _) =>
           ingestFailed.e.getMessage should startWith(
-            "fetch.txt refers to paths in a mismatched prefix:"
+            "fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:"
           )
 
           ingestFailed.maybeUserFacingMessage.get should startWith(
-            "fetch.txt refers to paths in a mismatched prefix:"
+            "fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:"
           )
       }
     }

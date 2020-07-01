@@ -41,7 +41,7 @@ class VerifyFetchTest
       // Then check that it's *not* a valid fetch.txt if the URI points elsewhere
       getVerifyResult(scheme = "https")
         .left.value
-        .userMessage.get should startWith("fetch.txt refers to paths in a mismatched prefix")
+        .userMessage.get should startWith("fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:")
     }
   }
 }

@@ -52,7 +52,7 @@ trait VerifyFetch {
           case _ =>
             Left(
               BagVerifierError(
-                s"fetch.txt refers to paths in a mismatched prefix: ${mismatchedPaths.mkString(", ")}"
+                s"fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme: ${mismatchedPaths.mkString(", ")}"
               )
             )
         }
