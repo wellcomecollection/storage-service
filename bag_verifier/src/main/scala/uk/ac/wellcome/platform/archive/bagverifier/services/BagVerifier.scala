@@ -58,7 +58,7 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
           _ <- verifyPayloadOxumFileCount(bag)
 
           _ <- verifyFetchPrefixes(
-            bag,
+            fetch = bag.fetch,
             root = ObjectLocationPrefix(
               namespace = namespace,
               path = s"$space/$externalIdentifier"

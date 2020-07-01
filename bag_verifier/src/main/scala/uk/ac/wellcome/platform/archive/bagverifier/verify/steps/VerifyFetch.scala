@@ -22,10 +22,10 @@ trait VerifyFetch {
   // ensures that a single bag (same space/external identifier) is completely self-contained,
   // and we don't have to worry about interconnected bag dependencies.
   def verifyFetchPrefixes(
-    bag: Bag,
+    fetch: Option[BagFetch],
     root: ObjectLocationPrefix
   ): Either[BagVerifierError, Unit] =
-    bag.fetch match {
+    fetch match {
       case None => Right(())
 
       case Some(BagFetch(entries)) =>
