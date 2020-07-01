@@ -17,7 +17,7 @@ import scala.util.Random
 
 trait IngestGenerators extends BagIdGenerators with NewS3Fixtures {
 
-  def createSourceLocation: NewSourceLocation[_ <: Prefix[_]] =
+  def createSourceLocation: SourceLocation[_ <: Prefix[_]] =
     S3SourceLocation(
       prefix = createS3ObjectLocationPrefix
     )
@@ -37,7 +37,7 @@ trait IngestGenerators extends BagIdGenerators with NewS3Fixtures {
   def createIngestWith(
     id: IngestID = createIngestID,
     ingestType: IngestType = CreateIngestType,
-    sourceLocation: NewSourceLocation[_ <: Prefix[_]] = createSourceLocation,
+    sourceLocation: SourceLocation[_ <: Prefix[_]] = createSourceLocation,
     callback: Option[Callback] = Some(createCallback()),
     space: StorageSpace = createStorageSpace,
     status: Status = Ingest.Accepted,

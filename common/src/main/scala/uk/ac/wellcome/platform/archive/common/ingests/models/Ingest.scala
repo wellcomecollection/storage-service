@@ -12,7 +12,7 @@ import uk.ac.wellcome.storage.Prefix
 case class Ingest(
   id: IngestID,
   ingestType: IngestType,
-  sourceLocation: NewSourceLocation[_ <: Prefix[_]],
+  sourceLocation: SourceLocation[_ <: Prefix[_]],
   space: StorageSpace,
   callback: Option[Callback],
   status: Ingest.Status,

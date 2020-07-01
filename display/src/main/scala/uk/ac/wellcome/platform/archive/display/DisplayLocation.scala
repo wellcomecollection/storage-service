@@ -12,7 +12,7 @@ case class DisplayLocation(
   @JsonKey("type") ontologyType: String = "Location"
 ) {
   // TODO: Test this properly.
-  def toSourceLocation: NewSourceLocation[_] =
+  def toSourceLocation: SourceLocation[_] =
     provider.toStorageProvider match {
       case AmazonS3StorageProvider =>
         S3SourceLocation(
@@ -28,7 +28,7 @@ case class DisplayLocation(
 
 object DisplayLocation {
   // TODO: Test this properly
-  def apply(location: NewSourceLocation[_]): DisplayLocation =
+  def apply(location: SourceLocation[_]): DisplayLocation =
     location match {
       case S3SourceLocation(prefix) =>
         DisplayLocation(
