@@ -18,6 +18,7 @@ import uk.ac.wellcome.platform.archive.common.{
   SourceLocationPayload,
   UnpackedBagLocationPayload
 }
+import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.util.Try
 
@@ -26,7 +27,7 @@ class BagUnpackerWorker[IngestDestination, OutgoingDestination](
   bagUnpackerWorkerConfig: BagUnpackerWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  unpacker: Unpacker,
+  unpacker: Unpacker[S3ObjectLocation, S3ObjectLocation, S3ObjectLocationPrefix],
   val metricsNamespace: String
 )(
   implicit val mc: MetricsMonitoringClient,
@@ -49,8 +50,8 @@ class BagUnpackerWorker[IngestDestination, OutgoingDestination](
 
       stepResult <- unpacker.unpack(
         ingestId = payload.ingestId,
-        srcLocation = payload.sourceLocation,
-        dstLocation = unpackedBagLocation
+        srcLocation = S3ObjectLocation(payload.sourceLocation),
+        dstPrefix = S3ObjectLocationPrefix(unpackedBagLocation)
       )
 
       _ <- ingestUpdater.send(payload.ingestId, stepResult)

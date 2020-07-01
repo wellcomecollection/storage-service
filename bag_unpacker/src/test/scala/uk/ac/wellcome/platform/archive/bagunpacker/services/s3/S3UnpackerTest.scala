@@ -4,30 +4,25 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.scalatest.Assertion
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.s3.S3CompressFixture
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{
-  Unpacker,
-  UnpackerTestCases
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepResult
-}
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{Unpacker, UnpackerTestCases}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.S3ClientFactory
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
+import uk.ac.wellcome.storage.store.s3.NewS3StreamStore
+import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.util.Try
 
 class S3UnpackerTest
-    extends UnpackerTestCases[S3StreamStore, Bucket]
-    with S3Fixtures {
-  val unpacker: Unpacker = new S3Unpacker()
+    extends UnpackerTestCases[S3ObjectLocation, S3ObjectLocationPrefix, NewS3StreamStore, Bucket]
+    with S3CompressFixture {
+  val unpacker: S3Unpacker = new S3Unpacker()
 
   override def withUnpacker[R](
-    testWith: TestWith[Unpacker, R]
-  )(implicit store: S3StreamStore): R =
+    testWith: TestWith[Unpacker[S3ObjectLocation, S3ObjectLocation, S3ObjectLocationPrefix], R]
+  )(implicit store: NewS3StreamStore): R =
     testWith(unpacker)
 
   override def withNamespace[R](testWith: TestWith[Bucket, R]): R =
@@ -35,8 +30,14 @@ class S3UnpackerTest
       testWith(bucket)
     }
 
-  override def withStreamStore[R](testWith: TestWith[S3StreamStore, R]): R =
-    testWith(new S3StreamStore())
+  override def withStreamStore[R](testWith: TestWith[NewS3StreamStore, R]): R =
+    testWith(new NewS3StreamStore())
+
+  override def createSrcLocationWith(bucket: Bucket, key: String): S3ObjectLocation =
+    createS3ObjectLocationWith(bucket, key = key)
+
+  override def createDstPrefixWith(bucket: Bucket, keyPrefix: String): S3ObjectLocationPrefix =
+    createS3ObjectLocationPrefixWith(bucket, keyPrefix = keyPrefix)
 
   it("fails if asked to write to a non-existent bucket") {
     val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()
@@ -44,14 +45,12 @@ class S3UnpackerTest
     withLocalS3Bucket { srcBucket =>
       withStreamStore { implicit streamStore =>
         withArchive(srcBucket, archiveFile) { archiveLocation =>
-          val dstLocation = createObjectLocationPrefixWith(
-            namespace = createBucketName
-          )
+          val dstPrefix = createS3ObjectLocationPrefixWith(bucket = createBucket)
           val result =
             unpacker.unpack(
               ingestId = createIngestID,
               srcLocation = archiveLocation,
-              dstLocation = dstLocation
+              dstPrefix = dstPrefix
             )
 
           val ingestResult = result.success.value
@@ -73,7 +72,7 @@ class S3UnpackerTest
   describe("includes users-facing messages if reading the archive fails") {
     it("if it gets a permissions error") {
       val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()
-      val dstLocation = createObjectLocationPrefix
+      val dstPrefix = createS3ObjectLocationPrefix
 
       withLocalS3Bucket { srcBucket =>
         withStreamStore { implicit streamStore =>
@@ -97,11 +96,11 @@ class S3UnpackerTest
               badUnpacker.unpack(
                 ingestId = createIngestID,
                 srcLocation = archiveLocation,
-                dstLocation = dstLocation
+                dstPrefix = dstPrefix
               )
 
             assertIsError(result) { maybeMessage =>
-              maybeMessage.get shouldBe s"Error reading s3://${archiveLocation.namespace}/${archiveLocation.path}: either it doesn't exist, or the unpacker doesn't have permission to read it"
+              maybeMessage.get shouldBe s"Error reading $archiveLocation: either it doesn't exist, or the unpacker doesn't have permission to read it"
             }
           }
         }
@@ -109,58 +108,58 @@ class S3UnpackerTest
     }
 
     it("if the bucket does not exist") {
-      val srcLocation = createObjectLocationWith(bucket = createBucket)
-      val dstLocation = createObjectLocationPrefix
+      val srcLocation = createS3ObjectLocationWith(bucket = createBucket)
+      val dstPrefix = createS3ObjectLocationPrefix
 
       withStreamStore { implicit streamStore =>
         val result =
           unpacker.unpack(
             ingestId = createIngestID,
             srcLocation = srcLocation,
-            dstLocation = dstLocation
+            dstPrefix = dstPrefix
           )
 
         assertIsError(result) { maybeMessage =>
-          maybeMessage.get shouldBe s"There is no S3 bucket ${srcLocation.namespace}"
+          maybeMessage.get shouldBe s"There is no S3 bucket ${srcLocation.bucket}"
         }
       }
     }
 
     it("if the key does not exist") {
-      val dstLocation = createObjectLocationPrefix
+      val dstPrefix = createS3ObjectLocationPrefix
 
       withLocalS3Bucket { bucket =>
-        val srcLocation = createObjectLocationWith(bucket = bucket)
+        val srcLocation = createS3ObjectLocationWith(bucket = bucket)
 
         withStreamStore { implicit streamStore =>
           val result =
             unpacker.unpack(
               ingestId = createIngestID,
               srcLocation = srcLocation,
-              dstLocation = dstLocation
+              dstPrefix = dstPrefix
             )
 
           assertIsError(result) { maybeMessage =>
-            maybeMessage.get shouldBe s"There is no archive at s3://${srcLocation.namespace}/${srcLocation.path}"
+            maybeMessage.get shouldBe s"There is no archive at $srcLocation"
           }
         }
       }
     }
 
     it("if the bucket name is invalid") {
-      val srcLocation = createObjectLocationWith(namespace = "ABCD")
-      val dstLocation = createObjectLocationPrefix
+      val srcLocation = createS3ObjectLocationWith(bucket = createInvalidBucket)
+      val dstPrefix = createS3ObjectLocationPrefix
 
       withStreamStore { implicit streamStore =>
         val result =
           unpacker.unpack(
             ingestId = createIngestID,
             srcLocation = srcLocation,
-            dstLocation = dstLocation
+            dstPrefix = dstPrefix
           )
 
         assertIsError(result) { maybeMessage =>
-          maybeMessage.get shouldBe s"${srcLocation.namespace} is not a valid S3 bucket name"
+          maybeMessage.get shouldBe s"${srcLocation.bucket} is not a valid S3 bucket name"
         }
       }
     }

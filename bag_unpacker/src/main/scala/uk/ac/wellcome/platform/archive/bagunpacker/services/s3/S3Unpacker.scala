@@ -11,24 +11,24 @@ import uk.ac.wellcome.platform.archive.bagunpacker.services.{
   UnpackerStorageError
 }
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
+import uk.ac.wellcome.storage.store.s3.NewS3StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 class S3Unpacker(
   bufferSize: Long = 128 * FileUtils.ONE_MB
 )(implicit s3Client: AmazonS3)
-    extends Unpacker {
-  private val s3StreamStore = new S3StreamStore()
+    extends Unpacker[S3ObjectLocation, S3ObjectLocation, S3ObjectLocationPrefix] {
+  private val s3StreamStore = new NewS3StreamStore()
 
   val reader: S3StreamReader = new S3StreamReader(bufferSize = bufferSize)
 
   override def get(
-    location: ObjectLocation
+    location: S3ObjectLocation
   ): Either[StorageError, InputStream] =
     reader.get(location).map { _.identifiedT }
 
   override def put(
-    location: ObjectLocation
+    location: S3ObjectLocation
   )(inputStream: InputStreamWithLength): Either[StorageError, Unit] =
     s3StreamStore
       .put(location)(inputStream)
@@ -36,11 +36,8 @@ class S3Unpacker(
         ()
       }
 
-  override def formatLocation(location: ObjectLocation): String =
-    s"s3://$location"
-
   override def buildMessageFor(
-    srcLocation: ObjectLocation,
+    srcLocation: S3ObjectLocation,
     error: UnpackerError
   ): Option[String] =
     error match {
@@ -60,16 +57,16 @@ class S3Unpacker(
       case UnpackerStorageError(StoreReadError(exc: AmazonS3Exception))
           if exc.getMessage.startsWith("Access Denied") =>
         Some(
-          s"Error reading ${formatLocation(srcLocation)}: either it doesn't exist, or the unpacker doesn't have permission to read it"
+          s"Error reading $srcLocation: either it doesn't exist, or the unpacker doesn't have permission to read it"
         )
 
       case UnpackerStorageError(StoreReadError(exc: AmazonS3Exception))
           if exc.getMessage.startsWith("The specified bucket is not valid") =>
-        Some(s"${srcLocation.namespace} is not a valid S3 bucket name")
+        Some(s"${srcLocation.bucket} is not a valid S3 bucket name")
 
       case UnpackerStorageError(DoesNotExistError(exc: AmazonS3Exception))
           if exc.getMessage.startsWith("The specified bucket does not exist") =>
-        Some(s"There is no S3 bucket ${srcLocation.namespace}")
+        Some(s"There is no S3 bucket ${srcLocation.bucket}")
 
       case _ =>
         warn(s"Error unpacking bag at $srcLocation: $error")

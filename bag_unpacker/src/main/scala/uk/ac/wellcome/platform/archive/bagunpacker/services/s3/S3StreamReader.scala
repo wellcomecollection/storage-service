@@ -31,11 +31,11 @@ import scala.util.{Failure, Success, Try}
   *
   */
 class S3StreamReader(bufferSize: Long)(implicit s3Client: AmazonS3)
-    extends Readable[ObjectLocation, InputStreamWithLength]
+    extends Readable[S3ObjectLocation, InputStreamWithLength]
     with Logging {
 
   private class S3StreamEnumeration(
-    location: ObjectLocation,
+    location: S3ObjectLocation,
     contentLength: Long,
     bufferSize: Long
   ) extends util.Enumeration[InputStream] {
@@ -47,7 +47,7 @@ class S3StreamReader(bufferSize: Long)(implicit s3Client: AmazonS3)
 
     override def nextElement(): InputStream = {
       val getRequest =
-        new GetObjectRequest(location.namespace, location.path)
+        new GetObjectRequest(location.bucket, location.key)
 
       // The S3 Range request is *inclusive* of the boundaries.
       //
@@ -82,7 +82,7 @@ class S3StreamReader(bufferSize: Long)(implicit s3Client: AmazonS3)
     }
   }
 
-  override def get(location: ObjectLocation): ReadEither =
+  override def get(location: S3ObjectLocation): ReadEither =
     Try {
       // We use getObject here rather than getObjectMetadata so we get more
       // detailed errors from S3 about why a GetObject fails, if necessary.
@@ -90,7 +90,7 @@ class S3StreamReader(bufferSize: Long)(implicit s3Client: AmazonS3)
       // e.g. GetObject will return "The bucket name was invalid" rather than
       // "Bad Request".
       //
-      val getRequest = new GetObjectRequest(location.namespace, location.path)
+      val getRequest = new GetObjectRequest(location.bucket, location.key)
 
       val s3Object = s3Client.getObject(getRequest)
       val metadata = s3Object.getObjectMetadata
