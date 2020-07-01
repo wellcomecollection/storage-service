@@ -51,12 +51,9 @@ class RegisterTest
     // TODO: Bridging code while we split ObjectLocation.  Remove this later.
     // See https://github.com/wellcomecollection/platform/issues/4596
     implicit val underlying =
-      new MemoryStore[ObjectLocation, Array[Byte]](initialEntries = Map.empty) {
-        override def get(location: ObjectLocation): ReadEither =
-          streamStore.memoryStore
-            .get(MemoryLocation(location))
-            .map { case Identified(_, result) => Identified(location, result) }
-      }
+      new MemoryStore[ObjectLocation, Array[Byte]](
+        initialEntries = Map.empty
+      )
 
     implicit val readable: MemoryStreamStore[ObjectLocation] =
       new MemoryStreamStore[ObjectLocation](underlying)
@@ -75,6 +72,13 @@ class RegisterTest
       space = space,
       version = version
     )
+
+    // TODO: Bridging code while we split ObjectLocation.  Remove this later.
+    // See https://github.com/wellcomecollection/platform/issues/4596
+    underlying.entries = streamStore.memoryStore.entries.map {
+      case (memoryLocation, bytes) =>
+        memoryLocation.toObjectLocation -> bytes
+    }
 
     val primaryLocation = createPrimaryLocationWith(
       prefix = bagRoot.toObjectLocationPrefix

@@ -91,17 +91,13 @@ trait BagRegisterFixtures
 
         // TODO: Bridging code while we split ObjectLocation.  Remove this later.
         // See https://github.com/wellcomecollection/platform/issues/4596
-        val underlying =
+        implicit val underlying =
           new MemoryStore[ObjectLocation, Array[Byte]](
-            initialEntries = Map.empty
-          ) {
-            override def get(location: ObjectLocation): ReadEither =
-              streamStore.memoryStore
-                .get(MemoryLocation(location))
-                .map {
-                  case Identified(_, result) => Identified(location, result)
-                }
-          }
+            initialEntries = streamStore.memoryStore.entries.map {
+              case (memoryLocation, bytes) =>
+                memoryLocation.toObjectLocation -> bytes
+            }
+          )
 
         implicit val memoryStore: MemoryStreamStore[ObjectLocation] =
           new MemoryStreamStore[ObjectLocation](underlying)
