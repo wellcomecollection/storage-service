@@ -23,7 +23,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.display._
 import uk.ac.wellcome.platform.archive.display.ingests._
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 
 /** Tests for POST /ingests
   *
@@ -100,9 +100,8 @@ class CreateIngestApiTest
             val expectedIngest = Ingest(
               id = IngestID(id),
               ingestType = CreateIngestType,
-              sourceLocation = SourceLocation(
-                provider = AmazonS3StorageProvider,
-                location = ObjectLocation(bucketName, s3key)
+              sourceLocation = S3SourceLocation(
+                prefix = S3ObjectLocationPrefix(bucketName, s3key)
               ),
               space = StorageSpace(spaceName),
               callback = Some(Callback(testCallbackUri, Callback.Pending)),
