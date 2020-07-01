@@ -11,7 +11,10 @@ import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.s3.S3CompressFixture
 import uk.ac.wellcome.platform.archive.common.UnpackedBagLocationPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestStatusUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestStatusUpdate
+}
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 
 class UnpackerFeatureTest
@@ -32,7 +35,9 @@ class UnpackerFeatureTest
           withLocalS3Bucket { srcBucket =>
             withArchive(srcBucket, archiveFile) { archiveLocation =>
               val sourceLocationPayload =
-                createSourceLocationPayloadWith(archiveLocation.toObjectLocation)
+                createSourceLocationPayloadWith(
+                  archiveLocation.toObjectLocation
+                )
               sendNotificationToSQS(queue, sourceLocationPayload)
 
               eventually {

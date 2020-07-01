@@ -6,8 +6,14 @@ import org.scalatest.Assertion
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.s3.S3CompressFixture
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{Unpacker, UnpackerTestCases}
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{
+  Unpacker,
+  UnpackerTestCases
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  IngestStepResult
+}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.S3ClientFactory
 import uk.ac.wellcome.storage.store.s3.NewS3StreamStore
@@ -16,12 +22,20 @@ import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 import scala.util.Try
 
 class S3UnpackerTest
-    extends UnpackerTestCases[S3ObjectLocation, S3ObjectLocationPrefix, NewS3StreamStore, Bucket]
+    extends UnpackerTestCases[
+      S3ObjectLocation,
+      S3ObjectLocationPrefix,
+      NewS3StreamStore,
+      Bucket
+    ]
     with S3CompressFixture {
   val unpacker: S3Unpacker = new S3Unpacker()
 
   override def withUnpacker[R](
-    testWith: TestWith[Unpacker[S3ObjectLocation, S3ObjectLocation, S3ObjectLocationPrefix], R]
+    testWith: TestWith[
+      Unpacker[S3ObjectLocation, S3ObjectLocation, S3ObjectLocationPrefix],
+      R
+    ]
   )(implicit store: NewS3StreamStore): R =
     testWith(unpacker)
 
@@ -33,10 +47,16 @@ class S3UnpackerTest
   override def withStreamStore[R](testWith: TestWith[NewS3StreamStore, R]): R =
     testWith(new NewS3StreamStore())
 
-  override def createSrcLocationWith(bucket: Bucket, key: String): S3ObjectLocation =
+  override def createSrcLocationWith(
+    bucket: Bucket,
+    key: String
+  ): S3ObjectLocation =
     createS3ObjectLocationWith(bucket, key = key)
 
-  override def createDstPrefixWith(bucket: Bucket, keyPrefix: String): S3ObjectLocationPrefix =
+  override def createDstPrefixWith(
+    bucket: Bucket,
+    keyPrefix: String
+  ): S3ObjectLocationPrefix =
     createS3ObjectLocationPrefixWith(bucket, keyPrefix = keyPrefix)
 
   it("fails if asked to write to a non-existent bucket") {
@@ -45,7 +65,8 @@ class S3UnpackerTest
     withLocalS3Bucket { srcBucket =>
       withStreamStore { implicit streamStore =>
         withArchive(srcBucket, archiveFile) { archiveLocation =>
-          val dstPrefix = createS3ObjectLocationPrefixWith(bucket = createBucket)
+          val dstPrefix =
+            createS3ObjectLocationPrefixWith(bucket = createBucket)
           val result =
             unpacker.unpack(
               ingestId = createIngestID,

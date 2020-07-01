@@ -27,7 +27,11 @@ class BagUnpackerWorker[IngestDestination, OutgoingDestination](
   bagUnpackerWorkerConfig: BagUnpackerWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  unpacker: Unpacker[S3ObjectLocation, S3ObjectLocation, S3ObjectLocationPrefix],
+  unpacker: Unpacker[
+    S3ObjectLocation,
+    S3ObjectLocation,
+    S3ObjectLocationPrefix
+  ],
   val metricsNamespace: String
 )(
   implicit val mc: MetricsMonitoringClient,

@@ -19,9 +19,10 @@ import uk.ac.wellcome.storage._
 import scala.util.{Failure, Success, Try}
 
 trait Unpacker[
-    SrcLocation <: Location,
-    DstLocation <: Location,
-    DstPrefix <: Prefix[DstLocation]] extends Logging {
+  SrcLocation <: Location,
+  DstLocation <: Location,
+  DstPrefix <: Prefix[DstLocation]
+] extends Logging {
 
   // The unpacker asks for separate get/put methods rather than a Store
   // because it might be unpacking/uploading to different providers.

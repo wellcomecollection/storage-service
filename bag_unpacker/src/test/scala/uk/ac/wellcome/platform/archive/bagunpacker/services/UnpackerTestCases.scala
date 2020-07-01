@@ -9,27 +9,32 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepSucceeded}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  IngestStepSucceeded
+}
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.streaming.StreamAssertions
 import uk.ac.wellcome.storage.{Location, Prefix}
 
-trait UnpackerTestCases[
-  BagLocation <: Location,
-  BagPrefix <: Prefix[BagLocation],
-  StoreImpl <: StreamStore[BagLocation],
-  Namespace]
+trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
+  BagLocation
+], StoreImpl <: StreamStore[BagLocation], Namespace]
     extends AnyFunSpec
     with Matchers
     with TryValues
     with CompressFixture[BagLocation, Namespace]
     with StreamAssertions {
-  def withUnpacker[R](testWith: TestWith[Unpacker[BagLocation, BagLocation, BagPrefix], R])(
+  def withUnpacker[R](
+    testWith: TestWith[Unpacker[BagLocation, BagLocation, BagPrefix], R]
+  )(
     implicit streamStore: StoreImpl
   ): R
 
-  private def withUnpackerAndStore[R](testWith: TestWith[Unpacker[BagLocation, BagLocation, BagPrefix], R]): R =
+  private def withUnpackerAndStore[R](
+    testWith: TestWith[Unpacker[BagLocation, BagLocation, BagPrefix], R]
+  ): R =
     withStreamStore { implicit streamStore =>
       withUnpacker { unpacker =>
         testWith(unpacker)
@@ -40,10 +45,19 @@ trait UnpackerTestCases[
 
   def withStreamStore[R](testWith: TestWith[StoreImpl, R]): R
 
-  def createSrcLocationWith(namespace: Namespace, path: String = randomAlphanumeric): BagLocation
-  def createDstPrefixWith(namespace: Namespace, pathPrefix: String = randomAlphanumeric): BagPrefix
+  def createSrcLocationWith(
+    namespace: Namespace,
+    path: String = randomAlphanumeric
+  ): BagLocation
+  def createDstPrefixWith(
+    namespace: Namespace,
+    pathPrefix: String = randomAlphanumeric
+  ): BagPrefix
 
-  override def createLocationWith(namespace: Namespace, path: String): BagLocation =
+  override def createLocationWith(
+    namespace: Namespace,
+    path: String
+  ): BagLocation =
     createSrcLocationWith(namespace = namespace, path = path)
 
   def createDstPrefix: BagPrefix =
@@ -58,7 +72,8 @@ trait UnpackerTestCases[
       withNamespace { dstNamespace =>
         withStreamStore { implicit streamStore =>
           withArchive(srcNamespace, archiveFile) { archiveLocation =>
-            val dstPrefix = createDstPrefixWith(dstNamespace, pathPrefix = "unpacker")
+            val dstPrefix =
+              createDstPrefixWith(dstNamespace, pathPrefix = "unpacker")
 
             val summaryResult =
               withUnpacker {
@@ -98,7 +113,8 @@ trait UnpackerTestCases[
       withNamespace { dstNamespace =>
         withStreamStore { implicit streamStore =>
           withArchive(srcNamespace, archiveFile) { archiveLocation =>
-            val dstPrefix = createDstPrefixWith(dstNamespace, pathPrefix = "unpacker")
+            val dstPrefix =
+              createDstPrefixWith(dstNamespace, pathPrefix = "unpacker")
             val summaryResult =
               withUnpacker {
                 _.unpack(
@@ -142,7 +158,8 @@ trait UnpackerTestCases[
       ingestResult.summary.fileCount shouldBe 0
       ingestResult.summary.bytesUnpacked shouldBe 0
 
-      val ingestFailed = ingestResult.asInstanceOf[IngestFailed[UnpackSummary[_, _]]]
+      val ingestFailed =
+        ingestResult.asInstanceOf[IngestFailed[UnpackSummary[_, _]]]
       ingestFailed.maybeUserFacingMessage.get should startWith(
         "There is no archive at"
       )

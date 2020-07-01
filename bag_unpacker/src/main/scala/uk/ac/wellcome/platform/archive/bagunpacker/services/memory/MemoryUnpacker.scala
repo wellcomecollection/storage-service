@@ -5,7 +5,11 @@ import java.io.InputStream
 import uk.ac.wellcome.platform.archive.bagunpacker.services.Unpacker
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
-import uk.ac.wellcome.storage.{MemoryLocation, MemoryLocationPrefix, StorageError}
+import uk.ac.wellcome.storage.{
+  MemoryLocation,
+  MemoryLocationPrefix,
+  StorageError
+}
 
 class MemoryUnpacker()(implicit streamStore: MemoryStreamStore[MemoryLocation])
     extends Unpacker[MemoryLocation, MemoryLocation, MemoryLocationPrefix] {
