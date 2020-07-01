@@ -56,7 +56,7 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
       case IngestStepSucceeded(summary: RootFinderSuccessSummary, _) =>
         val outgoingPayload: BagRootPayload = BagRootLocationPayload(
           context = payload.context,
-          bagRoot = summary.rootLocation
+          bagRoot = summary.bagRoot.toObjectLocationPrefix
         )
         outgoingPublisher.sendIfSuccessful(step, outgoingPayload)
       case _ => Success(())
