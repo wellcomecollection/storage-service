@@ -33,7 +33,7 @@ class MemoryBagReaderTest
     )
 
   override def withBagReader[R](
-    testWith: TestWith[BagReader, R]
+    testWith: TestWith[BagReader[MemoryLocation, MemoryLocationPrefix], R]
   )(implicit context: MemoryStreamStore[MemoryLocation]): R = {
 
     // TODO: Bridging code while we split ObjectLocation.  Remove this later.
