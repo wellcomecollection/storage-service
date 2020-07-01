@@ -16,6 +16,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.S3Resolvable
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
+import uk.ac.wellcome.storage.{ObjectLocationPrefix, S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
@@ -58,9 +59,9 @@ trait BagVerifierFixtures
       }
     }
 
-  def withVerifier[R](bucket: Bucket)(testWith: TestWith[BagVerifier, R]): R =
+  def withVerifier[R](bucket: Bucket)(testWith: TestWith[BagVerifier[S3ObjectLocation, S3ObjectLocationPrefix], R]): R =
     withMaterializer { implicit mat =>
-      implicit val _bagReader: BagReader =
+      implicit val _bagReader: BagReader[S3ObjectLocation, S3ObjectLocationPrefix] =
         new S3BagReader()
 
       implicit val s3FixityChecker: S3FixityChecker =
@@ -71,7 +72,10 @@ trait BagVerifierFixtures
 
       implicit val listing: S3ObjectLocationListing = S3ObjectLocationListing()
 
-      val verifier = new BagVerifier(namespace = bucket.name)
+      val verifier = new BagVerifier[S3ObjectLocation, S3ObjectLocationPrefix](
+        namespace = bucket.name,
+        toLocation = (prefix: ObjectLocationPrefix) => S3ObjectLocationPrefix(prefix)
+      )
 
       testWith(verifier)
     }
