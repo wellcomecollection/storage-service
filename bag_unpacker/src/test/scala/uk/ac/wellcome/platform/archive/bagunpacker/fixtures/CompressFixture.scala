@@ -222,10 +222,3 @@ trait CompressFixture[Namespace]
     }
   }
 }
-
-case class TestArchive(
-  archiveFile: File,
-  containedFiles: List[File],
-  archiveEntries: Set[ArchiveEntry],
-  location: ObjectLocation
-)
