@@ -3,27 +3,14 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 import org.scalatest.{Assertion, EitherValues, TryValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  Bag,
-  BagPath,
-  BagVersion,
-  ExternalIdentifier
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagPath, BagVersion, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.memory.MemoryBagBuilder
 import uk.ac.wellcome.platform.archive.common.generators._
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  PrimaryStorageLocation,
-  SecondaryStorageLocation,
-  StorageManifest,
-  StorageSpace
-}
-import uk.ac.wellcome.storage.store.memory.{
-  MemoryStreamStore,
-  NewMemoryTypedStore
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryStorageLocation, SecondaryStorageLocation, StorageManifest, StorageSpace}
+import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore, NewMemoryTypedStore}
 import uk.ac.wellcome.storage._
 
 import scala.util.Random
@@ -578,6 +565,23 @@ class StorageManifestServiceTest
     namespace: String = randomAlphanumeric,
     streamStore: MemoryStreamStore[ObjectLocation]
   ): (MemoryLocationPrefix, Bag) = {
+    // TODO: Temporary while we disambiguate ObjectLocation.  Remove eventually.
+
+    implicit val memoryStreamStore: MemoryStreamStore[MemoryLocation] =
+      new MemoryStreamStore[MemoryLocation](
+        memoryStore = new MemoryStore[MemoryLocation, Array[Byte]](initialEntries = Map.empty) {
+          override def get(location: MemoryLocation): ReadEither =
+            streamStore.memoryStore
+              .get(location.toObjectLocation)
+              .map { case Identified(_, result) => Identified(location, result) }
+
+          override def put(location: MemoryLocation)(bytes: Array[Byte]): WriteEither =
+            streamStore.memoryStore
+              .put(location.toObjectLocation)(bytes)
+              .map { case Identified(_, result) => Identified(location, result) }
+        }
+      )
+
     implicit val typedStore: NewMemoryTypedStore[String] =
       new NewMemoryTypedStore[String]()
 
@@ -592,7 +596,7 @@ class StorageManifestServiceTest
 
     (
       bagRoot,
-      new MemoryBagReader().get(bagRoot.toObjectLocationPrefix).right.value
+      new MemoryBagReader().get(bagRoot).right.value
     )
   }
 
