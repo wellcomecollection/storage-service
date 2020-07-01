@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.display
 import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageLocation
-import uk.ac.wellcome.storage.{AzureBlobItemLocationPrefix, ObjectLocation, S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.{AzureBlobItemLocationPrefix, Prefix, S3ObjectLocationPrefix}
 
 case class DisplayLocation(
   provider: DisplayProvider,
@@ -11,8 +11,7 @@ case class DisplayLocation(
   path: String,
   @JsonKey("type") ontologyType: String = "Location"
 ) {
-  // TODO: Test this properly.
-  def toSourceLocation: SourceLocation[_] =
+  def toSourceLocation: SourceLocation[_ <: Prefix[_]] =
     provider.toStorageProvider match {
       case AmazonS3StorageProvider =>
         S3SourceLocation(
@@ -27,7 +26,6 @@ case class DisplayLocation(
 }
 
 object DisplayLocation {
-  // TODO: Test this properly
   def apply(location: SourceLocation[_]): DisplayLocation =
     location match {
       case S3SourceLocation(prefix) =>
