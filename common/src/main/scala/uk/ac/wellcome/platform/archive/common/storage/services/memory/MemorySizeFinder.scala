@@ -9,7 +9,7 @@ class MemorySizeFinder[Ident](
 ) extends SizeFinder[Ident] {
   override def get(id: Ident): ReadEither = {
     println(s"@@AWLC getting id = $id")
-      memoryStore.entries.get(id) match {
+    memoryStore.entries.get(id) match {
       case Some(entry) => Right(Identified(id, entry.length))
       case None        => Left(DoesNotExistError())
     }
