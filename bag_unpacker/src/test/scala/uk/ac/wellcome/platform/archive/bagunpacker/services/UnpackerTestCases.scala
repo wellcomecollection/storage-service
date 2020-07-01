@@ -24,7 +24,9 @@ trait UnpackerTestCases[StoreImpl <: StreamStore[ObjectLocation], Namespace]
     with TryValues
     with CompressFixture[Namespace]
     with StreamAssertions {
-  def withUnpacker[R](testWith: TestWith[Unpacker, R])(implicit streamStore: StoreImpl): R
+  def withUnpacker[R](testWith: TestWith[Unpacker, R])(
+    implicit streamStore: StoreImpl
+  ): R
 
   private def withUnpackerAndStore[R](testWith: TestWith[Unpacker, R]): R =
     withStreamStore { implicit streamStore =>

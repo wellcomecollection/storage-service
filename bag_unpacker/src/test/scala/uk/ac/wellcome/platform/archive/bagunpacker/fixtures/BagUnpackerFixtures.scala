@@ -88,6 +88,8 @@ trait BagUnpackerFixtures
       }
     }
 
-  def withStreamStore[R](testWith: TestWith[StreamStore[ObjectLocation], R]): R =
+  def withStreamStore[R](
+    testWith: TestWith[StreamStore[ObjectLocation], R]
+  ): R =
     testWith(new S3StreamStore())
 }

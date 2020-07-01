@@ -20,10 +20,14 @@ import uk.ac.wellcome.storage.store.s3.S3StreamStore
 
 import scala.util.Try
 
-class S3UnpackerTest extends UnpackerTestCases[S3StreamStore, Bucket] with S3Fixtures {
+class S3UnpackerTest
+    extends UnpackerTestCases[S3StreamStore, Bucket]
+    with S3Fixtures {
   val unpacker: Unpacker = new S3Unpacker()
 
-  override def withUnpacker[R](testWith: TestWith[Unpacker, R])(implicit store: S3StreamStore): R =
+  override def withUnpacker[R](
+    testWith: TestWith[Unpacker, R]
+  )(implicit store: S3StreamStore): R =
     testWith(unpacker)
 
   override def withNamespace[R](testWith: TestWith[Bucket, R]): R =

@@ -11,7 +11,7 @@ import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 import scala.util.Random
 
 class UnpackerMessageTest
-  extends AnyFunSpec
+    extends AnyFunSpec
     with Matchers
     with StorageRandomThings
     with ObjectLocationGenerators {
