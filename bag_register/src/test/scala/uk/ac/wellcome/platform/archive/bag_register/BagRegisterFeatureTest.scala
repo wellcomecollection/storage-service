@@ -10,16 +10,9 @@ import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.generators.{
-  PayloadGenerators,
-  StorageLocationGenerators
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  KnownReplicas,
-  PrimaryStorageLocation,
-  StorageManifest
-}
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.platform.archive.common.generators.{PayloadGenerators, StorageLocationGenerators}
+import uk.ac.wellcome.platform.archive.common.storage.models.{KnownReplicas, PrimaryStorageLocation, StorageManifest}
+import uk.ac.wellcome.storage.MemoryLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
 class BagRegisterFeatureTest
@@ -32,8 +25,8 @@ class BagRegisterFeatureTest
     with IntegrationPatience {
 
   it("sends an update if it registers a bag") {
-    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
-      MemoryStreamStore[ObjectLocation]()
+    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
+      MemoryStreamStore[MemoryLocation]()
 
     val ingests = new MemoryMessageSender()
 
@@ -113,8 +106,8 @@ class BagRegisterFeatureTest
   }
 
   it("handles a failed registration") {
-    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
-      MemoryStreamStore[ObjectLocation]()
+    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
+      MemoryStreamStore[MemoryLocation]()
 
     val ingests = new MemoryMessageSender()
 

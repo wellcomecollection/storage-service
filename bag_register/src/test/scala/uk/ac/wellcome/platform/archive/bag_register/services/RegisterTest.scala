@@ -8,25 +8,13 @@ import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
-import uk.ac.wellcome.platform.archive.common.generators.{
-  StorageLocationGenerators,
-  StorageSpaceGenerators
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestCompleted,
-  IngestFailed
-}
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  BadFetchLocationException,
-  StorageManifestService
-}
+import uk.ac.wellcome.platform.archive.common.generators.{StorageLocationGenerators, StorageSpaceGenerators}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestCompleted, IngestFailed}
+import uk.ac.wellcome.platform.archive.common.storage.services.{BadFetchLocationException, StorageManifestService}
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemorySizeFinder
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
-import uk.ac.wellcome.storage.store.memory.{
-  MemoryStreamStore,
-  NewMemoryTypedStore
-}
+import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore, MemoryTypedStore}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -42,13 +30,26 @@ class RegisterTest
     with IntegrationPatience {
 
   it("registers a bag with primary and secondary locations") {
-    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
-      MemoryStreamStore[ObjectLocation]()
+    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
+      MemoryStreamStore[MemoryLocation]()
 
     val bagReader = new MemoryBagReader()
 
+    // TODO: Bridging code while we split ObjectLocation.  Remove this later.
+    // See https://github.com/wellcomecollection/platform/issues/4596
+    implicit val underlying =
+      new MemoryStore[ObjectLocation, Array[Byte]](initialEntries = Map.empty) {
+        override def get(location: ObjectLocation): ReadEither =
+          streamStore.memoryStore
+            .get(MemoryLocation(location))
+            .map { case Identified(_, result) => Identified(location, result) }
+      }
+
+    implicit val readable: MemoryStreamStore[ObjectLocation] =
+      new MemoryStreamStore[ObjectLocation](underlying)
+
     val storageManifestService = new StorageManifestService(
-      sizeFinder = new MemorySizeFinder[ObjectLocation](streamStore.memoryStore),
+      sizeFinder = new MemorySizeFinder[ObjectLocation](underlying),
       toIdent = identity
     )
 
@@ -79,7 +80,8 @@ class RegisterTest
       val register = new Register(
         bagReader = bagReader,
         bagTrackerClient = bagTrackerClient,
-        storageManifestService = storageManifestService
+        storageManifestService = storageManifestService,
+        toPrefix = (prefix: ObjectLocationPrefix) => MemoryLocationPrefix(prefix.namespace, prefix.path)
       )
 
       val future = register.update(
@@ -130,16 +132,29 @@ class RegisterTest
   it(
     "includes a user-facing message if the fetch.txt refers to the wrong namespace"
   ) {
-    implicit val streamStore: MemoryStreamStore[ObjectLocation] =
-      MemoryStreamStore[ObjectLocation]()
+    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
+      MemoryStreamStore[MemoryLocation]()
 
-    implicit val typedStore: NewMemoryTypedStore[String] =
-      new NewMemoryTypedStore[String]()
+    // TODO: Bridging code while we split ObjectLocation.  Remove this later.
+    // See https://github.com/wellcomecollection/platform/issues/4596
+    implicit val underlying =
+      new MemoryStore[ObjectLocation, Array[Byte]](initialEntries = Map.empty) {
+        override def get(location: ObjectLocation): ReadEither =
+          streamStore.memoryStore
+            .get(MemoryLocation(location))
+            .map { case Identified(_, result) => Identified(location, result) }
+      }
+
+    implicit val readable: MemoryStreamStore[ObjectLocation] =
+      new MemoryStreamStore[ObjectLocation](underlying)
+
+    implicit val typedStore: MemoryTypedStore[MemoryLocation, String] =
+      new MemoryTypedStore[MemoryLocation, String]()
 
     val bagReader = new MemoryBagReader()
 
     val storageManifestService = new StorageManifestService(
-      sizeFinder = new MemorySizeFinder[ObjectLocation](streamStore.memoryStore),
+      sizeFinder = new MemorySizeFinder[ObjectLocation](underlying),
       toIdent = identity
     )
 
@@ -176,7 +191,8 @@ class RegisterTest
       val register = new Register(
         bagReader = bagReader,
         bagTrackerClient = bagTrackerClient,
-        storageManifestService = storageManifestService
+        storageManifestService = storageManifestService,
+        toPrefix = (prefix: ObjectLocationPrefix) => MemoryLocationPrefix(prefix.namespace, prefix.path)
       )
 
       val future = register.update(
