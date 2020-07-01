@@ -37,7 +37,8 @@ case object SourceLocationPayload {
   def apply(ingest: Ingest): SourceLocationPayload =
     SourceLocationPayload(
       context = PipelineContext(ingest),
-      sourceLocation = ingest.sourceLocation.prefix.toObjectLocationPrefix.asLocation()
+      sourceLocation =
+        ingest.sourceLocation.prefix.toObjectLocationPrefix.asLocation()
     )
 }
 

@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.archive.display
 import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageLocation
-import uk.ac.wellcome.storage.{AzureBlobItemLocationPrefix, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.{
+  AzureBlobItemLocationPrefix,
+  S3ObjectLocationPrefix
+}
 
 case class DisplayLocation(
   provider: DisplayProvider,
@@ -20,7 +23,8 @@ case class DisplayLocation(
 
       case AzureBlobStorageProvider =>
         AzureBlobSourceLocation(
-          prefix = AzureBlobItemLocationPrefix(container = bucket, namePrefix = path)
+          prefix =
+            AzureBlobItemLocationPrefix(container = bucket, namePrefix = path)
         )
     }
 }
