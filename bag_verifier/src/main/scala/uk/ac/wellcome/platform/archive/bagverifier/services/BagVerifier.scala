@@ -24,6 +24,7 @@ import scala.util.Try
 class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
   namespace: String,
   // TODO: Temporary while we disambiguate ObjectLocation.  Remove eventually.
+  toLocation: ObjectLocation => BagLocation,
   toPrefix: ObjectLocationPrefix => BagPrefix
 )(
   implicit bagReader: BagReader[BagLocation, BagPrefix],
@@ -33,7 +34,7 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
 ) extends Logging
     with VerifyChecksumAndSize
     with VerifyExternalIdentifier
-    with VerifyFetch
+    with VerifyFetch[BagLocation, BagPrefix]
     with VerifyPayloadOxum
     with VerifyNoUnreferencedFiles {
 
@@ -59,9 +60,11 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
 
           _ <- verifyFetchPrefixes(
             fetch = bag.fetch,
-            root = ObjectLocationPrefix(
-              namespace = namespace,
-              path = s"$space/$externalIdentifier"
+            root = toPrefix(
+              ObjectLocationPrefix(
+                namespace = namespace,
+                path = s"$space/$externalIdentifier"
+              )
             )
           )
 
@@ -80,8 +83,8 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
             case FixityListAllCorrect(_) =>
               verifyNoConcreteFetchEntries(
                 fetch = bag.fetch,
-                root = root,
-                actualLocations = actualLocations
+                root = toPrefix(root),
+                actualLocations = actualLocations.map { toLocation }
               )
 
             case _ => Right(())
