@@ -14,7 +14,9 @@ class MemoryStorageManifestService(
   val sizeFinder: SizeFinder[MemoryLocation]
 ) extends StorageManifestService[MemoryLocation] {
 
-  override def toLocationPrefix(prefix: ObjectLocationPrefix): MemoryLocationPrefix =
+  override def toLocationPrefix(
+    prefix: ObjectLocationPrefix
+  ): MemoryLocationPrefix =
     MemoryLocationPrefix(namespace = prefix.namespace, pathPrefix = prefix.path)
 
   override def createLocation(uri: URI): MemoryLocation =
@@ -25,7 +27,9 @@ class MemoryStorageManifestService(
 }
 
 object MemoryStorageManifestService {
-  def apply()(implicit streamReader: MemoryStreamStore[MemoryLocation]): MemoryStorageManifestService = {
+  def apply()(
+    implicit streamReader: MemoryStreamStore[MemoryLocation]
+  ): MemoryStorageManifestService = {
     implicit val sizeFinder: MemorySizeFinder[MemoryLocation] =
       new MemorySizeFinder[MemoryLocation](streamReader.memoryStore)
 

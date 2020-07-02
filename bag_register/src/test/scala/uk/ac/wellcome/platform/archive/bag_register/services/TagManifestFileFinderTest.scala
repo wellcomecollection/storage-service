@@ -5,12 +5,20 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.{EitherValues, TryValues}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifestFile
-import uk.ac.wellcome.platform.archive.common.verify.{ChecksumValue, MD5, SHA256}
+import uk.ac.wellcome.platform.archive.common.verify.{
+  ChecksumValue,
+  MD5,
+  SHA256
+}
 import uk.ac.wellcome.storage.generators.RandomThings
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore}
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
-import uk.ac.wellcome.storage.{MemoryLocation, MemoryLocationPrefix, StoreReadError}
+import uk.ac.wellcome.storage.{
+  MemoryLocation,
+  MemoryLocationPrefix,
+  StoreReadError
+}
 
 class TagManifestFileFinderTest
     extends AnyFunSpec

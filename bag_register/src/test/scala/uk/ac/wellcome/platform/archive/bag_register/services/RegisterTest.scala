@@ -9,8 +9,14 @@ import uk.ac.wellcome.platform.archive.bag_register.services.memory.MemoryStorag
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
-import uk.ac.wellcome.platform.archive.common.generators.{StorageLocationGenerators, StorageSpaceGenerators}
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestCompleted, IngestFailed}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  StorageLocationGenerators,
+  StorageSpaceGenerators
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestCompleted,
+  IngestFailed
+}
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}

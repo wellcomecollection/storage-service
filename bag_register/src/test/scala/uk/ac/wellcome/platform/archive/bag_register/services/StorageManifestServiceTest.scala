@@ -4,13 +4,23 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{Assertion, EitherValues, TryValues}
 import uk.ac.wellcome.platform.archive.bag_register.services.memory.MemoryStorageManifestService
-import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagPath, BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  Bag,
+  BagPath,
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.memory.MemoryBagBuilder
 import uk.ac.wellcome.platform.archive.common.generators._
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryStorageLocation, SecondaryStorageLocation, StorageManifest, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  PrimaryStorageLocation,
+  SecondaryStorageLocation,
+  StorageManifest,
+  StorageSpace
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
@@ -421,10 +431,11 @@ class StorageManifestServiceTest
 
       val err = new Throwable("BOOM!")
 
-      implicit val brokenSizeFinder: SizeFinder[MemoryLocation] = new SizeFinder[MemoryLocation] {
-        override def get(location: MemoryLocation): ReadEither =
-          Left(StoreReadError(err))
-      }
+      implicit val brokenSizeFinder: SizeFinder[MemoryLocation] =
+        new SizeFinder[MemoryLocation] {
+          override def get(location: MemoryLocation): ReadEither =
+            Left(StoreReadError(err))
+        }
 
       implicit val streamStore: MemoryStreamStore[MemoryLocation] =
         MemoryStreamStore[MemoryLocation]()
@@ -495,7 +506,9 @@ class StorageManifestServiceTest
           }
           .toMap
 
-      storageManifestSizes shouldBe sizeCache.map { case (cachedLoc, cachedSize) => cachedLoc.toObjectLocation -> cachedSize }
+      storageManifestSizes shouldBe sizeCache.map {
+        case (cachedLoc, cachedSize) => cachedLoc.toObjectLocation -> cachedSize
+      }
     }
 
     it("uses the size from the fetch file") {
@@ -622,10 +635,11 @@ class StorageManifestServiceTest
     replicas: Seq[SecondaryStorageLocation] = Seq.empty,
     space: StorageSpace = createStorageSpace,
     version: BagVersion,
-    sizeFinderImpl: SizeFinder[MemoryLocation] = new SizeFinder[MemoryLocation] {
-      override def get(location: MemoryLocation): ReadEither =
-        Right(Identified(location, Random.nextLong().abs))
-    }
+    sizeFinderImpl: SizeFinder[MemoryLocation] =
+      new SizeFinder[MemoryLocation] {
+        override def get(location: MemoryLocation): ReadEither =
+          Right(Identified(location, Random.nextLong().abs))
+      }
   )(
     implicit streamStore: MemoryStreamStore[MemoryLocation]
   ): StorageManifest = {
