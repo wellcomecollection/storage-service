@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   Locatable,
   Resolvable
 }
-import uk.ac.wellcome.platform.archive.bagverifier.storage.bag.BagLocatable._
+import uk.ac.wellcome.platform.archive.bagverifier.storage.bag.BagLocatable
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
 import uk.ac.wellcome.platform.archive.common.verify._
@@ -21,6 +21,7 @@ class BagExpectedFixity(root: ObjectLocationPrefix)(
 ) extends ExpectedFixity[Bag]
     with Logging {
 
+  import BagLocatable._
   import Locatable._
 
   override def create(
