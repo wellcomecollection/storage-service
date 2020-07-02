@@ -20,20 +20,10 @@ import uk.ac.wellcome.platform.archive.bagverifier.services.{
 import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.S3Resolvable
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
-import uk.ac.wellcome.platform.archive.common.config.builders.{
-  IngestUpdaterBuilder,
-  OperationNameBuilder,
-  OutgoingPublisherBuilder
-}
-import uk.ac.wellcome.storage.listing.Listing
-import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
+import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
+import uk.ac.wellcome.storage.listing.s3.NewS3ObjectLocationListing
 import uk.ac.wellcome.storage.typesafe.S3Builder
-import uk.ac.wellcome.storage.{
-  ObjectLocation,
-  ObjectLocationPrefix,
-  S3ObjectLocation,
-  S3ObjectLocationPrefix
-}
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix, S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
@@ -70,8 +60,8 @@ object Main extends WellcomeTypesafeApp {
     implicit val s3Resolvable: S3Resolvable =
       new S3Resolvable()
 
-    implicit val s3Listing: Listing[ObjectLocationPrefix, ObjectLocation] =
-      S3ObjectLocationListing()
+    implicit val s3Listing: NewS3ObjectLocationListing =
+      new NewS3ObjectLocationListing()
 
     val verifier = new BagVerifier[S3ObjectLocation, S3ObjectLocationPrefix](
       namespace = config.requireString("bag-verifier.primary-storage-bucket"),

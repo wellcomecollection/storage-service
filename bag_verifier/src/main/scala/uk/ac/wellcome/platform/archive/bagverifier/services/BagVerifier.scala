@@ -30,7 +30,7 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
   implicit bagReader: BagReader[BagLocation, BagPrefix],
   val resolvable: Resolvable[BagLocation],
   val fixityChecker: FixityChecker[BagLocation],
-  listing: Listing[ObjectLocationPrefix, ObjectLocation]
+  listing: Listing[BagPrefix, BagLocation]
 ) extends Logging
     with VerifyChecksumAndSize[BagLocation, BagPrefix]
     with VerifyExternalIdentifier
@@ -73,7 +73,7 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
             bag = bag
           )
 
-          actualLocations <- listing.list(root) match {
+          actualLocations <- listing.list(toPrefix(root)) match {
             case Right(iterable) => Right(iterable.toSeq)
             case Left(listingFailure) =>
               Left(BagVerifierError(listingFailure.e))
@@ -84,7 +84,7 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
               verifyNoConcreteFetchEntries(
                 fetch = bag.fetch,
                 root = toPrefix(root),
-                actualLocations = actualLocations.map { toLocation }
+                actualLocations = actualLocations
               )
 
             case _ => Right(())
@@ -92,7 +92,7 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
 
           _ <- verifyNoUnreferencedFiles(
             root = toPrefix(root),
-            actualLocations = actualLocations.map { toLocation },
+            actualLocations = actualLocations,
             verificationResult = verificationResult
           )
 
