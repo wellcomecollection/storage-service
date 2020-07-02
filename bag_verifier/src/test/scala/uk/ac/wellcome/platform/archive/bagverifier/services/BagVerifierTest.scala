@@ -68,7 +68,7 @@ class BagVerifierTest
         withVerifier(bucket) {
           _.verify(
             ingestId = createIngestID,
-            root = bagRoot.toObjectLocationPrefix,
+            root = bagRoot,
             space = space,
             externalIdentifier = bagInfo.externalIdentifier
           )
@@ -260,7 +260,7 @@ class BagVerifierTest
         withVerifier(bucket) {
           _.verify(
             ingestId = createIngestID,
-            root = bagRoot.toObjectLocationPrefix,
+            root = bagRoot,
             space = space,
             externalIdentifier = payloadExternalIdentifier
           )
@@ -552,7 +552,7 @@ class BagVerifierTest
           withVerifier(bucket) {
             _.verify(
               ingestId = createIngestID,
-              root = bagRoot.toObjectLocationPrefix,
+              root = bagRoot,
               space = space,
               externalIdentifier = bagInfo.externalIdentifier
             )
@@ -632,7 +632,7 @@ class BagVerifierTest
         withVerifier(bucket) {
           _.verify(
             ingestId = createIngestID,
-            root = bagRoot.toObjectLocationPrefix,
+            root = bagRoot,
             space = space,
             externalIdentifier = bagInfo.externalIdentifier
           )

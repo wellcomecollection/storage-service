@@ -9,10 +9,8 @@ import uk.ac.wellcome.platform.archive.bagverifier.models.VerificationSummary
 import uk.ac.wellcome.platform.archive.common.BagRootPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestStepResult,
-  IngestStepWorker
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, IngestStepWorker}
+import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.util.Try
 
@@ -20,7 +18,7 @@ class BagVerifierWorker[IngestDestination, OutgoingDestination](
   val config: AlpakkaSQSWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  verifier: BagVerifier[_, _],
+  verifier: BagVerifier[S3ObjectLocation, S3ObjectLocationPrefix],
   val metricsNamespace: String
 )(
   implicit val mc: MetricsMonitoringClient,
@@ -39,7 +37,7 @@ class BagVerifierWorker[IngestDestination, OutgoingDestination](
       _ <- ingestUpdater.start(payload.ingestId)
       summary <- verifier.verify(
         ingestId = payload.ingestId,
-        root = payload.bagRoot,
+        root = S3ObjectLocationPrefix(payload.bagRoot),
         space = payload.storageSpace,
         externalIdentifier = payload.externalIdentifier
       )

@@ -6,24 +6,12 @@ import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder,
-  SQSBuilder
-}
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.s3.S3FixityChecker
-import uk.ac.wellcome.platform.archive.bagverifier.services.{
-  BagVerifier,
-  BagVerifierWorker
-}
-import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.S3Resolvable
-import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
-import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
+import uk.ac.wellcome.platform.archive.bagverifier.services.BagVerifierWorker
+import uk.ac.wellcome.platform.archive.bagverifier.services.s3.S3BagVerifier
 import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
-import uk.ac.wellcome.storage.listing.s3.NewS3ObjectLocationListing
 import uk.ac.wellcome.storage.typesafe.S3Builder
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix, S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
@@ -50,24 +38,8 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: SqsAsyncClient =
       SQSBuilder.buildSQSAsyncClient(config)
 
-    implicit val s3FixityChecker: S3FixityChecker =
-      new S3FixityChecker()
-
-    implicit val bagReader
-      : BagReader[S3ObjectLocation, S3ObjectLocationPrefix] =
-      new S3BagReader()
-
-    implicit val s3Resolvable: S3Resolvable =
-      new S3Resolvable()
-
-    implicit val s3Listing: NewS3ObjectLocationListing =
-      new NewS3ObjectLocationListing()
-
-    val verifier = new BagVerifier[S3ObjectLocation, S3ObjectLocationPrefix](
-      namespace = config.requireString("bag-verifier.primary-storage-bucket"),
-      toLocation = (location: ObjectLocation) => S3ObjectLocation(location),
-      toPrefix =
-        (prefix: ObjectLocationPrefix) => S3ObjectLocationPrefix(prefix)
+    val verifier = new S3BagVerifier(
+      primaryBucket = config.requireString("bag-verifier.primary-storage-bucket"),
     )
 
     val operationName =
