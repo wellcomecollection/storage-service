@@ -1,50 +1,59 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity
 
 import grizzled.slf4j.Logging
+import uk.ac.wellcome.storage.Location
 
 /** Given some Container of files, get the expected fixity information for every
   * file in the container, then verify the fixity on each of them.
   *
   */
-class FixityListChecker[Container](
+class FixityListChecker[BagLocation <: Location, Container](
   implicit
   verifiable: ExpectedFixity[Container],
-  fixityChecker: FixityChecker[_]
+  fixityChecker: FixityChecker[BagLocation]
 ) extends Logging {
-  def check(container: Container): FixityListResult = {
+  def check(container: Container): FixityListResult[BagLocation] = {
     debug(s"Checking the fixity info for $container")
     verifiable.create(container) match {
       case Left(err) => CouldNotCreateExpectedFixityList(err.msg)
       case Right(verifiableLocations) =>
         verifiableLocations
           .map(fixityChecker.check)
-          .foldLeft[FixityListCheckingResult](FixityListAllCorrect(Nil)) {
+          .foldLeft[FixityListCheckingResult[BagLocation]](
+            FixityListAllCorrect(Nil)
+          ) {
 
             case (
-                FixityListAllCorrect(locations),
-                correct: FileFixityCorrect
+                existingCorrect: FixityListAllCorrect[BagLocation],
+                newCorrect: FileFixityCorrect[BagLocation]
                 ) =>
-              FixityListAllCorrect(correct :: locations)
+              FixityListAllCorrect(newCorrect :: existingCorrect.locations)
 
-            case (FixityListAllCorrect(locations), err: FileFixityError) =>
+            case (
+                correct: FixityListAllCorrect[BagLocation],
+                err: FileFixityError[BagLocation]
+                ) =>
               FixityListWithErrors(
                 errors = List(err),
-                correct = locations
+                correct = correct.locations
               )
 
             case (
-                FixityListWithErrors(errors, correct),
-                c: FileFixityCorrect
-                ) =>
-              FixityListWithErrors(errors, c :: correct)
-
-            case (
-                FixityListWithErrors(errors, correct),
-                err: FileFixityError
+                existingErrors: FixityListWithErrors[BagLocation],
+                c: FileFixityCorrect[BagLocation]
                 ) =>
               FixityListWithErrors(
-                errors = err :: errors,
-                correct = correct
+                existingErrors.errors,
+                c :: existingErrors.correct
+              )
+
+            case (
+                existingErrors: FixityListWithErrors[BagLocation],
+                err: FileFixityError[BagLocation]
+                ) =>
+              FixityListWithErrors(
+                errors = err :: existingErrors.errors,
+                correct = existingErrors.correct
               )
           }
     }

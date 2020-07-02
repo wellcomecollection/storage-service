@@ -1,44 +1,41 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity
 
-import uk.ac.wellcome.storage.ObjectLocation
-
-sealed trait FileFixityResult {
+sealed trait FileFixityResult[BagLocation] {
   val expectedFileFixity: ExpectedFileFixity
 }
 
-sealed trait FileFixityError extends FileFixityResult {
+sealed trait FileFixityError[BagLocation]
+    extends FileFixityResult[BagLocation] {
   val e: Throwable
 }
 
-case class FileFixityCorrect(
+case class FileFixityCorrect[BagLocation](
   expectedFileFixity: ExpectedFileFixity,
-  objectLocation: ObjectLocation,
+  objectLocation: BagLocation,
   // We record the size of the files as we verify them, so we can verify
   // the Payload-Oxum in the bag metadata.
   size: Long
-) extends FileFixityResult
+) extends FileFixityResult[BagLocation]
 
-case class FileFixityMismatch(
+case class FileFixityMismatch[BagLocation](
   expectedFileFixity: ExpectedFileFixity,
-  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
-  // See https://github.com/wellcomecollection/platform/issues/4596
-  objectLocation: Any,
+  objectLocation: BagLocation,
   e: Throwable
-) extends FileFixityError
+) extends FileFixityError[BagLocation]
 
-case class FileFixityCouldNotRead(
+case class FileFixityCouldNotRead[BagLocation](
   expectedFileFixity: ExpectedFileFixity,
   e: Throwable
-) extends FileFixityError
+) extends FileFixityError[BagLocation]
 
-case class FileFixityCouldNotGetChecksum(
+case class FileFixityCouldNotGetChecksum[BagLocation](
   expectedFileFixity: ExpectedFileFixity,
-  objectLocation: ObjectLocation,
+  objectLocation: BagLocation,
   e: Throwable
-) extends FileFixityError
+) extends FileFixityError[BagLocation]
 
-case class FileFixityCouldNotWriteTag(
+case class FileFixityCouldNotWriteTag[BagLocation](
   expectedFileFixity: ExpectedFileFixity,
-  objectLocation: ObjectLocation,
+  objectLocation: BagLocation,
   e: Throwable
-) extends FileFixityError
+) extends FileFixityError[BagLocation]

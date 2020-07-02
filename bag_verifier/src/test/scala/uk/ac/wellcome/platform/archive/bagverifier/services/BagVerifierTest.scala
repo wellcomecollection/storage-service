@@ -32,7 +32,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepSucceeded,
   StorageSpace
 }
-import uk.ac.wellcome.storage.S3ObjectLocationPrefix
+import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
 class BagVerifierTest
@@ -602,12 +602,14 @@ class BagVerifierTest
   }
 
   private def verifySuccessCount(
-    successes: List[FileFixityCorrect],
+    successes: List[FileFixityCorrect[_]],
     expectedCount: Int
   ): Assertion =
-    if (successes.map { _.objectLocation.path }.exists {
-          _.endsWith("/fetch.txt")
-        }) {
+    if (successes
+          .map { _.objectLocation.asInstanceOf[S3ObjectLocation].key }
+          .exists {
+            _.endsWith("/fetch.txt")
+          }) {
       successes.size shouldBe expectedCount + 1
     } else {
       successes.size shouldBe expectedCount

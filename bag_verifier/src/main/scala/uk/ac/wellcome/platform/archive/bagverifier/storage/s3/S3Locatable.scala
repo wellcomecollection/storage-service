@@ -8,31 +8,32 @@ import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   LocateFailure,
   LocationParsingError
 }
-import uk.ac.wellcome.storage.S3ObjectLocation
+import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.util.{Failure, Success, Try}
 
 object S3Locatable {
-  implicit val s3UriLocatable: Locatable[S3ObjectLocation, URI] =
-    new Locatable[S3ObjectLocation, URI] {
-      override def locate(t: URI)(
-        maybeRoot: Option[S3ObjectLocation]
+  implicit val s3UriLocatable
+    : Locatable[S3ObjectLocation, S3ObjectLocationPrefix, URI] =
+    new Locatable[S3ObjectLocation, S3ObjectLocationPrefix, URI] {
+      override def locate(uri: URI)(
+        maybeRoot: Option[S3ObjectLocationPrefix]
       ): Either[LocateFailure[URI], S3ObjectLocation] =
-        Try { new AmazonS3URI(t) } match {
+        Try { new AmazonS3URI(uri) } match {
           case Success(s3Uri) =>
             Right(
               S3ObjectLocation(bucket = s3Uri.getBucket, key = s3Uri.getKey)
             )
 
           // We are not running in AWS - manually parse URL
-          case Failure(_) if t.getHost == "localhost" =>
-            t.getPath.split("/").toList match {
+          case Failure(_) if uri.getHost == "localhost" =>
+            uri.getPath.split("/").toList match {
               case _ :: head :: tail =>
                 Right(S3ObjectLocation(bucket = head, key = tail.mkString("/")))
               case default =>
                 Left(
                   LocationParsingError(
-                    t,
+                    uri,
                     s"Failed to parse S3 URI: invalid path trying to parse local URL (${default
                       .mkString("/")})"
                   )
@@ -43,7 +44,7 @@ object S3Locatable {
           case Failure(e) =>
             Left(
               LocationParsingError(
-                t,
+                uri,
                 s"Failed to parse S3 URI: ${e.getMessage}"
               )
             )

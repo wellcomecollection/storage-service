@@ -1,4 +1,5 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity
+
 import java.net.URI
 
 import grizzled.slf4j.Logging
@@ -13,25 +14,23 @@ import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.tags.Tags
-import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation, ReadError}
+import uk.ac.wellcome.storage.{DoesNotExistError, Location, ReadError}
 
 import scala.util.{Failure, Success}
 
 /** Look up and check the fixity info (checksum, size) on an individual file.
   *
   */
-trait FixityChecker[BagLocation] extends Logging {
-  protected val streamStore: StreamStore[ObjectLocation]
+trait FixityChecker[BagLocation <: Location] extends Logging {
+  protected val streamStore: StreamStore[BagLocation]
   protected val sizeFinder: SizeFinder[BagLocation]
-  val tags: Tags[ObjectLocation]
+  val tags: Tags[BagLocation]
 
   def locate(uri: URI): Either[LocateFailure[URI], BagLocation]
 
-  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
-  // See https://github.com/wellcomecollection/platform/issues/4596
-  def toLocation(bagLocation: BagLocation): ObjectLocation
-
-  def check(expectedFileFixity: ExpectedFileFixity): FileFixityResult = {
+  def check(
+    expectedFileFixity: ExpectedFileFixity
+  ): FileFixityResult[BagLocation] = {
     debug(s"Attempting to verify: $expectedFileFixity")
 
     val algorithm = expectedFileFixity.checksum.algorithm
@@ -49,19 +48,15 @@ trait FixityChecker[BagLocation] extends Logging {
     //        (e.g. if they're very large and infrequently accessed)
 
     val fixityResult = for {
-      bagLocation <- parseLocation(expectedFileFixity)
+      location <- parseLocation(expectedFileFixity)
       _ = debug(
-        s"Parsed location for ${expectedFileFixity.uri} as $bagLocation"
+        s"Parsed location for ${expectedFileFixity.uri} as $location"
       )
-
-      // TODO: Bridging code while we split ObjectLocation.  Remove this later.
-      // See https://github.com/wellcomecollection/platform/issues/4596
-      location = toLocation(bagLocation)
 
       existingTags <- getExistingTags(expectedFileFixity, location)
       _ = debug(s"Got existing tags for $location: $existingTags")
 
-      size <- verifySize(expectedFileFixity, bagLocation)
+      size <- verifySize(expectedFileFixity, location)
       _ = debug(s"Checked the size of $location is correct")
 
       result <- verifyChecksum(
@@ -85,7 +80,7 @@ trait FixityChecker[BagLocation] extends Logging {
 
   private def parseLocation(
     expectedFileFixity: ExpectedFileFixity
-  ): Either[FileFixityCouldNotRead, BagLocation] =
+  ): Either[FileFixityCouldNotRead[BagLocation], BagLocation] =
     locate(expectedFileFixity.uri) match {
       case Right(location) => Right(location)
       case Left(locateError) =>
@@ -99,8 +94,8 @@ trait FixityChecker[BagLocation] extends Logging {
 
   private def getExistingTags(
     expectedFileFixity: ExpectedFileFixity,
-    location: ObjectLocation
-  ): Either[FileFixityCouldNotRead, Map[String, String]] =
+    location: BagLocation
+  ): Either[FileFixityCouldNotRead[BagLocation], Map[String, String]] =
     handleReadErrors(
       tags.get(location).map(_.identifiedT),
       expectedFileFixity = expectedFileFixity
@@ -108,8 +103,8 @@ trait FixityChecker[BagLocation] extends Logging {
 
   private def openInputStream(
     expectedFileFixity: ExpectedFileFixity,
-    location: ObjectLocation
-  ): Either[FileFixityCouldNotRead, InputStreamWithLength] =
+    location: BagLocation
+  ): Either[FileFixityCouldNotRead[BagLocation], InputStreamWithLength] =
     handleReadErrors(
       streamStore.get(location),
       expectedFileFixity = expectedFileFixity
@@ -118,7 +113,7 @@ trait FixityChecker[BagLocation] extends Logging {
   private def verifySize(
     expectedFileFixity: ExpectedFileFixity,
     location: BagLocation
-  ): Either[FileFixityError, Long] =
+  ): Either[FileFixityError[BagLocation], Long] =
     for {
       actualLength <- handleReadErrors(
         sizeFinder.getSize(location),
@@ -143,11 +138,11 @@ trait FixityChecker[BagLocation] extends Logging {
 
   private def verifyChecksum(
     expectedFileFixity: ExpectedFileFixity,
-    location: ObjectLocation,
+    location: BagLocation,
     existingTags: Map[String, String],
     algorithm: HashingAlgorithm,
     size: Long
-  ): Either[FileFixityError, FileFixityCorrect] =
+  ): Either[FileFixityError[BagLocation], FileFixityCorrect[BagLocation]] =
     existingTags.get(fixityTagName(expectedFileFixity)) match {
       case Some(cachedFixityValue)
           if cachedFixityValue == fixityTagValue(expectedFileFixity) =>
@@ -186,11 +181,11 @@ trait FixityChecker[BagLocation] extends Logging {
 
   private def verifyChecksumFromInputStream(
     expectedFileFixity: ExpectedFileFixity,
-    location: ObjectLocation,
+    location: BagLocation,
     inputStream: InputStreamWithLength,
     algorithm: HashingAlgorithm,
     size: Long
-  ): Either[FileFixityError, FileFixityCorrect] = {
+  ): Either[FileFixityError[BagLocation], FileFixityCorrect[BagLocation]] = {
     // This assertion should never fire in practice -- if it does, it means
     // an object is changing under our feet.  If that's the case, there's something
     // badly wrong with the storage service.
@@ -245,8 +240,8 @@ trait FixityChecker[BagLocation] extends Logging {
 
   private def writeFixityTags(
     expectedFileFixity: ExpectedFileFixity,
-    location: ObjectLocation
-  ): Either[FileFixityCouldNotWriteTag, Unit] =
+    location: BagLocation
+  ): Either[FileFixityCouldNotWriteTag[BagLocation], Unit] =
     tags
       .update(location) { existingTags =>
         val tagName = fixityTagName(expectedFileFixity)
@@ -289,7 +284,7 @@ trait FixityChecker[BagLocation] extends Logging {
   private def handleReadErrors[T](
     t: Either[ReadError, T],
     expectedFileFixity: ExpectedFileFixity
-  ): Either[FileFixityCouldNotRead, T] =
+  ): Either[FileFixityCouldNotRead[BagLocation], T] =
     t match {
       case Right(value) => Right(value)
 

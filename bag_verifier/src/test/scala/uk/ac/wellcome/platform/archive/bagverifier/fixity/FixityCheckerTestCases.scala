@@ -9,28 +9,37 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagverifier.generators.FixityGenerators
 import uk.ac.wellcome.platform.archive.bagverifier.storage.LocationNotFound
 import uk.ac.wellcome.platform.archive.common.verify._
-import uk.ac.wellcome.storage.{Identified, ObjectLocation}
+import uk.ac.wellcome.storage.{Identified, Location}
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
 
-trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
-  ObjectLocation
-]] extends AnyFunSpec
+trait FixityCheckerTestCases[
+  BagLocation <: Location,
+  Namespace,
+  Context,
+  StreamStoreImpl <: StreamStore[BagLocation]
+] extends AnyFunSpec
     with Matchers
     with EitherValues
-    with NamespaceFixtures[ObjectLocation, Namespace]
-    with FixityGenerators {
+    with NamespaceFixtures[BagLocation, Namespace]
+    with FixityGenerators[BagLocation] {
 
   def withContext[R](testWith: TestWith[Context, R]): R
 
-  def createObjectLocationWith(namespace: Namespace): ObjectLocation
+  def createLocationWith(namespace: Namespace): BagLocation =
+    createId(namespace)
 
-  def putString(location: ObjectLocation, contents: String)(
+  override def createLocation: BagLocation =
+    withNamespace { namespace =>
+      createLocationWith(namespace)
+    }
+
+  def putString(location: BagLocation, contents: String)(
     implicit context: Context
   ): Unit
 
   def withFixityChecker[R](streamStore: StreamStoreImpl)(
-    testWith: TestWith[FixityChecker[_], R]
+    testWith: TestWith[FixityChecker[BagLocation], R]
   )(
     implicit context: Context
   ): R
@@ -39,7 +48,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
     implicit context: Context
   ): R
 
-  def withFixityChecker[R](testWith: TestWith[FixityChecker[_], R])(
+  def withFixityChecker[R](testWith: TestWith[FixityChecker[BagLocation], R])(
     implicit context: Context
   ): R =
     withStreamStore { streamStore =>
@@ -59,7 +68,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
         )
         val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
-        val location = createObjectLocationWith(namespace)
+        val location = createLocationWith(namespace)
         putString(location, contentString)
 
         val expectedFileFixity = createExpectedFileFixityWith(
@@ -72,9 +81,9 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
             _.check(expectedFileFixity)
           }
 
-        result shouldBe a[FileFixityCorrect]
+        result shouldBe a[FileFixityCorrect[_]]
 
-        val fixityCorrect = result.asInstanceOf[FileFixityCorrect]
+        val fixityCorrect = result.asInstanceOf[FileFixityCorrect[BagLocation]]
         fixityCorrect.expectedFileFixity shouldBe expectedFileFixity
         fixityCorrect.size shouldBe contentString.getBytes.length
       }
@@ -86,7 +95,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
       withNamespace { implicit namespace =>
         val checksum = randomChecksum
 
-        val location = createObjectLocationWith(namespace)
+        val location = createLocationWith(namespace)
 
         val expectedFileFixity = createExpectedFileFixityWith(
           location = location,
@@ -98,9 +107,10 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
             _.check(expectedFileFixity)
           }
 
-        result shouldBe a[FileFixityCouldNotRead]
+        result shouldBe a[FileFixityCouldNotRead[_]]
 
-        val fixityCouldNotRead = result.asInstanceOf[FileFixityCouldNotRead]
+        val fixityCouldNotRead =
+          result.asInstanceOf[FileFixityCouldNotRead[BagLocation]]
 
         fixityCouldNotRead.expectedFileFixity shouldBe expectedFileFixity
         fixityCouldNotRead.e shouldBe a[LocationNotFound[_]]
@@ -116,7 +126,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
       withNamespace { implicit namespace =>
         val checksum = randomChecksum
 
-        val location = createObjectLocationWith(namespace)
+        val location = createLocationWith(namespace)
         putString(location, randomAlphanumeric)
 
         val expectedFileFixity = createExpectedFileFixityWith(
@@ -129,9 +139,10 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
             _.check(expectedFileFixity)
           }
 
-        result shouldBe a[FileFixityMismatch]
+        result shouldBe a[FileFixityMismatch[_]]
 
-        val fixityMismatch = result.asInstanceOf[FileFixityMismatch]
+        val fixityMismatch =
+          result.asInstanceOf[FileFixityMismatch[BagLocation]]
 
         fixityMismatch.expectedFileFixity shouldBe expectedFileFixity
         fixityMismatch.e shouldBe a[FailedChecksumNoMatch]
@@ -152,7 +163,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
           "68e109f0f40ca72a15e05cc22786f8e6"
         )
 
-        val location = createObjectLocationWith(namespace)
+        val location = createLocationWith(namespace)
         val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
         val expectedFileFixity = createExpectedFileFixityWith(
@@ -168,9 +179,10 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
             _.check(expectedFileFixity)
           }
 
-        result shouldBe a[FileFixityMismatch]
+        result shouldBe a[FileFixityMismatch[_]]
 
-        val fixityMismatch = result.asInstanceOf[FileFixityMismatch]
+        val fixityMismatch =
+          result.asInstanceOf[FileFixityMismatch[BagLocation]]
 
         fixityMismatch.expectedFileFixity shouldBe expectedFileFixity
         fixityMismatch.e shouldBe a[Throwable]
@@ -191,7 +203,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
           "68e109f0f40ca72a15e05cc22786f8e6"
         )
 
-        val location = createObjectLocationWith(namespace)
+        val location = createLocationWith(namespace)
         val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
         val expectedFileFixity = createExpectedFileFixityWith(
@@ -207,9 +219,9 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
             _.check(expectedFileFixity)
           }
 
-        result shouldBe a[FileFixityCorrect]
+        result shouldBe a[FileFixityCorrect[_]]
 
-        val fixityCorrect = result.asInstanceOf[FileFixityCorrect]
+        val fixityCorrect = result.asInstanceOf[FileFixityCorrect[BagLocation]]
         fixityCorrect.expectedFileFixity shouldBe expectedFileFixity
         fixityCorrect.size shouldBe contentString.getBytes.length
       }
@@ -226,7 +238,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
           "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
         )
 
-        val location = createObjectLocationWith(namespace)
+        val location = createLocationWith(namespace)
         val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
         val expectedFileFixity = createExpectedFileFixityWith(
@@ -241,9 +253,9 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
             _.check(expectedFileFixity)
           }
 
-        result shouldBe a[FileFixityCorrect]
+        result shouldBe a[FileFixityCorrect[_]]
 
-        val fixityCorrect = result.asInstanceOf[FileFixityCorrect]
+        val fixityCorrect = result.asInstanceOf[FileFixityCorrect[BagLocation]]
         fixityCorrect.expectedFileFixity shouldBe expectedFileFixity
         fixityCorrect.size shouldBe contentString.getBytes.length
       }
@@ -258,7 +270,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
     it("sets a tag on a successfully-verified object") {
       withContext { implicit context =>
         withNamespace { implicit namespace =>
-          val location = createObjectLocationWith(namespace)
+          val location = createLocationWith(namespace)
           putString(location, contentString)
 
           val expectedFileFixity = createExpectedFileFixityWith(
@@ -268,7 +280,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
 
           withFixityChecker { fixityChecker =>
             fixityChecker.check(expectedFileFixity) shouldBe a[
-              FileFixityCorrect
+              FileFixityCorrect[_]
             ]
 
             fixityChecker.tags.get(location).right.value shouldBe Identified(
@@ -285,7 +297,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
     it("skips checking if there's a matching tag from a previous verification") {
       withContext { implicit context =>
         withNamespace { implicit namespace =>
-          val location = createObjectLocationWith(namespace)
+          val location = createLocationWith(namespace)
           putString(location, contentString)
 
           val expectedFileFixity = createExpectedFileFixityWith(
@@ -298,7 +310,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
 
             withFixityChecker(spyStore) { fixityChecker =>
               fixityChecker.check(expectedFileFixity) shouldBe a[
-                FileFixityCorrect
+                FileFixityCorrect[_]
               ]
 
               // StreamStore.get() should have been called to read the object so
@@ -308,7 +320,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
               // It shouldn't be read a second time, because we see the tag written by
               // the previous verification.
               fixityChecker.check(expectedFileFixity) shouldBe a[
-                FileFixityCorrect
+                FileFixityCorrect[_]
               ]
               verify(spyStore, times(1)).get(location)
             }
@@ -320,7 +332,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
     it("errors if there's a mismatched tag from a previous verification") {
       withContext { implicit context =>
         withNamespace { implicit namespace =>
-          val location = createObjectLocationWith(namespace)
+          val location = createLocationWith(namespace)
           putString(location, contentString)
 
           val expectedFileFixity = createExpectedFileFixityWith(
@@ -339,7 +351,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
 
             withFixityChecker(spyStore) { fixityChecker =>
               fixityChecker.check(expectedFileFixity) shouldBe a[
-                FileFixityCorrect
+                FileFixityCorrect[_]
               ]
 
               // StreamStore.get() should have been called to read the object so
@@ -349,9 +361,9 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
               // It shouldn't be read a second time, because we see the tag written by
               // the previous verification.
               val result = fixityChecker.check(badExpectedFixity)
-              result shouldBe a[FileFixityMismatch]
+              result shouldBe a[FileFixityMismatch[_]]
               result
-                .asInstanceOf[FileFixityMismatch]
+                .asInstanceOf[FileFixityMismatch[BagLocation]]
                 .e
                 .getMessage should startWith(
                 "Cached verification tag doesn't match expected checksum"
@@ -366,7 +378,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
     it("errors if there's a matching tag but the size is wrong") {
       withContext { implicit context =>
         withNamespace { implicit namespace =>
-          val location = createObjectLocationWith(namespace)
+          val location = createLocationWith(namespace)
           putString(location, contentString)
 
           val expectedFileFixity = createExpectedFileFixityWith(
@@ -383,7 +395,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
 
             withFixityChecker(spyStore) { fixityChecker =>
               fixityChecker.check(expectedFileFixity) shouldBe a[
-                FileFixityCorrect
+                FileFixityCorrect[_]
               ]
 
               // StreamStore.get() should have been called to read the object so
@@ -393,9 +405,9 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
               // It shouldn't be read a second time, because we see the tag written by
               // the previous verification.
               val result = fixityChecker.check(badExpectedFixity)
-              result shouldBe a[FileFixityMismatch]
+              result shouldBe a[FileFixityMismatch[_]]
               result
-                .asInstanceOf[FileFixityMismatch]
+                .asInstanceOf[FileFixityMismatch[BagLocation]]
                 .e
                 .getMessage should startWith("Lengths do not match")
               verify(spyStore, times(1)).get(location)
@@ -408,7 +420,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
     it("doesn't set a tag if the verification fails") {
       withContext { implicit context =>
         withNamespace { implicit namespace =>
-          val location = createObjectLocationWith(namespace)
+          val location = createLocationWith(namespace)
           putString(location, contentString)
 
           val expectedFileFixity = createExpectedFileFixityWith(
@@ -417,7 +429,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
 
           withFixityChecker { fixityChecker =>
             fixityChecker.check(expectedFileFixity) shouldBe a[
-              FileFixityMismatch
+              FileFixityMismatch[_]
             ]
 
             fixityChecker.tags.get(location).right.value shouldBe Identified(
@@ -448,7 +460,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
 
       withContext { implicit context =>
         withNamespace { implicit namespace =>
-          val location = createObjectLocationWith(namespace)
+          val location = createLocationWith(namespace)
           putString(location, contentString)
 
           withFixityChecker { fixityChecker =>
@@ -459,7 +471,7 @@ trait FixityCheckerTestCases[Namespace, Context, StreamStoreImpl <: StreamStore[
               )
 
               fixityChecker.check(expectedFileFixity) shouldBe a[
-                FileFixityCorrect
+                FileFixityCorrect[_]
               ]
             }
 

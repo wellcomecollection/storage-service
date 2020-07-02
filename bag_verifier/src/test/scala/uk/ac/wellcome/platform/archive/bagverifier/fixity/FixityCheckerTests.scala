@@ -28,24 +28,32 @@ class FixityCheckerTests
     extends AnyFunSpec
     with Matchers
     with EitherValues
-    with FixityGenerators {
-  override def resolve(location: ObjectLocation): URI =
-    new URI(s"mem://${location.namespace}/${location.path}")
+    with FixityGenerators[MemoryLocation] {
+  override def resolve(location: MemoryLocation): URI =
+    new URI(location.toString)
+
+  override def createLocation: MemoryLocation =
+    MemoryLocation(
+      namespace = randomAlphanumeric,
+      path = randomAlphanumeric
+    )
 
   describe("handles errors correctly") {
     it("turns an error in locate() into a FileFixityCouldNotRead") {
-      val streamStore = MemoryStreamStore[ObjectLocation]()
+      val streamStore = MemoryStreamStore[MemoryLocation]()
       val tags = createMemoryTags
 
       val brokenChecker = new MemoryFixityChecker(streamStore, tags) {
         override def locate(
           uri: URI
-        ): Either[LocateFailure[URI], ObjectLocation] =
+        ): Either[LocateFailure[URI], MemoryLocation] =
           Left(LocationParsingError(uri, msg = "BOOM!"))
       }
 
       val expectedFileFixity = createExpectedFileFixity
-      brokenChecker.check(expectedFileFixity) shouldBe a[FileFixityCouldNotRead]
+      brokenChecker.check(expectedFileFixity) shouldBe a[FileFixityCouldNotRead[
+        _
+      ]]
     }
 
     it("handles an error when trying to checksum the object") {
@@ -61,12 +69,12 @@ class FixityCheckerTests
 
       closedStream.close()
 
-      val streamStore = new MemoryStreamStore[ObjectLocation](
-        memoryStore = new MemoryStore[ObjectLocation, Array[Byte]](
+      val streamStore = new MemoryStreamStore[MemoryLocation](
+        memoryStore = new MemoryStore[MemoryLocation, Array[Byte]](
           initialEntries = Map.empty
         )
       ) {
-        override def get(location: ObjectLocation): this.ReadEither =
+        override def get(location: MemoryLocation): this.ReadEither =
           Right(Identified(location, closedStream))
       }
 
@@ -75,25 +83,25 @@ class FixityCheckerTests
       val tags = createMemoryTags
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
-        override protected val sizeFinder: SizeFinder[ObjectLocation] =
-          new SizeFinder[ObjectLocation] {
-            override def get(location: ObjectLocation): ReadEither =
+        override protected val sizeFinder: SizeFinder[MemoryLocation] =
+          new SizeFinder[MemoryLocation] {
+            override def get(location: MemoryLocation): ReadEither =
               Right(Identified(location, closedStream.length))
           }
       }
 
       checker.check(expectedFileFixity) shouldBe a[
-        FileFixityCouldNotGetChecksum
+        FileFixityCouldNotGetChecksum[_]
       ]
     }
 
     it("if it can't write the fixity tags") {
-      val streamStore = MemoryStreamStore[ObjectLocation]()
+      val streamStore = MemoryStreamStore[MemoryLocation]()
 
-      val tags = new MemoryTags[ObjectLocation](initialTags = Map.empty) {
+      val tags = new MemoryTags[MemoryLocation](initialTags = Map.empty) {
         override def get(
-          location: ObjectLocation
-        ): Either[ReadError, Identified[ObjectLocation, Map[String, String]]] =
+          location: MemoryLocation
+        ): Either[ReadError, Identified[MemoryLocation, Map[String, String]]] =
           super.get(location) match {
             case Right(t) => Right(t)
             case Left(_: DoesNotExistError) =>
@@ -102,7 +110,7 @@ class FixityCheckerTests
           }
 
         override protected def writeTags(
-          id: ObjectLocation,
+          id: MemoryLocation,
           tags: Map[String, String]
         ): Either[WriteError, Map[String, String]] = {
           Left(
@@ -115,7 +123,10 @@ class FixityCheckerTests
       val checksum =
         Checksum(MD5, ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6"))
 
-      val location = createObjectLocation
+      val location = MemoryLocation(
+        namespace = randomAlphanumeric,
+        path = randomAlphanumeric
+      )
 
       val inputStream = stringCodec.toStream(contentString).right.value
       streamStore.put(location)(inputStream) shouldBe a[Right[_, _]]
@@ -126,14 +137,16 @@ class FixityCheckerTests
       )
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
-        override protected val sizeFinder: SizeFinder[ObjectLocation] =
-          new SizeFinder[ObjectLocation] {
-            override def get(location: ObjectLocation): ReadEither =
+        override protected val sizeFinder: SizeFinder[MemoryLocation] =
+          new SizeFinder[MemoryLocation] {
+            override def get(location: MemoryLocation): ReadEither =
               Right(Identified(location, contentString.length))
           }
       }
 
-      checker.check(expectedFileFixity) shouldBe a[FileFixityCouldNotWriteTag]
+      checker.check(expectedFileFixity) shouldBe a[FileFixityCouldNotWriteTag[
+        _
+      ]]
     }
   }
 
@@ -158,12 +171,12 @@ class FixityCheckerTests
         }
       }
 
-      val streamStore = new MemoryStreamStore[ObjectLocation](
-        memoryStore = new MemoryStore[ObjectLocation, Array[Byte]](
+      val streamStore = new MemoryStreamStore[MemoryLocation](
+        memoryStore = new MemoryStore[MemoryLocation, Array[Byte]](
           initialEntries = Map.empty
         )
       ) {
-        override def get(location: ObjectLocation): ReadEither =
+        override def get(location: MemoryLocation): ReadEither =
           Right(Identified(location, inputStream))
       }
 
@@ -172,14 +185,14 @@ class FixityCheckerTests
       val tags = createMemoryTags
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
-        override protected val sizeFinder: SizeFinder[ObjectLocation] =
-          new SizeFinder[ObjectLocation] {
-            override def get(location: ObjectLocation): ReadEither =
+        override protected val sizeFinder: SizeFinder[MemoryLocation] =
+          new SizeFinder[MemoryLocation] {
+            override def get(location: MemoryLocation): ReadEither =
               Right(Identified(location, inputStream.length))
           }
       }
 
-      checker.check(expectedFileFixity) shouldBe a[FileFixityCorrect]
+      checker.check(expectedFileFixity) shouldBe a[FileFixityCorrect[_]]
 
       isClosed shouldBe true
     }
@@ -197,12 +210,12 @@ class FixityCheckerTests
         }
       }
 
-      val streamStore = new MemoryStreamStore[ObjectLocation](
-        memoryStore = new MemoryStore[ObjectLocation, Array[Byte]](
+      val streamStore = new MemoryStreamStore[MemoryLocation](
+        memoryStore = new MemoryStore[MemoryLocation, Array[Byte]](
           initialEntries = Map.empty
         )
       ) {
-        override def get(location: ObjectLocation): ReadEither =
+        override def get(location: MemoryLocation): ReadEither =
           Right(Identified(location, inputStream))
       }
 
@@ -211,24 +224,24 @@ class FixityCheckerTests
       val tags = createMemoryTags
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
-        override protected val sizeFinder: SizeFinder[ObjectLocation] =
-          new SizeFinder[ObjectLocation] {
-            override def get(location: ObjectLocation): ReadEither =
+        override protected val sizeFinder: SizeFinder[MemoryLocation] =
+          new SizeFinder[MemoryLocation] {
+            override def get(location: MemoryLocation): ReadEither =
               Right(Identified(location, inputStream.length))
           }
       }
 
-      checker.check(expectedFileFixity) shouldBe a[FileFixityMismatch]
+      checker.check(expectedFileFixity) shouldBe a[FileFixityMismatch[_]]
 
       isClosed shouldBe true
     }
   }
 
-  def createMemoryTags: MemoryTags[ObjectLocation] =
-    new MemoryTags[ObjectLocation](initialTags = Map.empty) {
+  def createMemoryTags: MemoryTags[MemoryLocation] =
+    new MemoryTags[MemoryLocation](initialTags = Map.empty) {
       override def get(
-        location: ObjectLocation
-      ): Either[ReadError, Identified[ObjectLocation, Map[String, String]]] =
+        location: MemoryLocation
+      ): Either[ReadError, Identified[MemoryLocation, Map[String, String]]] =
         super.get(location) match {
           case Right(tags) => Right(tags)
           case Left(_: DoesNotExistError) =>

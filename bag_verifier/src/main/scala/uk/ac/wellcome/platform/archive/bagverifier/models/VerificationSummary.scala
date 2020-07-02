@@ -9,7 +9,7 @@ import uk.ac.wellcome.storage.ObjectLocationPrefix
 
 sealed trait VerificationSummary extends Summary {
   val rootLocation: ObjectLocationPrefix
-  val fixityListResult: Option[FixityListResult]
+  val fixityListResult: Option[FixityListResult[_]]
 
   val endTime: Instant
   override val maybeEndTime: Option[Instant] = Some(endTime)
@@ -63,7 +63,7 @@ object VerificationSummary {
   def create(
     ingestId: IngestID,
     root: ObjectLocationPrefix,
-    v: FixityListResult,
+    v: FixityListResult[_],
     t: Instant
   ): VerificationSummary = v match {
     case i @ CouldNotCreateExpectedFixityList(_) =>
@@ -99,13 +99,13 @@ case class VerificationIncompleteSummary(
   e: Throwable,
   startTime: Instant,
   endTime: Instant,
-  fixityListResult: Option[FixityListResult] = None
+  fixityListResult: Option[FixityListResult[_]] = None
 ) extends VerificationSummary
 
 case class VerificationSuccessSummary(
   ingestId: IngestID,
   rootLocation: ObjectLocationPrefix,
-  fixityListResult: Some[FixityListAllCorrect],
+  fixityListResult: Some[FixityListAllCorrect[_]],
   startTime: Instant,
   endTime: Instant
 ) extends VerificationSummary
@@ -113,7 +113,7 @@ case class VerificationSuccessSummary(
 case class VerificationFailureSummary(
   ingestId: IngestID,
   rootLocation: ObjectLocationPrefix,
-  fixityListResult: Option[FixityListWithErrors],
+  fixityListResult: Option[FixityListWithErrors[_]],
   startTime: Instant,
   endTime: Instant
 ) extends VerificationSummary

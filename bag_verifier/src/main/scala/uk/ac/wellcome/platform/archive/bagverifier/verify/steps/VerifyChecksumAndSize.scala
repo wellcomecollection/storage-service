@@ -9,22 +9,22 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.bag.BagExpectedFixity
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable
 import uk.ac.wellcome.platform.archive.common.bagit.models.Bag
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.{Location, ObjectLocation, ObjectLocationPrefix}
 
 import scala.util.{Failure, Success, Try}
 
-trait VerifyChecksumAndSize {
+trait VerifyChecksumAndSize[BagLocation <: Location] {
   implicit val resolvable: Resolvable[ObjectLocation]
-  implicit val fixityChecker: FixityChecker[_]
+  implicit val fixityChecker: FixityChecker[BagLocation]
 
   def verifyChecksumAndSize(
     root: ObjectLocationPrefix,
     bag: Bag
-  ): Either[BagVerifierError, FixityListResult] = {
+  ): Either[BagVerifierError, FixityListResult[BagLocation]] = {
     implicit val bagExpectedFixity: BagExpectedFixity =
-      new BagExpectedFixity(root.asLocation())
+      new BagExpectedFixity(root)
 
-    implicit val fixityListChecker: FixityListChecker[Bag] =
+    implicit val fixityListChecker: FixityListChecker[BagLocation, Bag] =
       new FixityListChecker()
 
     Try { fixityListChecker.check(bag) } match {
