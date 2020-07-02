@@ -19,7 +19,7 @@ import uk.ac.wellcome.platform.archive.common.verify.{
   ChecksumValue,
   HashingAlgorithm
 }
-import uk.ac.wellcome.storage.ObjectLocation
+import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 class BagExpectedFixityTest
@@ -31,7 +31,7 @@ class BagExpectedFixityTest
   implicit val resolvable: Resolvable[ObjectLocation] =
     (t: ObjectLocation) => new URI(s"example://${t.namespace}/${t.path}")
 
-  val root: ObjectLocation = createObjectLocation
+  val root: ObjectLocationPrefix = createObjectLocationPrefix
   val bagExpectedFixity = new BagExpectedFixity(root)
 
   describe("creates the correct list of VerifiableLocation") {

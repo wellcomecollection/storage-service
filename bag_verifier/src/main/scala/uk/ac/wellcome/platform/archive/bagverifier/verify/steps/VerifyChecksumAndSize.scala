@@ -22,7 +22,7 @@ trait VerifyChecksumAndSize {
     bag: Bag
   ): Either[BagVerifierError, FixityListResult] = {
     implicit val bagExpectedFixity: BagExpectedFixity =
-      new BagExpectedFixity(root.asLocation())
+      new BagExpectedFixity(root)
 
     implicit val fixityListChecker: FixityListChecker[Bag] =
       new FixityListChecker()
