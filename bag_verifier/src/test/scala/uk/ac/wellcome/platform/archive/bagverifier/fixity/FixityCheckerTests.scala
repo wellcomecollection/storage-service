@@ -51,7 +51,7 @@ class FixityCheckerTests
       }
 
       val expectedFileFixity = createExpectedFileFixity
-      brokenChecker.check(expectedFileFixity) shouldBe a[FileFixityCouldNotRead]
+      brokenChecker.check(expectedFileFixity) shouldBe a[FileFixityCouldNotRead[_]]
     }
 
     it("handles an error when trying to checksum the object") {
@@ -89,7 +89,7 @@ class FixityCheckerTests
       }
 
       checker.check(expectedFileFixity) shouldBe a[
-        FileFixityCouldNotGetChecksum
+        FileFixityCouldNotGetChecksum[_]
       ]
     }
 
@@ -142,7 +142,7 @@ class FixityCheckerTests
           }
       }
 
-      checker.check(expectedFileFixity) shouldBe a[FileFixityCouldNotWriteTag]
+      checker.check(expectedFileFixity) shouldBe a[FileFixityCouldNotWriteTag[_]]
     }
   }
 
@@ -188,7 +188,7 @@ class FixityCheckerTests
           }
       }
 
-      checker.check(expectedFileFixity) shouldBe a[FileFixityCorrect]
+      checker.check(expectedFileFixity) shouldBe a[FileFixityCorrect[_]]
 
       isClosed shouldBe true
     }
@@ -227,7 +227,7 @@ class FixityCheckerTests
           }
       }
 
-      checker.check(expectedFileFixity) shouldBe a[FileFixityMismatch]
+      checker.check(expectedFileFixity) shouldBe a[FileFixityMismatch[_]]
 
       isClosed shouldBe true
     }

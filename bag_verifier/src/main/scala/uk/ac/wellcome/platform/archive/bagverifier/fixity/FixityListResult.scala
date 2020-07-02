@@ -4,12 +4,12 @@ sealed trait FixityListResult
 
 sealed trait FixityListCheckingResult extends FixityListResult
 
-case class FixityListAllCorrect(locations: List[FileFixityCorrect])
+case class FixityListAllCorrect[BagLocation](locations: List[FileFixityCorrect[BagLocation]])
     extends FixityListCheckingResult
 
-case class FixityListWithErrors(
-  errors: List[FileFixityError],
-  correct: List[FileFixityCorrect]
+case class FixityListWithErrors[BagLocation](
+  errors: List[FileFixityError[BagLocation]],
+  correct: List[FileFixityCorrect[BagLocation]]
 ) extends Throwable(
       "Some files don't have the expected fixity (size/checksum)!"
     )

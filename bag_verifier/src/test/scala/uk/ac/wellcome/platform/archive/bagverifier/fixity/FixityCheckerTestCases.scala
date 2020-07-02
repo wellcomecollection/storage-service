@@ -81,9 +81,9 @@ trait FixityCheckerTestCases[
             _.check(expectedFileFixity)
           }
 
-        result shouldBe a[FileFixityCorrect]
+        result shouldBe a[FileFixityCorrect[_]]
 
-        val fixityCorrect = result.asInstanceOf[FileFixityCorrect]
+        val fixityCorrect = result.asInstanceOf[FileFixityCorrect[BagLocation]]
         fixityCorrect.expectedFileFixity shouldBe expectedFileFixity
         fixityCorrect.size shouldBe contentString.getBytes.length
       }
@@ -107,9 +107,9 @@ trait FixityCheckerTestCases[
             _.check(expectedFileFixity)
           }
 
-        result shouldBe a[FileFixityCouldNotRead]
+        result shouldBe a[FileFixityCouldNotRead[_]]
 
-        val fixityCouldNotRead = result.asInstanceOf[FileFixityCouldNotRead]
+        val fixityCouldNotRead = result.asInstanceOf[FileFixityCouldNotRead[BagLocation]]
 
         fixityCouldNotRead.expectedFileFixity shouldBe expectedFileFixity
         fixityCouldNotRead.e shouldBe a[LocationNotFound[_]]
@@ -138,9 +138,9 @@ trait FixityCheckerTestCases[
             _.check(expectedFileFixity)
           }
 
-        result shouldBe a[FileFixityMismatch]
+        result shouldBe a[FileFixityMismatch[_]]
 
-        val fixityMismatch = result.asInstanceOf[FileFixityMismatch]
+        val fixityMismatch = result.asInstanceOf[FileFixityMismatch[BagLocation]]
 
         fixityMismatch.expectedFileFixity shouldBe expectedFileFixity
         fixityMismatch.e shouldBe a[FailedChecksumNoMatch]
@@ -177,9 +177,9 @@ trait FixityCheckerTestCases[
             _.check(expectedFileFixity)
           }
 
-        result shouldBe a[FileFixityMismatch]
+        result shouldBe a[FileFixityMismatch[_]]
 
-        val fixityMismatch = result.asInstanceOf[FileFixityMismatch]
+        val fixityMismatch = result.asInstanceOf[FileFixityMismatch[BagLocation]]
 
         fixityMismatch.expectedFileFixity shouldBe expectedFileFixity
         fixityMismatch.e shouldBe a[Throwable]
@@ -216,9 +216,9 @@ trait FixityCheckerTestCases[
             _.check(expectedFileFixity)
           }
 
-        result shouldBe a[FileFixityCorrect]
+        result shouldBe a[FileFixityCorrect[_]]
 
-        val fixityCorrect = result.asInstanceOf[FileFixityCorrect]
+        val fixityCorrect = result.asInstanceOf[FileFixityCorrect[BagLocation]]
         fixityCorrect.expectedFileFixity shouldBe expectedFileFixity
         fixityCorrect.size shouldBe contentString.getBytes.length
       }
@@ -250,9 +250,9 @@ trait FixityCheckerTestCases[
             _.check(expectedFileFixity)
           }
 
-        result shouldBe a[FileFixityCorrect]
+        result shouldBe a[FileFixityCorrect[_]]
 
-        val fixityCorrect = result.asInstanceOf[FileFixityCorrect]
+        val fixityCorrect = result.asInstanceOf[FileFixityCorrect[BagLocation]]
         fixityCorrect.expectedFileFixity shouldBe expectedFileFixity
         fixityCorrect.size shouldBe contentString.getBytes.length
       }
@@ -277,7 +277,7 @@ trait FixityCheckerTestCases[
 
           withFixityChecker { fixityChecker =>
             fixityChecker.check(expectedFileFixity) shouldBe a[
-              FileFixityCorrect
+              FileFixityCorrect[_]
             ]
 
             fixityChecker.tags.get(location).right.value shouldBe Identified(
@@ -307,7 +307,7 @@ trait FixityCheckerTestCases[
 
             withFixityChecker(spyStore) { fixityChecker =>
               fixityChecker.check(expectedFileFixity) shouldBe a[
-                FileFixityCorrect
+                FileFixityCorrect[_]
               ]
 
               // StreamStore.get() should have been called to read the object so
@@ -317,7 +317,7 @@ trait FixityCheckerTestCases[
               // It shouldn't be read a second time, because we see the tag written by
               // the previous verification.
               fixityChecker.check(expectedFileFixity) shouldBe a[
-                FileFixityCorrect
+                FileFixityCorrect[_]
               ]
               verify(spyStore, times(1)).get(location)
             }
@@ -348,7 +348,7 @@ trait FixityCheckerTestCases[
 
             withFixityChecker(spyStore) { fixityChecker =>
               fixityChecker.check(expectedFileFixity) shouldBe a[
-                FileFixityCorrect
+                FileFixityCorrect[_]
               ]
 
               // StreamStore.get() should have been called to read the object so
@@ -358,9 +358,9 @@ trait FixityCheckerTestCases[
               // It shouldn't be read a second time, because we see the tag written by
               // the previous verification.
               val result = fixityChecker.check(badExpectedFixity)
-              result shouldBe a[FileFixityMismatch]
+              result shouldBe a[FileFixityMismatch[_]]
               result
-                .asInstanceOf[FileFixityMismatch]
+                .asInstanceOf[FileFixityMismatch[BagLocation]]
                 .e
                 .getMessage should startWith(
                 "Cached verification tag doesn't match expected checksum"
@@ -392,7 +392,7 @@ trait FixityCheckerTestCases[
 
             withFixityChecker(spyStore) { fixityChecker =>
               fixityChecker.check(expectedFileFixity) shouldBe a[
-                FileFixityCorrect
+                FileFixityCorrect[_]
               ]
 
               // StreamStore.get() should have been called to read the object so
@@ -402,9 +402,9 @@ trait FixityCheckerTestCases[
               // It shouldn't be read a second time, because we see the tag written by
               // the previous verification.
               val result = fixityChecker.check(badExpectedFixity)
-              result shouldBe a[FileFixityMismatch]
+              result shouldBe a[FileFixityMismatch[_]]
               result
-                .asInstanceOf[FileFixityMismatch]
+                .asInstanceOf[FileFixityMismatch[BagLocation]]
                 .e
                 .getMessage should startWith("Lengths do not match")
               verify(spyStore, times(1)).get(location)
@@ -426,7 +426,7 @@ trait FixityCheckerTestCases[
 
           withFixityChecker { fixityChecker =>
             fixityChecker.check(expectedFileFixity) shouldBe a[
-              FileFixityMismatch
+              FileFixityMismatch[_]
             ]
 
             fixityChecker.tags.get(location).right.value shouldBe Identified(
@@ -468,7 +468,7 @@ trait FixityCheckerTestCases[
               )
 
               fixityChecker.check(expectedFileFixity) shouldBe a[
-                FileFixityCorrect
+                FileFixityCorrect[_]
               ]
             }
 

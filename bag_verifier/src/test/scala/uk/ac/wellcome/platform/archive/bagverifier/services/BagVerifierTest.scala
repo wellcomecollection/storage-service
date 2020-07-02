@@ -4,35 +4,17 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{Assertion, OptionValues, TryValues}
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
-  FailedChecksumNoMatch,
-  FileFixityCorrect
-}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FailedChecksumNoMatch, FileFixityCorrect}
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
-import uk.ac.wellcome.platform.archive.bagverifier.models.{
-  VerificationFailureSummary,
-  VerificationIncompleteSummary,
-  VerificationSuccessSummary,
-  VerificationSummary
-}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{VerificationFailureSummary, VerificationIncompleteSummary, VerificationSuccessSummary, VerificationSummary}
 import uk.ac.wellcome.platform.archive.bagverifier.storage.LocationNotFound
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagInfo,
-  BagPath,
-  ExternalIdentifier,
-  PayloadOxum
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, BagPath, ExternalIdentifier, PayloadOxum}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagUnavailable
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.StorageSpaceGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepResult,
-  IngestStepSucceeded,
-  StorageSpace
-}
-import uk.ac.wellcome.storage.S3ObjectLocationPrefix
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded, StorageSpace}
+import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
 class BagVerifierTest
@@ -602,10 +584,10 @@ class BagVerifierTest
   }
 
   private def verifySuccessCount(
-    successes: List[FileFixityCorrect],
+    successes: List[FileFixityCorrect[_]],
     expectedCount: Int
   ): Assertion =
-    if (successes.map { _.objectLocation.path }.exists {
+    if (successes.map { _.objectLocation.asInstanceOf[S3ObjectLocation].key }.exists {
           _.endsWith("/fetch.txt")
         }) {
       successes.size shouldBe expectedCount + 1

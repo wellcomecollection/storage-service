@@ -28,7 +28,7 @@ trait FixityChecker[BagLocation <: Location] extends Logging {
 
   def locate(uri: URI): Either[LocateFailure[URI], BagLocation]
 
-  def check(expectedFileFixity: ExpectedFileFixity): FileFixityResult = {
+  def check(expectedFileFixity: ExpectedFileFixity): FileFixityResult[BagLocation] = {
     debug(s"Attempting to verify: $expectedFileFixity")
 
     val algorithm = expectedFileFixity.checksum.algorithm
@@ -78,7 +78,7 @@ trait FixityChecker[BagLocation <: Location] extends Logging {
 
   private def parseLocation(
     expectedFileFixity: ExpectedFileFixity
-  ): Either[FileFixityCouldNotRead, BagLocation] =
+  ): Either[FileFixityCouldNotRead[BagLocation], BagLocation] =
     locate(expectedFileFixity.uri) match {
       case Right(location) => Right(location)
       case Left(locateError) =>
@@ -93,7 +93,7 @@ trait FixityChecker[BagLocation <: Location] extends Logging {
   private def getExistingTags(
     expectedFileFixity: ExpectedFileFixity,
     location: BagLocation
-  ): Either[FileFixityCouldNotRead, Map[String, String]] =
+  ): Either[FileFixityCouldNotRead[BagLocation], Map[String, String]] =
     handleReadErrors(
       tags.get(location).map(_.identifiedT),
       expectedFileFixity = expectedFileFixity
@@ -102,7 +102,7 @@ trait FixityChecker[BagLocation <: Location] extends Logging {
   private def openInputStream(
     expectedFileFixity: ExpectedFileFixity,
     location: BagLocation
-  ): Either[FileFixityCouldNotRead, InputStreamWithLength] =
+  ): Either[FileFixityCouldNotRead[BagLocation], InputStreamWithLength] =
     handleReadErrors(
       streamStore.get(location),
       expectedFileFixity = expectedFileFixity
@@ -111,7 +111,7 @@ trait FixityChecker[BagLocation <: Location] extends Logging {
   private def verifySize(
     expectedFileFixity: ExpectedFileFixity,
     location: BagLocation
-  ): Either[FileFixityError, Long] =
+  ): Either[FileFixityError[BagLocation], Long] =
     for {
       actualLength <- handleReadErrors(
         sizeFinder.getSize(location),
@@ -140,14 +140,14 @@ trait FixityChecker[BagLocation <: Location] extends Logging {
     existingTags: Map[String, String],
     algorithm: HashingAlgorithm,
     size: Long
-  ): Either[FileFixityError, FileFixityCorrect] =
+  ): Either[FileFixityError[BagLocation], FileFixityCorrect[BagLocation]] =
     existingTags.get(fixityTagName(expectedFileFixity)) match {
       case Some(cachedFixityValue)
           if cachedFixityValue == fixityTagValue(expectedFileFixity) =>
         Right(
           FileFixityCorrect(
             expectedFileFixity = expectedFileFixity,
-            objectLocation = location.toObjectLocation,
+            objectLocation = location,
             size = size
           )
         )
@@ -183,7 +183,7 @@ trait FixityChecker[BagLocation <: Location] extends Logging {
     inputStream: InputStreamWithLength,
     algorithm: HashingAlgorithm,
     size: Long
-  ): Either[FileFixityError, FileFixityCorrect] = {
+  ): Either[FileFixityError[BagLocation], FileFixityCorrect[BagLocation]] = {
     // This assertion should never fire in practice -- if it does, it means
     // an object is changing under our feet.  If that's the case, there's something
     // badly wrong with the storage service.
@@ -201,7 +201,7 @@ trait FixityChecker[BagLocation <: Location] extends Logging {
         Left(
           FileFixityCouldNotGetChecksum(
             expectedFileFixity = expectedFileFixity,
-            objectLocation = location.toObjectLocation,
+            objectLocation = location,
             e = FailedChecksumCreation(algorithm, e)
           )
         )
@@ -210,7 +210,7 @@ trait FixityChecker[BagLocation <: Location] extends Logging {
         Right(
           FileFixityCorrect(
             expectedFileFixity = expectedFileFixity,
-            objectLocation = location.toObjectLocation,
+            objectLocation = location,
             size = inputStream.length
           )
         )
@@ -239,7 +239,7 @@ trait FixityChecker[BagLocation <: Location] extends Logging {
   private def writeFixityTags(
     expectedFileFixity: ExpectedFileFixity,
     location: BagLocation
-  ): Either[FileFixityCouldNotWriteTag, Unit] =
+  ): Either[FileFixityCouldNotWriteTag[BagLocation], Unit] =
     tags
       .update(location) { existingTags =>
         val tagName = fixityTagName(expectedFileFixity)
@@ -266,7 +266,7 @@ trait FixityChecker[BagLocation <: Location] extends Logging {
         Left(
           FileFixityCouldNotWriteTag(
             expectedFileFixity = expectedFileFixity,
-            objectLocation = location.toObjectLocation,
+            objectLocation = location,
             e = writeError.e
           )
         )
@@ -282,7 +282,7 @@ trait FixityChecker[BagLocation <: Location] extends Logging {
   private def handleReadErrors[T](
     t: Either[ReadError, T],
     expectedFileFixity: ExpectedFileFixity
-  ): Either[FileFixityCouldNotRead, T] =
+  ): Either[FileFixityCouldNotRead[BagLocation], T] =
     t match {
       case Right(value) => Right(value)
 

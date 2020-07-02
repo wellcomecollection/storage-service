@@ -105,7 +105,7 @@ case class VerificationIncompleteSummary(
 case class VerificationSuccessSummary(
   ingestId: IngestID,
   rootLocation: ObjectLocationPrefix,
-  fixityListResult: Some[FixityListAllCorrect],
+  fixityListResult: Some[FixityListAllCorrect[_]],
   startTime: Instant,
   endTime: Instant
 ) extends VerificationSummary
@@ -113,7 +113,7 @@ case class VerificationSuccessSummary(
 case class VerificationFailureSummary(
   ingestId: IngestID,
   rootLocation: ObjectLocationPrefix,
-  fixityListResult: Option[FixityListWithErrors],
+  fixityListResult: Option[FixityListWithErrors[_]],
   startTime: Instant,
   endTime: Instant
 ) extends VerificationSummary

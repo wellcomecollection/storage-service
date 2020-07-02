@@ -29,10 +29,10 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
 )(
   implicit bagReader: BagReader[BagLocation, BagPrefix],
   val resolvable: Resolvable[ObjectLocation],
-  val fixityChecker: FixityChecker[_],
+  val fixityChecker: FixityChecker[BagLocation],
   listing: Listing[ObjectLocationPrefix, ObjectLocation]
 ) extends Logging
-    with VerifyChecksumAndSize
+    with VerifyChecksumAndSize[BagLocation]
     with VerifyExternalIdentifier
     with VerifyFetch[BagLocation, BagPrefix]
     with VerifyPayloadOxum
@@ -159,7 +159,7 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
           maybeUserFacingMessage = Some(creationError.getMessage)
         )
 
-      case Right(success: FixityListAllCorrect) =>
+      case Right(success: FixityListAllCorrect[BagLocation]) =>
         IngestStepSucceeded(
           VerificationSuccessSummary(
             ingestId = ingestId,
@@ -170,10 +170,10 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
           )
         )
 
-      case Right(result: FixityListWithErrors) =>
+      case Right(result: FixityListWithErrors[BagLocation]) =>
         val verificationFailureMessage =
           result.errors
-            .map { fixityError: FileFixityError =>
+            .map { fixityError: FileFixityError[BagLocation] =>
               s"${fixityError.expectedFileFixity.uri}: ${fixityError.e.getMessage}"
             }
             .mkString("\n")

@@ -70,9 +70,9 @@ class S3FixityCheckerTest
         _.check(expectedFileFixity)
       }
 
-    result shouldBe a[FileFixityCouldNotRead]
+    result shouldBe a[FileFixityCouldNotRead[_]]
 
-    val fixityCouldNotRead = result.asInstanceOf[FileFixityCouldNotRead]
+    val fixityCouldNotRead = result.asInstanceOf[FileFixityCouldNotRead[S3ObjectLocation]]
 
     fixityCouldNotRead.expectedFileFixity shouldBe expectedFileFixity
     fixityCouldNotRead.e shouldBe a[LocationNotFound[_]]
@@ -93,9 +93,9 @@ class S3FixityCheckerTest
         _.check(expectedFileFixity)
       }
 
-    result shouldBe a[FileFixityCouldNotRead]
+    result shouldBe a[FileFixityCouldNotRead[_]]
 
-    val fixityCouldNotRead = result.asInstanceOf[FileFixityCouldNotRead]
+    val fixityCouldNotRead = result.asInstanceOf[FileFixityCouldNotRead[S3ObjectLocation]]
 
     fixityCouldNotRead.expectedFileFixity shouldBe expectedFileFixity
     fixityCouldNotRead.e shouldBe a[LocationError[_]]
@@ -117,9 +117,9 @@ class S3FixityCheckerTest
           _.check(expectedFileFixity)
         }
 
-      result shouldBe a[FileFixityCouldNotRead]
+      result shouldBe a[FileFixityCouldNotRead[_]]
 
-      val fixityCouldNotRead = result.asInstanceOf[FileFixityCouldNotRead]
+      val fixityCouldNotRead = result.asInstanceOf[FileFixityCouldNotRead[S3ObjectLocation]]
 
       fixityCouldNotRead.expectedFileFixity shouldBe expectedFileFixity
       fixityCouldNotRead.e shouldBe a[LocationNotFound[_]]
