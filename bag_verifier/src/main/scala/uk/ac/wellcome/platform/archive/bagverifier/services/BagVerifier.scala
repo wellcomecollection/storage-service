@@ -76,12 +76,16 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
               Left(BagVerifierError(listingFailure.e))
           }
 
-          _ <- verifyNoConcreteFetchEntries(
-            bag = bag,
-            root = root,
-            actualLocations = actualLocations,
-            verificationResult = verificationResult
-          )
+          _ <- verificationResult match {
+            case FixityListAllCorrect(_) =>
+              verifyNoConcreteFetchEntries(
+                fetch = bag.fetch,
+                root = root,
+                actualLocations = actualLocations
+              )
+
+            case _ => Right(())
+          }
 
           _ <- verifyNoUnreferencedFiles(
             root = root,
