@@ -4,6 +4,7 @@ import java.net.URI
 
 import uk.ac.wellcome.platform.archive.bag_register.services.StorageManifestService
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
+import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemorySizeFinder
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
@@ -21,4 +22,13 @@ class MemoryStorageManifestService(
       namespace = uri.getHost,
       path = uri.getPath.stripPrefix("/")
     )
+}
+
+object MemoryStorageManifestService {
+  def apply()(implicit streamReader: MemoryStreamStore[MemoryLocation]): MemoryStorageManifestService = {
+    implicit val sizeFinder: MemorySizeFinder[MemoryLocation] =
+      new MemorySizeFinder[MemoryLocation](streamReader.memoryStore)
+
+    new MemoryStorageManifestService()
+  }
 }
