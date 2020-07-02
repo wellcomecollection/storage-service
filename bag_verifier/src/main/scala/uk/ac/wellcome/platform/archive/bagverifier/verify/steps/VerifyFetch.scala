@@ -1,12 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
-  FixityListAllCorrect,
-  FixityListResult
-}
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  Bag,
   BagFetch,
   BagFetchMetadata,
   BagPath
@@ -62,50 +57,37 @@ trait VerifyFetch {
   // Check that the user hasn't sent any files in the bag which
   // also have a fetch file entry.
   def verifyNoConcreteFetchEntries(
-    bag: Bag,
+    fetch: Option[BagFetch],
     root: ObjectLocationPrefix,
-    actualLocations: Seq[ObjectLocation],
-    verificationResult: FixityListResult
-  ): Either[BagVerifierError, Unit] =
-    verificationResult match {
-      case FixityListAllCorrect(_) =>
-        val bagFetchLocations = bag.fetch match {
-          case Some(bagFetch) =>
-            bagFetch.paths
-              .map { path: BagPath =>
-                root.asLocation(path.value)
-              }
+    actualLocations: Seq[ObjectLocation]
+  ): Either[BagVerifierError, Unit] = {
+    val bagFetchLocations: Seq[(BagPath, ObjectLocation)] = fetch match {
+      case Some(bagFetch) =>
+        bagFetch.paths
+          .map { path: BagPath =>
+            path -> root.asLocation(path.value)
+          }
 
-          case None => Seq.empty
-        }
-
-        val concreteFetchLocations =
-          bagFetchLocations
-            .filter { actualLocations.contains(_) }
-
-        if (concreteFetchLocations.isEmpty) {
-          Right(())
-        } else {
-          val messagePrefix =
-            "Files referred to in the fetch.txt also appear in the bag: "
-
-          val internalMessage = messagePrefix + concreteFetchLocations.mkString(
-            ", "
-          )
-
-          val userMessage = messagePrefix +
-            concreteFetchLocations
-              .map { _.path.stripPrefix(root.path).stripPrefix("/") }
-              .mkString(", ")
-
-          Left(
-            BagVerifierError(
-              new Throwable(internalMessage),
-              userMessage = Some(userMessage)
-            )
-          )
-        }
-
-      case _ => Right(())
+      case None => Seq.empty
     }
+
+    val concreteFetchLocations =
+      bagFetchLocations
+        .filter { case (_, location) => actualLocations.contains(location) }
+
+    if (concreteFetchLocations.isEmpty) {
+      Right(())
+    } else {
+      val concretePaths = concreteFetchLocations.collect {
+        case (bagPath, _) => bagPath
+      }
+
+      Left(
+        BagVerifierError(
+          "Files referred to in the fetch.txt also appear in the bag: " +
+            concretePaths.mkString(", ")
+        )
+      )
+    }
+  }
 }

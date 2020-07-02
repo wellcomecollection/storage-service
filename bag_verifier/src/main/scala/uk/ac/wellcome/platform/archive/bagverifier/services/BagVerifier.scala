@@ -24,7 +24,7 @@ import scala.util.Try
 class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
   namespace: String,
   // TODO: Temporary while we disambiguate ObjectLocation.  Remove eventually.
-  toLocation: ObjectLocationPrefix => BagPrefix
+  toPrefix: ObjectLocationPrefix => BagPrefix
 )(
   implicit bagReader: BagReader[BagLocation, BagPrefix],
   val resolvable: Resolvable[ObjectLocation],
@@ -76,12 +76,16 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
               Left(BagVerifierError(listingFailure.e))
           }
 
-          _ <- verifyNoConcreteFetchEntries(
-            bag = bag,
-            root = root,
-            actualLocations = actualLocations,
-            verificationResult = verificationResult
-          )
+          _ <- verificationResult match {
+            case FixityListAllCorrect(_) =>
+              verifyNoConcreteFetchEntries(
+                fetch = bag.fetch,
+                root = root,
+                actualLocations = actualLocations
+              )
+
+            case _ => Right(())
+          }
 
           _ <- verifyNoUnreferencedFiles(
             root = root,
@@ -108,7 +112,7 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
     root: ObjectLocationPrefix,
     startTime: Instant
   ): Either[BagVerifierError, Bag] =
-    bagReader.get(toLocation(root)) match {
+    bagReader.get(toPrefix(root)) match {
       case Left(bagUnavailable) =>
         Left(
           BagVerifierError(
