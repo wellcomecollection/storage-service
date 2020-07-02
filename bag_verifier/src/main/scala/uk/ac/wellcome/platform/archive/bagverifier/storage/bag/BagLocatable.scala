@@ -6,15 +6,15 @@ import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   LocationNotFound
 }
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.{Location, Prefix}
 
 object BagLocatable {
-  implicit val bagPathLocatable
-    : Locatable[ObjectLocation, ObjectLocationPrefix, BagPath] =
-    new Locatable[ObjectLocation, ObjectLocationPrefix, BagPath] {
+  implicit def bagPathLocatable[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
+    : Locatable[BagLocation, BagPrefix, BagPath] =
+    new Locatable[BagLocation, BagPrefix, BagPath] {
       override def locate(bagPath: BagPath)(
-        maybeRoot: Option[ObjectLocationPrefix]
-      ): Either[LocateFailure[BagPath], ObjectLocation] =
+        maybeRoot: Option[BagPrefix]
+      ): Either[LocateFailure[BagPath], BagLocation] =
         maybeRoot match {
           case None       => Left(LocationNotFound(bagPath, s"No root specified!"))
           case Some(root) => Right(root.asLocation(bagPath.value))

@@ -6,39 +6,37 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.ExpectedFileFixity
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagFetchMetadata,
-  BagPath
-}
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagGenerators,
-  FetchMetadataGenerators
-}
-import uk.ac.wellcome.platform.archive.common.verify.{
-  Checksum,
-  ChecksumValue,
-  HashingAlgorithm
-}
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
-import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFetchMetadata, BagPath}
+import uk.ac.wellcome.platform.archive.common.generators.{BagGenerators, FetchMetadataGenerators}
+import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, HashingAlgorithm}
+import uk.ac.wellcome.storage.{MemoryLocation, MemoryLocationPrefix}
 
 class BagExpectedFixityTest
     extends AnyFunSpec
     with Matchers
     with BagGenerators
-    with FetchMetadataGenerators
-    with ObjectLocationGenerators {
-  implicit val resolvable: Resolvable[ObjectLocation] =
-    (t: ObjectLocation) => new URI(s"example://${t.namespace}/${t.path}")
+    with FetchMetadataGenerators {
+  implicit val resolvable: Resolvable[MemoryLocation] =
+    (location: MemoryLocation) => new URI(location.toString)
 
-  val root: ObjectLocationPrefix = createObjectLocationPrefix
-  val bagExpectedFixity = new BagExpectedFixity(root)
+  val root: MemoryLocationPrefix = MemoryLocationPrefix(
+    namespace = randomAlphanumeric,
+    pathPrefix = randomAlphanumeric
+  )
+
+  val bagExpectedFixity = new BagExpectedFixity[MemoryLocation, MemoryLocationPrefix](root)
+
+  def createLocationWith(root: MemoryLocation): MemoryLocation =
+    MemoryLocation(
+      namespace = root.namespace,
+      path = s"${root.path}/$randomAlphanumeric/$randomAlphanumeric"
+    )
 
   describe("creates the correct list of VerifiableLocation") {
     it("for an empty bag") {
       val bag = createBag
 
-      val bagExpectedFixity = new BagExpectedFixity(root)
+      val bagExpectedFixity = new BagExpectedFixity[MemoryLocation, MemoryLocationPrefix](root)
 
       bagExpectedFixity.create(bag) shouldBe Right(List.empty)
     }
@@ -183,9 +181,6 @@ class BagExpectedFixityTest
     }
   }
 
-  def createObjectLocationWith(root: ObjectLocation): ObjectLocation =
-    root.join(randomAlphanumericWithLength(), randomAlphanumericWithLength())
-
   def getExpectedLocations(
     manifestEntries: Map[BagPath, ChecksumValue],
     checksumAlgorithm: HashingAlgorithm
@@ -194,9 +189,7 @@ class BagExpectedFixityTest
       case (bagPath, checksumValue) =>
         ExpectedFileFixity(
           path = bagPath,
-          uri = new URI(
-            s"example://${root.namespace}/${root.path}/$bagPath"
-          ),
+          uri = new URI(root.asLocation(bagPath.toString).toString),
           checksum = Checksum(
             algorithm = checksumAlgorithm,
             value = checksumValue

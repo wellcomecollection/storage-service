@@ -28,11 +28,11 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
   toPrefix: ObjectLocationPrefix => BagPrefix
 )(
   implicit bagReader: BagReader[BagLocation, BagPrefix],
-  val resolvable: Resolvable[ObjectLocation],
+  val resolvable: Resolvable[BagLocation],
   val fixityChecker: FixityChecker[BagLocation],
   listing: Listing[ObjectLocationPrefix, ObjectLocation]
 ) extends Logging
-    with VerifyChecksumAndSize[BagLocation]
+    with VerifyChecksumAndSize[BagLocation, BagPrefix]
     with VerifyExternalIdentifier
     with VerifyFetch[BagLocation, BagPrefix]
     with VerifyPayloadOxum
@@ -69,7 +69,7 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
           )
 
           verificationResult <- verifyChecksumAndSize(
-            root = root,
+            root = toPrefix(root),
             bag = bag
           )
 
