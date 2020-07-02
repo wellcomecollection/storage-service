@@ -9,6 +9,8 @@ trait Prefix[OfLocation <: Location] {
   def asLocation(parts: String*): OfLocation
 
   def toObjectLocationPrefix: ObjectLocationPrefix
+
+  def getRelativePathFrom(location: OfLocation): String
 }
 
 case class S3ObjectLocation(
@@ -57,6 +59,11 @@ case class S3ObjectLocationPrefix(
       namespace = this.bucket,
       path = this.keyPrefix
     )
+
+  override def getRelativePathFrom(location: S3ObjectLocation): String = {
+    assert(location.bucket == this.bucket)
+    location.key.stripPrefix(this.keyPrefix)
+  }
 }
 
 case object S3ObjectLocationPrefix {
@@ -109,6 +116,11 @@ case class MemoryLocationPrefix(
       namespace = namespace,
       path = pathPrefix
     )
+
+  override def getRelativePathFrom(location: MemoryLocation): String = {
+    assert(location.namespace == this.namespace)
+    location.path.stripPrefix(this.pathPrefix)
+  }
 }
 
 case class AzureBlobItemLocation(
@@ -137,4 +149,9 @@ case class AzureBlobItemLocationPrefix(
       namespace = container,
       path = namePrefix
     )
+
+  override def getRelativePathFrom(location: AzureBlobItemLocation): String = {
+    assert(location.container == this.container)
+    location.name.stripPrefix(this.namePrefix)
+  }
 }

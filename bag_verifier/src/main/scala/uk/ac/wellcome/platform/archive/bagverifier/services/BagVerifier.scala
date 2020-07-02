@@ -36,7 +36,7 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
     with VerifyExternalIdentifier
     with VerifyFetch[BagLocation, BagPrefix]
     with VerifyPayloadOxum
-    with VerifyNoUnreferencedFiles[BagLocation] {
+    with VerifyNoUnreferencedFiles[BagLocation, BagPrefix] {
 
   def verify(
     ingestId: IngestID,
@@ -91,8 +91,8 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
           }
 
           _ <- verifyNoUnreferencedFiles(
-            root = root,
-            actualLocations = actualLocations,
+            root = toPrefix(root),
+            actualLocations = actualLocations.map { toLocation },
             verificationResult = verificationResult
           )
 
