@@ -82,8 +82,7 @@ trait BagVerifierFixtures
 
       val verifier = new BagVerifier[S3ObjectLocation, S3ObjectLocationPrefix](
         namespace = bucket.name,
-        toLocation =
-          (location: ObjectLocation) => S3ObjectLocation(location),
+        toLocation = (location: ObjectLocation) => S3ObjectLocation(location),
         toPrefix =
           (prefix: ObjectLocationPrefix) => S3ObjectLocationPrefix(prefix)
       )

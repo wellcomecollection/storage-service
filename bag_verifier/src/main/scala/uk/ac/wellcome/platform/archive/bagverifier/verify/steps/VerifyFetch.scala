@@ -36,7 +36,7 @@ trait VerifyFetch[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
                 // TODO: This could verify the version prefix as well.
                 // TODO: Hard-coding the expected scheme here isn't ideal
                 fetchMetadata.uri.getScheme == "s3" &&
-                  isPrefixOf(fetchLocation, prefix = root)
+                isPrefixOf(fetchLocation, prefix = root)
             }
 
         val mismatchedPaths = mismatchedEntries.keys.toSeq
@@ -53,7 +53,10 @@ trait VerifyFetch[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
         }
     }
 
-  private def isPrefixOf(location: S3ObjectLocation, prefix: Prefix[_]): Boolean =
+  private def isPrefixOf(
+    location: S3ObjectLocation,
+    prefix: Prefix[_]
+  ): Boolean =
     prefix match {
       case S3ObjectLocationPrefix(bucket, keyPrefix) =>
         location.bucket == bucket && location.key.startsWith(s"$keyPrefix/")

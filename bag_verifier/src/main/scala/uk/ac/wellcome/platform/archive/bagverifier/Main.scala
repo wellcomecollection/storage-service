@@ -75,8 +75,7 @@ object Main extends WellcomeTypesafeApp {
 
     val verifier = new BagVerifier[S3ObjectLocation, S3ObjectLocationPrefix](
       namespace = config.requireString("bag-verifier.primary-storage-bucket"),
-      toLocation =
-        (location: ObjectLocation) => S3ObjectLocation(location),
+      toLocation = (location: ObjectLocation) => S3ObjectLocation(location),
       toPrefix =
         (prefix: ObjectLocationPrefix) => S3ObjectLocationPrefix(prefix)
     )

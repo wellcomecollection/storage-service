@@ -37,7 +37,8 @@ class VerifyFetchTest
               )
             )
           ),
-          root = S3ObjectLocationPrefix(bucket = "my-bukkit", keyPrefix = "b1234")
+          root =
+            S3ObjectLocationPrefix(bucket = "my-bukkit", keyPrefix = "b1234")
         )
 
       // First check this is a valid fetch.txt if the URI points to an S3 bucket
@@ -55,7 +56,9 @@ class VerifyFetchTest
       verifier.verifyNoConcreteFetchEntries(
         fetch = None,
         root = createS3ObjectLocationPrefix,
-        actualLocations = (1 to 5).map { _ => createS3ObjectLocation }
+        actualLocations = (1 to 5).map { _ =>
+          createS3ObjectLocation
+        }
       ) shouldBe Right(())
     }
   }
