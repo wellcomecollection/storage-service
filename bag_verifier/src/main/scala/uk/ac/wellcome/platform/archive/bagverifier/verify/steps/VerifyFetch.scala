@@ -61,11 +61,11 @@ trait VerifyFetch {
     root: ObjectLocationPrefix,
     actualLocations: Seq[ObjectLocation],
   ): Either[BagVerifierError, Unit] = {
-    val bagFetchLocations = fetch match {
+    val bagFetchLocations: Seq[(BagPath, ObjectLocation)] = fetch match {
       case Some(bagFetch) =>
         bagFetch.paths
           .map { path: BagPath =>
-            root.asLocation(path.value)
+            path -> root.asLocation(path.value)
           }
 
       case None => Seq.empty
@@ -73,25 +73,17 @@ trait VerifyFetch {
 
     val concreteFetchLocations =
       bagFetchLocations
-        .filter { actualLocations.contains(_) }
+        .filter { case (_, location) => actualLocations.contains(location) }
 
     if (concreteFetchLocations.isEmpty) {
       Right(())
     } else {
-      val messagePrefix =
-        "Files referred to in the fetch.txt also appear in the bag: "
-
-      val internalMessage = messagePrefix + concreteFetchLocations.mkString(", ")
-
-      val userMessage = messagePrefix +
-        concreteFetchLocations
-          .map { _.path.stripPrefix(root.path).stripPrefix("/") }
-          .mkString(", ")
+      val concretePaths = concreteFetchLocations.collect { case (bagPath, _) => bagPath }
 
       Left(
         BagVerifierError(
-          new Throwable(internalMessage),
-          userMessage = Some(userMessage)
+          "Files referred to in the fetch.txt also appear in the bag: " +
+            concretePaths.mkString(", ")
         )
       )
     }
