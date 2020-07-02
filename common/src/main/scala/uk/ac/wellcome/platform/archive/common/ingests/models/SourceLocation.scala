@@ -4,17 +4,17 @@ import uk.ac.wellcome.storage._
 
 sealed trait SourceLocation {
   val provider: StorageProvider
-  val prefix: Prefix[_]
+  val location: Location
 }
 
 case class S3SourceLocation(
-  prefix: S3ObjectLocationPrefix
+  location: S3ObjectLocation
 ) extends SourceLocation {
   val provider: StorageProvider = AmazonS3StorageProvider
 }
 
 case class AzureBlobSourceLocation(
-  prefix: AzureBlobItemLocationPrefix
+  location: AzureBlobItemLocation
 ) extends SourceLocation {
   val provider: StorageProvider = AzureBlobStorageProvider
 }

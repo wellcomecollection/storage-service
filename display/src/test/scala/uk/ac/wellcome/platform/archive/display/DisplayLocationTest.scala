@@ -7,10 +7,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   AzureBlobSourceLocation,
   S3SourceLocation
 }
-import uk.ac.wellcome.storage.{
-  AzureBlobItemLocationPrefix,
-  S3ObjectLocationPrefix
-}
+import uk.ac.wellcome.storage.{AzureBlobItemLocation, S3ObjectLocation}
 
 class DisplayLocationTest
     extends AnyFunSpec
@@ -20,28 +17,28 @@ class DisplayLocationTest
     ("internalLocation", "displayLocation"),
     (
       S3SourceLocation(
-        prefix = S3ObjectLocationPrefix(
+        location = S3ObjectLocation(
           bucket = "my-bukkit",
-          keyPrefix = "path/to/my/bag"
+          key = "path/to/my/bag.tar.gz"
         )
       ),
       DisplayLocation(
         provider = DisplayProvider("amazon-s3"),
         bucket = "my-bukkit",
-        path = "path/to/my/bag"
+        path = "path/to/my/bag.tar.gz"
       )
     ),
     (
       AzureBlobSourceLocation(
-        prefix = AzureBlobItemLocationPrefix(
+        location = AzureBlobItemLocation(
           container = "my-container",
-          namePrefix = "path/to/my/bag"
+          name = "path/to/my/bag.tar.gz"
         )
       ),
       DisplayLocation(
         provider = DisplayProvider("azure-blob-storage"),
         bucket = "my-container",
-        path = "path/to/my/bag"
+        path = "path/to/my/bag.tar.gz"
       )
     )
   )

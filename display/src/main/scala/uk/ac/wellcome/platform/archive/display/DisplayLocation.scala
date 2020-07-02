@@ -3,10 +3,7 @@ package uk.ac.wellcome.platform.archive.display
 import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageLocation
-import uk.ac.wellcome.storage.{
-  AzureBlobItemLocationPrefix,
-  S3ObjectLocationPrefix
-}
+import uk.ac.wellcome.storage.{AzureBlobItemLocation, S3ObjectLocation}
 
 case class DisplayLocation(
   provider: DisplayProvider,
@@ -18,24 +15,33 @@ case class DisplayLocation(
     provider.toStorageProvider match {
       case AmazonS3StorageProvider =>
         S3SourceLocation(
-          prefix = S3ObjectLocationPrefix(bucket = bucket, keyPrefix = path)
+          location = S3ObjectLocation(bucket = bucket, key = path)
         )
 
       case AzureBlobStorageProvider =>
         AzureBlobSourceLocation(
-          prefix =
-            AzureBlobItemLocationPrefix(container = bucket, namePrefix = path)
+          location = AzureBlobItemLocation(container = bucket, name = path)
         )
     }
 }
 
 object DisplayLocation {
   def apply(location: SourceLocation): DisplayLocation =
-    DisplayLocation(
-      provider = DisplayProvider(location.provider),
-      bucket = location.prefix.namespace,
-      path = location.prefix.path
-    )
+    location match {
+      case S3SourceLocation(s3Location) =>
+        DisplayLocation(
+          provider = DisplayProvider(location.provider),
+          bucket = s3Location.bucket,
+          path = s3Location.key
+        )
+
+      case AzureBlobSourceLocation(azureLocation) =>
+        DisplayLocation(
+          provider = DisplayProvider(location.provider),
+          bucket = azureLocation.container,
+          path = azureLocation.name
+        )
+    }
 
   def apply(location: StorageLocation): DisplayLocation =
     DisplayLocation(

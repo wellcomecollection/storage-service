@@ -21,7 +21,7 @@ class SourceLocationPayloadTest
   it("creates a payload from an ingest") {
     val ingestId = createIngestID
     val ingestType = CreateIngestType
-    val sourcePrefix = createS3ObjectLocationPrefix
+    val sourceLocation = createS3ObjectLocation
     val space = createStorageSpace
     val ingestDate = Instant.now()
     val externalIdentifier = createExternalIdentifier
@@ -30,7 +30,7 @@ class SourceLocationPayloadTest
       id = ingestId,
       ingestType = ingestType,
       sourceLocation = S3SourceLocation(
-        prefix = sourcePrefix
+        location = sourceLocation
       ),
       space = space,
       createdDate = ingestDate,
@@ -47,7 +47,7 @@ class SourceLocationPayloadTest
         ingestDate = ingestDate,
         externalIdentifier = externalIdentifier
       ),
-      sourceLocation = sourcePrefix.asLocation().toObjectLocation
+      sourceLocation = sourceLocation.toObjectLocation
     )
 
     SourceLocationPayload(ingest) shouldBe expectedPayload

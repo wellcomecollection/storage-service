@@ -11,6 +11,7 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
+import uk.ac.wellcome.platform.archive.common.ingests.models.S3SourceLocation
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
 
 /** Tests for GET /ingests/:id
@@ -39,6 +40,9 @@ class LookupIngestApiTest
       case (_, _, metrics, baseUrl) =>
         whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") { result =>
           result.status shouldBe StatusCodes.OK
+
+          val sourceLocation =
+            ingest.sourceLocation.asInstanceOf[S3SourceLocation]
 
           withStringEntity(result.entity) { jsonString =>
             assertJsonStringsAreEqual(
@@ -73,8 +77,8 @@ class LookupIngestApiTest
                  |      "type": "Provider",
                  |      "id": "amazon-s3"
                  |    },
-                 |    "bucket": "${ingest.sourceLocation.prefix.namespace}",
-                 |    "path": "${ingest.sourceLocation.prefix.path}"
+                 |    "bucket": "${sourceLocation.location.bucket}",
+                 |    "path": "${sourceLocation.location.key}"
                  |  },
                  |  "callback": {
                  |    "type": "Callback",
