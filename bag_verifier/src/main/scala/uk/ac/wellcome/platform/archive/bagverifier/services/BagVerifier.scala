@@ -96,10 +96,12 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
             verificationResult = verificationResult
           )
 
-          _ <- verifyPayloadOxumFileSize(
-            bag = bag,
-            verificationResult = verificationResult
-          )
+          _ <- verificationResult match {
+            case FixityListAllCorrect(locations) =>
+              verifyPayloadOxumFileSize(bag = bag, locations = locations)
+
+            case _ => Right(())
+          }
 
         } yield verificationResult
 
