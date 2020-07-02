@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.storage.services
+package uk.ac.wellcome.platform.archive.bag_register.services
 
 import org.scalatest.{Assertion, EitherValues, TryValues}
 import org.scalatest.funspec.AnyFunSpec
@@ -20,6 +20,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageManifest,
   StorageSpace
 }
+import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
 import uk.ac.wellcome.storage.store.memory.{
   MemoryStore,
   MemoryStreamStore,

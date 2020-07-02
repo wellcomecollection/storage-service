@@ -11,7 +11,8 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.messaging.sqs.SQSClientFactory
 import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
-  Register
+  Register,
+  StorageManifestService
 }
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
@@ -34,10 +35,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemorySizeFinder
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  StorageManifestDao,
-  StorageManifestService
-}
+import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 import uk.ac.wellcome.storage.store.memory.{
   MemoryStore,

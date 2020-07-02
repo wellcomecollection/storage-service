@@ -15,7 +15,8 @@ import uk.ac.wellcome.messaging.typesafe.{
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
-  Register
+  Register,
+  StorageManifestService
 }
 import uk.ac.wellcome.platform.archive.bag_tracker.client.AkkaBagTrackerClient
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
@@ -24,7 +25,6 @@ import uk.ac.wellcome.platform.archive.common.config.builders.{
   OperationNameBuilder
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3SizeFinder
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
 import uk.ac.wellcome.storage.{
   ObjectLocationPrefix,
   S3ObjectLocation,

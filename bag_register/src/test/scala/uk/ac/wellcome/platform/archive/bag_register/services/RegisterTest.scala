@@ -16,10 +16,6 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestCompleted,
   IngestFailed
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  BadFetchLocationException,
-  StorageManifestService
-}
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemorySizeFinder
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
