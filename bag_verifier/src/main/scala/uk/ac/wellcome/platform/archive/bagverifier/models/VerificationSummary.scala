@@ -5,17 +5,17 @@ import java.time.Instant
 import uk.ac.wellcome.platform.archive.bagverifier.fixity._
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
-import uk.ac.wellcome.storage.ObjectLocationPrefix
+import uk.ac.wellcome.storage.{Location, Prefix}
 
 sealed trait VerificationSummary extends Summary {
-  val rootLocation: ObjectLocationPrefix
+  val root: Prefix[_ <: Location]
   val fixityListResult: Option[FixityListResult[_]]
 
   val endTime: Instant
   override val maybeEndTime: Option[Instant] = Some(endTime)
 
   override val fieldsToLog: Seq[(String, Any)] = {
-    val baseFields = Seq(("root", rootLocation))
+    val baseFields = Seq(("root", root.toString))
 
     fixityListResult match {
       case Some(CouldNotCreateExpectedFixityList(message)) =>
@@ -48,13 +48,13 @@ sealed trait VerificationSummary extends Summary {
 object VerificationSummary {
   def incomplete(
     ingestId: IngestID,
-    root: ObjectLocationPrefix,
+    root: Prefix[_ <: Location],
     e: Throwable,
     t: Instant
   ): VerificationIncompleteSummary =
     VerificationIncompleteSummary(
       ingestId = ingestId,
-      rootLocation = root,
+      root = root,
       e = e,
       startTime = t,
       endTime = Instant.now()
@@ -62,14 +62,14 @@ object VerificationSummary {
 
   def create(
     ingestId: IngestID,
-    root: ObjectLocationPrefix,
+    root: Prefix[_ <: Location],
     v: FixityListResult[_],
     t: Instant
   ): VerificationSummary = v match {
     case i @ CouldNotCreateExpectedFixityList(_) =>
       VerificationIncompleteSummary(
         ingestId = ingestId,
-        rootLocation = root,
+        root = root,
         e = i,
         startTime = t,
         endTime = Instant.now()
@@ -77,7 +77,7 @@ object VerificationSummary {
     case f @ FixityListWithErrors(_, _) =>
       VerificationFailureSummary(
         ingestId = ingestId,
-        rootLocation = root,
+        root = root,
         fixityListResult = Some(f),
         startTime = t,
         endTime = Instant.now()
@@ -85,7 +85,7 @@ object VerificationSummary {
     case s @ FixityListAllCorrect(_) =>
       VerificationSuccessSummary(
         ingestId = ingestId,
-        rootLocation = root,
+        root = root,
         fixityListResult = Some(s),
         startTime = t,
         endTime = Instant.now()
@@ -95,7 +95,7 @@ object VerificationSummary {
 
 case class VerificationIncompleteSummary(
   ingestId: IngestID,
-  rootLocation: ObjectLocationPrefix,
+  root: Prefix[_ <: Location],
   e: Throwable,
   startTime: Instant,
   endTime: Instant,
@@ -104,7 +104,7 @@ case class VerificationIncompleteSummary(
 
 case class VerificationSuccessSummary(
   ingestId: IngestID,
-  rootLocation: ObjectLocationPrefix,
+  root: Prefix[_ <: Location],
   fixityListResult: Some[FixityListAllCorrect[_]],
   startTime: Instant,
   endTime: Instant
@@ -112,7 +112,7 @@ case class VerificationSuccessSummary(
 
 case class VerificationFailureSummary(
   ingestId: IngestID,
-  rootLocation: ObjectLocationPrefix,
+  root: Prefix[_ <: Location],
   fixityListResult: Option[FixityListWithErrors[_]],
   startTime: Instant,
   endTime: Instant

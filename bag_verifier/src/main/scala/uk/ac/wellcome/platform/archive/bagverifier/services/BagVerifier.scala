@@ -12,35 +12,30 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.listing.Listing
-import uk.ac.wellcome.storage.{
-  Location,
-  ObjectLocation,
-  ObjectLocationPrefix,
-  Prefix
-}
+import uk.ac.wellcome.storage.{Location, Prefix}
 
 import scala.util.Try
 
-class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
-  namespace: String,
-  // TODO: Temporary while we disambiguate ObjectLocation.  Remove eventually.
-  toLocation: ObjectLocation => BagLocation,
-  toPrefix: ObjectLocationPrefix => BagPrefix
-)(
-  implicit bagReader: BagReader[BagLocation, BagPrefix],
-  val resolvable: Resolvable[ObjectLocation],
-  val fixityChecker: FixityChecker[BagLocation],
-  listing: Listing[ObjectLocationPrefix, ObjectLocation]
-) extends Logging
-    with VerifyChecksumAndSize[BagLocation]
+trait BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
+    extends Logging
+    with VerifyChecksumAndSize[BagLocation, BagPrefix]
     with VerifyExternalIdentifier
     with VerifyFetch[BagLocation, BagPrefix]
     with VerifyPayloadOxum
-    with VerifyNoUnreferencedFiles[BagLocation] {
+    with VerifyNoUnreferencedFiles[BagLocation, BagPrefix] {
+
+  val namespace: String
+
+  def createPrefix(namespace: String, path: String): BagPrefix
+
+  implicit val bagReader: BagReader[BagLocation, BagPrefix]
+  implicit val resolvable: Resolvable[BagLocation]
+  implicit val fixityChecker: FixityChecker[BagLocation]
+  implicit val listing: Listing[BagPrefix, BagLocation]
 
   def verify(
     ingestId: IngestID,
-    root: ObjectLocationPrefix,
+    root: BagPrefix,
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier
   ): Try[IngestStepResult[VerificationSummary]] =
@@ -60,11 +55,9 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
 
           _ <- verifyFetchPrefixes(
             fetch = bag.fetch,
-            root = toPrefix(
-              ObjectLocationPrefix(
-                namespace = namespace,
-                path = s"$space/$externalIdentifier"
-              )
+            root = createPrefix(
+              namespace = namespace,
+              path = s"$space/$externalIdentifier"
             )
           )
 
@@ -83,8 +76,8 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
             case FixityListAllCorrect(_) =>
               verifyNoConcreteFetchEntries(
                 fetch = bag.fetch,
-                root = toPrefix(root),
-                actualLocations = actualLocations.map { toLocation }
+                root = root,
+                actualLocations = actualLocations
               )
 
             case _ => Right(())
@@ -114,10 +107,10 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
     }
 
   private def getBag(
-    root: ObjectLocationPrefix,
+    root: BagPrefix,
     startTime: Instant
   ): Either[BagVerifierError, Bag] =
-    bagReader.get(toPrefix(root)) match {
+    bagReader.get(root) match {
       case Left(bagUnavailable) =>
         Left(
           BagVerifierError(
@@ -132,7 +125,7 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
   private def buildStepResult(
     ingestId: IngestID,
     internalResult: Either[BagVerifierError, FixityListResult[BagLocation]],
-    root: ObjectLocationPrefix,
+    root: BagPrefix,
     startTime: Instant
   ): IngestStepResult[VerificationSummary] =
     internalResult match {
@@ -154,7 +147,7 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
         IngestFailed(
           summary = VerificationIncompleteSummary(
             ingestId = ingestId,
-            rootLocation = root,
+            root = root,
             e = creationError,
             startTime = startTime,
             endTime = Instant.now()
@@ -167,7 +160,7 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
         IngestStepSucceeded(
           VerificationSuccessSummary(
             ingestId = ingestId,
-            rootLocation = root,
+            root = root,
             fixityListResult = Some(success),
             startTime = startTime,
             endTime = Instant.now()
@@ -197,7 +190,7 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
         IngestFailed(
           summary = VerificationFailureSummary(
             ingestId = ingestId,
-            rootLocation = root,
+            root = root,
             fixityListResult = Some(result),
             startTime = startTime,
             endTime = Instant.now()

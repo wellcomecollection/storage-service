@@ -60,7 +60,7 @@ class S3FixityCheckerTest
   implicit val s3Resolvable: S3Resolvable = new S3Resolvable()
 
   override def resolve(location: S3ObjectLocation): URI =
-    s3Resolvable.resolve(location.toObjectLocation)
+    s3Resolvable.resolve(location)
 
   override def withNamespace[R](testWith: TestWith[Bucket, R]): R =
     withLocalS3Bucket { bucket =>
