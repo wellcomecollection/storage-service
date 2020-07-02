@@ -13,14 +13,18 @@ import uk.ac.wellcome.storage.listing.s3.NewS3ObjectLocationListing
 import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 class S3BagVerifier(primaryBucket: String)(implicit s3Client: AmazonS3)
-  extends BagVerifier[S3ObjectLocation, S3ObjectLocationPrefix] {
+    extends BagVerifier[S3ObjectLocation, S3ObjectLocationPrefix] {
 
-  override  val namespace: String = primaryBucket
+  override val namespace: String = primaryBucket
 
-  override def createPrefix(bucket: String, keyPrefix: String): S3ObjectLocationPrefix =
+  override def createPrefix(
+    bucket: String,
+    keyPrefix: String
+  ): S3ObjectLocationPrefix =
     S3ObjectLocationPrefix(bucket = namespace, keyPrefix = keyPrefix)
 
-  override implicit val bagReader: BagReader[S3ObjectLocation, S3ObjectLocationPrefix] =
+  override implicit val bagReader
+    : BagReader[S3ObjectLocation, S3ObjectLocationPrefix] =
     new S3BagReader()
 
   override implicit val resolvable: Resolvable[S3ObjectLocation] =
@@ -29,6 +33,7 @@ class S3BagVerifier(primaryBucket: String)(implicit s3Client: AmazonS3)
   override implicit val fixityChecker: FixityChecker[S3ObjectLocation] =
     new S3FixityChecker()
 
-  override implicit val listing: Listing[S3ObjectLocationPrefix, S3ObjectLocation] =
+  override implicit val listing
+    : Listing[S3ObjectLocationPrefix, S3ObjectLocation] =
     new NewS3ObjectLocationListing()
 }

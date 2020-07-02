@@ -13,7 +13,9 @@ import uk.ac.wellcome.storage.{Location, Prefix}
 
 import scala.util.{Failure, Success, Try}
 
-trait VerifyChecksumAndSize[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
+trait VerifyChecksumAndSize[BagLocation <: Location, BagPrefix <: Prefix[
+  BagLocation
+]] {
   implicit val resolvable: Resolvable[BagLocation]
   implicit val fixityChecker: FixityChecker[BagLocation]
 

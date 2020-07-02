@@ -16,7 +16,9 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.{Location, Prefix}
 
-class BagExpectedFixity[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](root: BagPrefix)(
+class BagExpectedFixity[BagLocation <: Location, BagPrefix <: Prefix[
+  BagLocation
+]](root: BagPrefix)(
   implicit resolvable: Resolvable[BagLocation]
 ) extends ExpectedFixity[Bag]
     with Logging {

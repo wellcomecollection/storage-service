@@ -17,7 +17,7 @@ import uk.ac.wellcome.storage.{Location, Prefix}
 import scala.util.Try
 
 trait BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
-  extends Logging
+    extends Logging
     with VerifyChecksumAndSize[BagLocation, BagPrefix]
     with VerifyExternalIdentifier
     with VerifyFetch[BagLocation, BagPrefix]

@@ -6,9 +6,19 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.ExpectedFileFixity
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFetchMetadata, BagPath}
-import uk.ac.wellcome.platform.archive.common.generators.{BagGenerators, FetchMetadataGenerators}
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, HashingAlgorithm}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagFetchMetadata,
+  BagPath
+}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagGenerators,
+  FetchMetadataGenerators
+}
+import uk.ac.wellcome.platform.archive.common.verify.{
+  Checksum,
+  ChecksumValue,
+  HashingAlgorithm
+}
 import uk.ac.wellcome.storage.{MemoryLocation, MemoryLocationPrefix}
 
 class BagExpectedFixityTest
@@ -24,7 +34,8 @@ class BagExpectedFixityTest
     pathPrefix = randomAlphanumeric
   )
 
-  val bagExpectedFixity = new BagExpectedFixity[MemoryLocation, MemoryLocationPrefix](root)
+  val bagExpectedFixity =
+    new BagExpectedFixity[MemoryLocation, MemoryLocationPrefix](root)
 
   def createLocationWith(root: MemoryLocation): MemoryLocation =
     MemoryLocation(
@@ -36,7 +47,8 @@ class BagExpectedFixityTest
     it("for an empty bag") {
       val bag = createBag
 
-      val bagExpectedFixity = new BagExpectedFixity[MemoryLocation, MemoryLocationPrefix](root)
+      val bagExpectedFixity =
+        new BagExpectedFixity[MemoryLocation, MemoryLocationPrefix](root)
 
       bagExpectedFixity.create(bag) shouldBe Right(List.empty)
     }
