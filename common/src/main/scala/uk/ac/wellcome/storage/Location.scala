@@ -6,9 +6,6 @@ trait Location {
 }
 
 trait Prefix[OfLocation <: Location] {
-  val namespace: String
-  val path: String
-
   def asLocation(parts: String*): OfLocation
 
   def toObjectLocationPrefix: ObjectLocationPrefix
@@ -46,9 +43,6 @@ case class S3ObjectLocationPrefix(
   bucket: String,
   keyPrefix: String
 ) extends Prefix[S3ObjectLocation] {
-  val namespace: String = bucket
-  val path: String = keyPrefix
-
   override def toString: String =
     s"s3://$bucket/$keyPrefix"
 
@@ -132,9 +126,6 @@ case class AzureBlobItemLocationPrefix(
   container: String,
   namePrefix: String
 ) extends Prefix[AzureBlobItemLocation] {
-  val namespace: String = container
-  val path: String = namePrefix
-
   override def asLocation(parts: String*): AzureBlobItemLocation =
     AzureBlobItemLocation(
       container = container,

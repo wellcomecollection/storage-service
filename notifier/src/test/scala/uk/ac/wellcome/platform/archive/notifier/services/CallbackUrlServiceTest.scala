@@ -18,7 +18,10 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  S3SourceLocation
+}
 import uk.ac.wellcome.platform.archive.notifier.fixtures.{
   LocalWireMockFixture,
   NotifierFixtures
@@ -89,6 +92,9 @@ class CallbackUrlServiceTest
 
       val request = buildRequest(ingest, callbackUri)
 
+      val ingestLocation =
+        ingest.sourceLocation.asInstanceOf[S3SourceLocation]
+
       assertIsJsonRequest(request, uri = callbackUri) { requestJsonString =>
         assertJsonStringsAreEqual(
           requestJsonString,
@@ -122,8 +128,8 @@ class CallbackUrlServiceTest
              |      "type": "Provider",
              |      "id": "amazon-s3"
              |    },
-             |    "bucket": "${ingest.sourceLocation.prefix.namespace}",
-             |    "path": "${ingest.sourceLocation.prefix.path}"
+             |    "bucket": "${ingestLocation.location.bucket}",
+             |    "path": "${ingestLocation.location.key}"
              |  },
              |  "callback": {
              |    "type": "Callback",

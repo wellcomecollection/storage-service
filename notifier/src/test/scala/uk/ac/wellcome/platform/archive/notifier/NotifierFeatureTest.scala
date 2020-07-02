@@ -13,12 +13,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Callback,
-  CallbackNotification,
-  IngestCallbackStatusUpdate,
-  IngestUpdate
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.notifier.fixtures.{
   LocalWireMockFixture,
   NotifierFixtures
@@ -59,6 +54,9 @@ class NotifierFeatureTest
               CallbackNotification(ingestId, callbackUri, ingest)
             )
 
+            val ingestLocation =
+              ingest.sourceLocation.asInstanceOf[S3SourceLocation]
+
             val expectedJson =
               s"""
                  |{
@@ -90,8 +88,8 @@ class NotifierFeatureTest
                  |      "type": "Provider",
                  |      "id": "amazon-s3"
                  |    },
-                 |    "bucket": "${ingest.sourceLocation.prefix.namespace}",
-                 |    "path": "${ingest.sourceLocation.prefix.path}"
+                 |    "bucket": "${ingestLocation.location.bucket}",
+                 |    "path": "${ingestLocation.location.key}"
                  |  },
                  |  "callback": {
                  |    "type": "Callback",
@@ -169,6 +167,9 @@ class NotifierFeatureTest
                 CallbackNotification(ingestID, callbackUri, ingest)
               )
 
+              val ingestLocation =
+                ingest.sourceLocation.asInstanceOf[S3SourceLocation]
+
               val expectedJson =
                 s"""
                    |{
@@ -201,8 +202,8 @@ class NotifierFeatureTest
                    |      "type": "Provider",
                    |      "id": "amazon-s3"
                    |    },
-                   |    "bucket": "${ingest.sourceLocation.prefix.namespace}",
-                   |    "path": "${ingest.sourceLocation.prefix.path}"
+                   |    "bucket": "${ingestLocation.location.bucket}",
+                   |    "path": "${ingestLocation.location.key}"
                    |  },
                    |  "callback": {
                    |    "type": "Callback",

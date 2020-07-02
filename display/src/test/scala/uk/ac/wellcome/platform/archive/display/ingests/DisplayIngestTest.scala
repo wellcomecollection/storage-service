@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.display._
-import uk.ac.wellcome.storage.S3ObjectLocationPrefix
+import uk.ac.wellcome.storage.S3ObjectLocation
 
 class DisplayIngestTest
     extends AnyFunSpec
@@ -39,7 +39,7 @@ class DisplayIngestTest
         id = id,
         ingestType = CreateIngestType,
         sourceLocation = S3SourceLocation(
-          prefix = S3ObjectLocationPrefix("bukkit", "mybag")
+          location = S3ObjectLocation("bukkit", "mybag.tar.gz")
         ),
         space = StorageSpace(spaceId),
         callback = Some(Callback(new URI(callbackUrl))),
@@ -55,7 +55,7 @@ class DisplayIngestTest
       displayIngest.sourceLocation shouldBe DisplayLocation(
         DisplayProvider(id = "amazon-s3"),
         bucket = "bukkit",
-        path = "mybag"
+        path = "mybag.tar.gz"
       )
       displayIngest.callback shouldBe Some(
         DisplayCallback(
@@ -115,7 +115,7 @@ class DisplayIngestTest
     it("transforms itself into a ingest") {
       val displayProvider = DisplayProvider(id = "amazon-s3")
       val bucket = "ingest-bucket"
-      val path = "bag.zip"
+      val path = "bag.tar.gz"
 
       val externalIdentifier = createExternalIdentifier
 
@@ -140,7 +140,7 @@ class DisplayIngestTest
 
       ingest.id shouldBe a[IngestID]
       ingest.sourceLocation shouldBe S3SourceLocation(
-        prefix = S3ObjectLocationPrefix(bucket, path)
+        location = S3ObjectLocation(bucket, path)
       )
       ingest.callback shouldBe Some(
         Callback(URI.create(ingestCreateRequest.callback.get.url))
