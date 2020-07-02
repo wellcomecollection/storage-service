@@ -445,7 +445,7 @@ class StorageManifestServiceTest
 
       result.failed.get shouldBe a[StorageManifestException]
       result.failed.get.getMessage should startWith(
-        s"Error getting size of ${location.prefix.asLocation("data/file1.txt")}"
+        s"Error getting size of mem://${location.prefix.asLocation("data/file1.txt")}"
       )
     }
 
@@ -498,7 +498,7 @@ class StorageManifestServiceTest
           }
           .toMap
 
-      storageManifestSizes shouldBe sizeCache
+      storageManifestSizes shouldBe sizeCache.map { case (cachedLoc, cachedSize) => cachedLoc.toObjectLocation -> cachedSize }
     }
 
     it("uses the size from the fetch file") {
