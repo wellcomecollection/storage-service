@@ -1,52 +1,47 @@
 package uk.ac.wellcome.platform.archive.bag_register.services
 
-import org.scalatest.{EitherValues, TryValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.{EitherValues, TryValues}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifestFile
-import uk.ac.wellcome.platform.archive.common.verify.{
-  ChecksumValue,
-  MD5,
-  SHA256
-}
-import uk.ac.wellcome.storage.{ObjectLocation, StoreReadError}
-import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
+import uk.ac.wellcome.platform.archive.common.verify.{ChecksumValue, MD5, SHA256}
+import uk.ac.wellcome.storage.generators.RandomThings
 import uk.ac.wellcome.storage.store.Readable
-import uk.ac.wellcome.storage.store.memory.MemoryStreamStoreFixtures
-import uk.ac.wellcome.storage.streaming.Codec._
+import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore}
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
+import uk.ac.wellcome.storage.{MemoryLocation, MemoryLocationPrefix, StoreReadError}
 
 class TagManifestFileFinderTest
     extends AnyFunSpec
     with Matchers
     with EitherValues
     with TryValues
-    with ObjectLocationGenerators
-    with MemoryStreamStoreFixtures[ObjectLocation] {
+    with RandomThings {
 
   def withTagManifestFileFinder[R](
-    entries: Map[ObjectLocation, String]
-  )(testWith: TestWith[TagManifestFileFinder, R]): R =
-    withStreamStoreContext { memoryStore =>
-      val initialEntries = entries
-        .map {
-          case (location, str) =>
-            val inputStream = stringCodec.toStream(str).right.value
+    entries: Map[MemoryLocation, String]
+  )(testWith: TestWith[TagManifestFileFinder[MemoryLocation], R]): R = {
+    val memoryStore: MemoryStore[MemoryLocation, Array[Byte]] =
+      new MemoryStore[MemoryLocation, Array[Byte]](initialEntries = Map.empty)
 
-            (location, inputStream)
-        }
-
-      withMemoryStreamStoreImpl(memoryStore, initialEntries = initialEntries) {
-        implicit streamStore =>
-          testWith(
-            new TagManifestFileFinder()
-          )
+    entries
+      .foreach {
+        case (location, str) =>
+          memoryStore.put(location)(str.getBytes())
       }
-    }
+
+    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
+      new MemoryStreamStore[MemoryLocation](memoryStore)
+
+    testWith(new TagManifestFileFinder())
+  }
 
   it("handles a bag that contains all four tag manifest files") {
-    val prefix = createObjectLocationPrefix
+    val prefix = MemoryLocationPrefix(
+      namespace = randomAlphanumeric,
+      pathPrefix = randomAlphanumeric
+    )
 
     val result =
       withTagManifestFileFinder(
@@ -99,7 +94,10 @@ class TagManifestFileFinderTest
   }
 
   it("uses the selected algorithm to create the checksums") {
-    val prefix = createObjectLocationPrefix
+    val prefix = MemoryLocationPrefix(
+      namespace = randomAlphanumeric,
+      pathPrefix = randomAlphanumeric
+    )
 
     val result =
       withTagManifestFileFinder(
@@ -144,7 +142,10 @@ class TagManifestFileFinderTest
   }
 
   it("returns only the tag manifest files that are present") {
-    val prefix = createObjectLocationPrefix
+    val prefix = MemoryLocationPrefix(
+      namespace = randomAlphanumeric,
+      pathPrefix = randomAlphanumeric
+    )
 
     val result =
       withTagManifestFileFinder(
@@ -179,7 +180,10 @@ class TagManifestFileFinderTest
   }
 
   it("fails if it doesn't find any files") {
-    val prefix = createObjectLocationPrefix
+    val prefix = MemoryLocationPrefix(
+      namespace = randomAlphanumeric,
+      pathPrefix = randomAlphanumeric
+    )
 
     val result = withTagManifestFileFinder(entries = Map.empty) {
       _.getTagManifestFiles(prefix, algorithm = SHA256)
@@ -190,11 +194,14 @@ class TagManifestFileFinderTest
   }
 
   it("fails if the underlying reader has an error") {
-    val prefix = createObjectLocationPrefix
+    val prefix = MemoryLocationPrefix(
+      namespace = randomAlphanumeric,
+      pathPrefix = randomAlphanumeric
+    )
 
     implicit val brokenReader =
-      new Readable[ObjectLocation, InputStreamWithLength] {
-        override def get(id: ObjectLocation): this.ReadEither =
+      new Readable[MemoryLocation, InputStreamWithLength] {
+        override def get(id: MemoryLocation): this.ReadEither =
           Left(StoreReadError(new Throwable("BOOM!")))
       }
 

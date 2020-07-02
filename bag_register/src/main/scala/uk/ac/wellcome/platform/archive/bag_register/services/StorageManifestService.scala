@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.bag_register.services
 
+import java.net.URI
 import java.time.Instant
 
 import grizzled.slf4j.Logging
@@ -8,20 +9,22 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
+import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 import scala.util.{Failure, Success, Try}
 
-class StorageManifestService[SizeIdent](
-  sizeFinder: SizeFinder[SizeIdent],
-  // TODO: Temporary while we disambiguate ObjectLocation.  Remove eventually.
-  toIdent: ObjectLocation => SizeIdent
-)(
-  implicit streamReader: Readable[ObjectLocation, InputStreamWithLength]
-) extends Logging {
+trait StorageManifestService[BagLocation <: Location] extends Logging {
+  def toLocationPrefix(prefix: ObjectLocationPrefix): Prefix[BagLocation]
+
+  val sizeFinder: SizeFinder[BagLocation]
+
+  implicit val streamReader: Readable[BagLocation, InputStreamWithLength]
+
   private val tagManifestFileFinder = new TagManifestFileFinder()
+
+  def createLocation(uri: URI): BagLocation
 
   def createManifest(
     ingestId: IngestID,
@@ -32,7 +35,9 @@ class StorageManifestService[SizeIdent](
     version: BagVersion
   ): Try[StorageManifest] =
     for {
-      bagRoot <- getBagRoot(location.prefix, version)
+      root: ObjectLocationPrefix <- getBagRoot(location.prefix, version)
+
+      bagRoot = toLocationPrefix(root)
 
       replicaLocations <- getReplicaLocations(replicas, version)
 
@@ -76,7 +81,7 @@ class StorageManifestService[SizeIdent](
         ),
         location = PrimaryStorageLocation(
           provider = location.provider,
-          prefix = bagRoot
+          prefix = bagRoot.toObjectLocationPrefix
         ),
         replicaLocations = replicaLocations,
         createdDate = Instant.now,
@@ -128,9 +133,9 @@ class StorageManifestService[SizeIdent](
 
   private def getSizeAndLocation(
     matchedLocation: MatchedLocation,
-    bagRoot: ObjectLocationPrefix,
+    bagRoot: Prefix[BagLocation],
     version: BagVersion
-  ): (ObjectLocation, Option[Long]) =
+  ): (BagLocation, Option[Long]) =
     matchedLocation.fetchMetadata match {
       // This is a concrete file inside the replicated bag,
       // so it's inside the versioned replica directory.
@@ -144,10 +149,7 @@ class StorageManifestService[SizeIdent](
       // We need to check it's in another versioned directory
       // for this bag.
       case Some(fetchMetadata) =>
-        val fetchLocation = ObjectLocation(
-          namespace = fetchMetadata.uri.getHost,
-          path = fetchMetadata.uri.getPath.stripPrefix("/")
-        )
+        val fetchLocation = createLocation(fetchMetadata.uri)
 
         if (fetchLocation.namespace != bagRoot.namespace) {
           throw new BadFetchLocationException(
@@ -156,7 +158,7 @@ class StorageManifestService[SizeIdent](
         }
 
         // TODO: This check could actually look for a /v1, /v2, etc.
-        if (!fetchLocation.path.startsWith(bagRoot.path + "/")) {
+        if (!fetchLocation.path.startsWith(bagRoot.pathPrefix + "/")) {
           throw new BadFetchLocationException(
             s"Fetch entry for ${matchedLocation.bagPath} refers to a file in the wrong path: /${fetchLocation.path}"
           )
@@ -178,9 +180,9 @@ class StorageManifestService[SizeIdent](
     */
   private def createPathLocationMap(
     matchedLocations: Seq[MatchedLocation],
-    bagRoot: ObjectLocationPrefix,
+    bagRoot: Prefix[BagLocation],
     version: BagVersion
-  ): Try[Map[BagPath, (ObjectLocation, Option[Long])]] =
+  ): Try[Map[BagPath, (BagLocation, Option[Long])]] =
     Try {
       matchedLocations.map { matchedLoc =>
         (
@@ -192,8 +194,8 @@ class StorageManifestService[SizeIdent](
 
   private def createManifestFiles(
     manifest: BagManifest,
-    entries: Map[BagPath, (ObjectLocation, Option[Long])],
-    bagRoot: ObjectLocationPrefix
+    entries: Map[BagPath, (BagLocation, Option[Long])],
+    bagRoot: Prefix[BagLocation]
   ): Try[Seq[StorageManifestFile]] = Try {
     manifest.entries.map {
       case (bagPath, checksumValue) =>
@@ -203,12 +205,12 @@ class StorageManifestService[SizeIdent](
         // We wrap it in a Try block just in case, but this should never
         // throw in practice.
         val (location, maybeSize) = entries(bagPath)
-        val path = location.path.stripPrefix(bagRoot.path + "/")
+        val path = location.path.stripPrefix(bagRoot.pathPrefix + "/")
 
         val size = maybeSize match {
           case Some(s) => s
           case None =>
-            sizeFinder.getSize(toIdent(location)) match {
+            sizeFinder.getSize(location) match {
               case Right(value) => value
               case Left(readError) =>
                 throw new StorageManifestException(
@@ -233,13 +235,13 @@ class StorageManifestService[SizeIdent](
   // are the only unreferenced files.
   //
   private def getUnreferencedFiles(
-    bagRoot: ObjectLocationPrefix,
+    bagRoot: Prefix[BagLocation],
     version: BagVersion,
     tagManifest: BagManifest
   ): Try[Seq[StorageManifestFile]] =
     tagManifestFileFinder
       .getTagManifestFiles(
-        prefix = bagRoot.asLocation(version.toString).asPrefix,
+        prefix = bagRoot.join(version.toString),
         algorithm = tagManifest.checksumAlgorithm
       )
       .map {
