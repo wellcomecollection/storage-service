@@ -18,7 +18,10 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, S3SourceLocation}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  S3SourceLocation
+}
 import uk.ac.wellcome.platform.archive.notifier.fixtures.{
   LocalWireMockFixture,
   NotifierFixtures
