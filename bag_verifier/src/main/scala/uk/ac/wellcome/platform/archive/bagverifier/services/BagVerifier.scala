@@ -24,7 +24,7 @@ import scala.util.Try
 class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
   namespace: String,
   // TODO: Temporary while we disambiguate ObjectLocation.  Remove eventually.
-  toLocation: ObjectLocationPrefix => BagPrefix
+  toPrefix: ObjectLocationPrefix => BagPrefix
 )(
   implicit bagReader: BagReader[BagLocation, BagPrefix],
   val resolvable: Resolvable[ObjectLocation],
@@ -108,7 +108,7 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
     root: ObjectLocationPrefix,
     startTime: Instant
   ): Either[BagVerifierError, Bag] =
-    bagReader.get(toLocation(root)) match {
+    bagReader.get(toPrefix(root)) match {
       case Left(bagUnavailable) =>
         Left(
           BagVerifierError(
