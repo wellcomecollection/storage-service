@@ -59,7 +59,7 @@ trait VerifyFetch {
   def verifyNoConcreteFetchEntries(
     fetch: Option[BagFetch],
     root: ObjectLocationPrefix,
-    actualLocations: Seq[ObjectLocation],
+    actualLocations: Seq[ObjectLocation]
   ): Either[BagVerifierError, Unit] = {
     val bagFetchLocations: Seq[(BagPath, ObjectLocation)] = fetch match {
       case Some(bagFetch) =>
@@ -78,7 +78,9 @@ trait VerifyFetch {
     if (concreteFetchLocations.isEmpty) {
       Right(())
     } else {
-      val concretePaths = concreteFetchLocations.collect { case (bagPath, _) => bagPath }
+      val concretePaths = concreteFetchLocations.collect {
+        case (bagPath, _) => bagPath
+      }
 
       Left(
         BagVerifierError(

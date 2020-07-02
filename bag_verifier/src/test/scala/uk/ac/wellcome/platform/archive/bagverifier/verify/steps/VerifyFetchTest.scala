@@ -54,7 +54,9 @@ class VerifyFetchTest
       verifier.verifyNoConcreteFetchEntries(
         fetch = None,
         root = createObjectLocationPrefix,
-        actualLocations = (1 to 5).map { _ => createObjectLocation }
+        actualLocations = (1 to 5).map { _ =>
+          createObjectLocation
+        }
       ) shouldBe Right(())
     }
   }
