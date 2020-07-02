@@ -36,7 +36,7 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
     with VerifyExternalIdentifier
     with VerifyFetch[BagLocation, BagPrefix]
     with VerifyPayloadOxum
-    with VerifyNoUnreferencedFiles {
+    with VerifyNoUnreferencedFiles[BagLocation] {
 
   def verify(
     ingestId: IngestID,
@@ -129,7 +129,7 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
 
   private def buildStepResult(
     ingestId: IngestID,
-    internalResult: Either[BagVerifierError, FixityListResult],
+    internalResult: Either[BagVerifierError, FixityListResult[BagLocation]],
     root: ObjectLocationPrefix,
     startTime: Instant
   ): IngestStepResult[VerificationSummary] =
@@ -146,7 +146,7 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
           maybeUserFacingMessage = error.userMessage
         )
 
-      case Right(creationError: CouldNotCreateExpectedFixityList) =>
+      case Right(creationError: CouldNotCreateExpectedFixityList[BagLocation]) =>
         IngestFailed(
           summary = VerificationIncompleteSummary(
             ingestId = ingestId,

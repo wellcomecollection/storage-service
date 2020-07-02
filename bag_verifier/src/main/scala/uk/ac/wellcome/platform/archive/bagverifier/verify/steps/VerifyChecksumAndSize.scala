@@ -16,7 +16,7 @@ trait VerifyChecksumAndSize[BagLocation <: Location] {
   def verifyChecksumAndSize(
     root: ObjectLocationPrefix,
     bag: Bag
-  ): Either[BagVerifierError, FixityListResult] = {
+  ): Either[BagVerifierError, FixityListResult[BagLocation]] = {
     implicit val bagExpectedFixity: BagExpectedFixity =
       new BagExpectedFixity(root)
 

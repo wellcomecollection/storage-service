@@ -25,7 +25,7 @@ trait VerifyPayloadOxum {
 
   def verifyPayloadOxumFileSize(
     bag: Bag,
-    verificationResult: FixityListResult
+    verificationResult: FixityListResult[_]
   ): Either[BagVerifierError, Unit] =
     verificationResult match {
       case FixityListAllCorrect(locations) =>

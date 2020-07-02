@@ -7,9 +7,9 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
 }
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
 import uk.ac.wellcome.platform.archive.common.bagit.models.UnreferencedFiles
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.{Location, ObjectLocation, ObjectLocationPrefix}
 
-trait VerifyNoUnreferencedFiles extends Logging {
+trait VerifyNoUnreferencedFiles[BagLocation <: Location] extends Logging {
 
   // Files that it's okay not to be referenced by any other manifests/files.
   //
@@ -29,11 +29,11 @@ trait VerifyNoUnreferencedFiles extends Logging {
   def verifyNoUnreferencedFiles(
     root: ObjectLocationPrefix,
     actualLocations: Seq[ObjectLocation],
-    verificationResult: FixityListResult
+    verificationResult: FixityListResult[BagLocation]
   ): Either[BagVerifierError, Unit] =
     verificationResult match {
       case FixityListAllCorrect(locations) =>
-        val expectedLocations = locations.map { _.objectLocation }
+        val expectedLocations = locations.map { _.objectLocation.toObjectLocation }
 
         debug(s"Expecting the bag to contain: $expectedLocations")
 

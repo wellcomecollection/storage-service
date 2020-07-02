@@ -1,11 +1,11 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity
 
-sealed trait FixityListResult
+sealed trait FixityListResult[BagLocation]
 
-sealed trait FixityListCheckingResult extends FixityListResult
+sealed trait FixityListCheckingResult[BagLocation] extends FixityListResult[BagLocation]
 
 case class FixityListAllCorrect[BagLocation](locations: List[FileFixityCorrect[BagLocation]])
-    extends FixityListCheckingResult
+    extends FixityListCheckingResult[BagLocation]
 
 case class FixityListWithErrors[BagLocation](
   errors: List[FileFixityError[BagLocation]],
@@ -13,8 +13,8 @@ case class FixityListWithErrors[BagLocation](
 ) extends Throwable(
       "Some files don't have the expected fixity (size/checksum)!"
     )
-    with FixityListCheckingResult
+    with FixityListCheckingResult[BagLocation]
 
-case class CouldNotCreateExpectedFixityList(msg: String)
+case class CouldNotCreateExpectedFixityList[BagLocation](msg: String)
     extends Throwable(msg)
-    with FixityListResult
+    with FixityListResult[BagLocation]
