@@ -14,12 +14,6 @@ import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 import scala.util.{Failure, Success, Try}
 
-class StorageManifestException(message: String)
-    extends RuntimeException(message)
-
-class BadFetchLocationException(message: String)
-    extends StorageManifestException(message)
-
 class StorageManifestService[SizeIdent](
   sizeFinder: SizeFinder[SizeIdent],
   // TODO: Temporary while we disambiguate ObjectLocation.  Remove eventually.
