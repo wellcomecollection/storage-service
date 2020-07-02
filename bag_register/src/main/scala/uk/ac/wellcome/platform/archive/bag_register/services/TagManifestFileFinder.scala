@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.storage.services
+package uk.ac.wellcome.platform.archive.bag_register.services
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.UnreferencedFiles
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifestFile

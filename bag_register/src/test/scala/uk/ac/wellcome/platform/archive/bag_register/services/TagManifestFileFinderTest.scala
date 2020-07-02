@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.storage.services
+package uk.ac.wellcome.platform.archive.bag_register.services
 
 import org.scalatest.{EitherValues, TryValues}
 import org.scalatest.funspec.AnyFunSpec

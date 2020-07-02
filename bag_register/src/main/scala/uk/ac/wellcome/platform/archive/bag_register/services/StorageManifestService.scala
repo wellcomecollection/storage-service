@@ -7,7 +7,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.platform.archive.common.storage.services.{SizeFinder, TagManifestFileFinder}
+import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
