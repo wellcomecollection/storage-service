@@ -15,10 +15,6 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.platform.archive.common.storage.services.{
-  BadFetchLocationException,
-  StorageManifestService
-}
 import uk.ac.wellcome.storage.{Location, ObjectLocationPrefix, Prefix}
 
 import scala.concurrent.{ExecutionContext, Future}

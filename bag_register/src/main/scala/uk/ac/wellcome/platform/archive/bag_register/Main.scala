@@ -13,6 +13,7 @@ import uk.ac.wellcome.messaging.typesafe.{
   SQSBuilder
 }
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
+import uk.ac.wellcome.platform.archive.bag_register.services.s3.S3StorageManifestService
 import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
   Register
@@ -23,14 +24,11 @@ import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3SizeFinder
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestService
 import uk.ac.wellcome.storage.{
   ObjectLocationPrefix,
   S3ObjectLocation,
   S3ObjectLocationPrefix
 }
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -63,12 +61,7 @@ object Main extends WellcomeTypesafeApp {
       operationName
     )
 
-    implicit val s3StreamStore: S3StreamStore = new S3StreamStore()
-
-    val storageManifestService = new StorageManifestService(
-      sizeFinder = new S3SizeFinder(),
-      toIdent = S3ObjectLocation.apply
-    )
+    val storageManifestService = new S3StorageManifestService()
 
     val register = new Register[S3ObjectLocation, S3ObjectLocationPrefix](
       bagReader = new S3BagReader(),

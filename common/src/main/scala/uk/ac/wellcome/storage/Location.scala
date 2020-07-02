@@ -1,12 +1,26 @@
 package uk.ac.wellcome.storage
+
 import java.nio.file.Paths
+
+private object PathJoiner {
+  def join(first: String, more: String*): String =
+    Paths.get(first, more: _*).normalize().toString
+}
 
 trait Location {
   def toObjectLocation: ObjectLocation
+
+  val namespace: String
+  val path: String
 }
 
 trait Prefix[OfLocation <: Location] {
+  val namespace: String
+  val pathPrefix: String
+
   def asLocation(parts: String*): OfLocation
+
+  def join(parts: String*): Prefix[OfLocation]
 
   def toObjectLocationPrefix: ObjectLocationPrefix
 
@@ -17,6 +31,9 @@ case class S3ObjectLocation(
   bucket: String,
   key: String
 ) extends Location {
+  val namespace: String = bucket
+  val path: String = key
+
   override def toString: String =
     s"s3://$bucket/$key"
 
@@ -45,13 +62,16 @@ case class S3ObjectLocationPrefix(
   bucket: String,
   keyPrefix: String
 ) extends Prefix[S3ObjectLocation] {
+  val namespace: String = bucket
+  val pathPrefix: String = keyPrefix
+
   override def toString: String =
     s"s3://$bucket/$keyPrefix"
 
   override def asLocation(parts: String*): S3ObjectLocation =
     S3ObjectLocation(
       bucket = bucket,
-      key = Paths.get(keyPrefix, parts: _*).normalize().toString
+      key = PathJoiner.join(keyPrefix, parts: _*)
     )
 
   def toObjectLocationPrefix: ObjectLocationPrefix =
@@ -64,6 +84,12 @@ case class S3ObjectLocationPrefix(
     assert(location.bucket == this.bucket)
     location.key.stripPrefix(this.keyPrefix)
   }
+
+  override def join(parts: String*): Prefix[S3ObjectLocation] =
+    S3ObjectLocationPrefix(
+      bucket = bucket,
+      keyPrefix = PathJoiner.join(keyPrefix, parts: _*)
+    )
 }
 
 case object S3ObjectLocationPrefix {
@@ -108,7 +134,7 @@ case class MemoryLocationPrefix(
   override def asLocation(parts: String*): MemoryLocation =
     MemoryLocation(
       namespace = namespace,
-      path = Paths.get(pathPrefix, parts: _*).normalize().toString
+      path = PathJoiner.join(pathPrefix, parts: _*)
     )
 
   override def toObjectLocationPrefix: ObjectLocationPrefix =
@@ -121,12 +147,21 @@ case class MemoryLocationPrefix(
     assert(location.namespace == this.namespace)
     location.path.stripPrefix(this.pathPrefix)
   }
+
+  override def join(parts: String*): Prefix[MemoryLocation] =
+    MemoryLocationPrefix(
+      namespace = namespace,
+      pathPrefix = PathJoiner.join(pathPrefix, parts: _*)
+    )
 }
 
 case class AzureBlobItemLocation(
   container: String,
   name: String
 ) extends Location {
+  val namespace: String = container
+  val path: String = name
+
   override def toObjectLocation: ObjectLocation =
     ObjectLocation(
       namespace = container,
@@ -138,6 +173,9 @@ case class AzureBlobItemLocationPrefix(
   container: String,
   namePrefix: String
 ) extends Prefix[AzureBlobItemLocation] {
+  val namespace: String = container
+  val pathPrefix: String = namePrefix
+
   override def asLocation(parts: String*): AzureBlobItemLocation =
     AzureBlobItemLocation(
       container = container,
@@ -154,4 +192,10 @@ case class AzureBlobItemLocationPrefix(
     assert(location.container == this.container)
     location.name.stripPrefix(this.namePrefix)
   }
+
+  override def join(parts: String*): Prefix[AzureBlobItemLocation] =
+    AzureBlobItemLocationPrefix(
+      container = container,
+      namePrefix = PathJoiner.join(namePrefix, parts: _*)
+    )
 }

@@ -1,15 +1,11 @@
-package uk.ac.wellcome.platform.archive.common.storage.services
+package uk.ac.wellcome.platform.archive.bag_register.services
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.UnreferencedFiles
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifestFile
 import uk.ac.wellcome.platform.archive.common.verify.{Hasher, HashingAlgorithm}
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
-import uk.ac.wellcome.storage.{
-  DoesNotExistError,
-  ObjectLocation,
-  ObjectLocationPrefix
-}
+import uk.ac.wellcome.storage._
 
 import scala.util.{Failure, Success, Try}
 
@@ -20,12 +16,12 @@ import scala.util.{Failure, Success, Try}
   * This class creates the `StorageManifestFile` entries for BagIt tag manifest files.
   *
   */
-class TagManifestFileFinder(
-  implicit streamReader: Readable[ObjectLocation, InputStreamWithLength]
+class TagManifestFileFinder[BagLocation <: Location](
+  implicit streamReader: Readable[BagLocation, InputStreamWithLength]
 ) {
 
   def getTagManifestFiles(
-    prefix: ObjectLocationPrefix,
+    prefix: Prefix[BagLocation],
     algorithm: HashingAlgorithm
   ): Try[Seq[StorageManifestFile]] = Try {
     val entries: Seq[StorageManifestFile] =
@@ -42,7 +38,7 @@ class TagManifestFileFinder(
 
   private def findIndividualTagManifestFile(
     name: String,
-    prefix: ObjectLocationPrefix,
+    prefix: Prefix[BagLocation],
     algorithm: HashingAlgorithm
   ): Option[StorageManifestFile] =
     streamReader.get(prefix.asLocation(name)) match {
