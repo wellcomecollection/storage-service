@@ -6,9 +6,9 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagFetchMetadata,
   BagPath
 }
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage._
 
-trait VerifyFetch {
+trait VerifyFetch[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
 
   // Check the user hasn't supplied any fetch entries which are in the wrong
   // namespace or path prefix.
@@ -18,7 +18,7 @@ trait VerifyFetch {
   // and we don't have to worry about interconnected bag dependencies.
   def verifyFetchPrefixes(
     fetch: Option[BagFetch],
-    root: ObjectLocationPrefix
+    root: BagPrefix
   ): Either[BagVerifierError, Unit] =
     fetch match {
       case None => Right(())
@@ -28,16 +28,15 @@ trait VerifyFetch {
           entries
             .filterNot {
               case (_, fetchMetadata: BagFetchMetadata) =>
-                val fetchLocation = ObjectLocation(
-                  namespace = fetchMetadata.uri.getHost,
-                  path = fetchMetadata.uri.getPath.stripPrefix("/")
+                val fetchLocation = S3ObjectLocation(
+                  bucket = fetchMetadata.uri.getHost,
+                  key = fetchMetadata.uri.getPath.stripPrefix("/")
                 )
 
                 // TODO: This could verify the version prefix as well.
                 // TODO: Hard-coding the expected scheme here isn't ideal
                 fetchMetadata.uri.getScheme == "s3" &&
-                fetchLocation.namespace == root.namespace &&
-                fetchLocation.path.startsWith(s"${root.path}/")
+                  isPrefixOf(fetchLocation, prefix = root)
             }
 
         val mismatchedPaths = mismatchedEntries.keys.toSeq
@@ -54,14 +53,22 @@ trait VerifyFetch {
         }
     }
 
+  private def isPrefixOf(location: S3ObjectLocation, prefix: Prefix[_]): Boolean =
+    prefix match {
+      case S3ObjectLocationPrefix(bucket, keyPrefix) =>
+        location.bucket == bucket && location.key.startsWith(s"$keyPrefix/")
+
+      case _ => false
+    }
+
   // Check that the user hasn't sent any files in the bag which
   // also have a fetch file entry.
   def verifyNoConcreteFetchEntries(
     fetch: Option[BagFetch],
-    root: ObjectLocationPrefix,
-    actualLocations: Seq[ObjectLocation]
+    root: BagPrefix,
+    actualLocations: Seq[BagLocation]
   ): Either[BagVerifierError, Unit] = {
-    val bagFetchLocations: Seq[(BagPath, ObjectLocation)] = fetch match {
+    val bagFetchLocations: Seq[(BagPath, BagLocation)] = fetch match {
       case Some(bagFetch) =>
         bagFetch.paths
           .map { path: BagPath =>

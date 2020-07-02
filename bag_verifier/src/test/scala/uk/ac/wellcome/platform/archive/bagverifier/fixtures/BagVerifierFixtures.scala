@@ -17,6 +17,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.storage.{
+  ObjectLocation,
   ObjectLocationPrefix,
   S3ObjectLocation,
   S3ObjectLocationPrefix
@@ -81,6 +82,8 @@ trait BagVerifierFixtures
 
       val verifier = new BagVerifier[S3ObjectLocation, S3ObjectLocationPrefix](
         namespace = bucket.name,
+        toLocation =
+          (location: ObjectLocation) => S3ObjectLocation(location),
         toPrefix =
           (prefix: ObjectLocationPrefix) => S3ObjectLocationPrefix(prefix)
       )
