@@ -19,7 +19,9 @@ class FixityListChecker[BagLocation <: Location, Container](
       case Right(verifiableLocations) =>
         verifiableLocations
           .map(fixityChecker.check)
-          .foldLeft[FixityListCheckingResult[BagLocation]](FixityListAllCorrect(Nil)) {
+          .foldLeft[FixityListCheckingResult[BagLocation]](
+            FixityListAllCorrect(Nil)
+          ) {
 
             case (
                 existingCorrect: FixityListAllCorrect[BagLocation],
@@ -27,7 +29,10 @@ class FixityListChecker[BagLocation <: Location, Container](
                 ) =>
               FixityListAllCorrect(newCorrect :: existingCorrect.locations)
 
-            case (correct: FixityListAllCorrect[BagLocation], err: FileFixityError[BagLocation]) =>
+            case (
+                correct: FixityListAllCorrect[BagLocation],
+                err: FileFixityError[BagLocation]
+                ) =>
               FixityListWithErrors(
                 errors = List(err),
                 correct = correct.locations
@@ -37,7 +42,10 @@ class FixityListChecker[BagLocation <: Location, Container](
                 existingErrors: FixityListWithErrors[BagLocation],
                 c: FileFixityCorrect[BagLocation]
                 ) =>
-              FixityListWithErrors(existingErrors.errors, c :: existingErrors.correct)
+              FixityListWithErrors(
+                existingErrors.errors,
+                c :: existingErrors.correct
+              )
 
             case (
                 existingErrors: FixityListWithErrors[BagLocation],

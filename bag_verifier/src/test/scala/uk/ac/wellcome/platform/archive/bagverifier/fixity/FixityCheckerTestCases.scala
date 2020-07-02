@@ -14,11 +14,11 @@ import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
 
 trait FixityCheckerTestCases[
-    BagLocation <: Location,
-    Namespace,
-    Context,
-    StreamStoreImpl <: StreamStore[BagLocation]]
-  extends AnyFunSpec
+  BagLocation <: Location,
+  Namespace,
+  Context,
+  StreamStoreImpl <: StreamStore[BagLocation]
+] extends AnyFunSpec
     with Matchers
     with EitherValues
     with NamespaceFixtures[BagLocation, Namespace]
@@ -109,7 +109,8 @@ trait FixityCheckerTestCases[
 
         result shouldBe a[FileFixityCouldNotRead[_]]
 
-        val fixityCouldNotRead = result.asInstanceOf[FileFixityCouldNotRead[BagLocation]]
+        val fixityCouldNotRead =
+          result.asInstanceOf[FileFixityCouldNotRead[BagLocation]]
 
         fixityCouldNotRead.expectedFileFixity shouldBe expectedFileFixity
         fixityCouldNotRead.e shouldBe a[LocationNotFound[_]]
@@ -140,7 +141,8 @@ trait FixityCheckerTestCases[
 
         result shouldBe a[FileFixityMismatch[_]]
 
-        val fixityMismatch = result.asInstanceOf[FileFixityMismatch[BagLocation]]
+        val fixityMismatch =
+          result.asInstanceOf[FileFixityMismatch[BagLocation]]
 
         fixityMismatch.expectedFileFixity shouldBe expectedFileFixity
         fixityMismatch.e shouldBe a[FailedChecksumNoMatch]
@@ -179,7 +181,8 @@ trait FixityCheckerTestCases[
 
         result shouldBe a[FileFixityMismatch[_]]
 
-        val fixityMismatch = result.asInstanceOf[FileFixityMismatch[BagLocation]]
+        val fixityMismatch =
+          result.asInstanceOf[FileFixityMismatch[BagLocation]]
 
         fixityMismatch.expectedFileFixity shouldBe expectedFileFixity
         fixityMismatch.e shouldBe a[Throwable]

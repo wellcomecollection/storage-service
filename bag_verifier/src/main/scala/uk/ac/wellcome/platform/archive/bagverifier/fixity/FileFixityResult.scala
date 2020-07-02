@@ -4,7 +4,8 @@ sealed trait FileFixityResult[BagLocation] {
   val expectedFileFixity: ExpectedFileFixity
 }
 
-sealed trait FileFixityError[BagLocation] extends FileFixityResult[BagLocation] {
+sealed trait FileFixityError[BagLocation]
+    extends FileFixityResult[BagLocation] {
   val e: Throwable
 }
 

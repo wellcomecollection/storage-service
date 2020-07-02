@@ -148,7 +148,9 @@ class BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
           maybeUserFacingMessage = error.userMessage
         )
 
-      case Right(creationError: CouldNotCreateExpectedFixityList[BagLocation]) =>
+      case Right(
+          creationError: CouldNotCreateExpectedFixityList[BagLocation]
+          ) =>
         IngestFailed(
           summary = VerificationIncompleteSummary(
             ingestId = ingestId,

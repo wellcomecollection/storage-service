@@ -33,7 +33,9 @@ trait VerifyNoUnreferencedFiles[BagLocation <: Location] extends Logging {
   ): Either[BagVerifierError, Unit] =
     verificationResult match {
       case FixityListAllCorrect(locations) =>
-        val expectedLocations = locations.map { _.objectLocation.toObjectLocation }
+        val expectedLocations = locations.map {
+          _.objectLocation.toObjectLocation
+        }
 
         debug(s"Expecting the bag to contain: $expectedLocations")
 

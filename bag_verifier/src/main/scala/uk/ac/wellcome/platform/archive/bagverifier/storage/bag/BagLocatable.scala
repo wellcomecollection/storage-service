@@ -9,7 +9,8 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 object BagLocatable {
-  implicit val bagPathLocatable: Locatable[ObjectLocation, ObjectLocationPrefix, BagPath] =
+  implicit val bagPathLocatable
+    : Locatable[ObjectLocation, ObjectLocationPrefix, BagPath] =
     new Locatable[ObjectLocation, ObjectLocationPrefix, BagPath] {
       override def locate(bagPath: BagPath)(
         maybeRoot: Option[ObjectLocationPrefix]
