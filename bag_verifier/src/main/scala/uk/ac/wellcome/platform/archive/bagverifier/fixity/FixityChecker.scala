@@ -1,4 +1,5 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity
+
 import java.net.URI
 
 import grizzled.slf4j.Logging
@@ -13,23 +14,19 @@ import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.tags.Tags
-import uk.ac.wellcome.storage.{DoesNotExistError, ObjectLocation, ReadError}
+import uk.ac.wellcome.storage.{DoesNotExistError, Location, ReadError}
 
 import scala.util.{Failure, Success}
 
 /** Look up and check the fixity info (checksum, size) on an individual file.
   *
   */
-trait FixityChecker[BagLocation] extends Logging {
-  protected val streamStore: StreamStore[ObjectLocation]
+trait FixityChecker[BagLocation <: Location] extends Logging {
+  protected val streamStore: StreamStore[BagLocation]
   protected val sizeFinder: SizeFinder[BagLocation]
-  val tags: Tags[ObjectLocation]
+  val tags: Tags[BagLocation]
 
   def locate(uri: URI): Either[LocateFailure[URI], BagLocation]
-
-  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
-  // See https://github.com/wellcomecollection/platform/issues/4596
-  def toLocation(bagLocation: BagLocation): ObjectLocation
 
   def check(expectedFileFixity: ExpectedFileFixity): FileFixityResult = {
     debug(s"Attempting to verify: $expectedFileFixity")
@@ -49,19 +46,15 @@ trait FixityChecker[BagLocation] extends Logging {
     //        (e.g. if they're very large and infrequently accessed)
 
     val fixityResult = for {
-      bagLocation <- parseLocation(expectedFileFixity)
+      location <- parseLocation(expectedFileFixity)
       _ = debug(
-        s"Parsed location for ${expectedFileFixity.uri} as $bagLocation"
+        s"Parsed location for ${expectedFileFixity.uri} as $location"
       )
-
-      // TODO: Bridging code while we split ObjectLocation.  Remove this later.
-      // See https://github.com/wellcomecollection/platform/issues/4596
-      location = toLocation(bagLocation)
 
       existingTags <- getExistingTags(expectedFileFixity, location)
       _ = debug(s"Got existing tags for $location: $existingTags")
 
-      size <- verifySize(expectedFileFixity, bagLocation)
+      size <- verifySize(expectedFileFixity, location)
       _ = debug(s"Checked the size of $location is correct")
 
       result <- verifyChecksum(
@@ -99,7 +92,7 @@ trait FixityChecker[BagLocation] extends Logging {
 
   private def getExistingTags(
     expectedFileFixity: ExpectedFileFixity,
-    location: ObjectLocation
+    location: BagLocation
   ): Either[FileFixityCouldNotRead, Map[String, String]] =
     handleReadErrors(
       tags.get(location).map(_.identifiedT),
@@ -108,7 +101,7 @@ trait FixityChecker[BagLocation] extends Logging {
 
   private def openInputStream(
     expectedFileFixity: ExpectedFileFixity,
-    location: ObjectLocation
+    location: BagLocation
   ): Either[FileFixityCouldNotRead, InputStreamWithLength] =
     handleReadErrors(
       streamStore.get(location),
@@ -143,7 +136,7 @@ trait FixityChecker[BagLocation] extends Logging {
 
   private def verifyChecksum(
     expectedFileFixity: ExpectedFileFixity,
-    location: ObjectLocation,
+    location: BagLocation,
     existingTags: Map[String, String],
     algorithm: HashingAlgorithm,
     size: Long
@@ -154,7 +147,7 @@ trait FixityChecker[BagLocation] extends Logging {
         Right(
           FileFixityCorrect(
             expectedFileFixity = expectedFileFixity,
-            objectLocation = location,
+            objectLocation = location.toObjectLocation,
             size = size
           )
         )
@@ -186,7 +179,7 @@ trait FixityChecker[BagLocation] extends Logging {
 
   private def verifyChecksumFromInputStream(
     expectedFileFixity: ExpectedFileFixity,
-    location: ObjectLocation,
+    location: BagLocation,
     inputStream: InputStreamWithLength,
     algorithm: HashingAlgorithm,
     size: Long
@@ -208,7 +201,7 @@ trait FixityChecker[BagLocation] extends Logging {
         Left(
           FileFixityCouldNotGetChecksum(
             expectedFileFixity = expectedFileFixity,
-            objectLocation = location,
+            objectLocation = location.toObjectLocation,
             e = FailedChecksumCreation(algorithm, e)
           )
         )
@@ -217,7 +210,7 @@ trait FixityChecker[BagLocation] extends Logging {
         Right(
           FileFixityCorrect(
             expectedFileFixity = expectedFileFixity,
-            objectLocation = location,
+            objectLocation = location.toObjectLocation,
             size = inputStream.length
           )
         )
@@ -245,7 +238,7 @@ trait FixityChecker[BagLocation] extends Logging {
 
   private def writeFixityTags(
     expectedFileFixity: ExpectedFileFixity,
-    location: ObjectLocation
+    location: BagLocation
   ): Either[FileFixityCouldNotWriteTag, Unit] =
     tags
       .update(location) { existingTags =>
@@ -273,7 +266,7 @@ trait FixityChecker[BagLocation] extends Logging {
         Left(
           FileFixityCouldNotWriteTag(
             expectedFileFixity = expectedFileFixity,
-            objectLocation = location,
+            objectLocation = location.toObjectLocation,
             e = writeError.e
           )
         )
