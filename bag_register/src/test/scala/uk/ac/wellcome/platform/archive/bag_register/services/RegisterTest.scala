@@ -11,6 +11,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
 import uk.ac.wellcome.platform.archive.common.generators.{StorageLocationGenerators, StorageSpaceGenerators}
 import uk.ac.wellcome.platform.archive.common.storage.models.{IngestCompleted, IngestFailed}
+import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemorySizeFinder
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore, MemoryTypedStore}
@@ -29,11 +30,14 @@ class RegisterTest
     with IntegrationPatience {
 
   it("registers a bag with primary and secondary locations") {
-    implicit val store: MemoryStore[MemoryLocation, Array[Byte]] =
+    implicit val memoryStore: MemoryStore[MemoryLocation, Array[Byte]] =
       new MemoryStore[MemoryLocation, Array[Byte]](initialEntries = Map.empty)
 
     implicit val readable: MemoryStreamStore[MemoryLocation] =
-      new MemoryStreamStore[MemoryLocation](store)
+      new MemoryStreamStore[MemoryLocation](memoryStore)
+
+    implicit val sizeFinder: MemorySizeFinder[MemoryLocation] =
+      new MemorySizeFinder[MemoryLocation](memoryStore)
 
     val bagReader = new MemoryBagReader()
 
@@ -119,11 +123,14 @@ class RegisterTest
   it(
     "includes a user-facing message if the fetch.txt refers to the wrong namespace"
   ) {
-    implicit val store: MemoryStore[MemoryLocation, Array[Byte]] =
+    implicit val memoryStore: MemoryStore[MemoryLocation, Array[Byte]] =
       new MemoryStore[MemoryLocation, Array[Byte]](initialEntries = Map.empty)
 
     implicit val readable: MemoryStreamStore[MemoryLocation] =
-      new MemoryStreamStore[MemoryLocation](store)
+      new MemoryStreamStore[MemoryLocation](memoryStore)
+
+    implicit val sizeFinder: MemorySizeFinder[MemoryLocation] =
+      new MemorySizeFinder[MemoryLocation](memoryStore)
 
     implicit val typedStore: MemoryTypedStore[MemoryLocation, String] =
       new MemoryTypedStore[MemoryLocation, String]()

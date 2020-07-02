@@ -12,8 +12,9 @@ import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryStorageLocation, SecondaryStorageLocation, StorageManifest, StorageSpace}
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
+import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemorySizeFinder
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore, MemoryTypedStore}
+import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
 
 import scala.util.Random
 
@@ -90,8 +91,8 @@ class StorageManifestServiceTest
   describe("sets the locations and replicaLocations correctly") {
     val version = createBagVersion
 
-    implicit val store: MemoryStore[MemoryLocation, Array[Byte]] =
-      new MemoryStore[MemoryLocation, Array[Byte]](initialEntries = Map.empty)
+    implicit val streamReader: MemoryStreamStore[MemoryLocation] =
+      MemoryStreamStore[MemoryLocation]()
 
     val (bagRoot, bag) = createStorageManifestBag(version = version)
 
@@ -151,8 +152,8 @@ class StorageManifestServiceTest
 
     val version = createBagVersion
 
-    implicit val store: MemoryStore[MemoryLocation, Array[Byte]] =
-      new MemoryStore[MemoryLocation, Array[Byte]](initialEntries = Map.empty)
+    implicit val streamReader: MemoryStreamStore[MemoryLocation] =
+      MemoryStreamStore[MemoryLocation]()
 
     val (bagRoot, bag) = createStorageManifestBag(
       version = version,
@@ -191,8 +192,8 @@ class StorageManifestServiceTest
 
     val version = createBagVersion
 
-    implicit val store: MemoryStore[MemoryLocation, Array[Byte]] =
-      new MemoryStore[MemoryLocation, Array[Byte]](initialEntries = Map.empty)
+    implicit val streamReader: MemoryStreamStore[MemoryLocation] =
+      MemoryStreamStore[MemoryLocation]()
 
     val (bagRoot, bag) = createStorageManifestBag(
       version = version,
@@ -256,12 +257,10 @@ class StorageManifestServiceTest
   describe("validates the checksums") {
     val version = createBagVersion
 
-    implicit val store: MemoryStore[MemoryLocation, Array[Byte]] =
-      new MemoryStore[MemoryLocation, Array[Byte]](initialEntries = Map.empty)
+    implicit val streamReader: MemoryStreamStore[MemoryLocation] =
+      MemoryStreamStore[MemoryLocation]()
 
-    val (bagRoot, bag) = createStorageManifestBag(
-      version = version
-    )
+    val (bagRoot, bag) = createStorageManifestBag(version = version)
 
     val location =
       createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
@@ -371,8 +370,8 @@ class StorageManifestServiceTest
     val version = createBagVersion
     val space = createStorageSpace
 
-    implicit val store: MemoryStore[MemoryLocation, Array[Byte]] =
-      new MemoryStore[MemoryLocation, Array[Byte]](initialEntries = Map.empty)
+    implicit val streamReader: MemoryStreamStore[MemoryLocation] =
+      MemoryStreamStore[MemoryLocation]()
 
     val (bagRoot, bag) = createStorageManifestBag(
       space = space,
@@ -423,13 +422,13 @@ class StorageManifestServiceTest
 
       val err = new Throwable("BOOM!")
 
-      val brokenSizeFinder: SizeFinder[MemoryLocation] = new SizeFinder[MemoryLocation] {
+      implicit val streamStore: MemoryStreamStore[MemoryLocation] =
+        MemoryStreamStore[MemoryLocation]()
+
+      implicit val brokenSizeFinder: SizeFinder[MemoryLocation] = new SizeFinder[MemoryLocation] {
         override def get(location: MemoryLocation): ReadEither =
           Left(StoreReadError(err))
       }
-
-      implicit val store: MemoryStore[MemoryLocation, Array[Byte]] =
-        new MemoryStore[MemoryLocation, Array[Byte]](initialEntries = Map.empty)
 
       val service = new MemoryStorageManifestService() {
         override val sizeFinder: SizeFinder[MemoryLocation] = brokenSizeFinder
@@ -458,8 +457,8 @@ class StorageManifestServiceTest
 
       val version = createBagVersion
 
-      implicit val store: MemoryStore[MemoryLocation, Array[Byte]] =
-        new MemoryStore[MemoryLocation, Array[Byte]](initialEntries = Map.empty)
+      implicit val streamReader: MemoryStreamStore[MemoryLocation] =
+        MemoryStreamStore[MemoryLocation]()
 
       val (bagRoot, bag) = createStorageManifestBag(
         version = version,
@@ -470,7 +469,7 @@ class StorageManifestServiceTest
         createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
 
       var sizeCache: Map[MemoryLocation, Long] = Map.empty
-      val cachingSizeFinder = new SizeFinder[MemoryLocation] {
+      implicit val cachingSizeFinder = new SizeFinder[MemoryLocation] {
         override def get(location: MemoryLocation): ReadEither = {
           sizeCache = sizeCache + (location -> Random.nextLong())
           val size = sizeCache(location)
@@ -517,8 +516,8 @@ class StorageManifestServiceTest
 
       val version = createBagVersion
 
-      implicit val store: MemoryStore[MemoryLocation, Array[Byte]] =
-        new MemoryStore[MemoryLocation, Array[Byte]](initialEntries = Map.empty)
+      implicit val streamReader: MemoryStreamStore[MemoryLocation] =
+        MemoryStreamStore[MemoryLocation]()
 
       val (bagRoot, bag) = createStorageManifestBag(
         version = version,
@@ -566,11 +565,8 @@ class StorageManifestServiceTest
   )(
     implicit
     namespace: String = randomAlphanumeric,
-    memoryStore: MemoryStore[MemoryLocation, Array[Byte]]
+    memoryStore: MemoryStreamStore[MemoryLocation]
   ): (MemoryLocationPrefix, Bag) = {
-    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
-      new MemoryStreamStore[MemoryLocation](memoryStore)
-
     implicit val typedStore: MemoryTypedStore[MemoryLocation, String] =
       new MemoryTypedStore[MemoryLocation, String]()
 
@@ -593,8 +589,8 @@ class StorageManifestServiceTest
     "finds files that aren't referenced in the BagIt tagmanifest-sha256.txt"
   ) {
     it("finds BagIt tag manifest files") {
-      implicit val store: MemoryStore[MemoryLocation, Array[Byte]] =
-        new MemoryStore[MemoryLocation, Array[Byte]](initialEntries = Map.empty)
+      implicit val streamReader: MemoryStreamStore[MemoryLocation] =
+        MemoryStreamStore[MemoryLocation]()
 
       val space = createStorageSpace
       val externalIdentifier = createExternalIdentifier
@@ -634,12 +630,12 @@ class StorageManifestServiceTest
         Right(Identified(location, Random.nextLong().abs))
     }
   )(
-    implicit readable: MemoryStore[MemoryLocation, Array[Byte]]
+    implicit streamStore: MemoryStreamStore[MemoryLocation]
   ): StorageManifest = {
+    implicit val sizeFinder: SizeFinder[MemoryLocation] =
+      sizeFinderImpl
 
-    val service = new MemoryStorageManifestService() {
-      override val sizeFinder: SizeFinder[MemoryLocation] = sizeFinderImpl
-    }
+    val service = new MemoryStorageManifestService()
 
     val result = service.createManifest(
       ingestId = ingestId,
@@ -687,8 +683,11 @@ class StorageManifestServiceTest
     replicas: Seq[SecondaryStorageLocation] = Seq.empty,
     version: BagVersion = BagVersion(1)
   )(assertError: Throwable => Assertion): Assertion = {
-    implicit val store: MemoryStore[MemoryLocation, Array[Byte]] =
-      new MemoryStore[MemoryLocation, Array[Byte]](initialEntries = Map.empty)
+    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
+      MemoryStreamStore[MemoryLocation]()
+
+    implicit val sizeFinder: MemorySizeFinder[MemoryLocation] =
+      new MemorySizeFinder[MemoryLocation](streamStore.memoryStore)
 
     val service = new MemoryStorageManifestService()
 

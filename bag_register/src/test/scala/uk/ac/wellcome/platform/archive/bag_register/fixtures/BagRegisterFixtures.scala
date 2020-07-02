@@ -21,6 +21,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAsser
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestStatusUpdate}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
+import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemorySizeFinder
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore, MemoryTypedStore}
@@ -68,8 +69,11 @@ trait BagRegisterFixtures
       withFakeMonitoringClient() { implicit monitoringClient =>
         val bagReader = new MemoryBagReader()
 
-        implicit val store: MemoryStore[MemoryLocation, Array[Byte]] =
+        implicit val memoryStore: MemoryStore[MemoryLocation, Array[Byte]] =
           streamStore.memoryStore
+
+        implicit val sizeFinder: MemorySizeFinder[MemoryLocation] =
+          new MemorySizeFinder[MemoryLocation](memoryStore)
 
         val storageManifestService = new MemoryStorageManifestService()
 
