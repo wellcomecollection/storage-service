@@ -115,6 +115,8 @@ if __name__ == "__main__":
                 pprint(item)
                 raise
 
+            # This was a test item sent with the new replica aggregator models,
+            # so it should be unchanged by this migration.
             if item["id"] == "testing/test_bag/v56":
                 assert item == original_item
 
