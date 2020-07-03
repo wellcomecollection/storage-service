@@ -1,15 +1,65 @@
 package uk.ac.wellcome.platform.archive.common.storage.models
 
-import uk.ac.wellcome.storage.{Location, Prefix}
+import uk.ac.wellcome.platform.archive.common.ingests.models.AmazonS3StorageProvider
+import uk.ac.wellcome.storage.{Location, Prefix, S3ObjectLocationPrefix}
 
 sealed trait ReplicaLocation {
   val prefix: Prefix[_ <: Location]
 }
 
-case class PrimaryReplicaLocation(
-  prefix: Prefix[_ <: Location]
-) extends ReplicaLocation
+object ReplicaLocation {
+  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
+  // See https://github.com/wellcomecollection/platform/issues/4596
+  def fromStorageLocation(storageLocation: StorageLocation): ReplicaLocation =
+    storageLocation match {
+      case primary: PrimaryStorageLocation =>
+        PrimaryS3ReplicaLocation(
+          prefix = S3ObjectLocationPrefix(primary.prefix)
+        )
 
-case class SecondaryReplicaLocation(
-  prefix: Prefix[_ <: Location]
-) extends ReplicaLocation
+      case secondary: SecondaryStorageLocation =>
+        SecondaryS3ReplicaLocation(
+          prefix = S3ObjectLocationPrefix(secondary.prefix)
+        )
+    }
+}
+
+sealed trait S3ReplicaLocation extends ReplicaLocation {
+  val prefix: S3ObjectLocationPrefix
+}
+
+sealed trait PrimaryReplicaLocation extends ReplicaLocation {
+  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
+  // See https://github.com/wellcomecollection/platform/issues/4596
+  def toStorageLocation: PrimaryStorageLocation
+}
+
+sealed trait SecondaryReplicaLocation extends ReplicaLocation {
+  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
+  // See https://github.com/wellcomecollection/platform/issues/4596
+  def toStorageLocation: SecondaryStorageLocation
+}
+
+case class PrimaryS3ReplicaLocation(
+  prefix: S3ObjectLocationPrefix
+) extends S3ReplicaLocation with PrimaryReplicaLocation {
+  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
+  // See https://github.com/wellcomecollection/platform/issues/4596
+  override def toStorageLocation: PrimaryStorageLocation =
+    PrimaryStorageLocation(
+      provider = AmazonS3StorageProvider,
+      prefix = prefix.toObjectLocationPrefix
+    )
+}
+
+case class SecondaryS3ReplicaLocation(
+  prefix: S3ObjectLocationPrefix
+) extends S3ReplicaLocation with SecondaryReplicaLocation {
+  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
+  // See https://github.com/wellcomecollection/platform/issues/4596
+  override def toStorageLocation: SecondaryStorageLocation =
+    SecondaryStorageLocation(
+      provider = AmazonS3StorageProvider,
+      prefix = prefix.toObjectLocationPrefix
+    )
+}
