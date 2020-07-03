@@ -3,24 +3,21 @@ package uk.ac.wellcome.platform.storage.replica_aggregator.models
 import org.scalatest.TryValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.generators.StorageLocationGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models.SecondaryStorageLocation
-import uk.ac.wellcome.storage.generators.RandomThings
+import uk.ac.wellcome.platform.archive.common.generators.ReplicaLocationGenerators
+import uk.ac.wellcome.platform.archive.common.storage.models.SecondaryReplicaLocation
 
 class AggregatorInternalRecordTest
     extends AnyFunSpec
     with Matchers
     with TryValues
-    with StorageLocationGenerators
-    with RandomThings {
+    with ReplicaLocationGenerators {
 
-  def createReplicas(min: Int = 0): List[SecondaryStorageLocation] =
+  def createReplicas(min: Int = 0): List[SecondaryReplicaLocation] =
     (1 to randomInt(min, 10))
       .map(_ => createSecondaryLocation)
       .toList
 
   describe("creates a record from a single storage location") {
-
     it("primary location") {
       val location = createPrimaryLocation
 

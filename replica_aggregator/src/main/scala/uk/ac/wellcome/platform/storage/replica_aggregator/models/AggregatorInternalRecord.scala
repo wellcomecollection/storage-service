@@ -1,10 +1,6 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator.models
 
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  PrimaryStorageLocation,
-  SecondaryStorageLocation,
-  StorageLocation
-}
+import uk.ac.wellcome.platform.archive.common.storage.models._
 
 import scala.util.Try
 
@@ -14,15 +10,21 @@ import scala.util.Try
   * a secondary replica first.
   */
 case class AggregatorInternalRecord(
-  location: Option[PrimaryStorageLocation],
-  replicas: List[SecondaryStorageLocation]
+  location: Option[PrimaryReplicaLocation],
+  replicas: List[SecondaryReplicaLocation]
 ) {
-  def addLocation(
-    storageLocation: StorageLocation
-  ): Try[AggregatorInternalRecord] =
+  def addLocation(location: ReplicaLocation): Try[AggregatorInternalRecord] =
     AggregatorInternalRecord.addLocation(
       record = this,
-      storageLocation = storageLocation
+      replicaLocation = location
+    )
+
+  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
+  // See https://github.com/wellcomecollection/platform/issues/4596
+  def addLocation(location: StorageLocation): Try[AggregatorInternalRecord] =
+    AggregatorInternalRecord.addLocation(
+      record = this,
+      replicaLocation = ReplicaLocation.fromStorageLocation(location)
     )
 
   def count: Int =
@@ -30,15 +32,21 @@ case class AggregatorInternalRecord(
 }
 
 object AggregatorInternalRecord {
-
+  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
+  // See https://github.com/wellcomecollection/platform/issues/4596
   def apply(storageLocation: StorageLocation): AggregatorInternalRecord =
-    storageLocation match {
-      case primary: PrimaryStorageLocation =>
+    AggregatorInternalRecord(
+      ReplicaLocation.fromStorageLocation(storageLocation)
+    )
+
+  def apply(replicaLocation: ReplicaLocation): AggregatorInternalRecord =
+    replicaLocation match {
+      case primary: PrimaryReplicaLocation =>
         AggregatorInternalRecord(
           location = Some(primary),
           replicas = List.empty
         )
-      case secondary: SecondaryStorageLocation =>
+      case secondary: SecondaryReplicaLocation =>
         AggregatorInternalRecord(
           location = None,
           replicas = List(secondary)
@@ -47,15 +55,15 @@ object AggregatorInternalRecord {
 
   def addLocation(
     record: AggregatorInternalRecord,
-    storageLocation: StorageLocation
+    replicaLocation: ReplicaLocation
   ): Try[AggregatorInternalRecord] = {
-    storageLocation match {
-      case primaryLocation: PrimaryStorageLocation =>
+    replicaLocation match {
+      case primaryLocation: PrimaryReplicaLocation =>
         addPrimaryLocation(
           record = record,
           primaryLocation = primaryLocation
         )
-      case secondaryLocation: SecondaryStorageLocation =>
+      case secondaryLocation: SecondaryReplicaLocation =>
         addSecondaryLocation(
           record = record,
           secondaryLocation = secondaryLocation
@@ -65,7 +73,7 @@ object AggregatorInternalRecord {
 
   private def addSecondaryLocation(
     record: AggregatorInternalRecord,
-    secondaryLocation: SecondaryStorageLocation
+    secondaryLocation: SecondaryReplicaLocation
   ) = Try {
     record.copy(
       replicas = (record.replicas.toSet ++ Set(secondaryLocation)).toList
@@ -74,7 +82,7 @@ object AggregatorInternalRecord {
 
   private def addPrimaryLocation(
     record: AggregatorInternalRecord,
-    primaryLocation: PrimaryStorageLocation
+    primaryLocation: PrimaryReplicaLocation
   ): Try[AggregatorInternalRecord] = Try {
     record.location match {
       case None                                          => record.copy(location = Some(primaryLocation))
