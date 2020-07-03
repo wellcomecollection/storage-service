@@ -42,7 +42,8 @@ sealed trait SecondaryReplicaLocation extends ReplicaLocation {
 
 case class PrimaryS3ReplicaLocation(
   prefix: S3ObjectLocationPrefix
-) extends S3ReplicaLocation with PrimaryReplicaLocation {
+) extends S3ReplicaLocation
+    with PrimaryReplicaLocation {
   override def toStorageLocation: PrimaryStorageLocation =
     PrimaryStorageLocation(
       provider = AmazonS3StorageProvider,
@@ -52,7 +53,8 @@ case class PrimaryS3ReplicaLocation(
 
 case class SecondaryS3ReplicaLocation(
   prefix: S3ObjectLocationPrefix
-) extends S3ReplicaLocation with SecondaryReplicaLocation {
+) extends S3ReplicaLocation
+    with SecondaryReplicaLocation {
   override def toStorageLocation: SecondaryStorageLocation =
     SecondaryStorageLocation(
       provider = AmazonS3StorageProvider,

@@ -35,7 +35,9 @@ object AggregatorInternalRecord {
   // TODO: Bridging code while we split ObjectLocation.  Remove this later.
   // See https://github.com/wellcomecollection/platform/issues/4596
   def apply(storageLocation: StorageLocation): AggregatorInternalRecord =
-    AggregatorInternalRecord(ReplicaLocation.fromStorageLocation(storageLocation))
+    AggregatorInternalRecord(
+      ReplicaLocation.fromStorageLocation(storageLocation)
+    )
 
   def apply(replicaLocation: ReplicaLocation): AggregatorInternalRecord =
     replicaLocation match {

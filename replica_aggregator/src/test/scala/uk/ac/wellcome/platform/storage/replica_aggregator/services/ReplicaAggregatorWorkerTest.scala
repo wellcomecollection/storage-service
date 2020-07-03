@@ -128,7 +128,9 @@ class ReplicaAggregatorWorkerTest
       )
       incompleteAggregation.aggregatorRecord shouldBe AggregatorInternalRecord(
         location = Some(
-          PrimaryS3ReplicaLocation(prefix = S3ObjectLocationPrefix(payload.bagRoot))
+          PrimaryS3ReplicaLocation(
+            prefix = S3ObjectLocationPrefix(payload.bagRoot)
+          )
         ),
         replicas = List.empty
       )
