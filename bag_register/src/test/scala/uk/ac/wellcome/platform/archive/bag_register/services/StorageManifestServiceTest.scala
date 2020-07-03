@@ -587,7 +587,7 @@ class StorageManifestServiceTest
         version = version
       )
 
-    bagBuilder.uploadBagObjects(bagObjects)
+    bagBuilder.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
 
     (
       bagRoot,

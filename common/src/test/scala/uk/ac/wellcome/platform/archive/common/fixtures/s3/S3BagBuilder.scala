@@ -59,7 +59,7 @@ trait S3BagBuilder
     )
 
     implicit val typedStore: NewS3TypedStore[String] = NewS3TypedStore[String]
-    uploadBagObjects(bagObjects)
+    uploadBagObjects(bagRoot, objects = bagObjects)
 
     (bagRoot, bagInfo)
   }

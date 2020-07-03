@@ -3,6 +3,8 @@ package uk.ac.wellcome.platform.archive.bagverifier.services.s3
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifier, BagVerifierTestCases}
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
+import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.PayloadEntry
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
@@ -53,4 +55,12 @@ class S3BagVerifierTest
 
   override def buildFetchEntryLineImpl(entry: PayloadEntry)(implicit bucket: Bucket): String =
     buildFetchEntryLine(entry)
+
+  override def writeFile(location: S3ObjectLocation, contents: String): Unit =
+    s3Client.putObject(location.bucket, location.key, contents)
+
+  override def createBagReader(
+    implicit typedStore: TypedStore[S3ObjectLocation, String]
+  ): BagReader[S3ObjectLocation, S3ObjectLocationPrefix] =
+    new S3BagReader()
 }

@@ -33,6 +33,7 @@ trait BagBuilder[
   def createBagLocation(bagRoot: BagLocationPrefix, path: String): BagLocation
 
   def uploadBagObjects(
+    bagRoot: BagLocationPrefix,
     objects: Map[BagLocation, String]
   )(implicit typedStore: TypedStore[BagLocation, String]): Unit =
     objects.foreach {
