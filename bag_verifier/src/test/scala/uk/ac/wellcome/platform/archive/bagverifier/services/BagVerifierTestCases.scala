@@ -68,7 +68,7 @@ trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[BagLocat
       buildFetchEntryLineImpl(entry)
   }
 
-  it("accepts a correctly-formatted bag") {
+  it("passes a bag with correct checksum values") {
     withNamespace { implicit namespace =>
       withTypedStore { implicit typedStore =>
         val space = createStorageSpace
