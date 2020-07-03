@@ -21,7 +21,7 @@ trait BagReaderTestCases[
     with Matchers
     with EitherValues
     with StorageRandomThings
-    with BagBuilder[BagLocation, BagPrefix] {
+    with BagBuilder[BagLocation, BagPrefix, Namespace] {
   def withContext[R](testWith: TestWith[Context, R]): R
   def withTypedStore[R](
     testWith: TestWith[TypedStore[BagLocation, String], R]
@@ -196,11 +196,9 @@ trait BagReaderTestCases[
 
   protected def createBag()(
     implicit
-    ns: Namespace,
+    namespace: Namespace,
     typedStore: TypedStore[BagLocation, String]
   ): (BagPrefix, BagInfo) = {
-    implicit val namespace: String = toString(ns)
-
     val (bagObjects, bagRoot, bagInfo) = createBagContentsWith()
 
     uploadBagObjects(bagObjects)

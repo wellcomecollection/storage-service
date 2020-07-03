@@ -13,9 +13,9 @@ import uk.ac.wellcome.storage.store.TypedStore
 
 import scala.util.Random
 
-trait BagBuilder[BagLocation <: Location, BagLocationPrefix <: Prefix[
-  BagLocation
-]] extends StorageSpaceGenerators
+trait BagBuilder[
+  BagLocation <: Location, BagLocationPrefix <: Prefix[BagLocation], Namespace]
+    extends StorageSpaceGenerators
     with BagInfoGenerators {
 
   case class PayloadEntry(bagPath: BagPath, path: String, contents: String)
@@ -27,7 +27,7 @@ trait BagBuilder[BagLocation <: Location, BagLocationPrefix <: Prefix[
     externalIdentifier: ExternalIdentifier,
     version: BagVersion
   )(
-    implicit namespace: String
+    implicit namespace: Namespace
   ): BagLocationPrefix
 
   def createBagLocation(bagRoot: BagLocationPrefix, path: String): BagLocation
@@ -49,7 +49,7 @@ trait BagBuilder[BagLocation <: Location, BagLocationPrefix <: Prefix[
     version: BagVersion = BagVersion(randomInt(from = 2, to = 10)),
     payloadFileCount: Int = randomInt(from = 5, to = 50)
   )(
-    implicit namespace: String
+    implicit namespace: Namespace
   ): (Map[BagLocation, String], BagLocationPrefix, BagInfo) = {
     val fetchEntryCount = getFetchEntryCount(payloadFileCount)
 
@@ -137,7 +137,7 @@ trait BagBuilder[BagLocation <: Location, BagLocationPrefix <: Prefix[
 
   protected def createFetchFile(
     entries: Seq[PayloadEntry]
-  )(implicit namespace: String): Option[String] =
+  )(implicit namespace: Namespace): Option[String] =
     if (entries.isEmpty) {
       None
     } else {
@@ -150,7 +150,7 @@ trait BagBuilder[BagLocation <: Location, BagLocationPrefix <: Prefix[
 
   protected def buildFetchEntryLine(
     entry: PayloadEntry
-  )(implicit namespace: String): String = {
+  )(implicit namespace: Namespace): String = {
     val displaySize =
       if (Random.nextBoolean()) entry.contents.getBytes.length.toString else "-"
 

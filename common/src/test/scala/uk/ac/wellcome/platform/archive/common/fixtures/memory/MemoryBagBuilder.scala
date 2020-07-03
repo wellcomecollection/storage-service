@@ -12,7 +12,7 @@ import uk.ac.wellcome.storage.{MemoryLocation, MemoryLocationPrefix}
 import scala.util.Random
 
 trait MemoryBagBuilder
-    extends BagBuilder[MemoryLocation, MemoryLocationPrefix] {
+    extends BagBuilder[MemoryLocation, MemoryLocationPrefix, String] {
 
   override def createBagRoot(
     space: StorageSpace,
