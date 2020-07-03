@@ -5,6 +5,10 @@ import uk.ac.wellcome.storage.{Location, Prefix, S3ObjectLocationPrefix}
 
 sealed trait ReplicaLocation {
   val prefix: Prefix[_ <: Location]
+
+  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
+  // See https://github.com/wellcomecollection/platform/issues/4596
+  def toStorageLocation: StorageLocation
 }
 
 object ReplicaLocation {
@@ -29,22 +33,16 @@ sealed trait S3ReplicaLocation extends ReplicaLocation {
 }
 
 sealed trait PrimaryReplicaLocation extends ReplicaLocation {
-  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
-  // See https://github.com/wellcomecollection/platform/issues/4596
-  def toStorageLocation: PrimaryStorageLocation
+  override def toStorageLocation: PrimaryStorageLocation
 }
 
 sealed trait SecondaryReplicaLocation extends ReplicaLocation {
-  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
-  // See https://github.com/wellcomecollection/platform/issues/4596
-  def toStorageLocation: SecondaryStorageLocation
+  override def toStorageLocation: SecondaryStorageLocation
 }
 
 case class PrimaryS3ReplicaLocation(
   prefix: S3ObjectLocationPrefix
 ) extends S3ReplicaLocation with PrimaryReplicaLocation {
-  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
-  // See https://github.com/wellcomecollection/platform/issues/4596
   override def toStorageLocation: PrimaryStorageLocation =
     PrimaryStorageLocation(
       provider = AmazonS3StorageProvider,
@@ -55,8 +53,6 @@ case class PrimaryS3ReplicaLocation(
 case class SecondaryS3ReplicaLocation(
   prefix: S3ObjectLocationPrefix
 ) extends S3ReplicaLocation with SecondaryReplicaLocation {
-  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
-  // See https://github.com/wellcomecollection/platform/issues/4596
   override def toStorageLocation: SecondaryStorageLocation =
     SecondaryStorageLocation(
       provider = AmazonS3StorageProvider,

@@ -3,15 +3,15 @@ package uk.ac.wellcome.platform.storage.replica_aggregator.services
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
+import uk.ac.wellcome.platform.archive.common.generators.ReplicaLocationGenerators
 import uk.ac.wellcome.platform.archive.common.storage.models.KnownReplicas
-import uk.ac.wellcome.platform.archive.common.generators.StorageLocationGenerators
 import uk.ac.wellcome.platform.storage.replica_aggregator.models.AggregatorInternalRecord
 
 class ReplicaCounterTest
     extends AnyFunSpec
     with Matchers
     with EitherValues
-    with StorageLocationGenerators {
+    with ReplicaLocationGenerators {
   it("rejects a record without a primary location") {
     val counter = new ReplicaCounter(expectedReplicaCount = 1)
 
@@ -51,7 +51,7 @@ class ReplicaCounterTest
     )
 
     counter.countReplicas(record).right.value shouldBe KnownReplicas(
-      location = location,
+      location = location.toStorageLocation,
       replicas = List.empty
     )
   }
@@ -68,8 +68,8 @@ class ReplicaCounterTest
     )
 
     counter.countReplicas(record).right.value shouldBe KnownReplicas(
-      location = location,
-      replicas = replicas
+      location = location.toStorageLocation,
+      replicas = replicas.map { _.toStorageLocation }
     )
   }
 
@@ -104,8 +104,8 @@ class ReplicaCounterTest
     )
 
     counter.countReplicas(record).right.value shouldBe KnownReplicas(
-      location = location,
-      replicas = replicas
+      location = location.toStorageLocation,
+      replicas = replicas.map { _.toStorageLocation }
     )
   }
 }
