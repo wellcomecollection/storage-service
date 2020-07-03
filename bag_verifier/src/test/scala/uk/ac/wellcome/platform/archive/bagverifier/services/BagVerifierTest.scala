@@ -51,66 +51,6 @@ class BagVerifierTest
     "bag-info.txt"
   ).size
 
-  it("fails a bag with an incorrect checksum in the file manifest") {
-    val badBuilder = new S3BagBuilder {
-      override protected def createPayloadManifest(
-        entries: Seq[PayloadEntry]
-      ): Option[String] =
-        super.createPayloadManifest(
-          entries.head.copy(contents = randomAlphanumeric) +: entries.tail
-        )
-    }
-
-    assertBagFails(badBuilder) {
-      case (ingestFailed, summary) =>
-        val fixityListResult = summary.fixityListResult.value
-
-        verifySuccessCount(
-          fixityListResult.correct,
-          expectedCount = expectedFileCount - 1
-        )
-        fixityListResult.errors should have size 1
-
-        val fixityError = fixityListResult.errors.head
-        val error = fixityError.e
-
-        error shouldBe a[FailedChecksumNoMatch]
-        error.getMessage should include("Checksum values do not match!")
-
-        ingestFailed.maybeUserFacingMessage.get should startWith(
-          "Unable to verify one file in the bag:"
-        )
-    }
-  }
-
-  it("fails a bag with an incorrect checksum in the tag manifest") {
-    val badBuilder = new S3BagBuilder {
-      override protected def createTagManifest(
-        entries: Seq[ManifestFile]
-      ): Option[String] =
-        super.createTagManifest(
-          entries.head.copy(contents = randomAlphanumeric) +: entries.tail
-        )
-    }
-
-    assertBagFails(badBuilder) {
-      case (_, summary) =>
-        val fixityListResult = summary.fixityListResult.value
-
-        verifySuccessCount(
-          fixityListResult.correct,
-          expectedCount = expectedFileCount - 1
-        )
-        fixityListResult.errors should have size 1
-
-        val fixityError = fixityListResult.errors.head
-        val error = fixityError.e
-
-        error shouldBe a[FailedChecksumNoMatch]
-        error.getMessage should include("Checksum values do not match!")
-    }
-  }
-
   it("fails a bag with multiple incorrect checksums in the file manifest") {
     val badBuilder = new S3BagBuilder {
       override protected def createPayloadManifest(

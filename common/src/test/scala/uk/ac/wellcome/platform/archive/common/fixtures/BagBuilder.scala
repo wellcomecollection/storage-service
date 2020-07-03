@@ -13,12 +13,12 @@ import uk.ac.wellcome.storage.store.TypedStore
 
 import scala.util.Random
 
+case class PayloadEntry(bagPath: BagPath, path: String, contents: String)
+
 trait BagBuilder[
   BagLocation <: Location, BagLocationPrefix <: Prefix[BagLocation], Namespace]
     extends StorageSpaceGenerators
     with BagInfoGenerators {
-
-  case class PayloadEntry(bagPath: BagPath, path: String, contents: String)
 
   case class ManifestFile(name: String, contents: String)
 
@@ -150,12 +150,7 @@ trait BagBuilder[
 
   protected def buildFetchEntryLine(
     entry: PayloadEntry
-  )(implicit namespace: Namespace): String = {
-    val displaySize =
-      if (Random.nextBoolean()) entry.contents.getBytes.length.toString else "-"
-
-    s"""bag://$namespace/${entry.path} $displaySize ${entry.bagPath}"""
-  }
+  )(implicit namespace: Namespace): String
 
   protected def createPayloadOxum(entries: Seq[PayloadEntry]): PayloadOxum =
     PayloadOxum(
