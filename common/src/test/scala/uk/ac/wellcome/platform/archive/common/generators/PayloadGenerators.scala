@@ -118,13 +118,20 @@ trait PayloadGenerators
       bagRoot = bagRoot.toObjectLocationPrefix
     )
 
-  def createReplicaResultPayload: ReplicaResultPayload =
+  def createReplicaResultPayloadWith(
+    provider: StorageProvider = createProvider
+  ): ReplicaResultPayload =
     ReplicaResultPayload(
       context = createPipelineContext,
       replicaResult = ReplicaResult(
-        storageLocation = createPrimaryLocation,
+        storageLocation = createPrimaryLocationWith(
+          provider = provider
+        ),
         timestamp = Instant.now
       ),
       version = createBagVersion
     )
+
+  def createReplicaResultPayload: ReplicaResultPayload =
+    createReplicaResultPayloadWith()
 }
