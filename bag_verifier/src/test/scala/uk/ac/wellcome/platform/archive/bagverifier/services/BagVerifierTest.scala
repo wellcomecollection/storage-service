@@ -51,41 +51,6 @@ class BagVerifierTest
     "bag-info.txt"
   ).size
 
-  it("passes a bag with correct checksum values") {
-    withLocalS3Bucket { bucket =>
-      val space = createStorageSpace
-      val (bagRoot, bagInfo) = createS3BagWith(
-        bucket,
-        space = space,
-        payloadFileCount = payloadFileCount
-      )
-
-      val ingestStep =
-        withVerifier(bucket) {
-          _.verify(
-            ingestId = createIngestID,
-            root = bagRoot,
-            space = space,
-            externalIdentifier = bagInfo.externalIdentifier
-          )
-        }
-
-      val result = ingestStep.success.get
-
-      result shouldBe a[IngestStepSucceeded[_]]
-      result.summary shouldBe a[VerificationSuccessSummary]
-
-      val summary = result.summary
-        .asInstanceOf[VerificationSuccessSummary]
-      val fixityListResult = summary.fixityListResult.value
-
-      verifySuccessCount(
-        fixityListResult.locations,
-        expectedCount = expectedFileCount
-      )
-    }
-  }
-
   it("fails a bag with an incorrect checksum in the file manifest") {
     val badBuilder = new S3BagBuilder {
       override protected def createPayloadManifest(
