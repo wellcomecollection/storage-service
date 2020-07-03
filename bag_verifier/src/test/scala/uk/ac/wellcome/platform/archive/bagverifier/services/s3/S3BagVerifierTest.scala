@@ -1,8 +1,14 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services.s3
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifier, BagVerifierTestCases}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{
+  BagVerifier,
+  BagVerifierTestCases
+}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.PayloadEntry
@@ -14,16 +20,21 @@ import uk.ac.wellcome.storage.store.s3.NewS3TypedStore
 import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 class S3BagVerifierTest
-  extends BagVerifierTestCases[S3ObjectLocation, S3ObjectLocationPrefix, Bucket]
+    extends BagVerifierTestCases[
+      S3ObjectLocation,
+      S3ObjectLocationPrefix,
+      Bucket
+    ]
     with S3BagBuilder {
 
   override def withTypedStore[R](
-      testWith: TestWith[TypedStore[S3ObjectLocation, String], R]): R =
+    testWith: TestWith[TypedStore[S3ObjectLocation, String], R]
+  ): R =
     testWith(NewS3TypedStore[String])
 
-  override def withVerifier[R](
-    primaryBucket: Bucket)(
-    testWith: TestWith[BagVerifier[S3ObjectLocation, S3ObjectLocationPrefix], R])(
+  override def withVerifier[R](primaryBucket: Bucket)(
+    testWith: TestWith[BagVerifier[S3ObjectLocation, S3ObjectLocationPrefix], R]
+  )(
     implicit typedStore: TypedStore[S3ObjectLocation, String]
   ): R =
     testWith(
@@ -41,7 +52,8 @@ class S3BagVerifierTest
   override def createBagRootImpl(
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
-    version: BagVersion)(
+    version: BagVersion
+  )(
     implicit bucket: Bucket
   ): S3ObjectLocationPrefix =
     createBagRoot(
@@ -50,10 +62,15 @@ class S3BagVerifierTest
       version = version
     )
 
-  override def createBagLocationImpl(bagRoot: S3ObjectLocationPrefix, path: String): S3ObjectLocation =
+  override def createBagLocationImpl(
+    bagRoot: S3ObjectLocationPrefix,
+    path: String
+  ): S3ObjectLocation =
     createBagLocation(bagRoot, path = path)
 
-  override def buildFetchEntryLineImpl(entry: PayloadEntry)(implicit bucket: Bucket): String =
+  override def buildFetchEntryLineImpl(
+    entry: PayloadEntry
+  )(implicit bucket: Bucket): String =
     buildFetchEntryLine(entry)
 
   override def writeFile(location: S3ObjectLocation, contents: String): Unit =

@@ -15,8 +15,9 @@ import scala.util.Random
 
 case class PayloadEntry(bagPath: BagPath, path: String, contents: String)
 
-trait BagBuilder[
-  BagLocation <: Location, BagLocationPrefix <: Prefix[BagLocation], Namespace]
+trait BagBuilder[BagLocation <: Location, BagLocationPrefix <: Prefix[
+  BagLocation
+], Namespace]
     extends StorageSpaceGenerators
     with BagInfoGenerators {
 
