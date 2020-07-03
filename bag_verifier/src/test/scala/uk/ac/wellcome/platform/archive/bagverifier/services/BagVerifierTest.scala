@@ -1,6 +1,5 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{Assertion, OptionValues, TryValues}
@@ -38,14 +37,11 @@ import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 class BagVerifierTest
     extends AnyFunSpec
     with Matchers
-    with ScalaFutures
     with TryValues
     with OptionValues
     with BagVerifierFixtures
     with StorageSpaceGenerators
     with S3BagBuilder {
-
-  type StringTuple = List[(String, String)]
 
   val payloadFileCount: Int = randomInt(from = 1, to = 10)
 
