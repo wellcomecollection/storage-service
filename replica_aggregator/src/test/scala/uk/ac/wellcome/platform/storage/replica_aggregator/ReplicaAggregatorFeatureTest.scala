@@ -9,16 +9,10 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.KnownReplicasPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  KnownReplicas,
-  PrimaryStorageLocation
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{KnownReplicas, PrimaryS3ReplicaLocation, PrimaryStorageLocation}
 import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
-  AggregatorInternalRecord,
-  ReplicaPath
-}
-import uk.ac.wellcome.storage.Version
+import uk.ac.wellcome.platform.storage.replica_aggregator.models.{AggregatorInternalRecord, ReplicaPath}
+import uk.ac.wellcome.storage.{S3ObjectLocationPrefix, Version}
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
 class ReplicaAggregatorFeatureTest
@@ -69,7 +63,11 @@ class ReplicaAggregatorFeatureTest
             prefix = payload.bagRoot
           )
 
-          stored.identifiedT.location shouldBe Some(primaryLocation)
+          val primaryReplicaLocation = PrimaryS3ReplicaLocation(
+            prefix = S3ObjectLocationPrefix(payload.bagRoot)
+          )
+
+          stored.identifiedT.location shouldBe Some(primaryReplicaLocation)
 
           stored.identifiedT.replicas shouldBe empty
 
