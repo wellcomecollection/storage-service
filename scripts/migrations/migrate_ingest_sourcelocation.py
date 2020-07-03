@@ -61,26 +61,34 @@ class DecimalEncoder(json.JSONEncoder):
 
 if __name__ == "__main__":
     dynamodb_client = get_aws_resource(
-        "dynamodb",
-        role_arn="arn:aws:iam::975596993436:role/storage-developer"
+        "dynamodb", role_arn="arn:aws:iam::975596993436:role/storage-developer"
     ).meta.client
-    
+
     out_name = "staging_ingests.json"
     table_name = "storage-staging-ingests"
-    
-    total_rows = dynamodb_client.describe_table(TableName=table_name)["Table"]["ItemCount"]
+
+    total_rows = dynamodb_client.describe_table(TableName=table_name)["Table"][
+        "ItemCount"
+    ]
 
     with open(out_name, "a") as out_file:
         out_file.write("---\n")
-        for row in tqdm.tqdm(scan_table(dynamodb_client, TableName=table_name), total=total_rows):
+        for row in tqdm.tqdm(
+            scan_table(dynamodb_client, TableName=table_name), total=total_rows
+        ):
             out_file.write(json.dumps(row, cls=DecimalEncoder) + "\n")
-            
+
             if row["payload"]["sourceLocation"].keys() == {"location", "provider"}:
-                assert row["payload"]["sourceLocation"]["provider"] == "AmazonS3StorageProvider", row
+                assert (
+                    row["payload"]["sourceLocation"]["provider"]
+                    == "AmazonS3StorageProvider"
+                ), row
                 row["payload"]["sourceLocation"] = {
                     "S3SourceLocation": {
                         "location": {
-                            "bucket": row["payload"]["sourceLocation"]["location"]["namespace"],
+                            "bucket": row["payload"]["sourceLocation"]["location"][
+                                "namespace"
+                            ],
                             "key": row["payload"]["sourceLocation"]["location"]["path"],
                         }
                     }
@@ -90,17 +98,19 @@ if __name__ == "__main__":
                 continue
             else:
                 pprint(row)
-                raise ValueError("Unrecognised sourceLocation: {row['payload']['sourceLocation']}")
-            
+                raise ValueError(
+                    "Unrecognised sourceLocation: {row['payload']['sourceLocation']}"
+                )
+
             row["version"] += 1
-            
+
             # print(row["id"])
-            
+
             dynamodb_client.put_item(
                 TableName=table_name,
                 Item=row,
                 ConditionExpression="version < :newVersion",
-                ExpressionAttributeValues={":newVersion": row["version"]}
+                ExpressionAttributeValues={":newVersion": row["version"]},
             )
-            
+
             break
