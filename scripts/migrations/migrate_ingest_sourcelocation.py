@@ -26,39 +26,39 @@ This script read the DynamoDB table holding our ingests, and updated the model
 on old ingests.
 
 """
-​
+
 import decimal
 import json
 from pprint import pprint
-​
+
 from common import get_aws_resource
 import tqdm
-​
-​
+
+
 def scan_table(dynamo_client, *, TableName, **kwargs):
     """
     Generates all the items in a DynamoDB table.
-​
+
     :param dynamo_client: A boto3 client for DynamoDB.
     :param TableName: The name of the table to scan.
-​
+
     Other keyword arguments will be passed directly to the Scan operation.
     See https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Client.scan
-​
+
     """
     # https://alexwlchan.net/2020/05/getting-every-item-from-a-dynamodb-table-with-python/
     paginator = dynamodb_client.get_paginator("scan")
-​
+
     for page in paginator.paginate(TableName=TableName, **kwargs):
         yield from page["Items"]
-​
-​
+
+
 class DecimalEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, decimal.Decimal):
             return int(obj)
-​
-​
+
+
 if __name__ == "__main__":
     dynamodb_client = get_aws_resource(
         "dynamodb",
@@ -69,7 +69,7 @@ if __name__ == "__main__":
     table_name = "storage-staging-ingests"
     
     total_rows = dynamodb_client.describe_table(TableName=table_name)["Table"]["ItemCount"]
-​
+
     with open(out_name, "a") as out_file:
         out_file.write("---\n")
         for row in tqdm.tqdm(scan_table(dynamodb_client, TableName=table_name), total=total_rows):
