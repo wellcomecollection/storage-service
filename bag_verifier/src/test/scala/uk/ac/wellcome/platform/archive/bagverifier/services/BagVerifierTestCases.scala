@@ -122,7 +122,7 @@ trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
 
         val ingestStep =
           withVerifier(namespace) {
-            _.verify(
+            _.verifyStandaloneBag(
               ingestId = createIngestID,
               root = bagRoot,
               space = space,
@@ -284,7 +284,7 @@ trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
 
         val ingestStep =
           withVerifier(namespace) {
-            _.verify(
+            _.verifyStandaloneBag(
               ingestId = createIngestID,
               root = bagRoot,
               space = space,
@@ -533,7 +533,7 @@ trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
 
           val ingestStep =
             withVerifier(namespace) {
-              _.verify(
+              _.verifyStandaloneBag(
                 ingestId = createIngestID,
                 root = bagRoot,
                 space = space,
@@ -631,7 +631,7 @@ trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
 
         val ingestStep =
           withVerifier(namespace) {
-            _.verify(
+            _.verifyStandaloneBag(
               ingestId = createIngestID,
               root = bagRoot,
               space = space,

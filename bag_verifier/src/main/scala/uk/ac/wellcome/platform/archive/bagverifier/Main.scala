@@ -6,19 +6,14 @@ import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder,
-  SQSBuilder
-}
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.bagverifier.services.BagVerifierWorker
-import uk.ac.wellcome.platform.archive.bagverifier.services.s3.S3BagVerifier
-import uk.ac.wellcome.platform.archive.common.config.builders.{
-  IngestUpdaterBuilder,
-  OperationNameBuilder,
-  OutgoingPublisherBuilder
+import uk.ac.wellcome.platform.archive.bagverifier.services.s3.{
+  S3ReplicatedBagVerifier,
+  S3UnpackedBagVerifier
 }
+import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -46,10 +41,13 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: SqsAsyncClient =
       SQSBuilder.buildSQSAsyncClient(config)
 
-    val verifier = new S3BagVerifier(
-      primaryBucket =
-        config.requireString("bag-verifier.primary-storage-bucket")
-    )
+    val primaryBucket = config.requireString("bag-verifier.primary-storage-bucket")
+
+    val verifier = config.requireString("bag-verifier.mode") match {
+      case "s3-unpacked" => new S3UnpackedBagVerifier(primaryBucket = primaryBucket)
+      case "s3-replica"  => new S3ReplicatedBagVerifier(primaryBucket = primaryBucket)
+      case mode          => throw new IllegalArgumentException(s"Unrecognised bag-verifier.mode: $mode")
+    }
 
     val operationName =
       OperationNameBuilder.getName(config)

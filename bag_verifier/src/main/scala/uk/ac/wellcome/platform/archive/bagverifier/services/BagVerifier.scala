@@ -33,7 +33,7 @@ trait BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
   implicit val fixityChecker: FixityChecker[BagLocation]
   implicit val listing: Listing[BagPrefix, BagLocation]
 
-  def verify(
+  def verifyStandaloneBag(
     ingestId: IngestID,
     root: BagPrefix,
     space: StorageSpace,
@@ -199,4 +199,36 @@ trait BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
           maybeUserFacingMessage = Some(userFacingMessage)
         )
     }
+}
+
+trait UnpackedBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
+    extends BagVerifier[BagLocation, BagPrefix] {
+  def verifyBag(
+    ingestId: IngestID,
+    root: BagPrefix,
+    space: StorageSpace,
+    externalIdentifier: ExternalIdentifier
+  ): Try[IngestStepResult[VerificationSummary]] =
+    verifyStandaloneBag(
+      ingestId = ingestId,
+      root = root,
+      space = space,
+      externalIdentifier = externalIdentifier
+    )
+}
+
+trait ReplicatedBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
+    extends BagVerifier[BagLocation, BagPrefix] {
+  def verifyBag(
+    ingestId: IngestID,
+    root: BagPrefix,
+    space: StorageSpace,
+    externalIdentifier: ExternalIdentifier
+  ): Try[IngestStepResult[VerificationSummary]] =
+    verifyStandaloneBag(
+      ingestId = ingestId,
+      root = root,
+      space = space,
+      externalIdentifier = externalIdentifier
+    )
 }

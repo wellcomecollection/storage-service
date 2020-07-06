@@ -38,7 +38,7 @@ class BagVerifierWorker[IngestDestination, OutgoingDestination](
   ): Try[IngestStepResult[VerificationSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
-      summary <- verifier.verify(
+      summary <- verifier.verifyStandaloneBag(
         ingestId = payload.ingestId,
         root = S3ObjectLocationPrefix(payload.bagRoot),
         space = payload.storageSpace,
