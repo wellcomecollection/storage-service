@@ -3,7 +3,11 @@ package uk.ac.wellcome.platform.archive.bagverifier.services.s3
 import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.s3.S3FixityChecker
-import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifier, ReplicatedBagVerifier, UnpackedBagVerifier}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{
+  BagVerifier,
+  ReplicatedBagVerifier,
+  UnpackedBagVerifier
+}
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable
 import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.S3Resolvable
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
@@ -41,10 +45,12 @@ trait S3BagVerifier
     new NewS3ObjectLocationListing()
 }
 
-class S3UnpackedBagVerifier(val primaryBucket: String)(implicit val s3Client: AmazonS3)
-  extends S3BagVerifier
+class S3UnpackedBagVerifier(val primaryBucket: String)(
+  implicit val s3Client: AmazonS3
+) extends S3BagVerifier
     with UnpackedBagVerifier[S3ObjectLocation, S3ObjectLocationPrefix]
 
-class S3ReplicatedBagVerifier(val primaryBucket: String)(implicit val s3Client: AmazonS3)
-  extends S3BagVerifier
+class S3ReplicatedBagVerifier(val primaryBucket: String)(
+  implicit val s3Client: AmazonS3
+) extends S3BagVerifier
     with ReplicatedBagVerifier[S3ObjectLocation, S3ObjectLocationPrefix]

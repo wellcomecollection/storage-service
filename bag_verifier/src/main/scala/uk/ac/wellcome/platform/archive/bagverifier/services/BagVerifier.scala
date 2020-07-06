@@ -201,8 +201,9 @@ trait BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     }
 }
 
-trait UnpackedBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
-    extends BagVerifier[BagLocation, BagPrefix] {
+trait UnpackedBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[
+  BagLocation
+]] extends BagVerifier[BagLocation, BagPrefix] {
   def verifyBag(
     ingestId: IngestID,
     root: BagPrefix,
@@ -217,8 +218,9 @@ trait UnpackedBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocati
     )
 }
 
-trait ReplicatedBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
-    extends BagVerifier[BagLocation, BagPrefix] {
+trait ReplicatedBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[
+  BagLocation
+]] extends BagVerifier[BagLocation, BagPrefix] {
   def verifyBag(
     ingestId: IngestID,
     root: BagPrefix,
