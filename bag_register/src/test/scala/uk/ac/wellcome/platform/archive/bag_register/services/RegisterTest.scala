@@ -151,7 +151,7 @@ class RegisterTest
         objLocation.copy(namespace = objLocation.namespace + "_wrong") -> contents
     }
 
-    uploadBagObjects(badBagObjects)
+    uploadBagObjects(bagRoot = bagRoot, objects = badBagObjects)
 
     val location = createPrimaryLocationWith(
       prefix = bagRoot

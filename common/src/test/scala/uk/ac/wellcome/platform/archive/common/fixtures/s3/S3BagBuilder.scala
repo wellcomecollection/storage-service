@@ -5,7 +5,10 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagVersion,
   ExternalIdentifier
 }
-import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagBuilder,
+  PayloadEntry
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
@@ -15,7 +18,7 @@ import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 import scala.util.Random
 
 trait S3BagBuilder
-    extends BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix]
+    extends BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix, Bucket]
     with NewS3Fixtures {
 
   override def createBagRoot(
@@ -23,10 +26,10 @@ trait S3BagBuilder
     externalIdentifier: ExternalIdentifier,
     version: BagVersion
   )(
-    implicit namespace: String
+    implicit bucket: Bucket
   ): S3ObjectLocationPrefix =
     S3ObjectLocationPrefix(
-      bucket = namespace,
+      bucket = bucket.name,
       keyPrefix = createBagRootPath(space, externalIdentifier, version)
     )
 
@@ -41,11 +44,11 @@ trait S3BagBuilder
 
   override protected def buildFetchEntryLine(
     entry: PayloadEntry
-  )(implicit namespace: String): String = {
+  )(implicit bucket: Bucket): String = {
     val displaySize =
       if (Random.nextBoolean()) entry.contents.getBytes.length.toString else "-"
 
-    s"""s3://$namespace/${entry.path} $displaySize ${entry.bagPath}"""
+    s"""s3://${bucket.name}/${entry.path} $displaySize ${entry.bagPath}"""
   }
 
   def createS3BagWith(
@@ -54,7 +57,7 @@ trait S3BagBuilder
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     payloadFileCount: Int = randomInt(from = 5, to = 50)
   ): (S3ObjectLocationPrefix, BagInfo) = {
-    implicit val namespace: String = bucket.name
+    implicit val namespace: Bucket = bucket
 
     val (bagObjects, bagRoot, bagInfo) = createBagContentsWith(
       space = space,
@@ -63,7 +66,7 @@ trait S3BagBuilder
     )
 
     implicit val typedStore: NewS3TypedStore[String] = NewS3TypedStore[String]
-    uploadBagObjects(bagObjects)
+    uploadBagObjects(bagRoot, objects = bagObjects)
 
     (bagRoot, bagInfo)
   }

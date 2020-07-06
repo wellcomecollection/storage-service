@@ -173,7 +173,7 @@ trait BagRegisterFixtures
         payloadFileCount = dataFileCount
       )
 
-    uploadBagObjects(bagObjects)
+    uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
 
     (bagRoot, bagInfo)
   }
