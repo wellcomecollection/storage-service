@@ -22,7 +22,7 @@ trait StorageManifestService[BagLocation <: Location] extends Logging {
 
   implicit val streamReader: Readable[BagLocation, InputStreamWithLength]
 
-  private val tagManifestFileFinder = new TagManifestFileFinder()
+  private lazy val tagManifestFileFinder = new TagManifestFileFinder()
 
   def createLocation(uri: URI): BagLocation
 
