@@ -6,7 +6,7 @@ import java.time.Instant
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
+import uk.ac.wellcome.platform.archive.common.ingests.models.{AmazonS3StorageProvider, IngestID}
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
 import uk.ac.wellcome.storage._
@@ -15,8 +15,8 @@ import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 import scala.util.{Failure, Success, Try}
 
-trait StorageManifestService[BagLocation <: Location] extends Logging {
-  def toLocationPrefix(prefix: ObjectLocationPrefix): Prefix[BagLocation]
+trait StorageManifestService[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] extends Logging {
+  def toLocationPrefix(prefix: ObjectLocationPrefix): BagPrefix
 
   val sizeFinder: SizeFinder[BagLocation]
 
@@ -67,6 +67,24 @@ trait StorageManifestService[BagLocation <: Location] extends Logging {
         tagManifest = bag.tagManifest
       )
 
+      // TODO: Bridging code while we split ObjectLocation.
+      // Eventually this will be passed new-style StorageLocations directly,
+      // and we can remove all this code.
+      primaryLocation = {
+        assert(location.provider == AmazonS3StorageProvider)
+        PrimaryS3StorageLocation(
+          prefix = bagRoot.asInstanceOf[S3ObjectLocationPrefix]
+        )
+      }
+
+      secondaryLocations = replicaLocations
+        .map { location =>
+          assert(location.provider == AmazonS3StorageProvider)
+          SecondaryS3StorageLocation(
+            prefix = bagRoot.asInstanceOf[S3ObjectLocationPrefix]
+          )
+        }
+
       storageManifest = StorageManifest(
         space = space,
         info = bag.info,
@@ -79,11 +97,8 @@ trait StorageManifestService[BagLocation <: Location] extends Logging {
           checksumAlgorithm = bag.tagManifest.checksumAlgorithm,
           files = tagManifestFiles ++ unreferencedTagManifestFiles
         ),
-        location = PrimaryStorageLocation(
-          provider = location.provider,
-          prefix = bagRoot.toObjectLocationPrefix
-        ),
-        replicaLocations = replicaLocations,
+        location = primaryLocation,
+        replicaLocations = secondaryLocations,
         createdDate = Instant.now,
         ingestId = ingestId
       )
@@ -114,8 +129,7 @@ trait StorageManifestService[BagLocation <: Location] extends Logging {
     } else {
       Failure(
         new StorageManifestException(
-          // TODO: Move the toString method for ObjectLocationPrefix into scala-storage
-          s"Malformed bag root: ${replicaRoot.namespace}/${replicaRoot.path} (expected suffix /$version)"
+          s"Malformed bag root: $replicaRoot (expected suffix /$version)"
         )
       )
     }

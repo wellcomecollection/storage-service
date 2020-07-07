@@ -5,21 +5,15 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
-import uk.ac.wellcome.platform.archive.bag_register.services.memory.MemoryStorageManifestService
+import uk.ac.wellcome.platform.archive.bag_register.services.s3.S3StorageManifestService
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
-import uk.ac.wellcome.platform.archive.common.generators.{
-  NewStorageLocationGenerators,
-  StorageSpaceGenerators
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestCompleted,
-  IngestFailed
-}
+import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
+import uk.ac.wellcome.platform.archive.common.generators.{NewStorageLocationGenerators, StorageSpaceGenerators}
+import uk.ac.wellcome.platform.archive.common.ingests.models.AmazonS3StorageProvider
+import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
-import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -35,157 +29,154 @@ class RegisterTest
     with IntegrationPatience {
 
   it("registers a bag with primary and secondary locations") {
-    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
-      MemoryStreamStore[MemoryLocation]()
-
-    val bagReader = new MemoryBagReader()
-
-    val storageManifestService = MemoryStorageManifestService()
+    val storageManifestService = new S3StorageManifestService()
 
     val storageManifestDao = createStorageManifestDao()
 
     val space = createStorageSpace
     val version = createBagVersion
 
-    val (bagRoot, bagInfo) = createRegisterBagWith(
-      space = space,
-      version = version
-    )
-
-    val primaryLocation = createPrimaryLocationWith(
-      prefix = bagRoot.toObjectLocationPrefix
-    )
-
-    val replicas = collectionOf(min = 1) {
-      createSecondaryLocationWith(
-        prefix =
-          bagRoot.copy(namespace = randomAlphanumeric).toObjectLocationPrefix
-      )
-    }
-
-    val ingestId = createIngestID
-
-    withBagTrackerClient(storageManifestDao) { bagTrackerClient =>
-      val register = new Register(
-        bagReader = bagReader,
-        bagTrackerClient = bagTrackerClient,
-        storageManifestService = storageManifestService,
-        toPrefix = (prefix: ObjectLocationPrefix) =>
-          MemoryLocationPrefix(prefix.namespace, prefix.path)
+    withLocalS3Bucket { implicit bucket =>
+      val (bagRoot, bagInfo) = createRegisterBagWith(
+        space = space,
+        version = version
       )
 
-      val future = register.update(
-        ingestId = ingestId,
-        location = primaryLocation,
-        replicas = replicas,
-        version = version,
+      val primaryLocation = PrimaryS3StorageLocation(prefix = bagRoot)
+
+      val replicas = collectionOf(min = 1) {
+        SecondaryS3StorageLocation(
+          prefix = bagRoot.copy(bucket = createBucketName)
+        )
+      }
+
+      val ingestId = createIngestID
+
+      withBagTrackerClient(storageManifestDao) { bagTrackerClient =>
+        val register = new Register(
+          bagReader = new S3BagReader(),
+          bagTrackerClient = bagTrackerClient,
+          storageManifestService = storageManifestService,
+          toPrefix = (prefix: ObjectLocationPrefix) =>
+            S3ObjectLocationPrefix(prefix.namespace, prefix.path)
+        )
+
+        val future = register.update(
+          ingestId = ingestId,
+          location = PrimaryStorageLocation(
+            provider = AmazonS3StorageProvider,
+            prefix = primaryLocation.prefix.toObjectLocationPrefix
+          ),
+          replicas = replicas.map { secondaryLocation =>
+            SecondaryStorageLocation(
+              provider = AmazonS3StorageProvider,
+              prefix = secondaryLocation.prefix.toObjectLocationPrefix
+            )
+          },
+          version = version,
+          space = space,
+          externalIdentifier = bagInfo.externalIdentifier
+        )
+
+        whenReady(future) { result =>
+          result shouldBe a[IngestCompleted[_]]
+
+          val summary = result.asInstanceOf[IngestCompleted[_]].summary
+          summary.asInstanceOf[RegistrationSummary].ingestId shouldBe ingestId
+        }
+      }
+
+      // Check it stores all the locations on the bag.
+      val bagId = BagId(
         space = space,
         externalIdentifier = bagInfo.externalIdentifier
       )
 
-      whenReady(future) { result =>
-        result shouldBe a[IngestCompleted[_]]
+      val manifest =
+        storageManifestDao.getLatest(id = bagId).right.value
 
-        val summary = result.asInstanceOf[IngestCompleted[_]].summary
-        summary.asInstanceOf[RegistrationSummary].ingestId shouldBe ingestId
-      }
+      manifest.location shouldBe primaryLocation.copy(
+        prefix = bagRoot
+          .copy(
+            keyPrefix = bagRoot.pathPrefix.stripSuffix(s"/$version")
+          )
+      )
+
+      manifest.replicaLocations shouldBe
+        replicas.map { secondaryLocation =>
+          val prefix = secondaryLocation.prefix
+
+          secondaryLocation.copy(
+            prefix = prefix
+              .copy(keyPrefix = prefix.keyPrefix.stripSuffix(s"/$version"))
+          )
+        }
     }
-
-    // Check it stores all the locations on the bag.
-    val bagId = BagId(
-      space = space,
-      externalIdentifier = bagInfo.externalIdentifier
-    )
-
-    val manifest =
-      storageManifestDao.getLatest(id = bagId).right.value
-
-    manifest.location shouldBe primaryLocation.copy(
-      prefix = bagRoot
-        .copy(
-          pathPrefix = bagRoot.pathPrefix.stripSuffix(s"/$version")
-        )
-        .toObjectLocationPrefix
-    )
-
-    manifest.replicaLocations shouldBe
-      replicas.map { secondaryLocation =>
-        val prefix = secondaryLocation.prefix
-
-        secondaryLocation.copy(
-          prefix = prefix
-            .copy(path = prefix.path.stripSuffix(s"/$version"))
-        )
-      }
   }
 
   it(
     "includes a user-facing message if the fetch.txt refers to the wrong namespace"
   ) {
-    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
-      MemoryStreamStore[MemoryLocation]()
-
-    implicit val typedStore: MemoryTypedStore[MemoryLocation, String] =
-      new MemoryTypedStore[MemoryLocation, String]()
-
-    val bagReader = new MemoryBagReader()
-
-    val storageManifestService = MemoryStorageManifestService()
+    val storageManifestService = new S3StorageManifestService()
 
     val space = createStorageSpace
     val version = createBagVersion
 
     val storageManifestDao = createStorageManifestDao()
 
-    val (bagObjects, bagRoot, bagInfo) =
-      withNamespace { implicit namespace =>
-        createBagContentsWith(
-          version = version
-        )
+    withLocalS3Bucket { implicit bucket =>
+      val (bagObjects, bagRoot, bagInfo) =
+        withNamespace { implicit namespace =>
+          createBagContentsWith(
+            version = version
+          )
+        }
+
+      // Actually upload the bag objects into a different namespace,
+      // so the entries in the fetch.txt will be wrong.
+      val badBagObjects = bagObjects.map {
+        case (objLocation, contents) =>
+          objLocation.copy(bucket = objLocation.bucket + "-wrong") -> contents
       }
 
-    // Actually upload the bag objects into a different namespace,
-    // so the entries in the fetch.txt will be wrong.
-    val badBagObjects = bagObjects.map {
-      case (objLocation, contents) =>
-        objLocation.copy(namespace = objLocation.namespace + "_wrong") -> contents
-    }
+      uploadBagObjects(bagRoot = bagRoot, objects = badBagObjects)
 
-    uploadBagObjects(bagRoot = bagRoot, objects = badBagObjects)
+      val location = PrimaryS3StorageLocation(
+        prefix = bagRoot
+          .copy(
+            bucket = bagRoot.bucket + "-wrong"
+          )
+      )
 
-    val location = createPrimaryLocationWith(
-      prefix = bagRoot
-        .copy(
-          namespace = bagRoot.namespace + "_wrong"
+      withBagTrackerClient(storageManifestDao) { bagTrackerClient =>
+        val register = new Register(
+          bagReader = new S3BagReader(),
+          bagTrackerClient = bagTrackerClient,
+          storageManifestService = storageManifestService,
+          toPrefix = (prefix: ObjectLocationPrefix) =>
+            S3ObjectLocationPrefix(prefix.namespace, prefix.path)
         )
-        .toObjectLocationPrefix
-    )
 
-    withBagTrackerClient(storageManifestDao) { bagTrackerClient =>
-      val register = new Register(
-        bagReader = bagReader,
-        bagTrackerClient = bagTrackerClient,
-        storageManifestService = storageManifestService,
-        toPrefix = (prefix: ObjectLocationPrefix) =>
-          MemoryLocationPrefix(prefix.namespace, prefix.path)
-      )
+        val future = register.update(
+          ingestId = createIngestID,
+          location = PrimaryStorageLocation(
+            provider = AmazonS3StorageProvider,
+            prefix = location.prefix.toObjectLocationPrefix
+          ),
+          replicas = Seq.empty,
+          version = version,
+          space = space,
+          externalIdentifier = bagInfo.externalIdentifier
+        )
 
-      val future = register.update(
-        ingestId = createIngestID,
-        location = location,
-        replicas = Seq.empty,
-        version = version,
-        space = space,
-        externalIdentifier = bagInfo.externalIdentifier
-      )
+        whenReady(future) { result =>
+          result shouldBe a[IngestFailed[_]]
 
-      whenReady(future) { result =>
-        result shouldBe a[IngestFailed[_]]
-
-        val ingestFailed = result.asInstanceOf[IngestFailed[_]]
-        ingestFailed.e shouldBe a[BadFetchLocationException]
-        ingestFailed.maybeUserFacingMessage.get should fullyMatch regex
-          """Fetch entry for data/[0-9A-Za-z/]+ refers to a file in the wrong namespace: [0-9A-Za-z/]+"""
+          val ingestFailed = result.asInstanceOf[IngestFailed[_]]
+          ingestFailed.e shouldBe a[BadFetchLocationException]
+          ingestFailed.maybeUserFacingMessage.get should fullyMatch regex
+            """Fetch entry for data/[0-9A-Za-z/]+ refers to a file in the wrong namespace: [0-9A-Za-z/]+"""
+        }
       }
     }
   }

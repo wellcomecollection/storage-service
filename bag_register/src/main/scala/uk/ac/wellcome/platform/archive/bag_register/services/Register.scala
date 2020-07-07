@@ -22,7 +22,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class Register[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
   bagReader: BagReader[BagLocation, BagPrefix],
   bagTrackerClient: BagTrackerClient,
-  storageManifestService: StorageManifestService[_],
+  storageManifestService: StorageManifestService[BagLocation, BagPrefix],
   // TODO: Temporary while we disambiguate ObjectLocation.  Remove eventually.
   toPrefix: ObjectLocationPrefix => BagPrefix
 )(
