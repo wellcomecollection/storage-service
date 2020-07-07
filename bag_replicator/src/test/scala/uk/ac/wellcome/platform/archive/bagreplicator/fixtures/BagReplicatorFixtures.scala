@@ -21,7 +21,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.Replicati
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
-import uk.ac.wellcome.platform.archive.common.generators.StorageLocationGenerators
+import uk.ac.wellcome.platform.archive.common.generators.NewStorageLocationGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.StorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
 import uk.ac.wellcome.storage.{ObjectLocationPrefix, S3ObjectLocationPrefix}
@@ -43,7 +43,7 @@ trait BagReplicatorFixtures
     with OperationFixtures
     with AlpakkaSQSWorkerFixtures
     with MemoryLockDaoFixtures
-    with StorageLocationGenerators
+    with NewStorageLocationGenerators
     with S3Fixtures {
 
   type ReplicatorLockingService =

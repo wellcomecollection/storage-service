@@ -15,6 +15,7 @@ import uk.ac.wellcome.storage.{ObjectLocation, S3ObjectLocationPrefix}
 trait PayloadGenerators
     extends ExternalIdentifierGenerators
     with StorageSpaceGenerators
+    with NewStorageLocationGenerators
     with StorageLocationGenerators
     with NewS3Fixtures {
 

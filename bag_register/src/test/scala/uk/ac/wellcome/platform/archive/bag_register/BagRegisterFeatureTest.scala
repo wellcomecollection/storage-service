@@ -12,7 +12,7 @@ import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.generators.{
   PayloadGenerators,
-  StorageLocationGenerators
+  NewStorageLocationGenerators
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   KnownReplicas,
@@ -28,7 +28,7 @@ class BagRegisterFeatureTest
     with BagRegisterFixtures
     with PayloadGenerators
     with Eventually
-    with StorageLocationGenerators
+    with NewStorageLocationGenerators
     with IntegrationPatience {
 
   it("sends an update if it registers a bag") {

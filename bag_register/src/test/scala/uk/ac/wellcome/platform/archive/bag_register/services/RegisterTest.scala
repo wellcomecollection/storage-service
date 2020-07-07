@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
 import uk.ac.wellcome.platform.archive.common.generators.{
-  StorageLocationGenerators,
+  NewStorageLocationGenerators,
   StorageSpaceGenerators
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.{
@@ -28,7 +28,7 @@ class RegisterTest
     with Matchers
     with BagRegisterFixtures
     with StorageSpaceGenerators
-    with StorageLocationGenerators
+    with NewStorageLocationGenerators
     with StringNamespaceFixtures
     with BagTrackerFixtures
     with ScalaFutures

@@ -33,7 +33,7 @@ class StorageManifestServiceTest
     with Matchers
     with BagGenerators
     with FetchMetadataGenerators
-    with StorageLocationGenerators
+    with NewStorageLocationGenerators
     with StorageSpaceGenerators
     with TimeTestFixture
     with EitherValues

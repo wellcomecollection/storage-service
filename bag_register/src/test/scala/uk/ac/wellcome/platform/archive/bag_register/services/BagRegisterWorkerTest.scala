@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagInfoGenerators,
   PayloadGenerators,
-  StorageLocationGenerators
+  NewStorageLocationGenerators
 }
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.MemoryLocation
@@ -27,7 +27,7 @@ class BagRegisterWorkerTest
     with BagInfoGenerators
     with BagRegisterFixtures
     with PayloadGenerators
-    with StorageLocationGenerators {
+    with NewStorageLocationGenerators {
 
   it("handles a successful registration") {
     implicit val streamStore: MemoryStreamStore[MemoryLocation] =
