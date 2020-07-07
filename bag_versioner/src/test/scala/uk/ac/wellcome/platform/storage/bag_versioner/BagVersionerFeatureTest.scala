@@ -18,14 +18,12 @@ import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.VersionedBagRootPayload
 import uk.ac.wellcome.platform.storage.bag_versioner.fixtures.BagVersionerFixtures
 import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
-import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 class BagVersionerFeatureTest
     extends AnyFunSpec
     with BagVersionerFixtures
     with IngestUpdateAssertions
     with PayloadGenerators
-    with ObjectLocationGenerators
     with ExternalIdentifierGenerators
     with StorageSpaceGenerators
     with Eventually
