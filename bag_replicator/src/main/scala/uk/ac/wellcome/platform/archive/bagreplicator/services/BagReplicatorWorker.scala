@@ -6,7 +6,6 @@ import java.util.UUID
 import akka.actor.ActorSystem
 import cats.instances.try_._
 import io.circe.Decoder
-import org.apache.commons.io.IOUtils
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
@@ -19,17 +18,8 @@ import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
-import uk.ac.wellcome.platform.archive.common.{
-  ReplicaResultPayload,
-  VersionedBagRootPayload
-}
-import uk.ac.wellcome.storage.locking.{
-  FailedLockingServiceOp,
-  LockDao,
-  LockingService
-}
-import uk.ac.wellcome.storage.store.StreamStore
-import uk.ac.wellcome.storage.{Identified, ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.platform.archive.common.{ReplicaResultPayload, VersionedBagRootPayload}
+import uk.ac.wellcome.storage.locking.{FailedLockingServiceOp, LockDao, LockingService}
 
 import scala.util.Try
 
@@ -52,8 +42,7 @@ class BagReplicatorWorker[
   val mc: MetricsMonitoringClient,
   val as: ActorSystem,
   val sc: SqsAsyncClient,
-  val wd: Decoder[VersionedBagRootPayload],
-  streamStore: StreamStore[ObjectLocation]
+  val wd: Decoder[VersionedBagRootPayload]
 ) extends IngestStepWorker[
       VersionedBagRootPayload,
       BagReplicationSummary[_]
@@ -117,46 +106,6 @@ class BagReplicatorWorker[
         case BagReplicationFailed(summary, e) =>
           IngestFailed(summary, e)
       }
-
-  /** This step is here to check the bag created by the replica and the
-    * original bag are the same; the verifier can only check that a
-    * bag is correctly formed.
-    *
-    * Without this check, it would be possible for the replicator to
-    * write an entirely different, valid bag -- and because the verifier
-    * doesn't have context for the original bag, it wouldn't flag
-    * it as an error.
-    *
-    */
-  def checkTagManifestsAreTheSame(
-    srcPrefix: ObjectLocationPrefix,
-    dstPrefix: ObjectLocationPrefix
-  ): Try[Unit] = Try {
-    val manifests =
-      for {
-        srcManifest <- streamStore.get(
-          srcPrefix.asLocation("tagmanifest-sha256.txt")
-        )
-        dstManifest <- streamStore.get(
-          dstPrefix.asLocation("tagmanifest-sha256.txt")
-        )
-      } yield (srcManifest, dstManifest)
-
-    manifests match {
-      case Right((Identified(_, srcStream), Identified(_, dstStream))) =>
-        if (IOUtils.contentEquals(srcStream, dstStream)) {
-          ()
-        } else {
-          throw new Throwable(
-            "tagmanifest-sha256.txt in replica source and replica location do not match!"
-          )
-        }
-      case err =>
-        throw new Throwable(
-          s"Unable to load tagmanifest-sha256.txt in source and replica to compare: $err"
-        )
-    }
-  }
 
   def lockFailed(
     ingestId: IngestID,
