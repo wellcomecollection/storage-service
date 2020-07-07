@@ -20,14 +20,12 @@ import uk.ac.wellcome.platform.storage.bag_versioner.models.{
   BagVersionerFailureSummary,
   BagVersionerSuccessSummary
 }
-import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 
 class BagVersionerTest
     extends AnyFunSpec
     with Matchers
     with TryValues
     with BagVersionerFixtures
-    with ObjectLocationGenerators
     with ExternalIdentifierGenerators
     with StorageSpaceGenerators {
 
