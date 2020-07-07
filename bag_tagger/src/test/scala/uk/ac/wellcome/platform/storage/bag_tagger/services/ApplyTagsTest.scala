@@ -10,8 +10,8 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryStorageLocation
 import uk.ac.wellcome.storage.Identified
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
-import uk.ac.wellcome.storage.tags.s3.S3Tags
+import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
+import uk.ac.wellcome.storage.tags.s3.NewS3Tags
 
 import scala.util.Success
 
@@ -19,15 +19,15 @@ class ApplyTagsTest
     extends AnyFunSpec
     with Matchers
     with TryValues
-    with S3Fixtures
+    with NewS3Fixtures
     with StorageManifestGenerators {
-  val s3Tags = new S3Tags()
+  val s3Tags = new NewS3Tags()
   val applyTags = new ApplyTags(s3Tags = s3Tags)
 
   describe("it updates tags") {
     it("to objects in S3") {
       withLocalS3Bucket { bucket =>
-        val prefix = createObjectLocationPrefixWith(bucket.name)
+        val prefix = createS3ObjectLocationPrefixWith(bucket)
 
         val file = createStorageManifestFileWith(
           pathPrefix = "space/externalIdentifier/v1",
@@ -49,7 +49,7 @@ class ApplyTagsTest
           storageLocations = Seq(
             PrimaryStorageLocation(
               provider = AmazonS3StorageProvider,
-              prefix = prefix
+              prefix = prefix.toObjectLocationPrefix
             )
           ),
           tagsToApply = Map(file -> Map("Content-Type" -> "application/mxf"))
@@ -70,7 +70,7 @@ class ApplyTagsTest
 
   describe("it returns an error") {
     it("if asked to tag a non-existent object") {
-      val prefix = createObjectLocationPrefixWith(createBucketName)
+      val prefix = createS3ObjectLocationPrefixWith(createBucket)
 
       val file = createStorageManifestFile
 
@@ -78,7 +78,7 @@ class ApplyTagsTest
         storageLocations = Seq(
           PrimaryStorageLocation(
             provider = AmazonS3StorageProvider,
-            prefix = prefix
+            prefix = prefix.toObjectLocationPrefix
           )
         ),
         tagsToApply = Map(file -> Map("Content-Type" -> "application/mxf"))
@@ -111,7 +111,7 @@ class ApplyTagsTest
 
     it("if the objects have not been tagged by the verifier") {
       withLocalS3Bucket { bucket =>
-        val prefix = createObjectLocationPrefixWith(bucket.name)
+        val prefix = createS3ObjectLocationPrefixWith(bucket)
 
         val file = createStorageManifestFileWith(
           pathPrefix = "space/externalIdentifier/v1",
@@ -130,7 +130,7 @@ class ApplyTagsTest
           storageLocations = Seq(
             PrimaryStorageLocation(
               provider = AmazonS3StorageProvider,
-              prefix = prefix
+              prefix = prefix.toObjectLocationPrefix
             )
           ),
           tagsToApply = Map(file -> Map("Content-Type" -> "application/mxf"))

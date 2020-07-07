@@ -6,17 +6,12 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageLocation,
   StorageManifestFile
 }
-import uk.ac.wellcome.storage.{
-  ObjectLocation,
-  ObjectLocationPrefix,
-  UpdateError
-}
-import uk.ac.wellcome.storage.tags.Tags
-import uk.ac.wellcome.storage.tags.s3.S3Tags
+import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.tags.s3.NewS3Tags
 
 import scala.util.Try
 
-class ApplyTags(s3Tags: S3Tags) extends Logging {
+class ApplyTags(s3Tags: NewS3Tags) extends Logging {
   def applyTags(
     storageLocations: Seq[StorageLocation],
     tagsToApply: Map[StorageManifestFile, Map[String, String]]
@@ -26,9 +21,8 @@ class ApplyTags(s3Tags: S3Tags) extends Logging {
         storageLocations.flatMap { location =>
           location.provider match {
             case AmazonS3StorageProvider =>
-              applyTags(
-                s3Tags,
-                prefix = location.prefix,
+              applyS3Tags(
+                prefix = S3ObjectLocationPrefix(location.prefix),
                 tagsToApply = tagsToApply
               )
             case provider =>
@@ -48,20 +42,19 @@ class ApplyTags(s3Tags: S3Tags) extends Logging {
       }
     }
 
-  private def applyTags(
-    tags: Tags[ObjectLocation],
-    prefix: ObjectLocationPrefix,
+  private def applyS3Tags(
+    prefix: S3ObjectLocationPrefix,
     tagsToApply: Map[StorageManifestFile, Map[String, String]]
   ): Iterable[Either[UpdateError, Unit]] =
     tagsToApply
       .map {
         case (storageManifestFile, newTags) =>
           debug(
-            s"Applying tags: provider=$tags, prefix=$prefix, path=${storageManifestFile.path}, tags=$tagsToApply"
+            s"Applying S3 tags: prefix=$prefix, path=${storageManifestFile.path}, tags=$tagsToApply"
           )
           val location = prefix.asLocation(storageManifestFile.path)
 
-          val result = tags.update(location) { existingTags =>
+          val result = s3Tags.update(location) { existingTags =>
             // The bag tagger runs after the bag verifier, which means we should see
             // a Content-SHA256 tag here.  If not, we should abort -- either the storage
             // service is broken, or we're waiting for something to happen with S3 consistency.
