@@ -31,7 +31,7 @@ class TestS3IADownload(object):
     def test_downloading_bag(self, tmpdir):
         bag = {
             "location": {
-                "provider": {"id": "aws-s3-ia"},
+                "provider": {"id": "amazon-s3"},
                 "bucket": "wellcomecollection-storage",
                 "path": "digitised/b10002819",
             },
@@ -117,7 +117,7 @@ class TestS3IADownload(object):
     def test_downloading_from_non_existent_bucket_is_error(self, tmpdir):
         bag = {
             "location": {
-                "provider": {"id": "aws-s3-ia"},
+                "provider": {"id": "amazon-s3"},
                 "bucket": "does-not-exist",
                 "path": "digitised/b10002819",
             },
@@ -143,7 +143,7 @@ class TestS3IADownload(object):
     def test_downloading_from_non_existent_key_is_error(self, tmpdir):
         bag = {
             "location": {
-                "provider": {"id": "aws-s3-ia"},
+                "provider": {"id": "amazon-s3"},
                 "bucket": "wellcomecollection-storage",
                 "path": "does-not-exist/b10002819",
             },

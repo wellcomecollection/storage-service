@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v2.1.0 - 2020-07-07
+
+Update the downloader code so it can recognise the `amazon-s3` storage provider
+from the bags API.
+
 ## v2.0.0 - 2020-06-01
 
 This is a refactor of the internals: there's an abstract class `StorageServiceClientBase`, which can be extended with different HTTP libraries as required.
@@ -7,7 +12,7 @@ The library includes two implementations: `RequestsStorageServiceClient` and `Re
 
 Some methods have also changed their signature: `space_id` is now `space`, `source_id` is now `external_identifier`.
 
-Ingests are created with the new `amazon-s3` storage provider
+Ingests are created with the new `amazon-s3` storage provider.
 
 ## v1.5.0 - 2019-11-26
 

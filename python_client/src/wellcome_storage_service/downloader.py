@@ -15,7 +15,7 @@ from ._utils import mkdir_p
 
 
 def _choose_provider(location):
-    if location["provider"]["id"] == "aws-s3-ia":
+    if location["provider"]["id"] == "amazon-s3":
         return S3InfrequentAccessProvider()
     else:
         raise RuntimeError(
@@ -116,7 +116,7 @@ class S3InfrequentAccessProvider(AbstractProvider):
         super(S3InfrequentAccessProvider, self).__init__()
 
     def get_fileobj(self, location, manifest_file):
-        assert location["provider"]["id"] == "aws-s3-ia"
+        assert location["provider"]["id"] == "amazon-s3"
 
         bucket = location["bucket"]
         path_prefix = location["path"]
