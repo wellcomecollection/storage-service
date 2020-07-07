@@ -5,26 +5,26 @@ import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
+import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
   CloudwatchMonitoringClientBuilder,
   SQSBuilder
 }
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
+import uk.ac.wellcome.platform.archive.bag_tracker.client.AkkaBagTrackerClient
 import uk.ac.wellcome.platform.storage.bag_tagger.services.{
   ApplyTags,
   BagTaggerWorker,
   TagRules
 }
+import uk.ac.wellcome.storage.tags.s3.NewS3Tags
+import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bag_tracker.client.AkkaBagTrackerClient
-import uk.ac.wellcome.storage.tags.s3.S3Tags
-import uk.ac.wellcome.storage.typesafe.S3Builder
+import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.ExecutionContextExecutor
-import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
@@ -52,7 +52,7 @@ object Main extends WellcomeTypesafeApp {
       metricsNamespace = config.requireString("aws.metrics.namespace"),
       bagTrackerClient = bagTrackerClient,
       applyTags = new ApplyTags(
-        s3Tags = new S3Tags()
+        s3Tags = new NewS3Tags()
       ),
       tagRules = TagRules.chooseTags
     )

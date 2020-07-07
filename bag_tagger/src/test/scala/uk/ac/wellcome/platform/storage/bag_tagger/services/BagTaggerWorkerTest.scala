@@ -15,14 +15,9 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.AmazonS3StorageProv
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.storage.bag_tagger.fixtures.BagTaggerFixtures
-import uk.ac.wellcome.storage.{
-  Identified,
-  ObjectLocation,
-  ReadError,
-  StoreReadError
-}
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
-import uk.ac.wellcome.storage.tags.s3.S3Tags
+import uk.ac.wellcome.storage.tags.s3.NewS3Tags
+import uk.ac.wellcome.storage._
 
 import scala.util.{Failure, Try}
 
@@ -33,7 +28,7 @@ class BagTaggerWorkerTest
     with IntegrationPatience
     with BagTaggerFixtures
     with StorageManifestGenerators {
-  val s3Tags = new S3Tags()
+  val s3Tags = new NewS3Tags()
 
   val contentSha256Tags: Map[String, String] = Map(
     "Content-SHA256" -> "4a5a41ebcf5e2c24c"
@@ -49,12 +44,12 @@ class BagTaggerWorkerTest
   describe("applies tags") {
     it("to a single location") {
       withLocalS3Bucket { replicaBucket =>
-        val prefix = createObjectLocationPrefixWith(replicaBucket.name)
+        val prefix = createS3ObjectLocationPrefixWith(replicaBucket)
 
         val manifest = createStorageManifestWith(
           location = PrimaryStorageLocation(
             provider = AmazonS3StorageProvider,
-            prefix = prefix
+            prefix = prefix.toObjectLocationPrefix
           ),
           replicaLocations = Seq.empty,
           files = Seq(
@@ -98,20 +93,20 @@ class BagTaggerWorkerTest
 
     it("to every location on a bag") {
       withLocalS3Bucket { replicaBucket =>
-        val primaryPrefix = createObjectLocationPrefixWith(replicaBucket.name)
+        val primaryPrefix = createS3ObjectLocationPrefixWith(replicaBucket)
         val replicaPrefixes = (1 to 3).map { _ =>
-          createObjectLocationPrefixWith(replicaBucket.name)
+          createS3ObjectLocationPrefixWith(replicaBucket)
         }
 
         val manifest = createStorageManifestWith(
           location = PrimaryStorageLocation(
             provider = AmazonS3StorageProvider,
-            prefix = primaryPrefix
+            prefix = primaryPrefix.toObjectLocationPrefix
           ),
           replicaLocations = replicaPrefixes.map { prefix =>
             SecondaryStorageLocation(
               provider = AmazonS3StorageProvider,
-              prefix = prefix
+              prefix = prefix.toObjectLocationPrefix
             )
           },
           files = Seq(
@@ -158,12 +153,12 @@ class BagTaggerWorkerTest
 
     it("based on the supplied rules") {
       withLocalS3Bucket { replicaBucket =>
-        val prefix = createObjectLocationPrefixWith(replicaBucket.name)
+        val prefix = createS3ObjectLocationPrefixWith(replicaBucket)
 
         val manifest = createStorageManifestWith(
           location = PrimaryStorageLocation(
             provider = AmazonS3StorageProvider,
-            prefix = prefix
+            prefix = prefix.toObjectLocationPrefix
           ),
           replicaLocations = Seq.empty,
           files = Seq(
@@ -315,10 +310,10 @@ class BagTaggerWorkerTest
     }
   }
 
-  def createObject(location: ObjectLocation): Unit = {
+  def createObject(location: S3ObjectLocation): Unit = {
     s3Client.putObject(
-      location.namespace,
-      location.path,
+      location.bucket,
+      location.key,
       "<test file contents>"
     )
     s3Tags.update(location) { _ =>
