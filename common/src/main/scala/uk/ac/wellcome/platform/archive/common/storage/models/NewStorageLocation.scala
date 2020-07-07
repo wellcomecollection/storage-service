@@ -6,6 +6,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{AmazonS3StoragePro
 import uk.ac.wellcome.storage.{Location, ObjectLocationPrefix, Prefix, S3ObjectLocationPrefix}
 
 sealed trait NewStorageLocation {
+  val provider: StorageProvider
   val prefix: Prefix[_ <: Location]
 }
 
@@ -14,13 +15,20 @@ sealed trait SecondaryNewStorageLocation extends NewStorageLocation
 
 case class PrimaryS3StorageLocation(
   prefix: S3ObjectLocationPrefix
-) extends PrimaryNewStorageLocation
+) extends PrimaryNewStorageLocation {
+  val provider: StorageProvider = AmazonS3StorageProvider
+}
 
 case class SecondaryS3StorageLocation(
   prefix: S3ObjectLocationPrefix
-) extends SecondaryNewStorageLocation
+) extends SecondaryNewStorageLocation {
+  val provider: StorageProvider = AmazonS3StorageProvider
+}
 
 trait S3LocationDecodable {
+  // This is a short-term fix while we disambiguate ObjectLocation.
+  // Once the existing manifests have been migrated to the new style, this can be removed.
+
   // (namespace, prefix) -> T
   protected def createDecoder[T](constructor: ObjectLocationPrefix => T, expectedLocationType: String): Decoder[T] =
     (cursor: HCursor) => {
