@@ -349,7 +349,7 @@ module "bag_register_output_queue" {
     module.bag_register_output_topic.arn,
   ]
 
-  role_names = [module.bag_indexer.task_role_name]
+  role_names = []
 
   aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
@@ -411,6 +411,14 @@ module "bag_indexer_input_queue" {
 
   role_names = [module.bag_indexer.task_role_name]
 
+  queue_high_actions = [
+    module.bag_indexer.scale_up_arn,
+  ]
+
+  queue_low_actions = [
+    module.bag_indexer.scale_down_arn,
+  ]
+
   aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 }
@@ -427,6 +435,14 @@ module "bag_tagger_input_queue" {
   ]
 
   role_names = [module.bag_tagger.task_role_name]
+
+  queue_high_actions = [
+    module.bag_tagger.scale_up_arn,
+  ]
+
+  queue_low_actions = [
+    module.bag_tagger.scale_down_arn,
+  ]
 
   aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
