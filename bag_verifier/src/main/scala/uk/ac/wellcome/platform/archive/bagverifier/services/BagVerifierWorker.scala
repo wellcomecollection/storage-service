@@ -41,6 +41,7 @@ class BagVerifierWorker[IngestDestination, OutgoingDestination](
       summary <- verifier.verify(
         ingestId = payload.ingestId,
         root = S3ObjectLocationPrefix(payload.bagRoot),
+        srcRoot = S3ObjectLocationPrefix(payload.bagRoot),
         space = payload.storageSpace,
         externalIdentifier = payload.externalIdentifier
       )

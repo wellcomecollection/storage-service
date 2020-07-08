@@ -22,7 +22,7 @@ trait BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     with VerifyExternalIdentifier
     with VerifyFetch[BagLocation, BagPrefix]
     with VerifyPayloadOxum
-    with VerifyNoUnreferencedFiles[BagLocation, BagPrefix] {
+    with VerifyNoUnreferencedFiles[BagLocation, BagPrefix] with VerifySourceTagManifest[BagLocation, BagPrefix] {
 
   val namespace: String
 
@@ -36,6 +36,7 @@ trait BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
   def verify(
     ingestId: IngestID,
     root: BagPrefix,
+    srcRoot: BagPrefix,
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier
   ): Try[IngestStepResult[VerificationSummary]] =
@@ -95,6 +96,8 @@ trait BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
 
             case _ => Right(())
           }
+
+//        _ <- verifySourceTagManifestIsTheSame(srcRoot, root)
 
         } yield verificationResult
 

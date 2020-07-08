@@ -10,6 +10,8 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.listing.s3.NewS3ObjectLocationListing
+import uk.ac.wellcome.storage.store.StreamStore
+import uk.ac.wellcome.storage.store.s3.NewS3StreamStore
 import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 class S3BagVerifier(primaryBucket: String)(implicit s3Client: AmazonS3)
@@ -36,4 +38,6 @@ class S3BagVerifier(primaryBucket: String)(implicit s3Client: AmazonS3)
   override implicit val listing
     : Listing[S3ObjectLocationPrefix, S3ObjectLocation] =
     new NewS3ObjectLocationListing()
+
+  override val streamStore: StreamStore[S3ObjectLocation] = new NewS3StreamStore()
 }
