@@ -125,6 +125,7 @@ trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
             _.verify(
               ingestId = createIngestID,
               root = bagRoot,
+              srcRoot = bagRoot,
               space = space,
               externalIdentifier = bagInfo.externalIdentifier
             )
@@ -287,6 +288,7 @@ trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
             _.verify(
               ingestId = createIngestID,
               root = bagRoot,
+              srcRoot = bagRoot,
               space = space,
               externalIdentifier = payloadExternalIdentifier
             )
@@ -300,6 +302,44 @@ trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
         result.maybeUserFacingMessage.get should startWith(
           "External identifier in bag-info.txt does not match request"
         )
+      }
+    }
+  }
+
+  it("fails a bag if it doesn't match original tag manifest") {
+    withNamespace { implicit namespace =>
+      withTypedStore { implicit typedStore =>
+        val space = createStorageSpace
+
+        val (srcBagObjects, srcBagRoot, _) = createBagContentsWith(
+          space = space,
+          payloadFileCount = payloadFileCount
+        )
+
+        val (bagObjects, bagRoot, bagInfo) = createBagContentsWith(
+          space = space,
+          payloadFileCount = payloadFileCount
+        )
+        uploadBagObjects(bagRoot = srcBagRoot, objects = srcBagObjects)
+        uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
+
+        val ingestStep =
+          withVerifier(namespace) {
+            _.verify(
+              ingestId = createIngestID,
+              root = bagRoot,
+              srcRoot = srcBagRoot,
+              space = space,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
+          }
+
+        val result = ingestStep.success.get
+
+        result shouldBe a[IngestFailed[_]]
+        result.summary shouldBe a[VerificationIncompleteSummary]
+
+        result.maybeUserFacingMessage shouldNot be(defined)
       }
     }
   }
@@ -536,6 +576,7 @@ trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
               _.verify(
                 ingestId = createIngestID,
                 root = bagRoot,
+                srcRoot = bagRoot,
                 space = space,
                 externalIdentifier = bagInfo.externalIdentifier
               )
@@ -634,6 +675,7 @@ trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
             _.verify(
               ingestId = createIngestID,
               root = bagRoot,
+              srcRoot = bagRoot,
               space = space,
               externalIdentifier = bagInfo.externalIdentifier
             )

@@ -97,7 +97,7 @@ trait BagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
             case _ => Right(())
           }
 
-//        _ <- verifySourceTagManifestIsTheSame(srcRoot, root)
+        _ <- verifySourceTagManifestIsTheSame(srcRoot, root)
 
         } yield verificationResult
 
