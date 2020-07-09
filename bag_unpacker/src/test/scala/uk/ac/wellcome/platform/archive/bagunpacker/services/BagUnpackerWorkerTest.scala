@@ -18,7 +18,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepSucceeded
 }
-import uk.ac.wellcome.storage.ObjectLocationPrefix
+import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
 class BagUnpackerWorkerTest
@@ -51,9 +51,9 @@ class BagUnpackerWorkerTest
 
             val expectedPayload = UnpackedBagLocationPayload(
               context = payload.context,
-              unpackedBagLocation = ObjectLocationPrefix(
-                namespace = dstBucket.name,
-                path = Paths
+              unpackedBagLocation = S3ObjectLocationPrefix(
+                bucket = dstBucket.name,
+                keyPrefix = Paths
                   .get(
                     payload.storageSpace.toString,
                     payload.ingestId.toString

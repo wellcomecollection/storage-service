@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepSucceeded
 }
 import uk.ac.wellcome.platform.storage.bag_root_finder.models._
-import uk.ac.wellcome.storage.{ObjectLocationPrefix, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 
 import scala.util.{Failure, Success, Try}
 
@@ -21,21 +21,19 @@ class BagRootFinder()(implicit s3Client: AmazonS3) {
 
   def getSummary(
     ingestId: IngestID,
-    unpackLocation: ObjectLocationPrefix
+    unpackLocation: S3ObjectLocationPrefix
   ): IngestStep =
     Try {
       val startTime = Instant.now()
 
-      val s3SearchRoot = S3ObjectLocationPrefix(unpackLocation)
-
-      s3BagLocator.locateBagRoot(s3SearchRoot) match {
+      s3BagLocator.locateBagRoot(unpackLocation) match {
         case Success(bagRoot) =>
           IngestStepSucceeded(
             RootFinderSuccessSummary(
               ingestId = ingestId,
               startTime = startTime,
               endTime = Instant.now(),
-              searchRoot = s3SearchRoot,
+              searchRoot = unpackLocation,
               bagRoot = bagRoot
             )
           )
@@ -46,7 +44,7 @@ class BagRootFinder()(implicit s3Client: AmazonS3) {
               ingestId = ingestId,
               startTime = startTime,
               endTime = Instant.now(),
-              searchRoot = s3SearchRoot
+              searchRoot = unpackLocation
             ),
             err
           )

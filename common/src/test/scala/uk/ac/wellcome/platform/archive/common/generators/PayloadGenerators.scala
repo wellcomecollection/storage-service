@@ -63,7 +63,7 @@ trait PayloadGenerators
       context = createPipelineContextWith(
         storageSpace = storageSpace
       ),
-      unpackedBagLocation = unpackedBagLocation.toObjectLocationPrefix
+      unpackedBagLocation = unpackedBagLocation
     )
 
   def createKnownReplicas = KnownReplicas(
