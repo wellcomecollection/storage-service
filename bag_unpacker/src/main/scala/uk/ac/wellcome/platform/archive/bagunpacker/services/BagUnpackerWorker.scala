@@ -54,7 +54,8 @@ class BagUnpackerWorker[IngestDestination, OutgoingDestination](
 
       stepResult <- unpacker.unpack(
         ingestId = payload.ingestId,
-        srcLocation = payload.sourceLocation.location.asInstanceOf[S3ObjectLocation],
+        srcLocation =
+          payload.sourceLocation.location.asInstanceOf[S3ObjectLocation],
         dstPrefix = unpackedBagLocation
       )
 

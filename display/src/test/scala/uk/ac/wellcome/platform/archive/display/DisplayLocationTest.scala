@@ -24,7 +24,7 @@ class DisplayLocationTest
         bucket = "my-bukkit",
         path = "path/to/my/bag.tar.gz"
       )
-    ),
+    )
   )
 
   it("creates an internal SourceLocation") {

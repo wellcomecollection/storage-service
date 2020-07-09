@@ -2,9 +2,21 @@ package uk.ac.wellcome.platform.archive.common
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestType, SourceLocation}
-import uk.ac.wellcome.platform.archive.common.storage.models.{KnownReplicas, ReplicaResult, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestID,
+  IngestType,
+  SourceLocation
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  KnownReplicas,
+  ReplicaResult,
+  StorageSpace
+}
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 
 sealed trait PipelinePayload {

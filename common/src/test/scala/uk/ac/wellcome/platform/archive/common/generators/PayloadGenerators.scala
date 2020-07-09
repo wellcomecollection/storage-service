@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.archive.common.generators
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
