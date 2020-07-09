@@ -3,11 +3,8 @@ package uk.ac.wellcome.platform.archive.display
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  AzureBlobSourceLocation,
-  S3SourceLocation
-}
-import uk.ac.wellcome.storage.{AzureBlobItemLocation, S3ObjectLocation}
+import uk.ac.wellcome.platform.archive.common.ingests.models.S3SourceLocation
+import uk.ac.wellcome.storage.S3ObjectLocation
 
 class DisplayLocationTest
     extends AnyFunSpec
@@ -25,19 +22,6 @@ class DisplayLocationTest
       DisplayLocation(
         provider = DisplayProvider("amazon-s3"),
         bucket = "my-bukkit",
-        path = "path/to/my/bag.tar.gz"
-      )
-    ),
-    (
-      AzureBlobSourceLocation(
-        location = AzureBlobItemLocation(
-          container = "my-container",
-          name = "path/to/my/bag.tar.gz"
-        )
-      ),
-      DisplayLocation(
-        provider = DisplayProvider("azure-blob-storage"),
-        bucket = "my-container",
         path = "path/to/my/bag.tar.gz"
       )
     )

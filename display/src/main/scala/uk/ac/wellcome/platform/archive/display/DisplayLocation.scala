@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.display
 import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageLocation
-import uk.ac.wellcome.storage.{AzureBlobItemLocation, S3ObjectLocation}
+import uk.ac.wellcome.storage.S3ObjectLocation
 
 case class DisplayLocation(
   provider: DisplayProvider,
@@ -19,8 +19,8 @@ case class DisplayLocation(
         )
 
       case AzureBlobStorageProvider =>
-        AzureBlobSourceLocation(
-          location = AzureBlobItemLocation(container = bucket, name = path)
+        throw new IllegalArgumentException(
+          "Unpacking is not supported from an Azure location!"
         )
     }
 }
@@ -33,13 +33,6 @@ object DisplayLocation {
           provider = DisplayProvider(location.provider),
           bucket = s3Location.bucket,
           path = s3Location.key
-        )
-
-      case AzureBlobSourceLocation(azureLocation) =>
-        DisplayLocation(
-          provider = DisplayProvider(location.provider),
-          bucket = azureLocation.container,
-          path = azureLocation.name
         )
     }
 

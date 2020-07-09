@@ -12,9 +12,3 @@ case class S3SourceLocation(
 ) extends SourceLocation {
   val provider: StorageProvider = AmazonS3StorageProvider
 }
-
-case class AzureBlobSourceLocation(
-  location: AzureBlobItemLocation
-) extends SourceLocation {
-  val provider: StorageProvider = AzureBlobStorageProvider
-}

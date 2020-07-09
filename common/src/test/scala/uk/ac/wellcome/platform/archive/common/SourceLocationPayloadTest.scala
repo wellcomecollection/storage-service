@@ -47,7 +47,7 @@ class SourceLocationPayloadTest
         ingestDate = ingestDate,
         externalIdentifier = externalIdentifier
       ),
-      sourceLocation = sourceLocation.toObjectLocation
+      sourceLocation = S3SourceLocation(sourceLocation)
     )
 
     SourceLocationPayload(ingest) shouldBe expectedPayload

@@ -40,8 +40,7 @@ class BagUnpackerWorkerTest
       withLocalS3Bucket { srcBucket =>
         withLocalS3Bucket { dstBucket =>
           withArchive(srcBucket, archiveFile) { archiveLocation =>
-            val payload =
-              createSourceLocationPayloadWith(archiveLocation.toObjectLocation)
+            val payload = createSourceLocationPayloadWith(archiveLocation)
 
             val result =
               withWorker(ingests, outgoing, dstBucket) { worker =>
@@ -91,16 +90,11 @@ class BagUnpackerWorkerTest
     val outgoing = new MemoryMessageSender()
 
     withLocalS3Bucket { srcBucket =>
-      val location = createObjectLocationWith(srcBucket)
+      val location = createS3ObjectLocationWith(srcBucket)
 
-      s3Client.putObject(
-        location.namespace,
-        location.path,
-        "hello world"
-      )
+      s3Client.putObject(location.bucket, location.key, "hello world")
 
-      val payload =
-        createSourceLocationPayloadWith(location)
+      val payload = createSourceLocationPayloadWith(location)
 
       val result =
         withWorker(ingests, outgoing) { worker =>
@@ -111,7 +105,7 @@ class BagUnpackerWorkerTest
       val failure = result.success.value.asInstanceOf[IngestFailed[_]]
 
       val message =
-        s"Error trying to unpack the archive at s3://$location - is it the correct format?"
+        s"Error trying to unpack the archive at $location - is it the correct format?"
 
       failure.maybeUserFacingMessage.get shouldBe message
 
@@ -136,19 +130,18 @@ class BagUnpackerWorkerTest
     val outgoing = new MemoryMessageSender()
 
     withLocalS3Bucket { srcBucket =>
-      val location = createObjectLocationWith(srcBucket)
+      val location = createS3ObjectLocationWith(srcBucket)
 
       val inputStream = getClass.getResourceAsStream("/crockery.7z")
 
       s3Client.putObject(
-        location.namespace,
-        location.path,
+        location.bucket,
+        location.key,
         inputStream,
         new ObjectMetadata()
       )
 
-      val payload =
-        createSourceLocationPayloadWith(location)
+      val payload = createSourceLocationPayloadWith(location)
 
       val result =
         withWorker(ingests, outgoing) { worker =>
@@ -159,7 +152,7 @@ class BagUnpackerWorkerTest
       val failure = result.success.value.asInstanceOf[IngestFailed[_]]
 
       val message =
-        s"Error trying to unpack the archive at s3://$location - is it the correct format?"
+        s"Error trying to unpack the archive at $location - is it the correct format?"
 
       failure.maybeUserFacingMessage.get shouldBe message
 

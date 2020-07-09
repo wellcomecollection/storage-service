@@ -54,15 +54,16 @@ class BagUnpackerWorker[IngestDestination, OutgoingDestination](
 
       stepResult <- unpacker.unpack(
         ingestId = payload.ingestId,
-        srcLocation = S3ObjectLocation(payload.sourceLocation),
-        dstPrefix = S3ObjectLocationPrefix(unpackedBagLocation)
+        srcLocation =
+          payload.sourceLocation.location.asInstanceOf[S3ObjectLocation],
+        dstPrefix = unpackedBagLocation
       )
 
       _ <- ingestUpdater.send(payload.ingestId, stepResult)
 
       outgoingPayload = UnpackedBagLocationPayload(
         context = payload.context,
-        unpackedBagLocation = unpackedBagLocation
+        unpackedBagLocation = unpackedBagLocation.toObjectLocationPrefix
       )
       _ <- outgoingPublisher.sendIfSuccessful(stepResult, outgoingPayload)
     } yield stepResult
