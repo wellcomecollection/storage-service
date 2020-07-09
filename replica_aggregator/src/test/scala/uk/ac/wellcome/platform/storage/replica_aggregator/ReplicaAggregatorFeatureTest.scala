@@ -9,6 +9,7 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.KnownReplicasPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
+import uk.ac.wellcome.platform.archive.common.ingests.models.AmazonS3StorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   KnownReplicas,
   PrimaryS3ReplicaLocation,
@@ -37,7 +38,9 @@ class ReplicaAggregatorFeatureTest
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
 
-      val payload = createReplicaResultPayload
+      val payload = createReplicaResultPayloadWith(
+        provider = AmazonS3StorageProvider
+      )
       val versionedStore =
         MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](Map.empty)
 
