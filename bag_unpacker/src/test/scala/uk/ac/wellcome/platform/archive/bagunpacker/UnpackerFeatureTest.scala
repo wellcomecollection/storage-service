@@ -35,9 +35,7 @@ class UnpackerFeatureTest
           withLocalS3Bucket { srcBucket =>
             withArchive(srcBucket, archiveFile) { archiveLocation =>
               val sourceLocationPayload =
-                createSourceLocationPayloadWith(
-                  archiveLocation.toObjectLocation
-                )
+                createSourceLocationPayloadWith(archiveLocation)
               sendNotificationToSQS(queue, sourceLocationPayload)
 
               eventually {
@@ -83,7 +81,7 @@ class UnpackerFeatureTest
   it("sends a failed Ingest update if it cannot read the bag") {
     withBagUnpackerApp(stepName = "unpacker") {
       case (_, _, queue, ingests, outgoing) =>
-        val sourceLocation = createObjectLocationWith(
+        val sourceLocation = createS3ObjectLocationWith(
           bucket = createBucket
         )
 

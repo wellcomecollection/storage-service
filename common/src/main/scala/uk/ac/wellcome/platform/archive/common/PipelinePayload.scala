@@ -2,21 +2,10 @@ package uk.ac.wellcome.platform.archive.common
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Ingest,
-  IngestID,
-  IngestType
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  KnownReplicas,
-  ReplicaResult,
-  StorageSpace
-}
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestType, SourceLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.{KnownReplicas, ReplicaResult, StorageSpace}
+import uk.ac.wellcome.storage.ObjectLocationPrefix
 
 sealed trait PipelinePayload {
   val context: PipelineContext
@@ -30,14 +19,14 @@ sealed trait PipelinePayload {
 
 case class SourceLocationPayload(
   context: PipelineContext,
-  sourceLocation: ObjectLocation
+  sourceLocation: SourceLocation
 ) extends PipelinePayload
 
 case object SourceLocationPayload {
   def apply(ingest: Ingest): SourceLocationPayload =
     SourceLocationPayload(
       context = PipelineContext(ingest),
-      sourceLocation = ingest.sourceLocation.location.toObjectLocation
+      sourceLocation = ingest.sourceLocation
     )
 }
 
