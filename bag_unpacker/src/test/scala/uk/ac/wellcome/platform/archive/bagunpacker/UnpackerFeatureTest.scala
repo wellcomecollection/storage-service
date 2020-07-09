@@ -11,11 +11,8 @@ import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.s3.S3CompressFixture
 import uk.ac.wellcome.platform.archive.common.UnpackedBagLocationPayload
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Ingest,
-  IngestStatusUpdate
-}
-import uk.ac.wellcome.storage.ObjectLocationPrefix
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestStatusUpdate}
+import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 
 class UnpackerFeatureTest
     extends AnyFunSpec
@@ -41,9 +38,9 @@ class UnpackerFeatureTest
               eventually {
                 val expectedPayload = UnpackedBagLocationPayload(
                   context = sourceLocationPayload.context,
-                  unpackedBagLocation = ObjectLocationPrefix(
-                    namespace = dstBucket.name,
-                    path = Paths
+                  unpackedBagLocation = S3ObjectLocationPrefix(
+                    bucket = dstBucket.name,
+                    keyPrefix = Paths
                       .get(
                         sourceLocationPayload.storageSpace.toString,
                         sourceLocationPayload.ingestId.toString

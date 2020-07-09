@@ -2,22 +2,10 @@ package uk.ac.wellcome.platform.archive.common
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Ingest,
-  IngestID,
-  IngestType,
-  SourceLocation
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  KnownReplicas,
-  ReplicaResult,
-  StorageSpace
-}
-import uk.ac.wellcome.storage.ObjectLocationPrefix
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestType, SourceLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.{KnownReplicas, ReplicaResult, StorageSpace}
+import uk.ac.wellcome.storage.{ObjectLocationPrefix, S3ObjectLocationPrefix}
 
 sealed trait PipelinePayload {
   val context: PipelineContext
@@ -44,7 +32,7 @@ case object SourceLocationPayload {
 
 case class UnpackedBagLocationPayload(
   context: PipelineContext,
-  unpackedBagLocation: ObjectLocationPrefix
+  unpackedBagLocation: S3ObjectLocationPrefix
 ) extends PipelinePayload
 
 case class KnownReplicasPayload(
