@@ -10,9 +10,13 @@ import uk.ac.wellcome.platform.archive.common.BagRootPayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, IngestStepWorker}
-import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.{Location, Prefix, S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.util.Try
+
+trait BagPayloadTranslator[R <: BagRootPayload, B <: BagRoot[BagLocation, BagPrefix], BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]{
+  def translate(r: R): B
+}
 
 class BagVerifierWorker[R <: BagRootPayload, B <: BagRoot[S3ObjectLocation, S3ObjectLocationPrefix],IngestDestination, OutgoingDestination](
   val config: AlpakkaSQSWorkerConfig,
@@ -20,7 +24,7 @@ class BagVerifierWorker[R <: BagRootPayload, B <: BagRoot[S3ObjectLocation, S3Ob
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
   verifier: BagVerifier[B, S3ObjectLocation, S3ObjectLocationPrefix],
   val metricsNamespace: String,
-  f: R => B
+  bagPayloadTranslator: BagPayloadTranslator[R, B, S3ObjectLocation, S3ObjectLocationPrefix]
 )(
   implicit val mc: MetricsMonitoringClient,
   val as: ActorSystem,
@@ -38,7 +42,7 @@ class BagVerifierWorker[R <: BagRootPayload, B <: BagRoot[S3ObjectLocation, S3Ob
       _ <- ingestUpdater.start(payload.ingestId)
       summary <- verifier.verify(
         ingestId = payload.ingestId,
-        bagRoot = f(payload),
+        bagRoot = bagPayloadTranslator.translate(payload),
         space = payload.storageSpace,
         externalIdentifier = payload.externalIdentifier
       )

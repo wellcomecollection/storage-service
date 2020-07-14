@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.services.s3
 import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.s3.S3FixityChecker
-import uk.ac.wellcome.platform.archive.bagverifier.services.{BagRoot, StandaloneBagVerifier}
+import uk.ac.wellcome.platform.archive.bagverifier.services.StandaloneBagVerifier
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable
 import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.S3Resolvable
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
