@@ -12,4 +12,5 @@
   <logger name="com.amazonaws" level="WARN"/>
   <logger name="software.amazon.awssdk" level="WARN"/>
   <logger name="io.netty" level="ERROR"/>
+  <logger name="reactor.netty" level="ERROR"/>
 </configuration>
