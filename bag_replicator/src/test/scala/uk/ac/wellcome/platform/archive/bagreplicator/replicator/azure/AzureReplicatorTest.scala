@@ -7,6 +7,9 @@ import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.fixtures.{AzureFixtures, S3Fixtures}
 import uk.ac.wellcome.storage.store.azure.{AzureStreamStore, AzureTypedStore}
 import uk.ac.wellcome.storage.streaming.Codec._
+import uk.ac.wellcome.storage.tags.Tags
+import uk.ac.wellcome.storage.tags.azure.AzureBlobMetadata
+import uk.ac.wellcome.storage.tags.s3.S3Tags
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 class AzureReplicatorTest
@@ -52,4 +55,7 @@ class AzureReplicatorTest
 
   override def getDstObject(location: ObjectLocation): String =
     typedStore.get(location).right.value.identifiedT
+
+  override  val srcTags: Tags[ObjectLocation] = new S3Tags()
+  override  val dstTags: Tags[ObjectLocation] = new AzureBlobMetadata()
 }
