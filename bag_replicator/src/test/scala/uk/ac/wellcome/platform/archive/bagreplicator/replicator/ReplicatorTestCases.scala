@@ -6,6 +6,7 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{ReplicationFailed, ReplicationRequest, ReplicationSucceeded}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
+import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.tags.Tags
 import uk.ac.wellcome.storage.{Identified, ObjectLocation, ObjectLocationPrefix}
 
@@ -25,13 +26,20 @@ trait ReplicatorTestCases[SrcNamespace, DstNamespace]
   def createSrcPrefixWith(srcNamespace: SrcNamespace): ObjectLocationPrefix
   def createDstPrefixWith(dstNamespace: DstNamespace): ObjectLocationPrefix
 
-  def putSrcObject(location: ObjectLocation, contents: String): Unit
-  def putDstObject(location: ObjectLocation, contents: String): Unit
-
-  def getDstObject(location: ObjectLocation): String
-
   val srcTags: Tags[ObjectLocation]
   val dstTags: Tags[ObjectLocation]
+
+  val srcStringStore: TypedStore[ObjectLocation, String]
+  val dstStringStore: TypedStore[ObjectLocation, String]
+
+  def putSrcObject(location: ObjectLocation, contents: String): Unit =
+    srcStringStore.put(location)(contents) shouldBe a[Right[_, _]]
+
+  def putDstObject(location: ObjectLocation, contents: String): Unit =
+    dstStringStore.put(location)(contents) shouldBe a[Right[_, _]]
+
+  def getDstObject(location: ObjectLocation): String =
+    dstStringStore.get(location).right.value.identifiedT
 
   it("replicates all the objects under a prefix") {
     withSrcNamespace { srcNamespace =>

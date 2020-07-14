@@ -6,6 +6,7 @@ import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.fixtures.{AzureFixtures, S3Fixtures}
 import uk.ac.wellcome.storage.store.azure.{AzureStreamStore, AzureTypedStore}
+import uk.ac.wellcome.storage.store.s3.S3TypedStore
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.tags.Tags
 import uk.ac.wellcome.storage.tags.azure.AzureBlobMetadata
@@ -44,18 +45,11 @@ class AzureReplicatorTest
     dstContainer: Container): ObjectLocationPrefix =
     ObjectLocationPrefix(dstContainer.name, path = "")
 
-  override def putSrcObject(location: ObjectLocation, contents: String): Unit =
-    s3Client.putObject(location.namespace, location.path, contents)
+  override val srcStringStore: S3TypedStore[String] = S3TypedStore[String]
 
   implicit val streamStore: AzureStreamStore = new AzureStreamStore()
-  val typedStore = new AzureTypedStore[String]
+  override val dstStringStore: AzureTypedStore[String] = new AzureTypedStore[String]
 
-  override def putDstObject(location: ObjectLocation, contents: String): Unit =
-    typedStore.put(location)(contents)
-
-  override def getDstObject(location: ObjectLocation): String =
-    typedStore.get(location).right.value.identifiedT
-
-  override  val srcTags: Tags[ObjectLocation] = new S3Tags()
-  override  val dstTags: Tags[ObjectLocation] = new AzureBlobMetadata()
+  override val srcTags: Tags[ObjectLocation] = new S3Tags()
+  override val dstTags: Tags[ObjectLocation] = new AzureBlobMetadata()
 }
