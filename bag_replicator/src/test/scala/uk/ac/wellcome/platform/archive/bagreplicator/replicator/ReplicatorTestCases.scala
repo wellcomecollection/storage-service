@@ -4,14 +4,18 @@ import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{ReplicationFailed, ReplicationRequest, ReplicationSucceeded}
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
+  ReplicationFailed,
+  ReplicationRequest,
+  ReplicationSucceeded
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.tags.Tags
 import uk.ac.wellcome.storage.{Identified, ObjectLocation, ObjectLocationPrefix}
 
 trait ReplicatorTestCases[SrcNamespace, DstNamespace]
-  extends AnyFunSpec
+    extends AnyFunSpec
     with Matchers
     with EitherValues
     with StorageRandomThings {
@@ -21,7 +25,10 @@ trait ReplicatorTestCases[SrcNamespace, DstNamespace]
   def withReplicator[R](testWith: TestWith[Replicator, R]): R
 
   def createSrcLocationWith(srcNamespace: SrcNamespace): ObjectLocation
-  def createDstLocationWith(dstNamespace: DstNamespace, path: String): ObjectLocation
+  def createDstLocationWith(
+    dstNamespace: DstNamespace,
+    path: String
+  ): ObjectLocation
 
   def createSrcPrefixWith(srcNamespace: SrcNamespace): ObjectLocationPrefix
   def createDstPrefixWith(dstNamespace: DstNamespace): ObjectLocationPrefix
@@ -165,7 +172,8 @@ trait ReplicatorTestCases[SrcNamespace, DstNamespace]
         result shouldBe a[ReplicationSucceeded]
 
         val dstLocation = createDstLocationWith(
-          dstNamespace, path = location.path
+          dstNamespace,
+          path = location.path
         )
 
         dstTags.get(dstLocation).right.value shouldBe Identified(

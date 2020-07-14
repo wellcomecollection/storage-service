@@ -1,7 +1,10 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagreplicator.replicator.{Replicator, ReplicatorTestCases}
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.{
+  Replicator,
+  ReplicatorTestCases
+}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.s3.S3TypedStore
@@ -29,7 +32,10 @@ class S3ReplicatorTest
   override def createSrcLocationWith(srcBucket: Bucket): ObjectLocation =
     createObjectLocationWith(srcBucket)
 
-  override def createDstLocationWith(dstBucket: Bucket, key: String): ObjectLocation =
+  override def createDstLocationWith(
+    dstBucket: Bucket,
+    key: String
+  ): ObjectLocation =
     createObjectLocationWith(dstBucket, key)
 
   override def createSrcPrefixWith(srcBucket: Bucket): ObjectLocationPrefix =
