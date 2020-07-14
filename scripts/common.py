@@ -82,6 +82,23 @@ def get_aws_resource(resource, role_arn):
     )
 
 
+def get_aws_client(resource, *, role_arn):
+    sts_client = boto3.client("sts")
+
+    assumed_role_object = sts_client.assume_role(
+        RoleArn=role_arn, RoleSessionName="AssumeRoleSession1"
+    )
+
+    credentials = assumed_role_object["Credentials"]
+
+    return boto3.client(
+        resource,
+        aws_access_key_id=credentials["AccessKeyId"],
+        aws_secret_access_key=credentials["SecretAccessKey"],
+        aws_session_token=credentials["SessionToken"],
+    )
+
+
 def get_read_only_aws_resource(resource):
     return get_aws_resource(
         resource, role_arn="arn:aws:iam::975596993436:role/storage-read_only"
