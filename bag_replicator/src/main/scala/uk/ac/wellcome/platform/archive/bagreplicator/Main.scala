@@ -73,7 +73,7 @@ object Main extends WellcomeTypesafeApp {
       new DynamoLockingService[IngestStepResult[BagReplicationSummary[_]], Try]()
 
     val replicator = config.requireString("bag-replicator.provider") match {
-      case "amazon-s3"          => new S3Replicator()
+      case "amazon-s3" => new S3Replicator()
       case "azure-blob-storage" =>
         implicit val azureBlobClient: BlobServiceClient =
           new BlobServiceClientBuilder()
