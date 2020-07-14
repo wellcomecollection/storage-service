@@ -90,6 +90,11 @@ variable "bag_verifier_image" {
   type = string
 }
 
+variable "secrets" {
+  type    = map(string)
+  default = {}
+}
+
 # Messaging
 
 variable "dlq_alarm_arn" {

@@ -471,8 +471,12 @@ module "replicator_verifier_azure" {
     module.bag_versioner_output_topic.arn,
   ]
 
-  bucket_name         = var.replica_glacier_bucket_name
+  bucket_name         = "wellcomecollection-storage-replica-amsterdam-staging"
   primary_bucket_name = var.replica_primary_bucket_name
+
+  secrets = {
+    azure_connection_string = "azure/wellcomecollectionstage/wellcomecollection-storage-replica-amsterdam-staging/read_write_sas_url"
+  }
 
   ingests_read_policy_json          = data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json
   cloudwatch_metrics_policy_json    = data.aws_iam_policy_document.cloudwatch_putmetrics.json
