@@ -38,7 +38,7 @@ class S3BagVerifierTest
     implicit typedStore: TypedStore[S3ObjectLocation, String]
   ): R =
     testWith(
-      new S3BagVerifier(primaryBucket = primaryBucket.name)
+      new S3StandaloneBagVerifier(primaryBucket = primaryBucket.name)
     )
 
   override def withNamespace[R](testWith: TestWith[Bucket, R]): R =

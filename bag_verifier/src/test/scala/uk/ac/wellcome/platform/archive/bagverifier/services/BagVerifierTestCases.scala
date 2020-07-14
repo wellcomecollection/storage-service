@@ -124,8 +124,8 @@ trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           withVerifier(namespace) {
             _.verify(
               ingestId = createIngestID,
-              root = bagRoot,
-              srcRoot = bagRoot,
+              bagRoot = bagRoot,
+              srcRoot = None,
               space = space,
               externalIdentifier = bagInfo.externalIdentifier
             )
@@ -287,8 +287,8 @@ trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           withVerifier(namespace) {
             _.verify(
               ingestId = createIngestID,
-              root = bagRoot,
-              srcRoot = bagRoot,
+              bagRoot = bagRoot,
+              srcRoot = None,
               space = space,
               externalIdentifier = payloadExternalIdentifier
             )
@@ -327,8 +327,8 @@ trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           withVerifier(namespace) {
             _.verify(
               ingestId = createIngestID,
-              root = bagRoot,
-              srcRoot = srcBagRoot,
+              bagRoot = bagRoot,
+              srcRoot = Some(srcBagRoot),
               space = space,
               externalIdentifier = bagInfo.externalIdentifier
             )
@@ -575,8 +575,8 @@ trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
             withVerifier(namespace) {
               _.verify(
                 ingestId = createIngestID,
-                root = bagRoot,
-                srcRoot = bagRoot,
+                bagRoot = bagRoot,
+                srcRoot = None,
                 space = space,
                 externalIdentifier = bagInfo.externalIdentifier
               )
@@ -674,8 +674,8 @@ trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           withVerifier(namespace) {
             _.verify(
               ingestId = createIngestID,
-              root = bagRoot,
-              srcRoot = bagRoot,
+              bagRoot = bagRoot,
+              srcRoot = None,
               space = space,
               externalIdentifier = bagInfo.externalIdentifier
             )

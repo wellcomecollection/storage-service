@@ -6,19 +6,13 @@ import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder,
-  SQSBuilder
-}
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.bagverifier.services.BagVerifierWorker
-import uk.ac.wellcome.platform.archive.bagverifier.services.s3.S3BagVerifier
-import uk.ac.wellcome.platform.archive.common.config.builders.{
-  IngestUpdaterBuilder,
-  OperationNameBuilder,
-  OutgoingPublisherBuilder
-}
+import uk.ac.wellcome.platform.archive.bagverifier.services.s3.S3StandaloneBagVerifier
+import uk.ac.wellcome.platform.archive.common.BagRootPayload
+import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
+import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -46,7 +40,7 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: SqsAsyncClient =
       SQSBuilder.buildSQSAsyncClient(config)
 
-    val verifier = new S3BagVerifier(
+    val verifier = new S3StandaloneBagVerifier(
       primaryBucket =
         config.requireString("bag-verifier.primary-storage-bucket")
     )
@@ -65,7 +59,8 @@ object Main extends WellcomeTypesafeApp {
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,
       verifier = verifier,
-      metricsNamespace = config.requireString("aws.metrics.namespace")
+      metricsNamespace = config.requireString("aws.metrics.namespace"),
+      (payload: BagRootPayload) => S3ObjectLocationPrefix(payload.bagRoot)
     )
   }
 }

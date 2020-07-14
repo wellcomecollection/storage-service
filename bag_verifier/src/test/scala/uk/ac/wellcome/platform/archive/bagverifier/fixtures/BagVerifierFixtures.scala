@@ -7,7 +7,7 @@ import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.bagverifier.services.s3.S3BagVerifier
+import uk.ac.wellcome.platform.archive.bagverifier.services.s3.S3StandaloneBagVerifier
 import uk.ac.wellcome.platform.archive.bagverifier.services.{
   BagVerifier,
   BagVerifierWorker
@@ -59,6 +59,6 @@ trait BagVerifierFixtures
     testWith: TestWith[BagVerifier[S3ObjectLocation, S3ObjectLocationPrefix], R]
   ): R =
     testWith(
-      new S3BagVerifier(primaryBucket = bucket.name)
+      new S3StandaloneBagVerifier(primaryBucket = bucket.name)
     )
 }
