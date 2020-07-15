@@ -1,21 +1,11 @@
-variable "azure_resource_group_name" {
-  type = string
-}
-
 data "azurerm_resource_group" "rg" {
   name = var.azure_resource_group_name
-}
-
-locals {
-  # Azure storage account names can only consist of lowercase letters and numbers,
-  # and must be between 3 and 24 characters long
-  storage_account_name = replace("wc-${var.namespace}", "-", "")
 }
 
 resource "azurerm_storage_account" "wellcome" {
   resource_group_name = data.azurerm_resource_group.rg.name
 
-  name         = local.storage_account_name
+  name         = var.azure_storage_account_name
   account_kind = "StorageV2"
   account_tier = "Standard"
 
@@ -49,7 +39,7 @@ resource "azurerm_storage_management_policy" "tier_to_archive" {
   storage_account_id = azurerm_storage_account.wellcome.id
 
   rule {
-    name    = "ArchiveRule"
+    name    = "TierToArchive"
     enabled = true
 
     filters {

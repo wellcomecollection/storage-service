@@ -3,8 +3,6 @@ module "critical" {
 
   namespace = "${local.namespace}-staging"
 
-  azure_resource_group_name = "rg-wcollarchive-stage"
-
   replica_primary_read_principals = [
     local.archivematica_task_role_arn,
     local.digitisation_account_principal,
@@ -22,6 +20,9 @@ module "critical" {
     "arn:aws:iam::653428163053:user/api",
     "arn:aws:iam::653428163053:user/echo-fs",
   ]
+
+  azure_storage_account_name = "wecostoragestage"
+  azure_resource_group_name  = "rg-wcollarchive-stage"
 
   inventory_bucket = "wellcomecollection-storage-infra"
 
