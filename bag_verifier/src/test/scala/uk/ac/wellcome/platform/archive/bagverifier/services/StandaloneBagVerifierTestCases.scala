@@ -39,7 +39,7 @@ import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
 import uk.ac.wellcome.storage.{Location, Prefix, S3ObjectLocation}
 
-trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
+trait StandaloneBagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
 ], Namespace]
     extends AnyFunSpec
@@ -55,7 +55,7 @@ trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
   ): R
 
   def withVerifier[R](namespace: Namespace)(
-    testWith: TestWith[BagVerifier[BagLocation, BagPrefix], R]
+    testWith: TestWith[StandaloneBagVerifier[BagLocation, BagPrefix], R]
   )(implicit typedStore: TypedStore[BagLocation, String]): R
 
   val payloadFileCount: Int = randomInt(from = 1, to = 10)
@@ -124,8 +124,7 @@ trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           withVerifier(namespace) {
             _.verify(
               ingestId = createIngestID,
-              bagRoot = bagRoot,
-              srcRoot = None,
+              bagRoot = StandaloneBagRoot(bagRoot),
               space = space,
               externalIdentifier = bagInfo.externalIdentifier
             )
@@ -287,8 +286,7 @@ trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           withVerifier(namespace) {
             _.verify(
               ingestId = createIngestID,
-              bagRoot = bagRoot,
-              srcRoot = None,
+              bagRoot = StandaloneBagRoot(bagRoot),
               space = space,
               externalIdentifier = payloadExternalIdentifier
             )
@@ -327,8 +325,8 @@ trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           withVerifier(namespace) {
             _.verify(
               ingestId = createIngestID,
-              bagRoot = bagRoot,
-              srcRoot = Some(srcBagRoot),
+              bagRoot = StandaloneBagRoot(bagRoot),
+             // srcRoot = Some(srcBagRoot),
               space = space,
               externalIdentifier = bagInfo.externalIdentifier
             )
@@ -575,8 +573,7 @@ trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
             withVerifier(namespace) {
               _.verify(
                 ingestId = createIngestID,
-                bagRoot = bagRoot,
-                srcRoot = None,
+                bagRoot = StandaloneBagRoot(bagRoot),
                 space = space,
                 externalIdentifier = bagInfo.externalIdentifier
               )
@@ -674,8 +671,7 @@ trait BagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           withVerifier(namespace) {
             _.verify(
               ingestId = createIngestID,
-              bagRoot = bagRoot,
-              srcRoot = None,
+              bagRoot = StandaloneBagRoot(bagRoot),
               space = space,
               externalIdentifier = bagInfo.externalIdentifier
             )

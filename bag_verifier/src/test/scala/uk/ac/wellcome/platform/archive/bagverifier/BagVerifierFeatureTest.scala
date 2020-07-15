@@ -47,7 +47,7 @@ class BagVerifierFeatureTest
     withLocalSqsQueuePair(visibilityTimeout = 10) {
       case QueuePair(queue, dlq) =>
         withLocalS3Bucket { bucket =>
-          withBagVerifierWorker(
+          withStandaloneBagVerifierWorker(
             ingests,
             outgoing,
             queue,
@@ -96,7 +96,7 @@ class BagVerifierFeatureTest
     withLocalSqsQueuePair() {
       case QueuePair(queue, dlq) =>
         withLocalS3Bucket { bucket =>
-          withBagVerifierWorker(
+          withStandaloneBagVerifierWorker(
             ingests,
             outgoing,
             queue,

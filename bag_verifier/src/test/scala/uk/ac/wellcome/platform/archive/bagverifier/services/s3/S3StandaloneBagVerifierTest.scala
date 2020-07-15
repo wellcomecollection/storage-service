@@ -1,14 +1,8 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services.s3
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.services.{
-  BagVerifier,
-  BagVerifierTestCases
-}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{StandaloneBagVerifier, StandaloneBagVerifierTestCases}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.PayloadEntry
@@ -19,8 +13,8 @@ import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.store.s3.NewS3TypedStore
 import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 
-class S3BagVerifierTest
-    extends BagVerifierTestCases[
+class S3StandaloneBagVerifierTest
+    extends StandaloneBagVerifierTestCases[
       S3ObjectLocation,
       S3ObjectLocationPrefix,
       Bucket
@@ -33,7 +27,7 @@ class S3BagVerifierTest
     testWith(NewS3TypedStore[String])
 
   override def withVerifier[R](primaryBucket: Bucket)(
-    testWith: TestWith[BagVerifier[S3ObjectLocation, S3ObjectLocationPrefix], R]
+    testWith: TestWith[StandaloneBagVerifier[S3ObjectLocation, S3ObjectLocationPrefix], R]
   )(
     implicit typedStore: TypedStore[S3ObjectLocation, String]
   ): R =
