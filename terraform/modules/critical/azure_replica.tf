@@ -16,6 +16,10 @@ resource "azurerm_storage_account" "wellcome" {
 
   # We only use Locally Redundant storage for the Azure replica because
   # this is a backup of last resort.
+  #
+  # Data is redundant within the facility (at least three copies) but not
+  # replicated to multiple facilities.
+  # See https://docs.microsoft.com/en-us/azure/storage/common/storage-redundancy
   account_replication_type = "LRS"
 
   # New blobs are written to the Cool tier by default, rather than Hot.
