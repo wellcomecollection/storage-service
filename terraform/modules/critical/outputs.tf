@@ -56,6 +56,10 @@ output "replica_glacier_bucket_arn" {
   value = "${aws_s3_bucket.replica_glacier.arn}"
 }
 
+output "replica_azure_container_name" {
+  value = azurerm_storage_container.container.name
+}
+
 # DynamoDB tables
 
 output "replicas_table_arn" {
