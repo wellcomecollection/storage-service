@@ -3,6 +3,8 @@ module "critical" {
 
   namespace = "${local.namespace}-staging"
 
+  azure_resource_group_name = "rg-wcollarchive-stage"
+
   replica_primary_read_principals = [
     local.archivematica_task_role_arn,
     local.digitisation_account_principal,
