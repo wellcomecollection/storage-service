@@ -84,7 +84,7 @@ object Main extends WellcomeTypesafeApp {
       case AzureBlobStorageProvider =>
         implicit val azureBlobClient: BlobServiceClient =
           new BlobServiceClientBuilder()
-            .connectionString(config.requireString("azure.connectionString"))
+            .endpoint(config.requireString("azure.endpoint"))
             .buildClient()
 
         new AzureReplicator()
