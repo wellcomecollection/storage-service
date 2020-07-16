@@ -95,8 +95,8 @@ data "aws_iam_policy_document" "replica_primary_read" {
         "AROAZQI22QHWTHLN4QHJU:*",
 
         # Dashboard for iiif-builder staging + staging-prd
-        "AROAZQI22QHW3RRRIYDN3:*"
-        "AROAZQI22QHWQI2FAIMQ5:*"
+        "AROAZQI22QHW3RRRIYDN3:*",
+        "AROAZQI22QHWQI2FAIMQ5:*",
       ]
     }
 
