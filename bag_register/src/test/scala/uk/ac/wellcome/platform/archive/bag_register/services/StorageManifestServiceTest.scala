@@ -326,54 +326,6 @@ class StorageManifestServiceTest
         )
       }
     }
-
-    it("refers to a file in the wrong namespace") {
-      val fetchEntries = Map(
-        BagPath("data/file1.txt") -> createFetchMetadataWith(
-          uri = "s3://not-the-replica-bucket/file1.txt"
-        )
-      )
-
-      val bag = createBagWith(
-        manifestEntries = Map(
-          BagPath("data/file1.txt") -> randomChecksumValue
-        ),
-        fetchEntries = fetchEntries
-      )
-
-      assertIsError(bag = bag) { err =>
-        err shouldBe a[BadFetchLocationException]
-        err.getMessage shouldBe "Fetch entry for data/file1.txt refers to a file in the wrong namespace: not-the-replica-bucket"
-      }
-    }
-
-    it("refers to a file that isn't in a versioned directory") {
-      val version = createBagVersion
-      val bagRoot = createObjectLocation
-
-      val location = createPrimaryLocationWith(
-        bagRoot = bagRoot,
-        version = version
-      )
-
-      val fetchEntries = Map(
-        BagPath("data/file1.txt") -> createFetchMetadataWith(
-          uri = s"s3://${location.prefix.namespace}/file1.txt"
-        )
-      )
-
-      val bag = createBagWith(
-        manifestEntries = Map(
-          BagPath("data/file1.txt") -> randomChecksumValue
-        ),
-        fetchEntries = fetchEntries
-      )
-
-      assertIsError(bag = bag, location = location, version = version) { err =>
-        err shouldBe a[BadFetchLocationException]
-        err.getMessage shouldBe "Fetch entry for data/file1.txt refers to a file in the wrong path: /file1.txt"
-      }
-    }
   }
 
   describe("passes through metadata correctly") {

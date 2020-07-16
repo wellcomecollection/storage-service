@@ -13,13 +13,10 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   StorageLocationGenerators,
   StorageSpaceGenerators
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestCompleted,
-  IngestFailed
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.IngestCompleted
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
-import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
+import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -117,76 +114,5 @@ class RegisterTest
             .copy(path = prefix.path.stripSuffix(s"/$version"))
         )
       }
-  }
-
-  it(
-    "includes a user-facing message if the fetch.txt refers to the wrong namespace"
-  ) {
-    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
-      MemoryStreamStore[MemoryLocation]()
-
-    implicit val typedStore: MemoryTypedStore[MemoryLocation, String] =
-      new MemoryTypedStore[MemoryLocation, String]()
-
-    val bagReader = new MemoryBagReader()
-
-    val storageManifestService = MemoryStorageManifestService()
-
-    val space = createStorageSpace
-    val version = createBagVersion
-
-    val storageManifestDao = createStorageManifestDao()
-
-    val (bagObjects, bagRoot, bagInfo) =
-      withNamespace { implicit namespace =>
-        createBagContentsWith(
-          version = version
-        )
-      }
-
-    // Actually upload the bag objects into a different namespace,
-    // so the entries in the fetch.txt will be wrong.
-    val badBagObjects = bagObjects.map {
-      case (objLocation, contents) =>
-        objLocation.copy(namespace = objLocation.namespace + "_wrong") -> contents
-    }
-
-    uploadBagObjects(bagRoot = bagRoot, objects = badBagObjects)
-
-    val location = createPrimaryLocationWith(
-      prefix = bagRoot
-        .copy(
-          namespace = bagRoot.namespace + "_wrong"
-        )
-        .toObjectLocationPrefix
-    )
-
-    withBagTrackerClient(storageManifestDao) { bagTrackerClient =>
-      val register = new Register(
-        bagReader = bagReader,
-        bagTrackerClient = bagTrackerClient,
-        storageManifestService = storageManifestService,
-        toPrefix = (prefix: ObjectLocationPrefix) =>
-          MemoryLocationPrefix(prefix.namespace, prefix.path)
-      )
-
-      val future = register.update(
-        ingestId = createIngestID,
-        location = location,
-        replicas = Seq.empty,
-        version = version,
-        space = space,
-        externalIdentifier = bagInfo.externalIdentifier
-      )
-
-      whenReady(future) { result =>
-        result shouldBe a[IngestFailed[_]]
-
-        val ingestFailed = result.asInstanceOf[IngestFailed[_]]
-        ingestFailed.e shouldBe a[BadFetchLocationException]
-        ingestFailed.maybeUserFacingMessage.get should fullyMatch regex
-          """Fetch entry for data/[0-9A-Za-z/]+ refers to a file in the wrong namespace: [0-9A-Za-z/]+"""
-      }
-    }
   }
 }
