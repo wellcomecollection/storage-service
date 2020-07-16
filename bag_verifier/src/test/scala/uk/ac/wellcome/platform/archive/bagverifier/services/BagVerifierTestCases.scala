@@ -4,42 +4,24 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{Assertion, EitherValues, OptionValues, TryValues}
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
-  FailedChecksumNoMatch,
-  FileFixityCorrect
-}
-import uk.ac.wellcome.platform.archive.bagverifier.models.{
-  VerificationFailureSummary,
-  VerificationIncompleteSummary,
-  VerificationSuccessSummary,
-  VerificationSummary
-}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FailedChecksumNoMatch, FileFixityCorrect}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{VerificationFailureSummary, VerificationIncompleteSummary, VerificationSuccessSummary, VerificationSummary}
 import uk.ac.wellcome.platform.archive.bagverifier.storage.LocationNotFound
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagPath,
-  BagVersion,
-  ExternalIdentifier,
-  PayloadOxum
-}
-import uk.ac.wellcome.platform.archive.common.bagit.services.{
-  BagReader,
-  BagUnavailable
-}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagBuilder,
-  PayloadEntry
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepResult,
-  IngestStepSucceeded,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagPath, BagVersion, ExternalIdentifier, PayloadOxum}
+import uk.ac.wellcome.platform.archive.common.bagit.services.{BagReader, BagUnavailable}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagBuilder, PayloadEntry}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded, StorageSpace}
 import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
 import uk.ac.wellcome.storage.{Location, Prefix, S3ObjectLocation}
 
 trait StandaloneBagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
+  BagLocation
+], Namespace] extends BagVerifierTestCases[StandaloneBagVerifier[BagLocation, BagPrefix], StandaloneBagRoot[BagLocation, BagPrefix], BagLocation, BagPrefix, Namespace] {
+  override def createBagRoot(bagRoot: BagPrefix, srcBagRoot: Option[BagPrefix]): StandaloneBagRoot[BagLocation, BagPrefix] = StandaloneBagRoot(bagRoot)
+}
+
+trait BagVerifierTestCases[Verifier <:BagVerifier[B, BagLocation, BagPrefix],B <: BagRoot[BagLocation,BagPrefix],BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
 ], Namespace]
     extends AnyFunSpec
@@ -55,8 +37,10 @@ trait StandaloneBagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefi
   ): R
 
   def withVerifier[R](namespace: Namespace)(
-    testWith: TestWith[StandaloneBagVerifier[BagLocation, BagPrefix], R]
+    testWith: TestWith[Verifier, R]
   )(implicit typedStore: TypedStore[BagLocation, String]): R
+
+  def createBagRoot(bagRoot: BagPrefix, srcBagRoot: Option[BagPrefix]): B
 
   val payloadFileCount: Int = randomInt(from = 1, to = 10)
 
@@ -124,7 +108,7 @@ trait StandaloneBagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefi
           withVerifier(namespace) {
             _.verify(
               ingestId = createIngestID,
-              bagRoot = StandaloneBagRoot(bagRoot),
+              bagRoot = createBagRoot(bagRoot, None),
               space = space,
               externalIdentifier = bagInfo.externalIdentifier
             )
@@ -286,7 +270,7 @@ trait StandaloneBagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefi
           withVerifier(namespace) {
             _.verify(
               ingestId = createIngestID,
-              bagRoot = StandaloneBagRoot(bagRoot),
+              bagRoot = createBagRoot(bagRoot, None),
               space = space,
               externalIdentifier = payloadExternalIdentifier
             )
@@ -300,44 +284,6 @@ trait StandaloneBagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefi
         result.maybeUserFacingMessage.get should startWith(
           "External identifier in bag-info.txt does not match request"
         )
-      }
-    }
-  }
-
-  it("fails a bag if it doesn't match original tag manifest") {
-    withNamespace { implicit namespace =>
-      withTypedStore { implicit typedStore =>
-        val space = createStorageSpace
-
-        val (srcBagObjects, srcBagRoot, _) = createBagContentsWith(
-          space = space,
-          payloadFileCount = payloadFileCount
-        )
-
-        val (bagObjects, bagRoot, bagInfo) = createBagContentsWith(
-          space = space,
-          payloadFileCount = payloadFileCount
-        )
-        uploadBagObjects(bagRoot = srcBagRoot, objects = srcBagObjects)
-        uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
-
-        val ingestStep =
-          withVerifier(namespace) {
-            _.verify(
-              ingestId = createIngestID,
-              bagRoot = StandaloneBagRoot(bagRoot),
-             // srcRoot = Some(srcBagRoot),
-              space = space,
-              externalIdentifier = bagInfo.externalIdentifier
-            )
-          }
-
-        val result = ingestStep.success.get
-
-        result shouldBe a[IngestFailed[_]]
-        result.summary shouldBe a[VerificationIncompleteSummary]
-
-        result.maybeUserFacingMessage shouldNot be(defined)
       }
     }
   }
@@ -573,7 +519,7 @@ trait StandaloneBagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefi
             withVerifier(namespace) {
               _.verify(
                 ingestId = createIngestID,
-                bagRoot = StandaloneBagRoot(bagRoot),
+                bagRoot = createBagRoot(bagRoot, None),
                 space = space,
                 externalIdentifier = bagInfo.externalIdentifier
               )
@@ -671,7 +617,7 @@ trait StandaloneBagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefi
           withVerifier(namespace) {
             _.verify(
               ingestId = createIngestID,
-              bagRoot = StandaloneBagRoot(bagRoot),
+              bagRoot = createBagRoot(bagRoot, None),
               space = space,
               externalIdentifier = bagInfo.externalIdentifier
             )
