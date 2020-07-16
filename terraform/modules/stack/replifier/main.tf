@@ -30,6 +30,8 @@ module "bag_replicator" {
     JAVA_OPTS               = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_replicator_service_name}"
   }
 
+  secrets = var.secrets
+
   cpu    = 1024
   memory = 2048
 

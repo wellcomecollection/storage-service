@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.bagreplicator
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
+import com.azure.storage.blob.{BlobServiceClient, BlobServiceClientBuilder}
 import com.typesafe.config.Config
 import org.scanamo.auto._
 import org.scanamo.time.JavaTimeFormats._
@@ -17,12 +18,18 @@ import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchM
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.BagReplicationSummary
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.azure.AzureReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
   OutgoingPublisherBuilder
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  AmazonS3StorageProvider,
+  AzureBlobStorageProvider,
+  StorageProvider
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
 import uk.ac.wellcome.storage.locking.dynamo.{
@@ -70,7 +77,19 @@ object Main extends WellcomeTypesafeApp {
     val lockingService =
       new DynamoLockingService[IngestStepResult[BagReplicationSummary[_]], Try]()
 
-    val replicator = new S3Replicator()
+    val provider =
+      StorageProvider.apply(config.requireString("bag-replicator.provider"))
+
+    val replicator = provider match {
+      case AmazonS3StorageProvider => new S3Replicator()
+      case AzureBlobStorageProvider =>
+        implicit val azureBlobClient: BlobServiceClient =
+          new BlobServiceClientBuilder()
+            .endpoint(config.requireString("azure.endpoint"))
+            .buildClient()
+
+        new AzureReplicator()
+    }
 
     // Eventually this will be a config option, and each instance of
     // the replicator will choose whether it's primary/secondary,
