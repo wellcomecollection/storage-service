@@ -77,7 +77,8 @@ object Main extends WellcomeTypesafeApp {
     val lockingService =
       new DynamoLockingService[IngestStepResult[BagReplicationSummary[_]], Try]()
 
-    val provider = StorageProvider.apply(config.requireString("bag-replicator.provider"))
+    val provider =
+      StorageProvider.apply(config.requireString("bag-replicator.provider"))
 
     val replicator = provider match {
       case AmazonS3StorageProvider => new S3Replicator()
