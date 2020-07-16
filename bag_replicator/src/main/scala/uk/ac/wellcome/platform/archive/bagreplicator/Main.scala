@@ -26,6 +26,11 @@ import uk.ac.wellcome.platform.archive.common.config.builders.{
   OperationNameBuilder,
   OutgoingPublisherBuilder
 }
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  AmazonS3StorageProvider,
+  AzureBlobStorageProvider,
+  StorageProvider
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
 import uk.ac.wellcome.storage.locking.dynamo.{
   DynamoLockDao,
@@ -72,9 +77,11 @@ object Main extends WellcomeTypesafeApp {
     val lockingService =
       new DynamoLockingService[IngestStepResult[BagReplicationSummary[_]], Try]()
 
-    val replicator = config.requireString("bag-replicator.provider") match {
-      case "amazon-s3" => new S3Replicator()
-      case "azure-blob-storage" =>
+    val provider = StorageProvider.apply(config.requireString("bag-replicator.provider"))
+
+    val replicator = provider match {
+      case AmazonS3StorageProvider => new S3Replicator()
+      case AzureBlobStorageProvider =>
         implicit val azureBlobClient: BlobServiceClient =
           new BlobServiceClientBuilder()
             .connectionString(config.requireString("azure.connectionString"))
