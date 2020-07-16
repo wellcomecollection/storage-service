@@ -8,7 +8,7 @@ import uk.ac.wellcome.messaging.sns.SNSConfig
 import uk.ac.wellcome.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.bagverifier.services.s3.{S3ReplicatedBagVerifier, S3StandaloneBagVerifier}
-import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifierWorker, ReplicatedBagRoots, StandaloneBagRoot}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifierWorker, ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.{BagRootPayload, ReplicaResultPayload}
@@ -31,7 +31,7 @@ object BagVerifierWorkerBuilder{
 
   private def buildStandaloneVerifierWorker(config: Config)(primaryBucket: String,ingestUpdater: IngestUpdater[SNSConfig],outgoingPublisher:OutgoingPublisher[SNSConfig])(implicit s3: AmazonS3,mc: MetricsMonitoringClient,
    as: ActorSystem,
-   sc: SqsAsyncClient): BagVerifierWorker[BagRootPayload, StandaloneBagRoot[S3ObjectLocation, S3ObjectLocationPrefix], SNSConfig, SNSConfig] ={
+   sc: SqsAsyncClient): BagVerifierWorker[BagRootPayload, StandaloneBagVerifyContext[S3ObjectLocation, S3ObjectLocationPrefix], SNSConfig, SNSConfig] ={
     val verifier = new S3StandaloneBagVerifier(primaryBucket)
     new BagVerifierWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
@@ -39,14 +39,14 @@ object BagVerifierWorkerBuilder{
       outgoingPublisher = outgoingPublisher,
       verifier = verifier,
       metricsNamespace = config.requireString("aws.metrics.namespace"),
-     ( payload: BagRootPayload) => StandaloneBagRoot(S3ObjectLocationPrefix(payload.bagRoot))
+     ( payload: BagRootPayload) => StandaloneBagVerifyContext(S3ObjectLocationPrefix(payload.bagRoot))
     )
 
   }
 
   private def buildReplicaBagVerifierWorker(config: Config)(primaryBucket: String,ingestUpdater: IngestUpdater[SNSConfig],outgoingPublisher:OutgoingPublisher[SNSConfig])(implicit s3: AmazonS3,mc: MetricsMonitoringClient,
                                                                                                                                                     as: ActorSystem,
-                                                                                                                                                    sc: SqsAsyncClient): BagVerifierWorker[ReplicaResultPayload, ReplicatedBagRoots[S3ObjectLocation, S3ObjectLocationPrefix], SNSConfig, SNSConfig] ={
+                                                                                                                                                    sc: SqsAsyncClient): BagVerifierWorker[ReplicaResultPayload, ReplicatedBagVerifyContext[S3ObjectLocation, S3ObjectLocationPrefix], SNSConfig, SNSConfig] ={
     val verifier = new S3ReplicatedBagVerifier(primaryBucket)
   new BagVerifierWorker(
     config = AlpakkaSqsWorkerConfigBuilder.build(config),
@@ -54,7 +54,7 @@ object BagVerifierWorkerBuilder{
     outgoingPublisher = outgoingPublisher,
     verifier = verifier,
     metricsNamespace = config.requireString("aws.metrics.namespace"),
-    ( payload: ReplicaResultPayload) => ReplicatedBagRoots(S3ObjectLocationPrefix(payload.bagRoot), S3ObjectLocationPrefix(payload.replicaResult.storageLocation.prefix))
+    ( payload: ReplicaResultPayload) => ReplicatedBagVerifyContext(S3ObjectLocationPrefix(payload.bagRoot), S3ObjectLocationPrefix(payload.replicaResult.storageLocation.prefix))
   )
 
   }

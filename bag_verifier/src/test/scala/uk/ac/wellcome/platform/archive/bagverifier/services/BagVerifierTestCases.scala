@@ -17,11 +17,11 @@ import uk.ac.wellcome.storage.{Location, Prefix, S3ObjectLocation}
 
 trait StandaloneBagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
-], Namespace] extends BagVerifierTestCases[StandaloneBagVerifier[BagLocation, BagPrefix], StandaloneBagRoot[BagLocation, BagPrefix], BagLocation, BagPrefix, Namespace] {
-  override def createBagRoot(bagRoot: BagPrefix, srcBagRoot: Option[BagPrefix]): StandaloneBagRoot[BagLocation, BagPrefix] = StandaloneBagRoot(bagRoot)
+], Namespace] extends BagVerifierTestCases[StandaloneBagVerifier[BagLocation, BagPrefix], StandaloneBagVerifyContext[BagLocation, BagPrefix], BagLocation, BagPrefix, Namespace] {
+  override def createBagRoot(bagRoot: BagPrefix, srcBagRoot: Option[BagPrefix]): StandaloneBagVerifyContext[BagLocation, BagPrefix] = StandaloneBagVerifyContext(bagRoot)
 }
 
-trait BagVerifierTestCases[Verifier <:BagVerifier[B, BagLocation, BagPrefix],B <: BagRoot[BagLocation,BagPrefix],BagLocation <: Location, BagPrefix <: Prefix[
+trait BagVerifierTestCases[Verifier <:BagVerifier[B, BagLocation, BagPrefix],B <: BagVerifyContext[BagLocation,BagPrefix],BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
 ], Namespace]
     extends AnyFunSpec
@@ -646,8 +646,8 @@ trait BagVerifierTestCases[Verifier <:BagVerifier[B, BagLocation, BagPrefix],B <
     }
 }
 
-trait ReplicatedBagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[BagLocation],Namespace] extends BagVerifierTestCases[ReplicatedBagVerifier[BagLocation,BagPrefix],ReplicatedBagRoots[BagLocation,BagPrefix],BagLocation, BagPrefix,Namespace] {
-  override def createBagRoot(bagRoot: BagPrefix, scrBagRoot: Option[BagPrefix]): ReplicatedBagRoots[BagLocation, BagPrefix] = ReplicatedBagRoots(bagRoot, scrBagRoot.getOrElse(bagRoot))
+trait ReplicatedBagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[BagLocation],Namespace] extends BagVerifierTestCases[ReplicatedBagVerifier[BagLocation,BagPrefix],ReplicatedBagVerifyContext[BagLocation,BagPrefix],BagLocation, BagPrefix,Namespace] {
+  override def createBagRoot(bagRoot: BagPrefix, scrBagRoot: Option[BagPrefix]): ReplicatedBagVerifyContext[BagLocation, BagPrefix] = ReplicatedBagVerifyContext(bagRoot, scrBagRoot.getOrElse(bagRoot))
 
   it("fails a bag if it doesn't match original tag manifest") {
     withNamespace { implicit namespace =>

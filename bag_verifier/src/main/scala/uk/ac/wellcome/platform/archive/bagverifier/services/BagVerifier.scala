@@ -17,21 +17,21 @@ import uk.ac.wellcome.storage.{Location, Prefix}
 import scala.util.Try
 
 
-sealed trait BagRoot[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]{
+sealed trait BagVerifyContext[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]{
   val root: BagPrefix
 }
-case class StandaloneBagRoot[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](root: BagPrefix) extends BagRoot[BagLocation, BagPrefix]
-case class ReplicatedBagRoots[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](root: BagPrefix, srcRoot: BagPrefix) extends BagRoot[BagLocation, BagPrefix]
+case class StandaloneBagVerifyContext[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](root: BagPrefix) extends BagVerifyContext[BagLocation, BagPrefix]
+case class ReplicatedBagVerifyContext[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](root: BagPrefix, srcRoot: BagPrefix) extends BagVerifyContext[BagLocation, BagPrefix]
 
-trait StandaloneBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] extends BagVerifier[StandaloneBagRoot[BagLocation, BagPrefix],BagLocation, BagPrefix]{
-  override def verifyReplicatedBag(root: StandaloneBagRoot[BagLocation, BagPrefix], space: StorageSpace, externalIdentifier: ExternalIdentifier, bag: Bag): Either[BagVerifierError, Unit] = Right(())
+trait StandaloneBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] extends BagVerifier[StandaloneBagVerifyContext[BagLocation, BagPrefix],BagLocation, BagPrefix]{
+  override def verifyReplicatedBag(root: StandaloneBagVerifyContext[BagLocation, BagPrefix], space: StorageSpace, externalIdentifier: ExternalIdentifier, bag: Bag): Either[BagVerifierError, Unit] = Right(())
 }
-trait ReplicatedBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] extends BagVerifier[ReplicatedBagRoots[BagLocation, BagPrefix],BagLocation, BagPrefix]
+trait ReplicatedBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] extends BagVerifier[ReplicatedBagVerifyContext[BagLocation, BagPrefix],BagLocation, BagPrefix]
   with VerifySourceTagManifest[BagLocation, BagPrefix] {
-  override def verifyReplicatedBag(root: ReplicatedBagRoots[BagLocation, BagPrefix], space: StorageSpace, externalIdentifier: ExternalIdentifier, bag: Bag): Either[BagVerifierError, Unit] = verifySourceTagManifestIsTheSame(srcPrefix = root.srcRoot,dstPrefix = root.root)
+  override def verifyReplicatedBag(root: ReplicatedBagVerifyContext[BagLocation, BagPrefix], space: StorageSpace, externalIdentifier: ExternalIdentifier, bag: Bag): Either[BagVerifierError, Unit] = verifySourceTagManifestIsTheSame(srcPrefix = root.srcRoot,dstPrefix = root.root)
 }
 
-trait BagVerifier[B <: BagRoot[BagLocation, BagPrefix],BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
+trait BagVerifier[BagContext <: BagVerifyContext[BagLocation, BagPrefix],BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     extends Logging
     with VerifyChecksumAndSize[BagLocation, BagPrefix]
     with VerifyExternalIdentifier
@@ -45,12 +45,12 @@ trait BagVerifier[B <: BagRoot[BagLocation, BagPrefix],BagLocation <: Location, 
   implicit val resolvable: Resolvable[BagLocation]
   implicit val fixityChecker: FixityChecker[BagLocation]
 
-  def verifyReplicatedBag(root:B, space: StorageSpace,
+  def verifyReplicatedBag(root:BagContext, space: StorageSpace,
                           externalIdentifier: ExternalIdentifier, bag: Bag): Either[BagVerifierError, Unit]
   def createPrefix(namespace: String, path: String): BagPrefix
 
   def verify(ingestId: IngestID,
-             bagRoot: B,
+             bagRoot: BagContext,
              space: StorageSpace,
              externalIdentifier: ExternalIdentifier) = Try{
     val startTime = Instant.now()

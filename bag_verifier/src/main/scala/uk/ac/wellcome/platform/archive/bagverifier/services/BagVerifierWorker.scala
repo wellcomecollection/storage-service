@@ -14,29 +14,29 @@ import uk.ac.wellcome.storage.{Location, Prefix, S3ObjectLocation, S3ObjectLocat
 
 import scala.util.Try
 
-trait BagPayloadTranslator[R <: BagRootPayload, B <: BagRoot[BagLocation, BagPrefix], BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]{
-  def translate(r: R): B
+trait BagPayloadTranslator[Payload <: BagRootPayload, BagContext <: BagVerifyContext[BagLocation, BagPrefix], BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]{
+  def translate(r: Payload): BagContext
 }
 
-class BagVerifierWorker[R <: BagRootPayload, B <: BagRoot[S3ObjectLocation, S3ObjectLocationPrefix],IngestDestination, OutgoingDestination](
-  val config: AlpakkaSQSWorkerConfig,
-  ingestUpdater: IngestUpdater[IngestDestination],
-  outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  verifier: BagVerifier[B, S3ObjectLocation, S3ObjectLocationPrefix],
-  val metricsNamespace: String,
-  bagPayloadTranslator: BagPayloadTranslator[R, B, S3ObjectLocation, S3ObjectLocationPrefix]
+class BagVerifierWorker[Payload <: BagRootPayload, BagContext <: BagVerifyContext[S3ObjectLocation, S3ObjectLocationPrefix],IngestDestination, OutgoingDestination](
+                                                                                                                                                               val config: AlpakkaSQSWorkerConfig,
+                                                                                                                                                               ingestUpdater: IngestUpdater[IngestDestination],
+                                                                                                                                                               outgoingPublisher: OutgoingPublisher[OutgoingDestination],
+                                                                                                                                                               verifier: BagVerifier[BagContext, S3ObjectLocation, S3ObjectLocationPrefix],
+                                                                                                                                                               val metricsNamespace: String,
+                                                                                                                                                               bagPayloadTranslator: BagPayloadTranslator[Payload, BagContext, S3ObjectLocation, S3ObjectLocationPrefix]
 )(
   implicit val mc: MetricsMonitoringClient,
   val as: ActorSystem,
   val sc: SqsAsyncClient,
-  val wd: Decoder[R]
+  val wd: Decoder[Payload]
 ) extends IngestStepWorker[
-      R,
+      Payload,
       VerificationSummary
     ] {
 
   override def processMessage(
-    payload: R
+    payload: Payload
   ): Try[IngestStepResult[VerificationSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)

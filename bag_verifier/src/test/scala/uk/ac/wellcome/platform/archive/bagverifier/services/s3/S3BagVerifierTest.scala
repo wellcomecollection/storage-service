@@ -13,7 +13,7 @@ import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.store.s3.NewS3TypedStore
 import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 
-trait S3BagVerifierTests[Verifier <:BagVerifier[B, S3ObjectLocation, S3ObjectLocationPrefix],B <: BagRoot[S3ObjectLocation,S3ObjectLocationPrefix]] extends S3BagBuilder  { this: BagVerifierTestCases[Verifier, B, S3ObjectLocation, S3ObjectLocationPrefix, Bucket] =>
+trait S3BagVerifierTests[Verifier <:BagVerifier[BagContext, S3ObjectLocation, S3ObjectLocationPrefix],BagContext <: BagVerifyContext[S3ObjectLocation,S3ObjectLocationPrefix]] extends S3BagBuilder  { this: BagVerifierTestCases[Verifier, BagContext, S3ObjectLocation, S3ObjectLocationPrefix, Bucket] =>
   override def withTypedStore[R](
                                   testWith: TestWith[TypedStore[S3ObjectLocation, String], R]
                                 ): R =
@@ -65,7 +65,7 @@ class S3ReplicatedBagVerifierTest
       S3ObjectLocationPrefix,
       Bucket
     ]
-    with S3BagVerifierTests[ReplicatedBagVerifier[S3ObjectLocation, S3ObjectLocationPrefix], ReplicatedBagRoots[S3ObjectLocation, S3ObjectLocationPrefix]]{
+    with S3BagVerifierTests[ReplicatedBagVerifier[S3ObjectLocation, S3ObjectLocationPrefix], ReplicatedBagVerifyContext[S3ObjectLocation, S3ObjectLocationPrefix]]{
   override def withVerifier[R](primaryBucket: Bucket)(
     testWith: TestWith[ReplicatedBagVerifier[S3ObjectLocation, S3ObjectLocationPrefix], R]
   )(
@@ -82,7 +82,7 @@ class S3StandaloneBagVerifierTest
     S3ObjectLocationPrefix,
     Bucket
   ]
-    with S3BagVerifierTests[StandaloneBagVerifier[S3ObjectLocation,S3ObjectLocationPrefix], StandaloneBagRoot[S3ObjectLocation, S3ObjectLocationPrefix]]{
+    with S3BagVerifierTests[StandaloneBagVerifier[S3ObjectLocation,S3ObjectLocationPrefix], StandaloneBagVerifyContext[S3ObjectLocation, S3ObjectLocationPrefix]]{
   override def withVerifier[R](primaryBucket: Bucket)(
     testWith: TestWith[StandaloneBagVerifier[S3ObjectLocation, S3ObjectLocationPrefix], R]
   )(
