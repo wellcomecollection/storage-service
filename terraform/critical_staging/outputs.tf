@@ -24,7 +24,11 @@ output "replica_glacier_bucket_name" {
   value = module.critical.replica_glacier_bucket_name
 }
 
-#
+output "replica_azure_container_name" {
+  value = module.critical.replica_azure_container_name
+}
+
+# Static bucket
 
 output "static_content_bucket_name" {
   value = module.critical.static_content_bucket_name

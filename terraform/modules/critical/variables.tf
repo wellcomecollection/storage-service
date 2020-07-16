@@ -26,3 +26,11 @@ variable "table_name" {
   type    = string
   default = ""
 }
+
+variable "azure_resource_group_name" {
+  type = string
+}
+
+variable "azure_storage_account_name" {
+  type = string
+}
