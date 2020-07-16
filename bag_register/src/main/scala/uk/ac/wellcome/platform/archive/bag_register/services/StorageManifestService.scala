@@ -137,34 +137,20 @@ trait StorageManifestService[BagLocation <: Location] extends Logging {
     version: BagVersion
   ): (BagLocation, Option[Long]) =
     matchedLocation.fetchMetadata match {
-      // This is a concrete file inside the replicated bag,
-      // so it's inside the versioned replica directory.
+      // A concrete file inside the replicated bag, so it's inside
+      // the versioned replica directory.
       case None =>
         (
           bagRoot.asLocation(version.toString, matchedLocation.bagPath.value),
           None
         )
 
-      // This is referring to a fetch file somewhere else.
-      // We need to check it's in another versioned directory
-      // for this bag.
+      // An entry in the fetch.txt, referring to a file somewhere else.
       case Some(fetchMetadata) =>
-        val fetchLocation = createLocation(fetchMetadata.uri)
-
-        if (fetchLocation.namespace != bagRoot.namespace) {
-          throw new BadFetchLocationException(
-            s"Fetch entry for ${matchedLocation.bagPath} refers to a file in the wrong namespace: ${fetchLocation.namespace}"
-          )
-        }
-
-        // TODO: This check could actually look for a /v1, /v2, etc.
-        if (!fetchLocation.path.startsWith(bagRoot.pathPrefix + "/")) {
-          throw new BadFetchLocationException(
-            s"Fetch entry for ${matchedLocation.bagPath} refers to a file in the wrong path: /${fetchLocation.path}"
-          )
-        }
-
-        (fetchLocation, fetchMetadata.length)
+        (
+          createLocation(fetchMetadata.uri),
+          fetchMetadata.length
+        )
     }
 
   /** Every entry in the bag manifest will be either a:
@@ -202,9 +188,18 @@ trait StorageManifestService[BagLocation <: Location] extends Logging {
         // This lookup should never file -- the BagMatcher populates the
         // entries from the original manifests in the bag.
         //
+        // The bag verifier should already have checked that any entries in
+        // the fetch.txt are inside the bag in the storage service.
+        //
         // We wrap it in a Try block just in case, but this should never
         // throw in practice.
         val (location, maybeSize) = entries(bagPath)
+
+        assert(
+          location.path.startsWith(bagRoot.pathPrefix + "/"),
+          s"Looks like a fetch.txt URI wasn't under the bag root - why wasn't this spotted by the verifier? +" +
+            s"$location ($bagPath)"
+        )
         val path = location.path.stripPrefix(bagRoot.pathPrefix + "/")
 
         val size = maybeSize match {
