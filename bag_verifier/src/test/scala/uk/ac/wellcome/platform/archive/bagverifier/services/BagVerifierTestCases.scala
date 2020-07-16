@@ -67,9 +67,7 @@ trait BagVerifierTestCases[Verifier <:BagVerifier[B, BagLocation, BagPrefix],B <
     contents: String = randomAlphanumeric
   ): Unit
 
-  def createBagReader(
-    implicit typedStore: TypedStore[BagLocation, String]
-  ): BagReader[BagLocation, BagPrefix]
+  def createBagReader: BagReader[BagLocation, BagPrefix]
 
   trait BagBuilderImpl extends BagBuilder[BagLocation, BagPrefix, Namespace] {
     override def createBagRoot(
@@ -646,4 +644,45 @@ trait BagVerifierTestCases[Verifier <:BagVerifier[B, BagLocation, BagPrefix],B <
 
       assertion(failedResult, summary)
     }
+}
+
+trait ReplicatedBagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[BagLocation],Namespace] extends BagVerifierTestCases[ReplicatedBagVerifier[BagLocation,BagPrefix],ReplicatedBagRoots[BagLocation,BagPrefix],BagLocation, BagPrefix,Namespace] {
+  override def createBagRoot(bagRoot: BagPrefix, scrBagRoot: Option[BagPrefix]): ReplicatedBagRoots[BagLocation, BagPrefix] = ReplicatedBagRoots(bagRoot, scrBagRoot.getOrElse(bagRoot))
+
+  it("fails a bag if it doesn't match original tag manifest") {
+    withNamespace { implicit namespace =>
+      withTypedStore { implicit typedStore =>
+        val space = createStorageSpace
+
+        val (srcBagObjects, srcBagRoot, _) = createBagContentsWith(
+          space = space,
+          payloadFileCount = payloadFileCount
+        )
+
+        val (bagObjects, bagRoot, bagInfo) = createBagContentsWith(
+          space = space,
+          payloadFileCount = payloadFileCount
+        )
+        uploadBagObjects(bagRoot = srcBagRoot, objects = srcBagObjects)
+        uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
+
+        val ingestStep =
+          withVerifier(namespace) {
+            _.verify(
+              ingestId = createIngestID,
+              bagRoot = createBagRoot(bagRoot, Some(srcBagRoot)),
+              space = space,
+              externalIdentifier = bagInfo.externalIdentifier
+            )
+          }
+
+        val result = ingestStep.success.get
+
+        result shouldBe a[IngestFailed[_]]
+        result.summary shouldBe a[VerificationIncompleteSummary]
+
+        result.maybeUserFacingMessage shouldNot be(defined)
+      }
+    }
+  }
 }
