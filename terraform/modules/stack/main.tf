@@ -457,58 +457,6 @@ module "replicator_verifier_glacier" {
   service_discovery_namespace_id = local.service_discovery_namespace_id
 }
 
-module "replicator_verifier_azure" {
-  source = "./replifier"
-
-  namespace = var.namespace
-
-  replica_id           = "azure"
-  replica_display_name = "Azure"
-  storage_provider     = "azure-blob-storage"
-  replica_type         = "secondary"
-
-  topic_arns = [
-    module.bag_versioner_output_topic.arn,
-  ]
-
-  bucket_name         = "wellcomecollection-storage-replica-amsterdam-staging"
-  primary_bucket_name = var.replica_primary_bucket_name
-
-  secrets = {
-    azure_connection_string = "azure/wellcomecollectionstage/wellcomecollection-storage-replica-amsterdam-staging/read_write_sas_url"
-  }
-
-  ingests_read_policy_json          = data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json
-  cloudwatch_metrics_policy_json    = data.aws_iam_policy_document.cloudwatch_putmetrics.json
-  replicator_lock_table_policy_json = module.replicator_lock_table.iam_policy
-
-  security_group_ids = [
-    aws_security_group.interservice.id,
-    aws_security_group.service_egress.id,
-  ]
-
-  cluster_name = aws_ecs_cluster.cluster.name
-  cluster_arn  = aws_ecs_cluster.cluster.arn
-  subnets      = var.private_subnets
-
-  ingests_topic_arn = module.ingests_topic.arn
-
-  replicator_lock_table_name  = module.replicator_lock_table.table_name
-  replicator_lock_table_index = module.replicator_lock_table.index_name
-
-  bag_replicator_image = local.image_ids["bag_replicator"]
-  bag_verifier_image   = local.image_ids["bag_verifier"]
-
-  min_capacity = var.min_capacity
-  max_capacity = var.max_capacity
-
-  dlq_alarm_arn = var.dlq_alarm_arn
-
-  aws_region = var.aws_region
-
-  service_discovery_namespace_id = local.service_discovery_namespace_id
-}
-
 # replica_aggregator
 
 module "replica_aggregator" {
