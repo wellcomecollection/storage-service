@@ -5,15 +5,12 @@ import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
   CloudwatchMonitoringClientBuilder,
   SQSBuilder
 }
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
-import uk.ac.wellcome.platform.archive.bagverifier.services.BagVerifierWorker
-import uk.ac.wellcome.platform.archive.bagverifier.services.s3.S3BagVerifier
+import uk.ac.wellcome.platform.archive.bagverifier.builder.BagVerifierWorkerBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
@@ -22,7 +19,6 @@ import uk.ac.wellcome.platform.archive.common.config.builders.{
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
-import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.ExecutionContext
 
@@ -46,11 +42,6 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: SqsAsyncClient =
       SQSBuilder.buildSQSAsyncClient(config)
 
-    val verifier = new S3BagVerifier(
-      primaryBucket =
-        config.requireString("bag-verifier.primary-storage-bucket")
-    )
-
     val operationName =
       OperationNameBuilder.getName(config)
 
@@ -59,13 +50,10 @@ object Main extends WellcomeTypesafeApp {
 
     val outgoingPublisher =
       OutgoingPublisherBuilder.build(config, operationName)
-
-    new BagVerifierWorker(
-      config = AlpakkaSqsWorkerConfigBuilder.build(config),
-      ingestUpdater = ingestUpdater,
-      outgoingPublisher = outgoingPublisher,
-      verifier = verifier,
-      metricsNamespace = config.requireString("aws.metrics.namespace")
+    BagVerifierWorkerBuilder.buildBagVerifierWorker(config)(
+      ingestUpdater,
+      outgoingPublisher
     )
+
   }
 }

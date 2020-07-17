@@ -50,7 +50,7 @@ class BagVerifierWorkerTest
         bagRoot = bagRoot
       )
 
-      withBagVerifierWorker(
+      withStandaloneBagVerifierWorker(
         ingests,
         outgoing,
         bucket = bucket,
@@ -89,7 +89,7 @@ class BagVerifierWorkerTest
           bagRoot = bagRoot
         )
 
-        withBagVerifierWorker(
+        withStandaloneBagVerifierWorker(
           ingests,
           outgoing,
           bucket = bucket,
@@ -120,7 +120,7 @@ class BagVerifierWorkerTest
           bagRoot = bagRoot
         )
 
-        withBagVerifierWorker(
+        withStandaloneBagVerifierWorker(
           ingests,
           outgoing,
           bucket = bucket,
@@ -157,7 +157,7 @@ class BagVerifierWorkerTest
         bagRoot = bagRoot
       )
 
-      withBagVerifierWorker(
+      withStandaloneBagVerifierWorker(
         ingests,
         outgoing,
         bucket = bucket,
@@ -200,7 +200,7 @@ class BagVerifierWorkerTest
         bagRoot = bagRoot
       )
 
-      withBagVerifierWorker(
+      withStandaloneBagVerifierWorker(
         ingests,
         outgoing,
         bucket = bucket,
@@ -245,7 +245,7 @@ class BagVerifierWorkerTest
         bagRoot = bagRoot
       )
 
-      withBagVerifierWorker(
+      withStandaloneBagVerifierWorker(
         ingests,
         outgoing,
         bucket = bucket,
@@ -287,7 +287,7 @@ class BagVerifierWorkerTest
         bagRoot = bagRoot
       )
 
-      withBagVerifierWorker(
+      withStandaloneBagVerifierWorker(
         ingests,
         outgoing,
         bucket = bucket,
