@@ -16,21 +16,48 @@ import uk.ac.wellcome.storage.{Location, Prefix}
 
 import scala.util.Try
 
-trait StandaloneBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] extends BagVerifier[StandaloneBagVerifyContext[BagLocation, BagPrefix],BagLocation, BagPrefix]{
-  override def verifyReplicatedBag(root: StandaloneBagVerifyContext[BagLocation, BagPrefix], space: StorageSpace, externalIdentifier: ExternalIdentifier, bag: Bag): Either[BagVerifierError, Unit] = Right(())
+trait StandaloneBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[
+  BagLocation
+]] extends BagVerifier[
+      StandaloneBagVerifyContext[BagLocation, BagPrefix],
+      BagLocation,
+      BagPrefix
+    ] {
+  override def verifyReplicatedBag(
+    root: StandaloneBagVerifyContext[BagLocation, BagPrefix],
+    space: StorageSpace,
+    externalIdentifier: ExternalIdentifier,
+    bag: Bag
+  ): Either[BagVerifierError, Unit] = Right(())
 }
-trait ReplicatedBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] extends BagVerifier[ReplicatedBagVerifyContext[BagLocation, BagPrefix],BagLocation, BagPrefix]
-  with VerifySourceTagManifest[BagLocation, BagPrefix] {
-  override def verifyReplicatedBag(root: ReplicatedBagVerifyContext[BagLocation, BagPrefix], space: StorageSpace, externalIdentifier: ExternalIdentifier, bag: Bag): Either[BagVerifierError, Unit] = verifySourceTagManifestIsTheSame(srcPrefix = root.srcRoot,dstPrefix = root.root)
+trait ReplicatedBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[
+  BagLocation
+]] extends BagVerifier[
+      ReplicatedBagVerifyContext[BagLocation, BagPrefix],
+      BagLocation,
+      BagPrefix
+    ]
+    with VerifySourceTagManifest[BagLocation, BagPrefix] {
+  override def verifyReplicatedBag(
+    root: ReplicatedBagVerifyContext[BagLocation, BagPrefix],
+    space: StorageSpace,
+    externalIdentifier: ExternalIdentifier,
+    bag: Bag
+  ): Either[BagVerifierError, Unit] =
+    verifySourceTagManifestIsTheSame(
+      srcPrefix = root.srcRoot,
+      dstPrefix = root.root
+    )
 }
 
-trait BagVerifier[BagContext <: BagVerifyContext[BagLocation, BagPrefix],BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
-    extends Logging
+trait BagVerifier[BagContext <: BagVerifyContext[BagLocation, BagPrefix], BagLocation <: Location, BagPrefix <: Prefix[
+  BagLocation
+]] extends Logging
     with VerifyChecksumAndSize[BagLocation, BagPrefix]
     with VerifyExternalIdentifier
     with VerifyFetch[BagLocation, BagPrefix]
     with VerifyPayloadOxum
-    with VerifyNoUnreferencedFiles[BagLocation, BagPrefix]{
+    with VerifyNoUnreferencedFiles[BagLocation, BagPrefix] {
 
   val namespace: String
   implicit val bagReader: BagReader[BagLocation, BagPrefix]
@@ -38,20 +65,26 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagLocation, BagPrefix],BagLoca
   implicit val resolvable: Resolvable[BagLocation]
   implicit val fixityChecker: FixityChecker[BagLocation]
 
-  def verifyReplicatedBag(root:BagContext, space: StorageSpace,
-                          externalIdentifier: ExternalIdentifier, bag: Bag): Either[BagVerifierError, Unit]
+  def verifyReplicatedBag(
+    root: BagContext,
+    space: StorageSpace,
+    externalIdentifier: ExternalIdentifier,
+    bag: Bag
+  ): Either[BagVerifierError, Unit]
   def createPrefix(namespace: String, path: String): BagPrefix
 
-  def verify(ingestId: IngestID,
-             bagContext: BagContext,
-             space: StorageSpace,
-             externalIdentifier: ExternalIdentifier) = Try{
+  def verify(
+    ingestId: IngestID,
+    bagContext: BagContext,
+    space: StorageSpace,
+    externalIdentifier: ExternalIdentifier
+  ) = Try {
     val startTime = Instant.now()
 
     val internalResult = for {
       bag <- getBag(bagContext.root, startTime = startTime)
       _ <- verifyReplicatedBag(bagContext, space, externalIdentifier, bag)
-      res<- verifyBagContents(bagContext.root, space, externalIdentifier, bag)
+      res <- verifyBagContents(bagContext.root, space, externalIdentifier, bag)
     } yield res
 
     buildStepResult(
@@ -63,9 +96,9 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagLocation, BagPrefix],BagLoca
   }
 
   private def getBag(
-                      root: BagPrefix,
-                      startTime: Instant
-                    ): Either[BagVerifierError, Bag] =
+    root: BagPrefix,
+    startTime: Instant
+  ): Either[BagVerifierError, Bag] =
     bagReader.get(root) match {
       case Left(bagUnavailable) =>
         Left(
@@ -78,70 +111,72 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagLocation, BagPrefix],BagLoca
       case Right(bag) => Right(bag)
     }
 
-  private def verifyBagContents(root: BagPrefix,
-                                space: StorageSpace,
-                                externalIdentifier: ExternalIdentifier,
-                                bag: Bag): Either[BagVerifierError,  FixityListResult[BagLocation]] = for {
+  private def verifyBagContents(
+    root: BagPrefix,
+    space: StorageSpace,
+    externalIdentifier: ExternalIdentifier,
+    bag: Bag
+  ): Either[BagVerifierError, FixityListResult[BagLocation]] =
+    for {
 
-
-    _ <- verifyExternalIdentifier(
-      bag = bag,
-      externalIdentifier = externalIdentifier
-    )
-
-    _ <- verifyPayloadOxumFileCount(bag)
-
-    _ <- verifyFetchPrefixes(
-      fetch = bag.fetch,
-      root = createPrefix(
-        namespace = namespace,
-        path = s"$space/$externalIdentifier"
+      _ <- verifyExternalIdentifier(
+        bag = bag,
+        externalIdentifier = externalIdentifier
       )
-    )
 
-    verificationResult <- verifyChecksumAndSize(
-      root = root,
-      bag = bag
-    )
+      _ <- verifyPayloadOxumFileCount(bag)
 
-    actualLocations <- listing.list(root) match {
-      case Right(iterable) => Right(iterable.toSeq)
-      case Left(listingFailure) =>
-        Left(BagVerifierError(listingFailure.e))
-    }
-
-    _ <- verificationResult match {
-      case FixityListAllCorrect(_) =>
-        verifyNoConcreteFetchEntries(
-          fetch = bag.fetch,
-          root = root,
-          actualLocations = actualLocations
+      _ <- verifyFetchPrefixes(
+        fetch = bag.fetch,
+        root = createPrefix(
+          namespace = namespace,
+          path = s"$space/$externalIdentifier"
         )
+      )
 
-      case _ => Right(())
-    }
+      verificationResult <- verifyChecksumAndSize(
+        root = root,
+        bag = bag
+      )
 
-    _ <- verifyNoUnreferencedFiles(
-      root = root,
-      actualLocations = actualLocations,
-      verificationResult = verificationResult
-    )
+      actualLocations <- listing.list(root) match {
+        case Right(iterable) => Right(iterable.toSeq)
+        case Left(listingFailure) =>
+          Left(BagVerifierError(listingFailure.e))
+      }
 
-    _ <- verificationResult match {
-      case FixityListAllCorrect(locations) =>
-        verifyPayloadOxumFileSize(bag = bag, locations = locations)
+      _ <- verificationResult match {
+        case FixityListAllCorrect(_) =>
+          verifyNoConcreteFetchEntries(
+            fetch = bag.fetch,
+            root = root,
+            actualLocations = actualLocations
+          )
 
-      case _ => Right(())
-    }
+        case _ => Right(())
+      }
 
-  } yield verificationResult
+      _ <- verifyNoUnreferencedFiles(
+        root = root,
+        actualLocations = actualLocations,
+        verificationResult = verificationResult
+      )
+
+      _ <- verificationResult match {
+        case FixityListAllCorrect(locations) =>
+          verifyPayloadOxumFileSize(bag = bag, locations = locations)
+
+        case _ => Right(())
+      }
+
+    } yield verificationResult
 
   private def buildStepResult(
-                               ingestId: IngestID,
-                               internalResult: Either[BagVerifierError, FixityListResult[BagLocation]],
-                               root: BagPrefix,
-                               startTime: Instant
-                             ): IngestStepResult[VerificationSummary] =
+    ingestId: IngestID,
+    internalResult: Either[BagVerifierError, FixityListResult[BagLocation]],
+    root: BagPrefix,
+    startTime: Instant
+  ): IngestStepResult[VerificationSummary] =
     internalResult match {
       case Left(error) =>
         IngestFailed(
@@ -156,8 +191,8 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagLocation, BagPrefix],BagLoca
         )
 
       case Right(
-      creationError: CouldNotCreateExpectedFixityList[BagLocation]
-      ) =>
+          creationError: CouldNotCreateExpectedFixityList[BagLocation]
+          ) =>
         IngestFailed(
           summary = VerificationIncompleteSummary(
             ingestId = ingestId,
@@ -214,4 +249,3 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagLocation, BagPrefix],BagLoca
         )
     }
 }
-

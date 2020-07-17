@@ -5,10 +5,17 @@ import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import uk.ac.wellcome.messaging.typesafe.{CloudwatchMonitoringClientBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.typesafe.{
+  CloudwatchMonitoringClientBuilder,
+  SQSBuilder
+}
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.bagverifier.builder.BagVerifierWorkerBuilder
-import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
+import uk.ac.wellcome.platform.archive.common.config.builders.{
+  IngestUpdaterBuilder,
+  OperationNameBuilder,
+  OutgoingPublisherBuilder
+}
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -35,7 +42,6 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: SqsAsyncClient =
       SQSBuilder.buildSQSAsyncClient(config)
 
-
     val operationName =
       OperationNameBuilder.getName(config)
 
@@ -44,9 +50,10 @@ object Main extends WellcomeTypesafeApp {
 
     val outgoingPublisher =
       OutgoingPublisherBuilder.build(config, operationName)
-    BagVerifierWorkerBuilder.buildBagVerifierWorker(config)(ingestUpdater,outgoingPublisher)
+    BagVerifierWorkerBuilder.buildBagVerifierWorker(config)(
+      ingestUpdater,
+      outgoingPublisher
+    )
 
   }
 }
-
-

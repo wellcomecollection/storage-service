@@ -4,24 +4,69 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{Assertion, EitherValues, OptionValues, TryValues}
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FailedChecksumNoMatch, FileFixityCorrect}
-import uk.ac.wellcome.platform.archive.bagverifier.models.{BagVerifyContext, ReplicatedBagVerifyContext, StandaloneBagVerifyContext, VerificationFailureSummary, VerificationIncompleteSummary, VerificationSuccessSummary, VerificationSummary}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  FailedChecksumNoMatch,
+  FileFixityCorrect
+}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{
+  BagVerifyContext,
+  ReplicatedBagVerifyContext,
+  StandaloneBagVerifyContext,
+  VerificationFailureSummary,
+  VerificationIncompleteSummary,
+  VerificationSuccessSummary,
+  VerificationSummary
+}
 import uk.ac.wellcome.platform.archive.bagverifier.storage.LocationNotFound
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagPath, BagVersion, ExternalIdentifier, PayloadOxum}
-import uk.ac.wellcome.platform.archive.common.bagit.services.{BagReader, BagUnavailable}
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagBuilder, PayloadEntry}
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagPath,
+  BagVersion,
+  ExternalIdentifier,
+  PayloadOxum
+}
+import uk.ac.wellcome.platform.archive.common.bagit.services.{
+  BagReader,
+  BagUnavailable
+}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagBuilder,
+  PayloadEntry
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  IngestStepResult,
+  IngestStepSucceeded,
+  StorageSpace
+}
 import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
 import uk.ac.wellcome.storage.{Location, Prefix, S3ObjectLocation}
 
-trait StandaloneBagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[
-  BagLocation
-], Namespace] extends BagVerifierTestCases[StandaloneBagVerifier[BagLocation, BagPrefix], StandaloneBagVerifyContext[BagLocation, BagPrefix], BagLocation, BagPrefix, Namespace] {
-  override def createBagContext(bagRoot: BagPrefix, srcBagRoot: Option[BagPrefix]): StandaloneBagVerifyContext[BagLocation, BagPrefix] = StandaloneBagVerifyContext(bagRoot)
+trait StandaloneBagVerifierTestCases[
+  BagLocation <: Location,
+  BagPrefix <: Prefix[
+    BagLocation
+  ],
+  Namespace
+] extends BagVerifierTestCases[
+      StandaloneBagVerifier[BagLocation, BagPrefix],
+      StandaloneBagVerifyContext[BagLocation, BagPrefix],
+      BagLocation,
+      BagPrefix,
+      Namespace
+    ] {
+  override def createBagContext(
+    bagRoot: BagPrefix,
+    srcBagRoot: Option[BagPrefix]
+  ): StandaloneBagVerifyContext[BagLocation, BagPrefix] =
+    StandaloneBagVerifyContext(bagRoot)
 }
 
-trait BagVerifierTestCases[Verifier <:BagVerifier[BagContext, BagLocation, BagPrefix],BagContext <: BagVerifyContext[BagLocation,BagPrefix],BagLocation <: Location, BagPrefix <: Prefix[
+trait BagVerifierTestCases[Verifier <: BagVerifier[
+  BagContext,
+  BagLocation,
+  BagPrefix
+], BagContext <: BagVerifyContext[BagLocation, BagPrefix], BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
 ], Namespace]
     extends AnyFunSpec
@@ -40,7 +85,10 @@ trait BagVerifierTestCases[Verifier <:BagVerifier[BagContext, BagLocation, BagPr
     testWith: TestWith[Verifier, R]
   )(implicit typedStore: TypedStore[BagLocation, String]): R
 
-  def createBagContext(bagRoot: BagPrefix, srcBagRoot: Option[BagPrefix]): BagContext
+  def createBagContext(
+    bagRoot: BagPrefix,
+    srcBagRoot: Option[BagPrefix]
+  ): BagContext
 
   val payloadFileCount: Int = randomInt(from = 1, to = 10)
 
@@ -646,9 +694,23 @@ trait BagVerifierTestCases[Verifier <:BagVerifier[BagContext, BagLocation, BagPr
     }
 }
 
-trait ReplicatedBagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefix[BagLocation],Namespace] extends BagVerifierTestCases[ReplicatedBagVerifier[BagLocation,BagPrefix],ReplicatedBagVerifyContext[BagLocation,BagPrefix],BagLocation, BagPrefix,Namespace] {
-  override def createBagContext(bagRoot: BagPrefix, scrBagRoot: Option[BagPrefix]): ReplicatedBagVerifyContext[BagLocation, BagPrefix] = ReplicatedBagVerifyContext(bagRoot, scrBagRoot.getOrElse(bagRoot))
-  def createBagPrefix(namespace:String, prefix: String): BagPrefix
+trait ReplicatedBagVerifierTestCases[
+  BagLocation <: Location,
+  BagPrefix <: Prefix[BagLocation],
+  Namespace
+] extends BagVerifierTestCases[
+      ReplicatedBagVerifier[BagLocation, BagPrefix],
+      ReplicatedBagVerifyContext[BagLocation, BagPrefix],
+      BagLocation,
+      BagPrefix,
+      Namespace
+    ] {
+  override def createBagContext(
+    bagRoot: BagPrefix,
+    scrBagRoot: Option[BagPrefix]
+  ): ReplicatedBagVerifyContext[BagLocation, BagPrefix] =
+    ReplicatedBagVerifyContext(bagRoot, scrBagRoot.getOrElse(bagRoot))
+  def createBagPrefix(namespace: String, prefix: String): BagPrefix
 
   it("fails a bag if it doesn't match original tag manifest") {
     withNamespace { implicit namespace =>
@@ -701,7 +763,10 @@ trait ReplicatedBagVerifierTestCases[BagLocation <: Location, BagPrefix <: Prefi
           withVerifier(namespace) {
             _.verify(
               ingestId = createIngestID,
-              bagContext = ReplicatedBagVerifyContext(bagRoot, createBagPrefix("this_bag_does_not","exist")),
+              bagContext = ReplicatedBagVerifyContext(
+                bagRoot,
+                createBagPrefix("this_bag_does_not", "exist")
+              ),
               space = space,
               externalIdentifier = bagInfo.externalIdentifier
             )
