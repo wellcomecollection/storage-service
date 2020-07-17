@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services.s3
 
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.platform.archive.bagverifier.models.{BagVerifyContext, ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
 import uk.ac.wellcome.platform.archive.bagverifier.services._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader

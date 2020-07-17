@@ -7,8 +7,9 @@ import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.platform.archive.bagverifier.models.StandaloneBagVerifyContext
 import uk.ac.wellcome.platform.archive.bagverifier.services.s3.S3StandaloneBagVerifier
-import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifier, BagVerifierWorker, StandaloneBagVerifyContext}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifier, BagVerifierWorker}
 import uk.ac.wellcome.platform.archive.common.BagRootPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
