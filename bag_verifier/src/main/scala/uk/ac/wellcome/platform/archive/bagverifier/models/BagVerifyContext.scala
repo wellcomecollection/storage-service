@@ -8,7 +8,8 @@ sealed trait BagVerifyContext[BagLocation <: Location, BagPrefix <: Prefix[
   val root: BagPrefix
 }
 case class StandaloneBagVerifyContext[
-  BagLocation <: Location, BagPrefix <: Prefix[BagLocation]
+  BagLocation <: Location,
+  BagPrefix <: Prefix[BagLocation]
 ](root: BagPrefix)
     extends BagVerifyContext[BagLocation, BagPrefix]
 case class ReplicatedBagVerifyContext[
