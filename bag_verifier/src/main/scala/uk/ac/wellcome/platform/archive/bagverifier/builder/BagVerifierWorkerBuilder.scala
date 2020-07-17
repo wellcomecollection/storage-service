@@ -21,7 +21,7 @@ import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 object BagVerifierWorkerBuilder{
   def buildBagVerifierWorker(config: Config)(ingestUpdater: IngestUpdater[SNSConfig],outgoingPublisher:OutgoingPublisher[SNSConfig])(implicit s3: AmazonS3,mc: MetricsMonitoringClient,
                                                                                                                                      as: ActorSystem,sc: SqsAsyncClient) = {
-    val isReplicatedBagMode = config.getBoolean("bag-verifier.mode.replicated_bag")
+    val isReplicatedBagMode = config.getBoolean("bag-verifier.mode.is_replica")
     val primaryBucket = config.requireString("bag-verifier.primary-storage-bucket")
     isReplicatedBagMode match {
       case false => buildStandaloneVerifierWorker(config)(primaryBucket,ingestUpdater, outgoingPublisher)
