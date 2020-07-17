@@ -75,6 +75,8 @@ class S3ReplicatedBagVerifierTest
     testWith(
       new S3ReplicatedBagVerifier(primaryBucket = primaryBucket.name)
     )
+
+  override def createBagPrefix(namespace: String, prefix: String): S3ObjectLocationPrefix = S3ObjectLocationPrefix(namespace, prefix)
 }
 
 class S3StandaloneBagVerifierTest
