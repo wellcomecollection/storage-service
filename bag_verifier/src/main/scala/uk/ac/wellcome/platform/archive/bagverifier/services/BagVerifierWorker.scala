@@ -42,7 +42,7 @@ class BagVerifierWorker[Payload <: BagRootPayload, BagContext <: BagVerifyContex
       _ <- ingestUpdater.start(payload.ingestId)
       summary <- verifier.verify(
         ingestId = payload.ingestId,
-        bagRoot = bagPayloadTranslator.translate(payload),
+        bagContext = bagPayloadTranslator.translate(payload),
         space = payload.storageSpace,
         externalIdentifier = payload.externalIdentifier
       )

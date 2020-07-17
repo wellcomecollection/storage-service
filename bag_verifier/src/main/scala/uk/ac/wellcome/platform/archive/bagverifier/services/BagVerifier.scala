@@ -50,21 +50,21 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagLocation, BagPrefix],BagLoca
   def createPrefix(namespace: String, path: String): BagPrefix
 
   def verify(ingestId: IngestID,
-             bagRoot: BagContext,
+             bagContext: BagContext,
              space: StorageSpace,
              externalIdentifier: ExternalIdentifier) = Try{
     val startTime = Instant.now()
 
     val internalResult = for {
-      bag <- getBag(bagRoot.root, startTime = startTime)
-      _ <- verifyReplicatedBag(bagRoot, space, externalIdentifier, bag)
-      res<- verifyBagContents(bagRoot.root, space, externalIdentifier, bag)
+      bag <- getBag(bagContext.root, startTime = startTime)
+      _ <- verifyReplicatedBag(bagContext, space, externalIdentifier, bag)
+      res<- verifyBagContents(bagContext.root, space, externalIdentifier, bag)
     } yield res
 
     buildStepResult(
       ingestId = ingestId,
       internalResult = internalResult,
-      root = bagRoot.root,
+      root = bagContext.root,
       startTime = startTime
     )
   }
