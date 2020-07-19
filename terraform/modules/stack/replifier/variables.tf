@@ -95,9 +95,10 @@ variable "secrets" {
   default = {}
 }
 
-variable "release_label" {
-  type = string
-}
+
+variable "deployment_service_name_verifier" {}
+variable "deployment_service_name_replicator" {}
+variable "deployment_service_env" {}
 
 # Messaging
 

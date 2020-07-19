@@ -435,7 +435,9 @@ module "replicator_verifier_primary" {
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
 
-  release_label = var.release_label
+  deployment_service_env             = var.release_label
+  deployment_service_name_replicator = "bag-replicator-primary"
+  deployment_service_name_verifier   = "bag-verifier-primary"
 }
 
 module "replicator_verifier_glacier" {
@@ -485,7 +487,9 @@ module "replicator_verifier_glacier" {
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
 
-  release_label = var.release_label
+  deployment_service_env             = var.release_label
+  deployment_service_name_replicator = "bag-replicator-primary"
+  deployment_service_name_verifier   = "bag-verifier-primary"
 }
 
 # replica_aggregator
