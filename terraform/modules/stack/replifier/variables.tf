@@ -95,6 +95,10 @@ variable "secrets" {
   default = {}
 }
 
+variable "release_label" {
+  type = string
+}
+
 # Messaging
 
 variable "dlq_alarm_arn" {
