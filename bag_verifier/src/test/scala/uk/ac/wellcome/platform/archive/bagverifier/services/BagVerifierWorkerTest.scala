@@ -15,7 +15,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{AmazonS3StorageProvider, Ingest}
-import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryStorageLocation, ReplicaResult}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, PrimaryStorageLocation, ReplicaResult}
 import uk.ac.wellcome.platform.archive.common.{ReplicaResultPayload, VersionedBagRootPayload}
 
 import scala.util.{Failure, Success, Try}
@@ -133,6 +133,46 @@ class BagVerifierWorkerTest
         result shouldBe a[Success[_]]
 
         outgoing.getMessages[ReplicaResultPayload] shouldBe Seq(payload)
+      }
+    }
+  }
+
+  describe("handling a replicated bag") {
+    it("fails if it cannot find the original bag") {
+      val outgoing = new MemoryMessageSender()
+
+      withLocalS3Bucket { bucket =>
+        val space = createStorageSpace
+        val (bagRoot, bagInfo) = createS3BagWith(bucket, space = space)
+
+        val payload = ReplicaResultPayload(
+          context = createPipelineContextWith(
+            externalIdentifier = bagInfo.externalIdentifier,
+            storageSpace = space
+          ),
+          replicaResult = ReplicaResult(
+            originalLocation = createS3ObjectLocationPrefix,
+            storageLocation = PrimaryStorageLocation(
+              provider = AmazonS3StorageProvider,
+              prefix = bagRoot.toObjectLocationPrefix
+            ),
+            timestamp = Instant.now
+          ),
+          version = createBagVersion
+        )
+
+        val result =
+          withReplicaBagVerifierWorker(
+            outgoing = outgoing,
+            bucket = bucket
+          ) {
+            _.processMessage(payload)
+          }
+
+        result shouldBe a[Success[_]]
+        result.get shouldBe a[IngestFailed[_]]
+
+        outgoing.messages shouldBe empty
       }
     }
   }
