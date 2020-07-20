@@ -326,6 +326,7 @@ module "bag_verifier_pre_replication" {
     metrics_namespace  = local.bag_verifier_pre_repl_service_name
     operation_name     = "verification (pre-replicating to archive storage)"
     JAVA_OPTS          = local.java_opts_heap_size
+    is_replica         = "false"
 
     primary_storage_bucket_name = var.replica_primary_bucket_name
   }
@@ -402,8 +403,9 @@ module "replicator_verifier_primary" {
     module.bag_versioner_output_topic.arn,
   ]
 
-  bucket_name         = var.replica_primary_bucket_name
-  primary_bucket_name = var.replica_primary_bucket_name
+  bucket_name          = var.replica_primary_bucket_name
+  primary_bucket_name  = var.replica_primary_bucket_name
+  unpacker_bucket_name = aws_s3_bucket.unpacked_bags.id
 
   ingests_read_policy_json          = data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json
   cloudwatch_metrics_policy_json    = data.aws_iam_policy_document.cloudwatch_putmetrics.json
@@ -454,8 +456,9 @@ module "replicator_verifier_glacier" {
     module.bag_versioner_output_topic.arn,
   ]
 
-  bucket_name         = var.replica_glacier_bucket_name
-  primary_bucket_name = var.replica_primary_bucket_name
+  bucket_name          = var.replica_glacier_bucket_name
+  primary_bucket_name  = var.replica_primary_bucket_name
+  unpacker_bucket_name = aws_s3_bucket.unpacked_bags.id
 
   ingests_read_policy_json          = data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json
   cloudwatch_metrics_policy_json    = data.aws_iam_policy_document.cloudwatch_putmetrics.json
