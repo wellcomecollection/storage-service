@@ -12,7 +12,7 @@ import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClien
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models._
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models._
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
@@ -37,7 +37,7 @@ class BagReplicatorWorker[
   val config: AlpakkaSQSWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  lockingService: LockingService[IngestStepResult[BagReplicationSummary[_]], Try, LockDao[
+  lockingService: LockingService[IngestStepResult[ReplicationSummary], Try, LockDao[
     String,
     UUID
   ]],
@@ -50,15 +50,12 @@ class BagReplicatorWorker[
   val as: ActorSystem,
   val sc: SqsAsyncClient,
   val wd: Decoder[VersionedBagRootPayload]
-) extends IngestStepWorker[
-      VersionedBagRootPayload,
-      BagReplicationSummary[_]
-    ] {
+) extends IngestStepWorker[VersionedBagRootPayload, ReplicationSummary] {
   override val visibilityTimeout = 180
 
   def processMessage(
     payload: VersionedBagRootPayload
-  ): Try[IngestStepResult[BagReplicationSummary[_]]] =
+  ): Try[IngestStepResult[ReplicationSummary]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
 
@@ -100,34 +97,30 @@ class BagReplicatorWorker[
   def replicate(
     ingestId: IngestID,
     bagReplicationRequest: BagReplicationRequest
-  ): Try[IngestStepResult[BagReplicationSummary[BagReplicationRequest]]] =
-    bagReplicator
-      .replicateBag(
-        ingestId = ingestId,
-        bagRequest = bagReplicationRequest
-      )
-      .map {
-        case BagReplicationSucceeded(summary) =>
-          IngestStepSucceeded(summary)
-
-        case BagReplicationFailed(summary, e) =>
-          IngestFailed(summary, e)
-      }
+  ): Try[IngestStepResult[ReplicationSummary]] = Try {
+    bagReplicator.replicator.replicate(
+      ingestId = ingestId,
+      request = bagReplicationRequest.request
+    ) match {
+      case ReplicationSucceeded(summary) => IngestStepSucceeded(summary)
+      case ReplicationFailed(summary, e) => IngestFailed(summary, e)
+    }
+  }
 
   def lockFailed(
     ingestId: IngestID,
     request: BagReplicationRequest
   ): PartialFunction[Either[FailedLockingServiceOp, IngestStepResult[
-    BagReplicationSummary[_]
-  ]], IngestStepResult[BagReplicationSummary[_]]] = {
+    ReplicationSummary
+  ]], IngestStepResult[ReplicationSummary]] = {
     case Right(result) => result
     case Left(failedLockingServiceOp) =>
       warn(s"Unable to lock successfully: $failedLockingServiceOp")
       IngestShouldRetry(
-        BagReplicationSummary(
+        ReplicationSummary(
           ingestId = ingestId,
           startTime = Instant.now,
-          request = request
+          request = request.request
         ),
         new Throwable(
           s"Unable to lock successfully: $failedLockingServiceOp"

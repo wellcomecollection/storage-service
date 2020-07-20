@@ -12,12 +12,14 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
   BagReplicationRequest,
-  BagReplicationSummary,
   PrimaryBagReplicationRequest,
   SecondaryBagReplicationRequest
 }
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
+  ReplicationRequest,
+  ReplicationSummary
+}
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
@@ -46,9 +48,9 @@ trait BagReplicatorFixtures
     with S3Fixtures {
 
   type ReplicatorLockingService =
-    LockingService[IngestStepResult[
-      BagReplicationSummary[_]
-    ], Try, LockDao[String, UUID]]
+    LockingService[
+      IngestStepResult[ReplicationSummary], Try, LockDao[String, UUID]
+    ]
 
   def createLockingServiceWith(
     lockServiceDao: LockDao[String, UUID]

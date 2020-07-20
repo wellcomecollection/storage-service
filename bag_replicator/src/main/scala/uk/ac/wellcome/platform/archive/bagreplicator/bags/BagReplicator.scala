@@ -14,7 +14,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import scala.util.{Failure, Success, Try}
 
 class BagReplicator(
-  replicator: Replicator
+  val replicator: Replicator
 ) {
   def replicateBag(
     ingestId: IngestID,

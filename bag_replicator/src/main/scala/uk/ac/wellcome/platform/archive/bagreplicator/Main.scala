@@ -16,9 +16,9 @@ import uk.ac.wellcome.messaging.typesafe.{
 }
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.BagReplicationSummary
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.azure.AzureReplicator
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
 import uk.ac.wellcome.platform.archive.common.config.builders.{
@@ -71,7 +71,7 @@ object Main extends WellcomeTypesafeApp {
       OperationNameBuilder.getName(config)
 
     val lockingService =
-      new DynamoLockingService[IngestStepResult[BagReplicationSummary[_]], Try]()
+      new DynamoLockingService[IngestStepResult[ReplicationSummary], Try]()
 
     val provider =
       StorageProvider.apply(config.requireString("bag-replicator.provider"))
