@@ -25,6 +25,12 @@ data "aws_ssm_parameter" "image_ids" {
   name = "/storage/images/${var.release_label}/${local.services[count.index]}"
 }
 
+data "aws_ecr_repository" "service" {
+  count = length(local.services)
+  name  = "uk.ac.wellcome/${local.services[count.index]}"
+}
+
 locals {
-  image_ids = zipmap(local.services, data.aws_ssm_parameter.image_ids.*.value)
+  repo_urls = [for repo_url in data.aws_ecr_repository.service.*.repository_url : "${repo_url}:env.${var.release_label}"]
+  image_ids = zipmap(local.services, local.repo_urls)
 }
