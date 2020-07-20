@@ -95,6 +95,11 @@ variable "secrets" {
   default = {}
 }
 
+
+variable "deployment_service_name_verifier" {}
+variable "deployment_service_name_replicator" {}
+variable "deployment_service_env" {}
+
 # Messaging
 
 variable "dlq_alarm_arn" {

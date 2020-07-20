@@ -34,6 +34,9 @@ module "base" {
 
   subnets = var.subnets
 
+  deployment_service_name = var.deployment_service_name
+  deployment_service_env  = var.deployment_service_env
+
   use_fargate_spot = var.use_fargate_spot
 }
 

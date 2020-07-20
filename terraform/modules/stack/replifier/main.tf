@@ -41,6 +41,9 @@ module "bag_replicator" {
   container_image = var.bag_replicator_image
 
   service_discovery_namespace_id = var.service_discovery_namespace_id
+
+  deployment_service_name = var.deployment_service_name_replicator
+  deployment_service_env  = var.deployment_service_env
 }
 
 # bag_verifier
@@ -76,5 +79,8 @@ module "bag_verifier" {
   container_image = var.bag_verifier_image
 
   service_discovery_namespace_id = var.service_discovery_namespace_id
+
+  deployment_service_name = var.deployment_service_name_verifier
+  deployment_service_env  = var.deployment_service_env
 }
 

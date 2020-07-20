@@ -43,6 +43,9 @@ module "ingest_service" {
 
   subnets = var.private_subnets
   vpc_id  = var.vpc_id
+
+  deployment_service_name = "ingests-service"
+  deployment_service_env  = var.release_label
 }
 
 module "ingests_indexer" {
@@ -79,6 +82,9 @@ module "ingests_indexer" {
   use_fargate_spot = true
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
+
+  deployment_service_name = "ingests-indexer"
+  deployment_service_env  = var.release_label
 }
 
 # bag_indexer
@@ -114,6 +120,9 @@ module "bag_indexer" {
   use_fargate_spot = true
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
+
+  deployment_service_name = "bags-indexer"
+  deployment_service_env  = var.release_label
 }
 
 # bags_api
@@ -160,6 +169,9 @@ module "bags_api" {
 
   subnets = var.private_subnets
   vpc_id  = var.vpc_id
+
+  deployment_service_name = "bags-api"
+  deployment_service_env  = var.release_label
 }
 
 
@@ -208,6 +220,9 @@ module "bag_unpacker" {
   container_image = local.image_ids["bag_unpacker"]
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
+
+  deployment_service_name = "bag-unpacker"
+  deployment_service_env  = var.release_label
 }
 
 # bag root finder
@@ -245,6 +260,9 @@ module "bag_root_finder" {
   use_fargate_spot = true
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
+
+  deployment_service_name = "bag-root-finder"
+  deployment_service_env  = var.release_label
 }
 
 # bag tagger
@@ -280,6 +298,9 @@ module "bag_tagger" {
   use_fargate_spot = true
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
+
+  deployment_service_name = "bag-tagger"
+  deployment_service_env  = var.release_label
 }
 
 # bag_verifier
@@ -318,6 +339,9 @@ module "bag_verifier_pre_replication" {
   container_image = local.image_ids["bag_verifier"]
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
+
+  deployment_service_name = "bag-verifer-pre-replication"
+  deployment_service_env  = var.release_label
 }
 
 # bag versioner
@@ -359,6 +383,9 @@ module "bag_versioner" {
   use_fargate_spot = true
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
+
+  deployment_service_name = "bag-versioner"
+  deployment_service_env  = var.release_label
 }
 
 module "replicator_verifier_primary" {
@@ -407,6 +434,10 @@ module "replicator_verifier_primary" {
   aws_region = var.aws_region
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
+
+  deployment_service_env             = var.release_label
+  deployment_service_name_replicator = "bag-replicator-primary"
+  deployment_service_name_verifier   = "bag-verifier-primary"
 }
 
 module "replicator_verifier_glacier" {
@@ -455,6 +486,10 @@ module "replicator_verifier_glacier" {
   aws_region = var.aws_region
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
+
+  deployment_service_env             = var.release_label
+  deployment_service_name_replicator = "bag-replicator-glacier"
+  deployment_service_name_verifier   = "bag-verifier-glacier"
 }
 
 # replica_aggregator
@@ -487,6 +522,10 @@ module "replica_aggregator" {
   use_fargate_spot = true
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
+
+
+  deployment_service_name = "replica-aggregator"
+  deployment_service_env  = var.release_label
 }
 
 # bag_register
@@ -525,6 +564,9 @@ module "bag_register" {
   use_fargate_spot = true
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
+
+  deployment_service_name = "bag-register"
+  deployment_service_env  = var.release_label
 }
 
 # notifier
@@ -558,6 +600,9 @@ module "notifier" {
   use_fargate_spot = true
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
+
+  deployment_service_name = "notifer"
+  deployment_service_env  = var.release_label
 }
 
 # storage API
@@ -583,4 +628,3 @@ module "api" {
 
   static_content_bucket_name = var.static_content_bucket_name
 }
-

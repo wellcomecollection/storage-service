@@ -35,6 +35,9 @@ module "base" {
 
   subnets = var.subnets
 
+  deployment_service_name = var.deployment_service_name
+  deployment_service_env  = var.deployment_service_env
+
   # We don't use Fargate Spot for the ingests service, because it includes the
   # external-facing ingests API which has to stay up.
   use_fargate_spot = false
