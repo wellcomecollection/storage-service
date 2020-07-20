@@ -133,7 +133,7 @@ lazy val bags_api = setupProject(
 
 lazy val indexer_common = setupProject(
   project,
-  "indexer/common",
+  folder = "indexer/common",
   localDependencies = Seq(common),
   externalDependencies =
     ExternalDependencies.circeOpticsDependencies ++
