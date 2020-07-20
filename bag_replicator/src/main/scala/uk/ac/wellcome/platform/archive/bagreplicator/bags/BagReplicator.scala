@@ -10,15 +10,11 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
   ReplicationSucceeded
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.storage.store.StreamStore
-import uk.ac.wellcome.storage.ObjectLocation
 
 import scala.util.{Failure, Success, Try}
 
 class BagReplicator(
   replicator: Replicator
-)(
-  implicit streamStore: StreamStore[ObjectLocation]
 ) {
   def replicateBag(
     ingestId: IngestID,

@@ -20,7 +20,6 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.ObjectLocationPrefix
 
 class BagReplicatorTest
@@ -30,8 +29,6 @@ class BagReplicatorTest
     with S3BagBuilder
     with TryValues {
   val replicator: S3Replicator = new S3Replicator()
-
-  implicit val streamStore: S3StreamStore = new S3StreamStore()
 
   it("replicates a bag successfully") {
     val bagReplicator =

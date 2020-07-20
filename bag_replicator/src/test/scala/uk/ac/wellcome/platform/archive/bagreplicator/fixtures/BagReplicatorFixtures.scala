@@ -33,7 +33,6 @@ import uk.ac.wellcome.storage.locking.memory.{
   MemoryLockDaoFixtures
 }
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
@@ -101,9 +100,6 @@ trait BagReplicatorFixtures
             provider = provider,
             requestBuilder = requestBuilder
           )
-
-        implicit val s3StreamStore: S3StreamStore =
-          new S3StreamStore()
 
         val replicator = new S3Replicator()
 

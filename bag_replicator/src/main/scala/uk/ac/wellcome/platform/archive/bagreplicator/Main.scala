@@ -36,7 +36,6 @@ import uk.ac.wellcome.storage.locking.dynamo.{
   DynamoLockDao,
   DynamoLockingService
 }
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.typesafe.{DynamoLockDaoBuilder, S3Builder}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -58,9 +57,6 @@ object Main extends WellcomeTypesafeApp {
 
     implicit val s3Client: AmazonS3 =
       S3Builder.buildS3Client(config)
-
-    implicit val s3StreamStore: S3StreamStore =
-      new S3StreamStore()
 
     implicit val monitoringClient: CloudwatchMetricsMonitoringClient =
       CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)
