@@ -20,7 +20,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.services.s3.{
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.{
-  BagRootPayload,
+  VerifiablePayload,
   ReplicaResultPayload
 }
 import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
@@ -65,7 +65,7 @@ object BagVerifierWorkerBuilder {
     mc: MetricsMonitoringClient,
     as: ActorSystem,
     sc: SqsAsyncClient
-  ): BagVerifierWorker[BagRootPayload, StandaloneBagVerifyContext[
+  ): BagVerifierWorker[VerifiablePayload, StandaloneBagVerifyContext[
     S3ObjectLocation,
     S3ObjectLocationPrefix
   ], SNSConfig, SNSConfig] = {
@@ -76,7 +76,7 @@ object BagVerifierWorkerBuilder {
       outgoingPublisher = outgoingPublisher,
       verifier = verifier,
       metricsNamespace = config.requireString("aws.metrics.namespace"),
-      (payload: BagRootPayload) =>
+      (payload: VerifiablePayload) =>
         StandaloneBagVerifyContext(S3ObjectLocationPrefix(payload.bagRoot))
     )
 

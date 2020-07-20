@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.storage.bag_root_finder
 import org.scalatest.funspec.AnyFunSpec
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.BagRootPayload
+import uk.ac.wellcome.platform.archive.common.BagRootLocationPayload
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagVersion,
   ExternalIdentifier
@@ -52,7 +52,7 @@ class BagRootFinderFeatureTest
           eventually {
             assertQueueEmpty(queue)
 
-            outgoing.getMessages[BagRootPayload] shouldBe Seq(expectedPayload)
+            outgoing.getMessages[BagRootLocationPayload] shouldBe Seq(expectedPayload)
 
             assertTopicReceivesIngestEvents(
               payload.ingestId,
@@ -117,7 +117,7 @@ class BagRootFinderFeatureTest
             assertQueueEmpty(queue)
 
             outgoing
-              .getMessages[BagRootPayload] shouldBe Seq(expectedPayload)
+              .getMessages[BagRootLocationPayload] shouldBe Seq(expectedPayload)
 
             assertTopicReceivesIngestEvents(
               payload.ingestId,

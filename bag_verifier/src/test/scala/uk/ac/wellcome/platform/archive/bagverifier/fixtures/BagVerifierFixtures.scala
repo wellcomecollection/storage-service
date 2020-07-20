@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.services.{
   BagVerifier,
   BagVerifierWorker
 }
-import uk.ac.wellcome.platform.archive.common.BagRootPayload
+import uk.ac.wellcome.platform.archive.common.VerifiablePayload
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
@@ -35,7 +35,7 @@ trait BagVerifierFixtures
     stepName: String = randomAlphanumericWithLength()
   )(
     testWith: TestWith[BagVerifierWorker[
-      BagRootPayload,
+      VerifiablePayload,
       StandaloneBagVerifyContext[S3ObjectLocation, S3ObjectLocationPrefix],
       String,
       String
@@ -50,7 +50,7 @@ trait BagVerifierFixtures
           val outgoingPublisher = createOutgoingPublisherWith(outgoing)
 
           val service
-            : BagVerifierWorker[BagRootPayload, StandaloneBagVerifyContext[
+            : BagVerifierWorker[VerifiablePayload, StandaloneBagVerifyContext[
               S3ObjectLocation,
               S3ObjectLocationPrefix
             ], String, String] = new BagVerifierWorker(
@@ -59,7 +59,7 @@ trait BagVerifierFixtures
             outgoingPublisher = outgoingPublisher,
             verifier = verifier,
             metricsNamespace = "bag_verifier",
-            (payload: BagRootPayload) =>
+            (payload: VerifiablePayload) =>
               StandaloneBagVerifyContext(
                 S3ObjectLocationPrefix(payload.bagRoot)
               )

@@ -16,7 +16,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestStatusUpdate
 }
 import uk.ac.wellcome.platform.archive.common.{
-  BagRootPayload,
+  VerifiablePayload,
   VersionedBagRootPayload
 }
 
@@ -65,7 +65,7 @@ class BagVerifierFeatureTest
               bagRoot = bagRoot
             )
 
-            sendNotificationToSQS[BagRootPayload](queue, payload)
+            sendNotificationToSQS[VerifiablePayload](queue, payload)
 
             eventually {
               assertTopicReceivesIngestEvents(
@@ -121,7 +121,7 @@ class BagVerifierFeatureTest
               bagRoot = bagRootLocation
             )
 
-            sendNotificationToSQS[BagRootPayload](queue, payload)
+            sendNotificationToSQS[VerifiablePayload](queue, payload)
 
             eventually {
               assertTopicReceivesIngestUpdates(payload.ingestId, ingests) {
