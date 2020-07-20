@@ -44,6 +44,11 @@ storage:
         - bag-verifer-pre-replication
         - bag-verifier-primary
         - bag-verifier-glacier
+    - id: bag_versioner
+      namespace: uk.ac.wellcome
+      account_id: '975596993436'
+      services:
+        - bag-versioner
     - id: bags_api
       namespace: uk.ac.wellcome
       account_id: '975596993436'
