@@ -1,24 +1,29 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
+import java.time.Instant
+
 import io.circe.Encoder
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.platform.archive.bagverifier.builder.BagVerifierWorkerBuilder
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.fixtures.PayloadEntry
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.common.{
-  BagRootLocationPayload,
-  VersionedBagRootPayload
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{AmazonS3StorageProvider, Ingest}
+import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
+import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
+import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryStorageLocation, ReplicaResult}
+import uk.ac.wellcome.platform.archive.common.{ReplicaResultPayload, VersionedBagRootPayload}
 
 import scala.util.{Failure, Success, Try}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class BagVerifierWorkerTest
     extends AnyFunSpec
@@ -73,7 +78,7 @@ class BagVerifierWorkerTest
   }
 
   describe("passes through the original payload, unmodified") {
-    it("EnrichedBagInformationPayload") {
+    it("VersionedBagRootPayload") {
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
 
@@ -104,7 +109,7 @@ class BagVerifierWorkerTest
       }
     }
 
-    it("BagInformationPayload") {
+    it("ReplicaResultPayload") {
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
 
@@ -112,24 +117,41 @@ class BagVerifierWorkerTest
         val space = createStorageSpace
         val (bagRoot, bagInfo) = createS3BagWith(bucket, space = space)
 
-        val payload = createBagRootLocationPayloadWith(
+        val payload = ReplicaResultPayload(
           context = createPipelineContextWith(
             externalIdentifier = bagInfo.externalIdentifier,
             storageSpace = space
           ),
-          bagRoot = bagRoot
+          replicaResult = ReplicaResult(
+            originalLocation = bagRoot,
+            storageLocation = PrimaryStorageLocation(
+              provider = AmazonS3StorageProvider,
+              prefix = bagRoot.toObjectLocationPrefix
+            ),
+            timestamp = Instant.now
+          ),
+          version = createBagVersion
         )
 
-        withStandaloneBagVerifierWorker(
-          ingests,
-          outgoing,
-          bucket = bucket,
-          stepName = "verification"
-        ) {
-          _.processMessage(payload) shouldBe a[Success[_]]
-        }
+        withActorSystem { implicit actorSystem =>
+          withFakeMonitoringClient() { implicit monitoringClient =>
+            val worker = BagVerifierWorkerBuilder.buildReplicaBagVerifierWorker(
+              primaryBucket = bucket.name,
+              metricsNamespace = randomAlphanumeric,
+              alpakkaSqsWorkerConfig =
+                createAlpakkaSQSWorkerConfig(Queue("url://q", "arn://q", visibilityTimeout = 1)),
+              ingestUpdater = new IngestUpdater(
+                stepName = randomAlphanumeric,
+                messageSender = ingests
+              ),
+              outgoingPublisher = new OutgoingPublisher(messageSender = outgoing)
+            )
 
-        outgoing.getMessages[BagRootLocationPayload] shouldBe Seq(payload)
+            worker.processMessage(payload) shouldBe a[Success[_]]
+
+            outgoing.getMessages[ReplicaResultPayload] shouldBe Seq(payload)
+          }
+        }
       }
     }
   }
