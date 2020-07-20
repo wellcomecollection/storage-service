@@ -1,3 +1,4 @@
+# Project name should match the name given in the "publish" step in CI
 storage:
   environments:
     - id: stage
