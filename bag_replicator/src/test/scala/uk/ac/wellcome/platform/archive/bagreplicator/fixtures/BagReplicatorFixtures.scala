@@ -48,7 +48,9 @@ trait BagReplicatorFixtures
 
   type ReplicatorLockingService =
     LockingService[
-      IngestStepResult[ReplicationSummary], Try, LockDao[String, UUID]
+      IngestStepResult[ReplicationSummary],
+      Try,
+      LockDao[String, UUID]
     ]
 
   def createLockingServiceWith(
