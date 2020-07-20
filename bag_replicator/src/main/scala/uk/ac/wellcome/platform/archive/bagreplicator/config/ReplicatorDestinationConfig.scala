@@ -20,7 +20,7 @@ case object ReplicatorDestinationConfig {
   def buildDestinationConfig(config: Config): ReplicatorDestinationConfig = {
     val replicaType = config.requireString("bag-replicator.replicaType")
 
-    val requestBuilder: (ReplicationRequest => BagReplicationRequest) =
+    val requestBuilder: ReplicationRequest => BagReplicationRequest =
       replicaType match {
         case "primary"   => PrimaryBagReplicationRequest.apply
         case "secondary" => SecondaryBagReplicationRequest.apply
