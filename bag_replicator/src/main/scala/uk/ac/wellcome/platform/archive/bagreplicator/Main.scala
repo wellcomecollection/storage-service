@@ -15,7 +15,6 @@ import uk.ac.wellcome.messaging.typesafe.{
   SQSBuilder
 }
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.azure.AzureReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationSummary
@@ -98,7 +97,7 @@ object Main extends WellcomeTypesafeApp {
       lockingService = lockingService,
       destinationConfig = ReplicatorDestinationConfig
         .buildDestinationConfig(config),
-      bagReplicator = new BagReplicator(replicator),
+      replicator = replicator,
       metricsNamespace = config.requireString("aws.metrics.namespace")
     )
   }

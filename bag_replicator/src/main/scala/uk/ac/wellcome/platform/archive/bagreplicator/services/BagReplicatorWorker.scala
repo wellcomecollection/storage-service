@@ -9,9 +9,9 @@ import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models._
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models._
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
@@ -42,7 +42,7 @@ class BagReplicatorWorker[
     UUID
   ]],
   destinationConfig: ReplicatorDestinationConfig,
-  bagReplicator: BagReplicator,
+  replicator: Replicator,
   val metricsNamespace: String
 )(
   implicit
@@ -98,7 +98,7 @@ class BagReplicatorWorker[
     ingestId: IngestID,
     bagReplicationRequest: BagReplicationRequest
   ): Try[IngestStepResult[ReplicationSummary]] = Try {
-    bagReplicator.replicator.replicate(
+    replicator.replicate(
       ingestId = ingestId,
       request = bagReplicationRequest.request
     ) match {

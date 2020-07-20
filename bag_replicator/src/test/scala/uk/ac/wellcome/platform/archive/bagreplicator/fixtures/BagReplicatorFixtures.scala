@@ -9,7 +9,6 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
   BagReplicationRequest,
   PrimaryBagReplicationRequest,
@@ -105,16 +104,13 @@ trait BagReplicatorFixtures
 
         val replicator = new S3Replicator()
 
-        val bagReplicator =
-          new BagReplicator(replicator)
-
         val service = new BagReplicatorWorker(
           config = createAlpakkaSQSWorkerConfig(queue),
           ingestUpdater = ingestUpdater,
           outgoingPublisher = outgoingPublisher,
           lockingService = lockingService,
           destinationConfig = replicatorDestinationConfig,
-          bagReplicator = bagReplicator,
+          replicator = replicator,
           metricsNamespace = "bag_replicator"
         )
 
