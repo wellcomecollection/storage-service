@@ -20,15 +20,8 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.transfer.s3.{S3PrefixTransfer, S3Transfer}
-import uk.ac.wellcome.storage.transfer.{
-  TransferFailure,
-  TransferPerformed,
-  TransferSuccess
-}
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.ObjectLocationPrefix
 
 class BagReplicatorTest
     extends AnyFunSpec
@@ -100,74 +93,6 @@ class BagReplicatorTest
       bagReplicator = new BagReplicator(badReplicator)
     ) {
       _.e shouldBe underlyingErr
-    }
-  }
-
-  describe("checks the tag manifests match") {
-    it("errors if there is no tag manifest") {
-      withLocalS3Bucket { bucket =>
-        val (srcPrefix, _) = createS3BagWith(bucket)
-
-        deleteObject(srcPrefix.asLocation("tagmanifest-sha256.txt"))
-
-        assertIsFailure(
-          srcPrefix = srcPrefix.toObjectLocationPrefix,
-          dstPrefix = createObjectLocationPrefixWith(bucket.name)
-        ) { err =>
-          err.e.getMessage should startWith(
-            "Unable to load tagmanifest-sha256.txt in source and replica to compare"
-          )
-        }
-      }
-    }
-
-    it("errors if the tag manifests do not match") {
-      // Create an instance of the bag replicator that writes nonsense
-      // to the tag manifest in the replica bag, so the file in the
-      // original and the replica.
-
-      implicit val badTransfer: S3Transfer = new S3Transfer() {
-        override def transferWithOverwrites(
-          src: ObjectLocation,
-          dst: ObjectLocation
-        ): Either[TransferFailure, TransferSuccess] =
-          if (dst.path.endsWith("/tagmanifest-sha256.txt")) {
-            s3Client.putObject(
-              dst.namespace,
-              dst.path,
-              "not the tag manifest contents"
-            )
-            Right(TransferPerformed(src, dst))
-          } else {
-            super.transferWithOverwrites(src, dst)
-          }
-      }
-
-      implicit val listing: S3ObjectLocationListing =
-        S3ObjectLocationListing()
-
-      val badPrefixTransfer = new S3PrefixTransfer()
-
-      val badReplicator: S3Replicator = new S3Replicator() {
-        override val prefixTransfer: S3PrefixTransfer =
-          badPrefixTransfer
-      }
-
-      withLocalS3Bucket { bucket =>
-        val (srcPrefix, _) = createS3BagWith(bucket)
-
-        deleteObject(srcPrefix.asLocation("tagmanifest-sha256.txt"))
-
-        assertIsFailure(
-          bagReplicator = new BagReplicator(badReplicator),
-          srcPrefix = srcPrefix.toObjectLocationPrefix,
-          dstPrefix = createObjectLocationPrefixWith(bucket.name)
-        ) { err =>
-          err.e.getMessage should startWith(
-            "Unable to load tagmanifest-sha256.txt in source and replica to compare"
-          )
-        }
-      }
     }
   }
 
