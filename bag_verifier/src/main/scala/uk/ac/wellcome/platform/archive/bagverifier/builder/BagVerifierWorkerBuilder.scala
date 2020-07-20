@@ -55,12 +55,12 @@ object BagVerifierWorkerBuilder {
     }
   }
 
-  private def buildStandaloneVerifierWorker(
+  def buildStandaloneVerifierWorker[IngestDestination, OutgoingDestination](
     primaryBucket: String,
     metricsNamespace: String,
     alpakkaSqsWorkerConfig: AlpakkaSQSWorkerConfig,
-    ingestUpdater: IngestUpdater[SNSConfig],
-    outgoingPublisher: OutgoingPublisher[SNSConfig]
+    ingestUpdater: IngestUpdater[IngestDestination],
+    outgoingPublisher: OutgoingPublisher[OutgoingDestination]
   )(
     implicit s3: AmazonS3,
     mc: MetricsMonitoringClient,
@@ -69,7 +69,7 @@ object BagVerifierWorkerBuilder {
   ): BagVerifierWorker[VersionedBagRootPayload, StandaloneBagVerifyContext[
     S3ObjectLocation,
     S3ObjectLocationPrefix
-  ], SNSConfig, SNSConfig] = {
+  ], IngestDestination, OutgoingDestination] = {
     val verifier = new S3StandaloneBagVerifier(primaryBucket)
 
     new BagVerifierWorker(

@@ -7,9 +7,7 @@ import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.bagverifier.builder.BagVerifierWorkerBuilder
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.fixtures.PayloadEntry
@@ -17,13 +15,10 @@ import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{AmazonS3StorageProvider, Ingest}
-import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
-import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryStorageLocation, ReplicaResult}
 import uk.ac.wellcome.platform.archive.common.{ReplicaResultPayload, VersionedBagRootPayload}
 
 import scala.util.{Failure, Success, Try}
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class BagVerifierWorkerTest
     extends AnyFunSpec
@@ -79,7 +74,6 @@ class BagVerifierWorkerTest
 
   describe("passes through the original payload, unmodified") {
     it("VersionedBagRootPayload") {
-      val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
 
       withLocalS3Bucket { bucket =>
@@ -95,22 +89,17 @@ class BagVerifierWorkerTest
         )
 
         withStandaloneBagVerifierWorker(
-          ingests,
-          outgoing,
-          bucket = bucket,
-          stepName = "verification"
+          outgoing = outgoing,
+          bucket = bucket
         ) {
           _.processMessage(payload) shouldBe a[Success[_]]
         }
 
-        outgoing.getMessages[VersionedBagRootPayload] shouldBe Seq(
-          payload
-        )
+        outgoing.getMessages[VersionedBagRootPayload] shouldBe Seq(payload)
       }
     }
 
     it("ReplicaResultPayload") {
-      val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
 
       withLocalS3Bucket { bucket =>
@@ -133,25 +122,17 @@ class BagVerifierWorkerTest
           version = createBagVersion
         )
 
-        withActorSystem { implicit actorSystem =>
-          withFakeMonitoringClient() { implicit monitoringClient =>
-            val worker = BagVerifierWorkerBuilder.buildReplicaBagVerifierWorker(
-              primaryBucket = bucket.name,
-              metricsNamespace = randomAlphanumeric,
-              alpakkaSqsWorkerConfig =
-                createAlpakkaSQSWorkerConfig(Queue("url://q", "arn://q", visibilityTimeout = 1)),
-              ingestUpdater = new IngestUpdater(
-                stepName = randomAlphanumeric,
-                messageSender = ingests
-              ),
-              outgoingPublisher = new OutgoingPublisher(messageSender = outgoing)
-            )
-
-            worker.processMessage(payload) shouldBe a[Success[_]]
-
-            outgoing.getMessages[ReplicaResultPayload] shouldBe Seq(payload)
+        val result =
+          withReplicaBagVerifierWorker(
+            outgoing = outgoing,
+            bucket = bucket
+          ) {
+            _.processMessage(payload)
           }
-        }
+
+        result shouldBe a[Success[_]]
+
+        outgoing.getMessages[ReplicaResultPayload] shouldBe Seq(payload)
       }
     }
   }
@@ -275,6 +256,8 @@ class BagVerifierWorkerTest
       ) {
         _.processMessage(payload) shouldBe a[Success[_]]
       }
+
+      outgoing.messages shouldBe empty
 
       assertTopicReceivesIngestStatus(
         payload.ingestId,
