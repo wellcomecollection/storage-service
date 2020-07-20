@@ -10,29 +10,18 @@ import org.scalatest.matchers.should.Matchers
 import software.amazon.awssdk.services.sqs.model.QueueAttributeName
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
+import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
+import uk.ac.wellcome.platform.archive.bagreplicator.models.{
   PrimaryBagReplicationRequest,
   SecondaryBagReplicationRequest
 }
-import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
-import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.common.ReplicaResultPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.storage.ObjectLocation
-import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
 import uk.ac.wellcome.storage.locking.memory.MemoryLockDao
 import uk.ac.wellcome.storage.locking.{LockDao, LockFailure}
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.transfer.s3.{S3PrefixTransfer, S3Transfer}
-import uk.ac.wellcome.storage.transfer.{
-  TransferFailure,
-  TransferPerformed,
-  TransferSuccess
-}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -312,117 +301,6 @@ class BagReplicatorWorkerTest
               )
             }
           }
-        }
-      }
-    }
-  }
-
-  describe("checks the tagmanifest-sha256.txt matches the original bag") {
-    it("fails if the tag manifests don't match") {
-      val ingests = new MemoryMessageSender()
-      val outgoing = new MemoryMessageSender()
-
-      withLocalS3Bucket { srcBucket =>
-        val (srcBagRoot, _) = createS3BagWith(
-          bucket = srcBucket
-        )
-
-        val payload = createVersionedBagRootPayloadWith(
-          bagRoot = srcBagRoot
-        )
-
-        withLocalS3Bucket { dstBucket =>
-          withActorSystem { implicit actorSystem =>
-            val ingestUpdater = createIngestUpdaterWith(ingests)
-            val outgoingPublisher = createOutgoingPublisherWith(outgoing)
-            withFakeMonitoringClient() { implicit monitoringClient =>
-              val lockingService = createLockingService
-
-              val replicatorDestinationConfig =
-                createReplicatorDestinationConfigWith(dstBucket)
-
-              implicit val badS3Transfer: S3Transfer =
-                new S3Transfer() {
-                  override def transferWithOverwrites(
-                    src: ObjectLocation,
-                    dst: ObjectLocation
-                  ): Either[TransferFailure, TransferSuccess] =
-                    if (dst.path.endsWith("/tagmanifest-sha256.txt")) {
-                      s3Client.putObject(
-                        dst.namespace,
-                        dst.path,
-                        "the wrong file contents"
-                      )
-
-                      Right(TransferPerformed(src, dst))
-                    } else {
-                      super.transferWithOverwrites(src, dst)
-                    }
-                }
-
-              implicit val listing: S3ObjectLocationListing =
-                S3ObjectLocationListing()
-
-              implicit val badPrefixTransfer: S3PrefixTransfer =
-                new S3PrefixTransfer()
-
-              implicit val replicator = new S3Replicator() {
-                override val prefixTransfer: S3PrefixTransfer =
-                  badPrefixTransfer
-              }
-
-              implicit val s3StreamStore: S3StreamStore =
-                new S3StreamStore()
-
-              val bagReplicator =
-                new BagReplicator(replicator)
-
-              val service = new BagReplicatorWorker(
-                config = createAlpakkaSQSWorkerConfig(dummyQueue),
-                ingestUpdater = ingestUpdater,
-                outgoingPublisher = outgoingPublisher,
-                lockingService = lockingService,
-                destinationConfig = replicatorDestinationConfig,
-                bagReplicator = bagReplicator,
-                metricsNamespace = "bag_replicator"
-              )
-
-              val result = service.processMessage(payload).success.value
-
-              result shouldBe a[IngestFailed[_]]
-
-              val ingestFailed = result.asInstanceOf[IngestFailed[_]]
-              ingestFailed.e.getMessage shouldBe "tagmanifest-sha256.txt in replica source and replica location do not match!"
-            }
-          }
-        }
-      }
-    }
-
-    it("fails if there is no tag manifest") {
-      withLocalS3Bucket { srcBucket =>
-        withLocalS3Bucket { dstBucket =>
-          val (srcBagRoot, _) = createS3BagWith(
-            bucket = srcBucket
-          )
-
-          val payload = createVersionedBagRootPayloadWith(
-            bagRoot = srcBagRoot
-          )
-
-          deleteObject(srcBagRoot.asLocation("tagmanifest-sha256.txt"))
-
-          val result =
-            withBagReplicatorWorker(bucket = dstBucket) {
-              _.processMessage(payload)
-            }.success.value
-
-          result shouldBe a[IngestFailed[_]]
-
-          val ingestFailed = result.asInstanceOf[IngestFailed[_]]
-          ingestFailed.e.getMessage should startWith(
-            "Unable to load tagmanifest-sha256.txt in source and replica to compare:"
-          )
         }
       }
     }

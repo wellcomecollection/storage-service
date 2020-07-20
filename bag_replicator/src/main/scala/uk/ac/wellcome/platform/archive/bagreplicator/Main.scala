@@ -15,10 +15,9 @@ import uk.ac.wellcome.messaging.typesafe.{
   SQSBuilder
 }
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.BagReplicationSummary
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.azure.AzureReplicator
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
 import uk.ac.wellcome.platform.archive.common.config.builders.{
@@ -36,7 +35,6 @@ import uk.ac.wellcome.storage.locking.dynamo.{
   DynamoLockDao,
   DynamoLockingService
 }
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.typesafe.{DynamoLockDaoBuilder, S3Builder}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -59,9 +57,6 @@ object Main extends WellcomeTypesafeApp {
     implicit val s3Client: AmazonS3 =
       S3Builder.buildS3Client(config)
 
-    implicit val s3StreamStore: S3StreamStore =
-      new S3StreamStore()
-
     implicit val monitoringClient: CloudwatchMetricsMonitoringClient =
       CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)
 
@@ -75,7 +70,7 @@ object Main extends WellcomeTypesafeApp {
       OperationNameBuilder.getName(config)
 
     val lockingService =
-      new DynamoLockingService[IngestStepResult[BagReplicationSummary[_]], Try]()
+      new DynamoLockingService[IngestStepResult[ReplicationSummary], Try]()
 
     val provider =
       StorageProvider.apply(config.requireString("bag-replicator.provider"))
@@ -102,7 +97,7 @@ object Main extends WellcomeTypesafeApp {
       lockingService = lockingService,
       destinationConfig = ReplicatorDestinationConfig
         .buildDestinationConfig(config),
-      bagReplicator = new BagReplicator(replicator),
+      replicator = replicator,
       metricsNamespace = config.requireString("aws.metrics.namespace")
     )
   }

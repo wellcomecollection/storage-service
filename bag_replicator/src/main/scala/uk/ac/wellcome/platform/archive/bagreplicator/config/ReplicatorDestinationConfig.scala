@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.config
 
 import com.typesafe.config.Config
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
+import uk.ac.wellcome.platform.archive.bagreplicator.models.{
   BagReplicationRequest,
   PrimaryBagReplicationRequest,
   SecondaryBagReplicationRequest
@@ -20,7 +20,7 @@ case object ReplicatorDestinationConfig {
   def buildDestinationConfig(config: Config): ReplicatorDestinationConfig = {
     val replicaType = config.requireString("bag-replicator.replicaType")
 
-    val requestBuilder: (ReplicationRequest => BagReplicationRequest) =
+    val requestBuilder: ReplicationRequest => BagReplicationRequest =
       replicaType match {
         case "primary"   => PrimaryBagReplicationRequest.apply
         case "secondary" => SecondaryBagReplicationRequest.apply

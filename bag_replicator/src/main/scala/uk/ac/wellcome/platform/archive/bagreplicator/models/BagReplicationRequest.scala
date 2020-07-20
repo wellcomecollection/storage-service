@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bagreplicator.bags.models
+package uk.ac.wellcome.platform.archive.bagreplicator.models
 
 import java.time.Instant
 

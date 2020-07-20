@@ -9,15 +9,16 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.BagReplicator
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
+import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
+import uk.ac.wellcome.platform.archive.bagreplicator.models.{
   BagReplicationRequest,
-  BagReplicationSummary,
   PrimaryBagReplicationRequest,
   SecondaryBagReplicationRequest
 }
-import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
+  ReplicationRequest,
+  ReplicationSummary
+}
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
@@ -33,7 +34,6 @@ import uk.ac.wellcome.storage.locking.memory.{
   MemoryLockDaoFixtures
 }
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
@@ -47,9 +47,11 @@ trait BagReplicatorFixtures
     with S3Fixtures {
 
   type ReplicatorLockingService =
-    LockingService[IngestStepResult[
-      BagReplicationSummary[_]
-    ], Try, LockDao[String, UUID]]
+    LockingService[
+      IngestStepResult[ReplicationSummary],
+      Try,
+      LockDao[String, UUID]
+    ]
 
   def createLockingServiceWith(
     lockServiceDao: LockDao[String, UUID]
@@ -102,13 +104,7 @@ trait BagReplicatorFixtures
             requestBuilder = requestBuilder
           )
 
-        implicit val s3StreamStore: S3StreamStore =
-          new S3StreamStore()
-
         val replicator = new S3Replicator()
-
-        val bagReplicator =
-          new BagReplicator(replicator)
 
         val service = new BagReplicatorWorker(
           config = createAlpakkaSQSWorkerConfig(queue),
@@ -116,7 +112,7 @@ trait BagReplicatorFixtures
           outgoingPublisher = outgoingPublisher,
           lockingService = lockingService,
           destinationConfig = replicatorDestinationConfig,
-          bagReplicator = bagReplicator,
+          replicator = replicator,
           metricsNamespace = "bag_replicator"
         )
 
