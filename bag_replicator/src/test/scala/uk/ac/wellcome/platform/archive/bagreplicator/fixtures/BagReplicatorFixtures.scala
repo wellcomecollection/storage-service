@@ -9,12 +9,12 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
+import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
+import uk.ac.wellcome.platform.archive.bagreplicator.models.{
   BagReplicationRequest,
   PrimaryBagReplicationRequest,
   SecondaryBagReplicationRequest
 }
-import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
   ReplicationRequest,
   ReplicationSummary

@@ -10,11 +10,11 @@ import org.scalatest.matchers.should.Matchers
 import software.amazon.awssdk.services.sqs.model.QueueAttributeName
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
+import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
+import uk.ac.wellcome.platform.archive.bagreplicator.models.{
   PrimaryBagReplicationRequest,
   SecondaryBagReplicationRequest
 }
-import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.common.ReplicaResultPayload
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators

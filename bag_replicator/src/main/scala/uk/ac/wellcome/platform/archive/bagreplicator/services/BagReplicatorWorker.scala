@@ -9,8 +9,8 @@ import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.models._
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
+import uk.ac.wellcome.platform.archive.bagreplicator.models._
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models._
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID

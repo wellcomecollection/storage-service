@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.config
 
 import com.typesafe.config.Config
-import uk.ac.wellcome.platform.archive.bagreplicator.bags.models.{
+import uk.ac.wellcome.platform.archive.bagreplicator.models.{
   BagReplicationRequest,
   PrimaryBagReplicationRequest,
   SecondaryBagReplicationRequest
