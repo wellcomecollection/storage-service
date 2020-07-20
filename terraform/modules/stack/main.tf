@@ -488,8 +488,8 @@ module "replicator_verifier_glacier" {
   service_discovery_namespace_id = local.service_discovery_namespace_id
 
   deployment_service_env             = var.release_label
-  deployment_service_name_replicator = "bag-replicator-primary"
-  deployment_service_name_verifier   = "bag-verifier-primary"
+  deployment_service_name_replicator = "bag-replicator-glacier"
+  deployment_service_name_verifier   = "bag-verifier-glacier"
 }
 
 # replica_aggregator
@@ -628,4 +628,3 @@ module "api" {
 
   static_content_bucket_name = var.static_content_bucket_name
 }
-
