@@ -1,4 +1,4 @@
-storage_service:
+storage:
   environments:
     - id: stage
       name: Staging
