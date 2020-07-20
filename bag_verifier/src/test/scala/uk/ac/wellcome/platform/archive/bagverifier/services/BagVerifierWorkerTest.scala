@@ -14,9 +14,19 @@ import uk.ac.wellcome.platform.archive.common.fixtures.PayloadEntry
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{AmazonS3StorageProvider, Ingest}
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, PrimaryStorageLocation, ReplicaResult}
-import uk.ac.wellcome.platform.archive.common.{ReplicaResultPayload, VersionedBagRootPayload}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  AmazonS3StorageProvider,
+  Ingest
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  PrimaryStorageLocation,
+  ReplicaResult
+}
+import uk.ac.wellcome.platform.archive.common.{
+  ReplicaResultPayload,
+  VersionedBagRootPayload
+}
 
 import scala.util.{Failure, Success, Try}
 

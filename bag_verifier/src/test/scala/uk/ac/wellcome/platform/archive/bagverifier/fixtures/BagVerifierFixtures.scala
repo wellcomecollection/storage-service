@@ -7,10 +7,19 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagverifier.builder.BagVerifierWorkerBuilder
-import uk.ac.wellcome.platform.archive.bagverifier.models.{ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{
+  ReplicatedBagVerifyContext,
+  StandaloneBagVerifyContext
+}
 import uk.ac.wellcome.platform.archive.bagverifier.services.s3.S3StandaloneBagVerifier
-import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifier, BagVerifierWorker}
-import uk.ac.wellcome.platform.archive.common.{ReplicaResultPayload, VersionedBagRootPayload}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{
+  BagVerifier,
+  BagVerifierWorker
+}
+import uk.ac.wellcome.platform.archive.common.{
+  ReplicaResultPayload,
+  VersionedBagRootPayload
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
@@ -40,7 +49,8 @@ trait BagVerifierFixtures
   ): R =
     withFakeMonitoringClient() { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
-        val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
+        val ingestUpdater =
+          createIngestUpdaterWith(ingests, stepName = stepName)
 
         val outgoingPublisher = createOutgoingPublisherWith(outgoing)
 
@@ -71,11 +81,12 @@ trait BagVerifierFixtures
       ReplicatedBagVerifyContext[S3ObjectLocation, S3ObjectLocationPrefix],
       String,
       String
-      ], R]
+    ], R]
   ): R =
     withFakeMonitoringClient() { implicit monitoringClient =>
       withActorSystem { implicit actorSystem =>
-        val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
+        val ingestUpdater =
+          createIngestUpdaterWith(ingests, stepName = stepName)
 
         val outgoingPublisher = createOutgoingPublisherWith(outgoing)
 

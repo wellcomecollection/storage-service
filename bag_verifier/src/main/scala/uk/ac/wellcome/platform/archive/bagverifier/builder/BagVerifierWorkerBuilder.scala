@@ -9,12 +9,21 @@ import uk.ac.wellcome.messaging.sns.SNSConfig
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
-import uk.ac.wellcome.platform.archive.bagverifier.models.{ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{
+  ReplicatedBagVerifyContext,
+  StandaloneBagVerifyContext
+}
 import uk.ac.wellcome.platform.archive.bagverifier.services.BagVerifierWorker
-import uk.ac.wellcome.platform.archive.bagverifier.services.s3.{S3ReplicatedBagVerifier, S3StandaloneBagVerifier}
+import uk.ac.wellcome.platform.archive.bagverifier.services.s3.{
+  S3ReplicatedBagVerifier,
+  S3StandaloneBagVerifier
+}
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
-import uk.ac.wellcome.platform.archive.common.{ReplicaResultPayload, VersionedBagRootPayload}
+import uk.ac.wellcome.platform.archive.common.{
+  ReplicaResultPayload,
+  VersionedBagRootPayload
+}
 import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
@@ -107,7 +116,9 @@ object BagVerifierWorkerBuilder {
       metricsNamespace = metricsNamespace,
       (payload: ReplicaResultPayload) =>
         ReplicatedBagVerifyContext(
-          root = S3ObjectLocationPrefix(payload.replicaResult.storageLocation.prefix),
+          root = S3ObjectLocationPrefix(
+            payload.replicaResult.storageLocation.prefix
+          ),
           srcRoot = payload.replicaResult.originalLocation
         )
     )

@@ -4,7 +4,11 @@ import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
 import uk.ac.wellcome.platform.archive.common.ingests.models.StorageProvider
-import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryStorageLocation, ReplicaResult, SecondaryStorageLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  PrimaryStorageLocation,
+  ReplicaResult,
+  SecondaryStorageLocation
+}
 import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 
 // For bag replicas, we distinguish between primary and secondary replicas.
