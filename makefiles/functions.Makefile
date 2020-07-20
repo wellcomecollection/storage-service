@@ -66,17 +66,13 @@ endef
 #
 define publish_service
 	$(ROOT)/docker_run.py \
-	    --aws --dind -- \
-	    wellcome/publish_service:86 \
-	    	--service_id="$(1)" \
-	        --project_id=$(2) \
-	        --account_id=$(3) \
-	        --region_id=eu-west-1 \
-	        --namespace=uk.ac.wellcome \
-	        --role_arn="$(DEV_ROLE_ARN)" \
-	        --label=latest
+        --aws --dind -- \
+            wellcome/weco-deploy:4.1.0 \
+            --project-id="$(2)" \
+            --verbose \
+            publish \
+            --image-id="$(1)"
 endef
-
 
 # Test an sbt project.
 #
