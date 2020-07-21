@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
+import java.time.Instant
+
 import io.circe.Encoder
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.funspec.AnyFunSpec
@@ -12,9 +14,17 @@ import uk.ac.wellcome.platform.archive.common.fixtures.PayloadEntry
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  AmazonS3StorageProvider,
+  Ingest
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  PrimaryStorageLocation,
+  ReplicaResult
+}
 import uk.ac.wellcome.platform.archive.common.{
-  BagRootLocationPayload,
+  ReplicaResultPayload,
   VersionedBagRootPayload
 }
 
@@ -73,8 +83,7 @@ class BagVerifierWorkerTest
   }
 
   describe("passes through the original payload, unmodified") {
-    it("EnrichedBagInformationPayload") {
-      val ingests = new MemoryMessageSender()
+    it("VersionedBagRootPayload") {
       val outgoing = new MemoryMessageSender()
 
       withLocalS3Bucket { bucket =>
@@ -90,46 +99,90 @@ class BagVerifierWorkerTest
         )
 
         withStandaloneBagVerifierWorker(
-          ingests,
-          outgoing,
-          bucket = bucket,
-          stepName = "verification"
+          outgoing = outgoing,
+          bucket = bucket
         ) {
           _.processMessage(payload) shouldBe a[Success[_]]
         }
 
-        outgoing.getMessages[VersionedBagRootPayload] shouldBe Seq(
-          payload
-        )
+        outgoing.getMessages[VersionedBagRootPayload] shouldBe Seq(payload)
       }
     }
 
-    it("BagInformationPayload") {
-      val ingests = new MemoryMessageSender()
+    it("ReplicaResultPayload") {
       val outgoing = new MemoryMessageSender()
 
       withLocalS3Bucket { bucket =>
         val space = createStorageSpace
         val (bagRoot, bagInfo) = createS3BagWith(bucket, space = space)
 
-        val payload = createBagRootLocationPayloadWith(
+        val payload = ReplicaResultPayload(
           context = createPipelineContextWith(
             externalIdentifier = bagInfo.externalIdentifier,
             storageSpace = space
           ),
-          bagRoot = bagRoot
+          replicaResult = ReplicaResult(
+            originalLocation = bagRoot,
+            storageLocation = PrimaryStorageLocation(
+              provider = AmazonS3StorageProvider,
+              prefix = bagRoot.toObjectLocationPrefix
+            ),
+            timestamp = Instant.now
+          ),
+          version = createBagVersion
         )
 
-        withStandaloneBagVerifierWorker(
-          ingests,
-          outgoing,
-          bucket = bucket,
-          stepName = "verification"
-        ) {
-          _.processMessage(payload) shouldBe a[Success[_]]
-        }
+        val result =
+          withReplicaBagVerifierWorker(
+            outgoing = outgoing,
+            bucket = bucket
+          ) {
+            _.processMessage(payload)
+          }
 
-        outgoing.getMessages[BagRootLocationPayload] shouldBe Seq(payload)
+        result shouldBe a[Success[_]]
+
+        outgoing.getMessages[ReplicaResultPayload] shouldBe Seq(payload)
+      }
+    }
+  }
+
+  describe("handling a replicated bag") {
+    it("fails if it cannot find the original bag") {
+      val outgoing = new MemoryMessageSender()
+
+      withLocalS3Bucket { bucket =>
+        val space = createStorageSpace
+        val (bagRoot, bagInfo) = createS3BagWith(bucket, space = space)
+
+        val payload = ReplicaResultPayload(
+          context = createPipelineContextWith(
+            externalIdentifier = bagInfo.externalIdentifier,
+            storageSpace = space
+          ),
+          replicaResult = ReplicaResult(
+            originalLocation = createS3ObjectLocationPrefix,
+            storageLocation = PrimaryStorageLocation(
+              provider = AmazonS3StorageProvider,
+              prefix = bagRoot.toObjectLocationPrefix
+            ),
+            timestamp = Instant.now
+          ),
+          version = createBagVersion
+        )
+
+        val result =
+          withReplicaBagVerifierWorker(
+            outgoing = outgoing,
+            bucket = bucket
+          ) {
+            _.processMessage(payload)
+          }
+
+        result shouldBe a[Success[_]]
+        result.get shouldBe a[IngestFailed[_]]
+
+        outgoing.messages shouldBe empty
       }
     }
   }
@@ -253,6 +306,8 @@ class BagVerifierWorkerTest
       ) {
         _.processMessage(payload) shouldBe a[Success[_]]
       }
+
+      outgoing.messages shouldBe empty
 
       assertTopicReceivesIngestStatus(
         payload.ingestId,

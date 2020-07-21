@@ -9,6 +9,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   ReplicaResult,
   SecondaryStorageLocation
 }
+import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 
 // For bag replicas, we distinguish between primary and secondary replicas.
 //
@@ -48,6 +49,7 @@ sealed trait BagReplicationRequest {
       }
 
     ReplicaResult(
+      originalLocation = S3ObjectLocationPrefix(request.srcPrefix),
       storageLocation = storageLocation,
       timestamp = Instant.now()
     )

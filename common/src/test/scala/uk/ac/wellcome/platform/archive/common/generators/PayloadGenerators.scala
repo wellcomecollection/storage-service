@@ -124,6 +124,7 @@ trait PayloadGenerators
     ReplicaResultPayload(
       context = createPipelineContext,
       replicaResult = ReplicaResult(
+        originalLocation = createS3ObjectLocationPrefix,
         storageLocation = createPrimaryLocationWith(
           provider = provider
         ),

@@ -24,6 +24,7 @@ class ReplicaAggregatorTest
     replicaLocation: ReplicaLocation = createPrimaryLocation
   ): ReplicaResult =
     ReplicaResult(
+      originalLocation = createS3ObjectLocationPrefix,
       storageLocation = replicaLocation.toStorageLocation,
       timestamp = Instant.now
     )

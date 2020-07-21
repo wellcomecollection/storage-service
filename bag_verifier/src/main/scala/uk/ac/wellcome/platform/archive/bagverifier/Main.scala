@@ -50,10 +50,10 @@ object Main extends WellcomeTypesafeApp {
 
     val outgoingPublisher =
       OutgoingPublisherBuilder.build(config, operationName)
-    BagVerifierWorkerBuilder.buildBagVerifierWorker(config)(
-      ingestUpdater,
-      outgoingPublisher
-    )
 
+    BagVerifierWorkerBuilder.buildBagVerifierWorker(config)(
+      ingestUpdater = ingestUpdater,
+      outgoingPublisher = outgoingPublisher
+    )
   }
 }

@@ -54,7 +54,7 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
   )(step: IngestStepResult[RootFinderSummary]): Try[Unit] =
     step match {
       case IngestStepSucceeded(summary: RootFinderSuccessSummary, _) =>
-        val outgoingPayload: BagRootPayload = BagRootLocationPayload(
+        val outgoingPayload = BagRootLocationPayload(
           context = payload.context,
           bagRoot = summary.bagRoot.toObjectLocationPrefix
         )

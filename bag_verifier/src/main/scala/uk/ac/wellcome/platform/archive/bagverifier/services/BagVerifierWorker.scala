@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.models.{
   BagVerifyContext,
   VerificationSummary
 }
-import uk.ac.wellcome.platform.archive.common.BagRootPayload
+import uk.ac.wellcome.platform.archive.common.VerifiablePayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.storage.models.{
@@ -26,7 +26,7 @@ import uk.ac.wellcome.storage.{
 import scala.util.Try
 
 trait BagPayloadTranslator[
-  Payload <: BagRootPayload,
+  Payload <: VerifiablePayload,
   BagContext <: BagVerifyContext[BagLocation, BagPrefix],
   BagLocation <: Location,
   BagPrefix <: Prefix[BagLocation]
@@ -35,7 +35,7 @@ trait BagPayloadTranslator[
 }
 
 class BagVerifierWorker[
-  Payload <: BagRootPayload,
+  Payload <: VerifiablePayload,
   BagContext <: BagVerifyContext[S3ObjectLocation, S3ObjectLocationPrefix],
   IngestDestination,
   OutgoingDestination
@@ -56,10 +56,7 @@ class BagVerifierWorker[
   val as: ActorSystem,
   val sc: SqsAsyncClient,
   val wd: Decoder[Payload]
-) extends IngestStepWorker[
-      Payload,
-      VerificationSummary
-    ] {
+) extends IngestStepWorker[Payload, VerificationSummary] {
 
   override def processMessage(
     payload: Payload
