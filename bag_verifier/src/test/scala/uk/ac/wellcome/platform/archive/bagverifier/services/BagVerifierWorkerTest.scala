@@ -65,10 +65,8 @@ class BagVerifierWorkerTest
         outgoing,
         bucket = bucket,
         stepName = "verification"
-      ) { worker =>
-        val r = worker.processMessage(payload)
-        println(s"@@AWLC $r")
-        r shouldBe a[Success[_]]
+      ) {
+        _.processMessage(payload) shouldBe a[Success[_]]
       }
 
       assertTopicReceivesIngestEvents(
