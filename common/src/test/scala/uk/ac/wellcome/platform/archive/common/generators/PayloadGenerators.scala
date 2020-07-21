@@ -102,7 +102,7 @@ trait PayloadGenerators
   ): VersionedBagRootPayload =
     VersionedBagRootPayload(
       context = context,
-      bagRoot = bagRoot.toObjectLocationPrefix,
+      bagRoot = bagRoot,
       version = version
     )
 
@@ -115,7 +115,7 @@ trait PayloadGenerators
   ): BagRootLocationPayload =
     BagRootLocationPayload(
       context = context,
-      bagRoot = bagRoot.toObjectLocationPrefix
+      bagRoot = bagRoot
     )
 
   def createReplicaResultPayloadWith(
