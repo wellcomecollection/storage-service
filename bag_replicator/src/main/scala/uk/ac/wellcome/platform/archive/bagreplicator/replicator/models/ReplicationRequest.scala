@@ -1,8 +1,8 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.replicator.models
 
-import uk.ac.wellcome.storage.ObjectLocationPrefix
+import uk.ac.wellcome.storage.{ObjectLocationPrefix, S3ObjectLocationPrefix}
 
 case class ReplicationRequest(
-  srcPrefix: ObjectLocationPrefix,
+  srcPrefix: S3ObjectLocationPrefix,
   dstPrefix: ObjectLocationPrefix
 )

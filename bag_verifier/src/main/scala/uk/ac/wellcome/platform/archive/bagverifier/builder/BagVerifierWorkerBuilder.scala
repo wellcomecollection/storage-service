@@ -88,7 +88,7 @@ object BagVerifierWorkerBuilder {
       verifier = verifier,
       metricsNamespace = metricsNamespace,
       (payload: BagRootLocationPayload) =>
-        StandaloneBagVerifyContext(S3ObjectLocationPrefix(payload.bagRoot))
+        StandaloneBagVerifyContext(payload.bagRoot)
     )
   }
 
