@@ -322,6 +322,7 @@ class ReplicaAggregatorWorkerTest
       ReplicaResultPayload(
         context = context,
         replicaResult = ReplicaResult(
+          originalLocation = createS3ObjectLocationPrefix,
           storageLocation = storageLocation,
           timestamp = Instant.now
         ),
