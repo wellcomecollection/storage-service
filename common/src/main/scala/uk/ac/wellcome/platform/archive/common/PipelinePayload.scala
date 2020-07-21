@@ -53,14 +53,14 @@ case class KnownReplicasPayload(
   knownReplicas: KnownReplicas
 ) extends PipelinePayload
 
-case class BagRootLocationPayload(
-  context: PipelineContext,
-  bagRoot: ObjectLocationPrefix
-) extends PipelinePayload
-
 sealed trait VerifiablePayload extends PipelinePayload {
   val bagRoot: ObjectLocationPrefix
 }
+
+case class BagRootLocationPayload(
+  context: PipelineContext,
+  bagRoot: ObjectLocationPrefix
+) extends VerifiablePayload
 
 case class VersionedBagRootPayload(
   context: PipelineContext,
