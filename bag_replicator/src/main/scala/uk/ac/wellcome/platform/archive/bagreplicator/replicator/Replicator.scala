@@ -7,7 +7,12 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models._
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.transfer.{PrefixTransfer, TransferResult}
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix, S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.{
+  ObjectLocation,
+  ObjectLocationPrefix,
+  S3ObjectLocation,
+  S3ObjectLocationPrefix
+}
 
 // This is a generic replication from one location to another.
 //

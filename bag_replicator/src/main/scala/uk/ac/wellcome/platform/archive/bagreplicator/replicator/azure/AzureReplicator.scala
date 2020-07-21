@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.archive.bagreplicator.replicator.azure
 import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.BlobServiceClient
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.Replicator
-import uk.ac.wellcome.storage.listing.s3.{NewS3ObjectLocationListing, S3ObjectLocationListing}
+import uk.ac.wellcome.storage.listing.s3.{
+  NewS3ObjectLocationListing,
+  S3ObjectLocationListing
+}
 import uk.ac.wellcome.storage.store.s3.{S3StreamReadable, S3StreamStore}
 import uk.ac.wellcome.storage.transfer.PrefixTransfer
 import uk.ac.wellcome.storage.transfer.azure.{

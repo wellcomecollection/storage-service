@@ -4,7 +4,11 @@ import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{ReplicationFailed, ReplicationRequest, ReplicationSucceeded}
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
+  ReplicationFailed,
+  ReplicationRequest,
+  ReplicationSucceeded
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
