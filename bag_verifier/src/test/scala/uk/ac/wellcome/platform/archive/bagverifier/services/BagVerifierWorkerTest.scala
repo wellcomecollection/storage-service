@@ -24,8 +24,8 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   ReplicaResult
 }
 import uk.ac.wellcome.platform.archive.common.{
-  ReplicaResultPayload,
-  VersionedBagRootPayload
+  BagRootLocationPayload,
+  ReplicaResultPayload
 }
 
 import scala.util.{Failure, Success, Try}
@@ -52,7 +52,7 @@ class BagVerifierWorkerTest
 
       val (bagRoot, bagInfo) = createS3BagWith(bucket, space = space)
 
-      val payload = createVersionedBagRootPayloadWith(
+      val payload = createBagRootLocationPayloadWith(
         context = createPipelineContextWith(
           externalIdentifier = bagInfo.externalIdentifier,
           storageSpace = space
@@ -65,8 +65,10 @@ class BagVerifierWorkerTest
         outgoing,
         bucket = bucket,
         stepName = "verification"
-      ) {
-        _.processMessage(payload) shouldBe a[Success[_]]
+      ) { worker =>
+        val r = worker.processMessage(payload)
+        println(s"@@AWLC $r")
+        r shouldBe a[Success[_]]
       }
 
       assertTopicReceivesIngestEvents(
@@ -78,19 +80,19 @@ class BagVerifierWorkerTest
         )
       )
 
-      outgoing.getMessages[VersionedBagRootPayload] shouldBe Seq(payload)
+      outgoing.getMessages[BagRootLocationPayload] shouldBe Seq(payload)
     }
   }
 
   describe("passes through the original payload, unmodified") {
-    it("VersionedBagRootPayload") {
+    it("BagRootLocationPayload") {
       val outgoing = new MemoryMessageSender()
 
       withLocalS3Bucket { bucket =>
         val space = createStorageSpace
         val (bagRoot, bagInfo) = createS3BagWith(bucket, space = space)
 
-        val payload = createVersionedBagRootPayloadWith(
+        val payload = createBagRootLocationPayloadWith(
           context = createPipelineContextWith(
             externalIdentifier = bagInfo.externalIdentifier,
             storageSpace = space
@@ -105,7 +107,7 @@ class BagVerifierWorkerTest
           _.processMessage(payload) shouldBe a[Success[_]]
         }
 
-        outgoing.getMessages[VersionedBagRootPayload] shouldBe Seq(payload)
+        outgoing.getMessages[BagRootLocationPayload] shouldBe Seq(payload)
       }
     }
 
@@ -203,7 +205,7 @@ class BagVerifierWorkerTest
 
       val (bagRoot, bagInfo) = badBuilder.createS3BagWith(bucket)
 
-      val payload = createVersionedBagRootPayloadWith(
+      val payload = createBagRootLocationPayloadWith(
         context = createPipelineContextWith(
           externalIdentifier = bagInfo.externalIdentifier
         ),
@@ -246,7 +248,7 @@ class BagVerifierWorkerTest
 
       val (bagRoot, bagInfo) = badBuilder.createS3BagWith(bucket)
 
-      val payload = createVersionedBagRootPayloadWith(
+      val payload = createBagRootLocationPayloadWith(
         context = createPipelineContextWith(
           externalIdentifier = bagInfo.externalIdentifier
         ),
@@ -291,7 +293,7 @@ class BagVerifierWorkerTest
         externalIdentifier = bagInfoExternalIdentifier
       )
 
-      val payload = createVersionedBagRootPayloadWith(
+      val payload = createBagRootLocationPayloadWith(
         context = createPipelineContextWith(
           externalIdentifier = payloadExternalIdentifier
         ),
@@ -334,7 +336,7 @@ class BagVerifierWorkerTest
       val space = createStorageSpace
       val (bagRoot, bagInfo) = createS3BagWith(bucket, space = space)
 
-      val payload = createVersionedBagRootPayloadWith(
+      val payload = createBagRootLocationPayloadWith(
         context = createPipelineContextWith(
           externalIdentifier = bagInfo.externalIdentifier,
           storageSpace = space

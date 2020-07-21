@@ -16,8 +16,8 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestStatusUpdate
 }
 import uk.ac.wellcome.platform.archive.common.{
-  VerifiablePayload,
-  VersionedBagRootPayload
+  BagRootLocationPayload,
+  VerifiablePayload
 }
 
 class BagVerifierFeatureTest
@@ -57,7 +57,7 @@ class BagVerifierFeatureTest
             val space = createStorageSpace
             val (bagRoot, bagInfo) = createS3BagWith(bucket, space = space)
 
-            val payload = createVersionedBagRootPayloadWith(
+            val payload = createBagRootLocationPayloadWith(
               context = createPipelineContextWith(
                 externalIdentifier = bagInfo.externalIdentifier,
                 storageSpace = space
@@ -78,7 +78,7 @@ class BagVerifierFeatureTest
               )
 
               outgoing
-                .getMessages[VersionedBagRootPayload]
+                .getMessages[BagRootLocationPayload]
                 .toSet shouldBe Set(payload)
 
               assertQueueEmpty(queue)

@@ -17,8 +17,8 @@ import uk.ac.wellcome.platform.archive.bagverifier.services.{
   BagVerifierWorker
 }
 import uk.ac.wellcome.platform.archive.common.{
-  ReplicaResultPayload,
-  VersionedBagRootPayload
+  BagRootLocationPayload,
+  ReplicaResultPayload
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
@@ -41,7 +41,7 @@ trait BagVerifierFixtures
     stepName: String = randomAlphanumericWithLength()
   )(
     testWith: TestWith[BagVerifierWorker[
-      VersionedBagRootPayload,
+      BagRootLocationPayload,
       StandaloneBagVerifyContext[S3ObjectLocation, S3ObjectLocationPrefix],
       String,
       String
