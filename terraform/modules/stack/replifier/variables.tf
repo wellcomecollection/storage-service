@@ -34,6 +34,10 @@ variable "primary_bucket_name" {
   type = string
 }
 
+variable "unpacker_bucket_name" {
+  type = string
+}
+
 # IAM policies
 
 variable "ingests_read_policy_json" {
