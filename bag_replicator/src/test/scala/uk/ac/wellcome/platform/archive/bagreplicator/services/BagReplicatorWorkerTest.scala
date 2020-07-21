@@ -110,7 +110,7 @@ class BagReplicatorWorkerTest
 
           result shouldBe a[IngestStepSucceeded[_]]
 
-          val destination = result.summary.dstPrefix
+          val destination = result.summary.request.dstPrefix
           destination.namespace shouldBe dstBucket.name
         }
       }
@@ -134,7 +134,7 @@ class BagReplicatorWorkerTest
 
           result shouldBe a[IngestStepSucceeded[_]]
 
-          val dstBagLocation = result.summary.dstPrefix
+          val dstBagLocation = result.summary.request.dstPrefix
           val expectedPath =
             Paths
               .get(

@@ -13,13 +13,8 @@ import uk.ac.wellcome.storage.tags.s3.S3Tags
 import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
 
 class S3ReplicatorTest
-    extends ReplicatorTestCases[Bucket, Bucket]
+    extends ReplicatorTestCases[Bucket]
     with S3Fixtures {
-
-  override def withSrcNamespace[R](testWith: TestWith[Bucket, R]): R =
-    withLocalS3Bucket { bucket =>
-      testWith(bucket)
-    }
 
   override def withDstNamespace[R](testWith: TestWith[Bucket, R]): R =
     withLocalS3Bucket { bucket =>
@@ -29,24 +24,16 @@ class S3ReplicatorTest
   override def withReplicator[R](testWith: TestWith[Replicator, R]): R =
     testWith(new S3Replicator())
 
-  override def createSrcLocationWith(srcBucket: Bucket): ObjectLocation =
-    createObjectLocationWith(srcBucket)
-
   override def createDstLocationWith(
     dstBucket: Bucket,
     key: String
   ): ObjectLocation =
     createObjectLocationWith(dstBucket, key)
 
-  override def createSrcPrefixWith(srcBucket: Bucket): ObjectLocationPrefix =
-    ObjectLocationPrefix(srcBucket.name, path = "")
-
   override def createDstPrefixWith(dstBucket: Bucket): ObjectLocationPrefix =
     ObjectLocationPrefix(dstBucket.name, path = "")
 
-  override val srcTags: Tags[ObjectLocation] = new S3Tags()
   override val dstTags: Tags[ObjectLocation] = new S3Tags()
 
-  override val srcStringStore: S3TypedStore[String] = S3TypedStore[String]
   override val dstStringStore: S3TypedStore[String] = S3TypedStore[String]
 }

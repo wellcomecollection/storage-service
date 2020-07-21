@@ -2,10 +2,7 @@ package uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3
 
 import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.Replicator
-import uk.ac.wellcome.storage.listing.s3.{
-  S3ObjectLocationListing,
-  S3ObjectSummaryListing
-}
+import uk.ac.wellcome.storage.listing.s3.{NewS3ObjectLocationListing, S3ObjectSummaryListing}
 import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
 
 class S3Replicator(implicit s3Client: AmazonS3) extends Replicator {
@@ -25,6 +22,6 @@ class S3Replicator(implicit s3Client: AmazonS3) extends Replicator {
   implicit val s3ObjectSummaryListing: S3ObjectSummaryListing =
     new S3ObjectSummaryListing()
 
-  override implicit val prefixListing: S3ObjectLocationListing =
-    new S3ObjectLocationListing()
+  override implicit val prefixListing: NewS3ObjectLocationListing =
+    new NewS3ObjectLocationListing()
 }

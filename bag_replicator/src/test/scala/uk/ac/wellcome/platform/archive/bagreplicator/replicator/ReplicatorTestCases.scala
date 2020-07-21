@@ -4,42 +4,55 @@ import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
-  ReplicationFailed,
-  ReplicationRequest,
-  ReplicationSucceeded
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{ReplicationFailed, ReplicationRequest, ReplicationSucceeded}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
+import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
+import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.tags.Tags
-import uk.ac.wellcome.storage.{Identified, ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.store.s3.{NewS3StreamStore, NewS3TypedStore}
+import uk.ac.wellcome.storage.tags.s3.NewS3Tags
 
-trait ReplicatorTestCases[SrcNamespace, DstNamespace]
+trait ReplicatorTestCases[DstNamespace]
     extends AnyFunSpec
     with Matchers
     with EitherValues
-    with StorageRandomThings {
-  def withSrcNamespace[R](testWith: TestWith[SrcNamespace, R]): R
+    with StorageRandomThings
+    with NewS3Fixtures {
+  def withSrcNamespace[R](testWith: TestWith[Bucket, R]): R =
+    withLocalS3Bucket { bucket =>
+      testWith(bucket)
+    }
+
   def withDstNamespace[R](testWith: TestWith[DstNamespace, R]): R
 
   def withReplicator[R](testWith: TestWith[Replicator, R]): R
 
-  def createSrcLocationWith(srcNamespace: SrcNamespace): ObjectLocation
+  def createSrcLocationWith(srcBucket: Bucket): S3ObjectLocation =
+    createS3ObjectLocationWith(srcBucket)
+
   def createDstLocationWith(
     dstNamespace: DstNamespace,
     path: String
   ): ObjectLocation
 
-  def createSrcPrefixWith(srcNamespace: SrcNamespace): ObjectLocationPrefix
+  def createSrcPrefixWith(srcBucket: Bucket): S3ObjectLocationPrefix =
+    createS3ObjectLocationPrefixWith(srcBucket, keyPrefix = "")
+
   def createDstPrefixWith(dstNamespace: DstNamespace): ObjectLocationPrefix
 
-  val srcTags: Tags[ObjectLocation]
+  val srcTags: Tags[S3ObjectLocation] = new NewS3Tags()
   val dstTags: Tags[ObjectLocation]
 
-  val srcStringStore: TypedStore[ObjectLocation, String]
+  implicit val s3StreamStore: NewS3StreamStore = new NewS3StreamStore()
+
+  val srcStringStore: TypedStore[S3ObjectLocation, String] =
+    new NewS3TypedStore[String]()
+
   val dstStringStore: TypedStore[ObjectLocation, String]
 
-  def putSrcObject(location: ObjectLocation, contents: String): Unit =
+  def putSrcObject(location: S3ObjectLocation, contents: String): Unit =
     srcStringStore.put(location)(contents) shouldBe a[Right[_, _]]
 
   def putDstObject(location: ObjectLocation, contents: String): Unit =
