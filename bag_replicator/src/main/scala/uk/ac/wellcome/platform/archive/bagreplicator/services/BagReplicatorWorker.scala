@@ -10,7 +10,6 @@ import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.models._
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models._
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
@@ -77,9 +76,9 @@ class BagReplicatorWorker[
 
       result <- lockingService
         .withLock(dstPrefix.toString) {
-          replicate(payload.ingestId, replicationRequest)
+          replicate(payload.ingestId, replicationRequest.request)
         }
-        .map(lockFailed(payload.ingestId, replicationRequest).apply(_))
+        .map(lockFailed(payload.ingestId, replicationRequest.request).apply(_))
 
       _ <- ingestUpdater.send(payload.ingestId, result)
 
@@ -97,11 +96,11 @@ class BagReplicatorWorker[
 
   def replicate(
     ingestId: IngestID,
-    bagReplicationRequest: BagReplicationRequest
+    request: ReplicationRequest
   ): Try[IngestStepResult[ReplicationSummary]] = Try {
     replicator.replicate(
       ingestId = ingestId,
-      request = bagReplicationRequest.request
+      request = request
     ) match {
       case ReplicationSucceeded(summary) => IngestStepSucceeded(summary)
       case ReplicationFailed(summary, e) => IngestFailed(summary, e)
@@ -110,7 +109,7 @@ class BagReplicatorWorker[
 
   def lockFailed(
     ingestId: IngestID,
-    request: BagReplicationRequest
+    request: ReplicationRequest
   ): PartialFunction[Either[FailedLockingServiceOp, IngestStepResult[
     ReplicationSummary
   ]], IngestStepResult[ReplicationSummary]] = {
@@ -121,7 +120,7 @@ class BagReplicatorWorker[
         ReplicationSummary(
           ingestId = ingestId,
           startTime = Instant.now,
-          request = request.request
+          request = request
         ),
         new Throwable(
           s"Unable to lock successfully: $failedLockingServiceOp"
