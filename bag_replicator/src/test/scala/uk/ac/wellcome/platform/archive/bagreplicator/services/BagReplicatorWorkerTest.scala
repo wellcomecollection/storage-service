@@ -12,8 +12,8 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.models.{
-  PrimaryBagReplicationRequest,
-  SecondaryBagReplicationRequest
+  PrimaryReplica,
+  SecondaryReplica
 }
 import uk.ac.wellcome.platform.archive.common.ReplicaCompletePayload
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
@@ -338,7 +338,7 @@ class BagReplicatorWorkerTest
     }
   }
 
-  describe("uses the request builder in the config") {
+  describe("chooses the primary/secondary replica appropriately") {
     it("primary replicas") {
       val outgoing = new MemoryMessageSender()
 
@@ -355,7 +355,7 @@ class BagReplicatorWorkerTest
           withBagReplicatorWorker(
             bucket = dstBucket,
             outgoing = outgoing,
-            requestBuilder = PrimaryBagReplicationRequest.apply
+            replicaType = PrimaryReplica
           ) {
             _.processMessage(payload)
           }.success.value
@@ -384,7 +384,7 @@ class BagReplicatorWorkerTest
           withBagReplicatorWorker(
             bucket = dstBucket,
             outgoing = outgoing,
-            requestBuilder = SecondaryBagReplicationRequest.apply
+            replicaType = SecondaryReplica
           ) {
             _.processMessage(payload)
           }.success.value

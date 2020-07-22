@@ -1,7 +1,15 @@
 package uk.ac.wellcome.platform.archive.common.storage.models
 
-import uk.ac.wellcome.platform.archive.common.ingests.models.AmazonS3StorageProvider
-import uk.ac.wellcome.storage.{Location, Prefix, S3ObjectLocationPrefix}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  AmazonS3StorageProvider,
+  AzureBlobStorageProvider
+}
+import uk.ac.wellcome.storage.{
+  AzureBlobItemLocationPrefix,
+  Location,
+  Prefix,
+  S3ObjectLocationPrefix
+}
 
 sealed trait ReplicaLocation {
   val prefix: Prefix[_ <: Location]
@@ -58,6 +66,16 @@ case class SecondaryS3ReplicaLocation(
   override def toStorageLocation: SecondaryStorageLocation =
     SecondaryStorageLocation(
       provider = AmazonS3StorageProvider,
+      prefix = prefix.toObjectLocationPrefix
+    )
+}
+
+case class SecondaryAzureReplicaLocation(
+  prefix: AzureBlobItemLocationPrefix
+) extends SecondaryReplicaLocation {
+  override def toStorageLocation: SecondaryStorageLocation =
+    SecondaryStorageLocation(
+      provider = AzureBlobStorageProvider,
       prefix = prefix.toObjectLocationPrefix
     )
 }

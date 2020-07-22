@@ -10,7 +10,6 @@ import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.models._
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models._
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
@@ -68,11 +67,9 @@ class BagReplicatorWorker[
         version = payload.version
       )
 
-      replicationRequest = destinationConfig.requestBuilder(
-        ReplicationRequest(
-          srcPrefix = srcPrefix,
-          dstPrefix = dstPrefix
-        )
+      replicationRequest = ReplicationRequest(
+        srcPrefix = srcPrefix,
+        dstPrefix = dstPrefix
       )
 
       result <- lockingService
@@ -87,9 +84,13 @@ class BagReplicatorWorker[
         result,
         ReplicaCompletePayload(
           context = payload.context,
-          srcPrefix = replicationRequest.request.srcPrefix,
-          dstLocation =
-            replicationRequest.toLocation(destinationConfig.provider),
+          srcPrefix = replicationRequest.srcPrefix,
+          dstLocation = replicationRequest
+            .toReplicaLocation(
+              provider = destinationConfig.provider,
+              replicaType = destinationConfig.replicaType
+            )
+            .toStorageLocation,
           version = payload.version
         )
       )
@@ -97,11 +98,11 @@ class BagReplicatorWorker[
 
   def replicate(
     ingestId: IngestID,
-    bagReplicationRequest: BagReplicationRequest
+    request: ReplicationRequest
   ): Try[IngestStepResult[ReplicationSummary]] = Try {
     replicator.replicate(
       ingestId = ingestId,
-      request = bagReplicationRequest.request
+      request = request
     ) match {
       case ReplicationSucceeded(summary) => IngestStepSucceeded(summary)
       case ReplicationFailed(summary, e) => IngestFailed(summary, e)
@@ -110,7 +111,7 @@ class BagReplicatorWorker[
 
   def lockFailed(
     ingestId: IngestID,
-    request: BagReplicationRequest
+    request: ReplicationRequest
   ): PartialFunction[Either[FailedLockingServiceOp, IngestStepResult[
     ReplicationSummary
   ]], IngestStepResult[ReplicationSummary]] = {
@@ -121,7 +122,7 @@ class BagReplicatorWorker[
         ReplicationSummary(
           ingestId = ingestId,
           startTime = Instant.now,
-          request = request.request
+          request = request
         ),
         new Throwable(
           s"Unable to lock successfully: $failedLockingServiceOp"
