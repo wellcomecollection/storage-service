@@ -16,7 +16,10 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.archive.common.generators.StorageLocationGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{AmazonS3StorageProvider, StorageProvider}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  AmazonS3StorageProvider,
+  StorageProvider
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
 import uk.ac.wellcome.storage.{ObjectLocationPrefix, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
