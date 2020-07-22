@@ -15,5 +15,6 @@ trait NewTransfer[SrcLocation <: Location, DstLocation <: Location] {
       case Left(TransferSourceFailure(_, _, e))      => Left(NewTransferSourceFailure(src, dst, e))
       case Left(TransferDestinationFailure(_, _, e)) => Left(NewTransferDestinationFailure(src, dst, e))
       case Left(TransferOverwriteFailure(_, _, e))   => Left(NewTransferOverwriteFailure(src, dst, e))
+      case _ => throw new RuntimeException("This is a PrefixTransferResult, which shouldn't be returned here")
     }
 }
