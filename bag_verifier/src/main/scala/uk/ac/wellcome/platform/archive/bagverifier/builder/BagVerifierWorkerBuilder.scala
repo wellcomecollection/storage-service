@@ -22,7 +22,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.{
   BagRootLocationPayload,
-  ReplicaResultPayload
+  ReplicaCompletePayload
 }
 import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
@@ -103,7 +103,7 @@ object BagVerifierWorkerBuilder {
     mc: MetricsMonitoringClient,
     as: ActorSystem,
     sc: SqsAsyncClient
-  ): BagVerifierWorker[ReplicaResultPayload, ReplicatedBagVerifyContext[
+  ): BagVerifierWorker[ReplicaCompletePayload, ReplicatedBagVerifyContext[
     S3ObjectLocation,
     S3ObjectLocationPrefix
   ], IngestDestination, OutgoingDestination] = {
@@ -114,12 +114,10 @@ object BagVerifierWorkerBuilder {
       outgoingPublisher = outgoingPublisher,
       verifier = verifier,
       metricsNamespace = metricsNamespace,
-      (payload: ReplicaResultPayload) =>
+      (payload: ReplicaCompletePayload) =>
         ReplicatedBagVerifyContext(
-          root = S3ObjectLocationPrefix(
-            payload.replicaResult.storageLocation.prefix
-          ),
-          srcRoot = payload.replicaResult.originalLocation
+          root = S3ObjectLocationPrefix(payload.dstLocation.prefix),
+          srcRoot = payload.srcPrefix
         )
     )
   }

@@ -14,10 +14,10 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   KnownReplicas,
-  ReplicaResult,
+  StorageLocation,
   StorageSpace
 }
-import uk.ac.wellcome.storage.{ObjectLocationPrefix, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 
 sealed trait PipelinePayload {
   val context: PipelineContext
@@ -66,11 +66,9 @@ case class VersionedBagRootPayload(
   version: BagVersion
 ) extends VerifiablePayload
 
-case class ReplicaResultPayload(
+case class ReplicaCompletePayload(
   context: PipelineContext,
-  replicaResult: ReplicaResult,
+  srcPrefix: S3ObjectLocationPrefix,
+  dstLocation: StorageLocation,
   version: BagVersion
-) extends VerifiablePayload {
-  val bagRoot: ObjectLocationPrefix =
-    replicaResult.storageLocation.prefix
-}
+) extends VerifiablePayload

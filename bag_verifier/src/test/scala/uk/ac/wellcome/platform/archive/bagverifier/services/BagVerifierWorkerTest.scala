@@ -1,7 +1,5 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
-import java.time.Instant
-
 import io.circe.Encoder
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.funspec.AnyFunSpec
@@ -20,12 +18,11 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
-  PrimaryStorageLocation,
-  ReplicaResult
+  PrimaryStorageLocation
 }
 import uk.ac.wellcome.platform.archive.common.{
   BagRootLocationPayload,
-  ReplicaResultPayload
+  ReplicaCompletePayload
 }
 
 import scala.util.{Failure, Success, Try}
@@ -116,18 +113,15 @@ class BagVerifierWorkerTest
         val space = createStorageSpace
         val (bagRoot, bagInfo) = createS3BagWith(bucket, space = space)
 
-        val payload = ReplicaResultPayload(
+        val payload = ReplicaCompletePayload(
           context = createPipelineContextWith(
             externalIdentifier = bagInfo.externalIdentifier,
             storageSpace = space
           ),
-          replicaResult = ReplicaResult(
-            originalLocation = bagRoot,
-            storageLocation = PrimaryStorageLocation(
-              provider = AmazonS3StorageProvider,
-              prefix = bagRoot.toObjectLocationPrefix
-            ),
-            timestamp = Instant.now
+          srcPrefix = bagRoot,
+          dstLocation = PrimaryStorageLocation(
+            provider = AmazonS3StorageProvider,
+            prefix = bagRoot.toObjectLocationPrefix
           ),
           version = createBagVersion
         )
@@ -142,7 +136,7 @@ class BagVerifierWorkerTest
 
         result shouldBe a[Success[_]]
 
-        outgoing.getMessages[ReplicaResultPayload] shouldBe Seq(payload)
+        outgoing.getMessages[ReplicaCompletePayload] shouldBe Seq(payload)
       }
     }
   }
@@ -155,18 +149,15 @@ class BagVerifierWorkerTest
         val space = createStorageSpace
         val (bagRoot, bagInfo) = createS3BagWith(bucket, space = space)
 
-        val payload = ReplicaResultPayload(
+        val payload = ReplicaCompletePayload(
           context = createPipelineContextWith(
             externalIdentifier = bagInfo.externalIdentifier,
             storageSpace = space
           ),
-          replicaResult = ReplicaResult(
-            originalLocation = createS3ObjectLocationPrefix,
-            storageLocation = PrimaryStorageLocation(
-              provider = AmazonS3StorageProvider,
-              prefix = bagRoot.toObjectLocationPrefix
-            ),
-            timestamp = Instant.now
+          srcPrefix = createS3ObjectLocationPrefix,
+          dstLocation = PrimaryStorageLocation(
+            provider = AmazonS3StorageProvider,
+            prefix = bagRoot.toObjectLocationPrefix
           ),
           version = createBagVersion
         )

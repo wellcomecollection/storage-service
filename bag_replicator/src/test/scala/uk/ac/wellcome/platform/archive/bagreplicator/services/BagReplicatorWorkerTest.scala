@@ -15,7 +15,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.models.{
   PrimaryBagReplicationRequest,
   SecondaryBagReplicationRequest
 }
-import uk.ac.wellcome.platform.archive.common.ReplicaResultPayload
+import uk.ac.wellcome.platform.archive.common.ReplicaCompletePayload
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
@@ -64,7 +64,7 @@ class BagReplicatorWorkerTest
         result shouldBe a[IngestStepSucceeded[_]]
 
         val receivedMessages =
-          outgoing.getMessages[ReplicaResultPayload]
+          outgoing.getMessages[ReplicaCompletePayload]
 
         receivedMessages.size shouldBe 1
 
@@ -72,7 +72,7 @@ class BagReplicatorWorkerTest
         receivedPayload.context shouldBe payload.context
         receivedPayload.version shouldBe payload.version
 
-        val dstBagRoot = receivedPayload.replicaResult.storageLocation.prefix
+        val dstBagRoot = receivedPayload.dstLocation.prefix
 
         verifyObjectsCopied(
           srcPrefix = srcBagRoot,
@@ -330,10 +330,9 @@ class BagReplicatorWorkerTest
         }.success.value
 
         outgoing
-          .getMessages[ReplicaResultPayload]
+          .getMessages[ReplicaCompletePayload]
           .head
-          .replicaResult
-          .storageLocation
+          .dstLocation
           .provider shouldBe provider
       }
     }
@@ -362,10 +361,9 @@ class BagReplicatorWorkerTest
           }.success.value
 
           outgoing
-            .getMessages[ReplicaResultPayload]
+            .getMessages[ReplicaCompletePayload]
             .head
-            .replicaResult
-            .storageLocation shouldBe a[PrimaryStorageLocation]
+            .dstLocation shouldBe a[PrimaryStorageLocation]
         }
       }
     }
@@ -392,10 +390,9 @@ class BagReplicatorWorkerTest
           }.success.value
 
           outgoing
-            .getMessages[ReplicaResultPayload]
+            .getMessages[ReplicaCompletePayload]
             .head
-            .replicaResult
-            .storageLocation shouldBe a[SecondaryStorageLocation]
+            .dstLocation shouldBe a[SecondaryStorageLocation]
         }
       }
     }

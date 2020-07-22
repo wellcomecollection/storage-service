@@ -14,7 +14,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.{
   KnownReplicasPayload,
   PipelineContext,
-  ReplicaResultPayload
+  ReplicaCompletePayload
 }
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage.{RetryableError, UpdateError, UpdateWriteError}
@@ -32,9 +32,9 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   implicit val mc: MetricsMonitoringClient,
   val as: ActorSystem,
   val sc: SqsAsyncClient,
-  val wd: Decoder[ReplicaResultPayload]
+  val wd: Decoder[ReplicaCompletePayload]
 ) extends IngestStepWorker[
-      ReplicaResultPayload,
+      ReplicaCompletePayload,
       ReplicationAggregationSummary
     ] {
 
@@ -47,12 +47,12 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   ) extends WorkerError
 
   private def getKnownReplicas(
-    replicaResult: ReplicaResult
+    storageLocation: StorageLocation
   ): Either[WorkerError, KnownReplicas] =
     for {
 
       aggregatorRecord <- replicaAggregator
-        .aggregate(replicaResult)
+        .aggregate(storageLocation)
         .left
         .map(AggregationFailure)
 
@@ -64,12 +64,12 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
     } yield sufficientReplicas
 
   override def processMessage(
-    payload: ReplicaResultPayload
+    payload: ReplicaCompletePayload
   ): Try[IngestStepResult[ReplicationAggregationSummary]] = {
-    val replicaPath = ReplicaPath(payload.bagRoot.path)
+    val replicaPath = ReplicaPath(payload.dstLocation.prefix.path)
     val startTime = Instant.now()
 
-    val ingestStep = getKnownReplicas(payload.replicaResult) match {
+    val ingestStep = getKnownReplicas(payload.dstLocation) match {
       // If we get a retryable error when trying to store the replica
       // (for example, a DynamoDB ConditionalUpdate error), we want to retry
       // it rather than failing the entire ingest.
