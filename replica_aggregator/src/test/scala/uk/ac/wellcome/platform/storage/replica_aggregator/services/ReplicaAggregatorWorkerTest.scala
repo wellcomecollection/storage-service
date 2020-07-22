@@ -14,10 +14,7 @@ import uk.ac.wellcome.platform.archive.common.{
 }
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  AmazonS3StorageProvider,
-  Ingest
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
@@ -44,13 +41,12 @@ class ReplicaAggregatorWorkerTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    val dstLocation =
-      createPrimaryLocationWith(provider = AmazonS3StorageProvider)
+    val dstLocation = createPrimaryLocation
 
     val payload = createReplicaCompletePayloadWith(dstLocation = dstLocation)
 
     val expectedKnownReplicas = KnownReplicas(
-      location = dstLocation,
+      location = dstLocation.toStorageLocation,
       replicas = List.empty
     )
 
@@ -70,9 +66,7 @@ class ReplicaAggregatorWorkerTest
 
       val completeAggregation =
         result.summary.asInstanceOf[ReplicationAggregationComplete]
-      completeAggregation.replicaPath shouldBe ReplicaPath(
-        payload.dstLocation.prefix.path
-      )
+      completeAggregation.replicaPath shouldBe ReplicaPath(payload.dstLocation.prefix)
       completeAggregation.knownReplicas shouldBe expectedKnownReplicas
     }
 
@@ -124,15 +118,9 @@ class ReplicaAggregatorWorkerTest
 
       val incompleteAggregation =
         result.summary.asInstanceOf[ReplicationAggregationIncomplete]
-      incompleteAggregation.replicaPath shouldBe ReplicaPath(
-        payload.dstLocation.prefix.path
-      )
+      incompleteAggregation.replicaPath shouldBe ReplicaPath(payload.dstLocation.prefix)
       incompleteAggregation.aggregatorRecord shouldBe AggregatorInternalRecord(
-        location = Some(
-          PrimaryS3ReplicaLocation(
-            prefix = S3ObjectLocationPrefix(payload.dstLocation.prefix)
-          )
-        ),
+        location = Some(payload.dstLocation.asInstanceOf[PrimaryReplicaLocation]),
         replicas = List.empty
       )
       incompleteAggregation.counterError shouldBe NotEnoughReplicas(
@@ -200,7 +188,7 @@ class ReplicaAggregatorWorkerTest
       result.summary shouldBe a[ReplicationAggregationFailed]
 
       val failure = result.summary.asInstanceOf[ReplicationAggregationFailed]
-      failure.replicaPath shouldBe ReplicaPath(payload.dstLocation.prefix.path)
+      failure.replicaPath shouldBe ReplicaPath(payload.dstLocation.prefix)
       failure.e shouldBe throwable
     }
 
@@ -256,7 +244,7 @@ class ReplicaAggregatorWorkerTest
       result.summary shouldBe a[ReplicationAggregationFailed]
 
       val failure = result.summary.asInstanceOf[ReplicationAggregationFailed]
-      failure.replicaPath shouldBe ReplicaPath(payload.dstLocation.prefix.path)
+      failure.replicaPath shouldBe ReplicaPath(payload.dstLocation.prefix)
       failure.e shouldBe a[java.lang.Error]
     }
 
@@ -290,24 +278,9 @@ class ReplicaAggregatorWorkerTest
 
     val path = randomAlphanumeric
     val locations = Seq(
-      createPrimaryLocationWith(
-        prefix = ObjectLocationPrefix(
-          namespace = randomAlphanumeric,
-          path = path
-        )
-      ),
-      createSecondaryLocationWith(
-        prefix = ObjectLocationPrefix(
-          namespace = randomAlphanumeric,
-          path = path
-        )
-      ),
-      createSecondaryLocationWith(
-        prefix = ObjectLocationPrefix(
-          namespace = randomAlphanumeric,
-          path = path
-        )
-      )
+      createPrimaryLocation,
+      createSecondaryLocation,
+      createSecondaryLocation
     )
 
     val payloads = locations.map { dstLocation =>

@@ -47,12 +47,12 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   ) extends WorkerError
 
   private def getKnownReplicas(
-    storageLocation: StorageLocation
+    replicaLocation: ReplicaLocation
   ): Either[WorkerError, KnownReplicas] =
     for {
 
       aggregatorRecord <- replicaAggregator
-        .aggregate(storageLocation)
+        .aggregate(replicaLocation)
         .left
         .map(AggregationFailure)
 
@@ -66,7 +66,7 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   override def processMessage(
     payload: ReplicaCompletePayload
   ): Try[IngestStepResult[ReplicationAggregationSummary]] = {
-    val replicaPath = ReplicaPath(payload.dstLocation.prefix.path)
+    val replicaPath = ReplicaPath(payload.dstLocation.prefix)
     val startTime = Instant.now()
 
     val ingestStep = getKnownReplicas(payload.dstLocation) match {

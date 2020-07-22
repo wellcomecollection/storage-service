@@ -89,8 +89,7 @@ class BagReplicatorWorker[
             .toReplicaLocation(
               provider = destinationConfig.provider,
               replicaType = destinationConfig.replicaType
-            )
-            .toStorageLocation,
+            ),
           version = payload.version
         )
       )

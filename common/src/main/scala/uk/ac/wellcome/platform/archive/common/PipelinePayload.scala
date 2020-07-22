@@ -2,21 +2,9 @@ package uk.ac.wellcome.platform.archive.common
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Ingest,
-  IngestID,
-  IngestType,
-  SourceLocation
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  KnownReplicas,
-  StorageLocation,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestType, SourceLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.{KnownReplicas, ReplicaLocation, StorageSpace}
 import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 
 sealed trait PipelinePayload {
@@ -69,6 +57,6 @@ case class VersionedBagRootPayload(
 case class ReplicaCompletePayload(
   context: PipelineContext,
   srcPrefix: S3ObjectLocationPrefix,
-  dstLocation: StorageLocation,
+  dstLocation: ReplicaLocation,
   version: BagVersion
 ) extends VerifiablePayload
