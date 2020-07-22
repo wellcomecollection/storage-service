@@ -119,16 +119,12 @@ trait PayloadGenerators
     )
 
   def createReplicaCompletePayloadWith(
-    provider: StorageProvider = createProvider
+    dstLocation: StorageLocation = createPrimaryLocation
   ): ReplicaCompletePayload =
     ReplicaCompletePayload(
       context = createPipelineContext,
-      replicaResult = ReplicaResult(
-        originalLocation = createS3ObjectLocationPrefix,
-        storageLocation = createPrimaryLocationWith(
-          provider = provider
-        )
-      ),
+      srcPrefix = createS3ObjectLocationPrefix,
+      dstLocation = dstLocation,
       version = createBagVersion
     )
 

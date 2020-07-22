@@ -4,8 +4,8 @@ import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestType, SourceLocation}
-import uk.ac.wellcome.platform.archive.common.storage.models.{KnownReplicas, ReplicaResult, StorageLocation, StorageSpace}
-import uk.ac.wellcome.storage.{ObjectLocationPrefix, S3ObjectLocationPrefix}
+import uk.ac.wellcome.platform.archive.common.storage.models.{KnownReplicas, StorageLocation, StorageSpace}
+import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 
 sealed trait PipelinePayload {
   val context: PipelineContext
@@ -56,15 +56,7 @@ case class VersionedBagRootPayload(
 
 case class ReplicaCompletePayload(
   context: PipelineContext,
-  replicaResult: ReplicaResult,
+  srcPrefix: S3ObjectLocationPrefix,
+  dstLocation: StorageLocation,
   version: BagVersion
-) extends VerifiablePayload {
-  val bagRoot: ObjectLocationPrefix =
-    replicaResult.storageLocation.prefix
-
-  def srcPrefix: S3ObjectLocationPrefix =
-    replicaResult.originalLocation
-
-  def dstLocation: StorageLocation =
-    replicaResult.storageLocation
-}
+) extends VerifiablePayload

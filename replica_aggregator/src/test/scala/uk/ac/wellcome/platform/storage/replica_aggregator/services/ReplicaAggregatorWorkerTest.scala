@@ -45,12 +45,12 @@ class ReplicaAggregatorWorkerTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    val payload = createReplicaCompletePayloadWith(
-      provider = AmazonS3StorageProvider
-    )
+    val dstLocation = createPrimaryLocationWith(provider = AmazonS3StorageProvider)
+
+    val payload = createReplicaCompletePayloadWith(dstLocation = dstLocation)
 
     val expectedKnownReplicas = KnownReplicas(
-      location = payload.dstLocation.asInstanceOf[PrimaryStorageLocation],
+      location = dstLocation,
       replicas = List.empty
     )
 
@@ -71,7 +71,7 @@ class ReplicaAggregatorWorkerTest
       val completeAggregation =
         result.summary.asInstanceOf[ReplicationAggregationComplete]
       completeAggregation.replicaPath shouldBe ReplicaPath(
-        payload.bagRoot.path
+        payload.dstLocation.prefix.path
       )
       completeAggregation.knownReplicas shouldBe expectedKnownReplicas
     }
@@ -125,12 +125,12 @@ class ReplicaAggregatorWorkerTest
       val incompleteAggregation =
         result.summary.asInstanceOf[ReplicationAggregationIncomplete]
       incompleteAggregation.replicaPath shouldBe ReplicaPath(
-        payload.bagRoot.path
+        payload.dstLocation.prefix.path
       )
       incompleteAggregation.aggregatorRecord shouldBe AggregatorInternalRecord(
         location = Some(
           PrimaryS3ReplicaLocation(
-            prefix = S3ObjectLocationPrefix(payload.bagRoot)
+            prefix = S3ObjectLocationPrefix(payload.dstLocation.prefix)
           )
         ),
         replicas = List.empty
@@ -200,7 +200,7 @@ class ReplicaAggregatorWorkerTest
       result.summary shouldBe a[ReplicationAggregationFailed]
 
       val failure = result.summary.asInstanceOf[ReplicationAggregationFailed]
-      failure.replicaPath shouldBe ReplicaPath(payload.bagRoot.path)
+      failure.replicaPath shouldBe ReplicaPath(payload.dstLocation.prefix.path)
       failure.e shouldBe throwable
     }
 
@@ -256,7 +256,7 @@ class ReplicaAggregatorWorkerTest
       result.summary shouldBe a[ReplicationAggregationFailed]
 
       val failure = result.summary.asInstanceOf[ReplicationAggregationFailed]
-      failure.replicaPath shouldBe ReplicaPath(payload.bagRoot.path)
+      failure.replicaPath shouldBe ReplicaPath(payload.dstLocation.prefix.path)
       failure.e shouldBe a[java.lang.Error]
     }
 
@@ -288,7 +288,6 @@ class ReplicaAggregatorWorkerTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    val version = createBagVersion
     val path = randomAlphanumeric
     val locations = Seq(
       createPrimaryLocationWith(
@@ -311,16 +310,9 @@ class ReplicaAggregatorWorkerTest
       )
     )
 
-    val context = createPipelineContext
-
-    val payloads = locations.map { storageLocation =>
-      ReplicaCompletePayload(
-        context = context,
-        replicaResult = ReplicaResult(
-          originalLocation = createS3ObjectLocationPrefix,
-          storageLocation = storageLocation
-        ),
-        version = version
+    val payloads = locations.map { dstLocation =>
+      createReplicaCompletePayloadWith(
+        dstLocation = dstLocation
       )
     }
 

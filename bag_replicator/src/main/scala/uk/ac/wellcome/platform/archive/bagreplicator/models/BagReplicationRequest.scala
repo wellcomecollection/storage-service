@@ -2,11 +2,7 @@ package uk.ac.wellcome.platform.archive.bagreplicator.models
 
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
 import uk.ac.wellcome.platform.archive.common.ingests.models.StorageProvider
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  PrimaryStorageLocation,
-  ReplicaResult,
-  SecondaryStorageLocation
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryStorageLocation, SecondaryStorageLocation, StorageLocation}
 
 // For bag replicas, we distinguish between primary and secondary replicas.
 //
@@ -29,27 +25,20 @@ sealed trait BagReplicationRequest {
         f"""replica=secondary src=${req.srcPrefix} dst=${req.dstPrefix}"""
     }
 
-  def toResult(provider: StorageProvider): ReplicaResult = {
-    val storageLocation =
-      this match {
-        case PrimaryBagReplicationRequest(req) =>
-          PrimaryStorageLocation(
-            provider = provider,
-            prefix = this.request.dstPrefix
-          )
+  def toLocation(provider: StorageProvider): StorageLocation =
+    this match {
+      case _: PrimaryBagReplicationRequest =>
+        PrimaryStorageLocation(
+          provider = provider,
+          prefix = this.request.dstPrefix
+        )
 
-        case SecondaryBagReplicationRequest(req) =>
-          SecondaryStorageLocation(
-            provider = provider,
-            prefix = this.request.dstPrefix
-          )
-      }
-
-    ReplicaResult(
-      originalLocation = request.srcPrefix,
-      storageLocation = storageLocation
-    )
-  }
+      case _: SecondaryBagReplicationRequest =>
+        SecondaryStorageLocation(
+          provider = provider,
+          prefix = this.request.dstPrefix
+        )
+    }
 }
 
 case class PrimaryBagReplicationRequest(request: ReplicationRequest)

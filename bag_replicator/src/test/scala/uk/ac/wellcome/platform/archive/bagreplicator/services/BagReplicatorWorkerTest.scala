@@ -332,8 +332,7 @@ class BagReplicatorWorkerTest
         outgoing
           .getMessages[ReplicaCompletePayload]
           .head
-          .replicaResult
-          .storageLocation
+          .dstLocation
           .provider shouldBe provider
       }
     }
@@ -364,8 +363,7 @@ class BagReplicatorWorkerTest
           outgoing
             .getMessages[ReplicaCompletePayload]
             .head
-            .replicaResult
-            .storageLocation shouldBe a[PrimaryStorageLocation]
+            .dstLocation shouldBe a[PrimaryStorageLocation]
         }
       }
     }
@@ -394,8 +392,7 @@ class BagReplicatorWorkerTest
           outgoing
             .getMessages[ReplicaCompletePayload]
             .head
-            .replicaResult
-            .storageLocation shouldBe a[SecondaryStorageLocation]
+            .dstLocation shouldBe a[SecondaryStorageLocation]
         }
       }
     }

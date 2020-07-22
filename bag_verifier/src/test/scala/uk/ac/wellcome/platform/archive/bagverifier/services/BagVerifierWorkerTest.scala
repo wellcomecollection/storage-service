@@ -18,8 +18,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
-  PrimaryStorageLocation,
-  ReplicaResult
+  PrimaryStorageLocation
 }
 import uk.ac.wellcome.platform.archive.common.{
   BagRootLocationPayload,
@@ -119,12 +118,10 @@ class BagVerifierWorkerTest
             externalIdentifier = bagInfo.externalIdentifier,
             storageSpace = space
           ),
-          replicaResult = ReplicaResult(
-            originalLocation = bagRoot,
-            storageLocation = PrimaryStorageLocation(
-              provider = AmazonS3StorageProvider,
-              prefix = bagRoot.toObjectLocationPrefix
-            )
+          srcPrefix = bagRoot,
+          dstLocation = PrimaryStorageLocation(
+            provider = AmazonS3StorageProvider,
+            prefix = bagRoot.toObjectLocationPrefix
           ),
           version = createBagVersion
         )
@@ -157,12 +154,10 @@ class BagVerifierWorkerTest
             externalIdentifier = bagInfo.externalIdentifier,
             storageSpace = space
           ),
-          replicaResult = ReplicaResult(
-            originalLocation = createS3ObjectLocationPrefix,
-            storageLocation = PrimaryStorageLocation(
-              provider = AmazonS3StorageProvider,
-              prefix = bagRoot.toObjectLocationPrefix
-            )
+          srcPrefix = createS3ObjectLocationPrefix,
+          dstLocation = PrimaryStorageLocation(
+            provider = AmazonS3StorageProvider,
+            prefix = bagRoot.toObjectLocationPrefix
           ),
           version = createBagVersion
         )

@@ -66,7 +66,7 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   override def processMessage(
     payload: ReplicaCompletePayload
   ): Try[IngestStepResult[ReplicationAggregationSummary]] = {
-    val replicaPath = ReplicaPath(payload.bagRoot.path)
+    val replicaPath = ReplicaPath(payload.dstLocation.prefix.path)
     val startTime = Instant.now()
 
     val ingestStep = getKnownReplicas(payload.dstLocation) match {
