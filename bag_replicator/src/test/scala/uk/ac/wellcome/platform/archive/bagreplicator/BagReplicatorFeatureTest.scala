@@ -71,7 +71,7 @@ class BagReplicatorFeatureTest
               receivedPayload.context shouldBe payload.context
               receivedPayload.version shouldBe payload.version
 
-              receivedPayload.replicaResult.storageLocation shouldBe PrimaryStorageLocation(
+              receivedPayload.dstLocation shouldBe PrimaryStorageLocation(
                 provider = provider,
                 prefix = expectedDst
               )

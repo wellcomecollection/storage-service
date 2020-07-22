@@ -69,7 +69,7 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
     val replicaPath = ReplicaPath(payload.bagRoot.path)
     val startTime = Instant.now()
 
-    val ingestStep = getKnownReplicas(payload.replicaResult.storageLocation) match {
+    val ingestStep = getKnownReplicas(payload.dstLocation) match {
       // If we get a retryable error when trying to store the replica
       // (for example, a DynamoDB ConditionalUpdate error), we want to retry
       // it rather than failing the entire ingest.

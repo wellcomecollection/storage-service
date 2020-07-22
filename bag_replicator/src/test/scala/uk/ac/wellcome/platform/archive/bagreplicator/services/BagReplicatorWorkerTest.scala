@@ -72,7 +72,7 @@ class BagReplicatorWorkerTest
         receivedPayload.context shouldBe payload.context
         receivedPayload.version shouldBe payload.version
 
-        val dstBagRoot = receivedPayload.replicaResult.storageLocation.prefix
+        val dstBagRoot = receivedPayload.dstLocation.prefix
 
         verifyObjectsCopied(
           srcPrefix = srcBagRoot,

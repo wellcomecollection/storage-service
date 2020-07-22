@@ -116,10 +116,8 @@ object BagVerifierWorkerBuilder {
       metricsNamespace = metricsNamespace,
       (payload: ReplicaResultPayload) =>
         ReplicatedBagVerifyContext(
-          root = S3ObjectLocationPrefix(
-            payload.replicaResult.storageLocation.prefix
-          ),
-          srcRoot = payload.replicaResult.originalLocation
+          root = S3ObjectLocationPrefix(payload.dstLocation.prefix),
+          srcRoot = payload.srcPrefix
         )
     )
   }

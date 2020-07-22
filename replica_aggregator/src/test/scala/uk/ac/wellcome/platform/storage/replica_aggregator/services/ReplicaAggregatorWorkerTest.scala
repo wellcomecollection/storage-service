@@ -50,10 +50,7 @@ class ReplicaAggregatorWorkerTest
     )
 
     val expectedKnownReplicas = KnownReplicas(
-      location = PrimaryStorageLocation(
-        provider = payload.replicaResult.storageLocation.provider,
-        prefix = payload.bagRoot
-      ),
+      location = payload.dstLocation.asInstanceOf[PrimaryStorageLocation],
       replicas = List.empty
     )
 
