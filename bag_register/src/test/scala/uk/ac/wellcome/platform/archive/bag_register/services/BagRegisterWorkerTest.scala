@@ -10,7 +10,10 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, PayloadGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagInfoGenerators,
+  PayloadGenerators
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.AmazonS3StorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models._
 
@@ -126,13 +129,14 @@ class BagRegisterWorkerTest
         knownReplicas = knownReplicas
       )
 
-      withBagRegisterWorker(registrationNotifications = registrationNotifications) {
-        worker =>
-          val future = worker.processPayload(payload)
+      withBagRegisterWorker(
+        registrationNotifications = registrationNotifications
+      ) { worker =>
+        val future = worker.processPayload(payload)
 
-          whenReady(future) {
-            _ shouldBe a[IngestCompleted[_]]
-          }
+        whenReady(future) {
+          _ shouldBe a[IngestCompleted[_]]
+        }
       }
 
       registrationNotifications
@@ -182,8 +186,7 @@ class BagRegisterWorkerTest
       )
 
       val knownReplicas2 = KnownReplicas(
-        location =
-          PrimaryS3ReplicaLocation(prefix = bagRoot2).toStorageLocation,
+        location = PrimaryS3ReplicaLocation(prefix = bagRoot2).toStorageLocation,
         replicas = List.empty
       )
 
@@ -278,12 +281,14 @@ class BagRegisterWorkerTest
       val storageManifest =
         storageManifestDao.getLatest(bagId).right.value
 
-      storageManifest.location shouldBe primaryLocation.copy(
-        prefix = bagRoot
-          .copy(
-            keyPrefix = bagRoot.keyPrefix.stripSuffix(s"/$version")
-          )
-      ).toStorageLocation
+      storageManifest.location shouldBe primaryLocation
+        .copy(
+          prefix = bagRoot
+            .copy(
+              keyPrefix = bagRoot.keyPrefix.stripSuffix(s"/$version")
+            )
+        )
+        .toStorageLocation
 
       storageManifest.replicaLocations shouldBe
         replicas.map { secondaryLocation =>

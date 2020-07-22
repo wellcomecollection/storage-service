@@ -11,7 +11,10 @@ import software.amazon.awssdk.services.sqs.model.QueueAttributeName
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
-import uk.ac.wellcome.platform.archive.bagreplicator.models.{PrimaryReplica, SecondaryReplica}
+import uk.ac.wellcome.platform.archive.bagreplicator.models.{
+  PrimaryReplica,
+  SecondaryReplica
+}
 import uk.ac.wellcome.platform.archive.common.ReplicaCompletePayload
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
@@ -71,7 +74,8 @@ class BagReplicatorWorkerTest
         receivedPayload.context shouldBe payload.context
         receivedPayload.version shouldBe payload.version
 
-        val dstBagRoot = receivedPayload.dstLocation.prefix.asInstanceOf[S3ObjectLocationPrefix]
+        val dstBagRoot = receivedPayload.dstLocation.prefix
+          .asInstanceOf[S3ObjectLocationPrefix]
 
         verifyObjectsCopied(
           srcPrefix = srcBagRoot,

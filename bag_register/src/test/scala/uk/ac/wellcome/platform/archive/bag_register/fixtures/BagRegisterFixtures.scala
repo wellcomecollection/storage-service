@@ -10,15 +10,29 @@ import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.messaging.sqs.SQSClientFactory
 import uk.ac.wellcome.platform.archive.bag_register.services.s3.S3StorageManifestService
-import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
+import uk.ac.wellcome.platform.archive.bag_register.services.{
+  BagRegisterWorker,
+  Register
+}
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagInfo,
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures._
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
-import uk.ac.wellcome.platform.archive.common.generators.{ExternalIdentifierGenerators, StorageSpaceGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  ExternalIdentifierGenerators,
+  StorageSpaceGenerators
+}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestStatusUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestID,
+  IngestStatusUpdate
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.storage._
@@ -137,7 +151,8 @@ trait BagRegisterFixtures
     implicit bucket: Bucket
   ): (S3ObjectLocationPrefix, BagInfo) = {
     implicit val streamStore: NewS3StreamStore = new NewS3StreamStore()
-    implicit val typedStore: NewS3TypedStore[String] = new NewS3TypedStore[String]()
+    implicit val typedStore: NewS3TypedStore[String] =
+      new NewS3TypedStore[String]()
 
     val (bagObjects, bagRoot, bagInfo) =
       createBagContentsWith(

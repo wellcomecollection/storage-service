@@ -7,7 +7,10 @@ import java.util.UUID
 
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.platform.archive.common.bagit.models._
-import uk.ac.wellcome.platform.archive.common.ingests.models.{IngestID, StorageProvider}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  IngestID,
+  StorageProvider
+}
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.generators.RandomThings
 

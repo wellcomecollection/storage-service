@@ -7,11 +7,20 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.KnownReplicasPayload
-import uk.ac.wellcome.platform.archive.common.generators.{PayloadGenerators, ReplicaLocationGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  PayloadGenerators,
+  ReplicaLocationGenerators
+}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.storage.models.{KnownReplicas, PrimaryS3ReplicaLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  KnownReplicas,
+  PrimaryS3ReplicaLocation
+}
 import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.{AggregatorInternalRecord, ReplicaPath}
+import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
+  AggregatorInternalRecord,
+  ReplicaPath
+}
 import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 

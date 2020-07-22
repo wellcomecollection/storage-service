@@ -24,7 +24,10 @@ import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.listing.s3.S3ObjectSummaryListing
-import uk.ac.wellcome.storage.locking.memory.{MemoryLockDao, MemoryLockDaoFixtures}
+import uk.ac.wellcome.storage.locking.memory.{
+  MemoryLockDao,
+  MemoryLockDaoFixtures
+}
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -128,7 +131,8 @@ trait BagReplicatorFixtures
       _.getETag
     }
 
-    val destinationItems = listing.list(dstPrefix.toObjectLocationPrefix).right.value
+    val destinationItems =
+      listing.list(dstPrefix.toObjectLocationPrefix).right.value
     val destinationKeyEtags = destinationItems.map {
       _.getETag
     }

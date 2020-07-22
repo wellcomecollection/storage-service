@@ -2,7 +2,12 @@ package uk.ac.wellcome.platform.storage.replica_aggregator.models
 
 import io.circe.{Decoder, Encoder, HCursor, Json}
 import org.scanamo.DynamoFormat
-import uk.ac.wellcome.storage.{AzureBlobItemLocationPrefix, Location, Prefix, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.{
+  AzureBlobItemLocationPrefix,
+  Location,
+  Prefix,
+  S3ObjectLocationPrefix
+}
 
 case class ReplicaPath(underlying: String) extends AnyVal {
   override def toString: String = underlying
