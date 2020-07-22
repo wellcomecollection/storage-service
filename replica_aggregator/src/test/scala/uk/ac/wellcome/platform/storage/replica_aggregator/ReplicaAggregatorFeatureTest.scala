@@ -39,7 +39,9 @@ class ReplicaAggregatorFeatureTest
       val outgoing = new MemoryMessageSender()
 
       val payload = createReplicaCompletePayloadWith(
-        provider = AmazonS3StorageProvider
+        dstLocation = createPrimaryLocationWith(
+          provider = AmazonS3StorageProvider
+        )
       )
       val versionedStore =
         MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](Map.empty)
@@ -63,7 +65,7 @@ class ReplicaAggregatorFeatureTest
           )
 
           val expectedReplicaPath =
-            ReplicaPath(payload.bagRoot.path)
+            ReplicaPath(payload.dstLocation.prefix.path)
 
           val stored =
             versionedStore.get(id = Version(expectedReplicaPath, 0)).right.value
@@ -72,7 +74,7 @@ class ReplicaAggregatorFeatureTest
             payload.dstLocation.asInstanceOf[PrimaryStorageLocation]
 
           val primaryReplicaLocation = PrimaryS3ReplicaLocation(
-            prefix = S3ObjectLocationPrefix(payload.bagRoot)
+            prefix = S3ObjectLocationPrefix(payload.dstLocation.prefix)
           )
 
           stored.identifiedT.location shouldBe Some(primaryReplicaLocation)

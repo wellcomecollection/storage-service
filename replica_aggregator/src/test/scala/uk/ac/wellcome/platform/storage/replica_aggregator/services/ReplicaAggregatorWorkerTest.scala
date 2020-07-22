@@ -10,7 +10,6 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.{
   KnownReplicasPayload,
-  ReplicaCompletePayload,
   VersionedBagRootPayload
 }
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
