@@ -5,18 +5,14 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
-import uk.ac.wellcome.platform.archive.bag_register.services.memory.MemoryStorageManifestService
+import uk.ac.wellcome.platform.archive.bag_register.services.s3.S3StorageManifestService
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
-import uk.ac.wellcome.platform.archive.common.generators.{
-  StorageLocationGenerators,
-  StorageSpaceGenerators
-}
+import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
+import uk.ac.wellcome.platform.archive.common.generators.{StorageLocationGenerators, StorageSpaceGenerators}
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestCompleted
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
-import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -32,87 +28,80 @@ class RegisterTest
     with IntegrationPatience {
 
   it("registers a bag with primary and secondary locations") {
-    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
-      MemoryStreamStore[MemoryLocation]()
-
-    val bagReader = new MemoryBagReader()
-
-    val storageManifestService = MemoryStorageManifestService()
-
     val storageManifestDao = createStorageManifestDao()
 
     val space = createStorageSpace
     val version = createBagVersion
 
-    val (bagRoot, bagInfo) = createRegisterBagWith(
-      space = space,
-      version = version
-    )
-
-    val primaryLocation = createPrimaryLocationWith(
-      prefix = bagRoot.toObjectLocationPrefix
-    )
-
-    val replicas = collectionOf(min = 1) {
-      createSecondaryLocationWith(
-        prefix =
-          bagRoot.copy(namespace = randomAlphanumeric).toObjectLocationPrefix
-      )
-    }
-
-    val ingestId = createIngestID
-
-    withBagTrackerClient(storageManifestDao) { bagTrackerClient =>
-      val register = new Register(
-        bagReader = bagReader,
-        bagTrackerClient = bagTrackerClient,
-        storageManifestService = storageManifestService,
-        toPrefix = (prefix: ObjectLocationPrefix) =>
-          MemoryLocationPrefix(prefix.namespace, prefix.path)
+    withLocalS3Bucket { implicit bucket =>
+      val (bagRoot, bagInfo) = createRegisterBagWith(
+        space = space,
+        version = version
       )
 
-      val future = register.update(
-        ingestId = ingestId,
-        location = primaryLocation,
-        replicas = replicas,
-        version = version,
+      val primaryLocation = createPrimaryLocationWith(
+        prefix = bagRoot.toObjectLocationPrefix
+      )
+
+      val replicas = collectionOf(min = 1) {
+        createSecondaryLocationWith(
+          prefix =
+            bagRoot.copy(bucket = createBucketName).toObjectLocationPrefix
+        )
+      }
+
+      val ingestId = createIngestID
+
+      withBagTrackerClient(storageManifestDao) { bagTrackerClient =>
+        val register = new Register(
+          bagReader = new S3BagReader(),
+          bagTrackerClient = bagTrackerClient,
+          storageManifestService = new S3StorageManifestService(),
+          toPrefix = (prefix: ObjectLocationPrefix) =>
+            S3ObjectLocationPrefix(prefix.namespace, prefix.path)
+        )
+
+        val future = register.update(
+          ingestId = ingestId,
+          location = primaryLocation,
+          replicas = replicas,
+          version = version,
+          space = space,
+          externalIdentifier = bagInfo.externalIdentifier
+        )
+
+        whenReady(future) { result =>
+          result shouldBe a[IngestCompleted[_]]
+
+          val summary = result.asInstanceOf[IngestCompleted[_]].summary
+          summary.asInstanceOf[RegistrationSummary].ingestId shouldBe ingestId
+        }
+      }
+
+      // Check it stores all the locations on the bag.
+      val bagId = BagId(
         space = space,
         externalIdentifier = bagInfo.externalIdentifier
       )
 
-      whenReady(future) { result =>
-        result shouldBe a[IngestCompleted[_]]
+      val manifest =
+        storageManifestDao.getLatest(id = bagId).right.value
 
-        val summary = result.asInstanceOf[IngestCompleted[_]].summary
-        summary.asInstanceOf[RegistrationSummary].ingestId shouldBe ingestId
-      }
+      manifest.location shouldBe primaryLocation.copy(
+        prefix = bagRoot
+          .copy(keyPrefix = bagRoot.keyPrefix.stripSuffix(s"/$version"))
+          .toObjectLocationPrefix
+      )
+
+      manifest.replicaLocations shouldBe
+        replicas.map { secondaryLocation =>
+          val prefix = secondaryLocation.prefix
+
+          secondaryLocation.copy(
+            prefix = prefix
+              .copy(path = prefix.path.stripSuffix(s"/$version"))
+          )
+        }
     }
-
-    // Check it stores all the locations on the bag.
-    val bagId = BagId(
-      space = space,
-      externalIdentifier = bagInfo.externalIdentifier
-    )
-
-    val manifest =
-      storageManifestDao.getLatest(id = bagId).right.value
-
-    manifest.location shouldBe primaryLocation.copy(
-      prefix = bagRoot
-        .copy(
-          pathPrefix = bagRoot.pathPrefix.stripSuffix(s"/$version")
-        )
-        .toObjectLocationPrefix
-    )
-
-    manifest.replicaLocations shouldBe
-      replicas.map { secondaryLocation =>
-        val prefix = secondaryLocation.prefix
-
-        secondaryLocation.copy(
-          prefix = prefix
-            .copy(path = prefix.path.stripSuffix(s"/$version"))
-        )
-      }
   }
 }

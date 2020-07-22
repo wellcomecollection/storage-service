@@ -9,40 +9,22 @@ import uk.ac.wellcome.messaging.fixtures.SQS.{Queue, QueuePair}
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.messaging.sqs.SQSClientFactory
-import uk.ac.wellcome.platform.archive.bag_register.services.memory.MemoryStorageManifestService
-import uk.ac.wellcome.platform.archive.bag_register.services.{
-  BagRegisterWorker,
-  Register
-}
+import uk.ac.wellcome.platform.archive.bag_register.services.s3.S3StorageManifestService
+import uk.ac.wellcome.platform.archive.bag_register.services.{BagRegisterWorker, Register}
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagInfo,
-  BagVersion,
-  ExternalIdentifier
-}
-import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures._
-import uk.ac.wellcome.platform.archive.common.fixtures.memory.MemoryBagBuilder
-import uk.ac.wellcome.platform.archive.common.generators.{
-  ExternalIdentifierGenerators,
-  StorageSpaceGenerators
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
+import uk.ac.wellcome.platform.archive.common.generators.{ExternalIdentifierGenerators, StorageSpaceGenerators}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  Ingest,
-  IngestID,
-  IngestStatusUpdate
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestStatusUpdate}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
-import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemorySizeFinder
 import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
-import uk.ac.wellcome.storage.store.memory.{
-  MemoryStore,
-  MemoryStreamStore,
-  MemoryTypedStore
-}
+import uk.ac.wellcome.storage.store.s3.{NewS3StreamStore, NewS3TypedStore}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -57,7 +39,7 @@ trait BagRegisterFixtures
     with BagTrackerFixtures
     with StringNamespaceFixtures
     with StorageSpaceGenerators
-    with MemoryBagBuilder {
+    with S3BagBuilder {
 
   override implicit val asyncSqsClient: SqsAsyncClient =
     SQSClientFactory.createAsyncClient(
@@ -82,18 +64,12 @@ trait BagRegisterFixtures
     storageManifestDao: StorageManifestDao = createStorageManifestDao()
   )(
     testWith: TestWith[BagRegisterWorker[String, String], R]
-  )(implicit streamStore: MemoryStreamStore[MemoryLocation]): R =
+  ): R =
     withActorSystem { implicit actorSystem =>
       withFakeMonitoringClient() { implicit monitoringClient =>
-        val bagReader = new MemoryBagReader()
+        val bagReader = new S3BagReader()
 
-        implicit val memoryStore: MemoryStore[MemoryLocation, Array[Byte]] =
-          streamStore.memoryStore
-
-        implicit val sizeFinder: MemorySizeFinder[MemoryLocation] =
-          new MemorySizeFinder[MemoryLocation](memoryStore)
-
-        val storageManifestService = new MemoryStorageManifestService()
+        val storageManifestService = new S3StorageManifestService()
 
         withBagTrackerClient(storageManifestDao) { bagTrackerClient =>
           val register = new Register(
@@ -101,7 +77,7 @@ trait BagRegisterFixtures
             bagTrackerClient = bagTrackerClient,
             storageManifestService = storageManifestService,
             toPrefix = (prefix: ObjectLocationPrefix) =>
-              MemoryLocationPrefix(prefix.namespace, prefix.path)
+              S3ObjectLocationPrefix(prefix.namespace, prefix.path)
           )
 
           val service = new BagRegisterWorker(
@@ -158,12 +134,10 @@ trait BagRegisterFixtures
     version: BagVersion,
     dataFileCount: Int = randomInt(1, 15)
   )(
-    implicit
-    namespace: String = randomAlphanumeric,
-    streamStore: MemoryStreamStore[MemoryLocation]
-  ): (MemoryLocationPrefix, BagInfo) = {
-    implicit val typedStore: MemoryTypedStore[MemoryLocation, String] =
-      new MemoryTypedStore[MemoryLocation, String]()
+    implicit bucket: Bucket
+  ): (S3ObjectLocationPrefix, BagInfo) = {
+    implicit val streamStore: NewS3StreamStore = new NewS3StreamStore()
+    implicit val typedStore: NewS3TypedStore[String] = new NewS3TypedStore[String]()
 
     val (bagObjects, bagRoot, bagInfo) =
       createBagContentsWith(
