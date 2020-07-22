@@ -47,12 +47,12 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   ) extends WorkerError
 
   private def getKnownReplicas(
-    replicaResult: ReplicaResult
+    storageLocation: StorageLocation
   ): Either[WorkerError, KnownReplicas] =
     for {
 
       aggregatorRecord <- replicaAggregator
-        .aggregate(replicaResult.storageLocation)
+        .aggregate(storageLocation)
         .left
         .map(AggregationFailure)
 
@@ -69,7 +69,7 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
     val replicaPath = ReplicaPath(payload.bagRoot.path)
     val startTime = Instant.now()
 
-    val ingestStep = getKnownReplicas(payload.replicaResult) match {
+    val ingestStep = getKnownReplicas(payload.replicaResult.storageLocation) match {
       // If we get a retryable error when trying to store the replica
       // (for example, a DynamoDB ConditionalUpdate error), we want to retry
       // it rather than failing the entire ingest.
