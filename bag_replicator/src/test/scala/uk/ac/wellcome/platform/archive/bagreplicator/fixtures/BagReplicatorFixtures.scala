@@ -22,7 +22,10 @@ import uk.ac.wellcome.storage.{ObjectLocationPrefix, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.listing.s3.S3ObjectSummaryListing
-import uk.ac.wellcome.storage.locking.memory.{MemoryLockDao, MemoryLockDaoFixtures}
+import uk.ac.wellcome.storage.locking.memory.{
+  MemoryLockDao,
+  MemoryLockDaoFixtures
+}
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -108,8 +111,7 @@ trait BagReplicatorFixtures
   def createReplicatorDestinationConfigWith(
     bucket: Bucket,
     provider: StorageProvider = createProvider,
-    replicaType: ReplicaType =
-      chooseFrom(Seq(PrimaryReplica, SecondaryReplica))
+    replicaType: ReplicaType = chooseFrom(Seq(PrimaryReplica, SecondaryReplica))
   ): ReplicatorDestinationConfig =
     ReplicatorDestinationConfig(
       namespace = bucket.name,

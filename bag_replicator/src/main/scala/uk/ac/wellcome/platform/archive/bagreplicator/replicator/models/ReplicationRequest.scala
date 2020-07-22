@@ -26,7 +26,10 @@ case class ReplicationRequest(
   srcPrefix: S3ObjectLocationPrefix,
   dstPrefix: ObjectLocationPrefix
 ) {
-  def toReplicaLocation(provider: StorageProvider, replicaType: ReplicaType): ReplicaLocation =
+  def toReplicaLocation(
+    provider: StorageProvider,
+    replicaType: ReplicaType
+  ): ReplicaLocation =
     (provider, replicaType) match {
       case (AmazonS3StorageProvider, PrimaryReplica) =>
         PrimaryS3ReplicaLocation(
@@ -43,8 +46,9 @@ case class ReplicationRequest(
           prefix = AzureBlobItemLocationPrefix(dstPrefix)
         )
 
-      case _ => throw new IllegalArgumentException(
-        s"Unsupported provider/replica type: provider=$provider, replica type=$replicaType"
-      )
+      case _ =>
+        throw new IllegalArgumentException(
+          s"Unsupported provider/replica type: provider=$provider, replica type=$replicaType"
+        )
     }
 }
