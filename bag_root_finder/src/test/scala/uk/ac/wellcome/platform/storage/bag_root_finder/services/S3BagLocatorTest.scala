@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.storage.bag_root_finder.services
 import org.scalatest.Assertion
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.storage.{ObjectLocationPrefix, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 
@@ -175,14 +175,4 @@ class S3BagLocatorTest extends AnyFunSpec with Matchers with NewS3Fixtures {
     keys.foreach { k =>
       s3Client.putObject(bucket.name, k, "example object")
     }
-
-  // TODO: Move this into ObjectLocationgenerators
-  def createObjectLocationPrefixWith(
-    bucket: Bucket,
-    path: String
-  ): ObjectLocationPrefix =
-    ObjectLocationPrefix(
-      namespace = bucket.name,
-      path = path
-    )
 }
