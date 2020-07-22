@@ -199,3 +199,11 @@ case class AzureBlobItemLocationPrefix(
       namePrefix = PathJoiner.join(namePrefix, parts: _*)
     )
 }
+
+case object AzureBlobItemLocationPrefix {
+  def apply(location: ObjectLocationPrefix): AzureBlobItemLocationPrefix =
+    AzureBlobItemLocationPrefix(
+      container = location.namespace,
+      namePrefix = location.path
+    )
+}
