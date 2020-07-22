@@ -2,23 +2,9 @@ package uk.ac.wellcome.platform.archive.bagreplicator.replicator.models
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.bagreplicator.models.{
-  PrimaryReplica,
-  SecondaryReplica
-}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  AmazonS3StorageProvider,
-  AzureBlobStorageProvider
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  PrimaryS3ReplicaLocation,
-  SecondaryAzureReplicaLocation,
-  SecondaryS3ReplicaLocation
-}
-import uk.ac.wellcome.storage.{
-  AzureBlobItemLocationPrefix,
-  S3ObjectLocationPrefix
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.models.{PrimaryReplica, SecondaryReplica}
+import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryS3ReplicaLocation, SecondaryAzureReplicaLocation, SecondaryS3ReplicaLocation}
+import uk.ac.wellcome.storage.AzureBlobItemLocationPrefix
 import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
 
 class ReplicationRequestTest
@@ -26,46 +12,37 @@ class ReplicationRequestTest
     with Matchers
     with NewS3Fixtures {
   describe("toReplicaLocation") {
-    val dstPrefix = createObjectLocationPrefix
+    val s3Prefix = createS3ObjectLocationPrefix
+    val azurePrefix = AzureBlobItemLocationPrefix(
+      container = randomAlphanumeric,
+      namePrefix = randomAlphanumeric
+    )
 
-    val request = ReplicationRequest(
+    val s3Request = ReplicationRequest(
       srcPrefix = createS3ObjectLocationPrefix,
-      dstPrefix = dstPrefix
+      dstPrefix = s3Prefix
+    )
+
+    val azureRequest = ReplicationRequest(
+      srcPrefix = createS3ObjectLocationPrefix,
+      dstPrefix = azurePrefix
     )
 
     it("a primary S3 replica") {
-      request.toReplicaLocation(
-        provider = AmazonS3StorageProvider,
-        replicaType = PrimaryReplica
-      ) shouldBe PrimaryS3ReplicaLocation(
-        prefix = S3ObjectLocationPrefix(dstPrefix)
-      )
+      s3Request.toReplicaLocation(replicaType = PrimaryReplica) shouldBe PrimaryS3ReplicaLocation(prefix = s3Prefix)
     }
 
     it("a secondary S3 replica") {
-      request.toReplicaLocation(
-        provider = AmazonS3StorageProvider,
-        replicaType = SecondaryReplica
-      ) shouldBe SecondaryS3ReplicaLocation(
-        prefix = S3ObjectLocationPrefix(dstPrefix)
-      )
+      s3Request.toReplicaLocation(replicaType = SecondaryReplica) shouldBe SecondaryS3ReplicaLocation(prefix = s3Prefix)
     }
 
     it("a secondary Azure replica") {
-      request.toReplicaLocation(
-        provider = AzureBlobStorageProvider,
-        replicaType = SecondaryReplica
-      ) shouldBe SecondaryAzureReplicaLocation(
-        prefix = AzureBlobItemLocationPrefix(dstPrefix)
-      )
+      azureRequest.toReplicaLocation(replicaType = SecondaryReplica) shouldBe SecondaryAzureReplicaLocation(prefix = azurePrefix)
     }
 
     it("does not allow a primary Azure replica") {
       intercept[IllegalArgumentException] {
-        request.toReplicaLocation(
-          provider = AzureBlobStorageProvider,
-          replicaType = PrimaryReplica
-        )
+        azureRequest.toReplicaLocation(replicaType = PrimaryReplica)
       }
     }
   }

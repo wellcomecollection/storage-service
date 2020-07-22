@@ -57,9 +57,6 @@ object Main extends WellcomeTypesafeApp {
     val operationName =
       OperationNameBuilder.getName(config)
 
-    val lockingService =
-      new DynamoLockingService[IngestStepResult[ReplicationSummary[_]], Try]()
-
     val provider =
       StorageProvider.apply(config.requireString("bag-replicator.provider"))
 

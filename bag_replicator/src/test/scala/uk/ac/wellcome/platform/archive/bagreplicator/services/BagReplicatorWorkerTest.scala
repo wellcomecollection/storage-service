@@ -3,23 +3,19 @@ package uk.ac.wellcome.platform.archive.bagreplicator.services
 import java.nio.file.Paths
 import java.util.UUID
 
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.TryValues
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import software.amazon.awssdk.services.sqs.model.QueueAttributeName
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
-import uk.ac.wellcome.platform.archive.bagreplicator.models.{
-  PrimaryReplica,
-  SecondaryReplica
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.models.{PrimaryReplica, SecondaryReplica}
 import uk.ac.wellcome.platform.archive.common.ReplicaCompletePayload
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.AmazonS3StorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.locking.memory.MemoryLockDao
@@ -146,7 +142,7 @@ class BagReplicatorWorkerTest
                 payload.version.toString
               )
               .toString
-          dstBagLocation.path shouldBe expectedPath
+          dstBagLocation.keyPrefix shouldBe expectedPath
         }
       }
     }
@@ -305,37 +301,6 @@ class BagReplicatorWorkerTest
             }
           }
         }
-      }
-    }
-  }
-
-  it("uses the provider configured in the destination config") {
-    val provider = AmazonS3StorageProvider
-
-    val outgoing = new MemoryMessageSender()
-
-    withLocalS3Bucket { srcBucket =>
-      val (srcBagRoot, _) = createS3BagWith(
-        bucket = srcBucket
-      )
-
-      val payload = createVersionedBagRootPayloadWith(
-        bagRoot = srcBagRoot
-      )
-
-      withLocalS3Bucket { dstBucket =>
-        withBagReplicatorWorker(
-          bucket = dstBucket,
-          outgoing = outgoing,
-          provider = provider
-        ) {
-          _.processMessage(payload)
-        }.success.value
-
-        outgoing
-          .getMessages[ReplicaCompletePayload]
-          .head
-          .dstLocation shouldBe a[S3ReplicaLocation]
       }
     }
   }
