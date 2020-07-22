@@ -2,7 +2,11 @@ package uk.ac.wellcome.platform.archive.bagreplicator.models
 
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
 import uk.ac.wellcome.platform.archive.common.ingests.models.StorageProvider
-import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryStorageLocation, SecondaryStorageLocation, StorageLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  PrimaryStorageLocation,
+  SecondaryStorageLocation,
+  StorageLocation
+}
 
 // For bag replicas, we distinguish between primary and secondary replicas.
 //

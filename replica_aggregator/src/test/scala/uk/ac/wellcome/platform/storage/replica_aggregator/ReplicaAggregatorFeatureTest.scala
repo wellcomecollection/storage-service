@@ -68,7 +68,8 @@ class ReplicaAggregatorFeatureTest
           val stored =
             versionedStore.get(id = Version(expectedReplicaPath, 0)).right.value
 
-          val primaryLocation = payload.dstLocation.asInstanceOf[PrimaryStorageLocation]
+          val primaryLocation =
+            payload.dstLocation.asInstanceOf[PrimaryStorageLocation]
 
           val primaryReplicaLocation = PrimaryS3ReplicaLocation(
             prefix = S3ObjectLocationPrefix(payload.bagRoot)

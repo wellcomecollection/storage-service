@@ -121,7 +121,9 @@ class ReplicaAggregatorTest
     val results =
       withAggregator(versionedStore) { aggregator =>
         locations
-          .map { loc => aggregator.aggregate(loc.toStorageLocation) }
+          .map { loc =>
+            aggregator.aggregate(loc.toStorageLocation)
+          }
           .map { _.right.value }
       }
 
@@ -170,7 +172,9 @@ class ReplicaAggregatorTest
 
     withAggregator(versionedStore) { aggregator =>
       Seq(primaryLocation1, primaryLocation2)
-        .foreach { loc => aggregator.aggregate(loc.toStorageLocation) }
+        .foreach { loc =>
+          aggregator.aggregate(loc.toStorageLocation)
+        }
     }
 
     versionedStore.store
@@ -197,7 +201,9 @@ class ReplicaAggregatorTest
       }
 
     val result =
-      withAggregator(brokenStore)(_.aggregate(createPrimaryLocation.toStorageLocation))
+      withAggregator(brokenStore)(
+        _.aggregate(createPrimaryLocation.toStorageLocation)
+      )
 
     result.left.value shouldBe UpdateWriteError(err)
   }
@@ -233,14 +239,16 @@ class ReplicaAggregatorTest
     )
 
     withAggregator() { aggregator =>
-      val result = aggregator.aggregate(primaryLocation1.toStorageLocation).right.value
+      val result =
+        aggregator.aggregate(primaryLocation1.toStorageLocation).right.value
 
       result shouldBe AggregatorInternalRecord(
         location = Some(primaryLocation1),
         replicas = List()
       )
 
-      val err = aggregator.aggregate(primaryLocation2.toStorageLocation).left.get
+      val err =
+        aggregator.aggregate(primaryLocation2.toStorageLocation).left.get
       err.e.getMessage should startWith(
         "Record already has a different PrimaryStorageLocation"
       )

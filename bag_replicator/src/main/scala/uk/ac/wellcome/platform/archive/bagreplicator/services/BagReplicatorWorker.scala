@@ -88,7 +88,8 @@ class BagReplicatorWorker[
         ReplicaCompletePayload(
           context = payload.context,
           srcPrefix = replicationRequest.request.srcPrefix,
-          dstLocation = replicationRequest.toLocation(destinationConfig.provider),
+          dstLocation =
+            replicationRequest.toLocation(destinationConfig.provider),
           version = payload.version
         )
       )

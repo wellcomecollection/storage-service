@@ -45,7 +45,8 @@ class ReplicaAggregatorWorkerTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    val dstLocation = createPrimaryLocationWith(provider = AmazonS3StorageProvider)
+    val dstLocation =
+      createPrimaryLocationWith(provider = AmazonS3StorageProvider)
 
     val payload = createReplicaCompletePayloadWith(dstLocation = dstLocation)
 
