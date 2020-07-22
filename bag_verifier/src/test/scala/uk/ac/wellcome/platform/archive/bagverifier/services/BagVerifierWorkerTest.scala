@@ -1,7 +1,5 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
-import java.time.Instant
-
 import io.circe.Encoder
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.funspec.AnyFunSpec
@@ -126,8 +124,7 @@ class BagVerifierWorkerTest
             storageLocation = PrimaryStorageLocation(
               provider = AmazonS3StorageProvider,
               prefix = bagRoot.toObjectLocationPrefix
-            ),
-            timestamp = Instant.now
+            )
           ),
           version = createBagVersion
         )
@@ -165,8 +162,7 @@ class BagVerifierWorkerTest
             storageLocation = PrimaryStorageLocation(
               provider = AmazonS3StorageProvider,
               prefix = bagRoot.toObjectLocationPrefix
-            ),
-            timestamp = Instant.now
+            )
           ),
           version = createBagVersion
         )

@@ -1,7 +1,5 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.models
 
-import java.time.Instant
-
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationRequest
 import uk.ac.wellcome.platform.archive.common.ingests.models.StorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.{
@@ -49,8 +47,7 @@ sealed trait BagReplicationRequest {
 
     ReplicaResult(
       originalLocation = request.srcPrefix,
-      storageLocation = storageLocation,
-      timestamp = Instant.now()
+      storageLocation = storageLocation
     )
   }
 }

@@ -127,8 +127,7 @@ trait PayloadGenerators
         originalLocation = createS3ObjectLocationPrefix,
         storageLocation = createPrimaryLocationWith(
           provider = provider
-        ),
-        timestamp = Instant.now
+        )
       ),
       version = createBagVersion
     )

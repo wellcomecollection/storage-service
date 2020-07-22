@@ -1,7 +1,5 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator.services
 
-import java.time.Instant
-
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.TryValues
@@ -323,8 +321,7 @@ class ReplicaAggregatorWorkerTest
         context = context,
         replicaResult = ReplicaResult(
           originalLocation = createS3ObjectLocationPrefix,
-          storageLocation = storageLocation,
-          timestamp = Instant.now
+          storageLocation = storageLocation
         ),
         version = version
       )
