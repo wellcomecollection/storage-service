@@ -52,7 +52,7 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
     for {
 
       aggregatorRecord <- replicaAggregator
-        .aggregate(replicaResult)
+        .aggregate(replicaResult.storageLocation)
         .left
         .map(AggregationFailure)
 
