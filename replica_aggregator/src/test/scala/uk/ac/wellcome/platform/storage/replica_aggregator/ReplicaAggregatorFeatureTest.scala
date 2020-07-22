@@ -38,7 +38,7 @@ class ReplicaAggregatorFeatureTest
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
 
-      val payload = createReplicaResultPayloadWith(
+      val payload = createReplicaCompletePayloadWith(
         provider = AmazonS3StorageProvider
       )
       val versionedStore =

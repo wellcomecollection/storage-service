@@ -118,10 +118,10 @@ trait PayloadGenerators
       bagRoot = bagRoot
     )
 
-  def createReplicaResultPayloadWith(
+  def createReplicaCompletePayloadWith(
     provider: StorageProvider = createProvider
-  ): ReplicaResultPayload =
-    ReplicaResultPayload(
+  ): ReplicaCompletePayload =
+    ReplicaCompletePayload(
       context = createPipelineContext,
       replicaResult = ReplicaResult(
         originalLocation = createS3ObjectLocationPrefix,
@@ -132,6 +132,6 @@ trait PayloadGenerators
       version = createBagVersion
     )
 
-  def createReplicaResultPayload: ReplicaResultPayload =
-    createReplicaResultPayloadWith()
+  def createReplicaCompletePayload: ReplicaCompletePayload =
+    createReplicaCompletePayloadWith()
 }

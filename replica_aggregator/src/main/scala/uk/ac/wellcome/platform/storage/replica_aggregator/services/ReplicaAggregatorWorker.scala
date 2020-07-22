@@ -14,7 +14,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.{
   KnownReplicasPayload,
   PipelineContext,
-  ReplicaResultPayload
+  ReplicaCompletePayload
 }
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage.{RetryableError, UpdateError, UpdateWriteError}
@@ -32,9 +32,9 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   implicit val mc: MetricsMonitoringClient,
   val as: ActorSystem,
   val sc: SqsAsyncClient,
-  val wd: Decoder[ReplicaResultPayload]
+  val wd: Decoder[ReplicaCompletePayload]
 ) extends IngestStepWorker[
-      ReplicaResultPayload,
+      ReplicaCompletePayload,
       ReplicationAggregationSummary
     ] {
 
@@ -64,7 +64,7 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
     } yield sufficientReplicas
 
   override def processMessage(
-    payload: ReplicaResultPayload
+    payload: ReplicaCompletePayload
   ): Try[IngestStepResult[ReplicationAggregationSummary]] = {
     val replicaPath = ReplicaPath(payload.bagRoot.path)
     val startTime = Instant.now()

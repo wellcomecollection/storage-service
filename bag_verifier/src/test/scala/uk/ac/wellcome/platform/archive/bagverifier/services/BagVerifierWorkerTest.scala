@@ -23,7 +23,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.platform.archive.common.{
   BagRootLocationPayload,
-  ReplicaResultPayload
+  ReplicaCompletePayload
 }
 
 import scala.util.{Failure, Success, Try}
@@ -114,7 +114,7 @@ class BagVerifierWorkerTest
         val space = createStorageSpace
         val (bagRoot, bagInfo) = createS3BagWith(bucket, space = space)
 
-        val payload = ReplicaResultPayload(
+        val payload = ReplicaCompletePayload(
           context = createPipelineContextWith(
             externalIdentifier = bagInfo.externalIdentifier,
             storageSpace = space
@@ -139,7 +139,7 @@ class BagVerifierWorkerTest
 
         result shouldBe a[Success[_]]
 
-        outgoing.getMessages[ReplicaResultPayload] shouldBe Seq(payload)
+        outgoing.getMessages[ReplicaCompletePayload] shouldBe Seq(payload)
       }
     }
   }
@@ -152,7 +152,7 @@ class BagVerifierWorkerTest
         val space = createStorageSpace
         val (bagRoot, bagInfo) = createS3BagWith(bucket, space = space)
 
-        val payload = ReplicaResultPayload(
+        val payload = ReplicaCompletePayload(
           context = createPipelineContextWith(
             externalIdentifier = bagInfo.externalIdentifier,
             storageSpace = space

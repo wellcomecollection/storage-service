@@ -10,7 +10,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.{
   KnownReplicasPayload,
-  ReplicaResultPayload,
+  ReplicaCompletePayload,
   VersionedBagRootPayload
 }
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
@@ -45,7 +45,7 @@ class ReplicaAggregatorWorkerTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    val payload = createReplicaResultPayloadWith(
+    val payload = createReplicaCompletePayloadWith(
       provider = AmazonS3StorageProvider
     )
 
@@ -105,7 +105,7 @@ class ReplicaAggregatorWorkerTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    val payload = createReplicaResultPayload
+    val payload = createReplicaCompletePayload
 
     val result =
       withReplicaAggregatorWorker(
@@ -180,7 +180,7 @@ class ReplicaAggregatorWorkerTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    val payload = createReplicaResultPayload
+    val payload = createReplicaCompletePayload
 
     val result =
       withReplicaAggregatorWorker(
@@ -236,7 +236,7 @@ class ReplicaAggregatorWorkerTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    val payload = createReplicaResultPayload
+    val payload = createReplicaCompletePayload
 
     val result =
       withReplicaAggregatorWorker(
@@ -314,7 +314,7 @@ class ReplicaAggregatorWorkerTest
     val context = createPipelineContext
 
     val payloads = locations.map { storageLocation =>
-      ReplicaResultPayload(
+      ReplicaCompletePayload(
         context = context,
         replicaResult = ReplicaResult(
           originalLocation = createS3ObjectLocationPrefix,

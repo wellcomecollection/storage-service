@@ -19,7 +19,7 @@ import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
 import uk.ac.wellcome.platform.archive.common.{
-  ReplicaResultPayload,
+  ReplicaCompletePayload,
   VersionedBagRootPayload
 }
 import uk.ac.wellcome.storage.locking.{
@@ -85,7 +85,7 @@ class BagReplicatorWorker[
 
       _ <- outgoingPublisher.sendIfSuccessful(
         result,
-        ReplicaResultPayload(
+        ReplicaCompletePayload(
           context = payload.context,
           version = payload.version,
           replicaResult =

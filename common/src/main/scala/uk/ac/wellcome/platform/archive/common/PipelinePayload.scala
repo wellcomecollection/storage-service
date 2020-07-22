@@ -54,7 +54,7 @@ case class VersionedBagRootPayload(
   version: BagVersion
 ) extends VerifiablePayload
 
-case class ReplicaResultPayload(
+case class ReplicaCompletePayload(
   context: PipelineContext,
   replicaResult: ReplicaResult,
   version: BagVersion
