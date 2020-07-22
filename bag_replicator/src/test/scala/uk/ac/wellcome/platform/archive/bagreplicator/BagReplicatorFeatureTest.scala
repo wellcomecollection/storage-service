@@ -13,6 +13,7 @@ import uk.ac.wellcome.platform.archive.common.ReplicaCompletePayload
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
+import uk.ac.wellcome.platform.archive.common.ingests.models.AmazonS3StorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryS3ReplicaLocation
 import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 
@@ -28,8 +29,6 @@ class BagReplicatorFeatureTest
   it("replicates a bag successfully and updates both topics") {
     withLocalS3Bucket { srcBucket =>
       withLocalS3Bucket { dstBucket =>
-        val provider = createProvider
-
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
 
@@ -46,7 +45,7 @@ class BagReplicatorFeatureTest
             ingests = ingests,
             outgoing = outgoing,
             stepName = "replicating",
-            provider = provider,
+            provider = AmazonS3StorageProvider,
             replicaType = PrimaryReplica
           ) { _ =>
             sendNotificationToSQS(queue, payload)
