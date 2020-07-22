@@ -12,10 +12,6 @@ import uk.ac.wellcome.storage.generators.ObjectLocationGenerators
 trait StorageLocationGenerators
     extends ObjectLocationGenerators
     with StorageRandomThings {
-  def createProvider: StorageProvider =
-    StorageProvider(
-      id = chooseFrom(StorageProvider.allowedValues)
-    )
 
   def createPrimaryLocation: PrimaryStorageLocation =
     createPrimaryLocationWith()

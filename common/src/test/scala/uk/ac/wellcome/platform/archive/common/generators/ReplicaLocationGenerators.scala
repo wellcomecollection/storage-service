@@ -5,7 +5,6 @@ import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
 
 trait ReplicaLocationGenerators extends StorageRandomThings with NewS3Fixtures {
-
   def createPrimaryLocation: PrimaryReplicaLocation =
     chooseFrom(
       Seq(

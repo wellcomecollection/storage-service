@@ -13,7 +13,7 @@ import scala.util.Random
 trait StorageManifestGenerators
     extends BagInfoGenerators
     with StorageSpaceGenerators
-    with StorageLocationGenerators {
+    with ReplicaLocationGenerators {
 
   val checksumAlgorithm: HashingAlgorithm = SHA256
 
@@ -50,10 +50,10 @@ trait StorageManifestGenerators
     bagInfo: BagInfo = createBagInfo,
     version: BagVersion = createBagVersion,
     fileCount: Int = 3,
-    location: PrimaryStorageLocation = createPrimaryLocation,
+    location: PrimaryStorageLocation = createPrimaryLocation.toStorageLocation,
     replicaLocations: Seq[SecondaryStorageLocation] = (1 to randomInt(0, 5))
       .map { _ =>
-        createSecondaryLocation
+        createSecondaryLocation.toStorageLocation
       },
     createdDate: Instant = Instant.now,
     files: Seq[StorageManifestFile] = Nil

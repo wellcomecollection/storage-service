@@ -15,7 +15,7 @@ import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 trait PayloadGenerators
     extends ExternalIdentifierGenerators
     with StorageSpaceGenerators
-    with StorageLocationGenerators
+    with ReplicaLocationGenerators
     with NewS3Fixtures {
 
   def randomIngestType: IngestType =
@@ -119,7 +119,7 @@ trait PayloadGenerators
     )
 
   def createReplicaCompletePayloadWith(
-    dstLocation: StorageLocation = createPrimaryLocation
+    dstLocation: ReplicaLocation = createPrimaryLocation
   ): ReplicaCompletePayload =
     ReplicaCompletePayload(
       context = createPipelineContext,

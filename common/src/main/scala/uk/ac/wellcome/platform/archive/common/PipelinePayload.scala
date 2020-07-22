@@ -14,7 +14,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   KnownReplicas,
-  StorageLocation,
+  ReplicaLocation,
   StorageSpace
 }
 import uk.ac.wellcome.storage.S3ObjectLocationPrefix
@@ -69,6 +69,6 @@ case class VersionedBagRootPayload(
 case class ReplicaCompletePayload(
   context: PipelineContext,
   srcPrefix: S3ObjectLocationPrefix,
-  dstLocation: StorageLocation,
+  dstLocation: ReplicaLocation,
   version: BagVersion
 ) extends VerifiablePayload

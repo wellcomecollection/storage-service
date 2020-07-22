@@ -13,8 +13,9 @@ import uk.ac.wellcome.platform.archive.common.ReplicaCompletePayload
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryStorageLocation
-import uk.ac.wellcome.storage.ObjectLocationPrefix
+import uk.ac.wellcome.platform.archive.common.ingests.models.AmazonS3StorageProvider
+import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryS3ReplicaLocation
+import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 
 class BagReplicatorFeatureTest
     extends AnyFunSpec
@@ -28,8 +29,6 @@ class BagReplicatorFeatureTest
   it("replicates a bag successfully and updates both topics") {
     withLocalS3Bucket { srcBucket =>
       withLocalS3Bucket { dstBucket =>
-        val provider = createProvider
-
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
 
@@ -46,15 +45,15 @@ class BagReplicatorFeatureTest
             ingests = ingests,
             outgoing = outgoing,
             stepName = "replicating",
-            provider = provider,
+            provider = AmazonS3StorageProvider,
             replicaType = PrimaryReplica
           ) { _ =>
             sendNotificationToSQS(queue, payload)
 
             eventually {
-              val expectedDst = ObjectLocationPrefix(
-                namespace = dstBucket.name,
-                path = Paths
+              val expectedDst = S3ObjectLocationPrefix(
+                bucket = dstBucket.name,
+                keyPrefix = Paths
                   .get(
                     payload.storageSpace.toString,
                     payload.externalIdentifier.toString,
@@ -71,14 +70,13 @@ class BagReplicatorFeatureTest
               receivedPayload.context shouldBe payload.context
               receivedPayload.version shouldBe payload.version
 
-              receivedPayload.dstLocation shouldBe PrimaryStorageLocation(
-                provider = provider,
+              receivedPayload.dstLocation shouldBe PrimaryS3ReplicaLocation(
                 prefix = expectedDst
               )
 
               verifyObjectsCopied(
                 srcPrefix = srcBagRoot,
-                dstPrefix = expectedDst
+                dstPrefix = expectedDst.asInstanceOf[S3ObjectLocationPrefix]
               )
 
               assertTopicReceivesIngestEvents(

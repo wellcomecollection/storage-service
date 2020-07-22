@@ -19,26 +19,11 @@ case class AggregatorInternalRecord(
       replicaLocation = location
     )
 
-  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
-  // See https://github.com/wellcomecollection/platform/issues/4596
-  def addLocation(location: StorageLocation): Try[AggregatorInternalRecord] =
-    AggregatorInternalRecord.addLocation(
-      record = this,
-      replicaLocation = ReplicaLocation.fromStorageLocation(location)
-    )
-
   def count: Int =
     (Seq(location).flatten ++ replicas).size
 }
 
 object AggregatorInternalRecord {
-  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
-  // See https://github.com/wellcomecollection/platform/issues/4596
-  def apply(storageLocation: StorageLocation): AggregatorInternalRecord =
-    AggregatorInternalRecord(
-      ReplicaLocation.fromStorageLocation(storageLocation)
-    )
-
   def apply(replicaLocation: ReplicaLocation): AggregatorInternalRecord =
     replicaLocation match {
       case primary: PrimaryReplicaLocation =>

@@ -1,26 +1,27 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator
 
-import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.EitherValues
+import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.KnownReplicasPayload
-import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
+import uk.ac.wellcome.platform.archive.common.generators.{
+  PayloadGenerators,
+  ReplicaLocationGenerators
+}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.AmazonS3StorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   KnownReplicas,
-  PrimaryS3ReplicaLocation,
-  PrimaryStorageLocation
+  PrimaryS3ReplicaLocation
 }
 import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
 import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
   AggregatorInternalRecord,
   ReplicaPath
 }
-import uk.ac.wellcome.storage.{S3ObjectLocationPrefix, Version}
+import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
 class ReplicaAggregatorFeatureTest
@@ -31,17 +32,20 @@ class ReplicaAggregatorFeatureTest
     with PayloadGenerators
     with Eventually
     with EitherValues
-    with IntegrationPatience {
+    with IntegrationPatience
+    with ReplicaLocationGenerators {
 
   it("completes after a single primary replica") {
     withLocalSqsQueue() { queue =>
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
 
+      val primaryReplicaLocation = PrimaryS3ReplicaLocation(
+        prefix = createS3ObjectLocationPrefix
+      )
+
       val payload = createReplicaCompletePayloadWith(
-        dstLocation = createPrimaryLocationWith(
-          provider = AmazonS3StorageProvider
-        )
+        dstLocation = primaryReplicaLocation
       )
       val versionedStore =
         MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](Map.empty)
@@ -64,18 +68,13 @@ class ReplicaAggregatorFeatureTest
             )
           )
 
-          val expectedReplicaPath =
-            ReplicaPath(payload.dstLocation.prefix.path)
+          val expectedReplicaPath = ReplicaPath(payload.dstLocation.prefix)
 
           val stored =
             versionedStore.get(id = Version(expectedReplicaPath, 0)).right.value
 
           val primaryLocation =
-            payload.dstLocation.asInstanceOf[PrimaryStorageLocation]
-
-          val primaryReplicaLocation = PrimaryS3ReplicaLocation(
-            prefix = S3ObjectLocationPrefix(payload.dstLocation.prefix)
-          )
+            payload.dstLocation.asInstanceOf[PrimaryS3ReplicaLocation]
 
           stored.identifiedT.location shouldBe Some(primaryReplicaLocation)
 
@@ -85,7 +84,7 @@ class ReplicaAggregatorFeatureTest
             context = payload.context,
             version = payload.version,
             knownReplicas = KnownReplicas(
-              location = primaryLocation,
+              location = primaryLocation.toStorageLocation,
               replicas = List.empty
             )
           )

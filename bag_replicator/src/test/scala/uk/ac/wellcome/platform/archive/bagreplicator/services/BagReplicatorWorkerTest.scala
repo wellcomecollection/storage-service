@@ -19,7 +19,9 @@ import uk.ac.wellcome.platform.archive.common.ReplicaCompletePayload
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
+import uk.ac.wellcome.platform.archive.common.ingests.models.AmazonS3StorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models._
+import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.locking.memory.MemoryLockDao
 import uk.ac.wellcome.storage.locking.{LockDao, LockFailure}
 
@@ -73,6 +75,7 @@ class BagReplicatorWorkerTest
         receivedPayload.version shouldBe payload.version
 
         val dstBagRoot = receivedPayload.dstLocation.prefix
+          .asInstanceOf[S3ObjectLocationPrefix]
 
         verifyObjectsCopied(
           srcPrefix = srcBagRoot,
@@ -307,7 +310,7 @@ class BagReplicatorWorkerTest
   }
 
   it("uses the provider configured in the destination config") {
-    val provider = createProvider
+    val provider = AmazonS3StorageProvider
 
     val outgoing = new MemoryMessageSender()
 
@@ -332,8 +335,7 @@ class BagReplicatorWorkerTest
         outgoing
           .getMessages[ReplicaCompletePayload]
           .head
-          .dstLocation
-          .provider shouldBe provider
+          .dstLocation shouldBe a[S3ReplicaLocation]
       }
     }
   }
@@ -363,7 +365,7 @@ class BagReplicatorWorkerTest
           outgoing
             .getMessages[ReplicaCompletePayload]
             .head
-            .dstLocation shouldBe a[PrimaryStorageLocation]
+            .dstLocation shouldBe a[PrimaryS3ReplicaLocation]
         }
       }
     }
@@ -392,7 +394,7 @@ class BagReplicatorWorkerTest
           outgoing
             .getMessages[ReplicaCompletePayload]
             .head
-            .dstLocation shouldBe a[SecondaryStorageLocation]
+            .dstLocation shouldBe a[SecondaryS3ReplicaLocation]
         }
       }
     }

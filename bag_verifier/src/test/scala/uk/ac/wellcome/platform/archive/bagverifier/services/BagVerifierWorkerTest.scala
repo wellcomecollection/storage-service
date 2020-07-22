@@ -12,13 +12,10 @@ import uk.ac.wellcome.platform.archive.common.fixtures.PayloadEntry
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  AmazonS3StorageProvider,
-  Ingest
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
-  PrimaryStorageLocation
+  PrimaryS3ReplicaLocation
 }
 import uk.ac.wellcome.platform.archive.common.{
   BagRootLocationPayload,
@@ -119,10 +116,7 @@ class BagVerifierWorkerTest
             storageSpace = space
           ),
           srcPrefix = bagRoot,
-          dstLocation = PrimaryStorageLocation(
-            provider = AmazonS3StorageProvider,
-            prefix = bagRoot.toObjectLocationPrefix
-          ),
+          dstLocation = PrimaryS3ReplicaLocation(prefix = bagRoot),
           version = createBagVersion
         )
 
@@ -155,10 +149,7 @@ class BagVerifierWorkerTest
             storageSpace = space
           ),
           srcPrefix = createS3ObjectLocationPrefix,
-          dstLocation = PrimaryStorageLocation(
-            provider = AmazonS3StorageProvider,
-            prefix = bagRoot.toObjectLocationPrefix
-          ),
+          dstLocation = PrimaryS3ReplicaLocation(prefix = bagRoot),
           version = createBagVersion
         )
 

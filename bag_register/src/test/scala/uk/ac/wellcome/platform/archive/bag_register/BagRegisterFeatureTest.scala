@@ -10,17 +10,14 @@ import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.generators.{
-  PayloadGenerators,
-  StorageLocationGenerators
-}
+import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
+import uk.ac.wellcome.platform.archive.common.ingests.models.AmazonS3StorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   KnownReplicas,
+  PrimaryS3ReplicaLocation,
   PrimaryStorageLocation,
   StorageManifest
 }
-import uk.ac.wellcome.storage.MemoryLocation
-import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
 class BagRegisterFeatureTest
     extends AnyFunSpec
@@ -28,13 +25,9 @@ class BagRegisterFeatureTest
     with BagRegisterFixtures
     with PayloadGenerators
     with Eventually
-    with StorageLocationGenerators
     with IntegrationPatience {
 
   it("sends an update if it registers a bag") {
-    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
-      MemoryStreamStore[MemoryLocation]()
-
     val ingests = new MemoryMessageSender()
 
     val storageManifestDao = createStorageManifestDao()
@@ -44,78 +37,77 @@ class BagRegisterFeatureTest
     val version = createBagVersion
     val dataFileCount = randomInt(1, 15)
 
-    val (bagRoot, bagInfo) = createRegisterBagWith(
-      space = space,
-      version = version,
-      dataFileCount = dataFileCount
-    )
+    withLocalS3Bucket { implicit bucket =>
+      val (bagRoot, bagInfo) = createRegisterBagWith(
+        space = space,
+        version = version,
+        dataFileCount = dataFileCount
+      )
 
-    val bagId = BagId(
-      space = space,
-      externalIdentifier = bagInfo.externalIdentifier
-    )
+      val bagId = BagId(
+        space = space,
+        externalIdentifier = bagInfo.externalIdentifier
+      )
 
-    val primaryLocation = createPrimaryLocationWith(
-      prefix = bagRoot.toObjectLocationPrefix
-    )
+      val primaryLocation = PrimaryS3ReplicaLocation(
+        prefix = bagRoot
+      )
 
-    val knownReplicas = KnownReplicas(
-      location = primaryLocation,
-      replicas = List.empty
-    )
+      val knownReplicas = KnownReplicas(
+        location = primaryLocation.toStorageLocation,
+        replicas = List.empty
+      )
 
-    val payload = createKnownReplicasPayloadWith(
-      context = createPipelineContextWith(
-        storageSpace = space
-      ),
-      version = version,
-      knownReplicas = knownReplicas
-    )
+      val payload = createKnownReplicasPayloadWith(
+        context = createPipelineContextWith(
+          storageSpace = space
+        ),
+        version = version,
+        knownReplicas = knownReplicas
+      )
 
-    withLocalSqsQueue(visibilityTimeout = 5) { queue =>
-      withBagRegisterWorker(
-        queue = queue,
-        ingests = ingests,
-        storageManifestDao = storageManifestDao
-      ) { _ =>
-        sendNotificationToSQS(queue, payload)
+      withLocalSqsQueue(visibilityTimeout = 5) { queue =>
+        withBagRegisterWorker(
+          queue = queue,
+          ingests = ingests,
+          storageManifestDao = storageManifestDao
+        ) { _ =>
+          sendNotificationToSQS(queue, payload)
 
-        eventually {
-          val storageManifest: StorageManifest =
-            storageManifestDao.getLatest(bagId).right.value
+          eventually {
+            val storageManifest: StorageManifest =
+              storageManifestDao.getLatest(bagId).right.value
 
-          storageManifest.space shouldBe bagId.space
-          storageManifest.info shouldBe bagInfo
-          storageManifest.manifest.files should have size dataFileCount
+            storageManifest.space shouldBe bagId.space
+            storageManifest.info shouldBe bagInfo
+            storageManifest.manifest.files should have size dataFileCount
 
-          storageManifest.location shouldBe PrimaryStorageLocation(
-            provider = primaryLocation.provider,
-            prefix = bagRoot
-              .copy(
-                pathPrefix = bagRoot.pathPrefix.stripSuffix(s"/$version")
-              )
-              .toObjectLocationPrefix
-          )
+            storageManifest.location shouldBe PrimaryStorageLocation(
+              provider = AmazonS3StorageProvider,
+              prefix = bagRoot
+                .copy(
+                  keyPrefix = bagRoot.keyPrefix.stripSuffix(s"/$version")
+                )
+                .toObjectLocationPrefix
+            )
 
-          storageManifest.replicaLocations shouldBe empty
+            storageManifest.replicaLocations shouldBe empty
 
-          storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
+            storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
-          assertBagRegisterSucceeded(
-            ingestId = payload.ingestId,
-            ingests = ingests
-          )
+            assertBagRegisterSucceeded(
+              ingestId = payload.ingestId,
+              ingests = ingests
+            )
 
-          assertQueueEmpty(queue)
+            assertQueueEmpty(queue)
+          }
         }
       }
     }
   }
 
   it("handles a failed registration") {
-    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
-      MemoryStreamStore[MemoryLocation]()
-
     val ingests = new MemoryMessageSender()
 
     // This registration will fail because when the register tries to read the

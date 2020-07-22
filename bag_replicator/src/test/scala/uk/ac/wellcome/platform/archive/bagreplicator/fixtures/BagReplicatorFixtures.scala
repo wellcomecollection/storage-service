@@ -15,13 +15,12 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.Replicati
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
-import uk.ac.wellcome.platform.archive.common.generators.StorageLocationGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   AmazonS3StorageProvider,
   StorageProvider
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
-import uk.ac.wellcome.storage.{ObjectLocationPrefix, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.listing.s3.S3ObjectSummaryListing
@@ -39,7 +38,6 @@ trait BagReplicatorFixtures
     with OperationFixtures
     with AlpakkaSQSWorkerFixtures
     with MemoryLockDaoFixtures
-    with StorageLocationGenerators
     with S3Fixtures {
 
   type ReplicatorLockingService =
@@ -126,14 +124,15 @@ trait BagReplicatorFixtures
 
   def verifyObjectsCopied(
     srcPrefix: S3ObjectLocationPrefix,
-    dstPrefix: ObjectLocationPrefix
+    dstPrefix: S3ObjectLocationPrefix
   ): Assertion = {
     val sourceItems = listing.list(srcPrefix.toObjectLocationPrefix).right.value
     val sourceKeyEtags = sourceItems.map {
       _.getETag
     }
 
-    val destinationItems = listing.list(dstPrefix).right.value
+    val destinationItems =
+      listing.list(dstPrefix.toObjectLocationPrefix).right.value
     val destinationKeyEtags = destinationItems.map {
       _.getETag
     }
