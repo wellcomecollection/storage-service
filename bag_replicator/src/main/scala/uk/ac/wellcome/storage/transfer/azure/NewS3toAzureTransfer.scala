@@ -6,8 +6,10 @@ import uk.ac.wellcome.storage.store.s3.{S3StreamReadable, S3StreamStore}
 import uk.ac.wellcome.storage.transfer._
 import uk.ac.wellcome.storage.{AzureBlobItemLocation, S3ObjectLocation}
 
-class NewS3toAzureTransfer(implicit blobClient: BlobServiceClient, s3Client: AmazonS3)
-  extends NewTransfer[S3ObjectLocation, AzureBlobItemLocation] {
+class NewS3toAzureTransfer(
+  implicit blobClient: BlobServiceClient,
+  s3Client: AmazonS3
+) extends NewTransfer[S3ObjectLocation, AzureBlobItemLocation] {
 
   implicit val s3Readable: S3StreamReadable = new S3StreamStore()
 

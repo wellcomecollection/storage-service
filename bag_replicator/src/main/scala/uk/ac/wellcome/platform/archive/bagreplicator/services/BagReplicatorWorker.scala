@@ -16,9 +16,16 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.platform.archive.common.{ReplicaCompletePayload, VersionedBagRootPayload}
+import uk.ac.wellcome.platform.archive.common.{
+  ReplicaCompletePayload,
+  VersionedBagRootPayload
+}
 import uk.ac.wellcome.storage.{Location, Prefix}
-import uk.ac.wellcome.storage.locking.{FailedLockingServiceOp, LockDao, LockingService}
+import uk.ac.wellcome.storage.locking.{
+  FailedLockingServiceOp,
+  LockDao,
+  LockingService
+}
 
 import scala.util.Try
 
@@ -31,7 +38,9 @@ class BagReplicatorWorker[
   val config: AlpakkaSQSWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  lockingService: LockingService[IngestStepResult[ReplicationSummary[DstPrefix]], Try, LockDao[
+  lockingService: LockingService[IngestStepResult[
+    ReplicationSummary[DstPrefix]
+  ], Try, LockDao[
     String,
     UUID
   ]],
@@ -44,7 +53,9 @@ class BagReplicatorWorker[
   val as: ActorSystem,
   val sc: SqsAsyncClient,
   val wd: Decoder[VersionedBagRootPayload]
-) extends IngestStepWorker[VersionedBagRootPayload, ReplicationSummary[DstPrefix]] {
+) extends IngestStepWorker[VersionedBagRootPayload, ReplicationSummary[
+      DstPrefix
+    ]] {
   override val visibilityTimeout = 180
 
   def processMessage(

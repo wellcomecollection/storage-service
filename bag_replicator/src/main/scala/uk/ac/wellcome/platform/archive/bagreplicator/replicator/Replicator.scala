@@ -4,7 +4,10 @@ import java.time.Instant
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
@@ -20,7 +23,8 @@ import uk.ac.wellcome.storage.transfer.{NewPrefixTransfer, TransferResult}
 // For example, in the BagReplicator, we verify the tag manifests
 // are the same after replication completes.
 
-trait Replicator[DstLocation <: Location, DstPrefix <: Prefix[DstLocation]] extends Logging {
+trait Replicator[DstLocation <: Location, DstPrefix <: Prefix[DstLocation]]
+    extends Logging {
   implicit val prefixTransfer: NewPrefixTransfer[
     S3ObjectLocation,
     S3ObjectLocationPrefix,
@@ -44,7 +48,10 @@ trait Replicator[DstLocation <: Location, DstPrefix <: Prefix[DstLocation]] exte
       path = DestinationBuilder.buildPath(space, externalIdentifier, version)
     )
 
-  protected def buildDestinationFromParts(namespace: String, path: String): DstPrefix
+  protected def buildDestinationFromParts(
+    namespace: String,
+    path: String
+  ): DstPrefix
 
   def replicate(
     ingestId: IngestID,

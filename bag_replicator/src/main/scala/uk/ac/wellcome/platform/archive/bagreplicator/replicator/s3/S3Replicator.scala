@@ -6,7 +6,8 @@ import uk.ac.wellcome.storage.listing.s3.NewS3ObjectLocationListing
 import uk.ac.wellcome.storage.transfer.s3.NewS3PrefixTransfer
 import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 
-class S3Replicator(implicit s3Client: AmazonS3) extends Replicator[S3ObjectLocation, S3ObjectLocationPrefix] {
+class S3Replicator(implicit s3Client: AmazonS3)
+    extends Replicator[S3ObjectLocation, S3ObjectLocationPrefix] {
 
   // We write new objects as Standard, and then rely on bucket management policies
   // to lifecycle objects to Standard-IA or Glacier Deep Archive as appropriate.
@@ -23,6 +24,9 @@ class S3Replicator(implicit s3Client: AmazonS3) extends Replicator[S3ObjectLocat
   override implicit val prefixListing: NewS3ObjectLocationListing =
     new NewS3ObjectLocationListing()
 
-  override protected def buildDestinationFromParts(bucket: String, keyPrefix: String): S3ObjectLocationPrefix =
+  override protected def buildDestinationFromParts(
+    bucket: String,
+    keyPrefix: String
+  ): S3ObjectLocationPrefix =
     S3ObjectLocationPrefix(bucket = bucket, keyPrefix = keyPrefix)
 }

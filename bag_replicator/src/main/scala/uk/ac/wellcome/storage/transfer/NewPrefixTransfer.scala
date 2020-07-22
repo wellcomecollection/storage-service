@@ -6,35 +6,34 @@ import uk.ac.wellcome.storage.listing.Listing
 
 import scala.collection.parallel.ParIterable
 
-trait NewPrefixTransfer[
-    SrcLocation <: Location,
-    SrcPrefix <: Prefix[SrcLocation],
-    DstLocation <: Location,
-    DstPrefix <: Prefix[DstLocation]]
-  extends Logging {
+trait NewPrefixTransfer[SrcLocation <: Location, SrcPrefix <: Prefix[
+  SrcLocation
+], DstLocation <: Location, DstPrefix <: Prefix[DstLocation]]
+    extends Logging {
   implicit val transfer: NewTransfer[SrcLocation, DstLocation]
   implicit val listing: Listing[SrcPrefix, SrcLocation]
 
   protected def buildDstLocation(
-                                  srcPrefix: SrcPrefix,
-                                  dstPrefix: DstPrefix,
-                                  srcLocation: SrcLocation
-                                ): DstLocation
+    srcPrefix: SrcPrefix,
+    dstPrefix: DstPrefix,
+    srcLocation: SrcLocation
+  ): DstLocation
 
   private def copyPrefix(
-                          iterator: Iterable[SrcLocation],
-                          srcPrefix: SrcPrefix,
-                          dstPrefix: DstPrefix,
-                          checkForExisting: Boolean
-                        ): Either[PrefixTransferFailure, PrefixTransferSuccess] = {
+    iterator: Iterable[SrcLocation],
+    srcPrefix: SrcPrefix,
+    dstPrefix: DstPrefix,
+    checkForExisting: Boolean
+  ): Either[PrefixTransferFailure, PrefixTransferSuccess] = {
     var successes = 0
     var failures = 0
 
     iterator
       .grouped(10)
       .foreach { locations =>
-        val results: ParIterable[(SrcLocation,
-          Either[NewTransferFailure, NewTransferSuccess])] =
+        val results: ParIterable[
+          (SrcLocation, Either[NewTransferFailure, NewTransferSuccess])
+        ] =
           locations.par.map { srcLocation =>
             (
               srcLocation,
@@ -68,10 +67,10 @@ trait NewPrefixTransfer[
   }
 
   def transferPrefix(
-                      srcPrefix: SrcPrefix,
-                      dstPrefix: DstPrefix,
-                      checkForExisting: Boolean = true
-                    ): Either[TransferFailure, PrefixTransferSuccess] = {
+    srcPrefix: SrcPrefix,
+    dstPrefix: DstPrefix,
+    checkForExisting: Boolean = true
+  ): Either[TransferFailure, PrefixTransferSuccess] = {
     listing.list(srcPrefix) match {
       case Left(error) =>
         Left(PrefixTransferListingFailure(srcPrefix, error.e))

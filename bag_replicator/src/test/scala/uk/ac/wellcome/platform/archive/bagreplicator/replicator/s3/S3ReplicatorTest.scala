@@ -9,7 +9,13 @@ import uk.ac.wellcome.storage.tags.Tags
 import uk.ac.wellcome.storage.tags.s3.NewS3Tags
 import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 
-class S3ReplicatorTest extends ReplicatorTestCases[Bucket, S3ObjectLocation, S3ObjectLocationPrefix] with S3Fixtures {
+class S3ReplicatorTest
+    extends ReplicatorTestCases[
+      Bucket,
+      S3ObjectLocation,
+      S3ObjectLocationPrefix
+    ]
+    with S3Fixtures {
 
   override def withDstNamespace[R](testWith: TestWith[Bucket, R]): R =
     withLocalS3Bucket { bucket =>

@@ -18,8 +18,11 @@ import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.s3.{NewS3StreamStore, NewS3TypedStore}
 import uk.ac.wellcome.storage.tags.s3.NewS3Tags
 
-trait ReplicatorTestCases[DstNamespace, DstLocation <: Location, DstPrefix <: Prefix[DstLocation]]
-    extends AnyFunSpec
+trait ReplicatorTestCases[
+  DstNamespace,
+  DstLocation <: Location,
+  DstPrefix <: Prefix[DstLocation]
+] extends AnyFunSpec
     with Matchers
     with EitherValues
     with StorageRandomThings
