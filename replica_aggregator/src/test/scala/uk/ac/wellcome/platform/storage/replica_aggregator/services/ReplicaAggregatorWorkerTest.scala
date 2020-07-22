@@ -273,10 +273,12 @@ class ReplicaAggregatorWorkerTest
     )
 
   it("handles ConditionalUpdate errors from DynamoDB") {
+    val path = randomAlphanumeric
+
     val locations = Seq(
-      createPrimaryLocation,
-      createSecondaryLocation,
-      createSecondaryLocation
+      PrimaryS3ReplicaLocation(prefix = createS3ObjectLocationPrefixWith(keyPrefix = path)),
+      SecondaryS3ReplicaLocation(prefix = createS3ObjectLocationPrefixWith(keyPrefix = path)),
+      SecondaryS3ReplicaLocation(prefix = createS3ObjectLocationPrefixWith(keyPrefix = path))
     )
 
     val payloads = locations.map { dstLocation =>
