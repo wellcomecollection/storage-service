@@ -273,10 +273,6 @@ class ReplicaAggregatorWorkerTest
     )
 
   it("handles ConditionalUpdate errors from DynamoDB") {
-    val ingests = new MemoryMessageSender()
-    val outgoing = new MemoryMessageSender()
-
-    val path = randomAlphanumeric
     val locations = Seq(
       createPrimaryLocation,
       createSecondaryLocation,
@@ -298,8 +294,6 @@ class ReplicaAggregatorWorkerTest
       val future: Future[Seq[IngestStepResult[ReplicationAggregationSummary]]] =
         withReplicaAggregatorWorker(
           versionedStore = versionedStore,
-          ingests = ingests,
-          outgoing = outgoing,
           expectedReplicaCount = 3
         ) { service =>
           Future.sequence(

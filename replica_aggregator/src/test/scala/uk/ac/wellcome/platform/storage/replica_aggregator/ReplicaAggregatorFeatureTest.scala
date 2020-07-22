@@ -9,7 +9,7 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.KnownReplicasPayload
 import uk.ac.wellcome.platform.archive.common.generators.{PayloadGenerators, ReplicaLocationGenerators}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.storage.models.{KnownReplicas, PrimaryS3ReplicaLocation, PrimaryStorageLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.{KnownReplicas, PrimaryS3ReplicaLocation}
 import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
 import uk.ac.wellcome.platform.storage.replica_aggregator.models.{AggregatorInternalRecord, ReplicaPath}
 import uk.ac.wellcome.storage.Version
@@ -65,7 +65,7 @@ class ReplicaAggregatorFeatureTest
             versionedStore.get(id = Version(expectedReplicaPath, 0)).right.value
 
           val primaryLocation =
-            payload.dstLocation.asInstanceOf[PrimaryStorageLocation]
+            payload.dstLocation.asInstanceOf[PrimaryS3ReplicaLocation]
 
           stored.identifiedT.location shouldBe Some(primaryReplicaLocation)
 
@@ -75,7 +75,7 @@ class ReplicaAggregatorFeatureTest
             context = payload.context,
             version = payload.version,
             knownReplicas = KnownReplicas(
-              location = primaryLocation,
+              location = primaryLocation.toStorageLocation,
               replicas = List.empty
             )
           )

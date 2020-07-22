@@ -32,8 +32,8 @@ trait ReplicaAggregatorFixtures
       MemoryVersionedStore[ReplicaPath, AggregatorInternalRecord](
         initialEntries = Map.empty
       ),
-    ingests: MemoryMessageSender,
-    outgoing: MemoryMessageSender,
+    ingests: MemoryMessageSender = new MemoryMessageSender(),
+    outgoing: MemoryMessageSender = new MemoryMessageSender(),
     stepName: String = randomAlphanumericWithLength(),
     expectedReplicaCount: Int = 1
   )(testWith: TestWith[ReplicaAggregatorWorker[String, String], R]): R =
