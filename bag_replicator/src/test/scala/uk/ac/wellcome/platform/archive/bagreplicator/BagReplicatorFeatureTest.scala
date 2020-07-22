@@ -8,7 +8,7 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
-import uk.ac.wellcome.platform.archive.bagreplicator.models.PrimaryBagReplicationRequest
+import uk.ac.wellcome.platform.archive.bagreplicator.models.PrimaryReplica
 import uk.ac.wellcome.platform.archive.common.ReplicaCompletePayload
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
@@ -47,7 +47,7 @@ class BagReplicatorFeatureTest
             outgoing = outgoing,
             stepName = "replicating",
             provider = provider,
-            requestBuilder = PrimaryBagReplicationRequest.apply
+            replicaType = PrimaryReplica
           ) { _ =>
             sendNotificationToSQS(queue, payload)
 

@@ -67,18 +67,16 @@ class BagReplicatorWorker[
         version = payload.version
       )
 
-      replicationRequest = destinationConfig.requestBuilder(
-        ReplicationRequest(
-          srcPrefix = srcPrefix,
-          dstPrefix = dstPrefix
-        )
+      replicationRequest = ReplicationRequest(
+        srcPrefix = srcPrefix,
+        dstPrefix = dstPrefix
       )
 
       result <- lockingService
         .withLock(dstPrefix.toString) {
-          replicate(payload.ingestId, replicationRequest.request)
+          replicate(payload.ingestId, replicationRequest)
         }
-        .map(lockFailed(payload.ingestId, replicationRequest.request).apply(_))
+        .map(lockFailed(payload.ingestId, replicationRequest).apply(_))
 
       _ <- ingestUpdater.send(payload.ingestId, result)
 
@@ -86,9 +84,11 @@ class BagReplicatorWorker[
         result,
         ReplicaCompletePayload(
           context = payload.context,
-          srcPrefix = replicationRequest.request.srcPrefix,
-          dstLocation =
-            replicationRequest.toLocation(destinationConfig.provider),
+          srcPrefix = replicationRequest.srcPrefix,
+          dstLocation = replicationRequest.toReplicaLocation(
+            provider = destinationConfig.provider,
+            replicaType = destinationConfig.replicaType
+          ).toStorageLocation,
           version = payload.version
         )
       )

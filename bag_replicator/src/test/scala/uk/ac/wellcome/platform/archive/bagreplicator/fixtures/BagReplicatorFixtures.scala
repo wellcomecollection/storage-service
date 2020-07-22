@@ -10,15 +10,8 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
-import uk.ac.wellcome.platform.archive.bagreplicator.models.{
-  BagReplicationRequest,
-  PrimaryBagReplicationRequest,
-  SecondaryBagReplicationRequest
-}
-import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
-  ReplicationRequest,
-  ReplicationSummary
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.models._
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
@@ -29,10 +22,7 @@ import uk.ac.wellcome.storage.{ObjectLocationPrefix, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.listing.s3.S3ObjectSummaryListing
-import uk.ac.wellcome.storage.locking.memory.{
-  MemoryLockDao,
-  MemoryLockDaoFixtures
-}
+import uk.ac.wellcome.storage.locking.memory.{MemoryLockDao, MemoryLockDaoFixtures}
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -77,14 +67,7 @@ trait BagReplicatorFixtures
     outgoing: MemoryMessageSender = new MemoryMessageSender(),
     lockServiceDao: LockDao[String, UUID] = new MemoryLockDao[String, UUID] {},
     stepName: String = randomAlphanumericWithLength(),
-    requestBuilder: ReplicationRequest => BagReplicationRequest =
-      (request: ReplicationRequest) =>
-        chooseFrom(
-          Seq(
-            PrimaryBagReplicationRequest(request),
-            SecondaryBagReplicationRequest.apply(request)
-          )
-        )
+    replicaType: ReplicaType = chooseFrom(Seq(PrimaryReplica, SecondaryReplica))
   )(
     testWith: TestWith[
       BagReplicatorWorker[String, String],
@@ -101,7 +84,7 @@ trait BagReplicatorFixtures
           createReplicatorDestinationConfigWith(
             bucket = bucket,
             provider = provider,
-            requestBuilder = requestBuilder
+            replicaType = replicaType
           )
 
         val replicator = new S3Replicator()
@@ -125,19 +108,13 @@ trait BagReplicatorFixtures
   def createReplicatorDestinationConfigWith(
     bucket: Bucket,
     provider: StorageProvider = createProvider,
-    requestBuilder: ReplicationRequest => BagReplicationRequest =
-      (request: ReplicationRequest) =>
-        chooseFrom(
-          Seq(
-            PrimaryBagReplicationRequest(request),
-            SecondaryBagReplicationRequest.apply(request)
-          )
-        )
+    replicaType: ReplicaType =
+      chooseFrom(Seq(PrimaryReplica, SecondaryReplica))
   ): ReplicatorDestinationConfig =
     ReplicatorDestinationConfig(
       namespace = bucket.name,
       provider = provider,
-      requestBuilder = requestBuilder
+      replicaType = replicaType
     )
 
   private val listing = new S3ObjectSummaryListing()
