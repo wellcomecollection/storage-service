@@ -27,7 +27,7 @@ class BagRegisterWorker[IngestDestination, NotificationDestination](
   val config: AlpakkaSQSWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   registrationNotifications: MessageSender[NotificationDestination],
-  register: Register[_, _],
+  register: Register,
   val metricsNamespace: String
 )(
   implicit
@@ -53,8 +53,8 @@ class BagRegisterWorker[IngestDestination, NotificationDestination](
 
       registrationSummary <- register.update(
         ingestId = payload.ingestId,
-        location = payload.knownReplicas.location.toStorageLocation,
-        replicas = payload.knownReplicas.replicas.map { _.toStorageLocation },
+        location = payload.knownReplicas.location,
+        replicas = payload.knownReplicas.replicas,
         version = payload.version,
         space = payload.storageSpace,
         externalIdentifier = payload.externalIdentifier

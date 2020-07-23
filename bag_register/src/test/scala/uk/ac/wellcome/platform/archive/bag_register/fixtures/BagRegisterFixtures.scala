@@ -9,10 +9,10 @@ import uk.ac.wellcome.messaging.fixtures.SQS.{Queue, QueuePair}
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.messaging.sqs.SQSClientFactory
-import uk.ac.wellcome.platform.archive.bag_register.services.s3.S3StorageManifestService
 import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
-  Register
+  Register,
+  S3StorageManifestService
 }
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
@@ -89,9 +89,7 @@ trait BagRegisterFixtures
           val register = new Register(
             bagReader = bagReader,
             bagTrackerClient = bagTrackerClient,
-            storageManifestService = storageManifestService,
-            toPrefix = (prefix: ObjectLocationPrefix) =>
-              S3ObjectLocationPrefix(prefix.namespace, prefix.path)
+            storageManifestService = storageManifestService
           )
 
           val service = new BagRegisterWorker(

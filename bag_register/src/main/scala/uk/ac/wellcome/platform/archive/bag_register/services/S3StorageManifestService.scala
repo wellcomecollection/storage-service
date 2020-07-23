@@ -40,7 +40,7 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
     version: BagVersion
   ): Try[StorageManifest] =
     for {
-      bagRoot <- getBagRoot(location, version).asInstanceOf[S3ObjectLocationPrefix]
+      bagRoot <- getBagRoot(location, version).map { _.asInstanceOf[S3ObjectLocationPrefix] }
 
       replicaLocations <- getReplicaLocations(replicas, version)
 
@@ -82,9 +82,9 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
           checksumAlgorithm = bag.tagManifest.checksumAlgorithm,
           files = tagManifestFiles ++ unreferencedTagManifestFiles
         ),
-        location = PrimaryStorageLocation(prefix = bagRoot),
+        location = StorageLocation.createPrimary(prefix = bagRoot),
         replicaLocations = replicaLocations
-          .map { prefix => SecondaryStorageLocation(prefix) },
+          .map { prefix => StorageLocation.createSecondary(prefix) },
         createdDate = Instant.now,
         ingestId = ingestId
       )

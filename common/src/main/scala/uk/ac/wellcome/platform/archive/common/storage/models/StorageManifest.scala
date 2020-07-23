@@ -31,8 +31,8 @@ case class StorageManifest(
   version: BagVersion,
   manifest: FileManifest,
   tagManifest: FileManifest,
-  location: StorageLocation,
-  replicaLocations: Seq[StorageLocation],
+  location: PrimaryStorageLocation,
+  replicaLocations: Seq[SecondaryStorageLocation],
   createdDate: Instant,
   ingestId: IngestID
 ) {

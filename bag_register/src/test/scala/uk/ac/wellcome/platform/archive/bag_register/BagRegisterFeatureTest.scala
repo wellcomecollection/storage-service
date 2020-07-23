@@ -11,13 +11,7 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.AmazonS3StorageProvider
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  KnownReplicas,
-  PrimaryS3ReplicaLocation,
-  PrimaryStorageLocation,
-  StorageManifest
-}
+import uk.ac.wellcome.platform.archive.common.storage.models._
 
 class BagRegisterFeatureTest
     extends AnyFunSpec
@@ -82,13 +76,11 @@ class BagRegisterFeatureTest
             storageManifest.info shouldBe bagInfo
             storageManifest.manifest.files should have size dataFileCount
 
-            storageManifest.location shouldBe PrimaryStorageLocation(
-              provider = AmazonS3StorageProvider,
-              prefix = bagRoot
+            storageManifest.location shouldBe PrimaryS3StorageLocation(
+              bagRoot
                 .copy(
                   keyPrefix = bagRoot.keyPrefix.stripSuffix(s"/$version")
                 )
-                .toObjectLocationPrefix
             )
 
             storageManifest.replicaLocations shouldBe empty

@@ -4,35 +4,27 @@ import java.time.Instant
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
-import uk.ac.wellcome.platform.archive.bag_tracker.client.{
-  BagTrackerClient,
-  BagTrackerCreateError
-}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
-import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
+import uk.ac.wellcome.platform.archive.bag_tracker.client.{BagTrackerClient, BagTrackerCreateError}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.storage.{Location, ObjectLocationPrefix, Prefix}
+import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class Register[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
-  bagReader: BagReader[BagLocation, BagPrefix],
+class Register(
+  bagReader: S3BagReader,
   bagTrackerClient: BagTrackerClient,
-  storageManifestService: StorageManifestService[_],
-  // TODO: Temporary while we disambiguate ObjectLocation.  Remove eventually.
-  toPrefix: ObjectLocationPrefix => BagPrefix
+  storageManifestService: S3StorageManifestService
 )(
   implicit ec: ExecutionContext
 ) extends Logging {
 
   def update(
     ingestId: IngestID,
-    location: PrimaryStorageLocation,
-    replicas: Seq[SecondaryStorageLocation],
+    location: PrimaryReplicaLocation,
+    replicas: Seq[SecondaryReplicaLocation],
     version: BagVersion,
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier
@@ -48,7 +40,7 @@ class Register[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
     )
 
     val result: Future[IngestStepResult[RegistrationSummary]] = for {
-      bag <- bagReader.get(toPrefix(location.prefix)) match {
+      bag <- bagReader.get(location.prefix.asInstanceOf[S3ObjectLocationPrefix]) match {
         case Right(value) => Future(value)
         case Left(err) =>
           Future.failed(
