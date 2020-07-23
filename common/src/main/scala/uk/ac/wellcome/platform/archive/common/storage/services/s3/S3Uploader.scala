@@ -8,7 +8,7 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
 import uk.ac.wellcome.platform.archive.common.storage.services.s3
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
+import uk.ac.wellcome.storage.store.s3.{NewS3StreamStore, S3StreamStore}
 import uk.ac.wellcome.storage.streaming.Codec.stringCodec
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
@@ -24,7 +24,7 @@ import scala.util.{Failure, Success, Try}
 class S3Uploader(implicit val s3Client: AmazonS3) {
   import s3.S3ObjectExists._
 
-  private val s3StreamStore: S3StreamStore = new S3StreamStore()
+  private val s3StreamStore: NewS3StreamStore = new NewS3StreamStore()()
 
   // NOTE: checkExists will allow overwriting of existing content if set to false
   // overwriting existing content will change what previously generated URLs return
@@ -38,7 +38,7 @@ class S3Uploader(implicit val s3Client: AmazonS3) {
       exists <- location.exists
 
       _ <- if (!exists || !checkExists) {
-        s3StreamStore.put(location.toObjectLocation)(content)
+        s3StreamStore.put(location)(content)
       } else {
         Right(Identified(location, content))
       }
