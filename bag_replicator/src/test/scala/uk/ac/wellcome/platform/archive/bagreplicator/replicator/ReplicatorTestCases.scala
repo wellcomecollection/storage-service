@@ -125,7 +125,7 @@ trait ReplicatorTestCases[
 
         val dstLocation = createDstLocationWith(
           dstNamespace = dstNamespace,
-          path = locations.head.path.replace("src/", "dst/")
+          path = locations.head.key.replace("src/", "dst/")
         )
 
         putDstObject(dstLocation, contents = badContents)
@@ -194,7 +194,7 @@ trait ReplicatorTestCases[
 
         val dstLocation = createDstLocationWith(
           dstNamespace,
-          path = location.path
+          path = location.key
         )
 
         dstTags.get(dstLocation).right.value shouldBe Identified(

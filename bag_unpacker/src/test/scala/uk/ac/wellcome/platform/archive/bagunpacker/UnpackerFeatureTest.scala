@@ -104,7 +104,7 @@ class UnpackerFeatureTest
                 ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
               ingestFailed.status shouldBe Ingest.Failed
               ingestFailed.events.head.description shouldBe
-                s"Unpacker failed - There is no S3 bucket ${sourceLocation.namespace}"
+                s"Unpacker failed - There is no S3 bucket ${sourceLocation.bucket}"
           }
         }
     }

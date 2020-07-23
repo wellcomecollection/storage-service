@@ -33,8 +33,8 @@ class ApplyTagsTest
         val location = prefix.asLocation(file.path)
 
         s3Client.putObject(
-          location.namespace,
-          location.path,
+          location.bucket,
+          location.key,
           "<MXF file contents>"
         )
         s3Tags.update(location) { _ =>
@@ -105,8 +105,8 @@ class ApplyTagsTest
         val location = prefix.asLocation(file.path)
 
         s3Client.putObject(
-          location.namespace,
-          location.path,
+          location.bucket,
+          location.key,
           "<MXF file contents>"
         )
 

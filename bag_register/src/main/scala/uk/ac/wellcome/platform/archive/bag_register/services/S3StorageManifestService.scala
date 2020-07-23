@@ -212,7 +212,7 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
           s"Looks like a fetch.txt URI wasn't under the bag root - why wasn't this spotted by the verifier? +" +
             s"$location ($bagPath)"
         )
-        val path = location.path.stripPrefix(bagRoot.pathPrefix + "/")
+        val path = location.key.stripPrefix(bagRoot.keyPrefix + "/")
 
         val size = maybeSize match {
           case Some(s) => s

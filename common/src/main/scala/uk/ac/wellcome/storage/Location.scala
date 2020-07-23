@@ -9,9 +9,6 @@ private object PathJoiner {
 
 trait Location {
   def toObjectLocation: ObjectLocation
-
-  val namespace: String
-  val path: String
 }
 
 trait Prefix[OfLocation <: Location] {

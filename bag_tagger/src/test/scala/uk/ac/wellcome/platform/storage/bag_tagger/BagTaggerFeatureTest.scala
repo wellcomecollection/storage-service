@@ -39,8 +39,8 @@ class BagTaggerFeatureTest
 
         val location = prefix.asLocation("digitised/b1234", "b1234.mxf")
         s3Client.putObject(
-          location.namespace,
-          location.path,
+          location.bucket,
+          location.key,
           "<test file contents>"
         )
         s3Tags.update(location) { _ =>
