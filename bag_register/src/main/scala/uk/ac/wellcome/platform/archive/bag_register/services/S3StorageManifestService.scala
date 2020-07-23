@@ -85,7 +85,7 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
           checksumAlgorithm = bag.tagManifest.checksumAlgorithm,
           files = tagManifestFiles ++ unreferencedTagManifestFiles
         ),
-        location = NewPrimaryStorageLocation(bagRoot),
+        location = PrimaryStorageLocation(bagRoot),
         replicaLocations = replicaLocations,
         createdDate = Instant.now,
         ingestId = ingestId
@@ -247,12 +247,12 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
   private def getReplicaLocations(
     replicas: Seq[SecondaryReplicaLocation],
     version: BagVersion
-  ): Try[Seq[NewSecondaryStorageLocation]] = {
+  ): Try[Seq[SecondaryStorageLocation]] = {
     val rootReplicas =
       replicas
         .map { loc =>
           getBagRoot(replicaRoot = loc.prefix, version = version)
-            .map { NewSecondaryStorageLocation(_) }
+            .map { SecondaryStorageLocation(_) }
         }
 
     val successes = rootReplicas.collect { case Success(loc) => loc }

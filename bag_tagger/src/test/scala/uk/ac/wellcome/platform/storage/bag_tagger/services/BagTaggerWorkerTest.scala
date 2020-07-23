@@ -258,7 +258,7 @@ class BagTaggerWorkerTest
 
         val brokenApplyTags = new ApplyTags(s3Tags) {
           override def applyTags(
-            storageLocations: Seq[NewStorageLocation],
+            storageLocations: Seq[StorageLocation],
             tagsToApply: Map[StorageManifestFile, Map[String, String]]
           ): Try[Unit] =
             Failure(applyError)

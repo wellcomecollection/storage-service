@@ -1,7 +1,8 @@
 package uk.ac.wellcome.platform.storage.bag_tagger.services
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.storage.models.{NewStorageLocation, S3StorageLocation, StorageManifestFile}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  StorageLocation, S3StorageLocation, StorageManifestFile}
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.tags.s3.NewS3Tags
 
@@ -9,7 +10,7 @@ import scala.util.Try
 
 class ApplyTags(s3Tags: NewS3Tags) extends Logging {
   def applyTags(
-    storageLocations: Seq[NewStorageLocation],
+    storageLocations: Seq[StorageLocation],
     tagsToApply: Map[StorageManifestFile, Map[String, String]]
   ): Try[Unit] =
     Try {
