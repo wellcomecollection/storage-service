@@ -4,25 +4,18 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{Assertion, EitherValues, TryValues}
 import uk.ac.wellcome.platform.archive.bag_register.services.memory.MemoryStorageManifestService
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  Bag,
-  BagPath,
-  BagVersion
-}
+import uk.ac.wellcome.platform.archive.bag_register.services.s3.S3StorageManifestService
+import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagPath, BagVersion}
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.PayloadEntry
 import uk.ac.wellcome.platform.archive.common.fixtures.memory.MemoryBagBuilder
 import uk.ac.wellcome.platform.archive.common.generators._
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  PrimaryStorageLocation,
-  SecondaryStorageLocation,
-  StorageManifest,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryStorageLocation, SecondaryStorageLocation, StorageManifest, StorageSpace}
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
 import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
 
 import scala.util.Random
@@ -36,7 +29,8 @@ class StorageManifestServiceTest
     with StorageSpaceGenerators
     with TimeTestFixture
     with EitherValues
-    with TryValues {
+    with TryValues
+    with S3Fixtures {
 
   describe("checks the replica root paths") {
     describe("primary location") {
@@ -620,10 +614,7 @@ class StorageManifestServiceTest
     replicas: Seq[SecondaryStorageLocation] = Seq.empty,
     version: BagVersion = BagVersion(1)
   )(assertError: Throwable => Assertion): Assertion = {
-    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
-      MemoryStreamStore[MemoryLocation]()
-
-    val service = MemoryStorageManifestService()
+    val service = new S3StorageManifestService()
 
     val result = service.createManifest(
       ingestId = ingestId,
