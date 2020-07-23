@@ -3,11 +3,8 @@ package uk.ac.wellcome.platform.archive.display.fixtures
 import java.time.format.DateTimeFormatter
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  FileManifest,
-  StorageLocation,
-  StorageManifestFile
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{FileManifest, StorageLocation, StorageManifestFile}
+import uk.ac.wellcome.platform.archive.display.DisplayLocation
 
 trait DisplayJsonHelpers {
   private def stringField[T](t: T): String =
@@ -54,8 +51,8 @@ trait DisplayJsonHelpers {
        |    "id": "${loc.provider.id}",
        |    "type": "Provider"
        |  },
-       |  "bucket": "${loc.prefix.namespace}",
-       |  "path": "${loc.prefix.path}",
+       |  "bucket": "${DisplayLocation(loc).bucket}",
+       |  "path": "${DisplayLocation(loc).path}",
        |  "type": "Location"
        |}
      """.stripMargin
