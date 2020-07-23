@@ -520,34 +520,6 @@ class StorageManifestServiceTest
     }
   }
 
-  def createStorageManifestBag(
-    space: StorageSpace = createStorageSpace,
-    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
-    version: BagVersion,
-    bagBuilder: MemoryBagBuilder = new MemoryBagBuilder {}
-  )(
-    implicit
-    namespace: String = randomAlphanumeric,
-    memoryStore: MemoryStreamStore[MemoryLocation]
-  ): (MemoryLocationPrefix, Bag) = {
-    implicit val typedStore: MemoryTypedStore[MemoryLocation, String] =
-      new MemoryTypedStore[MemoryLocation, String]()
-
-    val (bagObjects, bagRoot, _) =
-      bagBuilder.createBagContentsWith(
-        space = space,
-        externalIdentifier = externalIdentifier,
-        version = version
-      )
-
-    bagBuilder.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
-
-    (
-      bagRoot,
-      new MemoryBagReader().get(bagRoot).right.value
-    )
-  }
-
   describe(
     "finds files that aren't referenced in the BagIt tagmanifest-sha256.txt"
   ) {
@@ -579,6 +551,34 @@ class StorageManifestServiceTest
 
       tagManifestFiles.isEmpty shouldBe false
     }
+  }
+
+  def createStorageManifestBag(
+    space: StorageSpace = createStorageSpace,
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
+    version: BagVersion,
+    bagBuilder: MemoryBagBuilder = new MemoryBagBuilder {}
+  )(
+    implicit
+    namespace: String = randomAlphanumeric,
+    memoryStore: MemoryStreamStore[MemoryLocation]
+  ): (MemoryLocationPrefix, Bag) = {
+    implicit val typedStore: MemoryTypedStore[MemoryLocation, String] =
+      new MemoryTypedStore[MemoryLocation, String]()
+
+    val (bagObjects, bagRoot, _) =
+      bagBuilder.createBagContentsWith(
+        space = space,
+        externalIdentifier = externalIdentifier,
+        version = version
+      )
+
+    bagBuilder.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
+
+    (
+      bagRoot,
+      new MemoryBagReader().get(bagRoot).right.value
+    )
   }
 
   private def createManifest(
