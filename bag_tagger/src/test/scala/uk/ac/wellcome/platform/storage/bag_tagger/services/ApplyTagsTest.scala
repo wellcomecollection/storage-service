@@ -89,7 +89,7 @@ class ApplyTagsTest
 
       val err = result.failed.get
       err shouldBe a[IllegalArgumentException]
-      err.getMessage shouldBe "Unsupported provider for tagging: AzureBlobStorageProvider"
+      err.getMessage should startWith("Unsupported location for tagging:")
     }
 
     it("if the objects have not been tagged by the verifier") {
