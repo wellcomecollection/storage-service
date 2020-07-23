@@ -14,7 +14,6 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   BagInfoGenerators,
   PayloadGenerators
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.AmazonS3StorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models._
 
 class BagRegisterWorkerTest
@@ -279,25 +278,21 @@ class BagRegisterWorkerTest
       val storageManifest =
         storageManifestDao.getLatest(bagId).right.value
 
-      storageManifest.location shouldBe primaryLocation
-        .copy(
-          prefix = bagRoot
-            .copy(
-              keyPrefix = bagRoot.keyPrefix.stripSuffix(s"/$version")
-            )
-        )
-        .toStorageLocation
+      storageManifest.location shouldBe PrimaryS3StorageLocation(
+        prefix = bagRoot
+          .copy(
+            keyPrefix = bagRoot.keyPrefix.stripSuffix(s"/$version")
+          )
+      )
 
       storageManifest.replicaLocations shouldBe
         replicas.map { secondaryLocation =>
           val prefix = secondaryLocation.prefix
 
-          secondaryLocation
-            .copy(
-              prefix = prefix
-                .copy(keyPrefix = prefix.keyPrefix.stripSuffix(s"/$version"))
-            )
-            .toStorageLocation
+          SecondaryS3StorageLocation(
+            prefix = prefix
+              .copy(keyPrefix = prefix.keyPrefix.stripSuffix(s"/$version"))
+          )
         }
 
       val tagManifestFiles =

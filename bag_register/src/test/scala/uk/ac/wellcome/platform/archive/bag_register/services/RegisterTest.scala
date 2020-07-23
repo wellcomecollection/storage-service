@@ -9,11 +9,7 @@ import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.generators.StorageSpaceGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestCompleted,
-  PrimaryS3ReplicaLocation,
-  SecondaryS3ReplicaLocation
-}
+import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -81,7 +77,7 @@ class RegisterTest
       val manifest =
         storageManifestDao.getLatest(id = bagId).right.value
 
-      manifest.location shouldBe primaryLocation.copy(
+      manifest.location shouldBe PrimaryS3StorageLocation(
         prefix = bagRoot
           .copy(keyPrefix = bagRoot.keyPrefix.stripSuffix(s"/$version"))
       )
@@ -90,7 +86,7 @@ class RegisterTest
         replicas.map { secondaryLocation =>
           val prefix = secondaryLocation.prefix
 
-          secondaryLocation.copy(
+          SecondaryS3StorageLocation(
             prefix = prefix
               .copy(keyPrefix = prefix.keyPrefix.stripSuffix(s"/$version"))
           )

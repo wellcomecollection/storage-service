@@ -11,7 +11,6 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.AmazonS3StorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models._
 
 class BagRegisterFeatureTest
