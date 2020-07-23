@@ -13,21 +13,16 @@ import uk.ac.wellcome.messaging.typesafe.{
   SQSBuilder
 }
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
-import uk.ac.wellcome.platform.archive.bag_register.services.s3.S3StorageManifestService
 import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
-  Register
+  Register,
+  S3StorageManifestService
 }
 import uk.ac.wellcome.platform.archive.bag_tracker.client.AkkaBagTrackerClient
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder
-}
-import uk.ac.wellcome.storage.{
-  ObjectLocationPrefix,
-  S3ObjectLocation,
-  S3ObjectLocationPrefix
 }
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
@@ -63,14 +58,12 @@ object Main extends WellcomeTypesafeApp {
 
     val storageManifestService = new S3StorageManifestService()
 
-    val register = new Register[S3ObjectLocation, S3ObjectLocationPrefix](
+    val register = new Register(
       bagReader = new S3BagReader(),
       bagTrackerClient = new AkkaBagTrackerClient(
         trackerHost = config.requireString("bags.tracker.host")
       ),
-      storageManifestService = storageManifestService,
-      toPrefix =
-        (prefix: ObjectLocationPrefix) => S3ObjectLocationPrefix(prefix)
+      storageManifestService = storageManifestService
     )
 
     val registrationNotifications = SNSBuilder.buildSNSMessageSender(
