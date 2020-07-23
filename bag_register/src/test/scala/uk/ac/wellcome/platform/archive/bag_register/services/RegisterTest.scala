@@ -80,7 +80,7 @@ class RegisterTest
       val manifest =
         storageManifestDao.getLatest(id = bagId).right.value
 
-      manifest.location shouldBe primaryLocation.copy(
+      manifest.location shouldBe PrimaryS3StorageLocation(
         prefix = bagRoot
           .copy(keyPrefix = bagRoot.keyPrefix.stripSuffix(s"/$version"))
       )
@@ -89,7 +89,7 @@ class RegisterTest
 
       manifest.replicaLocations shouldBe
         replicas.map { secondaryLocation =>
-          secondaryLocation.copy(prefix = secondaryLocation.prefix.parent)
+          SecondaryS3StorageLocation(prefix = secondaryLocation.prefix.parent)
         }
     }
   }

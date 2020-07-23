@@ -110,18 +110,18 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
   ): Try[Prefix[_ <: Location]] =
     replicaLocation.prefix match {
       case s3Prefix: S3ObjectLocationPrefix =>
-        if (s3Prefix.basename == s"/$version") {
+        if (s3Prefix.basename == version.toString) {
           Success(s3Prefix.parent)
         } else {
           Failure(
             new StorageManifestException(
-              s"Malformed bag root: ${ replicaLocation.prefix} (expected suffix /$version)"
+              s"Malformed bag root: ${replicaLocation.prefix} (expected suffix /$version)"
             )
           )
         }
 
       case azurePrefix: AzureBlobItemLocationPrefix =>
-        if (azurePrefix.basename == s"/$version") {
+        if (azurePrefix.basename == version.toString) {
           Success(azurePrefix.parent)
         } else {
           Failure(

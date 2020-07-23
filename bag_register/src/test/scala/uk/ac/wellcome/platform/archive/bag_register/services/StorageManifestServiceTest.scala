@@ -134,7 +134,7 @@ class StorageManifestServiceTest
     }
   }
 
-  describe("if there's no fetch.txt, it versions the paths") {
+  it("if there's no fetch.txt, it versions the paths") {
     object NoFetchBagBuilder extends S3BagBuilder {
       override protected def getFetchEntryCount(payloadFileCount: Int): Int = 0
     }
@@ -167,7 +167,7 @@ class StorageManifestServiceTest
     }
   }
 
-  describe("if there's a fetch.txt, it constructs the right paths") {
+  it("if there's a fetch.txt, it constructs the right paths") {
     object AtLeastOneFetchEntryBagBuilder extends S3BagBuilder {
       override protected def getFetchEntryCount(payloadFileCount: Int): Int =
         randomInt(from = 1, to = payloadFileCount)
@@ -408,7 +408,7 @@ class StorageManifestServiceTest
             .toMap
 
         storageManifestSizes shouldBe sizeCache.map {
-          case (cachedLoc, cachedSize) => cachedLoc.toObjectLocation -> cachedSize
+          case (cachedLoc, cachedSize) => cachedLoc -> cachedSize
         }
       }
     }
