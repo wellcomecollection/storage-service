@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{Assertion, TryValues}
-import uk.ac.wellcome.platform.archive.bag_register.services.s3.S3StorageManifestService
 import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagPath, BagVersion}
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.PayloadEntry

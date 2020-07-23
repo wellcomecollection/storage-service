@@ -9,10 +9,10 @@ import uk.ac.wellcome.messaging.fixtures.SQS.{Queue, QueuePair}
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.messaging.sqs.SQSClientFactory
-import uk.ac.wellcome.platform.archive.bag_register.services.s3.S3StorageManifestService
 import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
-  Register
+  Register,
+  S3StorageManifestService
 }
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
