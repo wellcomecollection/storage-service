@@ -42,8 +42,10 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
     version: BagVersion
   ): Try[StorageManifest] =
     for {
-      bagRoot <- getBagRoot(location.prefix.asInstanceOf[S3ObjectLocationPrefix], version)
-        .map { _.asInstanceOf[S3ObjectLocationPrefix] }
+      bagRoot <- getBagRoot(
+        location.prefix.asInstanceOf[S3ObjectLocationPrefix],
+        version
+      ).map { _.asInstanceOf[S3ObjectLocationPrefix] }
 
       replicaLocations <- getReplicaLocations(replicas, version)
 

@@ -2,7 +2,10 @@ package uk.ac.wellcome.platform.archive.common
 
 import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.storage.models.{StorageManifest, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  StorageManifest,
+  StorageSpace
+}
 
 /** This notification is sent by the storage service to notify another system
   * (which may be entirely separate from the storage service, e.g. the catalogue)

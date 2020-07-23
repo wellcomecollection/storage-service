@@ -51,15 +51,22 @@ trait StorageManifestGenerators
     bagInfo: BagInfo = createBagInfo,
     version: BagVersion = createBagVersion,
     fileCount: Int = 3,
-    location: PrimaryStorageLocation = PrimaryS3StorageLocation(createS3ObjectLocationPrefix),
+    location: PrimaryStorageLocation = PrimaryS3StorageLocation(
+      createS3ObjectLocationPrefix
+    ),
     replicaLocations: Seq[SecondaryStorageLocation] = (1 to randomInt(0, 5))
       .map { _ =>
-        chooseFrom(Seq(
-          SecondaryS3StorageLocation(createS3ObjectLocationPrefix),
-          SecondaryAzureStorageLocation(
-            AzureBlobItemLocationPrefix(randomAlphanumeric, randomAlphanumeric)
+        chooseFrom(
+          Seq(
+            SecondaryS3StorageLocation(createS3ObjectLocationPrefix),
+            SecondaryAzureStorageLocation(
+              AzureBlobItemLocationPrefix(
+                randomAlphanumeric,
+                randomAlphanumeric
+              )
+            )
           )
-        ))
+        )
       },
     createdDate: Instant = Instant.now,
     files: Seq[StorageManifestFile] = Nil

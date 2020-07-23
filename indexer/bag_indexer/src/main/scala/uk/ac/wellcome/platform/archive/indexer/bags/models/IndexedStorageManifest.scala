@@ -5,7 +5,10 @@ import java.time.{Instant, LocalDate}
 import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
 import uk.ac.wellcome.platform.archive.common.storage.models.{
-  StorageLocation, StorageManifest, StorageManifestFile}
+  StorageLocation,
+  StorageManifest,
+  StorageManifestFile
+}
 import uk.ac.wellcome.platform.archive.indexer.bags.services.FileSuffix
 
 case class IndexedFileFields(

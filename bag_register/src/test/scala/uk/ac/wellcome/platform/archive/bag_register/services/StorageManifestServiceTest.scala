@@ -3,7 +3,11 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{Assertion, TryValues}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagPath, BagVersion}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  Bag,
+  BagPath,
+  BagVersion
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.PayloadEntry
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
@@ -543,14 +547,17 @@ class StorageManifestServiceTest
   def createSecondaryLocationWith(
     version: BagVersion
   ): SecondaryReplicaLocation =
-    chooseFrom(Seq(
-      SecondaryS3ReplicaLocation(
-        createS3ObjectLocationPrefix.join(version.toString)
-      ),
-      SecondaryAzureReplicaLocation(
-        AzureBlobItemLocationPrefix(randomAlphanumeric, randomAlphanumeric).join(version.toString)
+    chooseFrom(
+      Seq(
+        SecondaryS3ReplicaLocation(
+          createS3ObjectLocationPrefix.join(version.toString)
+        ),
+        SecondaryAzureReplicaLocation(
+          AzureBlobItemLocationPrefix(randomAlphanumeric, randomAlphanumeric)
+            .join(version.toString)
+        )
       )
-    ))
+    )
 
   private def assertIsError(
     ingestId: IngestID = createIngestID,

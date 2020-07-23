@@ -4,8 +4,16 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
 import uk.ac.wellcome.platform.archive.common.ingests.models.S3SourceLocation
-import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryS3StorageLocation, SecondaryAzureStorageLocation, SecondaryS3StorageLocation}
-import uk.ac.wellcome.storage.{AzureBlobItemLocationPrefix, S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  PrimaryS3StorageLocation,
+  SecondaryAzureStorageLocation,
+  SecondaryS3StorageLocation
+}
+import uk.ac.wellcome.storage.{
+  AzureBlobItemLocationPrefix,
+  S3ObjectLocation,
+  S3ObjectLocationPrefix
+}
 
 class DisplayLocationTest
     extends AnyFunSpec
@@ -82,7 +90,7 @@ class DisplayLocationTest
         bucket = "replica-container",
         path = "path/to/blobs"
       )
-    ),
+    )
   )
 
   it("creates a DisplayLocation from a StorageLocation") {

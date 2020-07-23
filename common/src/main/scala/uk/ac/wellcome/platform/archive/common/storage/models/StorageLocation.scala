@@ -1,6 +1,10 @@
 package uk.ac.wellcome.platform.archive.common.storage.models
 
-import uk.ac.wellcome.platform.archive.common.ingests.models.{AmazonS3StorageProvider, AzureBlobStorageProvider, StorageProvider}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  AmazonS3StorageProvider,
+  AzureBlobStorageProvider,
+  StorageProvider
+}
 import uk.ac.wellcome.storage._
 
 // Represents the location of all the versions of a given (space, externalIdentifier) pair
@@ -9,8 +13,7 @@ sealed trait StorageLocation {
   val prefix: Prefix[_ <: Location]
 }
 
-sealed trait PrimaryStorageLocation
-  extends StorageLocation
+sealed trait PrimaryStorageLocation extends StorageLocation
 
 case object PrimaryStorageLocation {
   def apply(prefix: Prefix[_ <: Location]): PrimaryStorageLocation =
@@ -18,12 +21,12 @@ case object PrimaryStorageLocation {
       case s3Prefix: S3ObjectLocationPrefix =>
         PrimaryS3StorageLocation(s3Prefix)
 
-      case _ => throw new IllegalArgumentException(s"Unrecognised location: $prefix")
+      case _ =>
+        throw new IllegalArgumentException(s"Unrecognised location: $prefix")
     }
 }
 
-sealed trait SecondaryStorageLocation
-  extends StorageLocation
+sealed trait SecondaryStorageLocation extends StorageLocation
 
 case object SecondaryStorageLocation {
   def apply(prefix: Prefix[_ <: Location]): SecondaryStorageLocation =
@@ -34,7 +37,8 @@ case object SecondaryStorageLocation {
       case azurePrefix: AzureBlobItemLocationPrefix =>
         SecondaryAzureStorageLocation(azurePrefix)
 
-      case _ => throw new IllegalArgumentException(s"Unrecognised location: $prefix")
+      case _ =>
+        throw new IllegalArgumentException(s"Unrecognised location: $prefix")
     }
 }
 
@@ -49,13 +53,13 @@ sealed trait AzureStorageLocation extends StorageLocation {
 }
 
 case class PrimaryS3StorageLocation(prefix: S3ObjectLocationPrefix)
-  extends PrimaryStorageLocation
+    extends PrimaryStorageLocation
     with S3StorageLocation
 
 case class SecondaryS3StorageLocation(prefix: S3ObjectLocationPrefix)
-  extends SecondaryStorageLocation
+    extends SecondaryStorageLocation
     with S3StorageLocation
 
 case class SecondaryAzureStorageLocation(prefix: AzureBlobItemLocationPrefix)
-  extends SecondaryStorageLocation
+    extends SecondaryStorageLocation
     with AzureStorageLocation

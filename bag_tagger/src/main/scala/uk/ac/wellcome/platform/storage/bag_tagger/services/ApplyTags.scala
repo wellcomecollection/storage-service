@@ -2,7 +2,10 @@ package uk.ac.wellcome.platform.storage.bag_tagger.services
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.storage.models.{
-  StorageLocation, S3StorageLocation, StorageManifestFile}
+  S3StorageLocation,
+  StorageLocation,
+  StorageManifestFile
+}
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.tags.s3.NewS3Tags
 
