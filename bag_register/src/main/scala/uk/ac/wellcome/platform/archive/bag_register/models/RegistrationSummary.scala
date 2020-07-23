@@ -2,20 +2,14 @@ package uk.ac.wellcome.platform.archive.bag_register.models
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  PrimaryStorageLocation,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryReplicaLocation, StorageSpace}
 
 case class RegistrationSummary(
   ingestId: IngestID,
-  location: PrimaryStorageLocation,
+  location: PrimaryReplicaLocation,
   space: StorageSpace,
   externalIdentifier: ExternalIdentifier,
   version: BagVersion,

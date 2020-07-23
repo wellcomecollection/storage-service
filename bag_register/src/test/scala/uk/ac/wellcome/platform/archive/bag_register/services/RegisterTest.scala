@@ -8,11 +8,8 @@ import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
-import uk.ac.wellcome.platform.archive.common.generators.{
-  StorageLocationGenerators,
-  StorageSpaceGenerators
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.IngestCompleted
+import uk.ac.wellcome.platform.archive.common.generators.{StorageLocationGenerators, StorageSpaceGenerators}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestCompleted, PrimaryS3ReplicaLocation, SecondaryS3ReplicaLocation}
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -40,15 +37,10 @@ class RegisterTest
         version = version
       )
 
-      val primaryLocation = createPrimaryLocationWith(
-        prefix = bagRoot.toObjectLocationPrefix
-      )
+      val primaryLocation = PrimaryS3ReplicaLocation(bagRoot)
 
       val replicas = collectionOf(min = 1) {
-        createSecondaryLocationWith(
-          prefix =
-            bagRoot.copy(bucket = createBucketName).toObjectLocationPrefix
-        )
+        SecondaryS3ReplicaLocation(bagRoot.copy(bucket = createBucketName))
       }
 
       val ingestId = createIngestID
@@ -89,7 +81,6 @@ class RegisterTest
       manifest.location shouldBe primaryLocation.copy(
         prefix = bagRoot
           .copy(keyPrefix = bagRoot.keyPrefix.stripSuffix(s"/$version"))
-          .toObjectLocationPrefix
       )
 
       manifest.replicaLocations shouldBe
@@ -98,7 +89,7 @@ class RegisterTest
 
           secondaryLocation.copy(
             prefix = prefix
-              .copy(path = prefix.path.stripSuffix(s"/$version"))
+              .copy(keyPrefix = prefix.keyPrefix.stripSuffix(s"/$version"))
           )
         }
     }

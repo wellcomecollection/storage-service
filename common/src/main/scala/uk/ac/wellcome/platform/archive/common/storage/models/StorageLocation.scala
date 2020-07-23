@@ -12,8 +12,31 @@ sealed trait NewStorageLocation {
 sealed trait NewPrimaryStorageLocation
   extends NewStorageLocation
 
+case object NewPrimaryStorageLocation {
+  def apply(prefix: Prefix[_ <: Location]): NewPrimaryStorageLocation =
+    prefix match {
+      case s3Prefix: S3ObjectLocationPrefix =>
+        PrimaryS3StorageLocation(s3Prefix)
+
+      case _ => throw new IllegalArgumentException(s"Unrecognised location: $prefix")
+    }
+}
+
 sealed trait NewSecondaryStorageLocation
   extends NewStorageLocation
+
+case object NewSecondaryStorageLocation {
+  def apply(prefix: Prefix[_ <: Location]): NewSecondaryStorageLocation =
+    prefix match {
+      case s3Prefix: S3ObjectLocationPrefix =>
+        SecondaryS3StorageLocation(s3Prefix)
+
+      case azurePrefix: AzureBlobItemLocationPrefix =>
+        SecondaryAzureStorageLocation(azurePrefix)
+
+      case _ => throw new IllegalArgumentException(s"Unrecognised location: $prefix")
+    }
+}
 
 sealed trait S3StorageLocation extends NewStorageLocation {
   val prefix: S3ObjectLocationPrefix

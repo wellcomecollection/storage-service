@@ -36,15 +36,14 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
   def createManifest(
     ingestId: IngestID,
     bag: Bag,
-    location: PrimaryStorageLocation,
-    replicas: Seq[SecondaryStorageLocation],
+    location: PrimaryReplicaLocation,
+    replicas: Seq[SecondaryReplicaLocation],
     space: StorageSpace,
     version: BagVersion
   ): Try[StorageManifest] =
     for {
-      root: ObjectLocationPrefix <- getBagRoot(location.prefix, version)
-
-      bagRoot = S3ObjectLocationPrefix(root)
+      bagRoot <- getBagRoot(location.prefix.asInstanceOf[S3ObjectLocationPrefix], version)
+        .map { _.asInstanceOf[S3ObjectLocationPrefix] }
 
       replicaLocations <- getReplicaLocations(replicas, version)
 
@@ -86,10 +85,7 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
           checksumAlgorithm = bag.tagManifest.checksumAlgorithm,
           files = tagManifestFiles ++ unreferencedTagManifestFiles
         ),
-        location = PrimaryStorageLocation(
-          provider = location.provider,
-          prefix = bagRoot.toObjectLocationPrefix
-        ),
+        location = NewPrimaryStorageLocation(bagRoot),
         replicaLocations = replicaLocations,
         createdDate = Instant.now,
         ingestId = ingestId
@@ -109,15 +105,11 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
     *
     */
   private def getBagRoot(
-    replicaRoot: ObjectLocationPrefix,
+    replicaRoot: Prefix[_ <: Location],
     version: BagVersion
-  ): Try[ObjectLocationPrefix] =
-    if (replicaRoot.path.endsWith(s"/$version")) {
-      Success(
-        replicaRoot.copy(
-          path = replicaRoot.path.stripSuffix(s"/$version")
-        )
-      )
+  ): Try[Prefix[_ <: Location]] =
+    if (replicaRoot.filename == version.toString) {
+      Success(replicaRoot.parent)
     } else {
       Failure(
         new StorageManifestException(
@@ -253,23 +245,14 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
       }
 
   private def getReplicaLocations(
-    replicas: Seq[SecondaryStorageLocation],
+    replicas: Seq[SecondaryReplicaLocation],
     version: BagVersion
-  ): Try[Seq[SecondaryStorageLocation]] = {
+  ): Try[Seq[NewSecondaryStorageLocation]] = {
     val rootReplicas =
       replicas
         .map { loc =>
-          getBagRoot(replicaRoot = loc.prefix, version = version) match {
-            case Success(prefix) =>
-              Success(
-                SecondaryStorageLocation(
-                  provider = loc.provider,
-                  prefix = prefix
-                )
-              )
-
-            case Failure(err) => Failure(err)
-          }
+          getBagRoot(replicaRoot = loc.prefix, version = version)
+            .map { NewSecondaryStorageLocation(_) }
         }
 
     val successes = rootReplicas.collect { case Success(loc) => loc }
