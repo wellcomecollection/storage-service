@@ -81,13 +81,11 @@ class BagRegisterWorkerTest
       storageManifest.info shouldBe bagInfo
       storageManifest.manifest.files should have size dataFileCount
 
-      storageManifest.location shouldBe PrimaryStorageLocation(
-        provider = AmazonS3StorageProvider,
+      storageManifest.location shouldBe PrimaryS3StorageLocation(
         prefix = bagRoot
           .copy(
             keyPrefix = bagRoot.keyPrefix.stripSuffix(s"/$version")
           )
-          .toObjectLocationPrefix
       )
 
       storageManifest.replicaLocations shouldBe empty

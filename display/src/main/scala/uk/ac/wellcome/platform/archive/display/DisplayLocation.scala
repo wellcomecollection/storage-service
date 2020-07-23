@@ -37,19 +37,9 @@ object DisplayLocation {
     }
 
   def apply(location: NewStorageLocation): DisplayLocation =
-    location match {
-      case s3Location: S3StorageLocation =>
-        DisplayLocation(
-          provider = DisplayProvider(location.provider),
-          bucket = s3Location.prefix.bucket,
-          path = s3Location.prefix.keyPrefix
-        )
-
-      case azureLocation: AzureStorageLocation =>
-        DisplayLocation(
-          provider = DisplayProvider(location.provider),
-          bucket = azureLocation.prefix.container,
-          path = azureLocation.prefix.namePrefix
-        )
-    }
+    DisplayLocation(
+      provider = DisplayProvider(location.provider),
+      bucket = location.prefix.namespace,
+      path = location.prefix.pathPrefix
+    )
 }

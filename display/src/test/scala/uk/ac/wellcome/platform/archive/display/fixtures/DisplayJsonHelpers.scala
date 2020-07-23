@@ -3,11 +3,7 @@ package uk.ac.wellcome.platform.archive.display.fixtures
 import java.time.format.DateTimeFormatter
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  FileManifest,
-  StorageLocation,
-  StorageManifestFile
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{FileManifest, NewStorageLocation, StorageManifestFile}
 
 trait DisplayJsonHelpers {
   private def stringField[T](t: T): String =
@@ -47,7 +43,7 @@ trait DisplayJsonHelpers {
        |}
      """.stripMargin
 
-  def location(loc: StorageLocation): String =
+  def location(loc: NewStorageLocation): String =
     s"""
        |{
        |  "provider": {
@@ -55,7 +51,7 @@ trait DisplayJsonHelpers {
        |    "type": "Provider"
        |  },
        |  "bucket": "${loc.prefix.namespace}",
-       |  "path": "${loc.prefix.path}",
+       |  "path": "${loc.prefix.pathPrefix}",
        |  "type": "Location"
        |}
      """.stripMargin

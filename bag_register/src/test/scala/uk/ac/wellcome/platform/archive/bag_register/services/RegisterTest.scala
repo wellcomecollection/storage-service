@@ -8,7 +8,7 @@ import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
-import uk.ac.wellcome.platform.archive.common.generators.{StorageLocationGenerators, StorageSpaceGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.StorageSpaceGenerators
 import uk.ac.wellcome.platform.archive.common.storage.models.{IngestCompleted, PrimaryS3ReplicaLocation, SecondaryS3ReplicaLocation}
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 
@@ -19,7 +19,6 @@ class RegisterTest
     with Matchers
     with BagRegisterFixtures
     with StorageSpaceGenerators
-    with StorageLocationGenerators
     with StringNamespaceFixtures
     with BagTrackerFixtures
     with ScalaFutures

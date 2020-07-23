@@ -4,11 +4,7 @@ import java.time.{Instant, LocalDate}
 
 import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  StorageLocation,
-  StorageManifest,
-  StorageManifestFile
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{NewStorageLocation, StorageManifest, StorageManifestFile}
 import uk.ac.wellcome.platform.archive.indexer.bags.services.FileSuffix
 
 case class IndexedFileFields(
@@ -64,11 +60,11 @@ case class IndexedLocation(
 )
 
 object IndexedLocation {
-  def apply(location: StorageLocation): IndexedLocation =
+  def apply(location: NewStorageLocation): IndexedLocation =
     IndexedLocation(
       provider = location.provider.id,
       bucket = location.prefix.namespace,
-      path = location.prefix.path
+      path = location.prefix.pathPrefix
     )
 }
 

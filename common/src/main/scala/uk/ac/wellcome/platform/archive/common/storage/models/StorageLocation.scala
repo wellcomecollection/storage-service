@@ -59,20 +59,3 @@ case class SecondaryS3StorageLocation(prefix: S3ObjectLocationPrefix)
 case class SecondaryAzureStorageLocation(prefix: AzureBlobItemLocationPrefix)
   extends NewSecondaryStorageLocation
     with AzureStorageLocation
-
-
-
-sealed trait StorageLocation {
-  val provider: StorageProvider
-  val prefix: ObjectLocationPrefix
-}
-
-case class PrimaryStorageLocation(
-  provider: StorageProvider,
-  prefix: ObjectLocationPrefix
-) extends StorageLocation
-
-case class SecondaryStorageLocation(
-  provider: StorageProvider,
-  prefix: ObjectLocationPrefix
-) extends StorageLocation
