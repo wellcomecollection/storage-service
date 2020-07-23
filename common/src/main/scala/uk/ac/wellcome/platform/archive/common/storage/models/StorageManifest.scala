@@ -37,5 +37,5 @@ case class StorageManifest(
   ingestId: IngestID
 ) {
   val id = BagId(space, info.externalIdentifier)
-  val idWithVersion = s"${id}/${version}"
+  val idWithVersion = s"$id/$version"
 }
