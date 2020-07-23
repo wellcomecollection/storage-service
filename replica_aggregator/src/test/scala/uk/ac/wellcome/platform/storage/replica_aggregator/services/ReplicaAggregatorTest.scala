@@ -88,7 +88,7 @@ class ReplicaAggregatorTest
     }
 
     it("stores the replica in the underlying store") {
-      val path = ReplicaPath(secondaryLocation.toStorageLocation.prefix.path)
+      val path = ReplicaPath(secondaryLocation.prefix.pathPrefix)
 
       versionedStore
         .getLatest(path)
