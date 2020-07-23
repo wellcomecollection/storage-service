@@ -520,37 +520,33 @@ class StorageManifestServiceTest
     }
   }
 
-  describe(
-    "finds files that aren't referenced in the BagIt tagmanifest-sha256.txt"
-  ) {
-    it("finds BagIt tag manifest files") {
-      implicit val streamStore: MemoryStreamStore[MemoryLocation] =
-        MemoryStreamStore[MemoryLocation]()
+  it("includes the tag manifest files") {
+    implicit val streamStore: MemoryStreamStore[MemoryLocation] =
+      MemoryStreamStore[MemoryLocation]()
 
-      val space = createStorageSpace
-      val externalIdentifier = createExternalIdentifier
-      val version = createBagVersion
+    val space = createStorageSpace
+    val externalIdentifier = createExternalIdentifier
+    val version = createBagVersion
 
-      val (bagRoot, bag) = createStorageManifestBag(
-        space = space,
-        externalIdentifier,
-        version = version
-      )
+    val (bagRoot, bag) = createStorageManifestBag(
+      space = space,
+      externalIdentifier,
+      version = version
+    )
 
-      val manifest = createManifest(
-        bag = bag,
-        location =
-          createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix),
-        space = space,
-        version = version
-      )
+    val manifest = createManifest(
+      bag = bag,
+      location =
+        createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix),
+      space = space,
+      version = version
+    )
 
-      val tagManifestFiles = manifest.tagManifest.files.filter {
-        _.name.startsWith("tagmanifest-")
-      }
-
-      tagManifestFiles.isEmpty shouldBe false
+    val tagManifestFiles = manifest.tagManifest.files.filter {
+      _.name.startsWith("tagmanifest-")
     }
+
+    tagManifestFiles.isEmpty shouldBe false
   }
 
   def createStorageManifestBag(
