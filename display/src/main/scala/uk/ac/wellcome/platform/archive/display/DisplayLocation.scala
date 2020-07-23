@@ -2,11 +2,7 @@ package uk.ac.wellcome.platform.archive.display
 
 import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  AzureStorageLocation,
-  S3StorageLocation,
-  StorageLocation
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageLocation
 import uk.ac.wellcome.storage.S3ObjectLocation
 
 case class DisplayLocation(
