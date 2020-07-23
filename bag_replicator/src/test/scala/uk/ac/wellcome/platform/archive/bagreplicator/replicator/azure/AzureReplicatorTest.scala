@@ -1,20 +1,27 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.replicator.azure
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagreplicator.replicator.{
-  Replicator,
-  ReplicatorTestCases
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.ReplicatorTestCases
 import uk.ac.wellcome.storage.fixtures.AzureFixtures
 import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
-import uk.ac.wellcome.storage.store.azure.{AzureStreamStore, AzureTypedStore}
+import uk.ac.wellcome.storage.store.azure.{
+  NewAzureStreamStore,
+  NewAzureTypedStore
+}
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.tags.Tags
-import uk.ac.wellcome.storage.tags.azure.AzureBlobMetadata
-import uk.ac.wellcome.storage.{ObjectLocation, ObjectLocationPrefix}
+import uk.ac.wellcome.storage.tags.azure.NewAzureBlobMetadata
+import uk.ac.wellcome.storage.{
+  AzureBlobItemLocation,
+  AzureBlobItemLocationPrefix
+}
 
 class AzureReplicatorTest
-    extends ReplicatorTestCases[Container]
+    extends ReplicatorTestCases[
+      Container,
+      AzureBlobItemLocation,
+      AzureBlobItemLocationPrefix
+    ]
     with AzureFixtures {
 
   override def withDstNamespace[R](testWith: TestWith[Container, R]): R =
@@ -22,23 +29,23 @@ class AzureReplicatorTest
       testWith(container)
     }
 
-  override def withReplicator[R](testWith: TestWith[Replicator, R]): R =
+  override def withReplicator[R](testWith: TestWith[ReplicatorImpl, R]): R =
     testWith(new AzureReplicator())
 
   override def createDstLocationWith(
     dstContainer: Container,
-    path: String
-  ): ObjectLocation =
-    createObjectLocationWith(dstContainer.name, path = path)
+    name: String
+  ): AzureBlobItemLocation =
+    AzureBlobItemLocation(dstContainer.name, name = name)
 
   override def createDstPrefixWith(
     dstContainer: Container
-  ): ObjectLocationPrefix =
-    ObjectLocationPrefix(dstContainer.name, path = "")
+  ): AzureBlobItemLocationPrefix =
+    AzureBlobItemLocationPrefix(dstContainer.name, namePrefix = "")
 
-  implicit val streamStore: AzureStreamStore = new AzureStreamStore()
-  override val dstStringStore: AzureTypedStore[String] =
-    new AzureTypedStore[String]
+  implicit val streamStore: NewAzureStreamStore = new NewAzureStreamStore()
+  override val dstStringStore: NewAzureTypedStore[String] =
+    new NewAzureTypedStore[String]
 
-  override val dstTags: Tags[ObjectLocation] = new AzureBlobMetadata()
+  override val dstTags: Tags[AzureBlobItemLocation] = new NewAzureBlobMetadata()
 }

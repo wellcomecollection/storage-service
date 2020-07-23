@@ -4,15 +4,16 @@ import java.time.Instant
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models._
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.storage.listing.Listing
-import uk.ac.wellcome.storage.transfer.{PrefixTransfer, TransferResult}
-import uk.ac.wellcome.storage.{
-  ObjectLocation,
-  ObjectLocationPrefix,
-  S3ObjectLocation,
-  S3ObjectLocationPrefix
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
 }
+import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
+import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.listing.Listing
+import uk.ac.wellcome.storage.transfer.{NewPrefixTransfer, TransferResult}
 
 // This is a generic replication from one location to another.
 //
@@ -22,10 +23,13 @@ import uk.ac.wellcome.storage.{
 // For example, in the BagReplicator, we verify the tag manifests
 // are the same after replication completes.
 
-trait Replicator extends Logging {
-  implicit val prefixTransfer: PrefixTransfer[
-    ObjectLocationPrefix,
-    ObjectLocation
+trait Replicator[DstLocation <: Location, DstPrefix <: Prefix[DstLocation]]
+    extends Logging {
+  implicit val prefixTransfer: NewPrefixTransfer[
+    S3ObjectLocation,
+    S3ObjectLocationPrefix,
+    DstLocation,
+    DstPrefix
   ]
 
   implicit val prefixListing: Listing[
@@ -33,10 +37,26 @@ trait Replicator extends Logging {
     S3ObjectLocation
   ]
 
+  def buildDestination(
+    namespace: String,
+    space: StorageSpace,
+    externalIdentifier: ExternalIdentifier,
+    version: BagVersion
+  ): DstPrefix =
+    buildDestinationFromParts(
+      namespace = namespace,
+      path = DestinationBuilder.buildPath(space, externalIdentifier, version)
+    )
+
+  protected def buildDestinationFromParts(
+    namespace: String,
+    path: String
+  ): DstPrefix
+
   def replicate(
     ingestId: IngestID,
-    request: ReplicationRequest
-  ): ReplicationResult = {
+    request: ReplicationRequest[DstPrefix]
+  ): ReplicationResult[DstPrefix] = {
     val summary = ReplicationSummary(
       ingestId = ingestId,
       startTime = Instant.now,
@@ -72,7 +92,7 @@ trait Replicator extends Logging {
     debug(s"Consistency mode: checkForExisting = $checkForExisting")
 
     prefixTransfer.transferPrefix(
-      srcPrefix = request.srcPrefix.toObjectLocationPrefix,
+      srcPrefix = request.srcPrefix,
       dstPrefix = request.dstPrefix,
       checkForExisting = checkForExisting
     ) match {

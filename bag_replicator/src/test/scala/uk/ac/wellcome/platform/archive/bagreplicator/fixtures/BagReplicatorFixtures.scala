@@ -20,7 +20,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   StorageProvider
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
-import uk.ac.wellcome.storage.S3ObjectLocationPrefix
+import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.listing.s3.S3ObjectSummaryListing
@@ -42,7 +42,7 @@ trait BagReplicatorFixtures
 
   type ReplicatorLockingService =
     LockingService[
-      IngestStepResult[ReplicationSummary],
+      IngestStepResult[ReplicationSummary[S3ObjectLocationPrefix]],
       Try,
       LockDao[String, UUID]
     ]
@@ -66,7 +66,6 @@ trait BagReplicatorFixtures
   def withBagReplicatorWorker[R](
     queue: Queue = dummyQueue,
     bucket: Bucket,
-    provider: StorageProvider = AmazonS3StorageProvider,
     ingests: MemoryMessageSender = new MemoryMessageSender(),
     outgoing: MemoryMessageSender = new MemoryMessageSender(),
     lockServiceDao: LockDao[String, UUID] = new MemoryLockDao[String, UUID] {},
@@ -74,7 +73,12 @@ trait BagReplicatorFixtures
     replicaType: ReplicaType = chooseFrom(Seq(PrimaryReplica, SecondaryReplica))
   )(
     testWith: TestWith[
-      BagReplicatorWorker[String, String],
+      BagReplicatorWorker[
+        String,
+        String,
+        S3ObjectLocation,
+        S3ObjectLocationPrefix
+      ],
       R
     ]
   ): R =
@@ -87,7 +91,7 @@ trait BagReplicatorFixtures
         val replicatorDestinationConfig =
           createReplicatorDestinationConfigWith(
             bucket = bucket,
-            provider = provider,
+            provider = AmazonS3StorageProvider,
             replicaType = replicaType
           )
 

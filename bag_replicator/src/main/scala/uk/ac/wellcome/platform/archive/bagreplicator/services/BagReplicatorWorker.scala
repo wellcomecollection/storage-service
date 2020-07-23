@@ -16,11 +16,11 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
 import uk.ac.wellcome.platform.archive.common.{
   ReplicaCompletePayload,
   VersionedBagRootPayload
 }
+import uk.ac.wellcome.storage.{Location, Prefix}
 import uk.ac.wellcome.storage.locking.{
   FailedLockingServiceOp,
   LockDao,
@@ -31,17 +31,21 @@ import scala.util.Try
 
 class BagReplicatorWorker[
   IngestDestination,
-  OutgoingDestination
+  OutgoingDestination,
+  DstLocation <: Location,
+  DstPrefix <: Prefix[DstLocation]
 ](
   val config: AlpakkaSQSWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  lockingService: LockingService[IngestStepResult[ReplicationSummary], Try, LockDao[
+  lockingService: LockingService[IngestStepResult[
+    ReplicationSummary[DstPrefix]
+  ], Try, LockDao[
     String,
     UUID
   ]],
   destinationConfig: ReplicatorDestinationConfig,
-  replicator: Replicator,
+  replicator: Replicator[DstLocation, DstPrefix],
   val metricsNamespace: String
 )(
   implicit
@@ -49,20 +53,22 @@ class BagReplicatorWorker[
   val as: ActorSystem,
   val sc: SqsAsyncClient,
   val wd: Decoder[VersionedBagRootPayload]
-) extends IngestStepWorker[VersionedBagRootPayload, ReplicationSummary] {
+) extends IngestStepWorker[VersionedBagRootPayload, ReplicationSummary[
+      DstPrefix
+    ]] {
   override val visibilityTimeout = 180
 
   def processMessage(
     payload: VersionedBagRootPayload
-  ): Try[IngestStepResult[ReplicationSummary]] =
+  ): Try[IngestStepResult[ReplicationSummary[DstPrefix]]] =
     for {
       _ <- ingestUpdater.start(payload.ingestId)
 
       srcPrefix = payload.bagRoot
 
-      dstPrefix = DestinationBuilder.buildDestination(
+      dstPrefix = replicator.buildDestination(
         namespace = destinationConfig.namespace,
-        storageSpace = payload.storageSpace,
+        space = payload.storageSpace,
         externalIdentifier = payload.externalIdentifier,
         version = payload.version
       )
@@ -87,7 +93,6 @@ class BagReplicatorWorker[
           srcPrefix = replicationRequest.srcPrefix,
           dstLocation = replicationRequest
             .toReplicaLocation(
-              provider = destinationConfig.provider,
               replicaType = destinationConfig.replicaType
             ),
           version = payload.version
@@ -97,8 +102,8 @@ class BagReplicatorWorker[
 
   def replicate(
     ingestId: IngestID,
-    request: ReplicationRequest
-  ): Try[IngestStepResult[ReplicationSummary]] = Try {
+    request: ReplicationRequest[DstPrefix]
+  ): Try[IngestStepResult[ReplicationSummary[DstPrefix]]] = Try {
     replicator.replicate(
       ingestId = ingestId,
       request = request
@@ -110,10 +115,10 @@ class BagReplicatorWorker[
 
   def lockFailed(
     ingestId: IngestID,
-    request: ReplicationRequest
+    request: ReplicationRequest[DstPrefix]
   ): PartialFunction[Either[FailedLockingServiceOp, IngestStepResult[
-    ReplicationSummary
-  ]], IngestStepResult[ReplicationSummary]] = {
+    ReplicationSummary[DstPrefix]
+  ]], IngestStepResult[ReplicationSummary[DstPrefix]]] = {
     case Right(result) => result
     case Left(failedLockingServiceOp) =>
       warn(s"Unable to lock successfully: $failedLockingServiceOp")

@@ -9,6 +9,7 @@ import org.scanamo.auto._
 import org.scanamo.time.JavaTimeFormats._
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.sns.SNSConfig
 import uk.ac.wellcome.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
   CloudwatchMonitoringClientBuilder,
@@ -16,6 +17,7 @@ import uk.ac.wellcome.messaging.typesafe.{
 }
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.azure.AzureReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
@@ -31,6 +33,12 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   StorageProvider
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
+import uk.ac.wellcome.storage.{
+  AzureBlobItemLocationPrefix,
+  Location,
+  Prefix,
+  S3ObjectLocationPrefix
+}
 import uk.ac.wellcome.storage.locking.dynamo.{
   DynamoLockDao,
   DynamoLockingService
@@ -69,36 +77,49 @@ object Main extends WellcomeTypesafeApp {
     val operationName =
       OperationNameBuilder.getName(config)
 
-    val lockingService =
-      new DynamoLockingService[IngestStepResult[ReplicationSummary], Try]()
-
     val provider =
       StorageProvider.apply(config.requireString("bag-replicator.provider"))
 
-    val replicator = provider match {
-      case AmazonS3StorageProvider => new S3Replicator()
+    def createLockingService[DstPrefix <: Prefix[_ <: Location]] =
+      new DynamoLockingService[IngestStepResult[ReplicationSummary[DstPrefix]], Try]()
+
+    def createBagReplicatorWorker[DstLocation <: Location, DstPrefix <: Prefix[
+      DstLocation
+    ]](
+      lockingService: DynamoLockingService[IngestStepResult[
+        ReplicationSummary[DstPrefix]
+      ], Try],
+      replicator: Replicator[DstLocation, DstPrefix]
+    ): BagReplicatorWorker[SNSConfig, SNSConfig, DstLocation, DstPrefix] =
+      new BagReplicatorWorker(
+        config = AlpakkaSqsWorkerConfigBuilder.build(config),
+        ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
+        outgoingPublisher =
+          OutgoingPublisherBuilder.build(config, operationName),
+        lockingService = lockingService,
+        destinationConfig = ReplicatorDestinationConfig
+          .buildDestinationConfig(config),
+        replicator = replicator,
+        metricsNamespace = config.requireString("aws.metrics.namespace")
+      )
+
+    provider match {
+      case AmazonS3StorageProvider =>
+        createBagReplicatorWorker(
+          lockingService = createLockingService[S3ObjectLocationPrefix],
+          replicator = new S3Replicator()
+        )
+
       case AzureBlobStorageProvider =>
         implicit val azureBlobClient: BlobServiceClient =
           new BlobServiceClientBuilder()
             .endpoint(config.requireString("azure.endpoint"))
             .buildClient()
 
-        new AzureReplicator()
+        createBagReplicatorWorker(
+          lockingService = createLockingService[AzureBlobItemLocationPrefix],
+          replicator = new AzureReplicator()
+        )
     }
-
-    // Eventually this will be a config option, and each instance of
-    // the replicator will choose whether it's primary/secondary,
-    // and what sort of bag replicator will be passed in here.
-
-    new BagReplicatorWorker(
-      config = AlpakkaSqsWorkerConfigBuilder.build(config),
-      ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
-      outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName),
-      lockingService = lockingService,
-      destinationConfig = ReplicatorDestinationConfig
-        .buildDestinationConfig(config),
-      replicator = replicator,
-      metricsNamespace = config.requireString("aws.metrics.namespace")
-    )
   }
 }

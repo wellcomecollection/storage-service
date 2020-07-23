@@ -18,12 +18,16 @@ import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.s3.{NewS3StreamStore, NewS3TypedStore}
 import uk.ac.wellcome.storage.tags.s3.NewS3Tags
 
-trait ReplicatorTestCases[DstNamespace]
-    extends AnyFunSpec
+trait ReplicatorTestCases[
+  DstNamespace,
+  DstLocation <: Location,
+  DstPrefix <: Prefix[DstLocation]
+] extends AnyFunSpec
     with Matchers
     with EitherValues
     with StorageRandomThings
     with NewS3Fixtures {
+
   def withSrcNamespace[R](testWith: TestWith[Bucket, R]): R =
     withLocalS3Bucket { bucket =>
       testWith(bucket)
@@ -31,7 +35,9 @@ trait ReplicatorTestCases[DstNamespace]
 
   def withDstNamespace[R](testWith: TestWith[DstNamespace, R]): R
 
-  def withReplicator[R](testWith: TestWith[Replicator, R]): R
+  type ReplicatorImpl = Replicator[DstLocation, DstPrefix]
+
+  def withReplicator[R](testWith: TestWith[ReplicatorImpl, R]): R
 
   def createSrcLocationWith(srcBucket: Bucket): S3ObjectLocation =
     createS3ObjectLocationWith(srcBucket)
@@ -39,30 +45,30 @@ trait ReplicatorTestCases[DstNamespace]
   def createDstLocationWith(
     dstNamespace: DstNamespace,
     path: String
-  ): ObjectLocation
+  ): DstLocation
 
   def createSrcPrefixWith(srcBucket: Bucket): S3ObjectLocationPrefix =
     createS3ObjectLocationPrefixWith(srcBucket, keyPrefix = "")
 
-  def createDstPrefixWith(dstNamespace: DstNamespace): ObjectLocationPrefix
+  def createDstPrefixWith(dstNamespace: DstNamespace): DstPrefix
 
   val srcTags: Tags[S3ObjectLocation] = new NewS3Tags()
-  val dstTags: Tags[ObjectLocation]
+  val dstTags: Tags[DstLocation]
 
   implicit val s3StreamStore: NewS3StreamStore = new NewS3StreamStore()
 
   val srcStringStore: TypedStore[S3ObjectLocation, String] =
     new NewS3TypedStore[String]()
 
-  val dstStringStore: TypedStore[ObjectLocation, String]
+  val dstStringStore: TypedStore[DstLocation, String]
 
   def putSrcObject(location: S3ObjectLocation, contents: String): Unit =
     srcStringStore.put(location)(contents) shouldBe a[Right[_, _]]
 
-  def putDstObject(location: ObjectLocation, contents: String): Unit =
+  def putDstObject(location: DstLocation, contents: String): Unit =
     dstStringStore.put(location)(contents) shouldBe a[Right[_, _]]
 
-  def getDstObject(location: ObjectLocation): String =
+  def getDstObject(location: DstLocation): String =
     dstStringStore.get(location).right.value.identifiedT
 
   it("replicates all the objects under a prefix") {
@@ -91,7 +97,7 @@ trait ReplicatorTestCases[DstNamespace]
           )
         }
 
-        result shouldBe a[ReplicationSucceeded]
+        result shouldBe a[ReplicationSucceeded[_]]
         result.summary.maybeEndTime.isDefined shouldBe true
       }
     }
@@ -134,7 +140,7 @@ trait ReplicatorTestCases[DstNamespace]
           )
         }
 
-        result shouldBe a[ReplicationFailed]
+        result shouldBe a[ReplicationFailed[_]]
 
         getDstObject(dstLocation) shouldBe badContents
       }
@@ -155,10 +161,8 @@ trait ReplicatorTestCases[DstNamespace]
       )
     }
 
-    result shouldBe a[ReplicationFailed]
+    result shouldBe a[ReplicationFailed[_]]
     result.summary.maybeEndTime.isDefined shouldBe true
-
-    result.asInstanceOf[ReplicationFailed]
   }
 
   // The verifier will write a Content-SHA256 checksum tag to objects when it
@@ -186,7 +190,7 @@ trait ReplicatorTestCases[DstNamespace]
           )
         }
 
-        result shouldBe a[ReplicationSucceeded]
+        result shouldBe a[ReplicationSucceeded[_]]
 
         val dstLocation = createDstLocationWith(
           dstNamespace,

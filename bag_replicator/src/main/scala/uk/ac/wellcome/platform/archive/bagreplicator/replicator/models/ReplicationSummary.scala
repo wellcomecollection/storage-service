@@ -4,14 +4,15 @@ import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
+import uk.ac.wellcome.storage.{Location, Prefix}
 
-case class ReplicationSummary(
+case class ReplicationSummary[DstPrefix <: Prefix[_ <: Location]](
   ingestId: IngestID,
   startTime: Instant,
   maybeEndTime: Option[Instant] = None,
-  request: ReplicationRequest
+  request: ReplicationRequest[DstPrefix]
 ) extends Summary {
-  def complete: ReplicationSummary = this.copy(
+  def complete: ReplicationSummary[DstPrefix] = this.copy(
     maybeEndTime = Some(Instant.now)
   )
 
