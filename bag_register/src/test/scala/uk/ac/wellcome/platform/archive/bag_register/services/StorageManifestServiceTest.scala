@@ -546,7 +546,7 @@ class StorageManifestServiceTest
       _.name.startsWith("tagmanifest-")
     }
 
-    tagManifestFiles.isEmpty shouldBe false
+    tagManifestFiles should not be empty
   }
 
   def createStorageManifestBag(
