@@ -1,19 +1,15 @@
 package uk.ac.wellcome.platform.archive.common.storage.models
 
-import uk.ac.wellcome.platform.archive.common.ingests.models.StorageProvider
-import uk.ac.wellcome.storage.ObjectLocationPrefix
+import uk.ac.wellcome.storage.{Location, Prefix}
 
 sealed trait StorageLocation {
-  val provider: StorageProvider
-  val prefix: ObjectLocationPrefix
+  val prefix: Prefix[_ <: Location]
 }
 
 case class PrimaryStorageLocation(
-  provider: StorageProvider,
-  prefix: ObjectLocationPrefix
+  prefix: Prefix[_ <: Location]
 ) extends StorageLocation
 
 case class SecondaryStorageLocation(
-  provider: StorageProvider,
-  prefix: ObjectLocationPrefix
+  prefix: Prefix[_ <: Location]
 ) extends StorageLocation

@@ -3,41 +3,44 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 import java.net.URI
 import java.time.Instant
 
+import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
+import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3SizeFinder
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.Readable
+import uk.ac.wellcome.storage.store.s3.NewS3StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 import scala.util.{Failure, Success, Try}
 
-trait StorageManifestService[BagLocation <: Location] extends Logging {
-  def toLocationPrefix(prefix: ObjectLocationPrefix): Prefix[BagLocation]
+class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
+  val sizeFinder = new S3SizeFinder()
 
-  val sizeFinder: SizeFinder[BagLocation]
-
-  implicit val streamReader: Readable[BagLocation, InputStreamWithLength]
+  implicit val streamReader: Readable[S3ObjectLocation, InputStreamWithLength] =
+    new NewS3StreamStore()
 
   private lazy val tagManifestFileFinder = new TagManifestFileFinder()
 
-  def createLocation(uri: URI): BagLocation
+  def createLocation(uri: URI): S3ObjectLocation =
+    new S3ObjectLocation(
+      bucket = uri.getHost,
+      key = uri.getPath.stripPrefix("/")
+    )
 
   def createManifest(
     ingestId: IngestID,
     bag: Bag,
-    location: PrimaryStorageLocation,
-    replicas: Seq[SecondaryStorageLocation],
+    location: PrimaryReplicaLocation,
+    replicas: Seq[SecondaryReplicaLocation],
     space: StorageSpace,
     version: BagVersion
   ): Try[StorageManifest] =
     for {
-      root: ObjectLocationPrefix <- getBagRoot(location.prefix, version)
-
-      bagRoot = toLocationPrefix(root)
+      bagRoot <- getBagRoot(location, version).asInstanceOf[S3ObjectLocationPrefix]
 
       replicaLocations <- getReplicaLocations(replicas, version)
 
@@ -79,11 +82,9 @@ trait StorageManifestService[BagLocation <: Location] extends Logging {
           checksumAlgorithm = bag.tagManifest.checksumAlgorithm,
           files = tagManifestFiles ++ unreferencedTagManifestFiles
         ),
-        location = PrimaryStorageLocation(
-          provider = location.provider,
-          prefix = bagRoot.toObjectLocationPrefix
-        ),
-        replicaLocations = replicaLocations,
+        location = PrimaryStorageLocation(prefix = bagRoot),
+        replicaLocations = replicaLocations
+          .map { prefix => SecondaryStorageLocation(prefix) },
         createdDate = Instant.now,
         ingestId = ingestId
       )
@@ -101,23 +102,34 @@ trait StorageManifestService[BagLocation <: Location] extends Logging {
     * the replicator.
     *
     */
+  import PrefixOps._
+
   private def getBagRoot(
-    replicaRoot: ObjectLocationPrefix,
+    replicaLocation: ReplicaLocation,
     version: BagVersion
-  ): Try[ObjectLocationPrefix] =
-    if (replicaRoot.path.endsWith(s"/$version")) {
-      Success(
-        replicaRoot.copy(
-          path = replicaRoot.path.stripSuffix(s"/$version")
-        )
-      )
-    } else {
-      Failure(
-        new StorageManifestException(
-          // TODO: Move the toString method for ObjectLocationPrefix into scala-storage
-          s"Malformed bag root: ${replicaRoot.namespace}/${replicaRoot.path} (expected suffix /$version)"
-        )
-      )
+  ): Try[Prefix[_ <: Location]] =
+    replicaLocation.prefix match {
+      case s3Prefix: S3ObjectLocationPrefix =>
+        if (s3Prefix.basename == s"/$version") {
+          Success(s3Prefix.parent)
+        } else {
+          Failure(
+            new StorageManifestException(
+              s"Malformed bag root: ${ replicaLocation.prefix} (expected suffix /$version)"
+            )
+          )
+        }
+
+      case azurePrefix: AzureBlobItemLocationPrefix =>
+        if (azurePrefix.basename == s"/$version") {
+          Success(azurePrefix.parent)
+        } else {
+          Failure(
+            new StorageManifestException(
+              s"Malformed bag root: ${replicaLocation.prefix} (expected suffix /$version)"
+            )
+          )
+        }
     }
 
   private def resolveFetchLocations(bag: Bag): Try[Seq[MatchedLocation]] =
@@ -133,9 +145,9 @@ trait StorageManifestService[BagLocation <: Location] extends Logging {
 
   private def getSizeAndLocation(
     matchedLocation: MatchedLocation,
-    bagRoot: Prefix[BagLocation],
+    bagRoot: S3ObjectLocationPrefix,
     version: BagVersion
-  ): (BagLocation, Option[Long]) =
+  ): (S3ObjectLocation, Option[Long]) =
     matchedLocation.fetchMetadata match {
       // A concrete file inside the replicated bag, so it's inside
       // the versioned replica directory.
@@ -166,9 +178,9 @@ trait StorageManifestService[BagLocation <: Location] extends Logging {
     */
   private def createPathLocationMap(
     matchedLocations: Seq[MatchedLocation],
-    bagRoot: Prefix[BagLocation],
+    bagRoot: S3ObjectLocationPrefix,
     version: BagVersion
-  ): Try[Map[BagPath, (BagLocation, Option[Long])]] =
+  ): Try[Map[BagPath, (S3ObjectLocation, Option[Long])]] =
     Try {
       matchedLocations.map { matchedLoc =>
         (
@@ -180,8 +192,8 @@ trait StorageManifestService[BagLocation <: Location] extends Logging {
 
   private def createManifestFiles(
     manifest: BagManifest,
-    entries: Map[BagPath, (BagLocation, Option[Long])],
-    bagRoot: Prefix[BagLocation]
+    entries: Map[BagPath, (S3ObjectLocation, Option[Long])],
+    bagRoot: S3ObjectLocationPrefix
   ): Try[Seq[StorageManifestFile]] = Try {
     manifest.entries.map {
       case (bagPath, checksumValue) =>
@@ -196,7 +208,7 @@ trait StorageManifestService[BagLocation <: Location] extends Logging {
         val (location, maybeSize) = entries(bagPath)
 
         assert(
-          location.path.startsWith(bagRoot.pathPrefix + "/"),
+          location.key.startsWith(bagRoot.pathPrefix + "/"),
           s"Looks like a fetch.txt URI wasn't under the bag root - why wasn't this spotted by the verifier? +" +
             s"$location ($bagPath)"
         )
@@ -230,7 +242,7 @@ trait StorageManifestService[BagLocation <: Location] extends Logging {
   // are the only unreferenced files.
   //
   private def getUnreferencedFiles(
-    bagRoot: Prefix[BagLocation],
+    bagRoot: S3ObjectLocationPrefix,
     version: BagVersion,
     tagManifest: BagManifest
   ): Try[Seq[StorageManifestFile]] =
@@ -247,24 +259,12 @@ trait StorageManifestService[BagLocation <: Location] extends Logging {
       }
 
   private def getReplicaLocations(
-    replicas: Seq[SecondaryStorageLocation],
+    replicas: Seq[SecondaryReplicaLocation],
     version: BagVersion
-  ): Try[Seq[SecondaryStorageLocation]] = {
+  ): Try[Seq[Prefix[_ <: Location]]] = {
     val rootReplicas =
       replicas
-        .map { loc =>
-          getBagRoot(replicaRoot = loc.prefix, version = version) match {
-            case Success(prefix) =>
-              Success(
-                SecondaryStorageLocation(
-                  provider = loc.provider,
-                  prefix = prefix
-                )
-              )
-
-            case Failure(err) => Failure(err)
-          }
-        }
+        .map { loc => getBagRoot(replicaLocation = loc, version = version) }
 
     val successes = rootReplicas.collect { case Success(loc) => loc }
     val failures = rootReplicas.collect { case Failure(err)  => err }
