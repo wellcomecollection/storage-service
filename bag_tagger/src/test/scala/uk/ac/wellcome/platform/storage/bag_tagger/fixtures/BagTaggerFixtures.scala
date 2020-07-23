@@ -44,7 +44,6 @@ trait BagTaggerFixtures
       visibilityTimeout = 1
     ),
     storageManifestDao: StorageManifestDao = createStorageManifestDao(),
-    applyTags: ApplyTags = new ApplyTags(s3Tags = new NewS3Tags()),
     tagRules: StorageManifest => Map[StorageManifestFile, Map[String, String]] =
       TagRules.chooseTags
   )(
@@ -58,7 +57,7 @@ trait BagTaggerFixtures
               config = createAlpakkaSQSWorkerConfig(queue),
               metricsNamespace = "bag_tagger",
               bagTrackerClient = trackerClient,
-              applyTags = applyTags,
+              applyTags = new ApplyTags(s3Tags = new NewS3Tags()),
               tagRules = tagRules
             )
 

@@ -1,11 +1,7 @@
 package uk.ac.wellcome.platform.storage.bag_tagger.services
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.ingests.models.AmazonS3StorageProvider
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  StorageLocation,
-  StorageManifestFile
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{S3StorageLocation, StorageLocation, StorageManifestFile}
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.tags.s3.NewS3Tags
 
@@ -19,15 +15,16 @@ class ApplyTags(s3Tags: NewS3Tags) extends Logging {
     Try {
       val results: Seq[Either[UpdateError, Unit]] =
         storageLocations.flatMap { location =>
-          location.provider match {
-            case AmazonS3StorageProvider =>
+          location match {
+            case s3Location: S3StorageLocation =>
               applyS3Tags(
-                prefix = S3ObjectLocationPrefix(location.prefix),
+                prefix = s3Location.prefix,
                 tagsToApply = tagsToApply
               )
-            case provider =>
+
+            case _ =>
               throw new IllegalArgumentException(
-                s"Unsupported provider for tagging: $provider"
+                s"Unsupported provider for tagging: ${location.provider}"
               )
           }
         }

@@ -4,14 +4,10 @@ import org.scalatest.TryValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  AmazonS3StorageProvider,
-  AzureBlobStorageProvider
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryStorageLocation
-import uk.ac.wellcome.storage.Identified
+import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryS3StorageLocation, SecondaryAzureStorageLocation}
 import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
 import uk.ac.wellcome.storage.tags.s3.NewS3Tags
+import uk.ac.wellcome.storage.{AzureBlobItemLocationPrefix, Identified}
 
 import scala.util.Success
 
@@ -46,12 +42,7 @@ class ApplyTagsTest
         }
 
         val result = applyTags.applyTags(
-          storageLocations = Seq(
-            PrimaryStorageLocation(
-              provider = AmazonS3StorageProvider,
-              prefix = prefix.toObjectLocationPrefix
-            )
-          ),
+          storageLocations = Seq(PrimaryS3StorageLocation(prefix)),
           tagsToApply = Map(file -> Map("Content-Type" -> "application/mxf"))
         )
 
@@ -75,12 +66,7 @@ class ApplyTagsTest
       val file = createStorageManifestFile
 
       val result = applyTags.applyTags(
-        storageLocations = Seq(
-          PrimaryStorageLocation(
-            provider = AmazonS3StorageProvider,
-            prefix = prefix.toObjectLocationPrefix
-          )
-        ),
+        storageLocations = Seq(PrimaryS3StorageLocation(prefix)),
         tagsToApply = Map(file -> Map("Content-Type" -> "application/mxf"))
       )
 
@@ -90,17 +76,15 @@ class ApplyTagsTest
     }
 
     it("if asked to tag objects in Azure") {
-      val prefix = createObjectLocationPrefixWith(createBucketName)
+      val prefix = AzureBlobItemLocationPrefix(
+        container = randomAlphanumeric,
+        namePrefix = randomAlphanumeric
+      )
 
       val file = createStorageManifestFile
 
       val result = applyTags.applyTags(
-        storageLocations = Seq(
-          PrimaryStorageLocation(
-            provider = AzureBlobStorageProvider,
-            prefix = prefix
-          )
-        ),
+        storageLocations = Seq(SecondaryAzureStorageLocation(prefix)),
         tagsToApply = Map(file -> Map("Content-Type" -> "application/mxf"))
       )
 
@@ -127,12 +111,7 @@ class ApplyTagsTest
         )
 
         val result = applyTags.applyTags(
-          storageLocations = Seq(
-            PrimaryStorageLocation(
-              provider = AmazonS3StorageProvider,
-              prefix = prefix.toObjectLocationPrefix
-            )
-          ),
+          storageLocations = Seq(PrimaryS3StorageLocation(prefix)),
           tagsToApply = Map(file -> Map("Content-Type" -> "application/mxf"))
         )
 

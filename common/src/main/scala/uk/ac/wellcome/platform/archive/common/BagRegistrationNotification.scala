@@ -1,10 +1,7 @@
 package uk.ac.wellcome.platform.archive.common
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 
 /** This notification is sent by the storage service to notify another system
@@ -22,16 +19,3 @@ case class BagRegistrationNotification(
   version: String,
   @JsonKey("type") ontologyType: String = "RegisteredBagNotification"
 )
-
-case object BagRegistrationNotification {
-  def apply(
-    space: StorageSpace,
-    externalIdentifier: ExternalIdentifier,
-    version: BagVersion
-  ): BagRegistrationNotification =
-    BagRegistrationNotification(
-      space = space,
-      externalIdentifier = externalIdentifier,
-      version = version.toString
-    )
-}

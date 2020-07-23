@@ -4,22 +4,16 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.worker.models.{
-  NonDeterministicFailure,
-  Successful
-}
+import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Successful}
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.AmazonS3StorageProvider
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.storage.bag_tagger.fixtures.BagTaggerFixtures
+import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 import uk.ac.wellcome.storage.tags.s3.NewS3Tags
-import uk.ac.wellcome.storage._
-
-import scala.util.{Failure, Try}
 
 class BagTaggerWorkerTest
     extends AnyFunSpec
@@ -47,10 +41,7 @@ class BagTaggerWorkerTest
         val prefix = createS3ObjectLocationPrefixWith(replicaBucket)
 
         val manifest = createStorageManifestWith(
-          location = PrimaryStorageLocation(
-            provider = AmazonS3StorageProvider,
-            prefix = prefix.toObjectLocationPrefix
-          ),
+          location = PrimaryS3StorageLocation(prefix),
           replicaLocations = Seq.empty,
           files = Seq(
             createStorageManifestFileWith(
@@ -69,7 +60,7 @@ class BagTaggerWorkerTest
         val notification = BagRegistrationNotification(
           space = manifest.space,
           externalIdentifier = manifest.info.externalIdentifier,
-          version = manifest.version
+          version = manifest.version.toString
         )
 
         withWorkerService(
@@ -99,16 +90,8 @@ class BagTaggerWorkerTest
         }
 
         val manifest = createStorageManifestWith(
-          location = PrimaryStorageLocation(
-            provider = AmazonS3StorageProvider,
-            prefix = primaryPrefix.toObjectLocationPrefix
-          ),
-          replicaLocations = replicaPrefixes.map { prefix =>
-            SecondaryStorageLocation(
-              provider = AmazonS3StorageProvider,
-              prefix = prefix.toObjectLocationPrefix
-            )
-          },
+          location = PrimaryS3StorageLocation(primaryPrefix),
+          replicaLocations = replicaPrefixes.map { SecondaryS3StorageLocation },
           files = Seq(
             createStorageManifestFileWith(
               pathPrefix = "digitised/b1234",
@@ -130,7 +113,7 @@ class BagTaggerWorkerTest
         val notification = BagRegistrationNotification(
           space = manifest.space,
           externalIdentifier = manifest.info.externalIdentifier,
-          version = manifest.version
+          version = manifest.version.toString
         )
 
         withWorkerService(
@@ -156,10 +139,7 @@ class BagTaggerWorkerTest
         val prefix = createS3ObjectLocationPrefixWith(replicaBucket)
 
         val manifest = createStorageManifestWith(
-          location = PrimaryStorageLocation(
-            provider = AmazonS3StorageProvider,
-            prefix = prefix.toObjectLocationPrefix
-          ),
+          location = PrimaryS3StorageLocation(prefix),
           replicaLocations = Seq.empty,
           files = Seq(
             createStorageManifestFileWith(
@@ -184,7 +164,7 @@ class BagTaggerWorkerTest
         val notification = BagRegistrationNotification(
           space = manifest.space,
           externalIdentifier = manifest.info.externalIdentifier,
-          version = manifest.version
+          version = manifest.version.toString
         )
 
         val rules = (manifest: StorageManifest) =>
@@ -271,40 +251,23 @@ class BagTaggerWorkerTest
     }
 
     it("if it can't apply the tags") {
-      withLocalS3Bucket { replicaBucket =>
-        val manifest = createStorageManifest
+      val manifest = createStorageManifest
 
-        val dao = createStorageManifestDao()
-        dao.put(manifest) shouldBe a[Right[_, _]]
+      val dao = createStorageManifestDao()
+      dao.put(manifest) shouldBe a[Right[_, _]]
 
-        val notification = BagRegistrationNotification(
-          space = manifest.space,
-          externalIdentifier = manifest.info.externalIdentifier,
-          version = manifest.version
-        )
+      val notification = BagRegistrationNotification(
+        space = manifest.space,
+        externalIdentifier = manifest.info.externalIdentifier,
+        version = manifest.version.toString
+      )
 
-        val applyError = new Throwable("BOOM!")
-
-        val brokenApplyTags = new ApplyTags(s3Tags) {
-          override def applyTags(
-            storageLocations: Seq[StorageLocation],
-            tagsToApply: Map[StorageManifestFile, Map[String, String]]
-          ): Try[Unit] =
-            Failure(applyError)
-        }
-
-        withWorkerService(
-          storageManifestDao = dao,
-          tagRules = tagEverythingRule,
-          applyTags = brokenApplyTags
-        ) { worker =>
-          whenReady(worker.process(notification)) { result =>
-            result shouldBe a[NonDeterministicFailure[_]]
-
-            result
-              .asInstanceOf[NonDeterministicFailure[_]]
-              .failure shouldBe applyError
-          }
+      withWorkerService(
+        storageManifestDao = dao,
+        tagRules = tagEverythingRule,
+      ) { worker =>
+        whenReady(worker.process(notification)) {
+          _ shouldBe a[NonDeterministicFailure[_]]
         }
       }
     }

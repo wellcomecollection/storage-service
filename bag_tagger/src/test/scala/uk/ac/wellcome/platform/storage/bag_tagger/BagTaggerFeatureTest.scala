@@ -3,17 +3,13 @@ package uk.ac.wellcome.platform.storage.bag_tagger
 import org.scalatest.concurrent.Eventually
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.storage.bag_tagger.fixtures.BagTaggerFixtures
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.AmazonS3StorageProvider
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  PrimaryStorageLocation,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryS3StorageLocation, StorageSpace}
+import uk.ac.wellcome.platform.storage.bag_tagger.fixtures.BagTaggerFixtures
 import uk.ac.wellcome.storage.Identified
-import uk.ac.wellcome.storage.tags.s3.S3Tags
+import uk.ac.wellcome.storage.tags.s3.NewS3Tags
 
 class BagTaggerFeatureTest
     extends AnyFunSpec
@@ -22,19 +18,16 @@ class BagTaggerFeatureTest
     with Matchers
     with StorageManifestGenerators {
 
-  val s3Tags = new S3Tags()
+  val s3Tags = new NewS3Tags()
 
   it("applies tags to newly-registered bags") {
     withLocalSqsQueue() { queue =>
       withLocalS3Bucket { replicaBucket =>
-        val prefix = createObjectLocationPrefixWith(replicaBucket.name)
+        val prefix = createS3ObjectLocationPrefixWith(replicaBucket)
 
         val manifest = createStorageManifestWith(
           space = StorageSpace("digitised"),
-          location = PrimaryStorageLocation(
-            provider = AmazonS3StorageProvider,
-            prefix = prefix
-          ),
+          location = PrimaryS3StorageLocation(prefix),
           replicaLocations = Seq.empty,
           files = Seq(
             createStorageManifestFileWith(
@@ -60,7 +53,7 @@ class BagTaggerFeatureTest
         val notification = BagRegistrationNotification(
           space = manifest.space,
           externalIdentifier = manifest.info.externalIdentifier,
-          version = manifest.version
+          version = manifest.version.toString
         )
 
         withWorkerService(queue = queue, storageManifestDao = dao) { _ =>
