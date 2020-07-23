@@ -46,7 +46,7 @@ class BagRegisterWorkerTest
       val primaryLocation = PrimaryS3ReplicaLocation(prefix = bagRoot)
 
       val knownReplicas = KnownReplicas(
-        location = primaryLocation.toStorageLocation,
+        location = primaryLocation,
         replicas = List.empty
       )
 
@@ -116,7 +116,7 @@ class BagRegisterWorkerTest
       val primaryLocation = PrimaryS3ReplicaLocation(prefix = bagRoot)
 
       val knownReplicas = KnownReplicas(
-        location = primaryLocation.toStorageLocation,
+        location = primaryLocation,
         replicas = List.empty
       )
 
@@ -173,7 +173,7 @@ class BagRegisterWorkerTest
       )
 
       val knownReplicas1 = KnownReplicas(
-        location = PrimaryS3ReplicaLocation(prefix = bagRoot1).toStorageLocation,
+        location = PrimaryS3ReplicaLocation(prefix = bagRoot1),
         replicas = List.empty
       )
 
@@ -186,7 +186,7 @@ class BagRegisterWorkerTest
       )
 
       val knownReplicas2 = KnownReplicas(
-        location = PrimaryS3ReplicaLocation(prefix = bagRoot2).toStorageLocation,
+        location = PrimaryS3ReplicaLocation(prefix = bagRoot2),
         replicas = List.empty
       )
 
@@ -253,8 +253,8 @@ class BagRegisterWorkerTest
       }
 
       val knownReplicas = KnownReplicas(
-        location = primaryLocation.toStorageLocation,
-        replicas = replicas.map { _.toStorageLocation }
+        location = primaryLocation,
+        replicas = replicas
       )
 
       val payload = createKnownReplicasPayloadWith(
