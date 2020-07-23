@@ -144,7 +144,7 @@ class BagRegisterWorkerTest
         BagRegistrationNotification(
           space = space,
           externalIdentifier = bagInfo.externalIdentifier,
-          version = version
+          version = version.toString
         )
       )
     }

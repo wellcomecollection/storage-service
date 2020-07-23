@@ -68,11 +68,7 @@ trait BagIndexerFixtures
       externalIdentifier = externalIdentifier
     )
   )
-  val payload: BagRegistrationNotification = BagRegistrationNotification(
-    space = space,
-    externalIdentifier = externalIdentifier,
-    version = version
-  )
+  val payload: BagRegistrationNotification = BagRegistrationNotification(storageManifest)
 
   def createT: (BagRegistrationNotification, String) =
     (payload, storageManifest.id.toString)

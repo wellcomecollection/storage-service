@@ -81,7 +81,7 @@ class BagRegisterWorker[IngestDestination, NotificationDestination](
           BagRegistrationNotification(
             space = summary.space,
             externalIdentifier = summary.externalIdentifier,
-            version = summary.version
+            version = summary.version.toString
           )
         )
 
