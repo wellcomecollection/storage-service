@@ -33,8 +33,8 @@ class ReplicaCounter(val expectedReplicaCount: Int) {
         if (actualReplicaCount >= expectedReplicaCount) {
           Right(
             KnownReplicas(
-              location = primaryLocation.toStorageLocation,
-              replicas = record.replicas.map { _.toStorageLocation }
+              location = primaryLocation,
+              replicas = record.replicas
             )
           )
         } else {

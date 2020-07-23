@@ -84,7 +84,7 @@ class ReplicaAggregatorFeatureTest
             context = payload.context,
             version = payload.version,
             knownReplicas = KnownReplicas(
-              location = primaryLocation.toStorageLocation,
+              location = primaryLocation,
               replicas = List.empty
             )
           )

@@ -67,18 +67,9 @@ trait PayloadGenerators
     )
 
   def createKnownReplicas = KnownReplicas(
-    location = PrimaryStorageLocation(
-      provider = AmazonS3StorageProvider,
-      prefix = createObjectLocationPrefix
-    ),
+    location = createPrimaryLocation,
     replicas = (1 to randomInt(from = 0, to = 5))
-      .map(
-        _ =>
-          SecondaryStorageLocation(
-            provider = AmazonS3StorageProvider,
-            prefix = createObjectLocationPrefix
-          )
-      )
+      .map { _ => createSecondaryLocation }
       .toList
   )
 
