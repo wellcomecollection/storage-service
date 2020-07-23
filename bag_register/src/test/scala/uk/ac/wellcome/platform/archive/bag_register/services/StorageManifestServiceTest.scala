@@ -7,8 +7,7 @@ import uk.ac.wellcome.platform.archive.bag_register.services.memory.MemoryStorag
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   Bag,
   BagPath,
-  BagVersion,
-  ExternalIdentifier
+  BagVersion
 }
 import uk.ac.wellcome.platform.archive.common.bagit.services.memory.MemoryBagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.PayloadEntry
@@ -525,12 +524,10 @@ class StorageManifestServiceTest
       MemoryStreamStore[MemoryLocation]()
 
     val space = createStorageSpace
-    val externalIdentifier = createExternalIdentifier
     val version = createBagVersion
 
     val (bagRoot, bag) = createStorageManifestBag(
       space = space,
-      externalIdentifier,
       version = version
     )
 
@@ -551,7 +548,6 @@ class StorageManifestServiceTest
 
   def createStorageManifestBag(
     space: StorageSpace = createStorageSpace,
-    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     version: BagVersion,
     bagBuilder: MemoryBagBuilder = new MemoryBagBuilder {}
   )(
@@ -565,7 +561,6 @@ class StorageManifestServiceTest
     val (bagObjects, bagRoot, _) =
       bagBuilder.createBagContentsWith(
         space = space,
-        externalIdentifier = externalIdentifier,
         version = version
       )
 
