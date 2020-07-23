@@ -6,7 +6,10 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryS3StorageLocation, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  PrimaryS3StorageLocation,
+  StorageSpace
+}
 import uk.ac.wellcome.platform.storage.bag_tagger.fixtures.BagTaggerFixtures
 import uk.ac.wellcome.storage.Identified
 import uk.ac.wellcome.storage.tags.s3.NewS3Tags

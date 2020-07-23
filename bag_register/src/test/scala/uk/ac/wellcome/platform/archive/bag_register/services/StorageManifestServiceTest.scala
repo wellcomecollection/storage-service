@@ -3,7 +3,12 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{Assertion, EitherValues, TryValues}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagPath, BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  Bag,
+  BagPath,
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.PayloadEntry
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
@@ -122,7 +127,7 @@ class StorageManifestServiceTest
               s3Prefix.parent
 
             case azurePrefix: AzureBlobItemLocationPrefix =>
-            azurePrefix.parent
+              azurePrefix.parent
 
             case _ => throw new Throwable(s"Unrecognised prefix: $prefix")
           }
@@ -330,7 +335,8 @@ class StorageManifestServiceTest
 
       withLocalS3Bucket { implicit bucket =>
         val bag = createBagWith(
-          manifestEntries = files.map { BagPath(_) -> randomChecksumValue }.toMap
+          manifestEntries =
+            files.map { BagPath(_) -> randomChecksumValue }.toMap
         )
 
         val err = new Throwable("BOOM!")
@@ -475,7 +481,8 @@ class StorageManifestServiceTest
   ): (S3ObjectLocationPrefix, Bag) = {
     implicit val streamStore: NewS3StreamStore = new NewS3StreamStore()
 
-    implicit val typedStore: NewS3TypedStore[String] = new NewS3TypedStore[String]()
+    implicit val typedStore: NewS3TypedStore[String] =
+      new NewS3TypedStore[String]()
 
     val (bagObjects, bagRoot, _) =
       bagBuilder.createBagContentsWith(
@@ -569,20 +576,22 @@ class StorageManifestServiceTest
   def createSecondaryLocationWith(
     version: BagVersion
   ): SecondaryReplicaLocation =
-    chooseFrom(Seq(
-      SecondaryS3ReplicaLocation(
-        prefix = S3ObjectLocationPrefix(
-          bucket = createBucketName,
-          keyPrefix = s"$randomAlphanumeric/$version"
-        )
-      ),
-      SecondaryAzureReplicaLocation(
-        prefix = AzureBlobItemLocationPrefix(
-          container = randomAlphanumeric,
-          namePrefix = s"$randomAlphanumeric/$version"
+    chooseFrom(
+      Seq(
+        SecondaryS3ReplicaLocation(
+          prefix = S3ObjectLocationPrefix(
+            bucket = createBucketName,
+            keyPrefix = s"$randomAlphanumeric/$version"
+          )
+        ),
+        SecondaryAzureReplicaLocation(
+          prefix = AzureBlobItemLocationPrefix(
+            container = randomAlphanumeric,
+            namePrefix = s"$randomAlphanumeric/$version"
+          )
         )
       )
-    ))
+    )
 
   private def assertIsError(
     ingestId: IngestID = createIngestID,

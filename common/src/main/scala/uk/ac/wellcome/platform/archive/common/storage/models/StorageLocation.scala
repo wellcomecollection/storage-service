@@ -1,7 +1,16 @@
 package uk.ac.wellcome.platform.archive.common.storage.models
 
-import uk.ac.wellcome.platform.archive.common.ingests.models.{AmazonS3StorageProvider, AzureBlobStorageProvider, StorageProvider}
-import uk.ac.wellcome.storage.{AzureBlobItemLocationPrefix, Location, Prefix, S3ObjectLocationPrefix}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  AmazonS3StorageProvider,
+  AzureBlobStorageProvider,
+  StorageProvider
+}
+import uk.ac.wellcome.storage.{
+  AzureBlobItemLocationPrefix,
+  Location,
+  Prefix,
+  S3ObjectLocationPrefix
+}
 
 sealed trait StorageLocation {
   val prefix: Prefix[_ <: Location]
@@ -23,31 +32,39 @@ sealed trait AzureStorageLocation extends StorageLocation {
 
 case class PrimaryS3StorageLocation(
   prefix: S3ObjectLocationPrefix
-) extends PrimaryStorageLocation with S3StorageLocation
+) extends PrimaryStorageLocation
+    with S3StorageLocation
 
 case class SecondaryS3StorageLocation(
   prefix: S3ObjectLocationPrefix
-) extends SecondaryStorageLocation with S3StorageLocation
+) extends SecondaryStorageLocation
+    with S3StorageLocation
 
 case class SecondaryAzureStorageLocation(
   prefix: AzureBlobItemLocationPrefix
-) extends SecondaryStorageLocation with AzureStorageLocation
+) extends SecondaryStorageLocation
+    with AzureStorageLocation
 
 case object StorageLocation {
   def createPrimary(prefix: Prefix[_ <: Location]): PrimaryStorageLocation =
     prefix match {
-      case s3Prefix: S3ObjectLocationPrefix => PrimaryS3StorageLocation(s3Prefix)
-      case _ => throw new IllegalArgumentException(
-        s"Unrecognised prefix for primary location: $prefix"
-      )
+      case s3Prefix: S3ObjectLocationPrefix =>
+        PrimaryS3StorageLocation(s3Prefix)
+      case _ =>
+        throw new IllegalArgumentException(
+          s"Unrecognised prefix for primary location: $prefix"
+        )
     }
 
   def createSecondary(prefix: Prefix[_ <: Location]): SecondaryStorageLocation =
     prefix match {
-      case s3Prefix: S3ObjectLocationPrefix         => SecondaryS3StorageLocation(s3Prefix)
-      case azurePrefix: AzureBlobItemLocationPrefix => SecondaryAzureStorageLocation(azurePrefix)
-      case _ => throw new IllegalArgumentException(
-        s"Unrecognised prefix for primary location: $prefix"
-      )
+      case s3Prefix: S3ObjectLocationPrefix =>
+        SecondaryS3StorageLocation(s3Prefix)
+      case azurePrefix: AzureBlobItemLocationPrefix =>
+        SecondaryAzureStorageLocation(azurePrefix)
+      case _ =>
+        throw new IllegalArgumentException(
+          s"Unrecognised prefix for primary location: $prefix"
+        )
     }
 }

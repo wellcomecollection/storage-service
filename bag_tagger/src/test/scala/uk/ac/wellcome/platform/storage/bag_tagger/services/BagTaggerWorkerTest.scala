@@ -4,7 +4,10 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Successful}
+import uk.ac.wellcome.messaging.worker.models.{
+  NonDeterministicFailure,
+  Successful
+}
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
@@ -264,7 +267,7 @@ class BagTaggerWorkerTest
 
       withWorkerService(
         storageManifestDao = dao,
-        tagRules = tagEverythingRule,
+        tagRules = tagEverythingRule
       ) { worker =>
         whenReady(worker.process(notification)) {
           _ shouldBe a[NonDeterministicFailure[_]]

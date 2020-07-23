@@ -40,7 +40,9 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
     version: BagVersion
   ): Try[StorageManifest] =
     for {
-      bagRoot <- getBagRoot(location, version).map { _.asInstanceOf[S3ObjectLocationPrefix] }
+      bagRoot <- getBagRoot(location, version).map {
+        _.asInstanceOf[S3ObjectLocationPrefix]
+      }
 
       replicaLocations <- getReplicaLocations(replicas, version)
 
@@ -84,7 +86,9 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
         ),
         location = StorageLocation.createPrimary(prefix = bagRoot),
         replicaLocations = replicaLocations
-          .map { prefix => StorageLocation.createSecondary(prefix) },
+          .map { prefix =>
+            StorageLocation.createSecondary(prefix)
+          },
         createdDate = Instant.now,
         ingestId = ingestId
       )
@@ -264,7 +268,9 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
   ): Try[Seq[Prefix[_ <: Location]]] = {
     val rootReplicas =
       replicas
-        .map { loc => getBagRoot(replicaLocation = loc, version = version) }
+        .map { loc =>
+          getBagRoot(replicaLocation = loc, version = version)
+        }
 
     val successes = rootReplicas.collect { case Success(loc) => loc }
     val failures = rootReplicas.collect { case Failure(err)  => err }
