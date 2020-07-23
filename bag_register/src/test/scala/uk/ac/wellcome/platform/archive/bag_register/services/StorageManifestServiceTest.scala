@@ -3,14 +3,23 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{Assertion, TryValues}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, BagPath, BagVersion}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  Bag,
+  BagPath,
+  BagVersion
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.PayloadEntry
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators._
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryStorageLocation, SecondaryStorageLocation, StorageManifest, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  PrimaryStorageLocation,
+  SecondaryStorageLocation,
+  StorageManifest,
+  StorageSpace
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3SizeFinder
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
@@ -414,7 +423,8 @@ class StorageManifestServiceTest
             .toMap
 
         storageManifestSizes shouldBe sizeCache.map {
-          case (cachedLoc, cachedSize) => cachedLoc.toObjectLocation -> cachedSize
+          case (cachedLoc, cachedSize) =>
+            cachedLoc.toObjectLocation -> cachedSize
         }
       }
     }
@@ -503,8 +513,9 @@ class StorageManifestServiceTest
     implicit bucket: Bucket
   ): (S3ObjectLocationPrefix, Bag) = {
     implicit val streamStore: NewS3StreamStore = new NewS3StreamStore()
-    implicit val typedStore: NewS3TypedStore[String] = new NewS3TypedStore[String]()
-    
+    implicit val typedStore: NewS3TypedStore[String] =
+      new NewS3TypedStore[String]()
+
     val (bagObjects, bagRoot, _) =
       bagBuilder.createBagContentsWith(
         space = space,
