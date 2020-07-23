@@ -327,17 +327,14 @@ class StorageManifestServiceTest
     }
   }
 
-  describe("passes through metadata correctly") {
+  it("passes through metadata correctly") {
     val version = createBagVersion
     val space = createStorageSpace
 
     implicit val streamStore: MemoryStreamStore[MemoryLocation] =
       MemoryStreamStore[MemoryLocation]()
 
-    val (bagRoot, bag) = createStorageManifestBag(
-      space = space,
-      version = version
-    )
+    val (bagRoot, bag) = createStorageManifestBag(version = version)
 
     val location =
       createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix)
@@ -349,23 +346,13 @@ class StorageManifestServiceTest
       version = version
     )
 
-    it("sets the correct storage space") {
-      storageManifest.space shouldBe space
-    }
+    storageManifest.space shouldBe space
+    storageManifest.info shouldBe bag.info
+    storageManifest.version shouldBe version
 
-    it("sets the correct bagInfo") {
-      storageManifest.info shouldBe bag.info
-    }
-
-    it("sets the correct version") {
-      storageManifest.version shouldBe version
-    }
-
-    it("sets a recent createdDate") {
-      // This test takes longer when running on a Mac, not in CI, so allow some
-      // flex on the definition of "recent".
-      assertRecent(storageManifest.createdDate, recentSeconds = 45)
-    }
+    // This test takes longer when running on a Mac, not in CI, so allow some
+    // flex on the definition of "recent".
+    assertRecent(storageManifest.createdDate, recentSeconds = 45)
   }
 
   describe("adds the size to the manifest files") {
@@ -523,19 +510,14 @@ class StorageManifestServiceTest
     implicit val streamStore: MemoryStreamStore[MemoryLocation] =
       MemoryStreamStore[MemoryLocation]()
 
-    val space = createStorageSpace
     val version = createBagVersion
 
-    val (bagRoot, bag) = createStorageManifestBag(
-      space = space,
-      version = version
-    )
+    val (bagRoot, bag) = createStorageManifestBag(version = version)
 
     val manifest = createManifest(
       bag = bag,
       location =
         createPrimaryLocationWith(prefix = bagRoot.toObjectLocationPrefix),
-      space = space,
       version = version
     )
 
