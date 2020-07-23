@@ -13,7 +13,6 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   StorageSpaceGenerators
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestCompleted
-import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -58,9 +57,7 @@ class RegisterTest
         val register = new Register(
           bagReader = new S3BagReader(),
           bagTrackerClient = bagTrackerClient,
-          storageManifestService = new S3StorageManifestService(),
-          toPrefix = (prefix: ObjectLocationPrefix) =>
-            S3ObjectLocationPrefix(prefix.namespace, prefix.path)
+          storageManifestService = new S3StorageManifestService()
         )
 
         val future = register.update(

@@ -4,27 +4,19 @@ import java.time.Instant
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
-import uk.ac.wellcome.platform.archive.bag_tracker.client.{
-  BagTrackerClient,
-  BagTrackerCreateError
-}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
-import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
+import uk.ac.wellcome.platform.archive.bag_tracker.client.{BagTrackerClient, BagTrackerCreateError}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.storage.{Location, ObjectLocationPrefix, Prefix}
+import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class Register[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
-  bagReader: BagReader[BagLocation, BagPrefix],
+class Register(
+  bagReader: S3BagReader,
   bagTrackerClient: BagTrackerClient,
-  storageManifestService: S3StorageManifestService,
-  // TODO: Temporary while we disambiguate ObjectLocation.  Remove eventually.
-  toPrefix: ObjectLocationPrefix => BagPrefix
+  storageManifestService: S3StorageManifestService
 )(
   implicit ec: ExecutionContext
 ) extends Logging {
@@ -48,7 +40,7 @@ class Register[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]](
     )
 
     val result: Future[IngestStepResult[RegistrationSummary]] = for {
-      bag <- bagReader.get(toPrefix(location.prefix)) match {
+      bag <- bagReader.get(S3ObjectLocationPrefix(location.prefix)) match {
         case Right(value) => Future(value)
         case Left(err) =>
           Future.failed(

@@ -89,9 +89,7 @@ trait BagRegisterFixtures
           val register = new Register(
             bagReader = bagReader,
             bagTrackerClient = bagTrackerClient,
-            storageManifestService = storageManifestService,
-            toPrefix = (prefix: ObjectLocationPrefix) =>
-              S3ObjectLocationPrefix(prefix.namespace, prefix.path)
+            storageManifestService = storageManifestService
           )
 
           val service = new BagRegisterWorker(
