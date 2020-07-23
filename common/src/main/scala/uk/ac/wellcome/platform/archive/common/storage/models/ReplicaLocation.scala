@@ -19,23 +19,6 @@ sealed trait ReplicaLocation {
   def toStorageLocation: StorageLocation
 }
 
-object ReplicaLocation {
-  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
-  // See https://github.com/wellcomecollection/platform/issues/4596
-  def fromStorageLocation(storageLocation: StorageLocation): ReplicaLocation =
-    storageLocation match {
-      case primary: PrimaryStorageLocation =>
-        PrimaryS3ReplicaLocation(
-          prefix = S3ObjectLocationPrefix(primary.prefix)
-        )
-
-      case secondary: SecondaryStorageLocation =>
-        SecondaryS3ReplicaLocation(
-          prefix = S3ObjectLocationPrefix(secondary.prefix)
-        )
-    }
-}
-
 sealed trait S3ReplicaLocation extends ReplicaLocation {
   val prefix: S3ObjectLocationPrefix
 }
