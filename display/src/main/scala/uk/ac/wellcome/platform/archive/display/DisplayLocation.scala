@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.display
 
 import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageLocation
+import uk.ac.wellcome.platform.archive.common.storage.models.{AzureStorageLocation, NewStorageLocation, S3StorageLocation}
 import uk.ac.wellcome.storage.S3ObjectLocation
 
 case class DisplayLocation(
@@ -36,10 +36,20 @@ object DisplayLocation {
         )
     }
 
-  def apply(location: StorageLocation): DisplayLocation =
-    DisplayLocation(
-      provider = DisplayProvider(location.provider),
-      bucket = location.prefix.namespace,
-      path = location.prefix.path
-    )
+  def apply(location: NewStorageLocation): DisplayLocation =
+    location match {
+      case s3Location: S3StorageLocation =>
+        DisplayLocation(
+          provider = DisplayProvider(location.provider),
+          bucket = s3Location.prefix.bucket,
+          path = s3Location.prefix.keyPrefix
+        )
+
+      case azureLocation: AzureStorageLocation =>
+        DisplayLocation(
+          provider = DisplayProvider(location.provider),
+          bucket = azureLocation.prefix.container,
+          path = azureLocation.prefix.namePrefix
+        )
+    }
 }

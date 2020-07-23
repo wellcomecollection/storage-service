@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.storage.models
 
-import uk.ac.wellcome.platform.archive.common.ingests.models.{AmazonS3StorageProvider, StorageProvider}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{AmazonS3StorageProvider, AzureBlobStorageProvider, StorageProvider}
 import uk.ac.wellcome.storage._
 
 // Represents the location of all the versions of a given (space, externalIdentifier) pair
@@ -45,7 +45,7 @@ sealed trait S3StorageLocation extends NewStorageLocation {
 
 sealed trait AzureStorageLocation extends NewStorageLocation {
   val prefix: AzureBlobItemLocationPrefix
-  val provider: StorageProvider = AmazonS3StorageProvider
+  val provider: StorageProvider = AzureBlobStorageProvider
 }
 
 case class PrimaryS3StorageLocation(prefix: S3ObjectLocationPrefix)
