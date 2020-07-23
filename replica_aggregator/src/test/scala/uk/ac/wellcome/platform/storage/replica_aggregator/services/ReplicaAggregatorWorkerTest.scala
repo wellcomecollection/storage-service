@@ -46,7 +46,7 @@ class ReplicaAggregatorWorkerTest
     val payload = createReplicaCompletePayloadWith(dstLocation = dstLocation)
 
     val expectedKnownReplicas = KnownReplicas(
-      location = dstLocation.toStorageLocation,
+      location = dstLocation,
       replicas = List.empty
     )
 

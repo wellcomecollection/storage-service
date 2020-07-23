@@ -51,7 +51,7 @@ class ReplicaCounterTest
     )
 
     counter.countReplicas(record).right.value shouldBe KnownReplicas(
-      location = location.toStorageLocation,
+      location = location,
       replicas = List.empty
     )
   }
@@ -68,8 +68,8 @@ class ReplicaCounterTest
     )
 
     counter.countReplicas(record).right.value shouldBe KnownReplicas(
-      location = location.toStorageLocation,
-      replicas = replicas.map { _.toStorageLocation }
+      location = location,
+      replicas = replicas
     )
   }
 
@@ -104,8 +104,8 @@ class ReplicaCounterTest
     )
 
     counter.countReplicas(record).right.value shouldBe KnownReplicas(
-      location = location.toStorageLocation,
-      replicas = replicas.map { _.toStorageLocation }
+      location = location,
+      replicas = replicas
     )
   }
 }

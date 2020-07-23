@@ -8,6 +8,6 @@ package uk.ac.wellcome.platform.archive.common.storage.models
   *
   */
 case class KnownReplicas(
-  location: PrimaryStorageLocation,
-  replicas: Seq[SecondaryStorageLocation]
+  location: PrimaryReplicaLocation,
+  replicas: Seq[SecondaryReplicaLocation]
 )

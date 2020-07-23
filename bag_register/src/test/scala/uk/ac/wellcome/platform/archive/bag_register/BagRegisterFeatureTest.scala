@@ -54,7 +54,7 @@ class BagRegisterFeatureTest
       )
 
       val knownReplicas = KnownReplicas(
-        location = primaryLocation.toStorageLocation,
+        location = primaryLocation,
         replicas = List.empty
       )
 
