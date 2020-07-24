@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.bag_register.services
 
 import java.net.URI
+import java.nio.file.Paths
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
@@ -12,8 +13,10 @@ import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3SizeFinder
 import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.Readable
-import uk.ac.wellcome.storage.store.s3.NewS3StreamStore
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 import scala.util.{Failure, Success, Try}
@@ -23,7 +26,7 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
     new S3SizeFinder()
 
   implicit val streamReader: Readable[S3ObjectLocation, InputStreamWithLength] =
-    new NewS3StreamStore()
+    new S3StreamStore()
 
   private lazy val tagManifestFileFinder = new TagManifestFileFinder()
 
@@ -94,6 +97,49 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
       )
     } yield storageManifest
 
+  // TODO: Upstream this into scala-libs
+  def filename(prefix: Prefix[_ <: Location]): String =
+    prefix match {
+      case s3Prefix: S3ObjectLocationPrefix =>
+        Paths.get(s3Prefix.keyPrefix).getFileName.toString
+
+      case azurePrefix: AzureBlobLocationPrefix =>
+        Paths.get(azurePrefix.namePrefix).getFileName.toString
+
+      case _ =>
+        throw new Throwable(s"Unsupported prefix: $prefix")
+    }
+
+  def parent(prefix: Prefix[_ <: Location]): Prefix[_ <: Location] =
+    prefix match {
+      case s3Prefix: S3ObjectLocationPrefix =>
+        s3Prefix.copy(
+          keyPrefix = Paths.get(s3Prefix.keyPrefix).getParent.toString
+        )
+
+      case azurePrefix: AzureBlobLocationPrefix =>
+        azurePrefix.copy(
+          namePrefix = Paths.get(azurePrefix.namePrefix).getParent.toString
+        )
+
+      case _ =>
+        throw new Throwable(s"Unsupported prefix: $prefix")
+    }
+
+  def getPath(location: Location): String =
+    location match {
+      case s3Location: S3ObjectLocation => s3Location.key
+      case azureLocation: AzureBlobLocation => azureLocation.name
+      case _ => throw new Throwable(s"Unsupported location: $location")
+    }
+
+  def getPathPrefix(prefix: Prefix[_ <: Location]): String =
+    prefix match {
+      case s3Location: S3ObjectLocationPrefix => s3Location.keyPrefix
+      case azureLocation: AzureBlobLocationPrefix => azureLocation.namePrefix
+      case _ => throw new Throwable(s"Unsupported prefix: $prefix")
+    }
+
   /** The replicator writes bags inside a bucket to paths of the form
     *
     *     /{storageSpace}/{externalIdentifier}/v{version}
@@ -110,8 +156,8 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
     replicaRoot: Prefix[_ <: Location],
     version: BagVersion
   ): Try[Prefix[_ <: Location]] =
-    if (replicaRoot.filename == version.toString) {
-      Success(replicaRoot.parent)
+    if (filename(replicaRoot) == version.toString) {
+      Success(parent(replicaRoot))
     } else {
       Failure(
         new StorageManifestException(
@@ -196,11 +242,11 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
         val (location, maybeSize) = entries(bagPath)
 
         assert(
-          location.path.startsWith(bagRoot.pathPrefix + "/"),
+          getPath(location).startsWith(getPathPrefix(bagRoot) + "/"),
           s"Looks like a fetch.txt URI wasn't under the bag root - why wasn't this spotted by the verifier? +" +
             s"$location ($bagPath)"
         )
-        val path = location.path.stripPrefix(bagRoot.pathPrefix + "/")
+        val path = getPath(location).stripPrefix(getPathPrefix(bagRoot) + "/")
 
         val size = maybeSize match {
           case Some(s) => s
@@ -236,7 +282,8 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
   ): Try[Seq[StorageManifestFile]] =
     tagManifestFileFinder
       .getTagManifestFiles(
-        prefix = bagRoot.join(version.toString),
+        // TODO: Upstream a join() method into scala-libs
+        prefix = bagRoot.asLocation(version.toString).asPrefix,
         algorithm = tagManifest.checksumAlgorithm
       )
       .map {

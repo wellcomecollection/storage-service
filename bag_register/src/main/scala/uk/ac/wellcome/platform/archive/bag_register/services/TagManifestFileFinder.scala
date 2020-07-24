@@ -36,6 +36,8 @@ class TagManifestFileFinder[BagLocation <: Location](
     }
   }
 
+  def asLocation(prefix: Prefix[_ <: BagLocation]): BagLocation
+
   private def findIndividualTagManifestFile(
     name: String,
     prefix: Prefix[BagLocation],
