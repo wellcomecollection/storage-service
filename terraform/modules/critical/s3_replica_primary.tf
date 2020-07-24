@@ -94,9 +94,10 @@ data "aws_iam_policy_document" "replica_primary_read" {
         # See https://wellcome.slack.com/archives/CBT40CMKQ/p1573742247457800
         "AROAZQI22QHWTHLN4QHJU:*",
 
-        # Dashboard for iiif-builder staging + staging-prd
+        # Dashboard for iiif-builder staging + staging-prd + prod
         "AROAZQI22QHW3RRRIYDN3:*",
         "AROAZQI22QHWQI2FAIMQ5:*",
+        "AROAZQI22QHWZ755Z5O5K:*",
       ]
     }
 
