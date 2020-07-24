@@ -18,7 +18,7 @@ storage:
         - id: bag-root-finder
     - id: bag_tagger
       services:
-        - bag-tagger
+        - id: bag-tagger
     - id: bag_tracker
       services:
         - id: bags-api
