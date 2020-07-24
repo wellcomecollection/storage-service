@@ -44,11 +44,11 @@ def migrate_storage_locations(manifest):
     except AssertionError:
         # This is a new-style manifest written to the old table
         if (
-            manifest["location"].keys() == {"prefix", "type"} and
-            manifest["location"]["type"] == "PrimaryS3StorageLocation" and
-            len(manifest["replicaLocations"]) == 1 and
-            manifest["replicaLocations"][0].keys() == {"prefix", "type"} and
-            manifest["replicaLocations"][0]["type"] == "SecondaryS3StorageLocation"
+            manifest["location"].keys() == {"prefix", "type"}
+            and manifest["location"]["type"] == "PrimaryS3StorageLocation"
+            and len(manifest["replicaLocations"]) == 1
+            and manifest["replicaLocations"][0].keys() == {"prefix", "type"}
+            and manifest["replicaLocations"][0]["type"] == "SecondaryS3StorageLocation"
         ):
             return
         else:
@@ -79,26 +79,19 @@ if __name__ == "__main__":
 
         manifest = json.load(
             s3.get_object(
-                Bucket=item["payload"]["namespace"],
-                Key=item["payload"]["path"]
+                Bucket=item["payload"]["namespace"], Key=item["payload"]["path"]
             )["Body"]
         )
 
         migrate_storage_locations(manifest)
 
         new_key = os.path.join(
-            os.path.dirname(item["payload"]["path"]),
-            str(uuid.uuid4())
+            os.path.dirname(item["payload"]["path"]), str(uuid.uuid4())
         )
 
         s3.put_object(
-            Bucket=item["payload"]["namespace"],
-            Key=new_key,
-            Body=json.dumps(manifest)
+            Bucket=item["payload"]["namespace"], Key=new_key, Body=json.dumps(manifest)
         )
 
         item["payload"]["path"] = new_key
-        dynamodb_client.put_item(
-            TableName=new_table_name,
-            Item=item
-        )
+        dynamodb_client.put_item(TableName=new_table_name, Item=item)
