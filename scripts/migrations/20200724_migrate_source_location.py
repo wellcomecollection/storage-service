@@ -42,8 +42,18 @@ def migrate_storage_locations(manifest):
             "type": "SecondaryS3StorageLocation",
         }
     except AssertionError:
-        pprint.pprint(manifest)
-        raise
+        # This is a new-style manifest written to the old table
+        if (
+            manifest["location"].keys() == {"prefix", "type"} and
+            manifest["location"]["type"] == "PrimaryS3StorageLocation" and
+            len(manifest["replicaLocations"]) == 1 and
+            manifest["replicaLocations"][0].keys() == {"prefix", "type"} and
+            manifest["replicaLocations"][0]["type"] == "SecondaryS3StorageLocation"
+        ):
+            return
+        else:
+            pprint.pprint(manifest)
+            raise
 
 
 if __name__ == "__main__":
