@@ -1,11 +1,9 @@
 package uk.ac.wellcome.platform.archive.common.storage.models
 
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  AmazonS3StorageProvider,
-  AzureBlobStorageProvider,
-  StorageProvider
-}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{AmazonS3StorageProvider, AzureBlobStorageProvider, StorageProvider}
 import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.azure.AzureBlobLocationPrefix
+import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 
 // Represents the location of all the versions of a given (space, externalIdentifier) pair
 sealed trait StorageLocation {
@@ -34,7 +32,7 @@ case object SecondaryStorageLocation {
       case s3Prefix: S3ObjectLocationPrefix =>
         SecondaryS3StorageLocation(s3Prefix)
 
-      case azurePrefix: AzureBlobItemLocationPrefix =>
+      case azurePrefix: AzureBlobLocationPrefix =>
         SecondaryAzureStorageLocation(azurePrefix)
 
       case _ =>
@@ -48,7 +46,7 @@ sealed trait S3StorageLocation extends StorageLocation {
 }
 
 sealed trait AzureStorageLocation extends StorageLocation {
-  val prefix: AzureBlobItemLocationPrefix
+  val prefix: AzureBlobLocationPrefix
   val provider: StorageProvider = AzureBlobStorageProvider
 }
 
@@ -60,6 +58,6 @@ case class SecondaryS3StorageLocation(prefix: S3ObjectLocationPrefix)
     extends SecondaryStorageLocation
     with S3StorageLocation
 
-case class SecondaryAzureStorageLocation(prefix: AzureBlobItemLocationPrefix)
+case class SecondaryAzureStorageLocation(prefix: AzureBlobLocationPrefix)
     extends SecondaryStorageLocation
     with AzureStorageLocation

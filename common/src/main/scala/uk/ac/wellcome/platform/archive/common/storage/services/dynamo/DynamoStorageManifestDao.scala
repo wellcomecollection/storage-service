@@ -10,14 +10,8 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
-import uk.ac.wellcome.storage.{
-  ObjectLocation,
-  ObjectLocationPrefix,
-  ReadError,
-  StoreReadError
-}
 import uk.ac.wellcome.storage.dynamo.{DynamoConfig, DynamoHashRangeEntry}
-import uk.ac.wellcome.storage.s3.S3Config
+import uk.ac.wellcome.storage.s3.{S3Config, S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.store.dynamo.{
   DynamoHashRangeStore,
@@ -26,6 +20,7 @@ import uk.ac.wellcome.storage.store.dynamo.{
 }
 import uk.ac.wellcome.storage.store.s3.{S3StreamStore, S3TypedStore}
 import uk.ac.wellcome.storage.streaming.Codec._
+import uk.ac.wellcome.storage.{ReadError, StoreReadError}
 
 import scala.util.{Failure, Success, Try}
 
@@ -38,8 +33,8 @@ class DynamoStorageManifestDao(
   s3Client: AmazonS3
 ) extends StorageManifestDao {
 
-  implicit val indexedStore: DynamoHashRangeStore[BagId, Int, ObjectLocation] =
-    new DynamoHashRangeStore[BagId, Int, ObjectLocation](dynamoConfig)
+  implicit val indexedStore: DynamoHashRangeStore[BagId, Int, S3ObjectLocation] =
+    new DynamoHashRangeStore[BagId, Int, S3ObjectLocation](dynamoConfig)
 
   implicit val streamStore: S3StreamStore = new S3StreamStore()
   implicit val typedStore: S3TypedStore[StorageManifest] =
@@ -52,9 +47,9 @@ class DynamoStorageManifestDao(
         Int,
         StorageManifest
       ](
-        prefix = ObjectLocationPrefix(
-          namespace = s3Config.bucketName,
-          path = ""
+        prefix = S3ObjectLocationPrefix(
+          bucket = s3Config.bucketName,
+          keyPrefix = ""
         )
       )
     )
@@ -79,7 +74,7 @@ class DynamoStorageManifestDao(
   private def getManifests(
     bagId: BagId,
     before: Option[BagVersion],
-    locations: Seq[ObjectLocation]
+    locations: Seq[S3ObjectLocation]
   ): Either[StoreReadError, Seq[StorageManifest]] = {
     val s3Results = locations.map { typedStore.get }
 
@@ -102,11 +97,11 @@ class DynamoStorageManifestDao(
   private def getDynamoIndexEntries(
     bagId: BagId,
     before: Option[BagVersion]
-  ): Either[StoreReadError, Seq[ObjectLocation]] = {
+  ): Either[StoreReadError, Seq[S3ObjectLocation]] = {
     val table = ScanamoTable[DynamoHashRangeEntry[
       BagId,
       Int,
-      ObjectLocation
+      S3ObjectLocation
     ]](dynamoConfig.tableName)
 
     val baseOps = before match {

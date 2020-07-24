@@ -4,12 +4,12 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.s3.S3Errors
-import uk.ac.wellcome.storage.store.NewRetryableReadable
+import uk.ac.wellcome.storage.s3.{S3Errors, S3ObjectLocation}
+import uk.ac.wellcome.storage.store.RetryableReadable
 
 class S3SizeFinder(val maxRetries: Int = 3)(implicit s3Client: AmazonS3)
     extends SizeFinder[S3ObjectLocation]
-    with NewRetryableReadable[S3ObjectLocation, Long] {
+    with RetryableReadable[S3ObjectLocation, Long] {
 
   override def retryableGetFunction(location: S3ObjectLocation): Long =
     s3Client

@@ -40,10 +40,12 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
 
     } yield Bag(bagInfo, fileManifest, tagManifest, bagFetch)
 
+  def asLocation(prefix: BagPrefix, path: String): BagLocation
+
   private def loadOptional[T](
     root: BagPrefix
   )(path: BagPath)(f: Stream[T]): Either[BagUnavailable, Option[T]] = {
-    val location = root.asLocation(path.value)
+    val location = asLocation(root, path = path.value)
 
     readable.get(location) match {
       case Right(stream) =>

@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.ingests.models
 
 import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
 
 sealed trait SourceLocation {
   val provider: StorageProvider

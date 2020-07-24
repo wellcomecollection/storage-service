@@ -3,18 +3,15 @@ package uk.ac.wellcome.platform.archive.common.generators
 import java.net.URI
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Status
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
 
 import scala.util.Random
 
-trait IngestGenerators extends BagIdGenerators with NewS3Fixtures {
+trait IngestGenerators extends BagIdGenerators with S3Fixtures {
 
   def createSourceLocation: SourceLocation =
     S3SourceLocation(location = createS3ObjectLocation)
