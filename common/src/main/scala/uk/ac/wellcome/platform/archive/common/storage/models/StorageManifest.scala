@@ -31,11 +31,11 @@ case class StorageManifest(
   version: BagVersion,
   manifest: FileManifest,
   tagManifest: FileManifest,
-  location: StorageLocation,
-  replicaLocations: Seq[StorageLocation],
+  location: PrimaryStorageLocation,
+  replicaLocations: Seq[SecondaryStorageLocation],
   createdDate: Instant,
   ingestId: IngestID
 ) {
   val id = BagId(space, info.externalIdentifier)
-  val idWithVersion = s"${id}/${version}"
+  val idWithVersion = s"$id/$version"
 }

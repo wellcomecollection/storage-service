@@ -7,6 +7,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
 import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
+import uk.ac.wellcome.storage.AzureBlobItemLocationPrefix
 
 import scala.util.Random
 
@@ -50,10 +51,22 @@ trait StorageManifestGenerators
     bagInfo: BagInfo = createBagInfo,
     version: BagVersion = createBagVersion,
     fileCount: Int = 3,
-    location: PrimaryStorageLocation = createPrimaryLocation.toStorageLocation,
+    location: PrimaryStorageLocation = PrimaryS3StorageLocation(
+      createS3ObjectLocationPrefix
+    ),
     replicaLocations: Seq[SecondaryStorageLocation] = (1 to randomInt(0, 5))
       .map { _ =>
-        createSecondaryLocation.toStorageLocation
+        chooseFrom(
+          Seq(
+            SecondaryS3StorageLocation(createS3ObjectLocationPrefix),
+            SecondaryAzureStorageLocation(
+              AzureBlobItemLocationPrefix(
+                randomAlphanumeric,
+                randomAlphanumeric
+              )
+            )
+          )
+        )
       },
     createdDate: Instant = Instant.now,
     files: Seq[StorageManifestFile] = Nil

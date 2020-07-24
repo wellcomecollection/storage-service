@@ -9,13 +9,13 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
 import uk.ac.wellcome.platform.archive.common.storage.models.{
-  PrimaryStorageLocation,
+  PrimaryReplicaLocation,
   StorageSpace
 }
 
 case class RegistrationSummary(
   ingestId: IngestID,
-  location: PrimaryStorageLocation,
+  location: PrimaryReplicaLocation,
   space: StorageSpace,
   externalIdentifier: ExternalIdentifier,
   version: BagVersion,

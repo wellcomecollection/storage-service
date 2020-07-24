@@ -1,9 +1,5 @@
 package uk.ac.wellcome.platform.archive.common.storage.models
 
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  AmazonS3StorageProvider,
-  AzureBlobStorageProvider
-}
 import uk.ac.wellcome.storage.{
   AzureBlobItemLocationPrefix,
   Location,
@@ -13,69 +9,25 @@ import uk.ac.wellcome.storage.{
 
 sealed trait ReplicaLocation {
   val prefix: Prefix[_ <: Location]
-
-  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
-  // See https://github.com/wellcomecollection/platform/issues/4596
-  def toStorageLocation: StorageLocation
-}
-
-object ReplicaLocation {
-  // TODO: Bridging code while we split ObjectLocation.  Remove this later.
-  // See https://github.com/wellcomecollection/platform/issues/4596
-  def fromStorageLocation(storageLocation: StorageLocation): ReplicaLocation =
-    storageLocation match {
-      case primary: PrimaryStorageLocation =>
-        PrimaryS3ReplicaLocation(
-          prefix = S3ObjectLocationPrefix(primary.prefix)
-        )
-
-      case secondary: SecondaryStorageLocation =>
-        SecondaryS3ReplicaLocation(
-          prefix = S3ObjectLocationPrefix(secondary.prefix)
-        )
-    }
 }
 
 sealed trait S3ReplicaLocation extends ReplicaLocation {
   val prefix: S3ObjectLocationPrefix
 }
 
-sealed trait PrimaryReplicaLocation extends ReplicaLocation {
-  override def toStorageLocation: PrimaryStorageLocation
-}
-
-sealed trait SecondaryReplicaLocation extends ReplicaLocation {
-  override def toStorageLocation: SecondaryStorageLocation
-}
+sealed trait PrimaryReplicaLocation extends ReplicaLocation
+sealed trait SecondaryReplicaLocation extends ReplicaLocation
 
 case class PrimaryS3ReplicaLocation(
   prefix: S3ObjectLocationPrefix
 ) extends S3ReplicaLocation
-    with PrimaryReplicaLocation {
-  override def toStorageLocation: PrimaryStorageLocation =
-    PrimaryStorageLocation(
-      provider = AmazonS3StorageProvider,
-      prefix = prefix.toObjectLocationPrefix
-    )
-}
+    with PrimaryReplicaLocation
 
 case class SecondaryS3ReplicaLocation(
   prefix: S3ObjectLocationPrefix
 ) extends S3ReplicaLocation
-    with SecondaryReplicaLocation {
-  override def toStorageLocation: SecondaryStorageLocation =
-    SecondaryStorageLocation(
-      provider = AmazonS3StorageProvider,
-      prefix = prefix.toObjectLocationPrefix
-    )
-}
+    with SecondaryReplicaLocation
 
 case class SecondaryAzureReplicaLocation(
   prefix: AzureBlobItemLocationPrefix
-) extends SecondaryReplicaLocation {
-  override def toStorageLocation: SecondaryStorageLocation =
-    SecondaryStorageLocation(
-      provider = AzureBlobStorageProvider,
-      prefix = prefix.toObjectLocationPrefix
-    )
-}
+) extends SecondaryReplicaLocation

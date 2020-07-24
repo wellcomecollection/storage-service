@@ -8,11 +8,8 @@ import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
-import uk.ac.wellcome.platform.archive.common.generators.{
-  StorageLocationGenerators,
-  StorageSpaceGenerators
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.IngestCompleted
+import uk.ac.wellcome.platform.archive.common.generators.StorageSpaceGenerators
+import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -22,7 +19,6 @@ class RegisterTest
     with Matchers
     with BagRegisterFixtures
     with StorageSpaceGenerators
-    with StorageLocationGenerators
     with StringNamespaceFixtures
     with BagTrackerFixtures
     with ScalaFutures
@@ -40,15 +36,10 @@ class RegisterTest
         version = version
       )
 
-      val primaryLocation = createPrimaryLocationWith(
-        prefix = bagRoot.toObjectLocationPrefix
-      )
+      val primaryLocation = PrimaryS3ReplicaLocation(bagRoot)
 
       val replicas = collectionOf(min = 1) {
-        createSecondaryLocationWith(
-          prefix =
-            bagRoot.copy(bucket = createBucketName).toObjectLocationPrefix
-        )
+        SecondaryS3ReplicaLocation(bagRoot.copy(bucket = createBucketName))
       }
 
       val ingestId = createIngestID
@@ -86,19 +77,18 @@ class RegisterTest
       val manifest =
         storageManifestDao.getLatest(id = bagId).right.value
 
-      manifest.location shouldBe primaryLocation.copy(
+      manifest.location shouldBe PrimaryS3StorageLocation(
         prefix = bagRoot
           .copy(keyPrefix = bagRoot.keyPrefix.stripSuffix(s"/$version"))
-          .toObjectLocationPrefix
       )
 
       manifest.replicaLocations shouldBe
         replicas.map { secondaryLocation =>
           val prefix = secondaryLocation.prefix
 
-          secondaryLocation.copy(
+          SecondaryS3StorageLocation(
             prefix = prefix
-              .copy(path = prefix.path.stripSuffix(s"/$version"))
+              .copy(keyPrefix = prefix.keyPrefix.stripSuffix(s"/$version"))
           )
         }
     }

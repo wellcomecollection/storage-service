@@ -40,6 +40,6 @@ object DisplayLocation {
     DisplayLocation(
       provider = DisplayProvider(location.provider),
       bucket = location.prefix.namespace,
-      path = location.prefix.path
+      path = location.prefix.pathPrefix
     )
 }

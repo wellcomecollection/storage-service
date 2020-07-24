@@ -24,6 +24,11 @@ trait Prefix[OfLocation <: Location] {
 
   def toObjectLocationPrefix: ObjectLocationPrefix
 
+  def filename: String =
+    Paths.get(pathPrefix).getFileName.toString
+
+  def parent: Prefix[OfLocation]
+
   def getRelativePathFrom(location: OfLocation): String
 }
 
@@ -85,10 +90,16 @@ case class S3ObjectLocationPrefix(
     location.key.stripPrefix(this.keyPrefix)
   }
 
-  override def join(parts: String*): Prefix[S3ObjectLocation] =
+  override def join(parts: String*): S3ObjectLocationPrefix =
     S3ObjectLocationPrefix(
       bucket = bucket,
       keyPrefix = PathJoiner.join(keyPrefix, parts: _*)
+    )
+
+  override def parent: S3ObjectLocationPrefix =
+    S3ObjectLocationPrefix(
+      bucket = bucket,
+      keyPrefix = Paths.get(keyPrefix).getParent.toString
     )
 }
 
@@ -153,6 +164,12 @@ case class MemoryLocationPrefix(
       namespace = namespace,
       pathPrefix = PathJoiner.join(pathPrefix, parts: _*)
     )
+
+  override def parent: MemoryLocationPrefix =
+    MemoryLocationPrefix(
+      namespace = namespace,
+      pathPrefix = Paths.get(pathPrefix).getParent.toString
+    )
 }
 
 case class AzureBlobItemLocation(
@@ -193,10 +210,16 @@ case class AzureBlobItemLocationPrefix(
     location.name.stripPrefix(this.namePrefix)
   }
 
-  override def join(parts: String*): Prefix[AzureBlobItemLocation] =
+  override def join(parts: String*): AzureBlobItemLocationPrefix =
     AzureBlobItemLocationPrefix(
       container = container,
       namePrefix = PathJoiner.join(namePrefix, parts: _*)
+    )
+
+  override def parent: AzureBlobItemLocationPrefix =
+    AzureBlobItemLocationPrefix(
+      container = container,
+      namePrefix = Paths.get(namePrefix).getParent.toString
     )
 }
 

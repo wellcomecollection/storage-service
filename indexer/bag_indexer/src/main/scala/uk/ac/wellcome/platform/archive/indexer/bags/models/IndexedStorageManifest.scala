@@ -68,7 +68,7 @@ object IndexedLocation {
     IndexedLocation(
       provider = location.provider.id,
       bucket = location.prefix.namespace,
-      path = location.prefix.path
+      path = location.prefix.pathPrefix
     )
 }
 

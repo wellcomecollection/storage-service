@@ -29,8 +29,8 @@ class Register(
 
   def update(
     ingestId: IngestID,
-    location: PrimaryStorageLocation,
-    replicas: Seq[SecondaryStorageLocation],
+    location: PrimaryReplicaLocation,
+    replicas: Seq[SecondaryReplicaLocation],
     version: BagVersion,
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier
@@ -46,7 +46,7 @@ class Register(
     )
 
     val result: Future[IngestStepResult[RegistrationSummary]] = for {
-      bag <- bagReader.get(S3ObjectLocationPrefix(location.prefix)) match {
+      bag <- bagReader.get(location.prefix.asInstanceOf[S3ObjectLocationPrefix]) match {
         case Right(value) => Future(value)
         case Left(err) =>
           Future.failed(

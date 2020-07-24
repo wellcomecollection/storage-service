@@ -53,8 +53,8 @@ class BagRegisterWorker[IngestDestination, NotificationDestination](
 
       registrationSummary <- register.update(
         ingestId = payload.ingestId,
-        location = payload.knownReplicas.location.toStorageLocation,
-        replicas = payload.knownReplicas.replicas.map { _.toStorageLocation },
+        location = payload.knownReplicas.location,
+        replicas = payload.knownReplicas.replicas,
         version = payload.version,
         space = payload.storageSpace,
         externalIdentifier = payload.externalIdentifier
@@ -81,7 +81,7 @@ class BagRegisterWorker[IngestDestination, NotificationDestination](
           BagRegistrationNotification(
             space = summary.space,
             externalIdentifier = summary.externalIdentifier,
-            version = summary.version
+            version = summary.version.toString
           )
         )
 
