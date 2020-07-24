@@ -7,88 +7,55 @@ storage:
       name: Production
   image_repositories:
     - id: bag_register
-      namespace: uk.ac.wellcome
-      account_id: '975596993436'
       services:
-        - bag-register
+        - id: bag-register
     - id: bag_replicator
-      namespace: uk.ac.wellcome
-      account_id: '975596993436'
       services:
-        - bag-replicator-primary
-        - bag-replicator-glacier
+        - id: bag-replicator-primary
+        - id: bag-replicator-glacier
     - id: bag_root_finder
-      namespace: uk.ac.wellcome
-      account_id: '975596993436'
       services:
-        - bag-root-finder
+        - id: bag-root-finder
     - id: bag_tagger
-      namespace: uk.ac.wellcome
-      account_id: '975596993436'
       services:
-        - bag-tagger
+        - id: bag-tagger
     - id: bag_tracker
-      namespace: uk.ac.wellcome
-      account_id: '975596993436'
       services:
-        - bags-api
+        - id: bags-api
     - id: bag_unpacker
-      namespace: uk.ac.wellcome
-      account_id: '975596993436'
       services:
-        - bag-unpacker
+        - id: bag-unpacker
     - id: bag_verifier
-      namespace: uk.ac.wellcome
-      account_id: '975596993436'
       services:
-        - bag-verifer-pre-replication
-        - bag-verifier-primary
-        - bag-verifier-glacier
+        - id: bag-verifer-pre-replication
+        - id: bag-verifier-primary
+        - id: bag-verifier-glacier
     - id: bag_versioner
-      namespace: uk.ac.wellcome
-      account_id: '975596993436'
       services:
-        - bag-versioner
+        - id: bag-versioner
     - id: bags_api
-      namespace: uk.ac.wellcome
-      account_id: '975596993436'
       services:
-        - bags-api
+        - id: bags-api
     - id: notifier
-      namespace: uk.ac.wellcome
-      account_id: '975596993436'
       services:
-        - notifier
+        - id: notifier
     - id: replica_aggregator
-      namespace: uk.ac.wellcome
-      account_id: '975596993436'
       services:
-        - replica-aggregator
+        - id: replica-aggregator
     - id: bag_indexer
-      namespace: uk.ac.wellcome
-      account_id: '975596993436'
       services:
-        - bags-indexer
+        - id: bags-indexer
     - id: ingests_indexer
-      namespace: uk.ac.wellcome
-      account_id: '975596993436'
       services:
-        - ingests-indexer
+        - id: ingests-indexer
     - id: ingests_api
-      namespace: uk.ac.wellcome
-      account_id: '975596993436'
       services:
-        - ingests-service
+        - id: ingests-service
     - id: ingests_tracker
-      namespace: uk.ac.wellcome
-      account_id: '975596993436'
       services:
-        - ingests-service
+        - id: ingests-service
     - id: ingests_worker
-      namespace: uk.ac.wellcome
-      account_id: '975596993436'
       services:
-        - ingests-service
+        - id: ingests-service
   name: Storage service
   role_arn: arn:aws:iam::975596993436:role/storage-ci
-  aws_region_name: eu-west-1
