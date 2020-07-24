@@ -604,7 +604,7 @@ module "notifier" {
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
 
-  deployment_service_name = "notifer"
+  deployment_service_name = "notifier"
   deployment_service_env  = var.release_label
 }
 
