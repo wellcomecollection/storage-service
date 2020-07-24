@@ -28,7 +28,7 @@ module "critical" {
 
   tags = local.default_tags
 
-  table_name = "vhs-storage-manifests-25062020"
+  table_name = "vhs-storage-manifests-2020-07-24"
 
   # This gives us another layer of protection for the S3 buckets.
   #
