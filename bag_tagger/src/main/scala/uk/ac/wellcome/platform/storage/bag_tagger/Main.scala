@@ -18,7 +18,7 @@ import uk.ac.wellcome.platform.storage.bag_tagger.services.{
   BagTaggerWorker,
   TagRules
 }
-import uk.ac.wellcome.storage.tags.s3.NewS3Tags
+import uk.ac.wellcome.storage.tags.s3.S3Tags
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -52,7 +52,7 @@ object Main extends WellcomeTypesafeApp {
       metricsNamespace = config.requireString("aws.metrics.namespace"),
       bagTrackerClient = bagTrackerClient,
       applyTags = new ApplyTags(
-        s3Tags = new NewS3Tags()
+        s3Tags = new S3Tags()
       ),
       tagRules = TagRules.chooseTags
     )

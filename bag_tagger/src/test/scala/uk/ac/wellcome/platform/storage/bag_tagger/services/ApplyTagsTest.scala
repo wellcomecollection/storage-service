@@ -4,13 +4,11 @@ import org.scalatest.TryValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  PrimaryS3StorageLocation,
-  SecondaryAzureStorageLocation
-}
-import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
-import uk.ac.wellcome.storage.tags.s3.NewS3Tags
-import uk.ac.wellcome.storage.{AzureBlobItemLocationPrefix, Identified}
+import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryS3StorageLocation, SecondaryAzureStorageLocation}
+import uk.ac.wellcome.storage.Identified
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.generators.AzureBlobLocationGenerators
+import uk.ac.wellcome.storage.tags.s3.S3Tags
 
 import scala.util.Success
 
@@ -18,9 +16,10 @@ class ApplyTagsTest
     extends AnyFunSpec
     with Matchers
     with TryValues
-    with NewS3Fixtures
+    with S3Fixtures
+    with AzureBlobLocationGenerators
     with StorageManifestGenerators {
-  val s3Tags = new NewS3Tags()
+  val s3Tags = new S3Tags()
   val applyTags = new ApplyTags(s3Tags = s3Tags)
 
   describe("it updates tags") {
@@ -34,7 +33,7 @@ class ApplyTagsTest
         )
 
         val location = prefix.asLocation(file.path)
-        putS3Object(location)
+        putStream(location)
 
         s3Tags.update(location) { _ =>
           Right(Map("Content-SHA256" -> "4a5a41ebcf5e2c24c"))
@@ -79,8 +78,7 @@ class ApplyTagsTest
     }
 
     it("if asked to tag objects in Azure") {
-      val prefix =
-        AzureBlobItemLocationPrefix(randomAlphanumeric, randomAlphanumeric)
+      val prefix = createAzureBlobLocationPrefix
 
       val file = createStorageManifestFile
 
@@ -106,12 +104,7 @@ class ApplyTagsTest
         )
 
         val location = prefix.asLocation(file.path)
-
-        s3Client.putObject(
-          location.namespace,
-          location.path,
-          "<MXF file contents>"
-        )
+        putStream(location)
 
         val result = applyTags.applyTags(
           storageLocations = Seq(
