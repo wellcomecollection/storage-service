@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.bag_register.services
 
 import java.net.URI
-import java.nio.file.Paths
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
@@ -13,7 +12,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3SizeFinder
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import uk.ac.wellcome.storage.azure.AzureBlobLocation
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
@@ -211,7 +210,7 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
           s"Looks like a fetch.txt URI wasn't under the bag root - why wasn't this spotted by the verifier? +" +
             s"$location ($bagPath)"
         )
-        val path = getPath(location).stripPrefix(getPathPrefix(bagRoot) + "/")
+        val path = getPath(location).stripPrefix(bagRoot.pathPrefix + "/")
 
         val size = maybeSize match {
           case Some(s) => s
