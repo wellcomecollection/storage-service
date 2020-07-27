@@ -6,8 +6,4 @@ import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
 class MemoryBagReader()(
   implicit val readable: MemoryStreamStore[MemoryLocation]
-) extends BagReader[MemoryLocation, MemoryLocationPrefix] {
-
-  override def asLocation(prefix: MemoryLocationPrefix, path: String): MemoryLocation =
-    prefix.asLocation(path)
-}
+) extends BagReader[MemoryLocation, MemoryLocationPrefix]

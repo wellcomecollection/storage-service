@@ -9,7 +9,4 @@ class S3BagReader()(implicit s3Client: AmazonS3)
     extends BagReader[S3ObjectLocation, S3ObjectLocationPrefix] {
   override implicit val readable: S3StreamStore =
     new S3StreamStore()
-
-  override def asLocation(prefix: S3ObjectLocationPrefix, path: String): S3ObjectLocation =
-    prefix.asLocation(path)
 }

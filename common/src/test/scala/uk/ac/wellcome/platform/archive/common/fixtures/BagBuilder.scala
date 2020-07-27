@@ -19,8 +19,6 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
     extends StorageSpaceGenerators
     with BagInfoGenerators {
 
-  def asLocation(root: BagPrefix, path: String): BagLocation
-
   case class ManifestFile(name: String, contents: String)
 
   def createBagRoot(
@@ -126,7 +124,7 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
 
     val manifestObjects =
       (tagManifestFiles ++ tagManifest.toList).map { manifestFile =>
-        asLocation(bagRoot, path = manifestFile.name) -> manifestFile.contents
+        bagRoot.asLocation(manifestFile.name) -> manifestFile.contents
       }.toMap
 
     val payloadObjects =

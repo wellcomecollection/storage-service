@@ -14,9 +14,6 @@ trait S3BagBuilder
     extends BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix, Bucket]
     with S3Fixtures {
 
-  override def asLocation(prefix: S3ObjectLocationPrefix, path: String): S3ObjectLocation =
-    prefix.asLocation(path)
-
   override def createBagRoot(
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,

@@ -11,9 +11,6 @@ import scala.util.Random
 trait MemoryBagBuilder
     extends BagBuilder[MemoryLocation, MemoryLocationPrefix, String] {
 
-  override def asLocation(prefix: MemoryLocationPrefix, path: String): MemoryLocation =
-    prefix.asLocation(path)
-
   override def createBagRoot(
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,

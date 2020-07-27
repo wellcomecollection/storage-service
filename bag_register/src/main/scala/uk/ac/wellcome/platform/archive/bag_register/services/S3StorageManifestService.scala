@@ -97,47 +97,12 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
       )
     } yield storageManifest
 
-  // TODO: Upstream this into scala-libs
-  def filename(prefix: Prefix[_ <: Location]): String =
-    prefix match {
-      case s3Prefix: S3ObjectLocationPrefix =>
-        Paths.get(s3Prefix.keyPrefix).getFileName.toString
-
-      case azurePrefix: AzureBlobLocationPrefix =>
-        Paths.get(azurePrefix.namePrefix).getFileName.toString
-
-      case _ =>
-        throw new Throwable(s"Unsupported prefix: $prefix")
-    }
-
-  def parent(prefix: Prefix[_ <: Location]): Prefix[_ <: Location] =
-    prefix match {
-      case s3Prefix: S3ObjectLocationPrefix =>
-        s3Prefix.copy(
-          keyPrefix = Paths.get(s3Prefix.keyPrefix).getParent.toString
-        )
-
-      case azurePrefix: AzureBlobLocationPrefix =>
-        azurePrefix.copy(
-          namePrefix = Paths.get(azurePrefix.namePrefix).getParent.toString
-        )
-
-      case _ =>
-        throw new Throwable(s"Unsupported prefix: $prefix")
-    }
-
+  // TODO: Upstream into scala-libs
   def getPath(location: Location): String =
     location match {
       case s3Location: S3ObjectLocation => s3Location.key
       case azureLocation: AzureBlobLocation => azureLocation.name
       case _ => throw new Throwable(s"Unsupported location: $location")
-    }
-
-  def getPathPrefix(prefix: Prefix[_ <: Location]): String =
-    prefix match {
-      case s3Location: S3ObjectLocationPrefix => s3Location.keyPrefix
-      case azureLocation: AzureBlobLocationPrefix => azureLocation.namePrefix
-      case _ => throw new Throwable(s"Unsupported prefix: $prefix")
     }
 
   /** The replicator writes bags inside a bucket to paths of the form
@@ -156,8 +121,8 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
     replicaRoot: Prefix[_ <: Location],
     version: BagVersion
   ): Try[Prefix[_ <: Location]] =
-    if (filename(replicaRoot) == version.toString) {
-      Success(parent(replicaRoot))
+    if (replicaRoot.basename == version.toString) {
+      Success(replicaRoot.parent)
     } else {
       Failure(
         new StorageManifestException(
@@ -242,7 +207,7 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
         val (location, maybeSize) = entries(bagPath)
 
         assert(
-          getPath(location).startsWith(getPathPrefix(bagRoot) + "/"),
+          getPath(location).startsWith(bagRoot.pathPrefix + "/"),
           s"Looks like a fetch.txt URI wasn't under the bag root - why wasn't this spotted by the verifier? +" +
             s"$location ($bagPath)"
         )
