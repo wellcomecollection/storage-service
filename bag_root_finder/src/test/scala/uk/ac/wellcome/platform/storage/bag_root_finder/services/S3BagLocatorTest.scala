@@ -3,13 +3,13 @@ package uk.ac.wellcome.platform.storage.bag_root_finder.services
 import org.scalatest.Assertion
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.storage.S3ObjectLocationPrefix
-import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.util.Success
 
-class S3BagLocatorTest extends AnyFunSpec with Matchers with NewS3Fixtures {
+class S3BagLocatorTest extends AnyFunSpec with Matchers with S3Fixtures {
   describe("locateBagInfo") {
     it("locates a bag-info.txt file in the root") {
       withLocalS3Bucket { bucket =>
@@ -175,4 +175,11 @@ class S3BagLocatorTest extends AnyFunSpec with Matchers with NewS3Fixtures {
     keys.foreach { k =>
       s3Client.putObject(bucket.name, k, "example object")
     }
+
+  // TODO: Upstream into scala-libs
+  def createS3ObjectLocationPrefixWith(bucket: Bucket, keyPrefix: String): S3ObjectLocationPrefix =
+    S3ObjectLocationPrefix(bucket = bucket.name, keyPrefix = keyPrefix)
+
+  def createS3ObjectLocationWith(bucket: Bucket, key: String): S3ObjectLocation =
+    S3ObjectLocation(bucket = bucket.name, key = key)
 }
