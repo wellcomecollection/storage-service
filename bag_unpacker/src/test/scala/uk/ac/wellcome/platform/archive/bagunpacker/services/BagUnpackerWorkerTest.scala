@@ -18,8 +18,8 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
   IngestStepSucceeded
 }
-import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 
 class BagUnpackerWorkerTest
     extends AnyFunSpec

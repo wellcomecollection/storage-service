@@ -6,7 +6,7 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
-import uk.ac.wellcome.storage.{MemoryLocation, MemoryLocationPrefix}
+import uk.ac.wellcome.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
 
 import scala.util.Random
 
@@ -50,7 +50,7 @@ class UnpackerMessageTest
       ),
       dstPrefix = MemoryLocationPrefix(
         namespace = randomAlphanumeric,
-        pathPrefix = randomAlphanumeric
+        path = randomAlphanumeric
       ),
       fileCount = fileCount,
       bytesUnpacked = bytesUnpacked,

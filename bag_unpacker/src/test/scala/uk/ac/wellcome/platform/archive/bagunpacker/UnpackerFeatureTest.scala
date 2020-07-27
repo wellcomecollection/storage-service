@@ -15,7 +15,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
   IngestStatusUpdate
 }
-import uk.ac.wellcome.storage.S3ObjectLocationPrefix
+import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 
 class UnpackerFeatureTest
     extends AnyFunSpec
@@ -104,7 +104,7 @@ class UnpackerFeatureTest
                 ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
               ingestFailed.status shouldBe Ingest.Failed
               ingestFailed.events.head.description shouldBe
-                s"Unpacker failed - There is no S3 bucket ${sourceLocation.namespace}"
+                s"Unpacker failed - There is no S3 bucket ${sourceLocation.bucket}"
           }
         }
     }

@@ -15,9 +15,8 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepResult
 }
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.s3.S3ClientFactory
-import uk.ac.wellcome.storage.store.s3.NewS3StreamStore
-import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
+import uk.ac.wellcome.storage.s3.{S3ClientFactory, S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.util.Try
 
@@ -25,7 +24,7 @@ class S3UnpackerTest
     extends UnpackerTestCases[
       S3ObjectLocation,
       S3ObjectLocationPrefix,
-      NewS3StreamStore,
+      S3StreamStore,
       Bucket
     ]
     with S3CompressFixture {
@@ -36,7 +35,7 @@ class S3UnpackerTest
       Unpacker[S3ObjectLocation, S3ObjectLocation, S3ObjectLocationPrefix],
       R
     ]
-  )(implicit store: NewS3StreamStore): R =
+  )(implicit store: S3StreamStore): R =
     testWith(unpacker)
 
   override def withNamespace[R](testWith: TestWith[Bucket, R]): R =
@@ -44,20 +43,17 @@ class S3UnpackerTest
       testWith(bucket)
     }
 
-  override def withStreamStore[R](testWith: TestWith[NewS3StreamStore, R]): R =
-    testWith(new NewS3StreamStore())
+  override def withStreamStore[R](testWith: TestWith[S3StreamStore, R]): R =
+    testWith(new S3StreamStore())
 
-  override def createSrcLocationWith(
-    bucket: Bucket,
-    key: String
-  ): S3ObjectLocation =
-    createS3ObjectLocationWith(bucket, key = key)
+  override def createSrcLocationWith(bucket: Bucket, key: String): S3ObjectLocation =
+    S3ObjectLocation(bucket = bucket.name, key = key)
 
   override def createDstPrefixWith(
     bucket: Bucket,
     keyPrefix: String
   ): S3ObjectLocationPrefix =
-    createS3ObjectLocationPrefixWith(bucket, keyPrefix = keyPrefix)
+    S3ObjectLocationPrefix(bucket = bucket.name, keyPrefix = keyPrefix)
 
   it("fails if asked to write to a non-existent bucket") {
     val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()

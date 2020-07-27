@@ -8,6 +8,7 @@ import com.amazonaws.services.s3.model.{AmazonS3Exception, GetObjectRequest}
 import grizzled.slf4j.Logging
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 

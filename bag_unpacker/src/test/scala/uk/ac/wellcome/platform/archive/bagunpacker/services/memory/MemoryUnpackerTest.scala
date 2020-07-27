@@ -5,7 +5,7 @@ import uk.ac.wellcome.platform.archive.bagunpacker.services.{
   Unpacker,
   UnpackerTestCases
 }
-import uk.ac.wellcome.storage.{MemoryLocation, MemoryLocationPrefix}
+import uk.ac.wellcome.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
 class MemoryUnpackerTest
@@ -46,5 +46,5 @@ class MemoryUnpackerTest
     namespace: String,
     pathPrefix: String
   ): MemoryLocationPrefix =
-    MemoryLocationPrefix(namespace = namespace, pathPrefix = pathPrefix)
+    MemoryLocationPrefix(namespace = namespace, path = pathPrefix)
 }
