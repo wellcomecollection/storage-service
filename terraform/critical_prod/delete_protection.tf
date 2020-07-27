@@ -51,7 +51,15 @@ data "aws_iam_policy_document" "prevent_writes_to_prod" {
   statement {
     actions = [
       "s3:Delete*",
-      "s3:Put*",
+
+      # Although these two statements could be combined into "s3:Put*",
+      # we leave them separate so we can turn them on/off separately.
+      #
+      # In particular, when we want to change bucket policies or permissions,
+      # we can give ourselves PutBucket permissions without unlocking the
+      # ability to overwrite objects in the bucket.
+      "s3:PutObject*",
+      "s3:PutBucket*",
     ]
 
     effect = "Deny"

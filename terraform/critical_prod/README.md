@@ -22,8 +22,8 @@ Error: Error putting S3 policy: AccessDenied: Access Denied
 
 This is because, by default, we disable `s3:Put*` and `s3:Delete*` on both S3 buckets (to avoid accidental corruption of the archive).
 
-These protections are defined in `delete_protection.tf` -- temporarily comment out the line disabling `s3:Put*`, then try to apply your change again.
-You'll need to run Terraform twice: once to change the IAM permissions to re-enable `s3:Put*`, once to update the S3 bucket policy.
+These protections are defined in `delete_protection.tf` -- temporarily comment out the line disabling `s3:PutBucket*`, then try to apply your change again.
+You'll need to run Terraform twice: once to change the IAM permissions to re-enable `s3:PutBucket*`, once to update the S3 bucket policy.
 
 *Don't forget to re-enable the protection afterwards!*
 
