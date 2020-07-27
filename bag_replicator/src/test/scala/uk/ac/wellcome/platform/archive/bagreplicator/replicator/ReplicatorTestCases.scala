@@ -4,19 +4,16 @@ import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
-  ReplicationFailed,
-  ReplicationRequest,
-  ReplicationSucceeded
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{ReplicationFailed, ReplicationRequest, ReplicationSucceeded}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
-import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.tags.Tags
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.store.s3.{NewS3StreamStore, NewS3TypedStore}
-import uk.ac.wellcome.storage.tags.s3.NewS3Tags
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.store.s3.S3TypedStore
+import uk.ac.wellcome.storage.tags.s3.S3Tags
 
 trait ReplicatorTestCases[
   DstNamespace,
@@ -26,7 +23,7 @@ trait ReplicatorTestCases[
     with Matchers
     with EitherValues
     with StorageRandomThings
-    with NewS3Fixtures {
+    with S3Fixtures {
 
   def withSrcNamespace[R](testWith: TestWith[Bucket, R]): R =
     withLocalS3Bucket { bucket =>
@@ -48,17 +45,15 @@ trait ReplicatorTestCases[
   ): DstLocation
 
   def createSrcPrefixWith(srcBucket: Bucket): S3ObjectLocationPrefix =
-    createS3ObjectLocationPrefixWith(srcBucket, keyPrefix = "")
+    S3ObjectLocationPrefix(bucket = srcBucket.name, keyPrefix = "")
 
   def createDstPrefixWith(dstNamespace: DstNamespace): DstPrefix
 
-  val srcTags: Tags[S3ObjectLocation] = new NewS3Tags()
+  val srcTags: Tags[S3ObjectLocation] = new S3Tags()
   val dstTags: Tags[DstLocation]
 
-  implicit val s3StreamStore: NewS3StreamStore = new NewS3StreamStore()
-
   val srcStringStore: TypedStore[S3ObjectLocation, String] =
-    new NewS3TypedStore[String]()
+    S3TypedStore[String]
 
   val dstStringStore: TypedStore[DstLocation, String]
 
@@ -125,7 +120,7 @@ trait ReplicatorTestCases[
 
         val dstLocation = createDstLocationWith(
           dstNamespace = dstNamespace,
-          path = locations.head.path.replace("src/", "dst/")
+          path = locations.head.key.replace("src/", "dst/")
         )
 
         putDstObject(dstLocation, contents = badContents)
@@ -194,7 +189,7 @@ trait ReplicatorTestCases[
 
         val dstLocation = createDstLocationWith(
           dstNamespace,
-          path = location.path
+          path = location.key
         )
 
         dstTags.get(dstLocation).right.value shouldBe Identified(

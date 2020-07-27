@@ -3,32 +3,29 @@ package uk.ac.wellcome.platform.archive.bagreplicator.replicator.azure
 import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.BlobServiceClient
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.Replicator
-import uk.ac.wellcome.storage.listing.s3.NewS3ObjectLocationListing
-import uk.ac.wellcome.storage.transfer.azure.{
-  NewS3toAzurePrefixTransfer,
-  NewS3toAzureTransfer
-}
-import uk.ac.wellcome.storage.{
-  AzureBlobItemLocation,
-  AzureBlobItemLocationPrefix
-}
+import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
+import uk.ac.wellcome.storage.store.s3.{S3StreamReadable, S3StreamStore}
+import uk.ac.wellcome.storage.transfer.azure.{S3toAzurePrefixTransfer, S3toAzureTransfer}
 
 class AzureReplicator(
   implicit s3Client: AmazonS3,
   blobClient: BlobServiceClient
-) extends Replicator[AzureBlobItemLocation, AzureBlobItemLocationPrefix] {
+) extends Replicator[AzureBlobLocation, AzureBlobLocationPrefix] {
 
-  override implicit val prefixListing: NewS3ObjectLocationListing =
-    new NewS3ObjectLocationListing()
+  override implicit val prefixListing: S3ObjectLocationListing =
+    S3ObjectLocationListing()
 
-  implicit val transfer: NewS3toAzureTransfer = new NewS3toAzureTransfer()
+  implicit val readable: S3StreamReadable = new S3StreamStore()
 
-  override implicit val prefixTransfer: NewS3toAzurePrefixTransfer =
-    new NewS3toAzurePrefixTransfer()
+  implicit val transfer: S3toAzureTransfer = new S3toAzureTransfer()
+
+  override implicit val prefixTransfer: S3toAzurePrefixTransfer =
+    new S3toAzurePrefixTransfer()
 
   override protected def buildDestinationFromParts(
     container: String,
     namePrefix: String
-  ): AzureBlobItemLocationPrefix =
-    AzureBlobItemLocationPrefix(container = container, namePrefix = namePrefix)
+  ): AzureBlobLocationPrefix =
+    AzureBlobLocationPrefix(container = container, namePrefix = namePrefix)
 }

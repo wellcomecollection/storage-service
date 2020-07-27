@@ -20,7 +20,6 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   StorageProvider
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
-import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.listing.s3.S3ObjectSummaryListing
@@ -29,6 +28,7 @@ import uk.ac.wellcome.storage.locking.memory.{
   MemoryLockDaoFixtures
 }
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
@@ -130,13 +130,12 @@ trait BagReplicatorFixtures
     srcPrefix: S3ObjectLocationPrefix,
     dstPrefix: S3ObjectLocationPrefix
   ): Assertion = {
-    val sourceItems = listing.list(srcPrefix.toObjectLocationPrefix).right.value
+    val sourceItems = listing.list(srcPrefix).right.value
     val sourceKeyEtags = sourceItems.map {
       _.getETag
     }
 
-    val destinationItems =
-      listing.list(dstPrefix.toObjectLocationPrefix).right.value
+    val destinationItems = listing.list(dstPrefix).right.value
     val destinationKeyEtags = destinationItems.map {
       _.getETag
     }

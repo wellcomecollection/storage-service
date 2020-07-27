@@ -1,10 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.replicator.models
 
-import uk.ac.wellcome.platform.archive.bagreplicator.models.{
-  PrimaryReplica,
-  ReplicaType,
-  SecondaryReplica
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.models.{PrimaryReplica, ReplicaType, SecondaryReplica}
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   PrimaryS3ReplicaLocation,
   ReplicaLocation,
@@ -12,6 +8,8 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   SecondaryS3ReplicaLocation
 }
 import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.azure.AzureBlobLocationPrefix
+import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 
 case class ReplicationRequest[DstPrefix <: Prefix[_ <: Location]](
   srcPrefix: S3ObjectLocationPrefix,
@@ -27,7 +25,7 @@ case class ReplicationRequest[DstPrefix <: Prefix[_ <: Location]](
       case (s3Prefix: S3ObjectLocationPrefix, SecondaryReplica) =>
         SecondaryS3ReplicaLocation(prefix = s3Prefix)
 
-      case (azurePrefix: AzureBlobItemLocationPrefix, SecondaryReplica) =>
+      case (azurePrefix: AzureBlobLocationPrefix, SecondaryReplica) =>
         SecondaryAzureReplicaLocation(prefix = azurePrefix)
 
       case _ =>

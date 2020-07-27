@@ -20,9 +20,9 @@ import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.storage.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.locking.memory.MemoryLockDao
 import uk.ac.wellcome.storage.locking.{LockDao, LockFailure}
+import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

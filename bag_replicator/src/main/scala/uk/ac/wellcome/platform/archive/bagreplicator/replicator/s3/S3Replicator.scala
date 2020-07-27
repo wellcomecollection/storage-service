@@ -2,9 +2,9 @@ package uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3
 
 import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.Replicator
-import uk.ac.wellcome.storage.listing.s3.NewS3ObjectLocationListing
-import uk.ac.wellcome.storage.transfer.s3.NewS3PrefixTransfer
-import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
 
 class S3Replicator(implicit s3Client: AmazonS3)
     extends Replicator[S3ObjectLocation, S3ObjectLocationPrefix] {
@@ -19,10 +19,10 @@ class S3Replicator(implicit s3Client: AmazonS3)
   // Things like the bag-info.txt and tag manifest are tiny, and it's more expensive
   // to store them as Standard-IA than Standard.
   //
-  implicit val prefixTransfer: NewS3PrefixTransfer = NewS3PrefixTransfer()
+  implicit val prefixTransfer: S3PrefixTransfer = S3PrefixTransfer()
 
-  override implicit val prefixListing: NewS3ObjectLocationListing =
-    new NewS3ObjectLocationListing()
+  override implicit val prefixListing: S3ObjectLocationListing =
+    S3ObjectLocationListing()
 
   override protected def buildDestinationFromParts(
     bucket: String,
