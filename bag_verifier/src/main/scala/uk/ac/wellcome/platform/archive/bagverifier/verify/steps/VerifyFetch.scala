@@ -1,12 +1,9 @@
 package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagFetch,
-  BagFetchMetadata,
-  BagPath
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFetch, BagFetchMetadata, BagPath}
 import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 trait VerifyFetch[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
 

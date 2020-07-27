@@ -24,7 +24,7 @@ import uk.ac.wellcome.platform.archive.common.{
   BagRootLocationPayload,
   ReplicaCompletePayload
 }
-import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 object BagVerifierWorkerBuilder {

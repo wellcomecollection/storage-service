@@ -13,20 +13,20 @@ import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   LocationError,
   LocationNotFound
 }
-import uk.ac.wellcome.storage.S3ObjectLocation
-import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.StreamStore
-import uk.ac.wellcome.storage.store.s3.NewS3StreamStore
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
 
 class S3FixityCheckerTest
     extends FixityCheckerTestCases[
       S3ObjectLocation,
       Bucket,
       Unit,
-      NewS3StreamStore
+      S3StreamStore
     ]
-    with NewS3Fixtures {
+    with S3Fixtures {
   override def withContext[R](testWith: TestWith[Unit, R]): R =
     testWith(())
 
@@ -40,14 +40,14 @@ class S3FixityCheckerTest
     )
 
   override def withStreamStore[R](
-    testWith: TestWith[NewS3StreamStore, R]
+    testWith: TestWith[S3StreamStore, R]
   )(implicit context: Unit): R =
     testWith(
-      new NewS3StreamStore()
+      new S3StreamStore()
     )
 
   override def withFixityChecker[R](
-    s3Store: NewS3StreamStore
+    s3Store: S3StreamStore
   )(
     testWith: TestWith[FixityChecker[S3ObjectLocation], R]
   )(implicit context: Unit): R =

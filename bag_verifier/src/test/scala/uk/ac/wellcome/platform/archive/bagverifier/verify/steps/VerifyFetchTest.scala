@@ -11,14 +11,14 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagFetchMetadata,
   BagPath
 }
-import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
-import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 class VerifyFetchTest
     extends AnyFunSpec
     with Matchers
     with EitherValues
-    with NewS3Fixtures {
+    with S3Fixtures {
 
   val verifier: VerifyFetch[S3ObjectLocation, S3ObjectLocationPrefix] =
     new VerifyFetch[S3ObjectLocation, S3ObjectLocationPrefix] {}

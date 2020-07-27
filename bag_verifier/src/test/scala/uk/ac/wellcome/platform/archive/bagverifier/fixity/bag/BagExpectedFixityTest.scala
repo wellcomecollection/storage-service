@@ -6,33 +6,22 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.ExpectedFileFixity
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagFetchMetadata,
-  BagPath
-}
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagGenerators,
-  FetchMetadataGenerators
-}
-import uk.ac.wellcome.platform.archive.common.verify.{
-  Checksum,
-  ChecksumValue,
-  HashingAlgorithm
-}
-import uk.ac.wellcome.storage.{MemoryLocation, MemoryLocationPrefix}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFetchMetadata, BagPath}
+import uk.ac.wellcome.platform.archive.common.generators.{BagGenerators, FetchMetadataGenerators}
+import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, HashingAlgorithm}
+import uk.ac.wellcome.storage.generators.MemoryLocationGenerators
+import uk.ac.wellcome.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
 
 class BagExpectedFixityTest
     extends AnyFunSpec
     with Matchers
     with BagGenerators
-    with FetchMetadataGenerators {
+    with FetchMetadataGenerators
+    with MemoryLocationGenerators {
   implicit val resolvable: Resolvable[MemoryLocation] =
     (location: MemoryLocation) => new URI(location.toString)
 
-  val root: MemoryLocationPrefix = MemoryLocationPrefix(
-    namespace = randomAlphanumeric,
-    pathPrefix = randomAlphanumeric
-  )
+  val root: MemoryLocationPrefix = createMemoryLocationPrefix
 
   val bagExpectedFixity =
     new BagExpectedFixity[MemoryLocation, MemoryLocationPrefix](root)

@@ -4,43 +4,17 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{Assertion, EitherValues, OptionValues, TryValues}
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
-  FailedChecksumNoMatch,
-  FileFixityCorrect
-}
-import uk.ac.wellcome.platform.archive.bagverifier.models.{
-  BagVerifyContext,
-  ReplicatedBagVerifyContext,
-  StandaloneBagVerifyContext,
-  VerificationFailureSummary,
-  VerificationIncompleteSummary,
-  VerificationSuccessSummary,
-  VerificationSummary
-}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FailedChecksumNoMatch, FileFixityCorrect}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{BagVerifyContext, ReplicatedBagVerifyContext, StandaloneBagVerifyContext, VerificationFailureSummary, VerificationIncompleteSummary, VerificationSuccessSummary, VerificationSummary}
 import uk.ac.wellcome.platform.archive.bagverifier.storage.LocationNotFound
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagPath,
-  BagVersion,
-  ExternalIdentifier,
-  PayloadOxum
-}
-import uk.ac.wellcome.platform.archive.common.bagit.services.{
-  BagReader,
-  BagUnavailable
-}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagBuilder,
-  PayloadEntry
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepResult,
-  IngestStepSucceeded,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagPath, BagVersion, ExternalIdentifier, PayloadOxum}
+import uk.ac.wellcome.platform.archive.common.bagit.services.{BagReader, BagUnavailable}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagBuilder, PayloadEntry}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded, StorageSpace}
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
 import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
-import uk.ac.wellcome.storage.{Location, Prefix, S3ObjectLocation}
+import uk.ac.wellcome.storage.{Location, Prefix}
 
 trait StandaloneBagVerifierTestCases[
   BagLocation <: Location,
