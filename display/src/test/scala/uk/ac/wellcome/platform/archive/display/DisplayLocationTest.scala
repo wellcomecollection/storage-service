@@ -9,8 +9,8 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   SecondaryAzureStorageLocation,
   SecondaryS3StorageLocation
 }
-import uk.ac.wellcome.storage.{
-  AzureBlobItemLocationPrefix,
+import uk.ac.wellcome.storage.azure.AzureBlobLocationPrefix
+import uk.ac.wellcome.storage.s3.{
   S3ObjectLocation,
   S3ObjectLocationPrefix
 }
@@ -80,7 +80,7 @@ class DisplayLocationTest
     ),
     (
       SecondaryAzureStorageLocation(
-        prefix = AzureBlobItemLocationPrefix(
+        prefix = AzureBlobLocationPrefix(
           container = "replica-container",
           namePrefix = "path/to/blobs"
         )
