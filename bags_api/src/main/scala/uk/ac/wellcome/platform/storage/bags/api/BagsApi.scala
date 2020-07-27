@@ -17,7 +17,7 @@ import uk.ac.wellcome.platform.storage.bags.api.responses.{
   LookupBag,
   LookupBagVersions
 }
-import uk.ac.wellcome.storage.S3ObjectLocation
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
 
 import scala.concurrent.duration._
 

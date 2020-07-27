@@ -9,6 +9,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FixityCheckerTestCases
 }
 import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.providers.memory.MemoryLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.tags.memory.MemoryTags
@@ -83,5 +84,5 @@ class MemoryFixityCheckerTest
     )
 
   override def resolve(location: MemoryLocation): URI =
-    new URI(location.toString)
+    new URI(s"mem://$location")
 }

@@ -6,13 +6,13 @@ import uk.ac.wellcome.platform.archive.common.storage.services.{
   SizeFinder,
   SizeFinderTestCases
 }
-import uk.ac.wellcome.storage.S3ObjectLocation
-import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
 
 class S3SizeFinderTest
     extends SizeFinderTestCases[S3ObjectLocation, Bucket]
-    with NewS3Fixtures {
+    with S3Fixtures {
 
   override def withContext[R](testWith: TestWith[Bucket, R]): R =
     withLocalS3Bucket { bucket =>

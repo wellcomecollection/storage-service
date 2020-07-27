@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.display._
-import uk.ac.wellcome.storage.S3ObjectLocation
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
 
 class DisplayIngestTest
     extends AnyFunSpec

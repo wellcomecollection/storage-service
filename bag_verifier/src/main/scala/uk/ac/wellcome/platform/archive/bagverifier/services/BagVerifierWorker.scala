@@ -16,12 +16,8 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepResult,
   IngestStepWorker
 }
-import uk.ac.wellcome.storage.{
-  Location,
-  Prefix,
-  S3ObjectLocation,
-  S3ObjectLocationPrefix
-}
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.{Location, Prefix}
 
 import scala.util.Try
 

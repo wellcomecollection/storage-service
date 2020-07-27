@@ -12,8 +12,10 @@ import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3SizeFinder
 import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.azure.AzureBlobLocation
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.Readable
-import uk.ac.wellcome.storage.store.s3.NewS3StreamStore
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 import scala.util.{Failure, Success, Try}
@@ -23,7 +25,7 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
     new S3SizeFinder()
 
   implicit val streamReader: Readable[S3ObjectLocation, InputStreamWithLength] =
-    new NewS3StreamStore()
+    new S3StreamStore()
 
   private lazy val tagManifestFileFinder = new TagManifestFileFinder()
 
@@ -94,6 +96,14 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
       )
     } yield storageManifest
 
+  // TODO: Upstream into scala-libs
+  def getPath(location: Location): String =
+    location match {
+      case s3Location: S3ObjectLocation     => s3Location.key
+      case azureLocation: AzureBlobLocation => azureLocation.name
+      case _                                => throw new Throwable(s"Unsupported location: $location")
+    }
+
   /** The replicator writes bags inside a bucket to paths of the form
     *
     *     /{storageSpace}/{externalIdentifier}/v{version}
@@ -110,7 +120,7 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
     replicaRoot: Prefix[_ <: Location],
     version: BagVersion
   ): Try[Prefix[_ <: Location]] =
-    if (replicaRoot.filename == version.toString) {
+    if (replicaRoot.basename == version.toString) {
       Success(replicaRoot.parent)
     } else {
       Failure(
@@ -196,11 +206,11 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
         val (location, maybeSize) = entries(bagPath)
 
         assert(
-          location.path.startsWith(bagRoot.pathPrefix + "/"),
+          getPath(location).startsWith(bagRoot.pathPrefix + "/"),
           s"Looks like a fetch.txt URI wasn't under the bag root - why wasn't this spotted by the verifier? +" +
             s"$location ($bagPath)"
         )
-        val path = location.path.stripPrefix(bagRoot.pathPrefix + "/")
+        val path = getPath(location).stripPrefix(bagRoot.pathPrefix + "/")
 
         val size = maybeSize match {
           case Some(s) => s
@@ -236,7 +246,8 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
   ): Try[Seq[StorageManifestFile]] =
     tagManifestFileFinder
       .getTagManifestFiles(
-        prefix = bagRoot.join(version.toString),
+        // TODO: Upstream a join() method into scala-libs
+        prefix = bagRoot.asLocation(version.toString).asPrefix,
         algorithm = tagManifest.checksumAlgorithm
       )
       .map {

@@ -8,12 +8,13 @@ import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
 
 import scala.concurrent.duration._
 import scala.io.Source
 
-class S3UploaderTest extends AnyFunSpec with Matchers with NewS3Fixtures {
+class S3UploaderTest extends AnyFunSpec with Matchers with S3Fixtures {
   val uploader = new S3Uploader()
 
   it("creates a pre-signed URL for an object") {
@@ -169,9 +170,6 @@ class S3UploaderTest extends AnyFunSpec with Matchers with NewS3Fixtures {
 
   def getLastModified(location: S3ObjectLocation): Date =
     s3Client
-      .getObjectMetadata(
-        location.bucket,
-        location.key
-      )
+      .getObjectMetadata(location.bucket, location.key)
       .getLastModified
 }

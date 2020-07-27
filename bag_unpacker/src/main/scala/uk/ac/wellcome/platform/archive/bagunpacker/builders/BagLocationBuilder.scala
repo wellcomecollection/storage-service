@@ -5,7 +5,7 @@ import java.nio.file.Paths
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.storage.S3ObjectLocationPrefix
+import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 
 object BagLocationBuilder {
   def build(

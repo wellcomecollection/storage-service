@@ -11,11 +11,11 @@ import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWork
 import uk.ac.wellcome.platform.archive.bagunpacker.services.BagUnpackerWorker
 import uk.ac.wellcome.platform.archive.bagunpacker.services.s3.S3Unpacker
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
-import uk.ac.wellcome.storage.S3ObjectLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
 import uk.ac.wellcome.storage.store.StreamStore
-import uk.ac.wellcome.storage.store.s3.NewS3StreamStore
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -91,5 +91,5 @@ trait BagUnpackerFixtures
   def withStreamStore[R](
     testWith: TestWith[StreamStore[S3ObjectLocation], R]
   ): R =
-    testWith(new NewS3StreamStore())
+    testWith(new S3StreamStore())
 }

@@ -33,16 +33,13 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   StorageProvider
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
-import uk.ac.wellcome.storage.{
-  AzureBlobItemLocationPrefix,
-  Location,
-  Prefix,
-  S3ObjectLocationPrefix
-}
+import uk.ac.wellcome.storage.azure.AzureBlobLocationPrefix
+import uk.ac.wellcome.storage.{Location, Prefix}
 import uk.ac.wellcome.storage.locking.dynamo.{
   DynamoLockDao,
   DynamoLockingService
 }
+import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.typesafe.{DynamoLockDaoBuilder, S3Builder}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -117,7 +114,7 @@ object Main extends WellcomeTypesafeApp {
             .buildClient()
 
         createBagReplicatorWorker(
-          lockingService = createLockingService[AzureBlobItemLocationPrefix],
+          lockingService = createLockingService[AzureBlobLocationPrefix],
           replicator = new AzureReplicator()
         )
     }

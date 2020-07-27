@@ -9,7 +9,7 @@ import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3Uploader
-import uk.ac.wellcome.storage.S3ObjectLocationPrefix
+import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 import scala.concurrent.duration.Duration

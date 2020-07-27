@@ -3,9 +3,9 @@ package uk.ac.wellcome.platform.archive.common.storage.services.s3
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.storage.StorageError
-import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
 
-class S3ObjectExistsTest extends AnyFunSpec with Matchers with NewS3Fixtures {
+class S3ObjectExistsTest extends AnyFunSpec with Matchers with S3Fixtures {
 
   import S3ObjectExists._
 
@@ -14,7 +14,7 @@ class S3ObjectExistsTest extends AnyFunSpec with Matchers with NewS3Fixtures {
       it("returns true") {
         withLocalS3Bucket { bucket =>
           val location = createS3ObjectLocationWith(bucket)
-          putS3Object(location = location)
+          putStream(location)
 
           location.exists.right.value shouldBe true
         }

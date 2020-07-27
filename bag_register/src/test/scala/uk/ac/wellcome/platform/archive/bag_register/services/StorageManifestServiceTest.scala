@@ -17,9 +17,11 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3SizeFinder
 import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.azure.AzureBlobLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.store.s3.{NewS3StreamStore, NewS3TypedStore}
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.store.s3.S3TypedStore
 
 import scala.util.Random
 
@@ -482,9 +484,8 @@ class StorageManifestServiceTest
   )(
     implicit bucket: Bucket
   ): (S3ObjectLocationPrefix, Bag) = {
-    implicit val streamStore: NewS3StreamStore = new NewS3StreamStore()
-    implicit val typedStore: NewS3TypedStore[String] =
-      new NewS3TypedStore[String]()
+    implicit val typedStore: S3TypedStore[String] =
+      S3TypedStore[String]
 
     val (bagObjects, bagRoot, _) =
       bagBuilder.createBagContentsWith(
@@ -540,7 +541,8 @@ class StorageManifestServiceTest
     version: BagVersion
   ): PrimaryReplicaLocation =
     PrimaryS3ReplicaLocation(
-      bagRoot.join(version.toString)
+      // TODO: Add a .join() method to S3ObjectLocationPrefix in scala-libs
+      bagRoot.asLocation(version.toString).asPrefix
     )
 
   def createSecondaryLocationWith(
@@ -549,11 +551,14 @@ class StorageManifestServiceTest
     chooseFrom(
       Seq(
         SecondaryS3ReplicaLocation(
-          createS3ObjectLocationPrefix.join(version.toString)
+          createS3ObjectLocationPrefix
+            .asLocation(version.toString)
+            .asPrefix
         ),
         SecondaryAzureReplicaLocation(
-          AzureBlobItemLocationPrefix(randomAlphanumeric, randomAlphanumeric)
-            .join(version.toString)
+          AzureBlobLocationPrefix(randomAlphanumeric, randomAlphanumeric)
+            .asLocation(version.toString)
+            .asPrefix
         )
       )
     )

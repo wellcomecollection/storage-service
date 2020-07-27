@@ -8,6 +8,7 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
 import uk.ac.wellcome.platform.archive.common.storage.services.s3
 import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.streaming.Codec.stringCodec
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
@@ -38,7 +39,7 @@ class S3Uploader(implicit val s3Client: AmazonS3) {
       exists <- location.exists
 
       _ <- if (!exists || !checkExists) {
-        s3StreamStore.put(location.toObjectLocation)(content)
+        s3StreamStore.put(location)(content)
       } else {
         Right(Identified(location, content))
       }

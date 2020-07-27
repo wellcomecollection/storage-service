@@ -18,10 +18,10 @@ import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.S3Resolvable
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.storage.listing.Listing
-import uk.ac.wellcome.storage.listing.s3.NewS3ObjectLocationListing
+import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
 import uk.ac.wellcome.storage.store.StreamStore
-import uk.ac.wellcome.storage.store.s3.NewS3StreamStore
-import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 trait S3BagVerifier[B <: BagVerifyContext[
   S3ObjectLocation,
@@ -48,7 +48,13 @@ trait S3BagVerifier[B <: BagVerifyContext[
 
   override implicit val listing
     : Listing[S3ObjectLocationPrefix, S3ObjectLocation] =
-    new NewS3ObjectLocationListing()
+    S3ObjectLocationListing()
+
+  override def getRelativePath(
+    root: S3ObjectLocationPrefix,
+    location: S3ObjectLocation
+  ): String =
+    location.key.replace(root.keyPrefix, "")
 }
 
 class S3StandaloneBagVerifier(primaryBucket: String)(
@@ -68,5 +74,5 @@ class S3ReplicatedBagVerifier(primaryBucket: String)(
     ] {
   override val namespace: String = primaryBucket
   override val streamStore: StreamStore[S3ObjectLocation] =
-    new NewS3StreamStore()
+    new S3StreamStore()
 }

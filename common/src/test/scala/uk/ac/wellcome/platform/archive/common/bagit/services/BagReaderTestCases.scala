@@ -22,6 +22,8 @@ trait BagReaderTestCases[
     with EitherValues
     with StorageRandomThings
     with BagBuilder[BagLocation, BagPrefix, Namespace] {
+  def asLocation(root: BagPrefix, path: String): BagLocation
+
   def withContext[R](testWith: TestWith[Context, R]): R
   def withTypedStore[R](
     testWith: TestWith[TypedStore[BagLocation, String], R]
@@ -42,7 +44,7 @@ trait BagReaderTestCases[
   def scrambleFile(root: BagPrefix, path: String)(
     implicit typedStore: TypedStore[BagLocation, String]
   ): Assertion =
-    typedStore.put(root.asLocation(path))(randomAlphanumeric) shouldBe a[
+    typedStore.put(asLocation(root, path = path))(randomAlphanumeric) shouldBe a[
       Right[_, _]
     ]
 

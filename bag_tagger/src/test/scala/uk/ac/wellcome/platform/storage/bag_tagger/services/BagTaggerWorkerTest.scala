@@ -15,8 +15,9 @@ import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.storage.bag_tagger.fixtures.BagTaggerFixtures
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
-import uk.ac.wellcome.storage.tags.s3.NewS3Tags
+import uk.ac.wellcome.storage.tags.s3.S3Tags
 import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
 
 import scala.util.{Failure, Try}
 
@@ -27,7 +28,7 @@ class BagTaggerWorkerTest
     with IntegrationPatience
     with BagTaggerFixtures
     with StorageManifestGenerators {
-  val s3Tags = new NewS3Tags()
+  val s3Tags = new S3Tags()
 
   val contentSha256Tags: Map[String, String] = Map(
     "Content-SHA256" -> "4a5a41ebcf5e2c24c"
@@ -282,7 +283,7 @@ class BagTaggerWorkerTest
   }
 
   def createObject(location: S3ObjectLocation): Unit = {
-    putS3Object(location)
+    putStream(location)
     s3Tags.update(location) { _ =>
       Right(contentSha256Tags)
     }

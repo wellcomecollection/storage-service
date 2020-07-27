@@ -23,7 +23,7 @@ import uk.ac.wellcome.platform.archive.common.{
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

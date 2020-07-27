@@ -4,7 +4,7 @@ import java.net.URI
 
 import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable
-import uk.ac.wellcome.storage.S3ObjectLocation
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
 
 class S3Resolvable(implicit s3Client: AmazonS3)
     extends Resolvable[S3ObjectLocation] {

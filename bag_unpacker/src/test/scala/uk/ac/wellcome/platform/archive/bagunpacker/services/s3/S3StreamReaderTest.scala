@@ -4,23 +4,18 @@ import org.mockito.{Mockito, Matchers => MockitoMatchers}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
-import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.streaming.Codec._
 
 class S3StreamReaderTest
     extends AnyFunSpec
     with Matchers
-    with NewS3Fixtures
+    with S3Fixtures
     with StorageRandomThings {
   it("makes multiple GetObject requests") {
     withLocalS3Bucket { bucket =>
       val location = createS3ObjectLocationWith(bucket)
-
-      s3Client.putObject(
-        location.bucket,
-        location.key,
-        randomAlphanumericWithLength(length = 1000)
-      )
+      putStream(location, inputStream = randomInputStream(length = 1000))
 
       val spyClient = Mockito.spy(s3Client)
       val reader = new S3StreamReader(bufferSize = 500)(s3Client = spyClient)

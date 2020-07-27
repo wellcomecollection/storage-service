@@ -23,7 +23,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.display._
 import uk.ac.wellcome.platform.archive.display.ingests._
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
-import uk.ac.wellcome.storage.S3ObjectLocation
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
 
 /** Tests for POST /ingests
   *

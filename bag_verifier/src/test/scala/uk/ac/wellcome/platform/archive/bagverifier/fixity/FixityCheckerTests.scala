@@ -19,6 +19,7 @@ import uk.ac.wellcome.platform.archive.common.verify.{
   MD5
 }
 import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.providers.memory.MemoryLocation
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore}
 import uk.ac.wellcome.storage.streaming.Codec.stringCodec
 import uk.ac.wellcome.storage.streaming.{Codec, InputStreamWithLength}
@@ -30,7 +31,7 @@ class FixityCheckerTests
     with EitherValues
     with FixityGenerators[MemoryLocation] {
   override def resolve(location: MemoryLocation): URI =
-    new URI(location.toString)
+    new URI(s"mem://$location")
 
   override def createLocation: MemoryLocation =
     MemoryLocation(

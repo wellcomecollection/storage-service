@@ -11,14 +11,15 @@ import uk.ac.wellcome.platform.archive.bagunpacker.services.{
   UnpackerStorageError
 }
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.store.s3.NewS3StreamStore
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 class S3Unpacker(
   bufferSize: Long = 128 * FileUtils.ONE_MB
 )(implicit s3Client: AmazonS3)
     extends Unpacker[S3ObjectLocation, S3ObjectLocation, S3ObjectLocationPrefix] {
-  private val s3StreamStore = new NewS3StreamStore()
+  private val s3StreamStore = new S3StreamStore()
 
   val reader: S3StreamReader = new S3StreamReader(bufferSize = bufferSize)
 

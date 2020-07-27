@@ -15,9 +15,7 @@ import scala.util.Random
 
 case class PayloadEntry(bagPath: BagPath, path: String, contents: String)
 
-trait BagBuilder[BagLocation <: Location, BagLocationPrefix <: Prefix[
-  BagLocation
-], Namespace]
+trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Namespace]
     extends StorageSpaceGenerators
     with BagInfoGenerators {
 
@@ -29,12 +27,12 @@ trait BagBuilder[BagLocation <: Location, BagLocationPrefix <: Prefix[
     version: BagVersion
   )(
     implicit namespace: Namespace
-  ): BagLocationPrefix
+  ): BagPrefix
 
-  def createBagLocation(bagRoot: BagLocationPrefix, path: String): BagLocation
+  def createBagLocation(bagRoot: BagPrefix, path: String): BagLocation
 
   def uploadBagObjects(
-    bagRoot: BagLocationPrefix,
+    bagRoot: BagPrefix,
     objects: Map[BagLocation, String]
   )(implicit typedStore: TypedStore[BagLocation, String]): Unit =
     objects.foreach {
@@ -52,7 +50,7 @@ trait BagBuilder[BagLocation <: Location, BagLocationPrefix <: Prefix[
     payloadFileCount: Int = randomInt(from = 5, to = 50)
   )(
     implicit namespace: Namespace
-  ): (Map[BagLocation, String], BagLocationPrefix, BagInfo) = {
+  ): (Map[BagLocation, String], BagPrefix, BagInfo) = {
     val fetchEntryCount = getFetchEntryCount(payloadFileCount)
 
     val payloadFiles = createPayloadFiles(

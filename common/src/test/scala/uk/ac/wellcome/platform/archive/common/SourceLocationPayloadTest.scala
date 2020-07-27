@@ -9,14 +9,14 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   StorageSpaceGenerators
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
 
 class SourceLocationPayloadTest
     extends AnyFunSpec
     with Matchers
     with ExternalIdentifierGenerators
     with StorageSpaceGenerators
-    with NewS3Fixtures {
+    with S3Fixtures {
 
   it("creates a payload from an ingest") {
     val ingestId = createIngestID

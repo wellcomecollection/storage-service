@@ -18,7 +18,7 @@ import uk.ac.wellcome.platform.archive.common.http.{
   WellcomeHttpApp
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3Uploader
-import uk.ac.wellcome.storage.S3ObjectLocationPrefix
+import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder

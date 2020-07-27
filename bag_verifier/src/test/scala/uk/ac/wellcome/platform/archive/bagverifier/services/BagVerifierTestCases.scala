@@ -38,9 +38,10 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepSucceeded,
   StorageSpace
 }
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
 import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
-import uk.ac.wellcome.storage.{Location, Prefix, S3ObjectLocation}
+import uk.ac.wellcome.storage.{Location, Prefix}
 
 trait StandaloneBagVerifierTestCases[
   BagLocation <: Location,

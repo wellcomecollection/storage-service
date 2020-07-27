@@ -8,7 +8,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   LocateFailure,
   LocationParsingError
 }
-import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.util.{Failure, Success, Try}
 

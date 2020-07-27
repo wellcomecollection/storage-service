@@ -18,8 +18,8 @@ import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.TypedStore
-import uk.ac.wellcome.storage.store.s3.NewS3TypedStore
-import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.store.s3.S3TypedStore
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 trait S3BagVerifierTests[Verifier <: BagVerifier[
   BagContext,
@@ -37,7 +37,7 @@ trait S3BagVerifierTests[Verifier <: BagVerifier[
   override def withTypedStore[R](
     testWith: TestWith[TypedStore[S3ObjectLocation, String], R]
   ): R =
-    testWith(NewS3TypedStore[String])
+    testWith(S3TypedStore[String])
 
   override def withNamespace[R](testWith: TestWith[Bucket, R]): R =
     withLocalS3Bucket { bucket =>

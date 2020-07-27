@@ -10,7 +10,10 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
-import uk.ac.wellcome.storage.{MemoryLocation, MemoryLocationPrefix}
+import uk.ac.wellcome.storage.providers.memory.{
+  MemoryLocation,
+  MemoryLocationPrefix
+}
 
 import scala.util.Random
 
@@ -26,8 +29,7 @@ trait MemoryBagBuilder
   ): MemoryLocationPrefix =
     MemoryLocationPrefix(
       namespace = namespace,
-      pathPrefix =
-        DestinationBuilder.buildPath(space, externalIdentifier, version)
+      path = DestinationBuilder.buildPath(space, externalIdentifier, version)
     )
 
   override protected def buildFetchEntryLine(

@@ -9,14 +9,14 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.storage.fixtures.NewS3Fixtures
-import uk.ac.wellcome.storage.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 trait PayloadGenerators
     extends ExternalIdentifierGenerators
     with StorageSpaceGenerators
     with ReplicaLocationGenerators
-    with NewS3Fixtures {
+    with S3Fixtures {
 
   def randomIngestType: IngestType =
     chooseFrom(

@@ -282,13 +282,13 @@ class ReplicaAggregatorWorkerTest
 
     val locations = Seq(
       PrimaryS3ReplicaLocation(
-        prefix = createS3ObjectLocationPrefixWith(keyPrefix = path)
+        prefix = createS3ObjectLocationPrefix.copy(keyPrefix = path)
       ),
       SecondaryS3ReplicaLocation(
-        prefix = createS3ObjectLocationPrefixWith(keyPrefix = path)
+        prefix = createS3ObjectLocationPrefix.copy(keyPrefix = path)
       ),
       SecondaryS3ReplicaLocation(
-        prefix = createS3ObjectLocationPrefixWith(keyPrefix = path)
+        prefix = createS3ObjectLocationPrefix.copy(keyPrefix = path)
       )
     )
 

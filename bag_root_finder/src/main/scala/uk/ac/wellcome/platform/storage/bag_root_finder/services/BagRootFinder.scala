@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepSucceeded
 }
 import uk.ac.wellcome.platform.storage.bag_root_finder.models._
-import uk.ac.wellcome.storage.S3ObjectLocationPrefix
+import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 
 import scala.util.{Failure, Success, Try}
 

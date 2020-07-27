@@ -17,7 +17,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   ReplicaLocation,
   StorageSpace
 }
-import uk.ac.wellcome.storage.S3ObjectLocationPrefix
+import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 
 sealed trait PipelinePayload {
   val context: PipelineContext

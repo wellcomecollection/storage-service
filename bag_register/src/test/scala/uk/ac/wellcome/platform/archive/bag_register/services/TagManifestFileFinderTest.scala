@@ -10,15 +10,15 @@ import uk.ac.wellcome.platform.archive.common.verify.{
   MD5,
   SHA256
 }
+import uk.ac.wellcome.storage.StoreReadError
 import uk.ac.wellcome.storage.generators.RandomThings
+import uk.ac.wellcome.storage.providers.memory.{
+  MemoryLocation,
+  MemoryLocationPrefix
+}
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore}
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
-import uk.ac.wellcome.storage.{
-  MemoryLocation,
-  MemoryLocationPrefix,
-  StoreReadError
-}
 
 class TagManifestFileFinderTest
     extends AnyFunSpec
@@ -48,7 +48,7 @@ class TagManifestFileFinderTest
   it("handles a bag that contains all four tag manifest files") {
     val prefix = MemoryLocationPrefix(
       namespace = randomAlphanumeric,
-      pathPrefix = randomAlphanumeric
+      path = randomAlphanumeric
     )
 
     val result =
@@ -104,7 +104,7 @@ class TagManifestFileFinderTest
   it("uses the selected algorithm to create the checksums") {
     val prefix = MemoryLocationPrefix(
       namespace = randomAlphanumeric,
-      pathPrefix = randomAlphanumeric
+      path = randomAlphanumeric
     )
 
     val result =
@@ -152,7 +152,7 @@ class TagManifestFileFinderTest
   it("returns only the tag manifest files that are present") {
     val prefix = MemoryLocationPrefix(
       namespace = randomAlphanumeric,
-      pathPrefix = randomAlphanumeric
+      path = randomAlphanumeric
     )
 
     val result =
@@ -190,7 +190,7 @@ class TagManifestFileFinderTest
   it("fails if it doesn't find any files") {
     val prefix = MemoryLocationPrefix(
       namespace = randomAlphanumeric,
-      pathPrefix = randomAlphanumeric
+      path = randomAlphanumeric
     )
 
     val result = withTagManifestFileFinder(entries = Map.empty) {
@@ -204,7 +204,7 @@ class TagManifestFileFinderTest
   it("fails if the underlying reader has an error") {
     val prefix = MemoryLocationPrefix(
       namespace = randomAlphanumeric,
-      pathPrefix = randomAlphanumeric
+      path = randomAlphanumeric
     )
 
     implicit val brokenReader =

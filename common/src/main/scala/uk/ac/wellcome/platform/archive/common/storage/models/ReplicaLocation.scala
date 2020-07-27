@@ -1,11 +1,8 @@
 package uk.ac.wellcome.platform.archive.common.storage.models
 
-import uk.ac.wellcome.storage.{
-  AzureBlobItemLocationPrefix,
-  Location,
-  Prefix,
-  S3ObjectLocationPrefix
-}
+import uk.ac.wellcome.storage.azure.AzureBlobLocationPrefix
+import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
+import uk.ac.wellcome.storage.{Location, Prefix}
 
 sealed trait ReplicaLocation {
   val prefix: Prefix[_ <: Location]
@@ -29,5 +26,5 @@ case class SecondaryS3ReplicaLocation(
     with SecondaryReplicaLocation
 
 case class SecondaryAzureReplicaLocation(
-  prefix: AzureBlobItemLocationPrefix
+  prefix: AzureBlobLocationPrefix
 ) extends SecondaryReplicaLocation

@@ -13,7 +13,8 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.listing.Listing
-import uk.ac.wellcome.storage.transfer.{NewPrefixTransfer, TransferResult}
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.transfer.{PrefixTransfer, PrefixTransferFailure}
 
 // This is a generic replication from one location to another.
 //
@@ -25,11 +26,11 @@ import uk.ac.wellcome.storage.transfer.{NewPrefixTransfer, TransferResult}
 
 trait Replicator[DstLocation <: Location, DstPrefix <: Prefix[DstLocation]]
     extends Logging {
-  implicit val prefixTransfer: NewPrefixTransfer[
-    S3ObjectLocation,
+  implicit val prefixTransfer: PrefixTransfer[
     S3ObjectLocationPrefix,
-    DstLocation,
-    DstPrefix
+    S3ObjectLocation,
+    DstPrefix,
+    DstLocation
   ]
 
   implicit val prefixListing: Listing[
@@ -99,8 +100,11 @@ trait Replicator[DstLocation <: Location, DstPrefix <: Prefix[DstLocation]]
       case Right(_) =>
         ReplicationSucceeded(summary.complete)
 
-      case Left(err: TransferResult) =>
-        ReplicationFailed(summary.complete, err.e)
+      case Left(err: PrefixTransferFailure) =>
+        ReplicationFailed(
+          summary.complete,
+          e = new Throwable(s"Prefix transfer failed: $err")
+        )
     }
   }
 }
