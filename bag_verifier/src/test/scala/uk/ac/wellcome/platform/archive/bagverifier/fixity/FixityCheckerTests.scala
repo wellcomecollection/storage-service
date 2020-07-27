@@ -31,7 +31,7 @@ class FixityCheckerTests
     with EitherValues
     with FixityGenerators[MemoryLocation] {
   override def resolve(location: MemoryLocation): URI =
-    new URI(location.toString)
+    new URI(s"mem://$location")
 
   override def createLocation: MemoryLocation =
     MemoryLocation(
