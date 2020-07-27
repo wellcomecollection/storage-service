@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.storage.bag_root_finder
 
 import akka.actor.ActorSystem
-import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
@@ -33,8 +32,6 @@ object Main extends WellcomeTypesafeApp {
     implicit val actorSystem: ActorSystem = AkkaBuilder.buildActorSystem()
     implicit val executionContext: ExecutionContextExecutor =
       actorSystem.dispatcher
-    implicit val mat: Materializer =
-      AkkaBuilder.buildMaterializer()
 
     implicit val s3Client: AmazonS3 = S3Builder.buildS3Client(config)
 

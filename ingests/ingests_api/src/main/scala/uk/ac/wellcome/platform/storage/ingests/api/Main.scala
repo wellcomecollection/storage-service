@@ -4,7 +4,6 @@ import java.net.URL
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.Uri
-import akka.stream.Materializer
 import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.MessageSender
 import uk.ac.wellcome.messaging.sns.SNSConfig
@@ -32,8 +31,6 @@ object Main extends WellcomeTypesafeApp {
       AkkaBuilder.buildActorSystem()
     implicit val executionContext: ExecutionContext =
       AkkaBuilder.buildExecutionContext()
-    implicit val materializer: Materializer =
-      AkkaBuilder.buildMaterializer()
 
     val httpServerConfigMain = HTTPServerBuilder.buildHTTPServerConfig(config)
     val contextURLMain = HTTPServerBuilder.buildContextURL(config)

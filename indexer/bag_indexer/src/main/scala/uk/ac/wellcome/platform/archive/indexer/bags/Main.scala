@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.indexer.bags
 
 import akka.actor.ActorSystem
-import akka.stream.Materializer
 import com.sksamuel.elastic4s.Index
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
@@ -27,9 +26,6 @@ object Main extends WellcomeTypesafeApp {
 
     implicit val executionContext: ExecutionContextExecutor =
       actorSystem.dispatcher
-
-    implicit val materializer: Materializer =
-      AkkaBuilder.buildMaterializer()
 
     implicit val monitoringClient: CloudwatchMetricsMonitoringClient =
       CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)

@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator
 
 import akka.actor.ActorSystem
-import akka.stream.Materializer
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
@@ -43,9 +42,6 @@ object Main extends WellcomeTypesafeApp {
 
     implicit val executionContext: ExecutionContextExecutor =
       actorSystem.dispatcher
-
-    implicit val mat: Materializer =
-      AkkaBuilder.buildMaterializer()
 
     implicit val monitoringClient: CloudwatchMetricsMonitoringClient =
       CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)
