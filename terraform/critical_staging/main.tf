@@ -28,7 +28,7 @@ module "critical" {
 
   tags = local.default_tags
 
-  table_name = "vhs-storage-staging-manifests-25062020"
+  table_name = "vhs-storage-staging-manifests-2020-07-24"
 
   # The staging service shouldn't be the only copy of any important data, so
   # we don't need S3 versioning.
