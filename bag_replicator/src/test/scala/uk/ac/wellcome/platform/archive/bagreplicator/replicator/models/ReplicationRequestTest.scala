@@ -2,15 +2,19 @@ package uk.ac.wellcome.platform.archive.bagreplicator.replicator.models
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.bagreplicator.models.{PrimaryReplica, SecondaryReplica}
-import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryS3ReplicaLocation, SecondaryAzureReplicaLocation, SecondaryS3ReplicaLocation}
+import uk.ac.wellcome.platform.archive.bagreplicator.models.{
+  PrimaryReplica,
+  SecondaryReplica
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  PrimaryS3ReplicaLocation,
+  SecondaryAzureReplicaLocation,
+  SecondaryS3ReplicaLocation
+}
 import uk.ac.wellcome.storage.azure.AzureBlobLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 
-class ReplicationRequestTest
-    extends AnyFunSpec
-    with Matchers
-    with S3Fixtures {
+class ReplicationRequestTest extends AnyFunSpec with Matchers with S3Fixtures {
   describe("toReplicaLocation") {
     val s3Prefix = createS3ObjectLocationPrefix
     val azurePrefix = AzureBlobLocationPrefix(

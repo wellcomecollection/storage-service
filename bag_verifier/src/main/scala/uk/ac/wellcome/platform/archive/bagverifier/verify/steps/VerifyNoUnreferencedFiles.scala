@@ -70,7 +70,9 @@ trait VerifyNoUnreferencedFiles[BagLocation <: Location, BagPrefix <: Prefix[
 
           val userMessage = messagePrefix +
             unreferencedFiles
-              .map { loc: BagLocation => getRelativePath(root, loc) }
+              .map { loc: BagLocation =>
+                getRelativePath(root, loc)
+              }
               .mkString(", ")
 
           Left(

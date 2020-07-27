@@ -99,9 +99,9 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
   // TODO: Upstream into scala-libs
   def getPath(location: Location): String =
     location match {
-      case s3Location: S3ObjectLocation => s3Location.key
+      case s3Location: S3ObjectLocation     => s3Location.key
       case azureLocation: AzureBlobLocation => azureLocation.name
-      case _ => throw new Throwable(s"Unsupported location: $location")
+      case _                                => throw new Throwable(s"Unsupported location: $location")
     }
 
   /** The replicator writes bags inside a bucket to paths of the form

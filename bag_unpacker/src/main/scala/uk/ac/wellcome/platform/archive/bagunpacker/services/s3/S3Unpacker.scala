@@ -5,7 +5,11 @@ import java.io.InputStream
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.apache.commons.io.FileUtils
-import uk.ac.wellcome.platform.archive.bagunpacker.services.{Unpacker, UnpackerError, UnpackerStorageError}
+import uk.ac.wellcome.platform.archive.bagunpacker.services.{
+  Unpacker,
+  UnpackerError,
+  UnpackerStorageError
+}
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.s3.S3StreamStore

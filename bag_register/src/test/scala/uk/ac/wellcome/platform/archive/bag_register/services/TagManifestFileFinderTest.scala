@@ -12,7 +12,10 @@ import uk.ac.wellcome.platform.archive.common.verify.{
 }
 import uk.ac.wellcome.storage.StoreReadError
 import uk.ac.wellcome.storage.generators.RandomThings
-import uk.ac.wellcome.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
+import uk.ac.wellcome.storage.providers.memory.{
+  MemoryLocation,
+  MemoryLocationPrefix
+}
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore}
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength

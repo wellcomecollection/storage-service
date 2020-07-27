@@ -1,6 +1,10 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.replicator.models
 
-import uk.ac.wellcome.platform.archive.bagreplicator.models.{PrimaryReplica, ReplicaType, SecondaryReplica}
+import uk.ac.wellcome.platform.archive.bagreplicator.models.{
+  PrimaryReplica,
+  ReplicaType,
+  SecondaryReplica
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   PrimaryS3ReplicaLocation,
   ReplicaLocation,

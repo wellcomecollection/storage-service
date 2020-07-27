@@ -4,7 +4,10 @@ import org.scalatest.TryValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryS3StorageLocation, SecondaryAzureStorageLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  PrimaryS3StorageLocation,
+  SecondaryAzureStorageLocation
+}
 import uk.ac.wellcome.storage.Identified
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.generators.AzureBlobLocationGenerators

@@ -4,7 +4,10 @@ import java.io.InputStream
 
 import uk.ac.wellcome.platform.archive.bagunpacker.services.Unpacker
 import uk.ac.wellcome.storage.StorageError
-import uk.ac.wellcome.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
+import uk.ac.wellcome.storage.providers.memory.{
+  MemoryLocation,
+  MemoryLocationPrefix
+}
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 

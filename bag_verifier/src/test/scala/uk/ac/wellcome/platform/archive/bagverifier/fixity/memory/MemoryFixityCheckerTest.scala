@@ -4,7 +4,10 @@ import java.net.URI
 
 import org.scalatest.EitherValues
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FixityChecker, FixityCheckerTestCases}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  FixityChecker,
+  FixityCheckerTestCases
+}
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.providers.memory.MemoryLocation
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore

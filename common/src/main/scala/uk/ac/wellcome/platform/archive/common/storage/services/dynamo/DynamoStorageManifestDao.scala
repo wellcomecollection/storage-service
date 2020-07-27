@@ -11,7 +11,11 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.storage.dynamo.{DynamoConfig, DynamoHashRangeEntry}
-import uk.ac.wellcome.storage.s3.{S3Config, S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.s3.{
+  S3Config,
+  S3ObjectLocation,
+  S3ObjectLocationPrefix
+}
 import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.store.dynamo.{
   DynamoHashRangeStore,
@@ -33,7 +37,8 @@ class DynamoStorageManifestDao(
   s3Client: AmazonS3
 ) extends StorageManifestDao {
 
-  implicit val indexedStore: DynamoHashRangeStore[BagId, Int, S3ObjectLocation] =
+  implicit val indexedStore
+    : DynamoHashRangeStore[BagId, Int, S3ObjectLocation] =
     new DynamoHashRangeStore[BagId, Int, S3ObjectLocation](dynamoConfig)
 
   implicit val streamStore: S3StreamStore = new S3StreamStore()

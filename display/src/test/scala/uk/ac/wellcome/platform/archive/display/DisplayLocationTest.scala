@@ -10,10 +10,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   SecondaryS3StorageLocation
 }
 import uk.ac.wellcome.storage.azure.AzureBlobLocationPrefix
-import uk.ac.wellcome.storage.s3.{
-  S3ObjectLocation,
-  S3ObjectLocationPrefix
-}
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 class DisplayLocationTest
     extends AnyFunSpec

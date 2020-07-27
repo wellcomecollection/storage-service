@@ -1,6 +1,10 @@
 package uk.ac.wellcome.platform.archive.common.storage.models
 
-import uk.ac.wellcome.platform.archive.common.ingests.models.{AmazonS3StorageProvider, AzureBlobStorageProvider, StorageProvider}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  AmazonS3StorageProvider,
+  AzureBlobStorageProvider,
+  StorageProvider
+}
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.azure.AzureBlobLocationPrefix
 import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix

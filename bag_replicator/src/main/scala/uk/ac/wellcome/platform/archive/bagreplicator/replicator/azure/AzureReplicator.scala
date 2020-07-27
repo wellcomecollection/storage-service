@@ -6,7 +6,10 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.Replicator
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
 import uk.ac.wellcome.storage.store.s3.{S3StreamReadable, S3StreamStore}
-import uk.ac.wellcome.storage.transfer.azure.{S3toAzurePrefixTransfer, S3toAzureTransfer}
+import uk.ac.wellcome.storage.transfer.azure.{
+  S3toAzurePrefixTransfer,
+  S3toAzureTransfer
+}
 
 class AzureReplicator(
   implicit s3Client: AmazonS3,

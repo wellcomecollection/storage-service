@@ -50,7 +50,10 @@ trait S3BagVerifier[B <: BagVerifyContext[
     : Listing[S3ObjectLocationPrefix, S3ObjectLocation] =
     S3ObjectLocationListing()
 
-  override def getRelativePath(root: S3ObjectLocationPrefix, location: S3ObjectLocation): String =
+  override def getRelativePath(
+    root: S3ObjectLocationPrefix,
+    location: S3ObjectLocation
+  ): String =
     location.key.replace(root.keyPrefix, "")
 }
 

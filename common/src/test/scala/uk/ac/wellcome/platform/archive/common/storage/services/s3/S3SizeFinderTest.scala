@@ -2,7 +2,10 @@ package uk.ac.wellcome.platform.archive.common.storage.services.s3
 
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.storage.services.{SizeFinder, SizeFinderTestCases}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  SizeFinder,
+  SizeFinderTestCases
+}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.S3ObjectLocation

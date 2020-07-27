@@ -4,7 +4,10 @@ import java.time.Instant
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
@@ -98,7 +101,10 @@ trait Replicator[DstLocation <: Location, DstPrefix <: Prefix[DstLocation]]
         ReplicationSucceeded(summary.complete)
 
       case Left(err: PrefixTransferFailure) =>
-        ReplicationFailed(summary.complete, e = new Throwable(s"Prefix transfer failed: $err"))
+        ReplicationFailed(
+          summary.complete,
+          e = new Throwable(s"Prefix transfer failed: $err")
+        )
     }
   }
 }

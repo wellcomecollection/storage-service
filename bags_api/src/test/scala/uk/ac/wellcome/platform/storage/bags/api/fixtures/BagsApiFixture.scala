@@ -11,8 +11,15 @@ import uk.ac.wellcome.platform.archive.bag_tracker.client.BagTrackerClient
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
-import uk.ac.wellcome.platform.archive.common.fixtures.{HttpFixtures, StorageManifestDaoFixture, StorageRandomThings}
-import uk.ac.wellcome.platform.archive.common.http.{HttpMetrics, WellcomeHttpApp}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  HttpFixtures,
+  StorageManifestDaoFixture,
+  StorageRandomThings
+}
+import uk.ac.wellcome.platform.archive.common.http.{
+  HttpMetrics,
+  WellcomeHttpApp
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3Uploader

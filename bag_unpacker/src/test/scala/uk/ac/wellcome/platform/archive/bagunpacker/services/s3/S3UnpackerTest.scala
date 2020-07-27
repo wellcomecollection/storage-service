@@ -16,7 +16,11 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.s3.{S3ClientFactory, S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.s3.{
+  S3ClientFactory,
+  S3ObjectLocation,
+  S3ObjectLocationPrefix
+}
 
 import scala.util.Try
 
@@ -46,7 +50,10 @@ class S3UnpackerTest
   override def withStreamStore[R](testWith: TestWith[S3StreamStore, R]): R =
     testWith(new S3StreamStore())
 
-  override def createSrcLocationWith(bucket: Bucket, key: String): S3ObjectLocation =
+  override def createSrcLocationWith(
+    bucket: Bucket,
+    key: String
+  ): S3ObjectLocation =
     S3ObjectLocation(bucket = bucket.name, key = key)
 
   override def createDstPrefixWith(

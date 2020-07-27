@@ -1,9 +1,15 @@
 package uk.ac.wellcome.platform.archive.common.bagit.services.memory
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.bagit.services.{BagReader, BagReaderTestCases}
+import uk.ac.wellcome.platform.archive.common.bagit.services.{
+  BagReader,
+  BagReaderTestCases
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.memory.MemoryBagBuilder
-import uk.ac.wellcome.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
+import uk.ac.wellcome.storage.providers.memory.{
+  MemoryLocation,
+  MemoryLocationPrefix
+}
 import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
 
@@ -11,7 +17,10 @@ class MemoryBagReaderTest
     extends BagReaderTestCases[MemoryStreamStore[MemoryLocation], String, MemoryLocation, MemoryLocationPrefix]
     with MemoryBagBuilder {
 
-  override def asLocation(prefix: MemoryLocationPrefix, path: String): MemoryLocation =
+  override def asLocation(
+    prefix: MemoryLocationPrefix,
+    path: String
+  ): MemoryLocation =
     prefix.asLocation(path)
 
   override def withContext[R](

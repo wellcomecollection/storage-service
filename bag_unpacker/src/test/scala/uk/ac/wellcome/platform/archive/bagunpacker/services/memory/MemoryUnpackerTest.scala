@@ -5,7 +5,10 @@ import uk.ac.wellcome.platform.archive.bagunpacker.services.{
   Unpacker,
   UnpackerTestCases
 }
-import uk.ac.wellcome.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
+import uk.ac.wellcome.storage.providers.memory.{
+  MemoryLocation,
+  MemoryLocationPrefix
+}
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 
 class MemoryUnpackerTest

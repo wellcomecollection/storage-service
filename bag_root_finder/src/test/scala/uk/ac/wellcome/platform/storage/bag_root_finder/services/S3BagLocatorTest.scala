@@ -177,9 +177,15 @@ class S3BagLocatorTest extends AnyFunSpec with Matchers with S3Fixtures {
     }
 
   // TODO: Upstream into scala-libs
-  def createS3ObjectLocationPrefixWith(bucket: Bucket, keyPrefix: String): S3ObjectLocationPrefix =
+  def createS3ObjectLocationPrefixWith(
+    bucket: Bucket,
+    keyPrefix: String
+  ): S3ObjectLocationPrefix =
     S3ObjectLocationPrefix(bucket = bucket.name, keyPrefix = keyPrefix)
 
-  def createS3ObjectLocationWith(bucket: Bucket, key: String): S3ObjectLocation =
+  def createS3ObjectLocationWith(
+    bucket: Bucket,
+    key: String
+  ): S3ObjectLocation =
     S3ObjectLocation(bucket = bucket.name, key = key)
 }

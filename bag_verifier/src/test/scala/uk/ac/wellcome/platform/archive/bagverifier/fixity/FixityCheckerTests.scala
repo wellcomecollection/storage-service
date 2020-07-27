@@ -8,9 +8,16 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.memory.MemoryFixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.generators.FixityGenerators
-import uk.ac.wellcome.platform.archive.bagverifier.storage.{LocateFailure, LocationParsingError}
+import uk.ac.wellcome.platform.archive.bagverifier.storage.{
+  LocateFailure,
+  LocationParsingError
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, MD5}
+import uk.ac.wellcome.platform.archive.common.verify.{
+  Checksum,
+  ChecksumValue,
+  MD5
+}
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.providers.memory.MemoryLocation
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore}

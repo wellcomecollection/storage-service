@@ -3,7 +3,11 @@ package uk.ac.wellcome.platform.archive.bagverifier.storage.s3
 import java.net.URI
 
 import com.amazonaws.services.s3.AmazonS3URI
-import uk.ac.wellcome.platform.archive.bagverifier.storage.{Locatable, LocateFailure, LocationParsingError}
+import uk.ac.wellcome.platform.archive.bagverifier.storage.{
+  Locatable,
+  LocateFailure,
+  LocationParsingError
+}
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.util.{Failure, Success, Try}
