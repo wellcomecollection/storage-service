@@ -23,12 +23,11 @@ trait FixityGenerators[BagLocation <: Location] extends StorageRandomThings {
     location: BagLocation = createLocation,
     checksum: Checksum = randomChecksum,
     length: Option[Long] = None
-  ): ExpectedFileFixity = {
+  ): ExpectedFileFixity =
     ExpectedFileFixity(
       uri = resolve(location),
       path = BagPath(randomAlphanumeric),
       checksum = checksum,
       length = length
     )
-  }
 }
