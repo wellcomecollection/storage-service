@@ -94,10 +94,28 @@ data "aws_iam_policy_document" "replica_primary_read" {
         # See https://wellcome.slack.com/archives/CBT40CMKQ/p1573742247457800
         "AROAZQI22QHWTHLN4QHJU:*",
 
-        # Dashboard for iiif-builder staging + staging-prd + prod
+        # IIIF-Builder Service Roles
+        # iiif-stage reads staging storage; iiif-test and iiif read prod storage.
+
+        # Dashboard: iiif-stage, iiif-test, iiif
         "AROAZQI22QHW3RRRIYDN3:*",
         "AROAZQI22QHWQI2FAIMQ5:*",
         "AROAZQI22QHWZ755Z5O5K:*",
+
+        # IIIF-Builder (Wellcome.Dds.Server): iiif-stage, iiif-test, iiif
+        "AROAZQI22QHW77YB7PGNY:*",
+        "AROAZQI22QHWVTAR4DGAY:*",
+        "AROAZQI22QHWRXPYWUQA2:*",
+
+        # DlcsJobProcessor: iiif-stage, iiif-test, iiif
+        "AROAZQI22QHW6PZDJV5QL:*",
+        "AROAZQI22QHWSQDNVUL7I:*",
+        "AROAZQI22QHWQW3AO5BZB:*",
+
+        # WorkflowProcessor: iiif-stage, iiif-test, iiif
+        "AROAZQI22QHWVEECG3UI3:*",
+        "AROAZQI22QHWWHVPVKOM3:*",
+        "AROAZQI22QHW5L3AA6HGE:*",
       ]
     }
 
