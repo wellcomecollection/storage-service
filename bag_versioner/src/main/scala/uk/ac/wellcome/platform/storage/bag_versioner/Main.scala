@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.storage.bag_versioner
 
 import akka.actor.ActorSystem
-import akka.stream.Materializer
 import cats.Id
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
@@ -45,8 +44,6 @@ object Main extends WellcomeTypesafeApp {
     implicit val actorSystem: ActorSystem = AkkaBuilder.buildActorSystem()
     implicit val executionContext: ExecutionContextExecutor =
       actorSystem.dispatcher
-    implicit val mat: Materializer =
-      AkkaBuilder.buildMaterializer()
 
     implicit val monitoringClient: CloudwatchMetricsMonitoringClient =
       CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)

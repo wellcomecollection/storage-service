@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagverifier
 
 import akka.actor.ActorSystem
-import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
@@ -29,9 +28,6 @@ object Main extends WellcomeTypesafeApp {
 
     implicit val executionContext: ExecutionContext =
       AkkaBuilder.buildExecutionContext()
-
-    implicit val mat: Materializer =
-      AkkaBuilder.buildMaterializer()
 
     implicit val s3Client: AmazonS3 =
       S3Builder.buildS3Client(config)

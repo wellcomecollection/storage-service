@@ -5,7 +5,6 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives.{get, _}
 import akka.http.scaladsl.server.Route
-import akka.stream.Materializer
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
@@ -32,8 +31,7 @@ class IngestsTrackerApi[CallbackDestination, IngestsDestination](
   host: String = "localhost",
   port: Int = 8080
 )(
-  implicit sys: ActorSystem,
-  mat: Materializer
+  implicit sys: ActorSystem
 ) extends Runnable
     with Logging {
 

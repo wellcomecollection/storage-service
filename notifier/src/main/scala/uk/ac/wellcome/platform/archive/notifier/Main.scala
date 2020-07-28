@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.notifier
 
 import akka.actor.ActorSystem
-import akka.stream.Materializer
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.typesafe.{
@@ -28,8 +27,6 @@ object Main extends WellcomeTypesafeApp {
       AkkaBuilder.buildActorSystem()
     implicit val executionContext: ExecutionContext =
       AkkaBuilder.buildExecutionContext()
-    implicit val materializer: Materializer =
-      AkkaBuilder.buildMaterializer()
 
     implicit val monitoringClient: CloudwatchMetricsMonitoringClient =
       CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)

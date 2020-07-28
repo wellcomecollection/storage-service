@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.storage.ingests_tracker
 
 import akka.actor.ActorSystem
-import akka.stream.Materializer
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.typesafe.config.Config
 import uk.ac.wellcome.messaging.sns.{SNSConfig, SNSMessageSender}
@@ -20,8 +19,6 @@ object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
     implicit val actorSystem: ActorSystem =
       AkkaBuilder.buildActorSystem()
-    implicit val materializer: Materializer =
-      AkkaBuilder.buildMaterializer()
 
     implicit val dynamoClient: AmazonDynamoDB =
       DynamoBuilder.buildDynamoClient(config)

@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagunpacker
 
 import akka.actor.ActorSystem
-import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
@@ -31,9 +30,6 @@ object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
     implicit val actorSystem: ActorSystem =
       AkkaBuilder.buildActorSystem()
-
-    implicit val materializer: Materializer =
-      AkkaBuilder.buildMaterializer()
 
     implicit val executionContext: ExecutionContext =
       AkkaBuilder.buildExecutionContext()
