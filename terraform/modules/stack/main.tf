@@ -495,7 +495,7 @@ module "replicator_verifier_glacier" {
   deployment_service_name_verifier   = "bag-verifier-glacier"
 }
 
-module "replicator_verifier_glacier" {
+module "replicator_verifier_azure" {
   source = "./replifier"
 
   namespace = var.namespace
