@@ -17,8 +17,7 @@ module "critical" {
     local.catalogue_pipeline_task_role_arn,
     local.catalogue_pipeline_account_principal,
 
-    "arn:aws:iam::653428163053:user/api",
-    "arn:aws:iam::653428163053:user/echo-fs",
+    local.digirati_account_principal,
   ]
 
   azure_storage_account_name = "wecostoragestage"
