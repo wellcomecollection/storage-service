@@ -17,6 +17,8 @@ module "ingests_topic" {
     module.replicator_verifier_primary.verifier_task_role_name,
     module.replicator_verifier_glacier.replicator_task_role_name,
     module.replicator_verifier_glacier.verifier_task_role_name,
+    module.replicator_verifier_azure.replicator_task_role_name,
+    module.replicator_verifier_azure.verifier_task_role_name,
   ]
 }
 
