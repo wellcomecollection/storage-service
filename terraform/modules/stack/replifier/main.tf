@@ -17,17 +17,17 @@ module "bag_replicator" {
   service_name = local.bag_replicator_service_name
 
   environment = {
-    queue_url               = module.bag_replicator_input_queue.url
+    queue_url             = module.bag_replicator_input_queue.url
     destination_namespace = var.destination_namespace
-    ingest_topic_arn        = var.ingests_topic_arn
-    outgoing_topic_arn      = module.bag_replicator_output_topic.arn
-    metrics_namespace       = local.bag_replicator_service_name
-    operation_name          = "replicating to ${var.replica_display_name}"
-    locking_table_name      = var.replicator_lock_table_name
-    locking_table_index     = var.replicator_lock_table_index
-    storage_provider        = var.storage_provider
-    replica_type            = var.replica_type
-    JAVA_OPTS               = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_replicator_service_name}"
+    ingest_topic_arn      = var.ingests_topic_arn
+    outgoing_topic_arn    = module.bag_replicator_output_topic.arn
+    metrics_namespace     = local.bag_replicator_service_name
+    operation_name        = "replicating to ${var.replica_display_name}"
+    locking_table_name    = var.replicator_lock_table_name
+    locking_table_index   = var.replicator_lock_table_index
+    storage_provider      = var.storage_provider
+    replica_type          = var.replica_type
+    JAVA_OPTS             = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_replicator_service_name}"
   }
 
   secrets = var.secrets

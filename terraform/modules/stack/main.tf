@@ -403,9 +403,9 @@ module "replicator_verifier_primary" {
     module.bag_versioner_output_topic.arn,
   ]
 
-  destination_namespace          = var.replica_primary_bucket_name
-  primary_bucket_name  = var.replica_primary_bucket_name
-  unpacker_bucket_name = aws_s3_bucket.unpacked_bags.id
+  destination_namespace = var.replica_primary_bucket_name
+  primary_bucket_name   = var.replica_primary_bucket_name
+  unpacker_bucket_name  = aws_s3_bucket.unpacked_bags.id
 
   ingests_read_policy_json          = data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json
   cloudwatch_metrics_policy_json    = data.aws_iam_policy_document.cloudwatch_putmetrics.json
@@ -456,9 +456,9 @@ module "replicator_verifier_glacier" {
     module.bag_versioner_output_topic.arn,
   ]
 
-  destination_namespace          = var.replica_glacier_bucket_name
-  primary_bucket_name  = var.replica_primary_bucket_name
-  unpacker_bucket_name = aws_s3_bucket.unpacked_bags.id
+  destination_namespace = var.replica_glacier_bucket_name
+  primary_bucket_name   = var.replica_primary_bucket_name
+  unpacker_bucket_name  = aws_s3_bucket.unpacked_bags.id
 
   ingests_read_policy_json          = data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json
   cloudwatch_metrics_policy_json    = data.aws_iam_policy_document.cloudwatch_putmetrics.json
@@ -511,9 +511,9 @@ module "replicator_verifier_azure" {
   secrets = {
     azure_endpoint = var.azure_endpoint_sm_parameter
   }
-  destination_namespace          = var.azure_container_name
-  primary_bucket_name  = var.replica_primary_bucket_name
-  unpacker_bucket_name = aws_s3_bucket.unpacked_bags.id
+  destination_namespace = var.azure_container_name
+  primary_bucket_name   = var.replica_primary_bucket_name
+  unpacker_bucket_name  = aws_s3_bucket.unpacked_bags.id
 
   ingests_read_policy_json          = data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json
   cloudwatch_metrics_policy_json    = data.aws_iam_policy_document.cloudwatch_putmetrics.json
