@@ -8,7 +8,7 @@ import sys
 
 import boto3
 import daiquiri
-from wellcome_storage_service import StorageServiceClient
+from wellcome_storage_service import RequestsOAuthStorageServiceClient
 
 
 def get_logger(name):
@@ -38,7 +38,7 @@ def get_storage_client(api_url):
     )
     oauth_creds = json.load(open(creds_path))
 
-    return StorageServiceClient(
+    return RequestsOAuthStorageServiceClient(
         api_url=api_url,
         client_id=oauth_creds["client_id"],
         client_secret=oauth_creds["client_secret"],
