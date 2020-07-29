@@ -15,5 +15,5 @@ locals {
   digitisation_account_principal       = "arn:aws:iam::404315009621:root"
   catalogue_pipeline_account_principal = "arn:aws:iam::760097843905:root"
 
-  digirati_account_principal = "arn:aws:iam:653428163053:root"
+  digirati_account_principal = "arn:aws:iam::653428163053:root"
 }
