@@ -701,7 +701,7 @@ trait ReplicatedBagVerifierTestCases[
   Namespace
 ] extends BagVerifierTestCases[
       ReplicatedBagVerifier[BagLocation, BagPrefix],
-      ReplicatedBagVerifyContext[BagPrefix],
+      ReplicatedBagVerifyContext[BagPrefix, BagPrefix],
       BagLocation,
       BagPrefix,
       Namespace
@@ -709,7 +709,7 @@ trait ReplicatedBagVerifierTestCases[
   override def createBagContext(
     bagRoot: BagPrefix,
     srcRoot: Option[BagPrefix]
-  ): ReplicatedBagVerifyContext[BagPrefix] =
+  ): ReplicatedBagVerifyContext[BagPrefix, BagPrefix] =
     ReplicatedBagVerifyContext(
       srcRoot = srcRoot.getOrElse(bagRoot),
       replicaRoot = bagRoot

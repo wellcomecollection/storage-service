@@ -34,13 +34,13 @@ trait StandaloneBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[
 trait ReplicatedBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
 ]] extends BagVerifier[
-      ReplicatedBagVerifyContext[BagPrefix],
+      ReplicatedBagVerifyContext[BagPrefix, BagPrefix],
       BagLocation,
       BagPrefix
     ]
     with VerifySourceTagManifest[BagLocation, BagLocation] {
   override def verifyReplicatedBag(
-    root: ReplicatedBagVerifyContext[BagPrefix],
+    root: ReplicatedBagVerifyContext[BagPrefix, BagPrefix],
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     bag: Bag

@@ -87,7 +87,7 @@ class S3ReplicatedBagVerifierTest
     ]
     with S3BagVerifierTests[
       ReplicatedBagVerifier[S3ObjectLocation, S3ObjectLocationPrefix],
-      ReplicatedBagVerifyContext[S3ObjectLocationPrefix]
+      ReplicatedBagVerifyContext[S3ObjectLocationPrefix, S3ObjectLocationPrefix]
     ] {
   override def withVerifier[R](primaryBucket: Bucket)(
     testWith: TestWith[
