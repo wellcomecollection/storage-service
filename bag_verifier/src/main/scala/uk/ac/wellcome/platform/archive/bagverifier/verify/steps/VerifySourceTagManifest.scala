@@ -28,10 +28,8 @@ trait VerifySourceTagManifest[BagLocation <: Location, BagPrefix <: Prefix[
     for {
       srcManifest <- getTagManifest(srcPrefix)
       dstManifest <- getTagManifest(dstPrefix)
-      result <- if (IOUtils.contentEquals(
-                      srcManifest.identifiedT,
-                      dstManifest.identifiedT
-                    )) {
+
+      result <- if (IOUtils.contentEquals(srcManifest, dstManifest)) {
         Right(())
       } else {
         Left(
@@ -45,17 +43,9 @@ trait VerifySourceTagManifest[BagLocation <: Location, BagPrefix <: Prefix[
     } yield result
   }
 
-  private def getTagManifest(prefix: BagPrefix): Either[
-    BagVerifierError,
-    Identified[BagLocation, InputStreamWithLength]
-  ] = {
-    streamStore
-      .get(
-        prefix.asLocation("tagmanifest-sha256.txt")
-      )
-      .left
-      .map { error =>
-        BagVerifierError(error.e)
-      }
-  }
+  private def getTagManifest(prefix: BagPrefix): Either[BagVerifierError, InputStreamWithLength] =
+    streamStore.get(prefix.asLocation("tagmanifest-sha256.txt")) match {
+      case Right(Identified(_, inputStream)) => Right(inputStream)
+      case Left(error)                       => Left(BagVerifierError(error.e))
+    }
 }
