@@ -29,13 +29,9 @@ trait S3BagVerifier[B <: BagVerifyContext[S3ObjectLocationPrefix]]
   implicit val s3Client: AmazonS3
 
   val primaryBucket: String
-  override val namespace: String = primaryBucket
 
-  override def createPrefix(
-    bucket: String,
-    keyPrefix: String
-  ): S3ObjectLocationPrefix =
-    S3ObjectLocationPrefix(bucket = bucket, keyPrefix = keyPrefix)
+  override def createPrefix(keyPrefix: String): S3ObjectLocationPrefix =
+    S3ObjectLocationPrefix(bucket = primaryBucket, keyPrefix = keyPrefix)
 
   override implicit val bagReader
     : BagReader[S3ObjectLocation, S3ObjectLocationPrefix] =

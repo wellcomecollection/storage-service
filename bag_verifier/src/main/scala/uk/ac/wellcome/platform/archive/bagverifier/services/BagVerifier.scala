@@ -60,7 +60,6 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
     with VerifyPayloadOxum
     with VerifyNoUnreferencedFiles[BagLocation, BagPrefix] {
 
-  val namespace: String
   implicit val bagReader: BagReader[BagLocation, BagPrefix]
   implicit val listing: Listing[BagPrefix, BagLocation]
   implicit val resolvable: Resolvable[BagLocation]
@@ -72,7 +71,8 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
     externalIdentifier: ExternalIdentifier,
     bag: Bag
   ): Either[BagVerifierError, Unit]
-  def createPrefix(namespace: String, path: String): BagPrefix
+
+  def createPrefix(path: String): BagPrefix
 
   def verify(
     ingestId: IngestID,
@@ -129,10 +129,7 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
 
       _ <- verifyFetchPrefixes(
         fetch = bag.fetch,
-        root = createPrefix(
-          namespace = namespace,
-          path = s"$space/$externalIdentifier"
-        )
+        root = createPrefix(path = s"$space/$externalIdentifier")
       )
 
       verificationResult <- verifyChecksumAndSize(
