@@ -103,11 +103,11 @@ object BagVerifierWorkerBuilder {
     as: ActorSystem,
     sc: SqsAsyncClient
   ): BagVerifierWorker[
-      ReplicaCompletePayload,
-      ReplicatedBagVerifyContext[S3ObjectLocationPrefix],
-      IngestDestination,
-      OutgoingDestination
-    ] = {
+    ReplicaCompletePayload,
+    ReplicatedBagVerifyContext[S3ObjectLocationPrefix],
+    IngestDestination,
+    OutgoingDestination
+  ] = {
     val verifier = new S3ReplicatedBagVerifier(primaryBucket)
     new BagVerifierWorker(
       config = alpakkaSqsWorkerConfig,
@@ -118,7 +118,8 @@ object BagVerifierWorkerBuilder {
       (payload: ReplicaCompletePayload) =>
         ReplicatedBagVerifyContext(
           srcRoot = payload.srcPrefix,
-          replicaRoot = payload.dstLocation.prefix.asInstanceOf[S3ObjectLocationPrefix]
+          replicaRoot =
+            payload.dstLocation.prefix.asInstanceOf[S3ObjectLocationPrefix]
         )
     )
   }

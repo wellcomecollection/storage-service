@@ -24,7 +24,7 @@ import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 trait S3BagVerifier[B <: BagVerifyContext[S3ObjectLocationPrefix]]
-  extends BagVerifier[B, S3ObjectLocation, S3ObjectLocationPrefix] {
+    extends BagVerifier[B, S3ObjectLocation, S3ObjectLocationPrefix] {
 
   implicit val s3Client: AmazonS3
 

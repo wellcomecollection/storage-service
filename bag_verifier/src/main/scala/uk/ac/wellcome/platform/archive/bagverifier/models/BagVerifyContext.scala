@@ -7,13 +7,13 @@ sealed trait BagVerifyContext[BagPrefix <: Prefix[_ <: Location]] {
 }
 
 case class StandaloneBagVerifyContext[BagPrefix <: Prefix[_ <: Location]](
-  root: BagPrefix)
-    extends BagVerifyContext[BagPrefix]
+  root: BagPrefix
+) extends BagVerifyContext[BagPrefix]
 
 case class ReplicatedBagVerifyContext[BagPrefix <: Prefix[_ <: Location]](
   srcRoot: BagPrefix,
-  replicaRoot: BagPrefix)
-    extends BagVerifyContext[BagPrefix] {
+  replicaRoot: BagPrefix
+) extends BagVerifyContext[BagPrefix] {
 
   val root: BagPrefix = replicaRoot
 }

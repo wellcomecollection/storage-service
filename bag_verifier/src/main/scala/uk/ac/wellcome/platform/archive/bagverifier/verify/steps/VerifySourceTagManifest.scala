@@ -41,7 +41,9 @@ trait VerifySourceTagManifest[BagLocation <: Location] {
     } yield result
   }
 
-  private def getTagManifest(prefix: Prefix[BagLocation]): Either[BagVerifierError, InputStreamWithLength] =
+  private def getTagManifest(
+    prefix: Prefix[BagLocation]
+  ): Either[BagVerifierError, InputStreamWithLength] =
     streamStore.get(prefix.asLocation("tagmanifest-sha256.txt")) match {
       case Right(Identified(_, inputStream)) => Right(inputStream)
       case Left(error)                       => Left(BagVerifierError(error.e))
