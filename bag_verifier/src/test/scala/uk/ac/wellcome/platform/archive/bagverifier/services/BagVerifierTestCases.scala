@@ -700,7 +700,7 @@ trait ReplicatedBagVerifierTestCases[
   BagPrefix <: Prefix[BagLocation],
   Namespace
 ] extends BagVerifierTestCases[
-      ReplicatedBagVerifier[BagLocation, BagPrefix],
+      ReplicatedBagVerifier[BagLocation, BagPrefix, BagLocation, BagPrefix],
       ReplicatedBagVerifyContext[BagPrefix, BagPrefix],
       BagLocation,
       BagPrefix,

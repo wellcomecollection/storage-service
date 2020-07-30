@@ -61,7 +61,10 @@ class S3StandaloneBagVerifier(val primaryBucket: String)(
 
 class S3ReplicatedBagVerifier(val primaryBucket: String)(
   implicit val s3Client: AmazonS3
-) extends ReplicatedBagVerifier[S3ObjectLocation, S3ObjectLocationPrefix]
+) extends ReplicatedBagVerifier[
+  S3ObjectLocation, S3ObjectLocationPrefix,
+  S3ObjectLocation, S3ObjectLocationPrefix
+]
     with S3BagVerifier[ReplicatedBagVerifyContext[S3ObjectLocationPrefix, S3ObjectLocationPrefix]] {
 
   override val srcStreamStore: StreamStore[S3ObjectLocation] =
