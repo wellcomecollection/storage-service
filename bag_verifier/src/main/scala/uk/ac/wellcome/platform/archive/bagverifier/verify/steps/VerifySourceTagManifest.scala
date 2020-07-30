@@ -6,8 +6,12 @@ import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.{Identified, Location, Prefix}
 
-trait VerifySourceTagManifest[BagLocation <: Location] {
-  val streamStore: StreamStore[BagLocation]
+trait VerifySourceTagManifest[
+  SrcBagLocation <: Location,
+  ReplicaBagLocation <: Location
+] {
+  protected val srcStreamStore: StreamStore[SrcBagLocation]
+  protected val replicaStreamStore: StreamStore[ReplicaBagLocation]
 
   /** This step is here to check the bag created by the replica and the
     * original bag are the same; the verifier can only check that a
@@ -20,12 +24,12 @@ trait VerifySourceTagManifest[BagLocation <: Location] {
     *
     */
   def verifySourceTagManifestIsTheSame(
-    srcPrefix: Prefix[BagLocation],
-    replicaPrefix: Prefix[BagLocation]
+    srcPrefix: Prefix[SrcBagLocation],
+    replicaPrefix: Prefix[ReplicaBagLocation]
   ): Either[BagVerifierError, Unit] = {
     for {
-      srcManifest <- getTagManifest(srcPrefix)
-      replicaManifest <- getTagManifest(replicaPrefix)
+      srcManifest <- getTagManifest(srcPrefix, srcStreamStore)
+      replicaManifest <- getTagManifest(replicaPrefix, replicaStreamStore)
 
       result <- if (IOUtils.contentEquals(srcManifest, replicaManifest)) {
         Right(())
@@ -41,8 +45,9 @@ trait VerifySourceTagManifest[BagLocation <: Location] {
     } yield result
   }
 
-  private def getTagManifest(
-    prefix: Prefix[BagLocation]
+  private def getTagManifest[BagLocation <: Location](
+    prefix: Prefix[BagLocation],
+    streamStore: StreamStore[BagLocation]
   ): Either[BagVerifierError, InputStreamWithLength] =
     streamStore.get(prefix.asLocation("tagmanifest-sha256.txt")) match {
       case Right(Identified(_, inputStream)) => Right(inputStream)

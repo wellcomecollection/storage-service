@@ -10,10 +10,11 @@ case class StandaloneBagVerifyContext[BagPrefix <: Prefix[_ <: Location]](
   root: BagPrefix
 ) extends BagVerifyContext[BagPrefix]
 
-case class ReplicatedBagVerifyContext[BagPrefix <: Prefix[_ <: Location]](
-  srcRoot: BagPrefix,
-  replicaRoot: BagPrefix
-) extends BagVerifyContext[BagPrefix] {
+case class ReplicatedBagVerifyContext[
+  SrcBagPrefix <: Prefix[_ <: Location],
+  ReplicaBagPrefix <: Prefix[_ <: Location]
+](srcRoot: SrcBagPrefix, replicaRoot: ReplicaBagPrefix)
+    extends BagVerifyContext[ReplicaBagPrefix] {
 
-  val root: BagPrefix = replicaRoot
+  val root: ReplicaBagPrefix = replicaRoot
 }

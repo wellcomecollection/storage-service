@@ -31,16 +31,19 @@ trait StandaloneBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[
   ): Either[BagVerifierError, Unit] = Right(())
 }
 
-trait ReplicatedBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[
-  BagLocation
-]] extends BagVerifier[
-      ReplicatedBagVerifyContext[BagPrefix],
-      BagLocation,
-      BagPrefix
+trait ReplicatedBagVerifier[
+  SrcBagLocation <: Location,
+  SrcBagPrefix <: Prefix[SrcBagLocation],
+  ReplicaBagLocation <: Location,
+  ReplicaBagPrefix <: Prefix[ReplicaBagLocation]
+] extends BagVerifier[
+      ReplicatedBagVerifyContext[SrcBagPrefix, ReplicaBagPrefix],
+      ReplicaBagLocation,
+      ReplicaBagPrefix
     ]
-    with VerifySourceTagManifest[BagLocation] {
+    with VerifySourceTagManifest[SrcBagLocation, ReplicaBagLocation] {
   override def verifyReplicatedBag(
-    root: ReplicatedBagVerifyContext[BagPrefix],
+    root: ReplicatedBagVerifyContext[SrcBagPrefix, ReplicaBagPrefix],
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     bag: Bag
