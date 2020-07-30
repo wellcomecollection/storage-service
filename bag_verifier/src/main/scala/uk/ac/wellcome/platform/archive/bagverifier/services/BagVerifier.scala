@@ -32,8 +32,10 @@ trait StandaloneBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[
 }
 
 trait ReplicatedBagVerifier[
-  SrcBagLocation <: Location, SrcBagPrefix <: Prefix[SrcBagLocation],
-  ReplicaBagLocation <: Location, ReplicaBagPrefix <: Prefix[ReplicaBagLocation]
+  SrcBagLocation <: Location,
+  SrcBagPrefix <: Prefix[SrcBagLocation],
+  ReplicaBagLocation <: Location,
+  ReplicaBagPrefix <: Prefix[ReplicaBagLocation]
 ] extends BagVerifier[
       ReplicatedBagVerifyContext[SrcBagPrefix, ReplicaBagPrefix],
       ReplicaBagLocation,

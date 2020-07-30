@@ -58,7 +58,9 @@ trait StandaloneBagVerifierTestCases[
       BagPrefix,
       Namespace
     ] {
-  def withBagContext[R](bagRoot: BagPrefix)(testWith: TestWith[StandaloneBagVerifyContext[BagPrefix], R]): R =
+  def withBagContext[R](
+    bagRoot: BagPrefix
+  )(testWith: TestWith[StandaloneBagVerifyContext[BagPrefix], R]): R =
     testWith(
       StandaloneBagVerifyContext(bagRoot)
     )
@@ -87,7 +89,9 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     testWith: TestWith[Verifier, R]
   )(implicit typedStore: TypedStore[BagLocation, String]): R
 
-  def withBagContext[R](bagRoot: BagPrefix)(testWith: TestWith[BagContext, R]): R
+  def withBagContext[R](bagRoot: BagPrefix)(
+    testWith: TestWith[BagContext, R]
+  ): R
 
   val payloadFileCount: Int = randomInt(from = 1, to = 10)
 
@@ -702,13 +706,23 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
 }
 
 trait ReplicatedBagVerifierTestCases[
-  SrcBagLocation <: Location, SrcBagPrefix <: Prefix[SrcBagLocation], SrcNamespace,
-  ReplicaBagLocation <: Location, ReplicaBagPrefix <: Prefix[ReplicaBagLocation], ReplicaNamespace
-] extends BagVerifierTestCases[
-      ReplicatedBagVerifier[SrcBagLocation, SrcBagPrefix, ReplicaBagLocation, ReplicaBagPrefix],
-      ReplicatedBagVerifyContext[SrcBagPrefix, ReplicaBagPrefix],
-      ReplicaBagLocation, ReplicaBagPrefix,
+  SrcBagLocation <: Location,
+  SrcBagPrefix <: Prefix[SrcBagLocation],
+  SrcNamespace,
+  ReplicaBagLocation <: Location,
+  ReplicaBagPrefix <: Prefix[ReplicaBagLocation],
   ReplicaNamespace
+] extends BagVerifierTestCases[
+      ReplicatedBagVerifier[
+        SrcBagLocation,
+        SrcBagPrefix,
+        ReplicaBagLocation,
+        ReplicaBagPrefix
+      ],
+      ReplicatedBagVerifyContext[SrcBagPrefix, ReplicaBagPrefix],
+      ReplicaBagLocation,
+      ReplicaBagPrefix,
+      ReplicaNamespace
     ] {
 
   protected def copyTagManifest(
@@ -717,30 +731,44 @@ trait ReplicatedBagVerifierTestCases[
   ): Unit
 
   def createSrcPrefix(implicit namespace: SrcNamespace): SrcBagPrefix
-  def createReplicaPrefix(implicit namespace: ReplicaNamespace): ReplicaBagPrefix
+  def createReplicaPrefix(
+    implicit namespace: ReplicaNamespace
+  ): ReplicaBagPrefix
 
   def withSrcNamespace[R](testWith: TestWith[SrcNamespace, R]): R
   def withReplicaNamespace[R](testWith: TestWith[ReplicaNamespace, R]): R
 
-  def withSrcTypedStore[R](testWith: TestWith[TypedStore[SrcBagLocation, String], R]): R
-  def withReplicaTypedStore[R](testWith: TestWith[TypedStore[ReplicaBagLocation, String], R]): R
+  def withSrcTypedStore[R](
+    testWith: TestWith[TypedStore[SrcBagLocation, String], R]
+  ): R
+  def withReplicaTypedStore[R](
+    testWith: TestWith[TypedStore[ReplicaBagLocation, String], R]
+  ): R
 
   val srcBagBuilder: BagBuilder[SrcBagLocation, SrcBagPrefix, SrcNamespace]
-  val replicaBagBuilder: BagBuilder[ReplicaBagLocation, ReplicaBagPrefix, ReplicaNamespace]
+  val replicaBagBuilder: BagBuilder[
+    ReplicaBagLocation,
+    ReplicaBagPrefix,
+    ReplicaNamespace
+  ]
 
   def withNamespace[R](testWith: TestWith[ReplicaNamespace, R]): R =
     withReplicaNamespace { namespace =>
       testWith(namespace)
     }
 
-  def withTypedStore[R](testWith: TestWith[TypedStore[ReplicaBagLocation, String], R]): R =
+  def withTypedStore[R](
+    testWith: TestWith[TypedStore[ReplicaBagLocation, String], R]
+  ): R =
     withReplicaTypedStore { typedStore =>
       testWith(typedStore)
     }
 
-  override def withBagContext[R](
-    replicaRoot: ReplicaBagPrefix)(
-    testWith: TestWith[ReplicatedBagVerifyContext[SrcBagPrefix, ReplicaBagPrefix], R]
+  override def withBagContext[R](replicaRoot: ReplicaBagPrefix)(
+    testWith: TestWith[
+      ReplicatedBagVerifyContext[SrcBagPrefix, ReplicaBagPrefix],
+      R
+    ]
   ): R =
     withSrcNamespace { implicit srcNamespace =>
       val srcRoot = createSrcPrefix
@@ -765,11 +793,16 @@ trait ReplicatedBagVerifierTestCases[
           withReplicaTypedStore { implicit replicaTypedStore =>
             val space = createStorageSpace
 
-            val (srcObjects, srcRoot, _) = srcBagBuilder.createBagContentsWith(space = space)
+            val (srcObjects, srcRoot, _) =
+              srcBagBuilder.createBagContentsWith(space = space)
             srcBagBuilder.uploadBagObjects(srcRoot, objects = srcObjects)
 
-            val (replicaObjects, replicaRoot, bagInfo) = replicaBagBuilder.createBagContentsWith(space = space)
-            replicaBagBuilder.uploadBagObjects(replicaRoot, objects = replicaObjects)
+            val (replicaObjects, replicaRoot, bagInfo) =
+              replicaBagBuilder.createBagContentsWith(space = space)
+            replicaBagBuilder.uploadBagObjects(
+              replicaRoot,
+              objects = replicaObjects
+            )
 
             val ingestStep =
               withVerifier(replicaNamespace) {
@@ -802,7 +835,8 @@ trait ReplicatedBagVerifierTestCases[
         withReplicaTypedStore { implicit replicaTypedStore =>
           val space = createStorageSpace
 
-          val (bagObjects, bagRoot, bagInfo) = replicaBagBuilder.createBagContentsWith(space = space)
+          val (bagObjects, bagRoot, bagInfo) =
+            replicaBagBuilder.createBagContentsWith(space = space)
           replicaBagBuilder.uploadBagObjects(bagRoot, objects = bagObjects)
 
           val srcRoot = createSrcPrefix

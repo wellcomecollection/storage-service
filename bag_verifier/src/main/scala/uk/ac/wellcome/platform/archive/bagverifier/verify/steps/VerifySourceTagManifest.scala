@@ -6,7 +6,10 @@ import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.{Identified, Location, Prefix}
 
-trait VerifySourceTagManifest[SrcBagLocation <: Location, ReplicaBagLocation <: Location] {
+trait VerifySourceTagManifest[
+  SrcBagLocation <: Location,
+  ReplicaBagLocation <: Location
+] {
   protected val srcStreamStore: StreamStore[SrcBagLocation]
   protected val replicaStreamStore: StreamStore[ReplicaBagLocation]
 
@@ -43,7 +46,8 @@ trait VerifySourceTagManifest[SrcBagLocation <: Location, ReplicaBagLocation <: 
   }
 
   private def getTagManifest[BagLocation <: Location](
-    prefix: Prefix[BagLocation], streamStore: StreamStore[BagLocation]
+    prefix: Prefix[BagLocation],
+    streamStore: StreamStore[BagLocation]
   ): Either[BagVerifierError, InputStreamWithLength] =
     streamStore.get(prefix.asLocation("tagmanifest-sha256.txt")) match {
       case Right(Identified(_, inputStream)) => Right(inputStream)

@@ -1,12 +1,22 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services.s3
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.models.{BagVerifyContext, ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{
+  BagVerifyContext,
+  ReplicatedBagVerifyContext,
+  StandaloneBagVerifyContext
+}
 import uk.ac.wellcome.platform.archive.bagverifier.services._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagBuilder, PayloadEntry}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagBuilder,
+  PayloadEntry
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
@@ -74,16 +84,30 @@ trait S3BagVerifierTests[Verifier <: BagVerifier[
 
 class S3ReplicatedBagVerifierTest
     extends ReplicatedBagVerifierTestCases[
-      S3ObjectLocation, S3ObjectLocationPrefix, Bucket,
-      S3ObjectLocation, S3ObjectLocationPrefix, Bucket
+      S3ObjectLocation,
+      S3ObjectLocationPrefix,
+      Bucket,
+      S3ObjectLocation,
+      S3ObjectLocationPrefix,
+      Bucket
     ]
     with S3BagVerifierTests[
-      ReplicatedBagVerifier[S3ObjectLocation, S3ObjectLocationPrefix, S3ObjectLocation, S3ObjectLocationPrefix],
+      ReplicatedBagVerifier[
+        S3ObjectLocation,
+        S3ObjectLocationPrefix,
+        S3ObjectLocation,
+        S3ObjectLocationPrefix
+      ],
       ReplicatedBagVerifyContext[S3ObjectLocationPrefix, S3ObjectLocationPrefix]
     ] {
   override def withVerifier[R](primaryBucket: Bucket)(
     testWith: TestWith[
-      ReplicatedBagVerifier[S3ObjectLocation, S3ObjectLocationPrefix, S3ObjectLocation, S3ObjectLocationPrefix],
+      ReplicatedBagVerifier[
+        S3ObjectLocation,
+        S3ObjectLocationPrefix,
+        S3ObjectLocation,
+        S3ObjectLocationPrefix
+      ],
       R
     ]
   )(
@@ -101,13 +125,17 @@ class S3ReplicatedBagVerifierTest
       replicaRoot.bucket,
       s"${replicaRoot.keyPrefix}/tagmanifest-sha256.txt",
       srcRoot.bucket,
-      s"${srcRoot.keyPrefix}/tagmanifest-sha256.txt",
+      s"${srcRoot.keyPrefix}/tagmanifest-sha256.txt"
     )
 
-  override def createSrcPrefix(implicit bucket: Bucket): S3ObjectLocationPrefix =
+  override def createSrcPrefix(
+    implicit bucket: Bucket
+  ): S3ObjectLocationPrefix =
     createS3ObjectLocationPrefixWith(bucket)
 
-  override def createReplicaPrefix(implicit bucket: Bucket): S3ObjectLocationPrefix =
+  override def createReplicaPrefix(
+    implicit bucket: Bucket
+  ): S3ObjectLocationPrefix =
     createS3ObjectLocationPrefixWith(bucket)
 
   override def withSrcNamespace[R](testWith: TestWith[Bucket, R]): R =
@@ -120,16 +148,22 @@ class S3ReplicatedBagVerifierTest
       testWith(bucket)
     }
 
-  override def withSrcTypedStore[R](testWith: TestWith[TypedStore[S3ObjectLocation, String], R]): R =
+  override def withSrcTypedStore[R](
+    testWith: TestWith[TypedStore[S3ObjectLocation, String], R]
+  ): R =
     testWith(S3TypedStore[String])
 
-  override def withReplicaTypedStore[R](testWith: TestWith[TypedStore[S3ObjectLocation, String], R]): R =
+  override def withReplicaTypedStore[R](
+    testWith: TestWith[TypedStore[S3ObjectLocation, String], R]
+  ): R =
     testWith(S3TypedStore[String])
 
-  override val srcBagBuilder: BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix, Bucket] =
+  override val srcBagBuilder
+    : BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix, Bucket] =
     new S3BagBuilder {}
 
-  override val replicaBagBuilder: BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix, Bucket] =
+  override val replicaBagBuilder
+    : BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix, Bucket] =
     new S3BagBuilder {}
 }
 
