@@ -12,6 +12,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.listing.Listing
+import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.{Location, Prefix}
 
 import scala.util.Try
@@ -73,7 +74,9 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
     bag: Bag
   ): Either[BagVerifierError, Unit]
 
-  def createPrefix(path: String): BagPrefix
+  // What bucket is storing the "primary" copy of a bag?  This is the bucket
+  // that should be referred to in the fetch.txt URIs.
+  val primaryBucket: String
 
   def verify(
     ingestId: IngestID,
@@ -130,7 +133,10 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
 
       _ <- verifyFetchPrefixes(
         fetch = bag.fetch,
-        root = createPrefix(path = s"$space/$externalIdentifier")
+        root = S3ObjectLocationPrefix(
+          bucket = primaryBucket,
+          keyPrefix = s"$space/$externalIdentifier"
+        )
       )
 
       verificationResult <- verifyChecksumAndSize(
