@@ -19,27 +19,28 @@ import scala.util.Try
 trait StandaloneBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
 ]] extends BagVerifier[
-      StandaloneBagVerifyContext[BagLocation, BagPrefix],
+      StandaloneBagVerifyContext[BagPrefix],
       BagLocation,
       BagPrefix
     ] {
   override def verifyReplicatedBag(
-    root: StandaloneBagVerifyContext[BagLocation, BagPrefix],
+    root: StandaloneBagVerifyContext[BagPrefix],
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     bag: Bag
   ): Either[BagVerifierError, Unit] = Right(())
 }
+
 trait ReplicatedBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
 ]] extends BagVerifier[
-      ReplicatedBagVerifyContext[BagLocation, BagPrefix],
+      ReplicatedBagVerifyContext[BagPrefix],
       BagLocation,
       BagPrefix
     ]
     with VerifySourceTagManifest[BagLocation, BagPrefix] {
   override def verifyReplicatedBag(
-    root: ReplicatedBagVerifyContext[BagLocation, BagPrefix],
+    root: ReplicatedBagVerifyContext[BagPrefix],
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     bag: Bag
@@ -50,7 +51,7 @@ trait ReplicatedBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[
     )
 }
 
-trait BagVerifier[BagContext <: BagVerifyContext[BagLocation, BagPrefix], BagLocation <: Location, BagPrefix <: Prefix[
+trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
 ]] extends Logging
     with VerifyChecksumAndSize[BagLocation, BagPrefix]

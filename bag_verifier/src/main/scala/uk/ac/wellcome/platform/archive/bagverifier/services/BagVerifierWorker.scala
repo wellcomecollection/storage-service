@@ -23,7 +23,7 @@ import scala.util.Try
 
 trait BagPayloadTranslator[
   Payload <: VerifiablePayload,
-  BagContext <: BagVerifyContext[BagLocation, BagPrefix],
+  BagContext <: BagVerifyContext[BagPrefix],
   BagLocation <: Location,
   BagPrefix <: Prefix[BagLocation]
 ] {
@@ -32,7 +32,7 @@ trait BagPayloadTranslator[
 
 class BagVerifierWorker[
   Payload <: VerifiablePayload,
-  BagContext <: BagVerifyContext[S3ObjectLocation, S3ObjectLocationPrefix],
+  BagContext <: BagVerifyContext[S3ObjectLocationPrefix],
   IngestDestination,
   OutgoingDestination
 ](

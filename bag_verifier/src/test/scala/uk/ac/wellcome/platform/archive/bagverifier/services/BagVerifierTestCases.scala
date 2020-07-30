@@ -51,7 +51,7 @@ trait StandaloneBagVerifierTestCases[
   Namespace
 ] extends BagVerifierTestCases[
       StandaloneBagVerifier[BagLocation, BagPrefix],
-      StandaloneBagVerifyContext[BagLocation, BagPrefix],
+      StandaloneBagVerifyContext[BagPrefix],
       BagLocation,
       BagPrefix,
       Namespace
@@ -59,7 +59,7 @@ trait StandaloneBagVerifierTestCases[
   override def createBagContext(
     bagRoot: BagPrefix,
     srcBagRoot: Option[BagPrefix]
-  ): StandaloneBagVerifyContext[BagLocation, BagPrefix] =
+  ): StandaloneBagVerifyContext[BagPrefix] =
     StandaloneBagVerifyContext(bagRoot)
 }
 
@@ -67,7 +67,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
   BagContext,
   BagLocation,
   BagPrefix
-], BagContext <: BagVerifyContext[BagLocation, BagPrefix], BagLocation <: Location, BagPrefix <: Prefix[
+], BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
 ], Namespace]
     extends AnyFunSpec
@@ -701,7 +701,7 @@ trait ReplicatedBagVerifierTestCases[
   Namespace
 ] extends BagVerifierTestCases[
       ReplicatedBagVerifier[BagLocation, BagPrefix],
-      ReplicatedBagVerifyContext[BagLocation, BagPrefix],
+      ReplicatedBagVerifyContext[BagPrefix],
       BagLocation,
       BagPrefix,
       Namespace
@@ -709,7 +709,7 @@ trait ReplicatedBagVerifierTestCases[
   override def createBagContext(
     bagRoot: BagPrefix,
     scrBagRoot: Option[BagPrefix]
-  ): ReplicatedBagVerifyContext[BagLocation, BagPrefix] =
+  ): ReplicatedBagVerifyContext[BagPrefix] =
     ReplicatedBagVerifyContext(bagRoot, scrBagRoot.getOrElse(bagRoot))
   def createBagPrefix(namespace: String, prefix: String): BagPrefix
 

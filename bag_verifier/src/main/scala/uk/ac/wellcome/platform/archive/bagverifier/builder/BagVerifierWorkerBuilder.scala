@@ -24,7 +24,7 @@ import uk.ac.wellcome.platform.archive.common.{
   BagRootLocationPayload,
   ReplicaCompletePayload
 }
-import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 object BagVerifierWorkerBuilder {
@@ -76,7 +76,6 @@ object BagVerifierWorkerBuilder {
     as: ActorSystem,
     sc: SqsAsyncClient
   ): BagVerifierWorker[BagRootLocationPayload, StandaloneBagVerifyContext[
-    S3ObjectLocation,
     S3ObjectLocationPrefix
   ], IngestDestination, OutgoingDestination] = {
     val verifier = new S3StandaloneBagVerifier(primaryBucket)
@@ -103,10 +102,12 @@ object BagVerifierWorkerBuilder {
     mc: MetricsMonitoringClient,
     as: ActorSystem,
     sc: SqsAsyncClient
-  ): BagVerifierWorker[ReplicaCompletePayload, ReplicatedBagVerifyContext[
-    S3ObjectLocation,
-    S3ObjectLocationPrefix
-  ], IngestDestination, OutgoingDestination] = {
+  ): BagVerifierWorker[
+      ReplicaCompletePayload,
+      ReplicatedBagVerifyContext[S3ObjectLocationPrefix],
+      IngestDestination,
+      OutgoingDestination
+    ] = {
     val verifier = new S3ReplicatedBagVerifier(primaryBucket)
     new BagVerifierWorker(
       config = alpakkaSqsWorkerConfig,

@@ -25,7 +25,7 @@ trait S3BagVerifierTests[Verifier <: BagVerifier[
   BagContext,
   S3ObjectLocation,
   S3ObjectLocationPrefix
-], BagContext <: BagVerifyContext[S3ObjectLocation, S3ObjectLocationPrefix]]
+], BagContext <: BagVerifyContext[S3ObjectLocationPrefix]]
     extends S3BagBuilder {
   this: BagVerifierTestCases[
     Verifier,
@@ -87,7 +87,7 @@ class S3ReplicatedBagVerifierTest
     ]
     with S3BagVerifierTests[
       ReplicatedBagVerifier[S3ObjectLocation, S3ObjectLocationPrefix],
-      ReplicatedBagVerifyContext[S3ObjectLocation, S3ObjectLocationPrefix]
+      ReplicatedBagVerifyContext[S3ObjectLocationPrefix]
     ] {
   override def withVerifier[R](primaryBucket: Bucket)(
     testWith: TestWith[
@@ -115,7 +115,7 @@ class S3StandaloneBagVerifierTest
     ]
     with S3BagVerifierTests[
       StandaloneBagVerifier[S3ObjectLocation, S3ObjectLocationPrefix],
-      StandaloneBagVerifyContext[S3ObjectLocation, S3ObjectLocationPrefix]
+      StandaloneBagVerifyContext[S3ObjectLocationPrefix]
     ] {
   override def withVerifier[R](primaryBucket: Bucket)(
     testWith: TestWith[
