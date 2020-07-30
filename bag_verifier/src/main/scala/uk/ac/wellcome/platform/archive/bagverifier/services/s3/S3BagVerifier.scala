@@ -23,18 +23,15 @@ import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
-trait S3BagVerifier[B <: BagVerifyContext[
-  S3ObjectLocation,
-  S3ObjectLocationPrefix
-]] extends BagVerifier[B, S3ObjectLocation, S3ObjectLocationPrefix] {
+trait S3BagVerifier[B <: BagVerifyContext[S3ObjectLocationPrefix]]
+    extends BagVerifier[B, S3ObjectLocation, S3ObjectLocationPrefix] {
 
   implicit val s3Client: AmazonS3
 
-  override def createPrefix(
-    bucket: String,
-    keyPrefix: String
-  ): S3ObjectLocationPrefix =
-    S3ObjectLocationPrefix(bucket = namespace, keyPrefix = keyPrefix)
+  val primaryBucket: String
+
+  override def createPrefix(keyPrefix: String): S3ObjectLocationPrefix =
+    S3ObjectLocationPrefix(bucket = primaryBucket, keyPrefix = keyPrefix)
 
   override implicit val bagReader
     : BagReader[S3ObjectLocation, S3ObjectLocationPrefix] =
@@ -57,22 +54,16 @@ trait S3BagVerifier[B <: BagVerifyContext[
     location.key.replace(root.keyPrefix, "")
 }
 
-class S3StandaloneBagVerifier(primaryBucket: String)(
+class S3StandaloneBagVerifier(val primaryBucket: String)(
   implicit val s3Client: AmazonS3
 ) extends StandaloneBagVerifier[S3ObjectLocation, S3ObjectLocationPrefix]
-    with S3BagVerifier[
-      StandaloneBagVerifyContext[S3ObjectLocation, S3ObjectLocationPrefix]
-    ] {
-  override val namespace: String = primaryBucket
-}
+    with S3BagVerifier[StandaloneBagVerifyContext[S3ObjectLocationPrefix]]
 
-class S3ReplicatedBagVerifier(primaryBucket: String)(
+class S3ReplicatedBagVerifier(val primaryBucket: String)(
   implicit val s3Client: AmazonS3
 ) extends ReplicatedBagVerifier[S3ObjectLocation, S3ObjectLocationPrefix]
-    with S3BagVerifier[
-      ReplicatedBagVerifyContext[S3ObjectLocation, S3ObjectLocationPrefix]
-    ] {
-  override val namespace: String = primaryBucket
+    with S3BagVerifier[ReplicatedBagVerifyContext[S3ObjectLocationPrefix]] {
+
   override val streamStore: StreamStore[S3ObjectLocation] =
     new S3StreamStore()
 }

@@ -19,38 +19,39 @@ import scala.util.Try
 trait StandaloneBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
 ]] extends BagVerifier[
-      StandaloneBagVerifyContext[BagLocation, BagPrefix],
+      StandaloneBagVerifyContext[BagPrefix],
       BagLocation,
       BagPrefix
     ] {
   override def verifyReplicatedBag(
-    root: StandaloneBagVerifyContext[BagLocation, BagPrefix],
+    root: StandaloneBagVerifyContext[BagPrefix],
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     bag: Bag
   ): Either[BagVerifierError, Unit] = Right(())
 }
+
 trait ReplicatedBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
 ]] extends BagVerifier[
-      ReplicatedBagVerifyContext[BagLocation, BagPrefix],
+      ReplicatedBagVerifyContext[BagPrefix],
       BagLocation,
       BagPrefix
     ]
-    with VerifySourceTagManifest[BagLocation, BagPrefix] {
+    with VerifySourceTagManifest[BagLocation] {
   override def verifyReplicatedBag(
-    root: ReplicatedBagVerifyContext[BagLocation, BagPrefix],
+    root: ReplicatedBagVerifyContext[BagPrefix],
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     bag: Bag
   ): Either[BagVerifierError, Unit] =
     verifySourceTagManifestIsTheSame(
       srcPrefix = root.srcRoot,
-      dstPrefix = root.root
+      replicaPrefix = root.replicaRoot
     )
 }
 
-trait BagVerifier[BagContext <: BagVerifyContext[BagLocation, BagPrefix], BagLocation <: Location, BagPrefix <: Prefix[
+trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
 ]] extends Logging
     with VerifyChecksumAndSize[BagLocation, BagPrefix]
@@ -59,7 +60,6 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagLocation, BagPrefix], BagLoc
     with VerifyPayloadOxum
     with VerifyNoUnreferencedFiles[BagLocation, BagPrefix] {
 
-  val namespace: String
   implicit val bagReader: BagReader[BagLocation, BagPrefix]
   implicit val listing: Listing[BagPrefix, BagLocation]
   implicit val resolvable: Resolvable[BagLocation]
@@ -71,7 +71,8 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagLocation, BagPrefix], BagLoc
     externalIdentifier: ExternalIdentifier,
     bag: Bag
   ): Either[BagVerifierError, Unit]
-  def createPrefix(namespace: String, path: String): BagPrefix
+
+  def createPrefix(path: String): BagPrefix
 
   def verify(
     ingestId: IngestID,
@@ -128,10 +129,7 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagLocation, BagPrefix], BagLoc
 
       _ <- verifyFetchPrefixes(
         fetch = bag.fetch,
-        root = createPrefix(
-          namespace = namespace,
-          path = s"$space/$externalIdentifier"
-        )
+        root = createPrefix(path = s"$space/$externalIdentifier")
       )
 
       verificationResult <- verifyChecksumAndSize(

@@ -42,7 +42,7 @@ trait BagVerifierFixtures
   )(
     testWith: TestWith[BagVerifierWorker[
       BagRootLocationPayload,
-      StandaloneBagVerifyContext[S3ObjectLocation, S3ObjectLocationPrefix],
+      StandaloneBagVerifyContext[S3ObjectLocationPrefix],
       String,
       String
     ], R]
@@ -78,7 +78,7 @@ trait BagVerifierFixtures
   )(
     testWith: TestWith[BagVerifierWorker[
       ReplicaCompletePayload,
-      ReplicatedBagVerifyContext[S3ObjectLocation, S3ObjectLocationPrefix],
+      ReplicatedBagVerifyContext[S3ObjectLocationPrefix],
       String,
       String
     ], R]
@@ -107,7 +107,7 @@ trait BagVerifierFixtures
 
   def withVerifier[R](bucket: Bucket)(
     testWith: TestWith[BagVerifier[
-      StandaloneBagVerifyContext[S3ObjectLocation, S3ObjectLocationPrefix],
+      StandaloneBagVerifyContext[S3ObjectLocationPrefix],
       S3ObjectLocation,
       S3ObjectLocationPrefix
     ], R]
