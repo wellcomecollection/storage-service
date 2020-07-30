@@ -11,7 +11,8 @@ case class StandaloneBagVerifyContext[BagPrefix <: Prefix[_ <: Location]](
     extends BagVerifyContext[BagPrefix]
 
 case class ReplicatedBagVerifyContext[BagPrefix <: Prefix[_ <: Location]](
-  replicaRoot: BagPrefix, srcRoot: BagPrefix)
+  srcRoot: BagPrefix,
+  replicaRoot: BagPrefix)
     extends BagVerifyContext[BagPrefix] {
 
   val root: BagPrefix = replicaRoot

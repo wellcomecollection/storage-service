@@ -711,8 +711,8 @@ trait ReplicatedBagVerifierTestCases[
     srcRoot: Option[BagPrefix]
   ): ReplicatedBagVerifyContext[BagPrefix] =
     ReplicatedBagVerifyContext(
-      replicaRoot = bagRoot,
-      srcRoot = srcRoot.getOrElse(bagRoot)
+      srcRoot = srcRoot.getOrElse(bagRoot),
+      replicaRoot = bagRoot
     )
 
   def createBagPrefix(namespace: String, prefix: String): BagPrefix
@@ -769,8 +769,8 @@ trait ReplicatedBagVerifierTestCases[
             _.verify(
               ingestId = createIngestID,
               bagContext = ReplicatedBagVerifyContext(
-                replicaRoot = bagRoot,
-                srcRoot = createBagPrefix("this_bag_does_not", "exist")
+                srcRoot = createBagPrefix("this_bag_does_not", "exist"),
+                replicaRoot = bagRoot
               ),
               space = space,
               externalIdentifier = bagInfo.externalIdentifier
