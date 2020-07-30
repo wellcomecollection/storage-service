@@ -21,13 +21,13 @@ trait VerifySourceTagManifest[BagLocation <: Location] {
     */
   def verifySourceTagManifestIsTheSame(
     srcPrefix: Prefix[BagLocation],
-    dstPrefix: Prefix[BagLocation]
+    replicaPrefix: Prefix[BagLocation]
   ): Either[BagVerifierError, Unit] = {
     for {
       srcManifest <- getTagManifest(srcPrefix)
-      dstManifest <- getTagManifest(dstPrefix)
+      replicaManifest <- getTagManifest(replicaPrefix)
 
-      result <- if (IOUtils.contentEquals(srcManifest, dstManifest)) {
+      result <- if (IOUtils.contentEquals(srcManifest, replicaManifest)) {
         Right(())
       } else {
         Left(
