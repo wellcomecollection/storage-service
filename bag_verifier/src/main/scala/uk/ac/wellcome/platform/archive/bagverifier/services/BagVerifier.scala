@@ -47,7 +47,7 @@ trait ReplicatedBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[
   ): Either[BagVerifierError, Unit] =
     verifySourceTagManifestIsTheSame(
       srcPrefix = root.srcRoot,
-      dstPrefix = root.root
+      dstPrefix = root.replicaRoot
     )
 }
 
