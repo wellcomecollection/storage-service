@@ -38,7 +38,7 @@ trait ReplicatedBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[
       BagLocation,
       BagPrefix
     ]
-    with VerifySourceTagManifest[BagLocation, BagPrefix] {
+    with VerifySourceTagManifest[BagLocation] {
   override def verifyReplicatedBag(
     root: ReplicatedBagVerifyContext[BagPrefix],
     space: StorageSpace,
