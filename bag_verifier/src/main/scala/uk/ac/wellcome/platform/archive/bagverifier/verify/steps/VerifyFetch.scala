@@ -58,7 +58,9 @@ trait VerifyFetch[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
     location: S3ObjectLocation,
     prefix: S3ObjectLocationPrefix
   ): Boolean =
-    location.bucket == prefix.bucket && location.key.startsWith(s"${prefix.keyPrefix}/")
+    location.bucket == prefix.bucket && location.key.startsWith(
+      s"${prefix.keyPrefix}/"
+    )
 
   // Check that the user hasn't sent any files in the bag which
   // also have a fetch file entry.
