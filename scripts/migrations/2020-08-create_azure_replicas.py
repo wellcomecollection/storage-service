@@ -6,9 +6,15 @@ bags that only have replicas in S3 and Glacier.
 Part of https://github.com/wellcomecollection/platform/issues/4640
 """
 
+import json
 from pprint import pprint
+import re
 
-from common import scan_table
+from common import get_aws_client, get_aws_resource, scan_table, READ_ONLY_ROLE_ARN
+
+
+dynamo_resource = get_aws_resource("dynamodb", role_arn=READ_ONLY_ROLE_ARN).meta.client
+s3_client = get_aws_client("s3", role_arn=READ_ONLY_ROLE_ARN)
 
 
 def find_incomplete_replicas(replicas_table):
@@ -46,16 +52,76 @@ def find_incomplete_replicas(replicas_table):
         yield item
 
 
+def find_ingest_id(manifests_table, *, space, externalIdentifier, version):
+    """
+    Find the ingest ID that corresponds to this big.
+    """
+    # First look up the corresponding storage manifest.
+    manifest_pointer = dynamo_resource.get_item(
+        TableName=manifests_table,
+        Key={
+            "id": f"{space}/{externalIdentifier}",
+            "version": int(version)
+        }
+    )["Item"]
+
+    bucket = manifest_pointer["payload"]["namespace"]
+    key = manifest_pointer["payload"]["path"]
+
+    # Now we look up the manifest in S3.  We could download the whole manifest
+    # and parse it, but that's pretty expensive.  So we cheat: the JSON encoder
+    # that writes storage manifests usually writes the ingestId at the end of
+    # the JSON string.
+    #
+    # We'll read the last few bytes first and look for an ingest ID; only if we
+    # can't find it do we try to parse the whole manifest.
+    #
+    try:
+        size = s3_client.head_object(Bucket=bucket, Key=key)["ContentLength"]
+        s3_fragment = s3_client.get_object(
+            Bucket=bucket,
+            Key=key,
+            Range=f"bytes={size - 51}-"
+        )["Body"].read().decode("utf8")
+
+        return re.match(r'^"ingestId": "([0-9a-f-]{36})"}$', s3_fragment).group(1)
+    except Exception:
+        s3_body = s3_client.get_object(Bucket=bucket, Key=key)["Body"]
+        manifest = json.load(s3_body)
+        return manifest["ingestId"]
+
+
+def create_payload(replica_record, *, manifests_table):
+    # The ID will be of the form {space}/{externalIdentifier}/{version}
+    space, _remainder = replica_record["id"].split("/", 1)
+    externalIdentifier, version = _remainder.rsplit("/", 1)
+
+    version = int(re.match(r"^v([0-9]+)$", version).group(1))
+
+    ingest_id = find_ingest_id(
+        manifests_table,
+        space=space,
+        externalIdentifier=externalIdentifier,
+        version=version,
+    )
+
+    print(f"Detected ingest ID as {ingest_id}")
+
+    return
+
+
 if __name__ == "__main__":
-    namespace_config = {
-        "stage": "storage-staging",
-        "prod": "storage",
+    config = {
+        "stage": {
+            "replicas_table": "storage-staging_replicas_table",
+            "manifests_table": "vhs-storage-staging-manifests-2020-07-24",
+        },
     }
 
-    namespace = namespace_config["stage"]
+    replicas_table = config["stage"]["replicas_table"]
+    manifests_table = config["stage"]["manifests_table"]
 
-    replicas_table = f"{namespace}_replicas_table"
-
-    for replica in find_incomplete_replicas(replicas_table):
-        pprint(replica)
+    for replica_record in find_incomplete_replicas(replicas_table):
+        pprint(replica_record)
+        payload = create_payload(replica_record, manifests_table=manifests_table)
         break
