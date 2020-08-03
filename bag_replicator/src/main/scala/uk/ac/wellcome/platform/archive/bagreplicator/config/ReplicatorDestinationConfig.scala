@@ -27,7 +27,7 @@ case object ReplicatorDestinationConfig {
 
     ReplicatorDestinationConfig(
       namespace =
-        config.requireString("bag-replicator.storage.destination.bucket"),
+        config.requireString("bag-replicator.storage.destination.namespace"),
       provider = StorageProvider(
         config.requireString("bag-replicator.provider")
       ),

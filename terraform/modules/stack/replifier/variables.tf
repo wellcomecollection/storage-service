@@ -26,7 +26,7 @@ variable "topic_arns" {
   type = list(string)
 }
 
-variable "bucket_name" {
+variable "destination_namespace" {
   type = string
 }
 
