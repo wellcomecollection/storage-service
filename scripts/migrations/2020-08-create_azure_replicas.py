@@ -146,7 +146,7 @@ if __name__ == "__main__":
             "replicas_table": "storage-staging_replicas_table",
             "manifests_table": "vhs-storage-staging-manifests-2020-07-24",
             "ingests_table": "storage-staging-ingests",
-        },
+        }
     }
 
     replicas_table = config["stage"]["replicas_table"]
