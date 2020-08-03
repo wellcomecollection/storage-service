@@ -6,6 +6,7 @@ bags that only have replicas in S3 and Glacier.
 Part of https://github.com/wellcomecollection/platform/issues/4640
 """
 
+import datetime
 import json
 from pprint import pprint
 import re
@@ -59,10 +60,7 @@ def find_ingest_id(manifests_table, *, space, externalIdentifier, version):
     # First look up the corresponding storage manifest.
     manifest_pointer = dynamo_resource.get_item(
         TableName=manifests_table,
-        Key={
-            "id": f"{space}/{externalIdentifier}",
-            "version": int(version)
-        }
+        Key={"id": f"{space}/{externalIdentifier}", "version": int(version)},
     )["Item"]
 
     bucket = manifest_pointer["payload"]["namespace"]
@@ -78,11 +76,13 @@ def find_ingest_id(manifests_table, *, space, externalIdentifier, version):
     #
     try:
         size = s3_client.head_object(Bucket=bucket, Key=key)["ContentLength"]
-        s3_fragment = s3_client.get_object(
-            Bucket=bucket,
-            Key=key,
-            Range=f"bytes={size - 51}-"
-        )["Body"].read().decode("utf8")
+        s3_fragment = (
+            s3_client.get_object(Bucket=bucket, Key=key, Range=f"bytes={size - 51}-")[
+                "Body"
+            ]
+            .read()
+            .decode("utf8")
+        )
 
         return re.match(r'^"ingestId": "([0-9a-f-]{36})"}$', s3_fragment).group(1)
     except Exception:
@@ -91,7 +91,13 @@ def find_ingest_id(manifests_table, *, space, externalIdentifier, version):
         return manifest["ingestId"]
 
 
-def create_payload(replica_record, *, manifests_table):
+def get_ingest(ingest_id, *, ingests_table):
+    return dynamo_resource.get_item(TableName=ingests_table, Key={"id": ingest_id})[
+        "Item"
+    ]
+
+
+def create_payload(replica_record, *, ingests_table, manifests_table):
     # The ID will be of the form {space}/{externalIdentifier}/{version}
     space, _remainder = replica_record["id"].split("/", 1)
     externalIdentifier, version = _remainder.rsplit("/", 1)
@@ -105,9 +111,33 @@ def create_payload(replica_record, *, manifests_table):
         version=version,
     )
 
-    print(f"Detected ingest ID as {ingest_id}")
+    ingest = get_ingest(ingest_id, ingests_table=ingests_table)
 
-    return
+    context = {
+        "ingestId": ingest["id"],
+        "ingestType": {"id": ingest["payload"]["ingestType"]},
+        "storageSpace": ingest["payload"]["space"],
+        "externalIdentifier": ingest["payload"]["externalIdentifier"],
+        # This is a bit of a kludge -- the timestamp in the ingests table uses
+        # millisecond precision, but we throw away the millisecond portion here.
+        # In practice, only the bag versioner looks at this field, so a bit of
+        # loss is no big deal.
+        "ingestDate": datetime.datetime.fromtimestamp(
+            int(ingest["payload"]["createdDate"] / 1000)
+        ).isoformat()
+        + "Z",
+    }
+
+    bagRoot = replica_record["payload"]["location"]["PrimaryS3ReplicaLocation"][
+        "prefix"
+    ]
+
+    return {
+        "context": context,
+        "bagRoot": bagRoot,
+        "version": version,
+        "type": "VersionedBagRootPayload",
+    }
 
 
 if __name__ == "__main__":
@@ -115,13 +145,17 @@ if __name__ == "__main__":
         "stage": {
             "replicas_table": "storage-staging_replicas_table",
             "manifests_table": "vhs-storage-staging-manifests-2020-07-24",
+            "ingests_table": "storage-staging-ingests",
         },
     }
 
     replicas_table = config["stage"]["replicas_table"]
     manifests_table = config["stage"]["manifests_table"]
+    ingests_table = config["stage"]["ingests_table"]
 
     for replica_record in find_incomplete_replicas(replicas_table):
-        pprint(replica_record)
-        payload = create_payload(replica_record, manifests_table=manifests_table)
+        payload = create_payload(
+            replica_record, manifests_table=manifests_table, ingests_table=ingests_table
+        )
+        print(json.dumps(payload, indent=2))
         break
