@@ -6,7 +6,7 @@ data "aws_iam_policy_document" "bucket_readwrite" {
     ]
 
     resources = [
-      "arn:aws:s3:::${var.bucket_name}/*",
+      "arn:aws:s3:::${var.destination_namespace}/*",
     ]
   }
 }

@@ -18,7 +18,7 @@ module "bag_replicator" {
 
   environment = {
     queue_url               = module.bag_replicator_input_queue.url
-    destination_bucket_name = var.bucket_name
+    destination_namespace = var.destination_namespace
     ingest_topic_arn        = var.ingests_topic_arn
     outgoing_topic_arn      = module.bag_replicator_output_topic.arn
     metrics_namespace       = local.bag_replicator_service_name

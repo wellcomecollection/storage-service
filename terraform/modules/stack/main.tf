@@ -403,7 +403,7 @@ module "replicator_verifier_primary" {
     module.bag_versioner_output_topic.arn,
   ]
 
-  bucket_name          = var.replica_primary_bucket_name
+  destination_namespace          = var.replica_primary_bucket_name
   primary_bucket_name  = var.replica_primary_bucket_name
   unpacker_bucket_name = aws_s3_bucket.unpacked_bags.id
 
@@ -456,7 +456,7 @@ module "replicator_verifier_glacier" {
     module.bag_versioner_output_topic.arn,
   ]
 
-  bucket_name          = var.replica_glacier_bucket_name
+  destination_namespace          = var.replica_glacier_bucket_name
   primary_bucket_name  = var.replica_primary_bucket_name
   unpacker_bucket_name = aws_s3_bucket.unpacked_bags.id
 
