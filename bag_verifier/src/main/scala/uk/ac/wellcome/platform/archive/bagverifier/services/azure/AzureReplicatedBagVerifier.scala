@@ -5,6 +5,7 @@ import com.azure.storage.blob.BlobServiceClient
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.services.ReplicatedBagVerifier
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable
+import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.AzureResolvable
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.bagit.services.azure.AzureBagReader
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
@@ -12,6 +13,7 @@ import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.listing.azure.AzureBlobLocationListing
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.StreamStore
+import uk.ac.wellcome.storage.store.azure.AzureStreamStore
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 
 class AzureReplicatedBagVerifier(val primaryBucket: String)(
@@ -23,12 +25,10 @@ class AzureReplicatedBagVerifier(val primaryBucket: String)(
     new S3StreamStore()
   override implicit val bagReader: BagReader[AzureBlobLocation, AzureBlobLocationPrefix] = new AzureBagReader()
   override implicit val listing: Listing[AzureBlobLocationPrefix, AzureBlobLocation] = AzureBlobLocationListing()
-  override implicit val resolvable: Resolvable[S3ObjectLocation] = _
-  override implicit val fixityChecker: FixityChecker[S3ObjectLocation] = _
+  override implicit val resolvable: Resolvable[AzureBlobLocation] = new AzureResolvable()
+  override implicit val fixityChecker: FixityChecker[AzureBlobLocation] = ???
 
-  override def createPrefix(path: String): AzureBlobLocationPrefix = ???
+  override def getRelativePath(root: AzureBlobLocationPrefix, location: AzureBlobLocation): String = ???
 
-  override def getRelativePath(root: AzureBlobLocationPrefix, location: S3ObjectLocation): String = ???
-
-  override val replicaStreamStore: StreamStore[AzureBlobLocation] = _
+  override val replicaStreamStore: StreamStore[AzureBlobLocation] = new AzureStreamStore()
 }
