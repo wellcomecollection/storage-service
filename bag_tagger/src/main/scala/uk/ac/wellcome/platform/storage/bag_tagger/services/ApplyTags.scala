@@ -2,17 +2,19 @@ package uk.ac.wellcome.platform.storage.bag_tagger.services
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.storage.models.{
+  AzureStorageLocation,
   S3StorageLocation,
   StorageLocation,
   StorageManifestFile
 }
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.tags.Tags
+import uk.ac.wellcome.storage.tags.azure.AzureBlobMetadata
 import uk.ac.wellcome.storage.tags.s3.S3Tags
 
 import scala.util.Try
 
-class ApplyTags(s3Tags: S3Tags) extends Logging {
+class ApplyTags(s3Tags: S3Tags, azureMetadata: AzureBlobMetadata) extends Logging {
   def applyTags(
     storageLocations: Seq[StorageLocation],
     tagsToApply: Map[StorageManifestFile, Map[String, String]]
@@ -28,9 +30,11 @@ class ApplyTags(s3Tags: S3Tags) extends Logging {
                 tagsToApply = tagsToApply
               )
 
-            case _ =>
-              throw new IllegalArgumentException(
-                s"Unsupported location for tagging: $location"
+            case azureLocation: AzureStorageLocation =>
+              applyTagsToPrefix(
+                tags = azureMetadata,
+                prefix = azureLocation.prefix,
+                tagsToApply = tagsToApply
               )
           }
         }
