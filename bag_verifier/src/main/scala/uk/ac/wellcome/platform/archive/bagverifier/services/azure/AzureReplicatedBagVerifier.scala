@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.services.azure
 import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.BlobServiceClient
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityChecker
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.azure.AzureFixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.services.ReplicatedBagVerifier
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable
 import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.AzureResolvable
@@ -26,9 +27,9 @@ class AzureReplicatedBagVerifier(val primaryBucket: String)(
   override implicit val bagReader: BagReader[AzureBlobLocation, AzureBlobLocationPrefix] = new AzureBagReader()
   override implicit val listing: Listing[AzureBlobLocationPrefix, AzureBlobLocation] = AzureBlobLocationListing()
   override implicit val resolvable: Resolvable[AzureBlobLocation] = new AzureResolvable()
-  override implicit val fixityChecker: FixityChecker[AzureBlobLocation] = ???
+  override implicit val fixityChecker: FixityChecker[AzureBlobLocation, AzureBlobLocationPrefix] = new AzureFixityChecker()
 
-  override def getRelativePath(root: AzureBlobLocationPrefix, location: AzureBlobLocation): String = ???
+  override def getRelativePath(root: AzureBlobLocationPrefix, location: AzureBlobLocation): String = location.name.replace(root.namePrefix, "")
 
   override val replicaStreamStore: StreamStore[AzureBlobLocation] = new AzureStreamStore()
 }
