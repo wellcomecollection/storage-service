@@ -410,7 +410,7 @@ class StorageManifestServiceTest
         override protected def getFetchEntryCount(payloadFileCount: Int): Int =
           payloadFileCount
 
-        override protected def buildFetchEntryLine(
+        override def buildFetchEntryLine(
           entry: PayloadEntry
         )(implicit bucket: Bucket): String =
           s"""s3://$bucket/${entry.path} ${entry.contents.getBytes.length} ${entry.bagPath}"""

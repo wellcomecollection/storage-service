@@ -33,7 +33,7 @@ trait AzureBagBuilder
     path: String
   ): AzureBlobLocation = AzureBlobLocation(bagRoot.container, path)
 
-  override protected def buildFetchEntryLine(
+  override def buildFetchEntryLine(
     entry: PayloadEntry
   )(implicit container: Container): String = {
     val displaySize =

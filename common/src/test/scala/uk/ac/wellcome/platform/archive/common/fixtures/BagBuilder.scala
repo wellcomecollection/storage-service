@@ -148,7 +148,7 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
       )
     }
 
-  protected def buildFetchEntryLine(
+  def buildFetchEntryLine(
     entry: PayloadEntry
   )(implicit namespace: Namespace): String
 

@@ -42,7 +42,7 @@ trait S3BagBuilder
       key = path
     )
 
-  override protected def buildFetchEntryLine(
+  override def buildFetchEntryLine(
     entry: PayloadEntry
   )(implicit bucket: Bucket): String = {
     val displaySize =

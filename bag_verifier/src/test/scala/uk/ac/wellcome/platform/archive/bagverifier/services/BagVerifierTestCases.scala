@@ -8,15 +8,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FailedChecksumNoMatch,
   FileFixityCorrect
 }
-import uk.ac.wellcome.platform.archive.bagverifier.models.{
-  BagVerifyContext,
-  ReplicatedBagVerifyContext,
-  StandaloneBagVerifyContext,
-  VerificationFailureSummary,
-  VerificationIncompleteSummary,
-  VerificationSuccessSummary,
-  VerificationSummary
-}
+import uk.ac.wellcome.platform.archive.bagverifier.models._
 import uk.ac.wellcome.platform.archive.bagverifier.storage.LocationNotFound
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagPath,
@@ -31,6 +23,10 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.{
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagBuilder,
   PayloadEntry
+}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagInfoGenerators,
+  StorageSpaceGenerators
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
@@ -78,7 +74,8 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     with EitherValues
     with OptionValues
     with TryValues
-    with BagBuilder[BagLocation, BagPrefix, Namespace]
+    with StorageSpaceGenerators
+    with BagInfoGenerators
     with NamespaceFixtures[BagLocation, Namespace] {
 
   def withTypedStore[R](
@@ -92,7 +89,11 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
   def withBagContext[R](bagRoot: BagPrefix)(
     testWith: TestWith[BagContext, R]
   ): R
-
+  val replicaBagBuilder: BagBuilder[
+    BagLocation,
+    BagPrefix,
+    Namespace
+  ]
   val payloadFileCount: Int = randomInt(from = 1, to = 10)
 
   val expectedFileCount: Int = payloadFileCount + List(
@@ -100,18 +101,6 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     "bagit.txt",
     "bag-info.txt"
   ).size
-
-  def createBagRootImpl(
-    space: StorageSpace,
-    externalIdentifier: ExternalIdentifier,
-    version: BagVersion
-  )(implicit namespace: Namespace): BagPrefix
-
-  def createBagLocationImpl(bagRoot: BagPrefix, path: String): BagLocation
-
-  def buildFetchEntryLineImpl(entry: PayloadEntry)(
-    implicit namespace: Namespace
-  ): String
 
   def writeFile(
     location: BagLocation,
@@ -128,18 +117,18 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     )(
       implicit namespace: Namespace
     ): BagPrefix =
-      createBagRootImpl(space, externalIdentifier, version)
+      replicaBagBuilder.createBagRoot(space, externalIdentifier, version)
 
     override def createBagLocation(
       bagRoot: BagPrefix,
       path: String
     ): BagLocation =
-      createBagLocationImpl(bagRoot, path)
+      replicaBagBuilder.createBagLocation(bagRoot, path)
 
     override def buildFetchEntryLine(
       entry: PayloadEntry
     )(implicit namespace: Namespace): String =
-      buildFetchEntryLineImpl(entry)
+      replicaBagBuilder.buildFetchEntryLine(entry)
   }
 
   it("passes a bag with correct checksum values") {
@@ -147,11 +136,11 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
       withTypedStore { implicit typedStore =>
         val space = createStorageSpace
 
-        val (bagObjects, bagRoot, bagInfo) = createBagContentsWith(
+        val (bagObjects, bagRoot, bagInfo) = replicaBagBuilder.createBagContentsWith(
           space = space,
           payloadFileCount = payloadFileCount
         )
-        uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
+        replicaBagBuilder.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
 
         val ingestStep =
           withBagContext(bagRoot) { bagContext =>
@@ -312,10 +301,10 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
 
     withNamespace { implicit namespace =>
       withTypedStore { implicit typedStore =>
-        val (bagObjects, bagRoot, _) = createBagContentsWith(
+        val (bagObjects, bagRoot, _) = replicaBagBuilder.createBagContentsWith(
           externalIdentifier = bagInfoExternalIdentifier
         )
-        uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
+        replicaBagBuilder.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
 
         val ingestStep =
           withBagContext(bagRoot) { bagContext =>
@@ -562,8 +551,8 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
           val space = createStorageSpace
 
           val (bagObjects, bagRoot, bagInfo) =
-            createBagContentsWith(space = space)
-          uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
+            replicaBagBuilder.createBagContentsWith(space = space)
+          replicaBagBuilder.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
 
           val location = bagRoot.asLocation("tagmanifest-sha512.txt")
           writeFile(location)
@@ -731,9 +720,6 @@ trait ReplicatedBagVerifierTestCases[
   ): Unit
 
   def createSrcPrefix(implicit namespace: SrcNamespace): SrcBagPrefix
-  def createReplicaPrefix(
-    implicit namespace: ReplicaNamespace
-  ): ReplicaBagPrefix
 
   def withSrcNamespace[R](testWith: TestWith[SrcNamespace, R]): R
   def withReplicaNamespace[R](testWith: TestWith[ReplicaNamespace, R]): R
@@ -746,11 +732,6 @@ trait ReplicatedBagVerifierTestCases[
   ): R
 
   val srcBagBuilder: BagBuilder[SrcBagLocation, SrcBagPrefix, SrcNamespace]
-  val replicaBagBuilder: BagBuilder[
-    ReplicaBagLocation,
-    ReplicaBagPrefix,
-    ReplicaNamespace
-  ]
 
   def withNamespace[R](testWith: TestWith[ReplicaNamespace, R]): R =
     withReplicaNamespace { namespace =>

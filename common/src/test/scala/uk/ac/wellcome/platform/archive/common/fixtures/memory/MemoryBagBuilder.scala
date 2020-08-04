@@ -32,7 +32,7 @@ trait MemoryBagBuilder
       path = DestinationBuilder.buildPath(space, externalIdentifier, version)
     )
 
-  override protected def buildFetchEntryLine(
+  override def buildFetchEntryLine(
     entry: PayloadEntry
   )(implicit namespace: String): String = {
     val displaySize =
