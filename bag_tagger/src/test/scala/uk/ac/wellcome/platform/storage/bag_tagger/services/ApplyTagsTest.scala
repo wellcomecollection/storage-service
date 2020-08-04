@@ -9,8 +9,8 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   SecondaryAzureStorageLocation
 }
 import uk.ac.wellcome.storage.Identified
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
-import uk.ac.wellcome.storage.generators.AzureBlobLocationGenerators
+import uk.ac.wellcome.storage.fixtures.{AzureFixtures, S3Fixtures}
+import uk.ac.wellcome.storage.tags.azure.AzureBlobMetadata
 import uk.ac.wellcome.storage.tags.s3.S3Tags
 
 import scala.util.Success
@@ -20,39 +20,62 @@ class ApplyTagsTest
     with Matchers
     with TryValues
     with S3Fixtures
-    with AzureBlobLocationGenerators
+    with AzureFixtures
     with StorageManifestGenerators {
-  val s3Tags = new S3Tags()
-  val applyTags = new ApplyTags(s3Tags = s3Tags)
 
-  describe("it updates tags") {
-    it("to objects in S3") {
-      withLocalS3Bucket { bucket =>
-        val prefix = createS3ObjectLocationPrefixWith(bucket)
+  val s3Tags = new S3Tags()
+  val azureMetadata = new AzureBlobMetadata()
+
+  val applyTags = new ApplyTags(s3Tags = s3Tags, azureMetadata = azureMetadata)
+
+  it("updates tags") {
+    withLocalS3Bucket { bucket =>
+      withAzureContainer { container =>
+        val s3Prefix = createS3ObjectLocationPrefixWith(bucket)
+        val azurePrefix = createAzureBlobLocationPrefixWith(container)
 
         val file = createStorageManifestFileWith(
           pathPrefix = "space/externalIdentifier/v1",
           name = "b1234.mxf"
         )
 
-        val location = prefix.asLocation(file.path)
-        putStream(location)
+        val s3Location = s3Prefix.asLocation(file.path)
+        s3Client.putObject(s3Location.bucket, s3Location.key, randomAlphanumeric)
 
-        s3Tags.update(location) { _ =>
+        val azureLocation = azurePrefix.asLocation(file.path)
+        azureClient
+          .getBlobContainerClient(azureLocation.container)
+          .getBlobClient(azureLocation.name)
+          .upload(randomInputStream(length = 10), 10)
+
+        s3Tags.update(s3Location) { _ =>
+          Right(Map("Content-SHA256" -> "4a5a41ebcf5e2c24c"))
+        }
+
+        azureMetadata.update(azureLocation) { _ =>
           Right(Map("Content-SHA256" -> "4a5a41ebcf5e2c24c"))
         }
 
         val result = applyTags.applyTags(
           storageLocations = Seq(
-            PrimaryS3StorageLocation(prefix)
+            PrimaryS3StorageLocation(s3Prefix),
+            SecondaryAzureStorageLocation(azurePrefix)
           ),
           tagsToApply = Map(file -> Map("Content-Type" -> "application/mxf"))
         )
 
         result shouldBe Success(())
 
-        s3Tags.get(location).right.value shouldBe Identified(
-          location,
+        s3Tags.get(s3Location).right.value shouldBe Identified(
+          s3Location,
+          Map(
+            "Content-SHA256" -> "4a5a41ebcf5e2c24c",
+            "Content-Type" -> "application/mxf"
+          )
+        )
+
+        azureMetadata.get(azureLocation).right.value shouldBe Identified(
+          azureLocation,
           Map(
             "Content-SHA256" -> "4a5a41ebcf5e2c24c",
             "Content-Type" -> "application/mxf"
@@ -78,23 +101,6 @@ class ApplyTagsTest
       val err = result.failed.get
       err shouldBe a[Throwable]
       err.getMessage shouldBe "Could not successfully apply tags!"
-    }
-
-    it("if asked to tag objects in Azure") {
-      val prefix = createAzureBlobLocationPrefix
-
-      val file = createStorageManifestFile
-
-      val result = applyTags.applyTags(
-        storageLocations = Seq(
-          SecondaryAzureStorageLocation(prefix)
-        ),
-        tagsToApply = Map(file -> Map("Content-Type" -> "application/mxf"))
-      )
-
-      val err = result.failed.get
-      err shouldBe a[IllegalArgumentException]
-      err.getMessage should startWith("Unsupported location for tagging:")
     }
 
     it("if the objects have not been tagged by the verifier") {

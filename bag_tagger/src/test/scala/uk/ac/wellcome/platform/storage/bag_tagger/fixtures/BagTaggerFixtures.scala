@@ -23,8 +23,7 @@ import uk.ac.wellcome.platform.storage.bag_tagger.services.{
   BagTaggerWorker,
   TagRules
 }
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
-import uk.ac.wellcome.storage.tags.s3.S3Tags
+import uk.ac.wellcome.storage.fixtures.{AzureFixtures, S3Fixtures}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -33,6 +32,7 @@ trait BagTaggerFixtures
     with Akka
     with SQS
     with S3Fixtures
+    with AzureFixtures
     with BagTrackerFixtures
     with StorageManifestDaoFixture
     with AlpakkaSQSWorkerFixtures { this: Suite =>
@@ -44,7 +44,7 @@ trait BagTaggerFixtures
       visibilityTimeout = 1
     ),
     storageManifestDao: StorageManifestDao = createStorageManifestDao(),
-    applyTags: ApplyTags = new ApplyTags(s3Tags = new S3Tags()),
+    applyTags: ApplyTags = ApplyTags(),
     tagRules: StorageManifest => Map[StorageManifestFile, Map[String, String]] =
       TagRules.chooseTags
   )(
