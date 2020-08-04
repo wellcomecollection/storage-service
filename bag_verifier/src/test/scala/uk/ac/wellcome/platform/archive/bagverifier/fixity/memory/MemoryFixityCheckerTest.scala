@@ -9,7 +9,10 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FixityCheckerTestCases
 }
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.providers.memory.MemoryLocation
+import uk.ac.wellcome.storage.providers.memory.{
+  MemoryLocation,
+  MemoryLocationPrefix
+}
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.tags.memory.MemoryTags
@@ -17,6 +20,7 @@ import uk.ac.wellcome.storage.tags.memory.MemoryTags
 class MemoryFixityCheckerTest
     extends FixityCheckerTestCases[
       MemoryLocation,
+    MemoryLocationPrefix,
       String,
       (MemoryStreamStore[MemoryLocation], MemoryTags[MemoryLocation]),
       MemoryStreamStore[MemoryLocation]
@@ -66,7 +70,7 @@ class MemoryFixityCheckerTest
   override def withFixityChecker[R](
     streamStore: MemoryStreamStore[MemoryLocation]
   )(
-    testWith: TestWith[FixityChecker[MemoryLocation], R]
+    testWith: TestWith[FixityChecker[MemoryLocation, MemoryLocationPrefix], R]
   )(implicit context: MemoryContext): R = {
     val (_, tags) = context
     testWith(

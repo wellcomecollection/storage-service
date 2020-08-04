@@ -9,6 +9,7 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.memory.MemoryFixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.generators.FixityGenerators
 import uk.ac.wellcome.platform.archive.bagverifier.storage.{
+  Locatable,
   LocateFailure,
   LocationParsingError
 }
@@ -19,7 +20,10 @@ import uk.ac.wellcome.platform.archive.common.verify.{
   MD5
 }
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.providers.memory.MemoryLocation
+import uk.ac.wellcome.storage.providers.memory.{
+  MemoryLocation,
+  MemoryLocationPrefix
+}
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore}
 import uk.ac.wellcome.storage.streaming.Codec.stringCodec
 import uk.ac.wellcome.storage.streaming.{Codec, InputStreamWithLength}
@@ -45,10 +49,12 @@ class FixityCheckerTests
       val tags = createMemoryTags
 
       val brokenChecker = new MemoryFixityChecker(streamStore, tags) {
-        override def locate(
-          uri: URI
-        ): Either[LocateFailure[URI], MemoryLocation] =
-          Left(LocationParsingError(uri, msg = "BOOM!"))
+        override val locator = new Locatable[MemoryLocation, MemoryLocationPrefix, URI] {
+          def locate(
+            uri: URI
+          )(maybeRoot: Option[MemoryLocationPrefix]): Either[LocateFailure[URI], MemoryLocation] =
+            Left(LocationParsingError(uri, msg = "BOOM!"))
+        }
       }
 
       val expectedFileFixity = createExpectedFileFixity

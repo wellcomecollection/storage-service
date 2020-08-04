@@ -35,7 +35,7 @@ trait S3BagVerifier[B <: BagVerifyContext[S3ObjectLocationPrefix]]
   override implicit val resolvable: Resolvable[S3ObjectLocation] =
     new S3Resolvable()
 
-  override implicit val fixityChecker: FixityChecker[S3ObjectLocation] =
+  override implicit val fixityChecker: FixityChecker[S3ObjectLocation, S3ObjectLocationPrefix] =
     new S3FixityChecker()
 
   override implicit val listing

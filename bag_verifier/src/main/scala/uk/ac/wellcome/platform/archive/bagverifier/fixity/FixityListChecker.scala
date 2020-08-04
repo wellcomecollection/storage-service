@@ -3,17 +3,17 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.s3.S3FixityChecker
-import uk.ac.wellcome.storage.Location
+import uk.ac.wellcome.storage.{Location, Prefix}
 
 /** Given some Container of files, get the expected fixity information for every
   * file in the container, then verify the fixity on each of them.
   *
   */
-class FixityListChecker[BagLocation <: Location, Container](
+class FixityListChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation],Container](
   implicit
   verifiable: ExpectedFixity[Container],
   s3Client: AmazonS3,
-  dataDirectoryFixityChecker: FixityChecker[BagLocation]
+  dataDirectoryFixityChecker: FixityChecker[BagLocation, BagPrefix]
 ) extends Logging {
   val fetchEntriesFixityChecker = new S3FixityChecker()
 

@@ -9,12 +9,13 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagverifier.generators.FixityGenerators
 import uk.ac.wellcome.platform.archive.bagverifier.storage.LocationNotFound
 import uk.ac.wellcome.platform.archive.common.verify._
-import uk.ac.wellcome.storage.{Identified, Location}
+import uk.ac.wellcome.storage.{Identified, Location, Prefix}
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
 
 trait FixityCheckerTestCases[
   BagLocation <: Location,
+  BagPrefix <: Prefix[BagLocation],
   Namespace,
   Context,
   StreamStoreImpl <: StreamStore[BagLocation]
@@ -39,7 +40,7 @@ trait FixityCheckerTestCases[
   ): Unit
 
   def withFixityChecker[R](streamStore: StreamStoreImpl)(
-    testWith: TestWith[FixityChecker[BagLocation], R]
+    testWith: TestWith[FixityChecker[BagLocation, BagPrefix], R]
   )(
     implicit context: Context
   ): R
@@ -48,7 +49,7 @@ trait FixityCheckerTestCases[
     implicit context: Context
   ): R
 
-  def withFixityChecker[R](testWith: TestWith[FixityChecker[BagLocation], R])(
+  def withFixityChecker[R](testWith: TestWith[FixityChecker[BagLocation, BagPrefix], R])(
     implicit context: Context
   ): R =
     withStreamStore { streamStore =>

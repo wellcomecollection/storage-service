@@ -18,7 +18,7 @@ trait VerifyChecksumAndSize[BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
 ]] {
   implicit val resolvable: Resolvable[BagLocation]
-  implicit val fixityChecker: FixityChecker[BagLocation]
+  implicit val fixityChecker: FixityChecker[BagLocation, BagPrefix]
   implicit val s3Client: AmazonS3
 
   def verifyChecksumAndSize(
@@ -28,7 +28,7 @@ trait VerifyChecksumAndSize[BagLocation <: Location, BagPrefix <: Prefix[
     implicit val bagExpectedFixity: BagExpectedFixity[BagLocation, BagPrefix] =
       new BagExpectedFixity[BagLocation, BagPrefix](root)
 
-    implicit val fixityListChecker: FixityListChecker[BagLocation, Bag] =
+    implicit val fixityListChecker: FixityListChecker[BagLocation, BagPrefix, Bag] =
       new FixityListChecker()
 
     Try { fixityListChecker.check(bag) } match {
