@@ -50,12 +50,12 @@ trait S3BagVerifier[B <: BagVerifyContext[S3ObjectLocationPrefix]]
     location.key.replace(root.keyPrefix, "")
 }
 
-class S3StandaloneBagVerifier(val primaryBucket: String)(
+class S3StandaloneBagVerifier(val namespace: String)(
   implicit val s3Client: AmazonS3
 ) extends StandaloneBagVerifier[S3ObjectLocation, S3ObjectLocationPrefix]
     with S3BagVerifier[StandaloneBagVerifyContext[S3ObjectLocationPrefix]]
 
-class S3ReplicatedBagVerifier(val primaryBucket: String)(
+class S3ReplicatedBagVerifier(val namespace: String)(
   implicit val s3Client: AmazonS3
 ) extends ReplicatedBagVerifier[
       S3ObjectLocation,

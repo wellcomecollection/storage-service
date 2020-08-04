@@ -1,11 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services.s3
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.models.{
-  BagVerifyContext,
-  ReplicatedBagVerifyContext,
-  StandaloneBagVerifyContext
-}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{BagVerifyContext, ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
 import uk.ac.wellcome.platform.archive.bagverifier.services._
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
@@ -82,7 +78,7 @@ class S3ReplicatedBagVerifierTest
     implicit typedStore: TypedStore[S3ObjectLocation, String]
   ): R =
     testWith(
-      new S3ReplicatedBagVerifier(primaryBucket = primaryBucket.name)
+      new S3ReplicatedBagVerifier(namespace = primaryBucket.name)
     )
 
   override protected def copyTagManifest(
@@ -149,7 +145,7 @@ class S3StandaloneBagVerifierTest
     implicit typedStore: TypedStore[S3ObjectLocation, String]
   ): R =
     testWith(
-      new S3StandaloneBagVerifier(primaryBucket = primaryBucket.name)
+      new S3StandaloneBagVerifier(namespace = primaryBucket.name)
     )
 
   override val replicaBagBuilder

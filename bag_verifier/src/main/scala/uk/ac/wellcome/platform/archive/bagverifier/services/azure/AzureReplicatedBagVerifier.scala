@@ -16,7 +16,7 @@ import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.azure.AzureStreamStore
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 
-class AzureReplicatedBagVerifier(val primaryBucket: String)(
+class AzureReplicatedBagVerifier(val namespace: String)(
   implicit val s3Client: AmazonS3,
   implicit val blobClient: BlobServiceClient
 ) extends ReplicatedBagVerifier[S3ObjectLocation, S3ObjectLocationPrefix,AzureBlobLocation, AzureBlobLocationPrefix] {

@@ -116,6 +116,6 @@ trait BagVerifierFixtures
     ], R]
   ): R =
     testWith(
-      new S3StandaloneBagVerifier(primaryBucket = bucket.name)
+      new S3StandaloneBagVerifier(namespace = bucket.name)
     )
 }
