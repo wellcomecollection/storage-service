@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.storage.bag_tagger.services
 
+import com.amazonaws.services.s3.AmazonS3
+import com.azure.storage.blob.BlobServiceClient
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   AzureStorageLocation,
@@ -78,4 +80,17 @@ class ApplyTags(s3Tags: S3Tags, azureMetadata: AzureBlobMetadata) extends Loggin
             ()
           }
       }
+}
+
+object ApplyTags {
+  def apply()(
+    implicit
+    s3Client: AmazonS3,
+    blobServiceClient: BlobServiceClient
+  ): ApplyTags = {
+    val s3Tags = new S3Tags()
+    val azureMetadata = new AzureBlobMetadata()
+
+    new ApplyTags(s3Tags = s3Tags, azureMetadata = azureMetadata)
+  }
 }

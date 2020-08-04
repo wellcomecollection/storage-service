@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.storage.bag_tagger
 
 import akka.actor.ActorSystem
 import com.amazonaws.services.s3.AmazonS3
+import com.azure.storage.blob.{BlobServiceClient, BlobServiceClientBuilder}
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.json.JsonUtil._
@@ -17,7 +18,6 @@ import uk.ac.wellcome.platform.storage.bag_tagger.services.{
   BagTaggerWorker,
   TagRules
 }
-import uk.ac.wellcome.storage.tags.s3.S3Tags
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -44,13 +44,16 @@ object Main extends WellcomeTypesafeApp {
     implicit val s3Client: AmazonS3 =
       S3Builder.buildS3Client(config)
 
+    implicit val azureBlobClient: BlobServiceClient =
+      new BlobServiceClientBuilder()
+        .endpoint(config.requireString("azure.endpoint"))
+        .buildClient()
+
     new BagTaggerWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
       metricsNamespace = config.requireString("aws.metrics.namespace"),
       bagTrackerClient = bagTrackerClient,
-      applyTags = new ApplyTags(
-        s3Tags = new S3Tags()
-      ),
+      applyTags = ApplyTags(),
       tagRules = TagRules.chooseTags
     )
   }
