@@ -3,11 +3,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity.s3
 import java.net.URI
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
-  FileFixityCouldNotRead,
-  FixityChecker,
-  FixityCheckerTestCases
-}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FileFixityCouldNotRead, FixityChecker, FixityCheckerTestCases}
 import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.S3Resolvable
 import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   LocationError,
