@@ -40,7 +40,11 @@ class ApplyTagsTest
         )
 
         val s3Location = s3Prefix.asLocation(file.path)
-        s3Client.putObject(s3Location.bucket, s3Location.key, randomAlphanumeric)
+        s3Client.putObject(
+          s3Location.bucket,
+          s3Location.key,
+          randomAlphanumeric
+        )
 
         val azureLocation = azurePrefix.asLocation(file.path)
         azureClient

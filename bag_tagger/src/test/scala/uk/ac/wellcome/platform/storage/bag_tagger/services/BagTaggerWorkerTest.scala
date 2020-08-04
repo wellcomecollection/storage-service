@@ -259,13 +259,14 @@ class BagTaggerWorkerTest
 
         val applyError = new Throwable("BOOM!")
 
-        val brokenApplyTags = new ApplyTags(s3Tags = s3Tags, azureMetadata = azureMetadata) {
-          override def applyTags(
-            storageLocations: Seq[StorageLocation],
-            tagsToApply: Map[StorageManifestFile, Map[String, String]]
-          ): Try[Unit] =
-            Failure(applyError)
-        }
+        val brokenApplyTags =
+          new ApplyTags(s3Tags = s3Tags, azureMetadata = azureMetadata) {
+            override def applyTags(
+              storageLocations: Seq[StorageLocation],
+              tagsToApply: Map[StorageManifestFile, Map[String, String]]
+            ): Try[Unit] =
+              Failure(applyError)
+          }
 
         withWorkerService(
           storageManifestDao = dao,

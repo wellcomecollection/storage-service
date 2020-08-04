@@ -16,7 +16,8 @@ import uk.ac.wellcome.storage.tags.s3.S3Tags
 
 import scala.util.Try
 
-class ApplyTags(s3Tags: S3Tags, azureMetadata: AzureBlobMetadata) extends Logging {
+class ApplyTags(s3Tags: S3Tags, azureMetadata: AzureBlobMetadata)
+    extends Logging {
   def applyTags(
     storageLocations: Seq[StorageLocation],
     tagsToApply: Map[StorageManifestFile, Map[String, String]]
