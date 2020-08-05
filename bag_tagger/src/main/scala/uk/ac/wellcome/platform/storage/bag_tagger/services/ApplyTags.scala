@@ -1,18 +1,23 @@
 package uk.ac.wellcome.platform.storage.bag_tagger.services
 
+import com.amazonaws.services.s3.AmazonS3
+import com.azure.storage.blob.BlobServiceClient
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.storage.models.{
+  AzureStorageLocation,
   S3StorageLocation,
   StorageLocation,
   StorageManifestFile
 }
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
+import uk.ac.wellcome.storage.tags.Tags
+import uk.ac.wellcome.storage.tags.azure.AzureBlobMetadata
 import uk.ac.wellcome.storage.tags.s3.S3Tags
 
 import scala.util.Try
 
-class ApplyTags(s3Tags: S3Tags) extends Logging {
+class ApplyTags(s3Tags: S3Tags, azureMetadata: AzureBlobMetadata)
+    extends Logging {
   def applyTags(
     storageLocations: Seq[StorageLocation],
     tagsToApply: Map[StorageManifestFile, Map[String, String]]
@@ -22,14 +27,17 @@ class ApplyTags(s3Tags: S3Tags) extends Logging {
         storageLocations.flatMap { location =>
           location match {
             case s3Location: S3StorageLocation =>
-              applyS3Tags(
+              applyTagsToPrefix(
+                tags = s3Tags,
                 prefix = s3Location.prefix,
                 tagsToApply = tagsToApply
               )
 
-            case _ =>
-              throw new IllegalArgumentException(
-                s"Unsupported location for tagging: $location"
+            case azureLocation: AzureStorageLocation =>
+              applyTagsToPrefix(
+                tags = azureMetadata,
+                prefix = azureLocation.prefix,
+                tagsToApply = tagsToApply
               )
           }
         }
@@ -44,22 +52,23 @@ class ApplyTags(s3Tags: S3Tags) extends Logging {
       }
     }
 
-  private def applyS3Tags(
-    prefix: S3ObjectLocationPrefix,
+  private def applyTagsToPrefix[BagLocation <: Location](
+    tags: Tags[BagLocation],
+    prefix: Prefix[BagLocation],
     tagsToApply: Map[StorageManifestFile, Map[String, String]]
   ): Iterable[Either[UpdateError, Unit]] =
     tagsToApply
       .map {
         case (storageManifestFile, newTags) =>
           debug(
-            s"Applying S3 tags: prefix=$prefix, path=${storageManifestFile.path}, tags=$tagsToApply"
+            s"Applying tags: prefix=$prefix, path=${storageManifestFile.path}, tags=$tagsToApply"
           )
           val location = prefix.asLocation(storageManifestFile.path)
 
-          val result = s3Tags.update(location) { existingTags =>
+          val result = tags.update(location) { existingTags =>
             // The bag tagger runs after the bag verifier, which means we should see
             // a Content-SHA256 tag here.  If not, we should abort -- either the storage
-            // service is broken, or we're waiting for something to happen with S3 consistency.
+            // service is broken, or we're waiting for something to happen with consistency.
             existingTags.get("Content-SHA256") match {
               case Some(_) => Right(existingTags ++ newTags)
               case None =>
@@ -72,4 +81,17 @@ class ApplyTags(s3Tags: S3Tags) extends Logging {
             ()
           }
       }
+}
+
+object ApplyTags {
+  def apply()(
+    implicit
+    s3Client: AmazonS3,
+    blobServiceClient: BlobServiceClient
+  ): ApplyTags = {
+    val s3Tags = new S3Tags()
+    val azureMetadata = new AzureBlobMetadata()
+
+    new ApplyTags(s3Tags = s3Tags, azureMetadata = azureMetadata)
+  }
 }

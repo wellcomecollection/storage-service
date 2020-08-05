@@ -18,6 +18,7 @@ import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 import uk.ac.wellcome.storage.tags.s3.S3Tags
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
+import uk.ac.wellcome.storage.tags.azure.AzureBlobMetadata
 
 import scala.util.{Failure, Try}
 
@@ -29,6 +30,7 @@ class BagTaggerWorkerTest
     with BagTaggerFixtures
     with StorageManifestGenerators {
   val s3Tags = new S3Tags()
+  val azureMetadata = new AzureBlobMetadata()
 
   val contentSha256Tags: Map[String, String] = Map(
     "Content-SHA256" -> "4a5a41ebcf5e2c24c"
@@ -257,13 +259,14 @@ class BagTaggerWorkerTest
 
         val applyError = new Throwable("BOOM!")
 
-        val brokenApplyTags = new ApplyTags(s3Tags) {
-          override def applyTags(
-            storageLocations: Seq[StorageLocation],
-            tagsToApply: Map[StorageManifestFile, Map[String, String]]
-          ): Try[Unit] =
-            Failure(applyError)
-        }
+        val brokenApplyTags =
+          new ApplyTags(s3Tags = s3Tags, azureMetadata = azureMetadata) {
+            override def applyTags(
+              storageLocations: Seq[StorageLocation],
+              tagsToApply: Map[StorageManifestFile, Map[String, String]]
+            ): Try[Unit] =
+              Failure(applyError)
+          }
 
         withWorkerService(
           storageManifestDao = dao,
