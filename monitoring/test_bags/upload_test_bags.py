@@ -32,7 +32,7 @@ def upload_tar_gz(tar_gz_name):
     s3.upload_file(
         Bucket="wellcomecollection-storage-infra",
         Filename=tar_gz_name,
-        Key=f"test_bags/{tar_gz_name}"
+        Key=f"test_bags/{tar_gz_name}",
     )
 
 
