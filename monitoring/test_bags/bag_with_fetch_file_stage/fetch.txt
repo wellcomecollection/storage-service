@@ -1,0 +1,1 @@
+s3://wellcomecollection-storage-staging/testing/test_bag/v1/data/README.txt	56	data/README.txt
