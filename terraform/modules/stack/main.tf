@@ -279,6 +279,10 @@ module "bag_tagger" {
     bags_tracker_host = "http://${module.bags_api.name}.${var.namespace}:8080"
   }
 
+  secrets = {
+    azure_endpoint = var.azure_endpoint_ssm_parameter
+  }
+
   cpu    = 512
   memory = 1024
 

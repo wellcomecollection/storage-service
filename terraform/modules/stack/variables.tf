@@ -73,6 +73,10 @@ variable "static_content_bucket_name" {
   type = string
 }
 
+variable "azure_endpoint_ssm_parameter" {
+  type = string
+}
+
 variable "cognito_storage_api_identifier" {
   type = string
 }
