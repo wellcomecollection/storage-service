@@ -13,12 +13,6 @@ def find_bag_dirs(root):
             yield dir_entry
 
 
-def create_bag(dirname):
-    bag = bagit.Bag(dirname)
-    bag.algorithms = ["sha256", "sha512"]
-    bag.save(manifests=True)
-
-
 def create_tar_gz(bag_dir):
     archive_name = f"{bag_dir}.tar.gz"
 
@@ -47,6 +41,5 @@ if __name__ == "__main__":
 
     for bag_dir in find_bag_dirs("."):
         print(f"Working on {bag_dir}")
-        create_bag(bag_dir)
         tar_gz_name = create_tar_gz(bag_dir)
         upload_tar_gz(tar_gz_name)
