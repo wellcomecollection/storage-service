@@ -1,1 +1,2 @@
-!*.tar.gz
+# Don't save the generated bags
+*.tar.gz
