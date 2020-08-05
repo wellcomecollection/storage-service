@@ -2,7 +2,6 @@
 
 import os
 
-import bagit
 import boto3
 import tarfile
 
