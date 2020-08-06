@@ -11,15 +11,15 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.azure.AzureBagReade
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.listing.azure.AzureBlobLocationListing
-import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.azure.AzureStreamStore
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 
-class AzureReplicatedBagVerifier(val namespace: String)(
+class AzureReplicatedBagVerifier(val bucket: String)(
   implicit val s3Client: AmazonS3,
   implicit val blobClient: BlobServiceClient
-) extends ReplicatedBagVerifier[S3ObjectLocation, S3ObjectLocationPrefix,AzureBlobLocation, AzureBlobLocationPrefix] {
+) extends ReplicatedBagVerifier[AzureBlobLocation, AzureBlobLocationPrefix] {
 
   override val srcStreamStore: StreamStore[S3ObjectLocation] =
     new S3StreamStore()

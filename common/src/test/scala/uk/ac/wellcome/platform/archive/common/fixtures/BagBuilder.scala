@@ -3,13 +3,10 @@ package uk.ac.wellcome.platform.archive.common.fixtures
 import java.security.MessageDigest
 
 import uk.ac.wellcome.platform.archive.common.bagit.models._
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagInfoGenerators,
-  StorageSpaceGenerators
-}
+import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, StorageSpaceGenerators}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.storage.{Location, Prefix}
 import uk.ac.wellcome.storage.store.TypedStore
+import uk.ac.wellcome.storage.{Location, Prefix}
 
 import scala.util.Random
 
@@ -47,7 +44,8 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
     space: StorageSpace = createStorageSpace,
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     version: BagVersion = BagVersion(randomInt(from = 2, to = 10)),
-    payloadFileCount: Int = randomInt(from = 5, to = 50)
+    payloadFileCount: Int = randomInt(from = 5, to = 50),
+                           bucketName: String = randomAlphanumeric
   )(
     implicit namespace: Namespace
   ): (Map[BagLocation, String], BagPrefix, BagInfo) = {
@@ -99,7 +97,7 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
           )
         }
 
-    val fetchFile = createFetchFile(fetchEntries)
+    val fetchFile = createFetchFile(bucketName,fetchEntries)
       .map { contents =>
         ManifestFile(
           name = "fetch.txt",
@@ -136,21 +134,27 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
   }
 
   protected def createFetchFile(
+                               bucketName: String,
     entries: Seq[PayloadEntry]
-  )(implicit namespace: Namespace): Option[String] =
+  ): Option[String] =
     if (entries.isEmpty) {
       None
     } else {
       Some(
         entries
-          .map { buildFetchEntryLine }
+          .map { entry => buildFetchEntryLine(bucketName, entry) }
           .mkString("\n")
       )
     }
 
-  def buildFetchEntryLine(
+  protected def buildFetchEntryLine(
+                               bucketName: String,
     entry: PayloadEntry
-  )(implicit namespace: Namespace): String
+  ): String ={
+    val displaySize =
+    if (Random.nextBoolean()) entry.contents.getBytes.length.toString else "-"
+
+  s"""s3://${bucketName}/${entry.path} $displaySize ${entry.bagPath}"""}
 
   protected def createPayloadOxum(entries: Seq[PayloadEntry]): PayloadOxum =
     PayloadOxum(

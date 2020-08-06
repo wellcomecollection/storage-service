@@ -79,7 +79,6 @@ trait BagVerifierFixtures
     testWith: TestWith[BagVerifierWorker[
       ReplicaCompletePayload,
       ReplicatedBagVerifyContext[
-        S3ObjectLocationPrefix,
         S3ObjectLocationPrefix
       ],
       String,
@@ -116,6 +115,6 @@ trait BagVerifierFixtures
     ], R]
   ): R =
     testWith(
-      new S3StandaloneBagVerifier(namespace = bucket.name)
+      new S3StandaloneBagVerifier(bucket = bucket.name)
     )
 }

@@ -1,21 +1,12 @@
 package uk.ac.wellcome.platform.archive.common.fixtures.s3
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagInfo,
-  BagVersion,
-  ExternalIdentifier
-}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagBuilder,
-  PayloadEntry
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.s3.S3TypedStore
-
-import scala.util.Random
 
 trait S3BagBuilder
     extends BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix, Bucket]
@@ -41,15 +32,6 @@ trait S3BagBuilder
       bucket = bagRoot.bucket,
       key = path
     )
-
-  override def buildFetchEntryLine(
-    entry: PayloadEntry
-  )(implicit bucket: Bucket): String = {
-    val displaySize =
-      if (Random.nextBoolean()) entry.contents.getBytes.length.toString else "-"
-
-    s"""s3://${bucket.name}/${entry.path} $displaySize ${entry.bagPath}"""
-  }
 
   def createS3BagWith(
     bucket: Bucket,

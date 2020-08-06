@@ -50,25 +50,20 @@ trait S3BagVerifier[B <: BagVerifyContext[S3ObjectLocationPrefix]]
     location.key.replace(root.keyPrefix, "")
 }
 
-class S3StandaloneBagVerifier(val namespace: String)(
+class S3StandaloneBagVerifier(val bucket: String)(
   implicit val s3Client: AmazonS3
-) extends StandaloneBagVerifier[S3ObjectLocation, S3ObjectLocationPrefix]
+) extends StandaloneBagVerifier
     with S3BagVerifier[StandaloneBagVerifyContext[S3ObjectLocationPrefix]]
 
-class S3ReplicatedBagVerifier(val namespace: String)(
+class S3ReplicatedBagVerifier(val bucket: String)(
   implicit val s3Client: AmazonS3
 ) extends ReplicatedBagVerifier[
-      S3ObjectLocation,
-      S3ObjectLocationPrefix,
       S3ObjectLocation,
       S3ObjectLocationPrefix
     ]
     with S3BagVerifier[
-      ReplicatedBagVerifyContext[S3ObjectLocationPrefix, S3ObjectLocationPrefix]
+      ReplicatedBagVerifyContext[S3ObjectLocationPrefix]
     ] {
-
-  override val srcStreamStore: StreamStore[S3ObjectLocation] =
-    new S3StreamStore()
 
   override val replicaStreamStore: StreamStore[S3ObjectLocation] =
     new S3StreamStore()

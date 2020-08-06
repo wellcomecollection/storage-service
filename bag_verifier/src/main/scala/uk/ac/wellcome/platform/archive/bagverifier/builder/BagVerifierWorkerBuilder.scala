@@ -104,7 +104,7 @@ object BagVerifierWorkerBuilder {
     sc: SqsAsyncClient
   ): BagVerifierWorker[
     ReplicaCompletePayload,
-    ReplicatedBagVerifyContext[S3ObjectLocationPrefix, S3ObjectLocationPrefix],
+    ReplicatedBagVerifyContext[S3ObjectLocationPrefix],
     IngestDestination,
     OutgoingDestination
   ] = {
