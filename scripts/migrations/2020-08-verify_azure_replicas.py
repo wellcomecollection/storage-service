@@ -49,9 +49,16 @@ def count_replicas(label, space, external_identifier, version):
         "stage": "storage-staging_replicas_table",
     }[label]
 
-    item = dynamodb.Table(replica_table_name).get_item(
-        Key={"id": f"{space}/{external_identifier}/{version}"}
-    )["Item"]
+    # Handle a trailing slash in the external identifier.  This is disallowed for
+    # new bags, but we have a couple of pre-existing bags that use it.
+    replica_id = f"{space}/{external_identifier}/{version}".replace("//", "/")
+
+    try:
+        item = dynamodb.Table(replica_table_name).get_item(
+            Key={"id": replica_id}
+        )["Item"]
+    except KeyError:
+        raise RuntimeError(f"Cannot find replica aggregator result for {replica_id}???")
 
     location = item["payload"]["location"]
     replicas = item["payload"]["replicas"]
