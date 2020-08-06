@@ -7,6 +7,7 @@ Part of https://github.com/wellcomecollection/platform/issues/4640
 """
 
 from pprint import pprint
+import sys
 
 import termcolor
 
