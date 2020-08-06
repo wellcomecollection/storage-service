@@ -2,8 +2,10 @@
 
 import decimal
 import json
+import os
 
 import boto3
+from wellcome_storage_service import RequestsOAuthStorageServiceClient
 
 
 READ_ONLY_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
@@ -40,7 +42,7 @@ def scan_table(*, TableName, **kwargs):
 sts_client = boto3.client("sts")
 
 
-def get_aws_resource(resource, *, role_arn):
+def get_aws_resource(resource, *, role_arn=READ_ONLY_ROLE_ARN):
     assumed_role_object = sts_client.assume_role(
         RoleArn=role_arn, RoleSessionName="AssumeRoleSession1"
     )
@@ -63,4 +65,18 @@ def get_aws_client(resource, *, role_arn):
         aws_access_key_id=credentials["AccessKeyId"],
         aws_secret_access_key=credentials["SecretAccessKey"],
         aws_session_token=credentials["SessionToken"],
+    )
+
+
+def get_storage_client(api_url):
+    creds_path = os.path.join(
+        os.environ["HOME"], ".wellcome-storage", "oauth-credentials.json"
+    )
+    oauth_creds = json.load(open(creds_path))
+
+    return RequestsOAuthStorageServiceClient(
+        api_url=api_url,
+        client_id=oauth_creds["client_id"],
+        client_secret=oauth_creds["client_secret"],
+        token_url=oauth_creds["token_url"],
     )
