@@ -6,6 +6,9 @@ import json
 import boto3
 
 
+READ_ONLY_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
+
+
 class DecimalEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, decimal.Decimal):
@@ -24,7 +27,7 @@ def scan_table(*, TableName, **kwargs):
 
     """
     dynamodb_client = get_aws_resource(
-        "dynamodb", role_arn="arn:aws:iam::975596993436:role/storage-read_only"
+        "dynamodb", role_arn=READ_ONLY_ROLE_ARN
     ).meta.client
 
     # https://alexwlchan.net/2020/05/getting-every-item-from-a-dynamodb-table-with-python/
