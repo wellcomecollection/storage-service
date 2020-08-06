@@ -33,7 +33,7 @@ def get_bag_identifiers():
                 "label": label,
                 "space": space,
                 "external_identifier": external_identifier,
-                "version": f"v{int(item['version'])}"
+                "version": f"v{int(item['version'])}",
             }
 
 
@@ -54,9 +54,9 @@ def count_replicas(label, space, external_identifier, version):
     replica_id = f"{space}/{external_identifier}/{version}".replace("//", "/")
 
     try:
-        item = dynamodb.Table(replica_table_name).get_item(
-            Key={"id": replica_id}
-        )["Item"]
+        item = dynamodb.Table(replica_table_name).get_item(Key={"id": replica_id})[
+            "Item"
+        ]
     except KeyError:
         raise RuntimeError(f"Cannot find replica aggregator result for {replica_id}???")
 
@@ -75,8 +75,8 @@ def count_replicas(label, space, external_identifier, version):
 
         # The primary and secondary S3 buckets should be different
         assert (
-            location["PrimaryS3ReplicaLocation"]["prefix"]["bucket"] !=
-            replicas[0]["SecondaryS3ReplicaLocation"]["prefix"]["bucket"]
+            location["PrimaryS3ReplicaLocation"]["prefix"]["bucket"]
+            != replicas[0]["SecondaryS3ReplicaLocation"]["prefix"]["bucket"]
         )
 
         # The third replica (if present) is Azure
@@ -95,12 +95,11 @@ def count_replicas(label, space, external_identifier, version):
 
     # If there are three replicas in the aggregator table, we need to check they
     # all made it to the storage manifest.
-    client = {
-        "prod": prod_client,
-        "stage": stage_client,
-    }[label]
+    client = {"prod": prod_client, "stage": stage_client}[label]
 
-    bag = client.get_bag(space=space, external_identifier=external_identifier, version=version)
+    bag = client.get_bag(
+        space=space, external_identifier=external_identifier, version=version
+    )
 
     try:
         assert bag["id"] == f"{space}/{external_identifier}"
@@ -126,10 +125,7 @@ def count_replicas(label, space, external_identifier, version):
 
 
 if __name__ == "__main__":
-    summary_replica_counts = {
-        "stage": {2: 0, 3: 0},
-        "prod": {2: 0, 3: 0},
-    }
+    summary_replica_counts = {"stage": {2: 0, 3: 0}, "prod": {2: 0, 3: 0}}
 
     for bag in get_bag_identifiers():
         # TODO: Add some caching here.  Once we've seen that a bag has three replicas,
@@ -144,7 +140,9 @@ if __name__ == "__main__":
             print(f"Unexpected replica count for bag: {result}, {bag}", file=sys.stderr)
             assert 0
 
-        print(f" {bag['label']}: {bag['space']}/{bag['external_identifier']}/{bag['version']}")
+        print(
+            f" {bag['label']}: {bag['space']}/{bag['external_identifier']}/{bag['version']}"
+        )
         summary_replica_counts[bag["label"]][result] += 1
 
         # Only check the bags in staging for now; that's what we'll migrate first.
@@ -155,19 +153,19 @@ if __name__ == "__main__":
     print("staging:")
     print(
         termcolor.colored("  %6d" % summary_replica_counts["stage"][2], "red"),
-        "awaiting Azure replica"
+        "awaiting Azure replica",
     )
     print(
         termcolor.colored("  %6d" % summary_replica_counts["stage"][3], "green"),
-        "replicated to Azure"
+        "replicated to Azure",
     )
 
     print("\nprod:")
     print(
         termcolor.colored("  %6d" % summary_replica_counts["prod"][2], "red"),
-        "awaiting Azure replica"
+        "awaiting Azure replica",
     )
     print(
         termcolor.colored("  %6d" % summary_replica_counts["prod"][3], "green"),
-        "replicated to Azure"
+        "replicated to Azure",
     )
