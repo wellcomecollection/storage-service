@@ -12,20 +12,19 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.listing.Listing
-import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.{Location, Prefix}
 
 import scala.util.Try
 
-trait StandaloneBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[
-  BagLocation
-]] extends BagVerifier[
-      StandaloneBagVerifyContext[BagPrefix],
-      BagLocation,
-      BagPrefix
+trait StandaloneBagVerifier
+  extends BagVerifier[
+      StandaloneBagVerifyContext[S3ObjectLocationPrefix],
+      S3ObjectLocation,
+      S3ObjectLocationPrefix
     ] {
   override def verifyReplicatedBag(
-    root: StandaloneBagVerifyContext[BagPrefix],
+    root: StandaloneBagVerifyContext[S3ObjectLocationPrefix],
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     bag: Bag
@@ -33,18 +32,16 @@ trait StandaloneBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[
 }
 
 trait ReplicatedBagVerifier[
-  SrcBagLocation <: Location,
-  SrcBagPrefix <: Prefix[SrcBagLocation],
   ReplicaBagLocation <: Location,
   ReplicaBagPrefix <: Prefix[ReplicaBagLocation]
 ] extends BagVerifier[
-      ReplicatedBagVerifyContext[SrcBagPrefix, ReplicaBagPrefix],
+      ReplicatedBagVerifyContext[ReplicaBagPrefix],
       ReplicaBagLocation,
       ReplicaBagPrefix
     ]
-    with VerifySourceTagManifest[SrcBagLocation, ReplicaBagLocation] {
+    with VerifySourceTagManifest[ReplicaBagLocation] {
   override def verifyReplicatedBag(
-    root: ReplicatedBagVerifyContext[SrcBagPrefix, ReplicaBagPrefix],
+    root: ReplicatedBagVerifyContext[ReplicaBagPrefix],
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     bag: Bag

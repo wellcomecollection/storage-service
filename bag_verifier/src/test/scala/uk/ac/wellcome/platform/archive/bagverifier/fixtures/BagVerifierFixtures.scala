@@ -79,7 +79,6 @@ trait BagVerifierFixtures
     testWith: TestWith[BagVerifierWorker[
       ReplicaCompletePayload,
       ReplicatedBagVerifyContext[
-        S3ObjectLocationPrefix,
         S3ObjectLocationPrefix
       ],
       String,
