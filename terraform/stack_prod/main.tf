@@ -16,6 +16,8 @@ module "stack_prod" {
   min_capacity = 0
   max_capacity = 10
 
+  azure_endpoint_ssm_parameter = "azure/wecostorageprod/wellcomecollection-storage-replica-netherlands/read_write_sas_url"
+
   vpc_id = local.vpc_id
 
   private_subnets = local.private_subnets
