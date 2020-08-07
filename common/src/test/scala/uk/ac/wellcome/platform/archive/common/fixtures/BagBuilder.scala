@@ -49,7 +49,7 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
     version: BagVersion = BagVersion(randomInt(from = 2, to = 10)),
     payloadFileCount: Int = randomInt(from = 5, to = 50),
     // TODO: This should be Bucket
-    bucketName: String = randomAlphanumeric
+    primaryBucket: String = randomAlphanumeric
   )(
     implicit namespace: Namespace
   ): (Map[BagLocation, String], BagPrefix, BagInfo) = {
@@ -101,7 +101,7 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
           )
         }
 
-    val fetchFile = createFetchFile(bucketName, fetchEntries)
+    val fetchFile = createFetchFile(primaryBucket, fetchEntries)
       .map { contents =>
         ManifestFile(
           name = "fetch.txt",
@@ -138,7 +138,7 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
   }
 
   protected def createFetchFile(
-                               bucketName: String,
+    primaryBucket: String,
     entries: Seq[PayloadEntry]
   ): Option[String] =
     if (entries.isEmpty) {
@@ -146,19 +146,19 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
     } else {
       Some(
         entries
-          .map { entry => buildFetchEntryLine(bucketName, entry) }
+          .map { entry => buildFetchEntryLine(primaryBucket, entry) }
           .mkString("\n")
       )
     }
 
   protected def buildFetchEntryLine(
-    bucketName: String,
+    primaryBucket: String,
     entry: PayloadEntry
   ): String = {
     val displaySize =
     if (Random.nextBoolean()) entry.contents.getBytes.length.toString else "-"
 
-    s"""s3://$bucketName/${entry.path} $displaySize ${entry.bagPath}"""
+    s"""s3://$primaryBucket/${entry.path} $displaySize ${entry.bagPath}"""
   }
 
   protected def createPayloadOxum(entries: Seq[PayloadEntry]): PayloadOxum =

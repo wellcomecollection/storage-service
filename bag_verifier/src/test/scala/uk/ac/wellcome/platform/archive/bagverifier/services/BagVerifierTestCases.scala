@@ -35,11 +35,9 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageSpace
 }
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
-import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
 import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
-import uk.ac.wellcome.storage.store.s3.S3TypedStore
 import uk.ac.wellcome.storage.{Location, Prefix}
 
 trait BagVerifierTestCases[Verifier <: BagVerifier[
@@ -60,44 +58,32 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
   val bagBuilder: BagBuilder[BagLocation, BagPrefix, Namespace]
 
   def withBag[R](space: StorageSpace, externalIdentifier: ExternalIdentifier,
+                 primaryBucket: String,
                  bagBuilder: BagBuilder[BagLocation, BagPrefix, Namespace] = bagBuilder)
-                (testWith: TestWith[(Bucket, Namespace, S3ObjectLocationPrefix, BagPrefix), R])
+                (testWith: TestWith[BagPrefix, R])
                 (implicit typedStore: TypedStore[BagLocation, String]): R =
-    withLocalS3Bucket { implicit bucket =>
       withNamespace { implicit namespace =>
         val (bagObjects, replicaBagRoot, _) = bagBuilder.createBagContentsWith(
           space = space,
           externalIdentifier = externalIdentifier,
           payloadFileCount = payloadFileCount,
-          bucketName = bucket.name
+          primaryBucket = primaryBucket
         )
         bagBuilder.uploadBagObjects(bagRoot = replicaBagRoot, objects = bagObjects)
 
-        // Upload a tagmanifest-sha256.txt to the source (i.e. not replicated bag).  We don't
-        // need to upload the whole bag, but the verifier will expect the tag manifest to
-        // be present.
-        val srcBagRoot = S3ObjectLocationPrefix(
-          bucket = bucket.name,
-          keyPrefix = replicaBagRoot.pathPrefix
-        )
-
-        val tagManifestLocation = srcBagRoot.asLocation("tagmanifest-sha256.txt")
-        val tagManifestContents = bagObjects(replicaBagRoot.asLocation("tagmanifest-sha256.txt"))
-        S3TypedStore[String].put(tagManifestLocation)(tagManifestContents)
-
-        testWith((bucket, namespace, S3ObjectLocationPrefix(bucket.name, replicaBagRoot.pathPrefix), replicaBagRoot))
+        testWith(replicaBagRoot)
       }
-    }
+
 
   def withTypedStore[R](
     testWith: TestWith[TypedStore[BagLocation, String], R]
   ): R
 
-  def withVerifier[R](srcBagBucket: Bucket)(
+  def withVerifier[R](primaryBucketName: String)(
     testWith: TestWith[Verifier, R]
-  )(implicit typedStore: TypedStore[BagLocation, String]): R
+  ): R
 
-  def withBagContext[R](srcBagRoot: S3ObjectLocationPrefix, replicaBagRoot: BagPrefix)(
+  def withBagContext[R](bagRoot: BagPrefix)(
     testWith: TestWith[BagContext, R]
   ): R
 
@@ -137,11 +123,12 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
 
+    val primaryBucket = createBucketName
     withTypedStore { implicit typedStore =>
-      withBag(space, externalIdentifier) { case (srcBucket, _, srcBagRoot, replicaBagRoot) =>
+      withBag(space, externalIdentifier, primaryBucket = primaryBucket) { bagRoot =>
         val ingestStep =
-          withBagContext(srcBagRoot, replicaBagRoot) { bagContext =>
-            withVerifier(srcBucket) {
+          withBagContext(bagRoot) { bagContext =>
+            withVerifier(primaryBucket) {
               _.verify(
                 ingestId = createIngestID,
                 bagContext = bagContext,
@@ -296,11 +283,12 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     val payloadExternalIdentifier =
       ExternalIdentifier(externalIdentifier + "_payload")
 
+    val primaryBucket = createBucketName
     withTypedStore { implicit typedStore =>
-      withBag(space, bagInfoExternalIdentifier) { case (srcBucket, _, srcBagRoot, replicaBagRoot) =>
+      withBag(space, bagInfoExternalIdentifier, primaryBucket = primaryBucket) { bagRoot =>
         val ingestStep =
-          withBagContext(srcBagRoot, replicaBagRoot) { bagContext =>
-            withVerifier(srcBucket) {
+          withBagContext(bagRoot) { bagContext =>
+            withVerifier(primaryBucket) {
               _.verify(
                 ingestId = createIngestID,
                 bagContext = bagContext,
@@ -326,11 +314,11 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     it("fails if the fetch file refers to a file not in the manifest") {
       val badBuilder = new BagBuilderImpl {
         override protected def createFetchFile(
-          bucketName: String,
+          primaryBucket: String,
           entries: Seq[PayloadEntry]
         ): Option[String] =
           super.createFetchFile(
-            bucketName,
+            primaryBucket,
             entries :+ entries.head.copy(
               bagPath = BagPath(entries.head.bagPath + "_extra"),
               path = entries.head.path + "_extra",
@@ -547,15 +535,15 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     it("passes a bag that includes an extra manifest/tag manifest") {
       val space = createStorageSpace
       val externalIdentifier = createExternalIdentifier
+      val primaryBucket = createBucketName
       withTypedStore { implicit typedStore =>
-        withBag(space, externalIdentifier) {
-          case (srcBucket, _, srcBagRoot, replicaBagRoot) =>
-            val location = replicaBagRoot.asLocation("tagmanifest-sha512.txt")
+        withBag(space, externalIdentifier, primaryBucket = primaryBucket) { bagRoot =>
+            val location = bagRoot.asLocation("tagmanifest-sha512.txt")
             writeFile(location)
 
             val ingestStep =
-              withBagContext(srcBagRoot, replicaBagRoot) { bagContext =>
-                withVerifier(srcBucket) {
+              withBagContext(bagRoot) { bagContext =>
+                withVerifier(primaryBucket) {
                   _.verify(
                     ingestId = createIngestID,
                     bagContext = bagContext,
@@ -646,11 +634,12 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
   )(assertion: IngestStepResult[VerificationSummary] => Assertion): Assertion = {
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
+    val primaryBucket = createBucketName
     withTypedStore { implicit typedStore =>
-      withBag(space, externalIdentifier, bagBuilder = badBuilder) { case (srcBucket, _, srcBagRoot, replicaBagRoot) =>
+      withBag(space, externalIdentifier, primaryBucket = primaryBucket, bagBuilder = badBuilder) { bagRoot =>
         val ingestStep =
-          withBagContext(srcBagRoot, replicaBagRoot) { bagContext =>
-            withVerifier(srcBucket) {
+          withBagContext(bagRoot) { bagContext =>
+            withVerifier(primaryBucket) {
               _.verify(
                 ingestId = createIngestID,
                 bagContext = bagContext,
