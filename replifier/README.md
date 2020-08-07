@@ -13,6 +13,9 @@ The "replifier" (replicator–verifier) is responsible for:
 
 1.  The user uploads a bag to the **user uploads bucket**.
 
+    This could be any bucket in S3 that the bag unpacker has access to.
+    In practice, the buckets we currently use are inside our AWS estate but not in the storage service account (we have buckets in the workflow and digitisation accounts).
+
 2.  The bag unpacker unpacks the user-uploaded bag into the **unpacked bags bucket**.
 
     We want it inside our AWS account as soon as possible (so it can't be deleted under our feet).
