@@ -61,7 +61,7 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
 
   // What bucket is storing the "primary" copy of a bag?  This is the bucket
   // that should be referred to in the fetch.txt URIs.
-  val bucket: String
+  val primaryBucketName: String
 
   def verify(
     ingestId: IngestID,
@@ -119,7 +119,7 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
       _ <- verifyFetchPrefixes(
         fetch = bag.fetch,
         root = S3ObjectLocationPrefix(
-          bucket = bucket,
+          bucket = primaryBucketName,
           keyPrefix = s"$space/$externalIdentifier"
         )
       )

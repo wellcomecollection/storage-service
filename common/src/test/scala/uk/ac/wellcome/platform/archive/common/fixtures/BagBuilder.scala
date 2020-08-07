@@ -41,11 +41,11 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
     randomInt(from = 0, to = payloadFileCount)
 
   def createBagContentsWith(
-    space: StorageSpace = createStorageSpace,
-    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
-    version: BagVersion = BagVersion(randomInt(from = 2, to = 10)),
-    payloadFileCount: Int = randomInt(from = 5, to = 50),
-                           bucketName: String = randomAlphanumeric
+                             space: StorageSpace = createStorageSpace,
+                             externalIdentifier: ExternalIdentifier = createExternalIdentifier,
+                             version: BagVersion = BagVersion(randomInt(from = 2, to = 10)),
+                             payloadFileCount: Int = randomInt(from = 5, to = 50),
+                             primaryBucketName: String = randomAlphanumeric
   )(
     implicit namespace: Namespace
   ): (Map[BagLocation, String], BagPrefix, BagInfo) = {
@@ -97,7 +97,7 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
           )
         }
 
-    val fetchFile = createFetchFile(bucketName,fetchEntries)
+    val fetchFile = createFetchFile(primaryBucketName,fetchEntries)
       .map { contents =>
         ManifestFile(
           name = "fetch.txt",
@@ -134,27 +134,27 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
   }
 
   protected def createFetchFile(
-                               bucketName: String,
-    entries: Seq[PayloadEntry]
+                                 primaryBucketName: String,
+                                 entries: Seq[PayloadEntry]
   ): Option[String] =
     if (entries.isEmpty) {
       None
     } else {
       Some(
         entries
-          .map { entry => buildFetchEntryLine(bucketName, entry) }
+          .map { entry => buildFetchEntryLine(primaryBucketName, entry) }
           .mkString("\n")
       )
     }
 
   protected def buildFetchEntryLine(
-                               bucketName: String,
-    entry: PayloadEntry
+                                     primaryBucketName: String,
+                                     entry: PayloadEntry
   ): String ={
     val displaySize =
     if (Random.nextBoolean()) entry.contents.getBytes.length.toString else "-"
 
-  s"""s3://${bucketName}/${entry.path} $displaySize ${entry.bagPath}"""}
+  s"""s3://${primaryBucketName}/${entry.path} $displaySize ${entry.bagPath}"""}
 
   protected def createPayloadOxum(entries: Seq[PayloadEntry]): PayloadOxum =
     PayloadOxum(

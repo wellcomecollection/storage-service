@@ -59,7 +59,7 @@ class S3ReplicatedBagVerifierTest
       ],
       ReplicatedBagVerifyContext[S3ObjectLocationPrefix]
     ] {
-  override def withVerifier[R](primaryBucket: Bucket)(
+  override def withVerifier[R](primaryBucketName: String)(
     testWith: TestWith[
       ReplicatedBagVerifier[
         S3ObjectLocation,
@@ -67,11 +67,9 @@ class S3ReplicatedBagVerifierTest
       ],
       R
     ]
-  )(
-    implicit typedStore: TypedStore[S3ObjectLocation, String]
   ): R =
     testWith(
-      new S3ReplicatedBagVerifier(bucket = primaryBucket.name)
+      new S3ReplicatedBagVerifier(primaryBucketName = primaryBucketName)
     )
 
   override val bagBuilder
@@ -91,19 +89,17 @@ class S3StandaloneBagVerifierTest
       S3StandaloneBagVerifier,
       StandaloneBagVerifyContext[S3ObjectLocationPrefix]
     ] {
-  override def withVerifier[R](primaryBucket: Bucket)(
+  override def withVerifier[R](primaryBucketName: String)(
     testWith: TestWith[
       S3StandaloneBagVerifier,
       R
     ]
-  )(
-    implicit typedStore: TypedStore[S3ObjectLocation, String]
   ): R =
     testWith(
-      new S3StandaloneBagVerifier(bucket = primaryBucket.name)
+      new S3StandaloneBagVerifier(primaryBucketName = primaryBucketName)
     )
 
   override val bagBuilder: BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix, Bucket] = new S3BagBuilder {}
 
-  override def withBagContext[R](srcBagRoot: S3ObjectLocationPrefix, replicaBagRoot: S3ObjectLocationPrefix)(testWith: TestWith[StandaloneBagVerifyContext[S3ObjectLocationPrefix], R]): R = testWith(StandaloneBagVerifyContext(replicaBagRoot))
+  override def withBagContext[R](bagRoot: S3ObjectLocationPrefix)(testWith: TestWith[StandaloneBagVerifyContext[S3ObjectLocationPrefix], R]): R = testWith(StandaloneBagVerifyContext(bagRoot))
 }

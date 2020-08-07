@@ -8,7 +8,6 @@ import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
 import uk.ac.wellcome.platform.archive.common.fixtures.azure.AzureBagBuilder
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
-import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.fixtures.{AzureFixtures, S3Fixtures}
 import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.store.azure.{AzureStreamStore, AzureTypedStore}
@@ -26,9 +25,9 @@ class AzureReplicatedBagVerifierTests extends ReplicatedBagVerifierTestCases[
 
   override def withTypedStore[R](testWith: TestWith[TypedStore[AzureBlobLocation, String], R]): R = testWith(azureTypedStore)
 
-  override def withVerifier[R](bucket: Bucket)(testWith: TestWith[ReplicatedBagVerifier[AzureBlobLocation, AzureBlobLocationPrefix], R])(implicit typedStore: TypedStore[AzureBlobLocation, String]): R =
+  override def withVerifier[R](primaryBucketName: String)(testWith: TestWith[ReplicatedBagVerifier[AzureBlobLocation, AzureBlobLocationPrefix], R]): R =
     testWith(
-      new AzureReplicatedBagVerifier(bucket = bucket.name)
+      new AzureReplicatedBagVerifier(primaryBucketName = primaryBucketName)
     )
   override def writeFile(location: AzureBlobLocation, contents: String): Unit = azureTypedStore.put(location)(contents)
 

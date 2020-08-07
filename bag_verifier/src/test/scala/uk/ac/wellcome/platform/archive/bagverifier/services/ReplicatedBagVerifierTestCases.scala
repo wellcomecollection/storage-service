@@ -21,35 +21,46 @@ trait ReplicatedBagVerifierTestCases[
   ReplicaBagPrefix,
   ReplicaNamespace
 ] {
-  override def withBagContext[R](srcBagRoot: S3ObjectLocationPrefix, replicaBagRoot: ReplicaBagPrefix)(testWith: TestWith[ReplicatedBagVerifyContext[ReplicaBagPrefix], R]): R =
-    testWith(ReplicatedBagVerifyContext(srcBagRoot, replicaBagRoot))
+  override def withBagContext[R](replicaBagRoot: ReplicaBagPrefix)(testWith: TestWith[ReplicatedBagVerifyContext[ReplicaBagPrefix], R]): R =
+    withLocalS3Bucket { srcBucket =>
+      withTypedStore { implicit typedStore =>
+        val srcBagRoot = S3ObjectLocationPrefix(srcBucket.name, replicaBagRoot.pathPrefix)
+        val tagManifestContents = typedStore.get(replicaBagRoot.asLocation("tagmanifest-sha256.txt")).right.get.identifiedT
+        S3TypedStore[String].put(srcBagRoot.asLocation("tagmanifest-sha256.txt"))(tagManifestContents)
+        testWith(ReplicatedBagVerifyContext(srcBagRoot, replicaBagRoot))
+      }
+    }
 
   it("fails a bag if it doesn't match original tag manifest") {
 
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
-    withTypedStore { implicit typedStore =>
-      withBag(space, externalIdentifier)() { case (srcBucket, replicaNamespace, srcBagRoot, replicaBagRoot) =>
-        S3TypedStore[String].put(srcBagRoot.asLocation("tagmanifest-sha256.txt"))(randomAlphanumeric)
-        val ingestStep =
-          withVerifier(srcBucket) {
-            _.verify(
-              ingestId = createIngestID,
-              bagContext = ReplicatedBagVerifyContext(
-                srcRoot = srcBagRoot,
-                replicaRoot = replicaBagRoot
-              ),
-              space = space,
-              externalIdentifier = externalIdentifier
-            )
-          }
+    val primaryBucketName = createBucketName
+    withLocalS3Bucket { srcBucket =>
+      withTypedStore { implicit typedStore =>
+        withBag(space, externalIdentifier, primaryBucketName)() { replicaBagRoot =>
+          val srcBagRoot = S3ObjectLocationPrefix(srcBucket.name, replicaBagRoot.pathPrefix)
+          S3TypedStore[String].put(srcBagRoot.asLocation("tagmanifest-sha256.txt"))(randomAlphanumeric)
+          val ingestStep =
+            withVerifier(primaryBucketName) {
+              _.verify(
+                ingestId = createIngestID,
+                bagContext = ReplicatedBagVerifyContext(
+                  srcRoot = srcBagRoot,
+                  replicaRoot = replicaBagRoot
+                ),
+                space = space,
+                externalIdentifier = externalIdentifier
+              )
+            }
 
-        val result = ingestStep.success.get
+          val result = ingestStep.success.get
 
-        result shouldBe a[IngestFailed[_]]
-        result.summary shouldBe a[VerificationIncompleteSummary]
+          result shouldBe a[IngestFailed[_]]
+          result.summary shouldBe a[VerificationIncompleteSummary]
 
-        result.maybeUserFacingMessage shouldNot be(defined)
+          result.maybeUserFacingMessage shouldNot be(defined)
+        }
       }
     }
   }
@@ -57,28 +68,31 @@ trait ReplicatedBagVerifierTestCases[
   it("fails a bag if it cannot read the original bag") {
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
-    withTypedStore { implicit typedStore =>
-      withBag(space, externalIdentifier)() { case (srcBucket, replicaNamespace, srcBagRoot, replicaBagRoot) =>
+    val primaryBucketName = createBucketName
+    withLocalS3Bucket { srcBucket =>
+      withTypedStore { implicit typedStore =>
+        withBag(space, externalIdentifier, primaryBucketName)() { replicaBagRoot =>
+          val srcBagRoot = S3ObjectLocationPrefix(srcBucket.name, replicaBagRoot.pathPrefix)
+          val ingestStep =
+            withVerifier(primaryBucketName) {
+              _.verify(
+                ingestId = createIngestID,
+                bagContext = ReplicatedBagVerifyContext(
+                  srcRoot = srcBagRoot,
+                  replicaRoot = replicaBagRoot
+                ),
+                space = space,
+                externalIdentifier = externalIdentifier
+              )
+            }
 
-        val ingestStep =
-          withVerifier(srcBucket) {
-            _.verify(
-              ingestId = createIngestID,
-              bagContext = ReplicatedBagVerifyContext(
-                srcRoot = srcBagRoot,
-                replicaRoot = replicaBagRoot
-              ),
-              space = space,
-              externalIdentifier = externalIdentifier
-            )
-          }
+          val result = ingestStep.success.get
 
-        val result = ingestStep.success.get
+          result shouldBe a[IngestFailed[_]]
+          result.summary shouldBe a[VerificationIncompleteSummary]
 
-        result shouldBe a[IngestFailed[_]]
-        result.summary shouldBe a[VerificationIncompleteSummary]
-
-        result.maybeUserFacingMessage shouldNot be(defined)
+          result.maybeUserFacingMessage shouldNot be(defined)
+        }
       }
     }
   }
