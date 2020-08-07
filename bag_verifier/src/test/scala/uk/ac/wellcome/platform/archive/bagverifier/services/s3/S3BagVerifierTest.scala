@@ -101,5 +101,6 @@ class S3StandaloneBagVerifierTest
 
   override val bagBuilder: BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix, Bucket] = new S3BagBuilder {}
 
-  override def withBagContext[R](bagRoot: S3ObjectLocationPrefix)(testWith: TestWith[StandaloneBagVerifyContext[S3ObjectLocationPrefix], R]): R = testWith(StandaloneBagVerifyContext(bagRoot))
+  override def withBagContext[R](bagRoot: S3ObjectLocationPrefix)(testWith: TestWith[StandaloneBagVerifyContext[S3ObjectLocationPrefix], R]): R =
+    testWith(StandaloneBagVerifyContext(bagRoot))
 }

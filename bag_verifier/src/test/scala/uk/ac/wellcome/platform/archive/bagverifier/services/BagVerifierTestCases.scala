@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
+import com.amazonaws.services.s3.AmazonS3
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{Assertion, EitherValues, OptionValues, TryValues}
@@ -37,19 +38,21 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
 
   def withBag[R](space: StorageSpace, externalIdentifier: ExternalIdentifier, primaryBucketName: String)
                 (bagBuilder: BagBuilder[BagLocation, BagPrefix, Namespace] = bagBuilder)
-                (testWith: TestWith[ BagPrefix, R])
-                (implicit typedStore: TypedStore[BagLocation, String]): R =
+                (testWith: TestWith[BagPrefix, R]): R =
+    withTypedStore { implicit typedStore =>
       withNamespace { implicit namespace =>
-        val (bagObjects, replicaBagRoot, _) = bagBuilder.createBagContentsWith(
-          space = space,
-          externalIdentifier = externalIdentifier,
-          payloadFileCount = payloadFileCount,
-          primaryBucketName = primaryBucketName
-        )
-        bagBuilder.uploadBagObjects(bagRoot = replicaBagRoot, objects = bagObjects)
+        withLocalS3Bucket { implicit primaryBucket =>
+          val bagContents = bagBuilder.createBagContentsWith(
+            space = space,
+            externalIdentifier = externalIdentifier,
+            payloadFileCount = payloadFileCount
+          )
+          bagBuilder.uploadBagObjects(bagRoot = bagContents.bagRoot, objects = bagContents.bagObjects, fetchObjects = bagContents.fetchObjects)
 
-        testWith(replicaBagRoot)
+          testWith(bagContents.bagRoot)
+        }
       }
+    }
 
 
   def withTypedStore[R](
@@ -100,7 +103,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
     val primaryBucketName = createBucketName
-    withTypedStore { implicit typedStore =>
+
       withBag(space, externalIdentifier, primaryBucketName)() { bagRoot =>
         val ingestStep =
           withBagContext(bagRoot) { bagContext =>
@@ -129,7 +132,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
         )
       }
     }
-  }
+
 
 
   it("fails a bag with an incorrect checksum in the file manifest") {
@@ -260,7 +263,6 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     val payloadExternalIdentifier =
       ExternalIdentifier(externalIdentifier + "_payload")
     val primaryBucketName = createBucketName
-    withTypedStore { implicit typedStore =>
       withBag(space, bagInfoExternalIdentifier, primaryBucketName)() { bagRoot =>
 
         val ingestStep =
@@ -284,7 +286,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
           "External identifier in bag-info.txt does not match request"
         )
       }
-    }
+
   }
 
   describe("checks the fetch file") {
@@ -432,8 +434,9 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
       val badBuilder = new BagBuilderImpl {
         override def uploadBagObjects(
                                        bagRoot: BagPrefix,
-                                       bagObjects: Map[BagLocation, String]
-                                     )(implicit typedStore: TypedStore[BagLocation, String]): Unit = {
+                                       bagObjects: Map[BagLocation, String],
+                                     fetchObjects: Map[S3ObjectLocation, String]
+                                     )(implicit typedStore: TypedStore[BagLocation, String], s3Client: AmazonS3): Unit = {
           super.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
 
           val location = bagRoot.asLocation("unreferencedfile.txt")
@@ -456,8 +459,9 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
       val badBuilder = new BagBuilderImpl {
         override def uploadBagObjects(
                                        bagRoot: BagPrefix,
-                                       bagObjects: Map[BagLocation, String]
-                                     )(implicit typedStore: TypedStore[BagLocation, String]): Unit = {
+                                       bagObjects: Map[BagLocation, String],
+                                       fetchObjects: Map[S3ObjectLocation, String]
+                                     )(implicit typedStore: TypedStore[BagLocation, String], s3Client: AmazonS3):Unit = {
           super.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
 
           (1 to 3).foreach { i =>
@@ -483,8 +487,9 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
       val alwaysWriteAsFetchBuilder = new BagBuilderImpl {
         override def uploadBagObjects(
                                        bagRoot: BagPrefix,
-                                       bagObjects: Map[BagLocation, String]
-                                     )(implicit typedStore: TypedStore[BagLocation, String]): Unit = {
+                                       bagObjects: Map[BagLocation, String],
+                                       fetchObjects: Map[S3ObjectLocation, String]
+                                     )(implicit typedStore: TypedStore[BagLocation, String], s3Client: AmazonS3): Unit = {
           super.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
 
           val bag = createBagReader.get(bagRoot).right.value
@@ -512,7 +517,6 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
       val space = createStorageSpace
       val externalIdentifier = createExternalIdentifier
       val primaryBucketName = createBucketName
-      withTypedStore { implicit typedStore =>
         withBag(space, externalIdentifier, primaryBucketName)() { bagRoot =>
 
             val location = bagRoot.asLocation("tagmanifest-sha512.txt")
@@ -533,7 +537,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
             ingestStep.success.get shouldBe a[IngestStepSucceeded[_]]
           }
         }
-      }
+
     }
 
   describe("checks the Payload-Oxum") {
@@ -612,7 +616,6 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
     val primaryBucketName = createBucketName
-    withTypedStore { implicit typedStore =>
       withBag(space, externalIdentifier, primaryBucketName)(badBuilder) { bagRoot =>
 
         val ingestStep =
@@ -632,7 +635,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
 
         result shouldBe a[IngestFailed[_]]
         assertion(result)
-      }
+
     }
   }
 

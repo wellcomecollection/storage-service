@@ -37,7 +37,6 @@ trait ReplicatedBagVerifierTestCases[
     val externalIdentifier = createExternalIdentifier
     val primaryBucketName = createBucketName
     withLocalS3Bucket { srcBucket =>
-      withTypedStore { implicit typedStore =>
         withBag(space, externalIdentifier, primaryBucketName)() { replicaBagRoot =>
           val srcBagRoot = S3ObjectLocationPrefix(srcBucket.name, replicaBagRoot.pathPrefix)
           S3TypedStore[String].put(srcBagRoot.asLocation("tagmanifest-sha256.txt"))(randomAlphanumeric)
@@ -61,7 +60,6 @@ trait ReplicatedBagVerifierTestCases[
 
           result.maybeUserFacingMessage shouldNot be(defined)
         }
-      }
     }
   }
 
@@ -70,7 +68,6 @@ trait ReplicatedBagVerifierTestCases[
     val externalIdentifier = createExternalIdentifier
     val primaryBucketName = createBucketName
     withLocalS3Bucket { srcBucket =>
-      withTypedStore { implicit typedStore =>
         withBag(space, externalIdentifier, primaryBucketName)() { replicaBagRoot =>
           val srcBagRoot = S3ObjectLocationPrefix(srcBucket.name, replicaBagRoot.pathPrefix)
           val ingestStep =
@@ -95,5 +92,4 @@ trait ReplicatedBagVerifierTestCases[
         }
       }
     }
-  }
 }

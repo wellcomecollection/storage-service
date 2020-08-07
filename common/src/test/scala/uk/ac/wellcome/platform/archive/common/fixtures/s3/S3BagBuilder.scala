@@ -41,15 +41,15 @@ trait S3BagBuilder
   ): (S3ObjectLocationPrefix, BagInfo) = {
     implicit val namespace: Bucket = bucket
 
-    val (bagObjects, bagRoot, bagInfo) = createBagContentsWith(
+    val bagContents = createBagContentsWith(
       space = space,
       externalIdentifier = externalIdentifier,
       payloadFileCount = payloadFileCount
     )
 
     implicit val typedStore: S3TypedStore[String] = S3TypedStore[String]
-    uploadBagObjects(bagRoot, objects = bagObjects)
+    uploadBagObjects(bagContents.bagRoot, objects = bagContents.bagObjects)
 
-    (bagRoot, bagInfo)
+    (bagContents.bagRoot, bagContents.bagInfo)
   }
 }
