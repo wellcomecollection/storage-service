@@ -56,7 +56,7 @@ trait BagsApiFixture
     uploader: S3Uploader
   )(testWith: TestWith[WellcomeHttpApp, R]): R =
     withActorSystem { implicit actorSystem =>
-      withMaterializer(actorSystem) { implicit mat =>
+      withMaterializer { implicit mat =>
         withBagTrackerClient(storageManifestDao) { trackerClient =>
           val httpMetrics = new HttpMetrics(
             name = metricsName,
