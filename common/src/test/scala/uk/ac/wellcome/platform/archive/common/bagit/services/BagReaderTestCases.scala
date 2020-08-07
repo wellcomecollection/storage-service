@@ -9,6 +9,8 @@ import uk.ac.wellcome.platform.archive.common.fixtures.{
   BagBuilder,
   StorageRandomThings
 }
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.{Location, Prefix}
 import uk.ac.wellcome.storage.store.TypedStore
 
@@ -21,7 +23,7 @@ trait BagReaderTestCases[
     with Matchers
     with EitherValues
     with StorageRandomThings
-    with BagBuilder[BagLocation, BagPrefix, Namespace] {
+    with BagBuilder[BagLocation, BagPrefix, Namespace] with S3Fixtures {
   def asLocation(root: BagPrefix, path: String): BagLocation
 
   def withContext[R](testWith: TestWith[Context, R]): R
@@ -50,21 +52,23 @@ trait BagReaderTestCases[
 
   def withFixtures[R](
     testWith: TestWith[
-      (Context, TypedStore[BagLocation, String], Namespace),
+      (Context, TypedStore[BagLocation, String], Namespace, Bucket),
       R
     ]
   ): R =
     withContext { implicit context =>
       withTypedStore { typedStore =>
         withNamespace { namespace =>
-          testWith((context, typedStore, namespace))
+          withLocalS3Bucket { bucket =>
+            testWith((context, typedStore, namespace, bucket))
+          }
         }
       }
     }
 
   it("gets a correctly formed bag") {
     withFixtures { fixtures =>
-      implicit val (context, typedStore, namespace) = fixtures
+      implicit val (context, typedStore, namespace, bucket) = fixtures
 
       val (bagRoot, bagInfo) = createBag()
 
@@ -78,7 +82,7 @@ trait BagReaderTestCases[
 
   it("errors if the bag-info.txt file does not exist") {
     withFixtures { fixtures =>
-      implicit val (context, typedStore, namespace) = fixtures
+      implicit val (context, typedStore, namespace, bucket) = fixtures
 
       val (bagRoot, _) = createBag()
       deleteFile(bagRoot, path = "bag-info.txt")
@@ -93,7 +97,7 @@ trait BagReaderTestCases[
 
   it("errors if the bag-info.txt file is malformed") {
     withFixtures { fixtures =>
-      implicit val (context, typedStore, namespace) = fixtures
+      implicit val (context, typedStore, namespace, bucket) = fixtures
 
       val (bagRoot, _) = createBag()
       scrambleFile(bagRoot, path = "bag-info.txt")
@@ -108,7 +112,7 @@ trait BagReaderTestCases[
 
   it("errors if the file manifest does not exist") {
     withFixtures { fixtures =>
-      implicit val (context, typedStore, namespace) = fixtures
+      implicit val (context, typedStore, namespace, bucket) = fixtures
 
       val (bagRoot, _) = createBag()
       deleteFile(bagRoot, path = "manifest-sha256.txt")
@@ -123,7 +127,7 @@ trait BagReaderTestCases[
 
   it("errors if the file manifest is malformed") {
     withFixtures { fixtures =>
-      implicit val (context, typedStore, namespace) = fixtures
+      implicit val (context, typedStore, namespace, bucket) = fixtures
 
       val (bagRoot, _) = createBag()
       scrambleFile(bagRoot, path = "manifest-sha256.txt")
@@ -138,7 +142,7 @@ trait BagReaderTestCases[
 
   it("errors if the tag manifest does not exist") {
     withFixtures { fixtures =>
-      implicit val (context, typedStore, namespace) = fixtures
+      implicit val (context, typedStore, namespace, bucket) = fixtures
 
       val (bagRoot, _) = createBag()
       deleteFile(bagRoot, "tagmanifest-sha256.txt")
@@ -153,7 +157,7 @@ trait BagReaderTestCases[
 
   it("errors if the tag manifest is malformed") {
     withFixtures { fixtures =>
-      implicit val (context, typedStore, namespace) = fixtures
+      implicit val (context, typedStore, namespace, bucket) = fixtures
 
       val (bagRoot, _) = createBag()
       scrambleFile(bagRoot, path = "tagmanifest-sha256.txt")
@@ -168,7 +172,7 @@ trait BagReaderTestCases[
 
   it("passes if the fetch.txt does not exist") {
     withFixtures { fixtures =>
-      implicit val (context, typedStore, namespace) = fixtures
+      implicit val (context, typedStore, namespace, bucket) = fixtures
 
       val (bagRoot, _) = createBag()
       deleteFile(bagRoot, path = "fetch.txt")
@@ -181,7 +185,7 @@ trait BagReaderTestCases[
 
   it("errors if the fetch file is malformed") {
     withFixtures { fixtures =>
-      implicit val (context, typedStore, namespace) = fixtures
+      implicit val (context, typedStore, namespace, bucket) = fixtures
 
       val (bagRoot, _) = createBag()
       scrambleFile(bagRoot, path = "fetch.txt")
@@ -199,12 +203,13 @@ trait BagReaderTestCases[
   protected def createBag()(
     implicit
     namespace: Namespace,
+                         bucket: Bucket,
     typedStore: TypedStore[BagLocation, String]
   ): (BagPrefix, BagInfo) = {
-    val (bagObjects, bagRoot, bagInfo) = createBagContentsWith()
+    val bagContents = createBagContentsWith()
 
-    uploadBagObjects(bagRoot, objects = bagObjects)
+    uploadBagObjects(bagContents.bagRoot, objects = bagContents.bagObjects)
 
-    (bagRoot, bagInfo)
+    (bagContents.bagRoot, bagContents.bagInfo)
   }
 }

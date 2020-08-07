@@ -8,7 +8,11 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   StorageSpaceGenerators
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
 import uk.ac.wellcome.storage.store.TypedStore
+import uk.ac.wellcome.storage.store.s3.S3TypedStore
 import uk.ac.wellcome.storage.{Location, Prefix}
 
 import scala.util.Random
@@ -17,7 +21,15 @@ case class PayloadEntry(bagPath: BagPath, path: String, contents: String)
 
 trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Namespace]
     extends StorageSpaceGenerators
-    with BagInfoGenerators {
+    with BagInfoGenerators
+    with S3Fixtures {
+
+  case class BagContents(
+    fetchObjects:Map[S3ObjectLocation, String],
+    bagObjects:Map[BagLocation, String],
+    bagRoot: BagPrefix,
+    bagInfo: BagInfo
+  )
 
   case class ManifestFile(name: String, contents: String)
 
@@ -33,12 +45,17 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
 
   def uploadBagObjects(
     bagRoot: BagPrefix,
-    objects: Map[BagLocation, String]
-  )(implicit typedStore: TypedStore[BagLocation, String]): Unit =
+    objects: Map[BagLocation, String],
+    fetchObjects: Map[S3ObjectLocation, String] = Map.empty
+  )(implicit typedStore: TypedStore[BagLocation, String]): Unit = {
     objects.foreach {
       case (location, contents) =>
         typedStore.put(location)(contents) shouldBe a[Right[_, _]]
     }
+   fetchObjects.foreach { case (fetchObjectLocation, fetchObjectContents) =>
+      S3TypedStore[String].put(fetchObjectLocation)(fetchObjectContents) shouldBe a[Right[_, _]]
+    }
+  }
 
   protected def getFetchEntryCount(payloadFileCount: Int): Int =
     randomInt(from = 0, to = payloadFileCount)
@@ -48,11 +65,11 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     version: BagVersion = BagVersion(randomInt(from = 2, to = 10)),
     payloadFileCount: Int = randomInt(from = 5, to = 50),
-    // TODO: This should be Bucket
-    primaryBucket: String = randomAlphanumeric
   )(
-    implicit namespace: Namespace
-  ): (Map[BagLocation, String], BagPrefix, BagInfo) = {
+    implicit
+    namespace: Namespace,
+    primaryBucket: Bucket
+  ): BagContents = {
     val fetchEntryCount = getFetchEntryCount(payloadFileCount)
 
     val payloadFiles = createPayloadFiles(
@@ -130,15 +147,19 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
       }.toMap
 
     val payloadObjects =
-      (payloadFiles ++ fetchEntries).map { payloadEntry =>
+      payloadFiles.map { payloadEntry =>
         createBagLocation(bagRoot, path = payloadEntry.path) -> payloadEntry.contents
       }.toMap
 
-    (manifestObjects ++ payloadObjects, bagRoot, bagInfo)
+    val fetchObjects = fetchEntries .map{fetchEntry =>
+      S3ObjectLocation(primaryBucket.name, fetchEntry.path) -> fetchEntry.contents
+    }.toMap
+
+    BagContents(fetchObjects,manifestObjects ++ payloadObjects, bagRoot, bagInfo)
   }
 
   protected def createFetchFile(
-    primaryBucket: String,
+    primaryBucket: Bucket,
     entries: Seq[PayloadEntry]
   ): Option[String] =
     if (entries.isEmpty) {
@@ -152,13 +173,13 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
     }
 
   protected def buildFetchEntryLine(
-    primaryBucket: String,
+    primaryBucket: Bucket,
     entry: PayloadEntry
   ): String = {
     val displaySize =
     if (Random.nextBoolean()) entry.contents.getBytes.length.toString else "-"
 
-    s"""s3://$primaryBucket/${entry.path} $displaySize ${entry.bagPath}"""
+    s"""s3://${primaryBucket.name}/${entry.path} $displaySize ${entry.bagPath}"""
   }
 
   protected def createPayloadOxum(entries: Seq[PayloadEntry]): PayloadOxum =

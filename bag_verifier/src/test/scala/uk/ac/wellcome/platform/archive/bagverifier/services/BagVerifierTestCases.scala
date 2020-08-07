@@ -35,6 +35,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageSpace
 }
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
 import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
@@ -58,34 +59,33 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
   val bagBuilder: BagBuilder[BagLocation, BagPrefix, Namespace]
 
   def withBag[R](space: StorageSpace, externalIdentifier: ExternalIdentifier,
-                 primaryBucket: String,
                  bagBuilder: BagBuilder[BagLocation, BagPrefix, Namespace] = bagBuilder)
-                (testWith: TestWith[BagPrefix, R])
-                (implicit typedStore: TypedStore[BagLocation, String]): R =
+                (testWith: TestWith[(Bucket, BagPrefix), R]): R =
+    withTypedStore { implicit typedStore =>
       withNamespace { implicit namespace =>
-        val (bagObjects, replicaBagRoot, _) = bagBuilder.createBagContentsWith(
-          space = space,
-          externalIdentifier = externalIdentifier,
-          payloadFileCount = payloadFileCount,
-          primaryBucket = primaryBucket
-        )
-        bagBuilder.uploadBagObjects(bagRoot = replicaBagRoot, objects = bagObjects)
+        withLocalS3Bucket { implicit primaryBucket =>
+          val bagContents = bagBuilder.createBagContentsWith(
+            space = space,
+            externalIdentifier = externalIdentifier,
+            payloadFileCount = payloadFileCount
+          )
+          bagBuilder.uploadBagObjects(
+            bagRoot = bagContents.bagRoot,
+            objects = bagContents.bagObjects,
+            fetchObjects = bagContents.fetchObjects
+          )
 
-        testWith(replicaBagRoot)
+          testWith((primaryBucket, bagContents.bagRoot))
+        }
       }
+    }
 
 
-  def withTypedStore[R](
-    testWith: TestWith[TypedStore[BagLocation, String], R]
-  ): R
+  def withTypedStore[R](testWith: TestWith[TypedStore[BagLocation, String], R]): R
 
-  def withVerifier[R](primaryBucketName: String)(
-    testWith: TestWith[Verifier, R]
-  ): R
+  def withVerifier[R](primaryBucket: Bucket)(testWith: TestWith[Verifier, R]): R
 
-  def withBagContext[R](bagRoot: BagPrefix)(
-    testWith: TestWith[BagContext, R]
-  ): R
+  def withBagContext[R](bagRoot: BagPrefix)(testWith: TestWith[BagContext, R]): R
 
   val payloadFileCount: Int = randomInt(from = 1, to = 10)
 
@@ -123,9 +123,8 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
 
-    val primaryBucket = createBucketName
     withTypedStore { implicit typedStore =>
-      withBag(space, externalIdentifier, primaryBucket = primaryBucket) { bagRoot =>
+      withBag(space, externalIdentifier) { case (primaryBucket, bagRoot) =>
         val ingestStep =
           withBagContext(bagRoot) { bagContext =>
             withVerifier(primaryBucket) {
@@ -283,9 +282,8 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     val payloadExternalIdentifier =
       ExternalIdentifier(externalIdentifier + "_payload")
 
-    val primaryBucket = createBucketName
     withTypedStore { implicit typedStore =>
-      withBag(space, bagInfoExternalIdentifier, primaryBucket = primaryBucket) { bagRoot =>
+      withBag(space, bagInfoExternalIdentifier) { case (primaryBucket, bagRoot) =>
         val ingestStep =
           withBagContext(bagRoot) { bagContext =>
             withVerifier(primaryBucket) {
@@ -314,7 +312,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     it("fails if the fetch file refers to a file not in the manifest") {
       val badBuilder = new BagBuilderImpl {
         override protected def createFetchFile(
-          primaryBucket: String,
+          primaryBucket: Bucket,
           entries: Seq[PayloadEntry]
         ): Option[String] =
           super.createFetchFile(
@@ -342,10 +340,10 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     it("fails if the fetch file refers to a file with the wrong URI scheme") {
       val wrongSchemeBuilder = new BagBuilderImpl {
         override def buildFetchEntryLine(
-          bucketName: String,
+          primaryBucket: Bucket,
           entry: PayloadEntry
         ): String =
-          super.buildFetchEntryLine(bucketName, entry).replace("s3://", "none://")
+          super.buildFetchEntryLine(primaryBucket, entry).replace("s3://", "none://")
 
         override protected def getFetchEntryCount(payloadFileCount: Int): Int =
           payloadFileCount
@@ -364,13 +362,13 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     }
 
     it("fails if the fetch file refers to a file in a different bucket") {
-      val wrongNamespace = randomAlphanumeric
+      val wrongBucket = createBucket
         val wrongBucketFetchBuilder = new BagBuilderImpl {
           override def buildFetchEntryLine(
-            bucketName: String,
+            primaryBucket: Bucket,
             entry: PayloadEntry
           ): String =
-            super.buildFetchEntryLine(wrongNamespace, entry)
+            super.buildFetchEntryLine(wrongBucket, entry)
 
           override protected def getFetchEntryCount(
             payloadFileCount: Int
@@ -393,11 +391,11 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     it("fails if the fetch file refers to a file in the wrong space") {
       val bagSpaceFetchBuilder = new BagBuilderImpl {
         override def buildFetchEntryLine(
-          bucketName: String,
+          primaryBucket: Bucket,
           entry: PayloadEntry
         ): String =
           super.buildFetchEntryLine(
-            bucketName,
+            primaryBucket,
             entry.copy(
               path = "badspace_" + entry.path
             )
@@ -424,11 +422,11 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     ) {
       val badExternalIdentifierFetchBuilder = new BagBuilderImpl {
         override def buildFetchEntryLine(
-          bucketName: String,
+          primaryBucket: Bucket,
           entry: PayloadEntry
         ): String =
           super.buildFetchEntryLine(
-            bucketName,
+            primaryBucket,
             entry.copy(
               path = entry.path.replace("/", "/wrong_")
             )
@@ -456,7 +454,8 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
       val badBuilder = new BagBuilderImpl {
         override def uploadBagObjects(
           bagRoot: BagPrefix,
-          bagObjects: Map[BagLocation, String]
+          bagObjects: Map[BagLocation, String],
+          fetchObjects: Map[S3ObjectLocation, String]
         )(implicit typedStore: TypedStore[BagLocation, String]): Unit = {
           super.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
 
@@ -480,7 +479,8 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
       val badBuilder = new BagBuilderImpl {
         override def uploadBagObjects(
           bagRoot: BagPrefix,
-          bagObjects: Map[BagLocation, String]
+          bagObjects: Map[BagLocation, String],
+          fetchObjects: Map[S3ObjectLocation, String]
         )(implicit typedStore: TypedStore[BagLocation, String]): Unit = {
           super.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
 
@@ -507,7 +507,8 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
       val alwaysWriteAsFetchBuilder = new BagBuilderImpl {
         override def uploadBagObjects(
           bagRoot: BagPrefix,
-          bagObjects: Map[BagLocation, String]
+          bagObjects: Map[BagLocation, String],
+          fetchObjects: Map[S3ObjectLocation, String]
         )(implicit typedStore: TypedStore[BagLocation, String]): Unit = {
           super.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
 
@@ -535,9 +536,8 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     it("passes a bag that includes an extra manifest/tag manifest") {
       val space = createStorageSpace
       val externalIdentifier = createExternalIdentifier
-      val primaryBucket = createBucketName
-      withTypedStore { implicit typedStore =>
-        withBag(space, externalIdentifier, primaryBucket = primaryBucket) { bagRoot =>
+
+        withBag(space, externalIdentifier) { case (primaryBucket, bagRoot) =>
             val location = bagRoot.asLocation("tagmanifest-sha512.txt")
             writeFile(location)
 
@@ -555,7 +555,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
 
             ingestStep.success.get shouldBe a[IngestStepSucceeded[_]]
         }
-      }
+
     }
   }
 
@@ -634,9 +634,9 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
   )(assertion: IngestStepResult[VerificationSummary] => Assertion): Assertion = {
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
-    val primaryBucket = createBucketName
+
     withTypedStore { implicit typedStore =>
-      withBag(space, externalIdentifier, primaryBucket = primaryBucket, bagBuilder = badBuilder) { bagRoot =>
+      withBag(space, externalIdentifier, bagBuilder = badBuilder) { case (primaryBucket, bagRoot) =>
         val ingestStep =
           withBagContext(bagRoot) { bagContext =>
             withVerifier(primaryBucket) {
@@ -654,6 +654,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
 
         result shouldBe a[IngestFailed[_]]
         assertion(result)
+
       }
     }
   }
