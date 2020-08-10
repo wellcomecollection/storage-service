@@ -22,7 +22,7 @@ from azure.storage.blob import (
 )
 import termcolor
 
-from aws import store_secret
+from _aws import store_secret
 from common import get_aws_client
 
 
