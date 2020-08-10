@@ -20,9 +20,9 @@ from azure.storage.blob import (
     BlobSasPermissions,
     BlobServiceClient,
 )
-from botocore.exceptions import ClientError
 import termcolor
 
+from aws import store_secret
 from common import get_aws_client
 
 
@@ -67,10 +67,4 @@ if __name__ == "__main__":
             )
         )
 
-        try:
-            secrets_client.put_secret_value(SecretId=secret_id, SecretString=new_url)
-        except ClientError as err:
-            if err.response["Error"]["Code"] == "ResourceNotFoundException":
-                secrets_client.create_secret(Name=secret_id, SecretString=new_url)
-            else:
-                raise
+        store_secret(secrets_client, secret_id=secret_id, secret_string=new_url)
