@@ -1,4 +1,27 @@
 #!/usr/bin/env python3
+"""
+This script was used to update the DynamoDB portion of VHS, after we
+changed the models in scala-libs v14.0.0:
+https://github.com/wellcomecollection/scala-libs/blob/master/CHANGELOG.md#v1400---2020-06-23
+
+Before:
+
+    id: str
+    version: int
+    payload:
+        typedStoreId:
+            namespace: str
+            path: str
+
+After:
+
+    id: str
+    version: int
+    payload:
+        namespace: str
+        path: str
+
+"""
 
 import concurrent.futures
 import itertools
