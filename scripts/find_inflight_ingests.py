@@ -19,6 +19,7 @@ import datetime
 
 from boto3.dynamodb.conditions import Attr
 
+from _aws import scan_table
 from common import get_read_only_aws_resource
 
 
@@ -26,19 +27,14 @@ dynamodb = get_read_only_aws_resource("dynamodb").meta.client
 
 
 def get_inflight_ingests_for_segment(segment, total_segments):
-    paginator = dynamodb.get_paginator("scan")
-
-    ingests = []
-
-    for page in paginator.paginate(
-        TableName="storage-ingests",
-        FilterExpression=Attr("payload.status").is_in(["Processing", "Accepted"]),
-        Segment=segment,
-        TotalSegments=total_segments,
-    ):
-        ingests.extend(page["Items"])
-
-    return ingests
+    return list(
+        scan_table(
+            TableName="storage-ingests",
+            FilterExpression=Attr("payload.status").is_in(["Processing", "Accepted"]),
+            Segment=segment,
+            TotalSegments=total_segments,
+        )
+    )
 
 
 def get_inflight_items():
