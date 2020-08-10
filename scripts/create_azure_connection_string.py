@@ -12,58 +12,51 @@ by rotating the storage Access Key in the Azure console.
 
 """
 
-import datetime
-import getpass
+import json
+import subprocess
 
-from azure.storage.blob import (
-    generate_container_sas,
-    BlobSasPermissions,
-    BlobServiceClient,
-)
 import termcolor
 
-from _aws import get_aws_client, store_secret
+from _aws import store_secret
+from _azure import create_prod_sas_uris
+
+
+def az(*args):
+    return subprocess.check_output(["az"] + list(args)).decode("utf8").strip()
+
+
+def log_event(s):
+    print(termcolor.colored(s, "blue"))
+
+
+def log_outcome(s):
+    print(termcolor.colored(s, "yellow"))
 
 
 if __name__ == "__main__":
-    connection_string = getpass.getpass(
-        "What is the connection string for the storage account? "
+    log_event("Logging in to Azure...")
+    az("login")
+
+    print("")
+
+    log_event("Looking up your storage accounts...")
+    storage_accounts = json.loads(az("storage", "account", "list"))
+    log_outcome(
+        f"You have access to {len(storage_accounts)} storage account{'s' if len(storage_accounts) != 1 else ''}",
     )
 
-    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+    for account in storage_accounts:
+        print("")
+        account_name = account["name"]
+        log_event(f"Getting connection string for {account_name}...")
 
-    secrets_client = get_aws_client(
-        "secretsmanager", role_arn="arn:aws:iam::975596993436:role/storage-developer"
-    )
+        connection_string = json.loads(
+            az("storage", "account", "show-connection-string", "--name", account_name)
+        )["connectionString"]
 
-    for container in blob_service_client.list_containers():
-        container_name = container["name"]
+        log_event(f"Creating SAS URIs for {account_name}...")
 
-        token = generate_container_sas(
-            blob_service_client.account_name,
-            container_name=container_name,
-            account_key=blob_service_client.credential.account_key,
-            # These permissions are fairly blunt -- there's a single "write"
-            # permission for any modifications to a blob, whether that's the
-            # content or the metadata.
-            permission=BlobSasPermissions(read=True, write=True, delete=False),
-            # TODO: Decide how long we actually want these credentials to last.
-            expiry=datetime.datetime.utcnow() + datetime.timedelta(days=1),
-            # TODO: Passing the `ip` parameter allows you to restrict the IP range
-            # that this SAS URI can be used with.  We should do this when we
-            # start to run in production.
-        )
-
-        new_url = f"{blob_service_client.url}?{token}"
-
-        secret_id = f"azure/{blob_service_client.account_name}/{container_name}/read_write_sas_url"
-
-        print(
-            "Writing SAS URI for container %s to %s"
-            % (
-                termcolor.colored(container_name, "blue"),
-                termcolor.colored(secret_id, "green"),
-            )
-        )
-
-        store_secret(secrets_client, secret_id=secret_id, secret_string=new_url)
+        for container_name, sas_uri in create_prod_sas_uris(connection_string):
+            secret_id = f"azure/{account_name}/{container_name}/read_write_sas_url"
+            store_secret(secret_id=secret_id, secret_string=sas_uri)
+            log_outcome(f"Stored secret for {container_name} in {secret_id}")

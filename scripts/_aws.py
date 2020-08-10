@@ -3,6 +3,7 @@ from botocore.exceptions import ClientError
 
 
 READ_ONLY_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
+DEV_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
 
 
 sts_client = boto3.client("sts")
@@ -40,7 +41,7 @@ def get_dynamo_client(*, role_arn=READ_ONLY_ROLE_ARN):
     return get_aws_resource("dynamodb", role_arn=role_arn).meta.client
 
 
-def find_elastic_ip():
+def get_elastic_ip():
     """
     Our VPCs have exactly one elastic IP associated with them.
 
@@ -64,10 +65,12 @@ def find_elastic_ip():
         return ipv4_addresses[0]
 
 
-def store_secret(secrets_client, *, secret_id, secret_string):
+def store_secret(*, secret_id, secret_string):
     """
     Store a SecretString in Secrets Manager.
     """
+    secrets_client = get_aws_client("secretsmanager", role_arn=DEV_ROLE_ARN)
+
     try:
         secrets_client.put_secret_value(SecretId=secret_id, SecretString=secret_string)
     except ClientError as err:
