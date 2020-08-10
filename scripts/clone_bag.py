@@ -13,7 +13,8 @@ import sys
 
 import bagit
 
-from common import get_read_only_aws_resource, get_storage_client
+from _aws import get_aws_resource
+from common import get_storage_client
 
 
 def slugify(ustr):
@@ -68,7 +69,7 @@ def clone_bag(api_name, space, external_identifier):
             fetch_file.write(f"s3://{bucket}/{path_prefix}/{path}\t{size}\t{name}\n")
 
     # Download some of the manifest files from the original bag.
-    s3 = get_read_only_aws_resource("s3")
+    s3 = get_aws_resource("s3")
 
     for tag_manifest_file in bag["tagManifest"]["files"]:
         path = tag_manifest_file["path"]

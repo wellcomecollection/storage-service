@@ -5,7 +5,7 @@ import datetime as dt
 import decimal
 import json
 
-from common import get_read_only_aws_resource
+from _aws import scan_table
 
 
 class DecimalEncoder(json.JSONEncoder):
@@ -16,16 +16,11 @@ class DecimalEncoder(json.JSONEncoder):
 
 
 if __name__ == "__main__":
-    dynamodb = get_read_only_aws_resource("dynamodb").meta.client
-    paginator = dynamodb.get_paginator("scan")
-
     date_slug = dt.datetime.now().strftime("%Y-%m-%d_%H-%m")
     out_path = f"ingests__{date_slug}.json"
 
     with open(out_path, "w") as outfile:
-        for page in paginator.paginate(TableName="storage-ingests"):
-            for item in page["Items"]:
-                outfile.write(json.dumps(item, cls=DecimalEncoder) + "\n")
-            outfile.flush()
+        for item in scan_table(TableName="storage-ingests"):
+            outfile.write(json.dumps(item, cls=DecimalEncoder) + "\n")
 
     print(out_path)

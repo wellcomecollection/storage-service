@@ -1,6 +1,8 @@
 #!/usr/bin/env python
-# -*- encoding: utf-8
 """
+This script was used in the initial migration of bags from Preservica to
+the new storage service.
+
 Given a dump of the DynamoDB ingests table and all the b numbers known by the
 bagger, print a list of b numbers which haven't been ingested at all.
 """

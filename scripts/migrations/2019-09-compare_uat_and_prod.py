@@ -1,5 +1,14 @@
 #!/usr/bin/env python
-# -*- encoding: utf-8
+"""
+This script was used in the initial migration of bags from Preservica to
+the new storage service.
+
+It compared the IIIF manifests presented by:
+
+*   The UAT instance of DLCS (reading from the new storage service)
+*   The prod instance of DLCS (reading from Preservica)
+
+"""
 
 import json
 import os
