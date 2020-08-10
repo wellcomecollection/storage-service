@@ -51,8 +51,7 @@ def get_xml_from_s3(location, path):
     s3 = get_aws_client("s3")
 
     s3_obj = s3.get_object(
-        Bucket=location["bucket"],
-        Key=os.path.join(location["path"], path)
+        Bucket=location["bucket"], Key=os.path.join(location["path"], path)
     )
 
     return etree.parse(s3_obj["Body"])
