@@ -38,7 +38,7 @@ if __name__ == "__main__":
     log_event("Looking up your storage accounts...")
     storage_accounts = get_storage_accounts()
     log_outcome(
-        f"You have access to {len(storage_accounts)} storage account{'s' if len(storage_accounts) != 1 else ''}",
+        f"You have access to {len(storage_accounts)} storage account{'s' if len(storage_accounts) != 1 else ''}"
     )
 
     for account in storage_accounts:
