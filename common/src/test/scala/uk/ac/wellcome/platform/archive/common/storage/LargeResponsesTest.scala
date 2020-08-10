@@ -40,7 +40,7 @@ class LargeResponsesTest
     it("does not redirect a < max-length response") {
       withLocalS3Bucket { bucket =>
         withActorSystem { implicit actorSystem =>
-          withMaterializer { implicit mat =>
+          withMaterializer{ implicit mat =>
             val maxBytes = 100
             val expectedByteArray = randomBytes(maxBytes - 10)
 

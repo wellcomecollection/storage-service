@@ -21,7 +21,7 @@ class AzureReplicatedBagVerifierTests extends ReplicatedBagVerifierTestCases[
   Container
 ] with S3Fixtures with AzureFixtures{
 
-  val azureTypedStore = new AzureTypedStore[String]()(implicitly[Codec[String]], new AzureStreamStore())
+  val azureTypedStore = AzureTypedStore[String]
   override val bagBuilder: BagBuilder[AzureBlobLocation, AzureBlobLocationPrefix, Container] = new AzureBagBuilder {}
 
   override def withTypedStore[R](testWith: TestWith[TypedStore[AzureBlobLocation, String], R]): R = testWith(azureTypedStore)
