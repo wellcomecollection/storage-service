@@ -1,3 +1,4 @@
+import datetime
 import json
 import subprocess
 
@@ -25,6 +26,9 @@ def _create_sas_uris(connection_string, *, expiry, ip):
     for container in blob_service_client.list_containers():
         container_name = container["name"]
 
+        if expiry is None:
+            raise TypeError(f"expiry cannot be None!")
+
         token = generate_container_sas(
             blob_service_client.account_name,
             container_name=container_name,
@@ -45,7 +49,7 @@ def create_prod_sas_uris(connection_string):
     Creates read/write SAS URIs for services running in our AWS account.
 
     These URIs are:
-    -   set to never expire
+    -   set to never expire (practically speaking, they expire in ~1000 years)
     -   bound to the Elastic IP of the storage account
 
     We consider IP restrictions a good enough security check on their use.
@@ -53,8 +57,10 @@ def create_prod_sas_uris(connection_string):
     """
     elastic_ip = get_elastic_ip()
 
+    expiry = datetime.datetime.now() + datetime.timedelta(days=1000 * 365)
+
     yield from _create_sas_uris(
-        connection_string=connection_string, expiry=None, ip=elastic_ip
+        connection_string=connection_string, expiry=expiry, ip=elastic_ip
     )
 
 
