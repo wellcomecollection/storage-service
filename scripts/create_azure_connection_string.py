@@ -12,17 +12,10 @@ by rotating the storage Access Key in the Azure console.
 
 """
 
-import json
-import subprocess
-
 import termcolor
 
 from _aws import store_secret
-from _azure import create_prod_sas_uris
-
-
-def az(*args):
-    return subprocess.check_output(["az"] + list(args)).decode("utf8").strip()
+from _azure import az, create_prod_sas_uris, get_connection_string, get_storage_accounts
 
 
 def log_event(s):
@@ -40,7 +33,7 @@ if __name__ == "__main__":
     print("")
 
     log_event("Looking up your storage accounts...")
-    storage_accounts = json.loads(az("storage", "account", "list"))
+    storage_accounts = get_storage_accounts()
     log_outcome(
         f"You have access to {len(storage_accounts)} storage account{'s' if len(storage_accounts) != 1 else ''}",
     )
@@ -49,14 +42,13 @@ if __name__ == "__main__":
         print("")
         account_name = account["name"]
         log_event(f"Getting connection string for {account_name}...")
+        connection_string = get_connection_string(account_name)
 
-        connection_string = json.loads(
-            az("storage", "account", "show-connection-string", "--name", account_name)
-        )["connectionString"]
-
-        log_event(f"Creating SAS URIs for {account_name}...")
+        log_event(f"Creating SAS URIs for containers in {account_name}...")
 
         for container_name, sas_uri in create_prod_sas_uris(connection_string):
             secret_id = f"azure/{account_name}/{container_name}/read_write_sas_url"
             store_secret(secret_id=secret_id, secret_string=sas_uri)
-            log_outcome(f"Stored secret for {container_name} in {secret_id}")
+            log_outcome(
+                f"Stored secret:\n - container: {container_name}\n - secret ID: {secret_id}"
+            )

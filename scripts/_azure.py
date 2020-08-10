@@ -1,4 +1,5 @@
-import datetime
+import json
+import subprocess
 
 from azure.storage.blob import (
     generate_container_sas,
@@ -7,6 +8,10 @@ from azure.storage.blob import (
 )
 
 from _aws import get_elastic_ip
+
+
+def az(*args):
+    return subprocess.check_output(["az"] + list(args)).decode("utf8").strip()
 
 
 def _create_sas_uris(connection_string, *, expiry, ip):
@@ -49,7 +54,21 @@ def create_prod_sas_uris(connection_string):
     elastic_ip = get_elastic_ip()
 
     yield from _create_sas_uris(
-        connection_string=connection_string,
-        expiry=None,
-        ip=elastic_ip
+        connection_string=connection_string, expiry=None, ip=elastic_ip
     )
+
+
+def get_storage_accounts():
+    """
+    Finds all the storage accounts a user has access to.
+    """
+    return json.loads(az("storage", "account", "list"))
+
+
+def get_connection_string(account_name):
+    """
+    Gets the connection string for an Azure account.
+    """
+    return json.loads(
+        az("storage", "account", "show-connection-string", "--name", account_name)
+    )["connectionString"]
