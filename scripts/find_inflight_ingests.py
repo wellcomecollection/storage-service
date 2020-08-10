@@ -20,10 +20,6 @@ import datetime
 from boto3.dynamodb.conditions import Attr
 
 from _aws import scan_table
-from common import get_read_only_aws_resource
-
-
-dynamodb = get_read_only_aws_resource("dynamodb").meta.client
 
 
 def get_inflight_ingests_for_segment(segment, total_segments):

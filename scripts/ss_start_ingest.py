@@ -18,7 +18,8 @@ import sys
 from botocore.exceptions import ClientError
 import click
 
-from common import get_read_only_aws_resource, get_logger, get_storage_client
+from _aws import get_aws_resource
+from common import get_logger, get_storage_client
 
 
 logger = get_logger(__name__)
@@ -32,7 +33,7 @@ if __name__ == "__main__":
 
     logger.debug("Creating ingest for file %s", filename)
 
-    s3 = get_read_only_aws_resource("s3")
+    s3 = get_aws_resource("s3")
 
     buckets = {
         "prod": "wellcomecollection-storage-bagger-drop",

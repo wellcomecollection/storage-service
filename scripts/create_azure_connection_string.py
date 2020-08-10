@@ -22,8 +22,7 @@ from azure.storage.blob import (
 )
 import termcolor
 
-from _aws import store_secret
-from common import get_aws_client
+from _aws import get_aws_client, store_secret
 
 
 if __name__ == "__main__":

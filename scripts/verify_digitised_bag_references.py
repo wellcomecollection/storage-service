@@ -24,7 +24,8 @@ import sys
 from lxml import etree
 import termcolor
 
-from common import get_storage_client, get_read_only_aws_resource
+from _aws import get_aws_client
+from common import get_storage_client
 
 
 NAMESPACES = {
@@ -47,12 +48,12 @@ def success(message):
 
 
 def get_xml_from_s3(location, path):
-    s3 = get_read_only_aws_resource("s3")
+    s3 = get_aws_client("s3")
 
-    bucket = s3.Bucket(location["bucket"])
-    key = os.path.join(location["path"], path)
-
-    s3_obj = bucket.Object(key).get()
+    s3_obj = s3.get_object(
+        Bucket=location["bucket"],
+        Key=os.path.join(location["path"], path)
+    )
 
     return etree.parse(s3_obj["Body"])
 
