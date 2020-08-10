@@ -436,7 +436,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
                                        bagObjects: Map[BagLocation, String],
                                      fetchObjects: Map[S3ObjectLocation, String]
                                      )(implicit typedStore: TypedStore[BagLocation, String], s3Client: AmazonS3): Unit = {
-          super.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
+          super.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects, fetchObjects = fetchObjects)
 
           val location = bagRoot.asLocation("unreferencedfile.txt")
           writeFile(location)
@@ -461,7 +461,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
                                        bagObjects: Map[BagLocation, String],
                                        fetchObjects: Map[S3ObjectLocation, String]
                                      )(implicit typedStore: TypedStore[BagLocation, String], s3Client: AmazonS3):Unit = {
-          super.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
+          super.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects, fetchObjects = fetchObjects)
 
           (1 to 3).foreach { i =>
             val location = bagRoot.asLocation(s"unreferencedfile_$i.txt")
@@ -489,7 +489,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
                                        bagObjects: Map[BagLocation, String],
                                        fetchObjects: Map[S3ObjectLocation, String]
                                      )(implicit typedStore: TypedStore[BagLocation, String], s3Client: AmazonS3): Unit = {
-          super.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
+          super.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects, fetchObjects = fetchObjects)
 
           val bag = createBagReader.get(bagRoot).right.value
 
@@ -613,7 +613,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
   )(assertion: IngestStepResult[VerificationSummary] => Assertion): Assertion = {
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
-    withBag(space, externalIdentifier)() { case (primaryBucket, bagRoot) =>
+    withBag(space, externalIdentifier)(badBuilder) { case (primaryBucket, bagRoot) =>
 
         val ingestStep =
           withBagContext(bagRoot) { bagContext =>
