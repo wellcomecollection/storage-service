@@ -31,8 +31,12 @@ trait ReplicatedBagVerifierTestCases[
           bucket = srcBucket.name,
           keyPrefix = replicaBagRoot.pathPrefix
         )
-        val tagManifestContents = typedStore.get(replicaBagRoot.asLocation("tagmanifest-sha256.txt")).right.get.identifiedT
-        S3TypedStore[String].put(srcBagRoot.asLocation("tagmanifest-sha256.txt"))(tagManifestContents)
+
+        val _ = for {
+          tagManifestContents <- typedStore.get(replicaBagRoot.asLocation("tagmanifest-sha256.txt"))
+          _ <- S3TypedStore[String].put(srcBagRoot.asLocation("tagmanifest-sha256.txt"))(tagManifestContents.identifiedT)
+        } yield ()
+
         testWith(ReplicatedBagVerifyContext(srcBagRoot, replicaBagRoot))
       }
     }
