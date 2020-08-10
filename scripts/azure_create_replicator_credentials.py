@@ -12,6 +12,8 @@ by rotating the storage Access Key in the Azure console.
 
 """
 
+import sys
+
 import termcolor
 
 from _aws import store_secret
@@ -27,10 +29,11 @@ def log_outcome(s):
 
 
 if __name__ == "__main__":
-    log_event("Logging in to Azure...")
-    az("login")
+    if "--skip-login" not in sys.argv:
+        log_event("Logging in to Azure...")
+        az("login")
 
-    print("")
+        print("")
 
     log_event("Looking up your storage accounts...")
     storage_accounts = get_storage_accounts()
