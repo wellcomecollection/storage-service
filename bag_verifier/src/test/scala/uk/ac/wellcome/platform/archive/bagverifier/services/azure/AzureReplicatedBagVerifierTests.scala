@@ -11,8 +11,7 @@ import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.fixtures.{AzureFixtures, S3Fixtures}
 import uk.ac.wellcome.storage.store.TypedStore
-import uk.ac.wellcome.storage.store.azure.{AzureStreamStore, AzureTypedStore}
-import uk.ac.wellcome.storage.streaming.Codec
+import uk.ac.wellcome.storage.store.azure.AzureTypedStore
 import uk.ac.wellcome.storage.streaming.Codec._
 
 class AzureReplicatedBagVerifierTests extends ReplicatedBagVerifierTestCases[

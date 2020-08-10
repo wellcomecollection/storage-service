@@ -8,6 +8,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.AzureResolvable
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.AzureFixtures
 import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
+import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.azure.{AzureStreamStore, AzureTypedStore}
 
 class AzureFixityCheckerTest extends FixityCheckerTestCases[
@@ -24,7 +25,9 @@ AzureBlobLocationPrefix,
 
   override def putString(location: AzureBlobLocation, contents: String)(implicit context: Unit): Unit = azureTypedStore.put(location)(contents)
 
-  override def withFixityChecker[R](streamStore: AzureStreamStore)(testWith: TestWith[FixityChecker[AzureBlobLocation, AzureBlobLocationPrefix], R])(implicit context: Unit): R = testWith(new AzureFixityChecker())
+  override def withFixityChecker[R](s: AzureStreamStore)(testWith: TestWith[FixityChecker[AzureBlobLocation, AzureBlobLocationPrefix], R])(implicit context: Unit): R = testWith(new AzureFixityChecker {
+    override val streamStore: StreamStore[AzureBlobLocation] = s
+  })
 
   override def withStreamStore[R](testWith: TestWith[AzureStreamStore, R])(implicit context: Unit): R = testWith(streamStore)
 
