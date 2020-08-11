@@ -15,7 +15,7 @@ class AzureBlobSizeFinderTest extends SizeFinderTestCases[AzureBlobLocation, Con
 
   override def createIdent(implicit container: Container): AzureBlobLocation = createAzureBlobLocationWith(container)
 
-  override def createObject(ident: AzureBlobLocation, contents: String)(implicit context: Container): Unit = AzureTypedStore[String].put(ident)(contents)
+  override def createObject(location: AzureBlobLocation, contents: String)(implicit context: Container): Unit = AzureTypedStore[String].put(location)(contents)
 }
 
 
