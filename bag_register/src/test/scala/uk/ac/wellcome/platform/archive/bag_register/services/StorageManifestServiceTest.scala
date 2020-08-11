@@ -410,10 +410,11 @@ class StorageManifestServiceTest
         override protected def getFetchEntryCount(payloadFileCount: Int): Int =
           payloadFileCount
 
-        override def buildFetchEntryLine(
-          entry: PayloadEntry
-        )(implicit bucket: Bucket): String =
-          s"""s3://$bucket/${entry.path} ${entry.contents.getBytes.length} ${entry.bagPath}"""
+        override protected def buildFetchEntryLine(
+                                                    primaryBucketName: String,
+                                                    entry: PayloadEntry
+        ): String =
+          s"""s3://$primaryBucketName/${entry.path} ${entry.contents.getBytes.length} ${entry.bagPath}"""
       }
 
       val version = createBagVersion
@@ -487,17 +488,17 @@ class StorageManifestServiceTest
     implicit val typedStore: S3TypedStore[String] =
       S3TypedStore[String]
 
-    val (bagObjects, bagRoot, _) =
+    val bagContents =
       bagBuilder.createBagContentsWith(
         space = space,
         version = version
       )
 
-    bagBuilder.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
+    bagBuilder.uploadBagObjects(bagRoot = bagContents.bagRoot, objects = bagContents.bagObjects, fetchObjects = bagContents.fetchObjects)
 
     (
-      bagRoot,
-      new S3BagReader().get(bagRoot).right.value
+      bagContents.bagRoot,
+      new S3BagReader().get(bagContents.bagRoot).right.value
     )
   }
 
