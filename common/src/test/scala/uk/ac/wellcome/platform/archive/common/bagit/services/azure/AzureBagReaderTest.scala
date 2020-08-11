@@ -6,7 +6,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.azure.AzureBagBuilder
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
 import uk.ac.wellcome.storage.store.TypedStore
-import uk.ac.wellcome.storage.store.azure.{AzureStreamStore, AzureTypedStore}
+import uk.ac.wellcome.storage.store.azure.AzureTypedStore
 
 class AzureBagReaderTest extends BagReaderTestCases[
   Unit,
@@ -19,10 +19,8 @@ class AzureBagReaderTest extends BagReaderTestCases[
 
   override def withContext[R](testWith: TestWith[Unit, R]): R = testWith(())
 
-  override def withTypedStore[R](testWith: TestWith[TypedStore[AzureBlobLocation, String], R])(implicit context: Unit): R = {
-    implicit val streamStore = new AzureStreamStore()
-    testWith(new AzureTypedStore[String]())
-  }
+  override def withTypedStore[R](testWith: TestWith[TypedStore[AzureBlobLocation, String], R])(implicit context: Unit): R =
+    testWith(AzureTypedStore[String])
 
   override def withBagReader[R](testWith: TestWith[BagReader[AzureBlobLocation, AzureBlobLocationPrefix], R])(implicit context: Unit): R = testWith(new AzureBagReader())
 
