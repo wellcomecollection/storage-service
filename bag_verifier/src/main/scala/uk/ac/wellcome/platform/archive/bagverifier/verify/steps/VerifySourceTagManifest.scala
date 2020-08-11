@@ -14,7 +14,8 @@ trait VerifySourceTagManifest[
 ] {
   implicit val s3Client: AmazonS3
 
-  protected val srcStreamStore: StreamStore[S3ObjectLocation] = new S3StreamStore()
+  protected val srcStreamStore: StreamStore[S3ObjectLocation] =
+    new S3StreamStore()
   protected val replicaStreamStore: StreamStore[ReplicaBagLocation]
 
   /** This step is here to check the bag created by the replica and the

@@ -104,7 +104,9 @@ trait BagVerifierFixtures
       }
     }
 
-  def withVerifier[R](bucket: Bucket)(testWith: TestWith[S3StandaloneBagVerifier, R]): R =
+  def withVerifier[R](
+    bucket: Bucket
+  )(testWith: TestWith[S3StandaloneBagVerifier, R]): R =
     testWith(
       new S3StandaloneBagVerifier(primaryBucket = bucket.name)
     )

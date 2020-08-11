@@ -23,7 +23,8 @@ trait BagReaderTestCases[
     with Matchers
     with EitherValues
     with StorageRandomThings
-    with BagBuilder[BagLocation, BagPrefix, Namespace] with S3Fixtures {
+    with BagBuilder[BagLocation, BagPrefix, Namespace]
+    with S3Fixtures {
   def asLocation(root: BagPrefix, path: String): BagLocation
 
   def withContext[R](testWith: TestWith[Context, R]): R
@@ -203,7 +204,7 @@ trait BagReaderTestCases[
   protected def createBag()(
     implicit
     namespace: Namespace,
-                         bucket: Bucket,
+    bucket: Bucket,
     typedStore: TypedStore[BagLocation, String]
   ): (BagPrefix, BagInfo) = {
     val bagContents = createBagContentsWith()

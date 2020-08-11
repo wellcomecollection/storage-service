@@ -58,12 +58,17 @@ trait S3BagVerifier[B <: BagVerifyContext[S3ObjectLocationPrefix]]
 class S3StandaloneBagVerifier(val primaryBucket: String)(
   implicit val s3Client: AmazonS3
 ) extends BagVerifier[
-  StandaloneBagVerifyContext,
-  S3ObjectLocation,
-  S3ObjectLocationPrefix
-]
+      StandaloneBagVerifyContext,
+      S3ObjectLocation,
+      S3ObjectLocationPrefix
+    ]
     with S3BagVerifier[StandaloneBagVerifyContext] {
-  override def verifyReplicatedBag(root: StandaloneBagVerifyContext, space: StorageSpace, externalIdentifier: ExternalIdentifier, bag: Bag): Either[BagVerifierError, Unit] = Right(())
+  override def verifyReplicatedBag(
+    root: StandaloneBagVerifyContext,
+    space: StorageSpace,
+    externalIdentifier: ExternalIdentifier,
+    bag: Bag
+  ): Either[BagVerifierError, Unit] = Right(())
 }
 
 class S3ReplicatedBagVerifier(val primaryBucket: String)(
