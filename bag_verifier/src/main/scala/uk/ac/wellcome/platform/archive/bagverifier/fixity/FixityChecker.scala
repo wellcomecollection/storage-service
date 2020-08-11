@@ -3,8 +3,9 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity
 import java.net.URI
 
 import grizzled.slf4j.Logging
+import uk.ac.wellcome.platform.archive.bagverifier.storage.Locatable._
 import uk.ac.wellcome.platform.archive.bagverifier.storage.{
-  LocateFailure,
+  Locatable,
   LocationError,
   LocationNotFound,
   LocationParsingError
@@ -14,19 +15,19 @@ import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.tags.Tags
-import uk.ac.wellcome.storage.{DoesNotExistError, Location, ReadError}
+import uk.ac.wellcome.storage.{DoesNotExistError, Location, Prefix, ReadError}
 
 import scala.util.{Failure, Success}
 
 /** Look up and check the fixity info (checksum, size) on an individual file.
   *
   */
-trait FixityChecker[BagLocation <: Location] extends Logging {
+trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
+    extends Logging {
   protected val streamStore: StreamStore[BagLocation]
   protected val sizeFinder: SizeFinder[BagLocation]
   val tags: Tags[BagLocation]
-
-  def locate(uri: URI): Either[LocateFailure[URI], BagLocation]
+  implicit val locator: Locatable[BagLocation, BagPrefix, URI]
 
   def check(
     expectedFileFixity: ExpectedFileFixity
@@ -81,7 +82,7 @@ trait FixityChecker[BagLocation <: Location] extends Logging {
   private def parseLocation(
     expectedFileFixity: ExpectedFileFixity
   ): Either[FileFixityCouldNotRead[BagLocation], BagLocation] =
-    locate(expectedFileFixity.uri) match {
+    expectedFileFixity.uri.locate match {
       case Right(location) => Right(location)
       case Left(locateError) =>
         Left(

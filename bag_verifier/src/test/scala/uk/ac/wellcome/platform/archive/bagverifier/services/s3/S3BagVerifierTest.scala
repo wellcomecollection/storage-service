@@ -7,22 +7,14 @@ import uk.ac.wellcome.platform.archive.bagverifier.models.{
   StandaloneBagVerifyContext
 }
 import uk.ac.wellcome.platform.archive.bagverifier.services._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagBuilder,
-  PayloadEntry
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.store.s3.S3TypedStore
-import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 trait S3BagVerifierTests[Verifier <: BagVerifier[
   BagContext,
@@ -49,30 +41,6 @@ trait S3BagVerifierTests[Verifier <: BagVerifier[
 
   override def createId(implicit bucket: Bucket): S3ObjectLocation =
     createS3ObjectLocationWith(bucket)
-
-  override def createBagRootImpl(
-    space: StorageSpace,
-    externalIdentifier: ExternalIdentifier,
-    version: BagVersion
-  )(
-    implicit bucket: Bucket
-  ): S3ObjectLocationPrefix =
-    createBagRoot(
-      space = space,
-      externalIdentifier = externalIdentifier,
-      version = version
-    )
-
-  override def createBagLocationImpl(
-    bagRoot: S3ObjectLocationPrefix,
-    path: String
-  ): S3ObjectLocation =
-    createBagLocation(bagRoot, path = path)
-
-  override def buildFetchEntryLineImpl(
-    entry: PayloadEntry
-  )(implicit bucket: Bucket): String =
-    buildFetchEntryLine(entry)
 
   override def writeFile(location: S3ObjectLocation, contents: String): Unit =
     s3Client.putObject(location.bucket, location.key, contents)
@@ -133,11 +101,6 @@ class S3ReplicatedBagVerifierTest
   ): S3ObjectLocationPrefix =
     createS3ObjectLocationPrefixWith(bucket)
 
-  override def createReplicaPrefix(
-    implicit bucket: Bucket
-  ): S3ObjectLocationPrefix =
-    createS3ObjectLocationPrefixWith(bucket)
-
   override def withSrcNamespace[R](testWith: TestWith[Bucket, R]): R =
     withLocalS3Bucket { bucket =>
       testWith(bucket)
@@ -188,4 +151,8 @@ class S3StandaloneBagVerifierTest
     testWith(
       new S3StandaloneBagVerifier(primaryBucket = primaryBucket.name)
     )
+
+  override val replicaBagBuilder
+    : BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix, Bucket] =
+    new S3BagBuilder {}
 }
