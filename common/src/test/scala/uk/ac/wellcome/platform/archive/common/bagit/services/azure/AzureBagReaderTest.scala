@@ -19,11 +19,6 @@ class AzureBagReaderTest
       AzureBlobLocationPrefix
     ]
     with AzureBagBuilder {
-  override def asLocation(
-    root: AzureBlobLocationPrefix,
-    path: String
-  ): AzureBlobLocation = root.asLocation(path)
-
   override def withContext[R](testWith: TestWith[Unit, R]): R = testWith(())
 
   override def withTypedStore[R](

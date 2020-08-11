@@ -20,12 +20,6 @@ class S3BagReaderTest
     ]
     with S3BagBuilder {
 
-  override def asLocation(
-    prefix: S3ObjectLocationPrefix,
-    path: String
-  ): S3ObjectLocation =
-    prefix.asLocation(path)
-
   override def withTypedStore[R](
     testWith: TestWith[TypedStore[S3ObjectLocation, String], R]
   )(implicit context: Unit): R = {
