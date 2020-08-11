@@ -211,8 +211,7 @@ class BagExpectedFixityTest
           checksum = Checksum(
             algorithm = checksumAlgorithm,
             value = checksumValue
-          ),
-          length = None
+          )
         )
     }.toSeq
 

@@ -21,6 +21,7 @@ case class FetchFileFixity(
 case class DataDirectoryFileFixity(
   uri: URI,
   path: BagPath,
-  checksum: Checksum,
-  length: Option[Long]
-) extends ExpectedFileFixity
+  checksum: Checksum
+) extends ExpectedFileFixity {
+  val length: Option[Long] = None
+}

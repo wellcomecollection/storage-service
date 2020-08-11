@@ -80,8 +80,7 @@ class BagExpectedFixity[BagLocation <: Location, BagPrefix <: Prefix[
               DataDirectoryFileFixity(
                 uri = resolvable.resolve(location),
                 path = bagPath,
-                checksum = checksum,
-                length = None
+                checksum = checksum
               )
             )
         }

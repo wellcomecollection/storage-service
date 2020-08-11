@@ -4,9 +4,9 @@ import java.net.URI
 
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   DataDirectoryFileFixity,
-  ExpectedFileFixity
+  ExpectedFileFixity,
+  FetchFileFixity
 }
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.verify.{Checksum, MD5, SHA256}
 import uk.ac.wellcome.storage.Location
@@ -22,15 +22,28 @@ trait FixityGenerators[BagLocation <: Location] extends StorageRandomThings {
 
   def createLocation: BagLocation
 
-  def createDataDirectoryFileFixityWith(
+  def createFetchFileFixityWith(
     location: BagLocation = createLocation,
     checksum: Checksum = randomChecksum,
     length: Option[Long] = None
-  ): DataDirectoryFileFixity =
-    DataDirectoryFileFixity(
+  ): FetchFileFixity =
+    FetchFileFixity(
       uri = resolve(location),
-      path = BagPath(randomAlphanumeric),
+      path = createBagPath,
       checksum = checksum,
       length = length
     )
+
+  def createDataDirectoryFileFixityWith(
+    location: BagLocation = createLocation,
+    checksum: Checksum = randomChecksum
+  ): DataDirectoryFileFixity =
+    DataDirectoryFileFixity(
+      uri = resolve(location),
+      path = createBagPath,
+      checksum = checksum
+    )
+
+  def createDataDirectoryFileFixity: DataDirectoryFileFixity =
+    createDataDirectoryFileFixityWith()
 }
