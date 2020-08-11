@@ -39,10 +39,7 @@ def _create_sas_uris(connection_string, *, expiry, ip):
             # permission for any modifications to a blob, whether that's the
             # content or the metadata.
             permission=ContainerSasPermissions(
-                read=True,
-                write=True,
-                delete=False,
-                list=True
+                read=True, write=True, delete=False, list=True
             ),
         )
 
