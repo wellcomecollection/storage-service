@@ -129,7 +129,6 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
 
-    withTypedStore { implicit typedStore =>
       withBag(space, externalIdentifier) { case (primaryBucket, bagRoot) =>
         val ingestStep =
           withBagContext(bagRoot) { bagContext =>
@@ -158,7 +157,6 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
         )
       }
     }
-  }
 
   it("fails a bag with an incorrect checksum in the file manifest") {
     val badBuilder: BagBuilderImpl = new BagBuilderImpl {
@@ -288,7 +286,6 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     val payloadExternalIdentifier =
       ExternalIdentifier(externalIdentifier + "_payload")
 
-    withTypedStore { implicit typedStore =>
       withBag(space, bagInfoExternalIdentifier) { case (primaryBucket, bagRoot) =>
         val ingestStep =
           withBagContext(bagRoot) { bagContext =>
@@ -312,7 +309,6 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
         )
       }
     }
-  }
 
   describe("checks the fetch file") {
     it("fails if the fetch file refers to a file not in the manifest") {
@@ -653,7 +649,6 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
 
-    withTypedStore { implicit typedStore =>
       withBag(space, externalIdentifier, bagBuilder = badBuilder) { case (primaryBucket, bagRoot) =>
         val ingestStep =
           withBagContext(bagRoot) { bagContext =>
@@ -674,7 +669,6 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
         assertion(result)
       }
     }
-  }
 
   private def assertBagIncomplete(badBuilder: BagBuilderImpl)(
     assertion: (
