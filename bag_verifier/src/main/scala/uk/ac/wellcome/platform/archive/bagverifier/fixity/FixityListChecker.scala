@@ -21,8 +21,8 @@ class FixityListChecker[BagLocation <: Location, Container](
     debug(s"Checking the fixity info for $container")
     verifiable.create(container) match {
       case Left(err) => CouldNotCreateExpectedFixityList(err.msg)
-      case Right(verifiableLocations) =>
-        verifiableLocations
+      case Right(expectedFileFixities) =>
+        expectedFileFixities
           .map {
             case f: FetchFileFixity => fetchEntriesFixityChecker.check(f)
             case d: DataDirectoryFileFixity => dataDirectoryFixityChecker.check(d)
