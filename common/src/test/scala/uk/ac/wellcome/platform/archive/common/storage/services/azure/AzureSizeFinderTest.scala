@@ -10,7 +10,7 @@ import uk.ac.wellcome.storage.fixtures.AzureFixtures
 import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
 import uk.ac.wellcome.storage.store.azure.AzureTypedStore
 
-class AzureBlobSizeFinderTest
+class AzureSizeFinderTest
     extends SizeFinderTestCases[AzureBlobLocation, Container]
     with AzureFixtures {
   override def withContext[R](testWith: TestWith[Container, R]): R =
