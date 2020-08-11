@@ -73,7 +73,7 @@ class S3FixityCheckerTest
   it("fails if the bucket doesn't exist") {
     val location = createS3ObjectLocationWith(bucket = createBucket)
 
-    val expectedFileFixity = createExpectedFileFixityWith(
+    val expectedFileFixity = createDataDirectoryFileFixityWith(
       location = location
     )
 
@@ -97,7 +97,7 @@ class S3FixityCheckerTest
   it("fails if the bucket name is invalid") {
     val location = createS3ObjectLocationWith(bucket = createInvalidBucket)
 
-    val expectedFileFixity = createExpectedFileFixityWith(
+    val expectedFileFixity = createDataDirectoryFileFixityWith(
       location = location
     )
 
@@ -122,7 +122,7 @@ class S3FixityCheckerTest
     withLocalS3Bucket { bucket =>
       val location = createS3ObjectLocationWith(bucket)
 
-      val expectedFileFixity = createExpectedFileFixityWith(
+      val expectedFileFixity = createDataDirectoryFileFixityWith(
         location = location
       )
 

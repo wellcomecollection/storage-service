@@ -79,7 +79,7 @@ class FixityCheckerTests
           Right(Identified(location, closedStream))
       }
 
-      val expectedFileFixity = createExpectedFileFixityWith(length = None)
+      val expectedFileFixity = createDataDirectoryFileFixity
 
       val tags = createMemoryTags
 
@@ -132,7 +132,7 @@ class FixityCheckerTests
       val inputStream = stringCodec.toStream(contentString).right.value
       streamStore.put(location)(inputStream) shouldBe a[Right[_, _]]
 
-      val expectedFileFixity = createExpectedFileFixityWith(
+      val expectedFileFixity = createDataDirectoryFileFixityWith(
         location = location,
         checksum = checksum
       )
@@ -181,7 +181,8 @@ class FixityCheckerTests
           Right(Identified(location, inputStream))
       }
 
-      val expectedFileFixity = createExpectedFileFixityWith(checksum = checksum)
+      val expectedFileFixity =
+        createDataDirectoryFileFixityWith(checksum = checksum)
 
       val tags = createMemoryTags
 

@@ -4,7 +4,11 @@ import java.net.URI
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.ExpectedFileFixity
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  DataDirectoryFileFixity,
+  ExpectedFileFixity,
+  FetchFileFixity
+}
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagFetchMetadata,
@@ -201,14 +205,13 @@ class BagExpectedFixityTest
   ): Seq[ExpectedFileFixity] =
     manifestEntries.map {
       case (bagPath, checksumValue) =>
-        ExpectedFileFixity(
+        DataDirectoryFileFixity(
           path = bagPath,
           uri = new URI(root.asLocation(bagPath.toString).toString),
           checksum = Checksum(
             algorithm = checksumAlgorithm,
             value = checksumValue
-          ),
-          length = None
+          )
         )
     }.toSeq
 
@@ -221,7 +224,7 @@ class BagExpectedFixityTest
       case (bagPath, checksumValue) =>
         val fetchMetadata = fetchEntries(bagPath)
 
-        ExpectedFileFixity(
+        FetchFileFixity(
           uri = fetchMetadata.uri,
           path = bagPath,
           checksum = Checksum(
