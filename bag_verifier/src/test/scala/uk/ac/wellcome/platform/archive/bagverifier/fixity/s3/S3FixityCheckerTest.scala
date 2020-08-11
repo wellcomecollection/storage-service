@@ -22,7 +22,7 @@ import uk.ac.wellcome.storage.store.s3.S3StreamStore
 class S3FixityCheckerTest
     extends FixityCheckerTestCases[
       S3ObjectLocation,
-    S3ObjectLocationPrefix,
+      S3ObjectLocationPrefix,
       Bucket,
       Unit,
       S3StreamStore
@@ -50,7 +50,10 @@ class S3FixityCheckerTest
   override def withFixityChecker[R](
     s3Store: S3StreamStore
   )(
-    testWith: TestWith[FixityChecker[S3ObjectLocation, S3ObjectLocationPrefix], R]
+    testWith: TestWith[
+      FixityChecker[S3ObjectLocation, S3ObjectLocationPrefix],
+      R
+    ]
   )(implicit context: Unit): R =
     testWith(new S3FixityChecker() {
       override val streamStore: StreamStore[S3ObjectLocation] = s3Store

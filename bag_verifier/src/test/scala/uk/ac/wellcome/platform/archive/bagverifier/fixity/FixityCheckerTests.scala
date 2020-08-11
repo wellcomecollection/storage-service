@@ -49,12 +49,15 @@ class FixityCheckerTests
       val tags = createMemoryTags
 
       val brokenChecker = new MemoryFixityChecker(streamStore, tags) {
-        override val locator = new Locatable[MemoryLocation, MemoryLocationPrefix, URI] {
-          def locate(
-            uri: URI
-          )(maybeRoot: Option[MemoryLocationPrefix]): Either[LocateFailure[URI], MemoryLocation] =
-            Left(LocationParsingError(uri, msg = "BOOM!"))
-        }
+        override val locator =
+          new Locatable[MemoryLocation, MemoryLocationPrefix, URI] {
+            def locate(
+              uri: URI
+            )(
+              maybeRoot: Option[MemoryLocationPrefix]
+            ): Either[LocateFailure[URI], MemoryLocation] =
+              Left(LocationParsingError(uri, msg = "BOOM!"))
+          }
       }
 
       val expectedFileFixity = createExpectedFileFixity

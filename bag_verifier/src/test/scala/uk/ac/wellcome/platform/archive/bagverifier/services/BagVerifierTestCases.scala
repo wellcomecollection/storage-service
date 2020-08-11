@@ -136,11 +136,15 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
       withTypedStore { implicit typedStore =>
         val space = createStorageSpace
 
-        val (bagObjects, bagRoot, bagInfo) = replicaBagBuilder.createBagContentsWith(
-          space = space,
-          payloadFileCount = payloadFileCount
+        val (bagObjects, bagRoot, bagInfo) =
+          replicaBagBuilder.createBagContentsWith(
+            space = space,
+            payloadFileCount = payloadFileCount
+          )
+        replicaBagBuilder.uploadBagObjects(
+          bagRoot = bagRoot,
+          objects = bagObjects
         )
-        replicaBagBuilder.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
 
         val ingestStep =
           withBagContext(bagRoot) { bagContext =>
@@ -304,7 +308,10 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
         val (bagObjects, bagRoot, _) = replicaBagBuilder.createBagContentsWith(
           externalIdentifier = bagInfoExternalIdentifier
         )
-        replicaBagBuilder.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
+        replicaBagBuilder.uploadBagObjects(
+          bagRoot = bagRoot,
+          objects = bagObjects
+        )
 
         val ingestStep =
           withBagContext(bagRoot) { bagContext =>
@@ -552,7 +559,10 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
 
           val (bagObjects, bagRoot, bagInfo) =
             replicaBagBuilder.createBagContentsWith(space = space)
-          replicaBagBuilder.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
+          replicaBagBuilder.uploadBagObjects(
+            bagRoot = bagRoot,
+            objects = bagObjects
+          )
 
           val location = bagRoot.asLocation("tagmanifest-sha512.txt")
           writeFile(location)

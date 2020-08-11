@@ -24,13 +24,16 @@ class MemoryFixityChecker(
   override protected val sizeFinder: SizeFinder[MemoryLocation] =
     new MemorySizeFinder(streamStore.memoryStore)
 
-  override implicit val locator: Locatable[MemoryLocation, MemoryLocationPrefix, URI] =
+  override implicit val locator
+    : Locatable[MemoryLocation, MemoryLocationPrefix, URI] =
     new Locatable[MemoryLocation, MemoryLocationPrefix, URI] {
-      override def locate(uri: URI)(maybeRoot: Option[MemoryLocationPrefix]): Either[LocateFailure[URI], MemoryLocation] = Right(
+      override def locate(uri: URI)(
+        maybeRoot: Option[MemoryLocationPrefix]
+      ): Either[LocateFailure[URI], MemoryLocation] = Right(
         MemoryLocation(
           namespace = uri.getHost,
           path = uri.getPath.stripPrefix("/")
         )
       )
-  }
+    }
 }

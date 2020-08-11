@@ -28,7 +28,8 @@ trait VerifyChecksumAndSize[BagLocation <: Location, BagPrefix <: Prefix[
     implicit val bagExpectedFixity: BagExpectedFixity[BagLocation, BagPrefix] =
       new BagExpectedFixity[BagLocation, BagPrefix](root)
 
-    implicit val fixityListChecker: FixityListChecker[BagLocation, BagPrefix, Bag] =
+    implicit val fixityListChecker
+      : FixityListChecker[BagLocation, BagPrefix, Bag] =
       new FixityListChecker()
 
     Try { fixityListChecker.check(bag) } match {

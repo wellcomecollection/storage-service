@@ -152,5 +152,7 @@ class S3StandaloneBagVerifierTest
       new S3StandaloneBagVerifier(primaryBucket = primaryBucket.name)
     )
 
-  override val replicaBagBuilder: BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix, Bucket] = new S3BagBuilder {}
+  override val replicaBagBuilder
+    : BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix, Bucket] =
+    new S3BagBuilder {}
 }

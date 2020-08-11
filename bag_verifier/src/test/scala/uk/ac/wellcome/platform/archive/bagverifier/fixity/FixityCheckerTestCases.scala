@@ -49,7 +49,9 @@ trait FixityCheckerTestCases[
     implicit context: Context
   ): R
 
-  def withFixityChecker[R](testWith: TestWith[FixityChecker[BagLocation, BagPrefix], R])(
+  def withFixityChecker[R](
+    testWith: TestWith[FixityChecker[BagLocation, BagPrefix], R]
+  )(
     implicit context: Context
   ): R =
     withStreamStore { streamStore =>

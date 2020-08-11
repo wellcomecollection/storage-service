@@ -20,7 +20,7 @@ import uk.ac.wellcome.storage.tags.memory.MemoryTags
 class MemoryFixityCheckerTest
     extends FixityCheckerTestCases[
       MemoryLocation,
-    MemoryLocationPrefix,
+      MemoryLocationPrefix,
       String,
       (MemoryStreamStore[MemoryLocation], MemoryTags[MemoryLocation]),
       MemoryStreamStore[MemoryLocation]

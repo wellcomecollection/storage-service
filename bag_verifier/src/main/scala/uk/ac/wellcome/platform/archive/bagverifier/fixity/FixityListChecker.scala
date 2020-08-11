@@ -9,7 +9,9 @@ import uk.ac.wellcome.storage.{Location, Prefix}
   * file in the container, then verify the fixity on each of them.
   *
   */
-class FixityListChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation],Container](
+class FixityListChecker[BagLocation <: Location, BagPrefix <: Prefix[
+  BagLocation
+], Container](
   implicit
   verifiable: ExpectedFixity[Container],
   s3Client: AmazonS3,

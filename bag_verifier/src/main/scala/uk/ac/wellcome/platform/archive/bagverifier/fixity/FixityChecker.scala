@@ -22,7 +22,8 @@ import scala.util.{Failure, Success}
 /** Look up and check the fixity info (checksum, size) on an individual file.
   *
   */
-trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] extends Logging {
+trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
+    extends Logging {
   protected val streamStore: StreamStore[BagLocation]
   protected val sizeFinder: SizeFinder[BagLocation]
   val tags: Tags[BagLocation]
