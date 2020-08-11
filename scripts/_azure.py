@@ -4,7 +4,7 @@ import subprocess
 
 from azure.storage.blob import (
     generate_container_sas,
-    BlobSasPermissions,
+    ContainerSasPermissions,
     BlobServiceClient,
 )
 
@@ -38,7 +38,12 @@ def _create_sas_uris(connection_string, *, expiry, ip):
             # These permissions are fairly blunt -- there's a single "write"
             # permission for any modifications to a blob, whether that's the
             # content or the metadata.
-            permission=BlobSasPermissions(read=True, write=True, delete=False),
+            permission=ContainerSasPermissions(
+                read=True,
+                write=True,
+                delete=False,
+                list=True
+            ),
         )
 
         yield (container_name, f"{blob_service_client.url}?{token}")
