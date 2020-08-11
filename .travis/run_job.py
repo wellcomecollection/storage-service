@@ -46,7 +46,7 @@ def should_run_sbt_project(repo, project_name, changed_paths):
         if path.startswith((".travis", "docs/")):
             continue
 
-        if path.endswith(".tf"):
+        if path.endswith((".py", ".tf")):
             continue
 
         if path.startswith(("python_client/", "nginx/")):
