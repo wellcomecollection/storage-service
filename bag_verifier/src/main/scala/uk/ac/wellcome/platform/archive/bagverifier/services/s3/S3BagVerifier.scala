@@ -3,11 +3,22 @@ package uk.ac.wellcome.platform.archive.bagverifier.services.s3
 import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.s3.S3FixityChecker
-import uk.ac.wellcome.platform.archive.bagverifier.models.{BagVerifierError, BagVerifyContext, ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
-import uk.ac.wellcome.platform.archive.bagverifier.services.{BagVerifier, ReplicatedBagVerifier}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{
+  BagVerifierError,
+  BagVerifyContext,
+  ReplicatedBagVerifyContext,
+  StandaloneBagVerifyContext
+}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{
+  BagVerifier,
+  ReplicatedBagVerifier
+}
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable
 import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.S3Resolvable
-import uk.ac.wellcome.platform.archive.common.bagit.models.{Bag, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  Bag,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
@@ -47,12 +58,17 @@ trait S3BagVerifier[B <: BagVerifyContext[S3ObjectLocationPrefix]]
 class S3StandaloneBagVerifier(val primaryBucketName: String)(
   implicit val s3Client: AmazonS3
 ) extends BagVerifier[
-  StandaloneBagVerifyContext[S3ObjectLocationPrefix],
-  S3ObjectLocation,
-  S3ObjectLocationPrefix
-]
+      StandaloneBagVerifyContext[S3ObjectLocationPrefix],
+      S3ObjectLocation,
+      S3ObjectLocationPrefix
+    ]
     with S3BagVerifier[StandaloneBagVerifyContext[S3ObjectLocationPrefix]] {
-  override def verifyReplicatedBag(root: StandaloneBagVerifyContext[S3ObjectLocationPrefix], space: StorageSpace, externalIdentifier: ExternalIdentifier, bag: Bag): Either[BagVerifierError, Unit] = Right(())
+  override def verifyReplicatedBag(
+    root: StandaloneBagVerifyContext[S3ObjectLocationPrefix],
+    space: StorageSpace,
+    externalIdentifier: ExternalIdentifier,
+    bag: Bag
+  ): Either[BagVerifierError, Unit] = Right(())
 }
 
 class S3ReplicatedBagVerifier(val primaryBucketName: String)(

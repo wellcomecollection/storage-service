@@ -1,7 +1,11 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services.s3
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.models.{BagVerifyContext, ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{
+  BagVerifyContext,
+  ReplicatedBagVerifyContext,
+  StandaloneBagVerifyContext
+}
 import uk.ac.wellcome.platform.archive.bagverifier.services._
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
@@ -80,9 +84,10 @@ class S3ReplicatedBagVerifierTest
 
 class S3StandaloneBagVerifierTest
     extends BagVerifierTestCases[
-    S3StandaloneBagVerifier,
+      S3StandaloneBagVerifier,
       StandaloneBagVerifyContext[S3ObjectLocationPrefix],
-    S3ObjectLocation,S3ObjectLocationPrefix,
+      S3ObjectLocation,
+      S3ObjectLocationPrefix,
       Bucket
     ]
     with S3BagVerifierTests[
@@ -99,8 +104,12 @@ class S3StandaloneBagVerifierTest
       new S3StandaloneBagVerifier(primaryBucketName = primaryBucket.name)
     )
 
-  override val bagBuilder: BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix, Bucket] = new S3BagBuilder {}
+  override val bagBuilder
+    : BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix, Bucket] =
+    new S3BagBuilder {}
 
-  override def withBagContext[R](bagRoot: S3ObjectLocationPrefix)(testWith: TestWith[StandaloneBagVerifyContext[S3ObjectLocationPrefix], R]): R =
+  override def withBagContext[R](bagRoot: S3ObjectLocationPrefix)(
+    testWith: TestWith[StandaloneBagVerifyContext[S3ObjectLocationPrefix], R]
+  ): R =
     testWith(StandaloneBagVerifyContext(bagRoot))
 }

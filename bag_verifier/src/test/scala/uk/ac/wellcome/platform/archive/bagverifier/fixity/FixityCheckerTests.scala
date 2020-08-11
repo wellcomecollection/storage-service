@@ -14,7 +14,11 @@ import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   LocationParsingError
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, MD5}
+import uk.ac.wellcome.platform.archive.common.verify.{
+  Checksum,
+  ChecksumValue,
+  MD5
+}
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.providers.memory.{
   MemoryLocation,

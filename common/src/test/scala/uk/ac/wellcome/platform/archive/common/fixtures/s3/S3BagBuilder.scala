@@ -1,6 +1,10 @@
 package uk.ac.wellcome.platform.archive.common.fixtures.s3
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagInfo, BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagInfo,
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
@@ -48,7 +52,11 @@ trait S3BagBuilder
     )
 
     implicit val typedStore: S3TypedStore[String] = S3TypedStore[String]
-    uploadBagObjects(bagContents.bagRoot, objects = bagContents.bagObjects, bagContents.fetchObjects)
+    uploadBagObjects(
+      bagContents.bagRoot,
+      objects = bagContents.bagObjects,
+      bagContents.fetchObjects
+    )
 
     (bagContents.bagRoot, bagContents.bagInfo)
   }

@@ -5,7 +5,10 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagBuilder, StorageRandomThings}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagBuilder,
+  StorageRandomThings
+}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.{Location, Prefix}
@@ -20,7 +23,8 @@ trait BagReaderTestCases[
     with Matchers
     with EitherValues
     with StorageRandomThings
-    with BagBuilder[BagLocation, BagPrefix, Namespace] with S3Fixtures {
+    with BagBuilder[BagLocation, BagPrefix, Namespace]
+    with S3Fixtures {
   def asLocation(root: BagPrefix, path: String): BagLocation
 
   def withContext[R](testWith: TestWith[Context, R]): R
@@ -200,7 +204,7 @@ trait BagReaderTestCases[
   protected def createBag()(
     implicit
     namespace: Namespace,
-                         bucket: Bucket,
+    bucket: Bucket,
     typedStore: TypedStore[BagLocation, String]
   ): (BagPrefix, BagInfo) = {
     val bagContents = createBagContentsWith()

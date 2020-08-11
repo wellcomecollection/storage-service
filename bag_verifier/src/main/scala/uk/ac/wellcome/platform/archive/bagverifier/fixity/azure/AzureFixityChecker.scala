@@ -14,9 +14,14 @@ import uk.ac.wellcome.storage.store.azure.AzureStreamStore
 import uk.ac.wellcome.storage.tags.Tags
 import uk.ac.wellcome.storage.tags.azure.AzureBlobMetadata
 
-class AzureFixityChecker(implicit blobClient: BlobServiceClient) extends FixityChecker[AzureBlobLocation, AzureBlobLocationPrefix] {
-  override protected val streamStore: StreamStore[AzureBlobLocation] = new AzureStreamStore()
-  override protected val sizeFinder: SizeFinder[AzureBlobLocation] = new AzureSizeFinder()
+class AzureFixityChecker(implicit blobClient: BlobServiceClient)
+    extends FixityChecker[AzureBlobLocation, AzureBlobLocationPrefix] {
+  override protected val streamStore: StreamStore[AzureBlobLocation] =
+    new AzureStreamStore()
+  override protected val sizeFinder: SizeFinder[AzureBlobLocation] =
+    new AzureSizeFinder()
   override val tags: Tags[AzureBlobLocation] = new AzureBlobMetadata()
-  override implicit val locator: Locatable[AzureBlobLocation, AzureBlobLocationPrefix, URI] = new AzureLocatable
+  override implicit val locator
+    : Locatable[AzureBlobLocation, AzureBlobLocationPrefix, URI] =
+    new AzureLocatable
 }

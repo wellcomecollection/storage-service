@@ -17,8 +17,6 @@ import uk.ac.wellcome.storage.{Location, Prefix}
 
 import scala.util.Try
 
-
-
 trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
 ]] extends Logging

@@ -4,7 +4,10 @@ import java.security.MessageDigest
 
 import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.common.bagit.models._
-import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, StorageSpaceGenerators}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagInfoGenerators,
+  StorageSpaceGenerators
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
@@ -21,11 +24,11 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
     with BagInfoGenerators {
 
   case class BagContents(
-                          fetchObjects:Map[S3ObjectLocation, String],
-                          bagObjects:Map[BagLocation, String],
-                          bagRoot: BagPrefix,
-                          bagInfo: BagInfo
-                        )
+    fetchObjects: Map[S3ObjectLocation, String],
+    bagObjects: Map[BagLocation, String],
+    bagRoot: BagPrefix,
+    bagInfo: BagInfo
+  )
 
   case class ManifestFile(name: String, contents: String)
 
@@ -42,14 +45,20 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
   def uploadBagObjects(
     bagRoot: BagPrefix,
     objects: Map[BagLocation, String],
-                      fetchObjects: Map[S3ObjectLocation, String] = Map.empty
-  )(implicit typedStore: TypedStore[BagLocation, String], s3Client: AmazonS3): Unit = {
+    fetchObjects: Map[S3ObjectLocation, String] = Map.empty
+  )(
+    implicit typedStore: TypedStore[BagLocation, String],
+    s3Client: AmazonS3
+  ): Unit = {
     objects.foreach {
       case (location, contents) =>
         typedStore.put(location)(contents) shouldBe a[Right[_, _]]
     }
-   fetchObjects.foreach { case (fetchObjectLocation, fetchObjectContents) =>
-      S3TypedStore[String].put(fetchObjectLocation)(fetchObjectContents) shouldBe a[Right[_, _]]
+    fetchObjects.foreach {
+      case (fetchObjectLocation, fetchObjectContents) =>
+        S3TypedStore[String].put(fetchObjectLocation)(fetchObjectContents) shouldBe a[
+          Right[_, _]
+        ]
     }
   }
 
@@ -57,10 +66,10 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
     randomInt(from = 0, to = payloadFileCount)
 
   def createBagContentsWith(
-                             space: StorageSpace = createStorageSpace,
-                             externalIdentifier: ExternalIdentifier = createExternalIdentifier,
-                             version: BagVersion = BagVersion(randomInt(from = 2, to = 10)),
-                             payloadFileCount: Int = randomInt(from = 5, to = 50)
+    space: StorageSpace = createStorageSpace,
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
+    version: BagVersion = BagVersion(randomInt(from = 2, to = 10)),
+    payloadFileCount: Int = randomInt(from = 5, to = 50)
   )(
     implicit namespace: Namespace,
     primaryBucket: Bucket
@@ -113,7 +122,7 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
           )
         }
 
-    val fetchFile = createFetchFile(primaryBucket.name,fetchEntries)
+    val fetchFile = createFetchFile(primaryBucket.name, fetchEntries)
       .map { contents =>
         ManifestFile(
           name = "fetch.txt",
@@ -146,35 +155,43 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
         createBagLocation(bagRoot, path = payloadEntry.path) -> payloadEntry.contents
       }.toMap
 
-    val fetchObjects = fetchEntries .map{fetchEntry =>
+    val fetchObjects = fetchEntries.map { fetchEntry =>
       S3ObjectLocation(primaryBucket.name, fetchEntry.path) -> fetchEntry.contents
     }.toMap
 
-    BagContents(fetchObjects,manifestObjects ++ payloadObjects, bagRoot, bagInfo)
+    BagContents(
+      fetchObjects,
+      manifestObjects ++ payloadObjects,
+      bagRoot,
+      bagInfo
+    )
   }
 
   protected def createFetchFile(
-                                 primaryBucketName: String,
-                                 entries: Seq[PayloadEntry]
+    primaryBucketName: String,
+    entries: Seq[PayloadEntry]
   ): Option[String] =
     if (entries.isEmpty) {
       None
     } else {
       Some(
         entries
-          .map { entry => buildFetchEntryLine(primaryBucketName, entry) }
+          .map { entry =>
+            buildFetchEntryLine(primaryBucketName, entry)
+          }
           .mkString("\n")
       )
     }
 
   protected def buildFetchEntryLine(
-                                     primaryBucketName: String,
-                                     entry: PayloadEntry
-  ): String ={
+    primaryBucketName: String,
+    entry: PayloadEntry
+  ): String = {
     val displaySize =
-    if (Random.nextBoolean()) entry.contents.getBytes.length.toString else "-"
+      if (Random.nextBoolean()) entry.contents.getBytes.length.toString else "-"
 
-  s"""s3://${primaryBucketName}/${entry.path} $displaySize ${entry.bagPath}"""}
+    s"""s3://${primaryBucketName}/${entry.path} $displaySize ${entry.bagPath}"""
+  }
 
   protected def createPayloadOxum(entries: Seq[PayloadEntry]): PayloadOxum =
     PayloadOxum(

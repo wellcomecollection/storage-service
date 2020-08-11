@@ -9,12 +9,14 @@ import uk.ac.wellcome.storage.{Location, Prefix}
   * file in the container, then verify the fixity on each of them.
   *
   */
-class FixityListChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Container](
-                                                                                               implicit
-                                                                                               verifiable: ExpectedFixity[Container],
-                                                                                               s3Client: AmazonS3,
-                                                                                               dataDirectoryFixityChecker: FixityChecker[BagLocation, BagPrefix]
-                                                                                             ) extends Logging {
+class FixityListChecker[BagLocation <: Location, BagPrefix <: Prefix[
+  BagLocation
+], Container](
+  implicit
+  verifiable: ExpectedFixity[Container],
+  s3Client: AmazonS3,
+  dataDirectoryFixityChecker: FixityChecker[BagLocation, BagPrefix]
+) extends Logging {
   val fetchEntriesFixityChecker = new S3FixityChecker()
 
   def check(container: Container): FixityListResult[BagLocation] = {
@@ -33,33 +35,33 @@ class FixityListChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation
           ) {
 
             case (
-              existingCorrect: FixityListAllCorrect[BagLocation],
-              newCorrect: FileFixityCorrect[BagLocation]
-              ) =>
+                existingCorrect: FixityListAllCorrect[BagLocation],
+                newCorrect: FileFixityCorrect[BagLocation]
+                ) =>
               FixityListAllCorrect(newCorrect :: existingCorrect.locations)
 
             case (
-              correct: FixityListAllCorrect[BagLocation],
-              err: FileFixityError[BagLocation]
-              ) =>
+                correct: FixityListAllCorrect[BagLocation],
+                err: FileFixityError[BagLocation]
+                ) =>
               FixityListWithErrors(
                 errors = List(err),
                 correct = correct.locations
               )
 
             case (
-              existingErrors: FixityListWithErrors[BagLocation],
-              c: FileFixityCorrect[BagLocation]
-              ) =>
+                existingErrors: FixityListWithErrors[BagLocation],
+                c: FileFixityCorrect[BagLocation]
+                ) =>
               FixityListWithErrors(
                 existingErrors.errors,
                 c :: existingErrors.correct
               )
 
             case (
-              existingErrors: FixityListWithErrors[BagLocation],
-              err: FileFixityError[BagLocation]
-              ) =>
+                existingErrors: FixityListWithErrors[BagLocation],
+                err: FileFixityError[BagLocation]
+                ) =>
               FixityListWithErrors(
                 errors = err :: existingErrors.errors,
                 correct = existingErrors.correct

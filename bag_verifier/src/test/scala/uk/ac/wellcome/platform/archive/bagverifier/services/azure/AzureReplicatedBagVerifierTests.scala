@@ -1,7 +1,10 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services.azure
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.services.{ReplicatedBagVerifier, ReplicatedBagVerifierTestCases}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{
+  ReplicatedBagVerifier,
+  ReplicatedBagVerifierTestCases
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.bagit.services.azure.AzureBagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
@@ -14,28 +17,45 @@ import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.store.azure.AzureTypedStore
 import uk.ac.wellcome.storage.streaming.Codec._
 
-class AzureReplicatedBagVerifierTests extends ReplicatedBagVerifierTestCases[
-  AzureBlobLocation,
-  AzureBlobLocationPrefix,
-  Container
-] with S3Fixtures with AzureFixtures{
+class AzureReplicatedBagVerifierTests
+    extends ReplicatedBagVerifierTestCases[
+      AzureBlobLocation,
+      AzureBlobLocationPrefix,
+      Container
+    ]
+    with S3Fixtures
+    with AzureFixtures {
 
   val azureTypedStore = AzureTypedStore[String]
-  override val bagBuilder: BagBuilder[AzureBlobLocation, AzureBlobLocationPrefix, Container] = new AzureBagBuilder {}
+  override val bagBuilder
+    : BagBuilder[AzureBlobLocation, AzureBlobLocationPrefix, Container] =
+    new AzureBagBuilder {}
 
-  override def withTypedStore[R](testWith: TestWith[TypedStore[AzureBlobLocation, String], R]): R = testWith(azureTypedStore)
+  override def withTypedStore[R](
+    testWith: TestWith[TypedStore[AzureBlobLocation, String], R]
+  ): R = testWith(azureTypedStore)
 
-  override def withVerifier[R](primaryBucket: Bucket)(testWith: TestWith[ReplicatedBagVerifier[AzureBlobLocation, AzureBlobLocationPrefix], R]): R =
+  override def withVerifier[R](primaryBucket: Bucket)(
+    testWith: TestWith[
+      ReplicatedBagVerifier[AzureBlobLocation, AzureBlobLocationPrefix],
+      R
+    ]
+  ): R =
     testWith(
       new AzureReplicatedBagVerifier(primaryBucketName = primaryBucket.name)
     )
-  override def writeFile(location: AzureBlobLocation, contents: String): Unit = azureTypedStore.put(location)(contents)
+  override def writeFile(location: AzureBlobLocation, contents: String): Unit =
+    azureTypedStore.put(location)(contents)
 
-  override def createBagReader: BagReader[AzureBlobLocation, AzureBlobLocationPrefix] = new AzureBagReader()
+  override def createBagReader
+    : BagReader[AzureBlobLocation, AzureBlobLocationPrefix] =
+    new AzureBagReader()
 
-  override def withNamespace[R](testWith: TestWith[Container, R]): R = withAzureContainer { container =>
-    testWith(container)
-  }
+  override def withNamespace[R](testWith: TestWith[Container, R]): R =
+    withAzureContainer { container =>
+      testWith(container)
+    }
 
-  override def createId(implicit container: Container): AzureBlobLocation = createAzureBlobLocationWith(container)
+  override def createId(implicit container: Container): AzureBlobLocation =
+    createAzureBlobLocationWith(container)
 }

@@ -411,8 +411,8 @@ class StorageManifestServiceTest
           payloadFileCount
 
         override protected def buildFetchEntryLine(
-                                                    primaryBucketName: String,
-                                                    entry: PayloadEntry
+          primaryBucketName: String,
+          entry: PayloadEntry
         ): String =
           s"""s3://$primaryBucketName/${entry.path} ${entry.contents.getBytes.length} ${entry.bagPath}"""
       }
@@ -494,7 +494,11 @@ class StorageManifestServiceTest
         version = version
       )
 
-    bagBuilder.uploadBagObjects(bagRoot = bagContents.bagRoot, objects = bagContents.bagObjects, fetchObjects = bagContents.fetchObjects)
+    bagBuilder.uploadBagObjects(
+      bagRoot = bagContents.bagRoot,
+      objects = bagContents.bagObjects,
+      fetchObjects = bagContents.fetchObjects
+    )
 
     (
       bagContents.bagRoot,
