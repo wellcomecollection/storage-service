@@ -19,7 +19,7 @@ trait VerifyFetch[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
   // and we don't have to worry about interconnected bag dependencies.
   def verifyFetchPrefixes(
     fetch: Option[BagFetch],
-    root: BagPrefix
+    root: S3ObjectLocationPrefix
   ): Either[BagVerifierError, Unit] =
     fetch match {
       case None => Right(())
@@ -56,14 +56,11 @@ trait VerifyFetch[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
 
   private def isPrefixOf(
     location: S3ObjectLocation,
-    prefix: Prefix[_]
+    prefix: S3ObjectLocationPrefix
   ): Boolean =
-    prefix match {
-      case S3ObjectLocationPrefix(bucket, keyPrefix) =>
-        location.bucket == bucket && location.key.startsWith(s"$keyPrefix/")
-
-      case _ => false
-    }
+    location.bucket == prefix.bucket && location.key.startsWith(
+      s"${prefix.keyPrefix}/"
+    )
 
   // Check that the user hasn't sent any files in the bag which
   // also have a fetch file entry.
