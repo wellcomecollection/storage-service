@@ -11,7 +11,11 @@ import scala.util.Random
 
 trait AzureBagBuilder extends BagBuilder[AzureBlobLocation, AzureBlobLocationPrefix, Container]
   with AzureFixtures{
-  override def createBagRoot(space: StorageSpace, externalIdentifier: ExternalIdentifier, version: BagVersion)(implicit container: Container): AzureBlobLocationPrefix = AzureBlobLocationPrefix(container.name, createBagRootPath(space, externalIdentifier, version))
+  override def createBagRoot(space: StorageSpace, externalIdentifier: ExternalIdentifier, version: BagVersion)(implicit container: Container): AzureBlobLocationPrefix =
+    AzureBlobLocationPrefix(
+      container = container.name,
+      namePrefix = createBagRootPath(space, externalIdentifier, version)
+    )
 
   override def createBagLocation(bagRoot: AzureBlobLocationPrefix, path: String): AzureBlobLocation = AzureBlobLocation(bagRoot.container, path)
 
