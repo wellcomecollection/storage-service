@@ -56,6 +56,19 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     with StorageSpaceGenerators with BagInfoGenerators
     with NamespaceFixtures[BagLocation, Namespace]
     with S3Fixtures {
+
+  def withTypedStore[R](
+    testWith: TestWith[TypedStore[BagLocation, String], R]
+  ): R
+
+  def withVerifier[R](primaryBucket: Bucket)(
+    testWith: TestWith[Verifier, R]
+  ): R
+
+  def withBagContext[R](bagRoot: BagPrefix)(
+    testWith: TestWith[BagContext, R]
+  ): R
+
   val bagBuilder: BagBuilder[BagLocation, BagPrefix, Namespace]
 
   def withBag[R](space: StorageSpace, externalIdentifier: ExternalIdentifier,
@@ -79,13 +92,6 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
         }
       }
     }
-
-
-  def withTypedStore[R](testWith: TestWith[TypedStore[BagLocation, String], R]): R
-
-  def withVerifier[R](primaryBucket: Bucket)(testWith: TestWith[Verifier, R]): R
-
-  def withBagContext[R](bagRoot: BagPrefix)(testWith: TestWith[BagContext, R]): R
 
   val payloadFileCount: Int = randomInt(from = 1, to = 10)
 
