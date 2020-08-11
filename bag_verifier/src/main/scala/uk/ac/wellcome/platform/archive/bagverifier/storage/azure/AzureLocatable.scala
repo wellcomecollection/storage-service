@@ -11,7 +11,11 @@ import scala.util.Try
 class AzureLocatable extends Locatable[AzureBlobLocation, AzureBlobLocationPrefix, URI] {
   override def locate(uri: URI)(maybeRoot: Option[AzureBlobLocationPrefix]): Either[LocateFailure[URI], AzureBlobLocation] = Try{
     val blobUrlParts = BlobUrlParts.parse(uri.toURL)
-    AzureBlobLocation(blobUrlParts.getBlobContainerName, blobUrlParts.getBlobName)
+
+    AzureBlobLocation(
+      container = blobUrlParts.getBlobContainerName,
+      name = blobUrlParts.getBlobName
+    )
   }.toEither.left.map{ throwable =>
     LocationParsingError(
       uri, s"Failed parsing Azure location: ${throwable.getMessage}")
