@@ -230,7 +230,6 @@ class BagExpectedFixityTest
           checksum = Checksum(
             algorithm = checksumAlgorithm,
             value = checksumValue
-
           ),
           length = fetchMetadata.length
         )

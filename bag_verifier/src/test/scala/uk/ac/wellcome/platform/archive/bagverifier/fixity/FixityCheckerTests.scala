@@ -181,7 +181,8 @@ class FixityCheckerTests
           Right(Identified(location, inputStream))
       }
 
-      val expectedFileFixity = createDataDirectoryFileFixityWith(checksum = checksum)
+      val expectedFileFixity =
+        createDataDirectoryFileFixityWith(checksum = checksum)
 
       val tags = createMemoryTags
 

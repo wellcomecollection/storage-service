@@ -25,7 +25,8 @@ class FixityListChecker[BagLocation <: Location, Container](
         expectedFileFixities
           .map {
             case f: FetchFileFixity => fetchEntriesFixityChecker.check(f)
-            case d: DataDirectoryFileFixity => dataDirectoryFixityChecker.check(d)
+            case d: DataDirectoryFileFixity =>
+              dataDirectoryFixityChecker.check(d)
           }
           .foldLeft[FixityListCheckingResult[BagLocation]](
             FixityListAllCorrect(Nil)

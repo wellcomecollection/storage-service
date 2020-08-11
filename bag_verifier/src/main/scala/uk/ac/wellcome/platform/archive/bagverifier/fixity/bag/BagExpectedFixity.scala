@@ -3,10 +3,10 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity.bag
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   CannotCreateExpectedFixity,
+  DataDirectoryFileFixity,
   ExpectedFileFixity,
   ExpectedFixity,
-  FetchFileFixity,
-  DataDirectoryFileFixity
+  FetchFileFixity
 }
 import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   Locatable,

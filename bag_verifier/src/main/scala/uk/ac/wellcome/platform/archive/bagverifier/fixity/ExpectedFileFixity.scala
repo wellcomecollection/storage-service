@@ -4,7 +4,7 @@ import java.net.URI
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
 import uk.ac.wellcome.platform.archive.common.verify.Checksum
 
-sealed trait ExpectedFileFixity{
+sealed trait ExpectedFileFixity {
   val uri: URI
   val path: BagPath
   val checksum: Checksum
