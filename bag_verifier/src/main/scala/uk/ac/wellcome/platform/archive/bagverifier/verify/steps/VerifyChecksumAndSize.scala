@@ -1,11 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 
 import com.amazonaws.services.s3.AmazonS3
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
-  FixityChecker,
-  FixityListChecker,
-  FixityListResult
-}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FixityChecker, FixityListChecker, FixityListResult}
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.bag.BagExpectedFixity
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable

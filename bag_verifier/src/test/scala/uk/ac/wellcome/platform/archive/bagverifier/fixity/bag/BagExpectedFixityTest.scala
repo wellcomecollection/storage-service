@@ -10,24 +10,11 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FetchFileFixity
 }
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagFetchMetadata,
-  BagPath
-}
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagGenerators,
-  FetchMetadataGenerators
-}
-import uk.ac.wellcome.platform.archive.common.verify.{
-  Checksum,
-  ChecksumValue,
-  HashingAlgorithm
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagFetchMetadata, BagPath}
+import uk.ac.wellcome.platform.archive.common.generators.{BagGenerators, FetchMetadataGenerators}
+import uk.ac.wellcome.platform.archive.common.verify.{Checksum, ChecksumValue, HashingAlgorithm}
 import uk.ac.wellcome.storage.generators.MemoryLocationGenerators
-import uk.ac.wellcome.storage.providers.memory.{
-  MemoryLocation,
-  MemoryLocationPrefix
-}
+import uk.ac.wellcome.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
 
 class BagExpectedFixityTest
     extends AnyFunSpec
@@ -230,6 +217,7 @@ class BagExpectedFixityTest
           checksum = Checksum(
             algorithm = checksumAlgorithm,
             value = checksumValue
+
           ),
           length = fetchMetadata.length
         )
