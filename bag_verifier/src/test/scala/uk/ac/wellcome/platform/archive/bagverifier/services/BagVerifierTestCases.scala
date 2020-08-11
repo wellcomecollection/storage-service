@@ -34,6 +34,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepSucceeded,
   StorageSpace
 }
+import uk.ac.wellcome.storage.azure.AzureBlobLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
@@ -605,9 +606,11 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     expectedCount: Int
   ): Assertion =
     if (successes
-          .map { _.objectLocation.asInstanceOf[S3ObjectLocation].key }
-          .exists {
-            _.endsWith("/fetch.txt")
+          .map { fixityEntry=> fixityEntry.objectLocation match {
+            case azureBlobLocation: AzureBlobLocation => azureBlobLocation.name
+            case s3ObjectLocation: S3ObjectLocation => s3ObjectLocation.key
+          } }
+          .exists {_.endsWith("/fetch.txt")
           }) {
       successes.size shouldBe expectedCount + 1
     } else {
