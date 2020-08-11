@@ -208,7 +208,7 @@ trait BagReaderTestCases[
   ): (BagPrefix, BagInfo) = {
     val bagContents = createBagContentsWith()
 
-    uploadBagObjects(bagContents.bagRoot, objects = bagContents.bagObjects)
+    storeBagContents(bagContents)
 
     (bagContents.bagRoot, bagContents.bagInfo)
   }

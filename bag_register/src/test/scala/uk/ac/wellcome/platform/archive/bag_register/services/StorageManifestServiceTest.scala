@@ -494,11 +494,7 @@ class StorageManifestServiceTest
         version = version
       )
 
-    bagBuilder.uploadBagObjects(
-      bagRoot = bagContents.bagRoot,
-      objects = bagContents.bagObjects,
-      fetchObjects = bagContents.fetchObjects
-    )
+    bagBuilder.storeBagContents(bagContents)
 
     (
       bagContents.bagRoot,

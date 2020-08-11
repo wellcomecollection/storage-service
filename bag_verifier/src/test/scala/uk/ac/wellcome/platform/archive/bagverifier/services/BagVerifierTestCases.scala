@@ -82,11 +82,8 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
             externalIdentifier = externalIdentifier,
             payloadFileCount = payloadFileCount
           )
-          bagBuilder.uploadBagObjects(
-            bagRoot = bagContents.bagRoot,
-            objects = bagContents.bagObjects,
-            fetchObjects = bagContents.fetchObjects
-          )
+
+          bagBuilder.storeBagContents(bagContents)
 
           testWith((primaryBucket, bagContents.bagRoot))
         }
@@ -454,18 +451,12 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
   describe("checks for unreferenced files") {
     it("fails if there is one unreferenced file") {
       val badBuilder = new BagBuilderImpl {
-        override def uploadBagObjects(
-          bagRoot: BagPrefix,
-          bagObjects: Map[BagLocation, String],
-          fetchObjects: Map[S3ObjectLocation, String]
+        override def storeBagContents(
+          bagContents: BagContents
         )(implicit typedStore: TypedStore[BagLocation, String]): Unit = {
-          super.uploadBagObjects(
-            bagRoot = bagRoot,
-            objects = bagObjects,
-            fetchObjects = fetchObjects
-          )
+          super.storeBagContents(bagContents)
 
-          val location = bagRoot.asLocation("unreferencedfile.txt")
+          val location = bagContents.bagRoot.asLocation("unreferencedfile.txt")
           writeFile(location)
         }
       }
@@ -483,19 +474,13 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
 
     it("fails if there are multiple unreferenced files") {
       val badBuilder = new BagBuilderImpl {
-        override def uploadBagObjects(
-          bagRoot: BagPrefix,
-          bagObjects: Map[BagLocation, String],
-          fetchObjects: Map[S3ObjectLocation, String]
+        override def storeBagContents(
+          bagContents: BagContents
         )(implicit typedStore: TypedStore[BagLocation, String]): Unit = {
-          super.uploadBagObjects(
-            bagRoot = bagRoot,
-            objects = bagObjects,
-            fetchObjects = fetchObjects
-          )
+          super.storeBagContents(bagContents)
 
           (1 to 3).foreach { i =>
-            val location = bagRoot.asLocation(s"unreferencedfile_$i.txt")
+            val location = bagContents.bagRoot.asLocation(s"unreferencedfile_$i.txt")
             writeFile(location)
           }
         }
@@ -515,17 +500,12 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
 
     it("fails if a file in the fetch.txt also appears in the bag") {
       val alwaysWriteAsFetchBuilder = new BagBuilderImpl {
-        override def uploadBagObjects(
-          bagRoot: BagPrefix,
-          bagObjects: Map[BagLocation, String],
-          fetchObjects: Map[S3ObjectLocation, String]
+        override def storeBagContents(
+          bagContents: BagContents
         )(implicit typedStore: TypedStore[BagLocation, String]): Unit = {
-          super.uploadBagObjects(
-            bagRoot = bagRoot,
-            objects = bagObjects,
-            fetchObjects = fetchObjects
-          )
+          super.storeBagContents(bagContents)
 
+          val bagRoot = bagContents.bagRoot
           val bag = createBagReader.get(bagRoot).right.value
 
           // Write one of the fetch.txt entries as a concrete file

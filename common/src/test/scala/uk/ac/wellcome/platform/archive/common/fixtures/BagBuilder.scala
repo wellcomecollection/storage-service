@@ -43,16 +43,14 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
 
   def createBagLocation(bagRoot: BagPrefix, path: String): BagLocation
 
-  def uploadBagObjects(
-    bagRoot: BagPrefix,
-    objects: Map[BagLocation, String],
-    fetchObjects: Map[S3ObjectLocation, String] = Map.empty
-  )(implicit typedStore: TypedStore[BagLocation, String]): Unit = {
-    objects.foreach {
+  def storeBagContents(bagContents: BagContents)(
+    implicit typedStore: TypedStore[BagLocation, String]
+  ): Unit = {
+    bagContents.bagObjects.foreach {
       case (location, contents) =>
         typedStore.put(location)(contents) shouldBe a[Right[_, _]]
     }
-   fetchObjects.foreach { case (fetchObjectLocation, fetchObjectContents) =>
+    bagContents.fetchObjects.foreach { case (fetchObjectLocation, fetchObjectContents) =>
       S3TypedStore[String].put(fetchObjectLocation)(fetchObjectContents) shouldBe a[Right[_, _]]
     }
   }
