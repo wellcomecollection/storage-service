@@ -48,37 +48,35 @@ trait IngestsApiFixture
     metrics: Metrics[Future, StandardUnit]
   )(testWith: TestWith[WellcomeHttpApp, R]): R =
     withActorSystem { implicit actorSystem =>
-      withMaterializer(actorSystem) { implicit materializer =>
-        val httpMetrics = new HttpMetrics(
-          name = metricsName,
-          metrics = metrics
-        )
+      val httpMetrics = new HttpMetrics(
+        name = metricsName,
+        metrics = metrics
+      )
 
-        val ingestsApi = new IngestsApi[String] {
-          override implicit val ec: ExecutionContext = global
-          override val ingestTrackerClient: IngestTrackerClient =
-            new AkkaIngestTrackerClient(trackerUri)
+      val ingestsApi = new IngestsApi[String] {
+        override implicit val ec: ExecutionContext = global
+        override val ingestTrackerClient: IngestTrackerClient =
+          new AkkaIngestTrackerClient(trackerUri)
 
-          override val unpackerMessageSender: MessageSender[String] =
-            unpackerSender
+        override val unpackerMessageSender: MessageSender[String] =
+          unpackerSender
 
-          override val httpServerConfig: HTTPServerConfig =
-            httpServerConfigTest
-          override val contextURL: URL = contextURLTest
-        }
-
-        val app = new WellcomeHttpApp(
-          routes = ingestsApi.ingests,
-          httpMetrics = httpMetrics,
-          httpServerConfig = httpServerConfigTest,
-          contextURL = contextURLTest,
-          appName = metricsName
-        )
-
-        app.run()
-
-        testWith(app)
+        override val httpServerConfig: HTTPServerConfig =
+          httpServerConfigTest
+        override val contextURL: URL = contextURLTest
       }
+
+      val app = new WellcomeHttpApp(
+        routes = ingestsApi.ingests,
+        httpMetrics = httpMetrics,
+        httpServerConfig = httpServerConfigTest,
+        contextURL = contextURLTest,
+        appName = metricsName
+      )
+
+      app.run()
+
+      testWith(app)
     }
 
   def withBrokenApp[R](

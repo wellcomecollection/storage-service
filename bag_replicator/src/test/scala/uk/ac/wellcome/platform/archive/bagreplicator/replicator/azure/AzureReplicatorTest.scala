@@ -5,7 +5,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.ReplicatorTestCa
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.AzureFixtures
 import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
-import uk.ac.wellcome.storage.store.azure.{AzureStreamStore, AzureTypedStore}
+import uk.ac.wellcome.storage.store.azure.AzureTypedStore
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.tags.Tags
 import uk.ac.wellcome.storage.tags.azure.AzureBlobMetadata
@@ -37,9 +37,8 @@ class AzureReplicatorTest
   ): AzureBlobLocationPrefix =
     AzureBlobLocationPrefix(dstContainer.name, namePrefix = "")
 
-  implicit val streamStore: AzureStreamStore = new AzureStreamStore()
   override val dstStringStore: AzureTypedStore[String] =
-    new AzureTypedStore[String]()
+    AzureTypedStore[String]
 
   override val dstTags: Tags[AzureBlobLocation] = new AzureBlobMetadata()
 }

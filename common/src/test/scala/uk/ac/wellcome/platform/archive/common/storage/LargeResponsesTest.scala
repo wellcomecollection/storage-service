@@ -40,7 +40,7 @@ class LargeResponsesTest
     it("does not redirect a < max-length response") {
       withLocalS3Bucket { bucket =>
         withActorSystem { implicit actorSystem =>
-          withMaterializer(actorSystem) { implicit mat =>
+          withMaterializer { implicit mat =>
             val maxBytes = 100
             val expectedByteArray = randomBytes(maxBytes - 10)
 
@@ -64,7 +64,7 @@ class LargeResponsesTest
       it("without Etag") {
         withLocalS3Bucket { bucket =>
           withActorSystem { implicit actorSystem =>
-            withMaterializer(actorSystem) { implicit mat =>
+            withMaterializer { implicit mat =>
               val maxBytes = 100
               val expectedByteArray = randomBytes(maxBytes + 10)
               val prefix = randomAlphanumeric
@@ -111,7 +111,7 @@ class LargeResponsesTest
       it("with Etag") {
         withLocalS3Bucket { bucket =>
           withActorSystem { implicit actorSystem =>
-            withMaterializer(actorSystem) { implicit mat =>
+            withMaterializer { implicit mat =>
               val maxBytes = 100
               val expectedByteArray = randomBytes(maxBytes + 10)
               val header = ETag(randomAlphanumeric)
