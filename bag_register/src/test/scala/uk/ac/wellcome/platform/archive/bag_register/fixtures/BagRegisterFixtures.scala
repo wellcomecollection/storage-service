@@ -151,7 +151,7 @@ trait BagRegisterFixtures
     implicit val typedStore: S3TypedStore[String] =
       S3TypedStore[String]
 
-    val (bagObjects, bagRoot, bagInfo) =
+    val bagContents =
       createBagContentsWith(
         space = space,
         externalIdentifier = externalIdentifier,
@@ -159,8 +159,12 @@ trait BagRegisterFixtures
         payloadFileCount = dataFileCount
       )
 
-    uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
+    uploadBagObjects(
+      bagRoot = bagContents.bagRoot,
+      objects = bagContents.bagObjects,
+      fetchObjects = bagContents.fetchObjects
+    )
 
-    (bagRoot, bagInfo)
+    (bagContents.bagRoot, bagContents.bagInfo)
   }
 }
