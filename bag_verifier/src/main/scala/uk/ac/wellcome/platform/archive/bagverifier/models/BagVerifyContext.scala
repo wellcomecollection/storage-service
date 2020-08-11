@@ -7,9 +7,9 @@ sealed trait BagVerifyContext[BagPrefix <: Prefix[_ <: Location]] {
   val root: BagPrefix
 }
 
-case class StandaloneBagVerifyContext[BagPrefix <: Prefix[_ <: Location]](
-  root: BagPrefix
-) extends BagVerifyContext[BagPrefix]
+case class StandaloneBagVerifyContext(
+  root: S3ObjectLocationPrefix
+) extends BagVerifyContext[S3ObjectLocationPrefix]
 
 case class ReplicatedBagVerifyContext[
   ReplicaBagPrefix <: Prefix[_ <: Location]
