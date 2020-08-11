@@ -1,6 +1,8 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity
 
+import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.s3.S3FixityChecker
 import uk.ac.wellcome.storage.Location
 
 /** Given some Container of files, get the expected fixity information for every
@@ -10,15 +12,21 @@ import uk.ac.wellcome.storage.Location
 class FixityListChecker[BagLocation <: Location, Container](
   implicit
   verifiable: ExpectedFixity[Container],
-  fixityChecker: FixityChecker[BagLocation]
+  s3Client: AmazonS3,
+  dataDirectoryFixityChecker: FixityChecker[BagLocation]
 ) extends Logging {
+  val fetchEntriesFixityChecker = new S3FixityChecker()
+
   def check(container: Container): FixityListResult[BagLocation] = {
     debug(s"Checking the fixity info for $container")
     verifiable.create(container) match {
       case Left(err) => CouldNotCreateExpectedFixityList(err.msg)
       case Right(verifiableLocations) =>
         verifiableLocations
-          .map(fixityChecker.check)
+          .map {
+            case f: FetchFileFixity => fetchEntriesFixityChecker.check(f)
+            case d: DataDirectoryFileFixity => dataDirectoryFixityChecker.check(d)
+          }
           .foldLeft[FixityListCheckingResult[BagLocation]](
             FixityListAllCorrect(Nil)
           ) {

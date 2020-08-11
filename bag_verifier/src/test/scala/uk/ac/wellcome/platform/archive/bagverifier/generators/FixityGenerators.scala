@@ -2,7 +2,10 @@ package uk.ac.wellcome.platform.archive.bagverifier.generators
 
 import java.net.URI
 
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.ExpectedFileFixity
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  DataDirectoryFileFixity,
+  ExpectedFileFixity
+}
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.verify.{Checksum, MD5, SHA256}
@@ -15,16 +18,16 @@ trait FixityGenerators[BagLocation <: Location] extends StorageRandomThings {
   def resolve(location: BagLocation): URI
 
   def createExpectedFileFixity: ExpectedFileFixity =
-    createExpectedFileFixityWith()
+    createDataDirectoryFileFixityWith()
 
   def createLocation: BagLocation
 
-  def createExpectedFileFixityWith(
+  def createDataDirectoryFileFixityWith(
     location: BagLocation = createLocation,
     checksum: Checksum = randomChecksum,
     length: Option[Long] = None
-  ): ExpectedFileFixity =
-    ExpectedFileFixity(
+  ): DataDirectoryFileFixity =
+    DataDirectoryFileFixity(
       uri = resolve(location),
       path = BagPath(randomAlphanumeric),
       checksum = checksum,

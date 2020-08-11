@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 
+import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FixityChecker,
   FixityListChecker,
@@ -18,6 +19,7 @@ trait VerifyChecksumAndSize[BagLocation <: Location, BagPrefix <: Prefix[
 ]] {
   implicit val resolvable: Resolvable[BagLocation]
   implicit val fixityChecker: FixityChecker[BagLocation]
+  implicit val s3Client: AmazonS3
 
   def verifyChecksumAndSize(
     root: BagPrefix,

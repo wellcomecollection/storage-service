@@ -71,7 +71,7 @@ trait FixityCheckerTestCases[
         val location = createLocationWith(namespace)
         putString(location, contentString)
 
-        val expectedFileFixity = createExpectedFileFixityWith(
+        val expectedFileFixity = createDataDirectoryFileFixityWith(
           location = location,
           checksum = checksum
         )
@@ -97,7 +97,7 @@ trait FixityCheckerTestCases[
 
         val location = createLocationWith(namespace)
 
-        val expectedFileFixity = createExpectedFileFixityWith(
+        val expectedFileFixity = createDataDirectoryFileFixityWith(
           location = location,
           checksum = checksum
         )
@@ -129,7 +129,7 @@ trait FixityCheckerTestCases[
         val location = createLocationWith(namespace)
         putString(location, randomAlphanumeric)
 
-        val expectedFileFixity = createExpectedFileFixityWith(
+        val expectedFileFixity = createDataDirectoryFileFixityWith(
           location = location,
           checksum = checksum
         )
@@ -166,7 +166,7 @@ trait FixityCheckerTestCases[
         val location = createLocationWith(namespace)
         val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
-        val expectedFileFixity = createExpectedFileFixityWith(
+        val expectedFileFixity = createDataDirectoryFileFixityWith(
           location = location,
           checksum = checksum,
           length = Some(contentString.getBytes().length - 1)
@@ -206,7 +206,7 @@ trait FixityCheckerTestCases[
         val location = createLocationWith(namespace)
         val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
-        val expectedFileFixity = createExpectedFileFixityWith(
+        val expectedFileFixity = createDataDirectoryFileFixityWith(
           location = location,
           checksum = checksum,
           length = Some(contentString.getBytes().length)
@@ -241,7 +241,7 @@ trait FixityCheckerTestCases[
         val location = createLocationWith(namespace)
         val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
-        val expectedFileFixity = createExpectedFileFixityWith(
+        val expectedFileFixity = createDataDirectoryFileFixityWith(
           location = location,
           checksum = checksum
         )
@@ -273,7 +273,7 @@ trait FixityCheckerTestCases[
           val location = createLocationWith(namespace)
           putString(location, contentString)
 
-          val expectedFileFixity = createExpectedFileFixityWith(
+          val expectedFileFixity = createDataDirectoryFileFixityWith(
             location = location,
             checksum = checksum
           )
@@ -300,7 +300,7 @@ trait FixityCheckerTestCases[
           val location = createLocationWith(namespace)
           putString(location, contentString)
 
-          val expectedFileFixity = createExpectedFileFixityWith(
+          val expectedFileFixity = createDataDirectoryFileFixityWith(
             location = location,
             checksum = checksum
           )
@@ -335,7 +335,7 @@ trait FixityCheckerTestCases[
           val location = createLocationWith(namespace)
           putString(location, contentString)
 
-          val expectedFileFixity = createExpectedFileFixityWith(
+          val expectedFileFixity = createDataDirectoryFileFixityWith(
             location = location,
             checksum = checksum
           )
@@ -381,7 +381,7 @@ trait FixityCheckerTestCases[
           val location = createLocationWith(namespace)
           putString(location, contentString)
 
-          val expectedFileFixity = createExpectedFileFixityWith(
+          val expectedFileFixity = createDataDirectoryFileFixityWith(
             location = location,
             checksum = checksum
           )
@@ -423,7 +423,7 @@ trait FixityCheckerTestCases[
           val location = createLocationWith(namespace)
           putString(location, contentString)
 
-          val expectedFileFixity = createExpectedFileFixityWith(
+          val expectedFileFixity = createDataDirectoryFileFixityWith(
             location = location
           )
 
@@ -465,7 +465,7 @@ trait FixityCheckerTestCases[
 
           withFixityChecker { fixityChecker =>
             allChecksums.foreach { checksum =>
-              val expectedFileFixity = createExpectedFileFixityWith(
+              val expectedFileFixity = createDataDirectoryFileFixityWith(
                 location = location,
                 checksum = checksum
               )

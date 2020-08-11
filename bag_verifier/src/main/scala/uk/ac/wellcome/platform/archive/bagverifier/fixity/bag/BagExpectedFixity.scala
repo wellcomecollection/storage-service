@@ -4,7 +4,9 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   CannotCreateExpectedFixity,
   ExpectedFileFixity,
-  ExpectedFixity
+  ExpectedFixity,
+  FetchFileFixity,
+  DataDirectoryFileFixity
 }
 import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   Locatable,
@@ -62,7 +64,7 @@ class BagExpectedFixity[BagLocation <: Location, BagPrefix <: Prefix[
           Some(fetchEntry)
           ) =>
         Right(
-          ExpectedFileFixity(
+          FetchFileFixity(
             uri = fetchEntry.uri,
             path = bagPath,
             checksum = checksum,
@@ -75,7 +77,7 @@ class BagExpectedFixity[BagLocation <: Location, BagPrefix <: Prefix[
           case Left(e) => Left(CannotCreateExpectedFixity(e.msg))
           case Right(location) =>
             Right(
-              ExpectedFileFixity(
+              DataDirectoryFileFixity(
                 uri = resolvable.resolve(location),
                 path = bagPath,
                 checksum = checksum,
