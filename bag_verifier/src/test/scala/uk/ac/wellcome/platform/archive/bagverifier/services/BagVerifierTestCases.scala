@@ -606,12 +606,14 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     expectedCount: Int
   ): Assertion =
     if (successes
-          .map { fixityEntry=> fixityEntry.objectLocation match {
-            case azureBlobLocation: AzureBlobLocation => azureBlobLocation.name
-            case s3ObjectLocation: S3ObjectLocation => s3ObjectLocation.key
-          } }
-          .exists {_.endsWith("/fetch.txt")
-          }) {
+          .map { fixityEntry =>
+            fixityEntry.objectLocation match {
+              case azureBlobLocation: AzureBlobLocation =>
+                azureBlobLocation.name
+              case s3ObjectLocation: S3ObjectLocation => s3ObjectLocation.key
+            }
+          }
+          .exists { _.endsWith("/fetch.txt") }) {
       successes.size shouldBe expectedCount + 1
     } else {
       successes.size shouldBe expectedCount

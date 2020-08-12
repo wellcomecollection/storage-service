@@ -17,13 +17,18 @@ class AzureReplicatedBagVerifier(val primaryBucket: String)(
 
   override implicit val bagReader: AzureBagReader = new AzureBagReader()
 
-  override implicit val listing: AzureBlobLocationListing = AzureBlobLocationListing()
+  override implicit val listing: AzureBlobLocationListing =
+    AzureBlobLocationListing()
 
   override implicit val resolvable: AzureResolvable = new AzureResolvable()
 
-  override implicit val fixityChecker: AzureFixityChecker = new AzureFixityChecker()
+  override implicit val fixityChecker: AzureFixityChecker =
+    new AzureFixityChecker()
 
-  override def getRelativePath(root: AzureBlobLocationPrefix, location: AzureBlobLocation): String =
+  override def getRelativePath(
+    root: AzureBlobLocationPrefix,
+    location: AzureBlobLocation
+  ): String =
     location.name.replace(root.namePrefix, "")
 
   override val replicaStreamStore: AzureStreamStore = new AzureStreamStore()
