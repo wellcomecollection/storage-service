@@ -119,16 +119,19 @@ def prepare_slack_payload(recent_ingests, name, time_period):
 
     payload = {"blocks": [summary_block]}
 
-    if len(ingests_by_status["succeeded"]) == len(recent_ingests) and recent_ingests:
-        status_block = {
-            "type": "context",
-            "elements": [{"type": "mrkdwn", "text": "All succeeded"}],
-        }
-    elif recent_ingests:
-        status_block = {
-            "type": "context",
-            "elements": [{"type": "mrkdwn", "text": " / ".join(pretty_statuses)}],
-        }
+    if recent_ingests:
+        if len(ingests_by_status["succeeded"]):
+            status_block = {
+                "type": "context",
+                "elements": [{"type": "mrkdwn", "text": "All succeeded"}],
+            }
+        else:
+            status_block = {
+                "type": "context",
+                "elements": [{"type": "mrkdwn", "text": " / ".join(pretty_statuses)}],
+            }
+
+        payload["blocks"].append(status_block)
 
     # If there were any ingests with unknown failures, we should highlight them!
     #
