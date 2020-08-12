@@ -1,7 +1,10 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services.azure
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.services.ReplicatedBagVerifierTestCases
+import uk.ac.wellcome.platform.archive.bagverifier.services.{
+  ReplicatedBagVerifier,
+  ReplicatedBagVerifierTestCases
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.bagit.services.azure.AzureBagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
@@ -20,12 +23,12 @@ class AzureReplicatedBagVerifierTests extends ReplicatedBagVerifierTestCases[
   Container
 ] with S3Fixtures with AzureFixtures{
 
-  val azureTypedStore = AzureTypedStore[String]
+  val azureTypedStore: AzureTypedStore[String] = AzureTypedStore[String]
   override val bagBuilder: BagBuilder[AzureBlobLocation, AzureBlobLocationPrefix, Container] = new AzureBagBuilder {}
 
   override def withTypedStore[R](testWith: TestWith[TypedStore[AzureBlobLocation, String], R]): R = testWith(azureTypedStore)
 
-  override def withVerifier[R](primaryBucket: Bucket)(testWith: TestWith[AzureReplicatedBagVerifier, R]): R =
+  override def withVerifier[R](primaryBucket: Bucket)(testWith: TestWith[ReplicatedBagVerifier[AzureBlobLocation, AzureBlobLocationPrefix], R]): R =
     testWith(
       new AzureReplicatedBagVerifier(primaryBucket = primaryBucket.name)
     )
