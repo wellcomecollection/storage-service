@@ -17,12 +17,6 @@ class MemoryBagReaderTest
     extends BagReaderTestCases[MemoryStreamStore[MemoryLocation], String, MemoryLocation, MemoryLocationPrefix]
     with MemoryBagBuilder {
 
-  override def asLocation(
-    prefix: MemoryLocationPrefix,
-    path: String
-  ): MemoryLocation =
-    prefix.asLocation(path)
-
   override def withContext[R](
     testWith: TestWith[MemoryStreamStore[MemoryLocation], R]
   ): R =
