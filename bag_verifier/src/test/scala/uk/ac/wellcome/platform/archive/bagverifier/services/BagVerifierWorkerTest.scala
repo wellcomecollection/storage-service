@@ -13,14 +13,8 @@ import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  PrimaryS3ReplicaLocation
-}
-import uk.ac.wellcome.platform.archive.common.{
-  BagRootLocationPayload,
-  ReplicaCompletePayload
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, PrimaryS3ReplicaLocation}
+import uk.ac.wellcome.platform.archive.common.{BagRootLocationPayload, ReplicaCompletePayload}
 
 import scala.util.{Failure, Success, Try}
 
@@ -103,7 +97,7 @@ class BagVerifierWorkerTest
       }
     }
 
-    it("ReplicaResultPayload") {
+    it("ReplicaResultPayload - s3") {
       val outgoing = new MemoryMessageSender()
 
       withLocalS3Bucket { bucket =>
@@ -121,7 +115,38 @@ class BagVerifierWorkerTest
         )
 
         val result =
-          withReplicaBagVerifierWorker(
+          withS3ReplicaBagVerifierWorker(
+            outgoing = outgoing,
+            bucket = bucket
+          ) {
+            _.processMessage(payload)
+          }
+
+        result shouldBe a[Success[_]]
+
+        outgoing.getMessages[ReplicaCompletePayload] shouldBe Seq(payload)
+      }
+    }
+
+    it("ReplicaResultPayload - Azure") {
+      val outgoing = new MemoryMessageSender()
+
+      withLocalS3Bucket { bucket =>
+        val space = createStorageSpace
+        val (bagRoot, bagInfo) = createS3BagWith(bucket, space = space)
+
+        val payload = ReplicaCompletePayload(
+          context = createPipelineContextWith(
+            externalIdentifier = bagInfo.externalIdentifier,
+            storageSpace = space
+          ),
+          srcPrefix = bagRoot,
+          dstLocation = PrimaryS3ReplicaLocation(prefix = bagRoot),
+          version = createBagVersion
+        )
+
+        val result =
+          withAzureReplicaBagVerifierWorker(
             outgoing = outgoing,
             bucket = bucket
           ) {
@@ -154,7 +179,7 @@ class BagVerifierWorkerTest
         )
 
         val result =
-          withReplicaBagVerifierWorker(
+          withS3ReplicaBagVerifierWorker(
             outgoing = outgoing,
             bucket = bucket
           ) {

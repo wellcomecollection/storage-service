@@ -7,20 +7,14 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagverifier.builder.BagVerifierWorkerBuilder
-import uk.ac.wellcome.platform.archive.bagverifier.models.{
-  ReplicatedBagVerifyContext,
-  StandaloneBagVerifyContext
-}
-import uk.ac.wellcome.platform.archive.bagverifier.services.s3.S3StandaloneBagVerifier
+import uk.ac.wellcome.platform.archive.bagverifier.models.{ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
 import uk.ac.wellcome.platform.archive.bagverifier.services.BagVerifierWorker
-import uk.ac.wellcome.platform.archive.common.{
-  BagRootLocationPayload,
-  ReplicaCompletePayload
-}
+import uk.ac.wellcome.platform.archive.bagverifier.services.s3.S3StandaloneBagVerifier
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
-import uk.ac.wellcome.storage.{Location, Prefix}
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.platform.archive.common.{BagRootLocationPayload, ReplicaCompletePayload}
+import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.fixtures.{AzureFixtures, S3Fixtures}
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -30,7 +24,7 @@ trait BagVerifierFixtures
     with SQS
     with Akka
     with OperationFixtures
-    with S3Fixtures {
+    with S3Fixtures with AzureFixtures{
   def withStandaloneBagVerifierWorker[R](
     ingests: MemoryMessageSender = new MemoryMessageSender(),
     outgoing: MemoryMessageSender,
@@ -69,9 +63,7 @@ trait BagVerifierFixtures
       }
     }
 
-  def withReplicaBagVerifierWorker[BagLocation <: Location, BagPrefix <: Prefix[
-    BagLocation
-  ], R](
+  def withS3ReplicaBagVerifierWorker[R](
     ingests: MemoryMessageSender = new MemoryMessageSender(),
     outgoing: MemoryMessageSender,
     queue: Queue = dummyQueue,
@@ -96,8 +88,46 @@ trait BagVerifierFixtures
 
         val outgoingPublisher = createOutgoingPublisherWith(outgoing)
 
-        val worker = BagVerifierWorkerBuilder
-          .buildReplicaBagVerifierWorker(
+        val worker = BagVerifierWorkerBuilder.buildReplicaS3BagVerifierWorker(
+            primaryBucket = bucket.name,
+            metricsNamespace = "bag_verifier",
+            alpakkaSqsWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+            ingestUpdater = ingestUpdater,
+            outgoingPublisher = outgoingPublisher
+          )
+
+        worker.run()
+
+        testWith(worker)
+      }
+    }
+
+  def withAzureReplicaBagVerifierWorker[R](
+    ingests: MemoryMessageSender = new MemoryMessageSender(),
+    outgoing: MemoryMessageSender,
+    queue: Queue = dummyQueue,
+    bucket: Bucket,
+    stepName: String = randomAlphanumericWithLength()
+  )(
+    testWith: TestWith[BagVerifierWorker[
+    AzureBlobLocation,
+    AzureBlobLocationPrefix,
+      ReplicatedBagVerifyContext[
+        AzureBlobLocationPrefix
+      ],
+      ReplicaCompletePayload,
+      String,
+      String
+    ], R]
+  ): R =
+    withFakeMonitoringClient() { implicit monitoringClient =>
+      withActorSystem { implicit actorSystem =>
+        val ingestUpdater =
+          createIngestUpdaterWith(ingests, stepName = stepName)
+
+        val outgoingPublisher = createOutgoingPublisherWith(outgoing)
+
+        val worker = BagVerifierWorkerBuilder.buildReplicaAzureBagVerifierWorker(
             primaryBucket = bucket.name,
             metricsNamespace = "bag_verifier",
             alpakkaSqsWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
