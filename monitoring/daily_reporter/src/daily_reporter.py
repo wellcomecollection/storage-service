@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import datetime
+import json
 
 import boto3
 import httpx
@@ -186,7 +187,21 @@ def main(*args):
     resp = httpx.post(
         get_secret("storage_service_reporter/slack_webhook"), json=complete_payload
     )
+
     print(f"Sent payload to Slack: {resp}")
+
+    if resp.status_code != 200:
+        print("Non-200 response from Slack:")
+
+        print("")
+
+        print("== request ==")
+        print(json.dumps(complete_payload, indent=2, sort_keys=True))
+
+        print("")
+
+        print("== response ==")
+        print(resp.text)
 
 
 if __name__ == "__main__":
