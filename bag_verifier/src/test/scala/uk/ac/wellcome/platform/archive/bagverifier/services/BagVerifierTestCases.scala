@@ -34,33 +34,12 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepSucceeded,
   StorageSpace
 }
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
 import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
 import uk.ac.wellcome.storage.{Location, Prefix}
-
-import scala.util.Try
-
-trait StandaloneBagVerifierTestCases[
-  BagLocation <: Location,
-  BagPrefix <: Prefix[
-    BagLocation
-  ],
-  Namespace
-] extends BagVerifierTestCases[
-      StandaloneBagVerifier[BagLocation, BagPrefix],
-      StandaloneBagVerifyContext[BagPrefix],
-      BagLocation,
-      BagPrefix,
-      Namespace
-    ] {
-  def withBagContext[R](
-    bagRoot: BagPrefix
-  )(testWith: TestWith[StandaloneBagVerifyContext[BagPrefix], R]): R =
-    testWith(
-      StandaloneBagVerifyContext(bagRoot)
-    )
-}
 
 trait BagVerifierTestCases[Verifier <: BagVerifier[
   BagContext,
@@ -76,24 +55,44 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     with TryValues
     with StorageSpaceGenerators
     with BagInfoGenerators
-    with NamespaceFixtures[BagLocation, Namespace] {
+    with NamespaceFixtures[BagLocation, Namespace]
+    with S3Fixtures {
 
   def withTypedStore[R](
     testWith: TestWith[TypedStore[BagLocation, String], R]
   ): R
 
-  def withVerifier[R](namespace: Namespace)(
+  def withVerifier[R](primaryBucket: Bucket)(
     testWith: TestWith[Verifier, R]
-  )(implicit typedStore: TypedStore[BagLocation, String]): R
+  ): R
 
   def withBagContext[R](bagRoot: BagPrefix)(
     testWith: TestWith[BagContext, R]
   ): R
-  val replicaBagBuilder: BagBuilder[
-    BagLocation,
-    BagPrefix,
-    Namespace
-  ]
+
+  val bagBuilder: BagBuilder[BagLocation, BagPrefix, Namespace]
+
+  def withBag[R](
+    space: StorageSpace,
+    externalIdentifier: ExternalIdentifier,
+    bagBuilder: BagBuilder[BagLocation, BagPrefix, Namespace] = bagBuilder
+  )(testWith: TestWith[(Bucket, BagPrefix), R]): R =
+    withTypedStore { implicit typedStore =>
+      withNamespace { implicit namespace =>
+        withLocalS3Bucket { implicit primaryBucket =>
+          val bagContents = bagBuilder.createBagContentsWith(
+            space = space,
+            externalIdentifier = externalIdentifier,
+            payloadFileCount = payloadFileCount
+          )
+
+          bagBuilder.storeBagContents(bagContents)
+
+          testWith((primaryBucket, bagContents.bagRoot))
+        }
+      }
+    }
+
   val payloadFileCount: Int = randomInt(from = 1, to = 10)
 
   val expectedFileCount: Int = payloadFileCount + List(
@@ -117,43 +116,29 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     )(
       implicit namespace: Namespace
     ): BagPrefix =
-      replicaBagBuilder.createBagRoot(space, externalIdentifier, version)
+      bagBuilder.createBagRoot(space, externalIdentifier, version)
 
     override def createBagLocation(
       bagRoot: BagPrefix,
       path: String
     ): BagLocation =
-      replicaBagBuilder.createBagLocation(bagRoot, path)
-
-    override def buildFetchEntryLine(
-      entry: PayloadEntry
-    )(implicit namespace: Namespace): String =
-      replicaBagBuilder.buildFetchEntryLine(entry)
+      bagBuilder.createBagLocation(bagRoot, path)
   }
 
   it("passes a bag with correct checksum values") {
-    withNamespace { implicit namespace =>
-      withTypedStore { implicit typedStore =>
-        val space = createStorageSpace
+    val space = createStorageSpace
+    val externalIdentifier = createExternalIdentifier
 
-        val (bagObjects, bagRoot, bagInfo) =
-          replicaBagBuilder.createBagContentsWith(
-            space = space,
-            payloadFileCount = payloadFileCount
-          )
-        replicaBagBuilder.uploadBagObjects(
-          bagRoot = bagRoot,
-          objects = bagObjects
-        )
-
+    withBag(space, externalIdentifier) {
+      case (primaryBucket, bagRoot) =>
         val ingestStep =
           withBagContext(bagRoot) { bagContext =>
-            withVerifier(namespace) {
+            withVerifier(primaryBucket) {
               _.verify(
                 ingestId = createIngestID,
                 bagContext = bagContext,
                 space = space,
-                externalIdentifier = bagInfo.externalIdentifier
+                externalIdentifier = externalIdentifier
               )
             }
           }
@@ -171,7 +156,6 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
           fixityListResult.locations,
           expectedCount = expectedFileCount
         )
-      }
     }
   }
 
@@ -303,19 +287,11 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     val payloadExternalIdentifier =
       ExternalIdentifier(externalIdentifier + "_payload")
 
-    withNamespace { implicit namespace =>
-      withTypedStore { implicit typedStore =>
-        val (bagObjects, bagRoot, _) = replicaBagBuilder.createBagContentsWith(
-          externalIdentifier = bagInfoExternalIdentifier
-        )
-        replicaBagBuilder.uploadBagObjects(
-          bagRoot = bagRoot,
-          objects = bagObjects
-        )
-
+    withBag(space, bagInfoExternalIdentifier) {
+      case (primaryBucket, bagRoot) =>
         val ingestStep =
           withBagContext(bagRoot) { bagContext =>
-            withVerifier(namespace) {
+            withVerifier(primaryBucket) {
               _.verify(
                 ingestId = createIngestID,
                 bagContext = bagContext,
@@ -333,7 +309,6 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
         result.maybeUserFacingMessage.get should startWith(
           "External identifier in bag-info.txt does not match request"
         )
-      }
     }
   }
 
@@ -341,9 +316,11 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     it("fails if the fetch file refers to a file not in the manifest") {
       val badBuilder = new BagBuilderImpl {
         override protected def createFetchFile(
+          primaryBucket: Bucket,
           entries: Seq[PayloadEntry]
-        )(implicit namespace: Namespace): Option[String] =
+        ): Option[String] =
           super.createFetchFile(
+            primaryBucket,
             entries :+ entries.head.copy(
               bagPath = BagPath(entries.head.bagPath + "_extra"),
               path = entries.head.path + "_extra",
@@ -367,9 +344,12 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     it("fails if the fetch file refers to a file with the wrong URI scheme") {
       val wrongSchemeBuilder = new BagBuilderImpl {
         override def buildFetchEntryLine(
+          primaryBucket: Bucket,
           entry: PayloadEntry
-        )(implicit namespace: Namespace): String =
-          super.buildFetchEntryLine(entry).replace("s3://", "none://")
+        ): String =
+          super
+            .buildFetchEntryLine(primaryBucket, entry)
+            .replace("s3://", "none://")
 
         override protected def getFetchEntryCount(payloadFileCount: Int): Int =
           payloadFileCount
@@ -387,39 +367,41 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
       }
     }
 
-    it("fails if the fetch file refers to a file in a different namespace") {
-      withNamespace { wrongNamespace =>
-        val wrongBucketFetchBuilder = new BagBuilderImpl {
-          override def buildFetchEntryLine(
-            entry: PayloadEntry
-          )(implicit namespace: Namespace): String =
-            super.buildFetchEntryLine(entry)(namespace = wrongNamespace)
+    it("fails if the fetch file refers to a file in a different bucket") {
+      val wrongBucket = createBucket
+      val wrongBucketFetchBuilder = new BagBuilderImpl {
+        override def buildFetchEntryLine(
+          primaryBucket: Bucket,
+          entry: PayloadEntry
+        ): String =
+          super.buildFetchEntryLine(wrongBucket, entry)
 
-          override protected def getFetchEntryCount(
-            payloadFileCount: Int
-          ): Int =
-            payloadFileCount
-        }
+        override protected def getFetchEntryCount(
+          payloadFileCount: Int
+        ): Int =
+          payloadFileCount
+      }
 
-        assertBagIncomplete(wrongBucketFetchBuilder) {
-          case (ingestFailed, _) =>
-            ingestFailed.e.getMessage should startWith(
-              "fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:"
-            )
+      assertBagIncomplete(wrongBucketFetchBuilder) {
+        case (ingestFailed, _) =>
+          ingestFailed.e.getMessage should startWith(
+            "fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:"
+          )
 
-            ingestFailed.maybeUserFacingMessage.get should startWith(
-              "fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:"
-            )
-        }
+          ingestFailed.maybeUserFacingMessage.get should startWith(
+            "fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:"
+          )
       }
     }
 
     it("fails if the fetch file refers to a file in the wrong space") {
       val bagSpaceFetchBuilder = new BagBuilderImpl {
         override def buildFetchEntryLine(
+          primaryBucket: Bucket,
           entry: PayloadEntry
-        )(implicit namespace: Namespace): String =
+        ): String =
           super.buildFetchEntryLine(
+            primaryBucket,
             entry.copy(
               path = "badspace_" + entry.path
             )
@@ -446,9 +428,11 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     ) {
       val badExternalIdentifierFetchBuilder = new BagBuilderImpl {
         override def buildFetchEntryLine(
+          primaryBucket: Bucket,
           entry: PayloadEntry
-        )(implicit namespace: Namespace): String =
+        ): String =
           super.buildFetchEntryLine(
+            primaryBucket,
             entry.copy(
               path = entry.path.replace("/", "/wrong_")
             )
@@ -474,13 +458,12 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
   describe("checks for unreferenced files") {
     it("fails if there is one unreferenced file") {
       val badBuilder = new BagBuilderImpl {
-        override def uploadBagObjects(
-          bagRoot: BagPrefix,
-          bagObjects: Map[BagLocation, String]
+        override def storeBagContents(
+          bagContents: BagContents
         )(implicit typedStore: TypedStore[BagLocation, String]): Unit = {
-          super.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
+          super.storeBagContents(bagContents)
 
-          val location = bagRoot.asLocation("unreferencedfile.txt")
+          val location = bagContents.bagRoot.asLocation("unreferencedfile.txt")
           writeFile(location)
         }
       }
@@ -498,14 +481,14 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
 
     it("fails if there are multiple unreferenced files") {
       val badBuilder = new BagBuilderImpl {
-        override def uploadBagObjects(
-          bagRoot: BagPrefix,
-          bagObjects: Map[BagLocation, String]
+        override def storeBagContents(
+          bagContents: BagContents
         )(implicit typedStore: TypedStore[BagLocation, String]): Unit = {
-          super.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
+          super.storeBagContents(bagContents)
 
           (1 to 3).foreach { i =>
-            val location = bagRoot.asLocation(s"unreferencedfile_$i.txt")
+            val location =
+              bagContents.bagRoot.asLocation(s"unreferencedfile_$i.txt")
             writeFile(location)
           }
         }
@@ -525,12 +508,12 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
 
     it("fails if a file in the fetch.txt also appears in the bag") {
       val alwaysWriteAsFetchBuilder = new BagBuilderImpl {
-        override def uploadBagObjects(
-          bagRoot: BagPrefix,
-          bagObjects: Map[BagLocation, String]
+        override def storeBagContents(
+          bagContents: BagContents
         )(implicit typedStore: TypedStore[BagLocation, String]): Unit = {
-          super.uploadBagObjects(bagRoot = bagRoot, objects = bagObjects)
+          super.storeBagContents(bagContents)
 
+          val bagRoot = bagContents.bagRoot
           val bag = createBagReader.get(bagRoot).right.value
 
           // Write one of the fetch.txt entries as a concrete file
@@ -553,35 +536,29 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     }
 
     it("passes a bag that includes an extra manifest/tag manifest") {
-      withNamespace { implicit namespace =>
-        withTypedStore { implicit typedStore =>
-          val space = createStorageSpace
+      val space = createStorageSpace
+      val externalIdentifier = createExternalIdentifier
 
-          val (bagObjects, bagRoot, bagInfo) =
-            replicaBagBuilder.createBagContentsWith(space = space)
-          replicaBagBuilder.uploadBagObjects(
-            bagRoot = bagRoot,
-            objects = bagObjects
-          )
-
+      withBag(space, externalIdentifier) {
+        case (primaryBucket, bagRoot) =>
           val location = bagRoot.asLocation("tagmanifest-sha512.txt")
           writeFile(location)
 
           val ingestStep =
             withBagContext(bagRoot) { bagContext =>
-              withVerifier(namespace) {
+              withVerifier(primaryBucket) {
                 _.verify(
                   ingestId = createIngestID,
                   bagContext = bagContext,
                   space = space,
-                  externalIdentifier = bagInfo.externalIdentifier
+                  externalIdentifier = externalIdentifier
                 )
               }
             }
 
           ingestStep.success.get shouldBe a[IngestStepSucceeded[_]]
-        }
       }
+
     }
   }
 
@@ -657,24 +634,22 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
   // it is caught correctly by the verifier.
   private def assertBagResultFails(
     badBuilder: BagBuilderImpl
-  )(assertion: IngestStepResult[VerificationSummary] => Assertion): Assertion =
-    withNamespace { implicit namespace =>
-      withTypedStore { implicit typedStore =>
-        val space = createStorageSpace
-        val (bagObjects, bagRoot, bagInfo) = badBuilder.createBagContentsWith(
-          space = space,
-          payloadFileCount = payloadFileCount
-        )
-        badBuilder.uploadBagObjects(bagRoot, objects = bagObjects)
+  )(
+    assertion: IngestStepResult[VerificationSummary] => Assertion
+  ): Assertion = {
+    val space = createStorageSpace
+    val externalIdentifier = createExternalIdentifier
 
+    withBag(space, externalIdentifier, bagBuilder = badBuilder) {
+      case (primaryBucket, bagRoot) =>
         val ingestStep =
           withBagContext(bagRoot) { bagContext =>
-            withVerifier(namespace) {
+            withVerifier(primaryBucket) {
               _.verify(
                 ingestId = createIngestID,
                 bagContext = bagContext,
                 space = space,
-                externalIdentifier = bagInfo.externalIdentifier
+                externalIdentifier = externalIdentifier
               )
             }
           }
@@ -684,8 +659,8 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
 
         result shouldBe a[IngestFailed[_]]
         assertion(result)
-      }
     }
+  }
 
   private def assertBagIncomplete(badBuilder: BagBuilderImpl)(
     assertion: (
@@ -702,157 +677,4 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
 
       assertion(failedResult, summary)
     }
-}
-
-trait ReplicatedBagVerifierTestCases[
-  SrcBagLocation <: Location,
-  SrcBagPrefix <: Prefix[SrcBagLocation],
-  SrcNamespace,
-  ReplicaBagLocation <: Location,
-  ReplicaBagPrefix <: Prefix[ReplicaBagLocation],
-  ReplicaNamespace
-] extends BagVerifierTestCases[
-      ReplicatedBagVerifier[
-        SrcBagLocation,
-        SrcBagPrefix,
-        ReplicaBagLocation,
-        ReplicaBagPrefix
-      ],
-      ReplicatedBagVerifyContext[SrcBagPrefix, ReplicaBagPrefix],
-      ReplicaBagLocation,
-      ReplicaBagPrefix,
-      ReplicaNamespace
-    ] {
-
-  protected def copyTagManifest(
-    srcRoot: SrcBagPrefix,
-    replicaRoot: ReplicaBagPrefix
-  ): Unit
-
-  def createSrcPrefix(implicit namespace: SrcNamespace): SrcBagPrefix
-
-  def withSrcNamespace[R](testWith: TestWith[SrcNamespace, R]): R
-  def withReplicaNamespace[R](testWith: TestWith[ReplicaNamespace, R]): R
-
-  def withSrcTypedStore[R](
-    testWith: TestWith[TypedStore[SrcBagLocation, String], R]
-  ): R
-  def withReplicaTypedStore[R](
-    testWith: TestWith[TypedStore[ReplicaBagLocation, String], R]
-  ): R
-
-  val srcBagBuilder: BagBuilder[SrcBagLocation, SrcBagPrefix, SrcNamespace]
-
-  def withNamespace[R](testWith: TestWith[ReplicaNamespace, R]): R =
-    withReplicaNamespace { namespace =>
-      testWith(namespace)
-    }
-
-  def withTypedStore[R](
-    testWith: TestWith[TypedStore[ReplicaBagLocation, String], R]
-  ): R =
-    withReplicaTypedStore { typedStore =>
-      testWith(typedStore)
-    }
-
-  override def withBagContext[R](replicaRoot: ReplicaBagPrefix)(
-    testWith: TestWith[
-      ReplicatedBagVerifyContext[SrcBagPrefix, ReplicaBagPrefix],
-      R
-    ]
-  ): R =
-    withSrcNamespace { implicit srcNamespace =>
-      val srcRoot = createSrcPrefix
-
-      // To keep the standalone verifier tests happy, copy the tagmanifest-sha256.txt into
-      // a newly-created srcPrefix.  Note: in at least one test, this file is deliberately
-      // missing, but we shouldn't throw.
-      Try { copyTagManifest(srcRoot, replicaRoot) }
-
-      testWith(
-        ReplicatedBagVerifyContext(
-          srcRoot = srcRoot,
-          replicaRoot = replicaRoot
-        )
-      )
-    }
-
-  it("fails a bag if it doesn't match original tag manifest") {
-    withSrcNamespace { implicit srcNamespace =>
-      withReplicaNamespace { implicit replicaNamespace =>
-        withSrcTypedStore { implicit srcTypedStore =>
-          withReplicaTypedStore { implicit replicaTypedStore =>
-            val space = createStorageSpace
-
-            val (srcObjects, srcRoot, _) =
-              srcBagBuilder.createBagContentsWith(space = space)
-            srcBagBuilder.uploadBagObjects(srcRoot, objects = srcObjects)
-
-            val (replicaObjects, replicaRoot, bagInfo) =
-              replicaBagBuilder.createBagContentsWith(space = space)
-            replicaBagBuilder.uploadBagObjects(
-              replicaRoot,
-              objects = replicaObjects
-            )
-
-            val ingestStep =
-              withVerifier(replicaNamespace) {
-                _.verify(
-                  ingestId = createIngestID,
-                  bagContext = ReplicatedBagVerifyContext(
-                    srcRoot = srcRoot,
-                    replicaRoot = replicaRoot
-                  ),
-                  space = space,
-                  externalIdentifier = bagInfo.externalIdentifier
-                )
-              }
-
-            val result = ingestStep.success.get
-
-            result shouldBe a[IngestFailed[_]]
-            result.summary shouldBe a[VerificationIncompleteSummary]
-
-            result.maybeUserFacingMessage shouldNot be(defined)
-          }
-        }
-      }
-    }
-  }
-
-  it("fails a bag if it cannot read the original bag") {
-    withSrcNamespace { implicit srcNamespace =>
-      withReplicaNamespace { implicit replicaNamespace =>
-        withReplicaTypedStore { implicit replicaTypedStore =>
-          val space = createStorageSpace
-
-          val (bagObjects, bagRoot, bagInfo) =
-            replicaBagBuilder.createBagContentsWith(space = space)
-          replicaBagBuilder.uploadBagObjects(bagRoot, objects = bagObjects)
-
-          val srcRoot = createSrcPrefix
-
-          val ingestStep =
-            withVerifier(replicaNamespace) {
-              _.verify(
-                ingestId = createIngestID,
-                bagContext = ReplicatedBagVerifyContext(
-                  srcRoot = srcRoot,
-                  replicaRoot = bagRoot
-                ),
-                space = space,
-                externalIdentifier = bagInfo.externalIdentifier
-              )
-            }
-
-          val result = ingestStep.success.get
-
-          result shouldBe a[IngestFailed[_]]
-          result.summary shouldBe a[VerificationIncompleteSummary]
-
-          result.maybeUserFacingMessage shouldNot be(defined)
-        }
-      }
-    }
-  }
 }

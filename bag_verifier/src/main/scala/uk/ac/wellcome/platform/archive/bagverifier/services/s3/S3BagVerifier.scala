@@ -4,19 +4,24 @@ import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.s3.S3FixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.models.{
+  BagVerifierError,
   BagVerifyContext,
   ReplicatedBagVerifyContext,
   StandaloneBagVerifyContext
 }
 import uk.ac.wellcome.platform.archive.bagverifier.services.{
   BagVerifier,
-  ReplicatedBagVerifier,
-  StandaloneBagVerifier
+  ReplicatedBagVerifier
 }
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable
 import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.S3Resolvable
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  Bag,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
+import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
 import uk.ac.wellcome.storage.store.StreamStore
@@ -52,23 +57,29 @@ trait S3BagVerifier[B <: BagVerifyContext[S3ObjectLocationPrefix]]
 
 class S3StandaloneBagVerifier(val primaryBucket: String)(
   implicit val s3Client: AmazonS3
-) extends StandaloneBagVerifier[S3ObjectLocation, S3ObjectLocationPrefix]
-    with S3BagVerifier[StandaloneBagVerifyContext[S3ObjectLocationPrefix]]
+) extends BagVerifier[
+      StandaloneBagVerifyContext,
+      S3ObjectLocation,
+      S3ObjectLocationPrefix
+    ]
+    with S3BagVerifier[StandaloneBagVerifyContext] {
+  override def verifyReplicatedBag(
+    root: StandaloneBagVerifyContext,
+    space: StorageSpace,
+    externalIdentifier: ExternalIdentifier,
+    bag: Bag
+  ): Either[BagVerifierError, Unit] = Right(())
+}
 
 class S3ReplicatedBagVerifier(val primaryBucket: String)(
   implicit val s3Client: AmazonS3
 ) extends ReplicatedBagVerifier[
       S3ObjectLocation,
-      S3ObjectLocationPrefix,
-      S3ObjectLocation,
       S3ObjectLocationPrefix
     ]
     with S3BagVerifier[
-      ReplicatedBagVerifyContext[S3ObjectLocationPrefix, S3ObjectLocationPrefix]
+      ReplicatedBagVerifyContext[S3ObjectLocationPrefix]
     ] {
-
-  override val srcStreamStore: StreamStore[S3ObjectLocation] =
-    new S3StreamStore()
 
   override val replicaStreamStore: StreamStore[S3ObjectLocation] =
     new S3StreamStore()

@@ -12,10 +12,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.models.{
   StandaloneBagVerifyContext
 }
 import uk.ac.wellcome.platform.archive.bagverifier.services.s3.S3StandaloneBagVerifier
-import uk.ac.wellcome.platform.archive.bagverifier.services.{
-  BagVerifier,
-  BagVerifierWorker
-}
+import uk.ac.wellcome.platform.archive.bagverifier.services.BagVerifierWorker
 import uk.ac.wellcome.platform.archive.common.{
   BagRootLocationPayload,
   ReplicaCompletePayload
@@ -23,7 +20,7 @@ import uk.ac.wellcome.platform.archive.common.{
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -42,7 +39,7 @@ trait BagVerifierFixtures
   )(
     testWith: TestWith[BagVerifierWorker[
       BagRootLocationPayload,
-      StandaloneBagVerifyContext[S3ObjectLocationPrefix],
+      StandaloneBagVerifyContext,
       String,
       String
     ], R]
@@ -79,7 +76,6 @@ trait BagVerifierFixtures
     testWith: TestWith[BagVerifierWorker[
       ReplicaCompletePayload,
       ReplicatedBagVerifyContext[
-        S3ObjectLocationPrefix,
         S3ObjectLocationPrefix
       ],
       String,
@@ -108,13 +104,9 @@ trait BagVerifierFixtures
       }
     }
 
-  def withVerifier[R](bucket: Bucket)(
-    testWith: TestWith[BagVerifier[
-      StandaloneBagVerifyContext[S3ObjectLocationPrefix],
-      S3ObjectLocation,
-      S3ObjectLocationPrefix
-    ], R]
-  ): R =
+  def withVerifier[R](
+    bucket: Bucket
+  )(testWith: TestWith[S3StandaloneBagVerifier, R]): R =
     testWith(
       new S3StandaloneBagVerifier(primaryBucket = bucket.name)
     )

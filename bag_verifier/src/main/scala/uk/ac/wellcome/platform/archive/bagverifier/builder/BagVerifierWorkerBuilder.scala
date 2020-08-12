@@ -75,9 +75,12 @@ object BagVerifierWorkerBuilder {
     mc: MetricsMonitoringClient,
     as: ActorSystem,
     sc: SqsAsyncClient
-  ): BagVerifierWorker[BagRootLocationPayload, StandaloneBagVerifyContext[
-    S3ObjectLocationPrefix
-  ], IngestDestination, OutgoingDestination] = {
+  ): BagVerifierWorker[
+    BagRootLocationPayload,
+    StandaloneBagVerifyContext,
+    IngestDestination,
+    OutgoingDestination
+  ] = {
     val verifier = new S3StandaloneBagVerifier(primaryBucket)
 
     new BagVerifierWorker(
@@ -104,7 +107,7 @@ object BagVerifierWorkerBuilder {
     sc: SqsAsyncClient
   ): BagVerifierWorker[
     ReplicaCompletePayload,
-    ReplicatedBagVerifyContext[S3ObjectLocationPrefix, S3ObjectLocationPrefix],
+    ReplicatedBagVerifyContext[S3ObjectLocationPrefix],
     IngestDestination,
     OutgoingDestination
   ] = {

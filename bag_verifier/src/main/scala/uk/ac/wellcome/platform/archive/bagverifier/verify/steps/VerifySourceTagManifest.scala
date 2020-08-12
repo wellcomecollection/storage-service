@@ -1,16 +1,21 @@
 package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 
+import com.amazonaws.services.s3.AmazonS3
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.StreamStore
+import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.{Identified, Location, Prefix}
 
 trait VerifySourceTagManifest[
-  SrcBagLocation <: Location,
   ReplicaBagLocation <: Location
 ] {
-  protected val srcStreamStore: StreamStore[SrcBagLocation]
+  implicit val s3Client: AmazonS3
+
+  protected val srcStreamStore: StreamStore[S3ObjectLocation] =
+    new S3StreamStore()
   protected val replicaStreamStore: StreamStore[ReplicaBagLocation]
 
   /** This step is here to check the bag created by the replica and the
@@ -24,7 +29,7 @@ trait VerifySourceTagManifest[
     *
     */
   def verifySourceTagManifestIsTheSame(
-    srcPrefix: Prefix[SrcBagLocation],
+    srcPrefix: S3ObjectLocationPrefix,
     replicaPrefix: Prefix[ReplicaBagLocation]
   ): Either[BagVerifierError, Unit] = {
     for {

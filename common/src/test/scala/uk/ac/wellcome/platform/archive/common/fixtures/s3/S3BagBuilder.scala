@@ -5,17 +5,12 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagVersion,
   ExternalIdentifier
 }
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagBuilder,
-  PayloadEntry
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.s3.S3TypedStore
-
-import scala.util.Random
 
 trait S3BagBuilder
     extends BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix, Bucket]
@@ -42,15 +37,6 @@ trait S3BagBuilder
       key = path
     )
 
-  override def buildFetchEntryLine(
-    entry: PayloadEntry
-  )(implicit bucket: Bucket): String = {
-    val displaySize =
-      if (Random.nextBoolean()) entry.contents.getBytes.length.toString else "-"
-
-    s"""s3://${bucket.name}/${entry.path} $displaySize ${entry.bagPath}"""
-  }
-
   def createS3BagWith(
     bucket: Bucket,
     space: StorageSpace = createStorageSpace,
@@ -59,15 +45,15 @@ trait S3BagBuilder
   ): (S3ObjectLocationPrefix, BagInfo) = {
     implicit val namespace: Bucket = bucket
 
-    val (bagObjects, bagRoot, bagInfo) = createBagContentsWith(
+    val bagContents = createBagContentsWith(
       space = space,
       externalIdentifier = externalIdentifier,
       payloadFileCount = payloadFileCount
     )
 
     implicit val typedStore: S3TypedStore[String] = S3TypedStore[String]
-    uploadBagObjects(bagRoot, objects = bagObjects)
+    storeBagContents(bagContents)
 
-    (bagRoot, bagInfo)
+    (bagContents.bagRoot, bagContents.bagInfo)
   }
 }

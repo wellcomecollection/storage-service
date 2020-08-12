@@ -17,34 +17,17 @@ import uk.ac.wellcome.storage.{Location, Prefix}
 
 import scala.util.Try
 
-trait StandaloneBagVerifier[BagLocation <: Location, BagPrefix <: Prefix[
-  BagLocation
-]] extends BagVerifier[
-      StandaloneBagVerifyContext[BagPrefix],
-      BagLocation,
-      BagPrefix
-    ] {
-  override def verifyReplicatedBag(
-    root: StandaloneBagVerifyContext[BagPrefix],
-    space: StorageSpace,
-    externalIdentifier: ExternalIdentifier,
-    bag: Bag
-  ): Either[BagVerifierError, Unit] = Right(())
-}
-
 trait ReplicatedBagVerifier[
-  SrcBagLocation <: Location,
-  SrcBagPrefix <: Prefix[SrcBagLocation],
   ReplicaBagLocation <: Location,
   ReplicaBagPrefix <: Prefix[ReplicaBagLocation]
 ] extends BagVerifier[
-      ReplicatedBagVerifyContext[SrcBagPrefix, ReplicaBagPrefix],
+      ReplicatedBagVerifyContext[ReplicaBagPrefix],
       ReplicaBagLocation,
       ReplicaBagPrefix
     ]
-    with VerifySourceTagManifest[SrcBagLocation, ReplicaBagLocation] {
+    with VerifySourceTagManifest[ReplicaBagLocation] {
   override def verifyReplicatedBag(
-    root: ReplicatedBagVerifyContext[SrcBagPrefix, ReplicaBagPrefix],
+    root: ReplicatedBagVerifyContext[ReplicaBagPrefix],
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     bag: Bag
