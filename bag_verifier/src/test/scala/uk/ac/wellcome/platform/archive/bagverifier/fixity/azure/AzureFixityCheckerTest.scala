@@ -31,13 +31,17 @@ class AzureFixityCheckerTest
     implicit context: Unit
   ): Unit = azureTypedStore.put(location)(contents)
 
-  override def withFixityChecker[R](streamStore: AzureStreamStore)(
+  override def withFixityChecker[R](underlyingStreamStore: AzureStreamStore)(
     testWith: TestWith[
       FixityChecker[AzureBlobLocation, AzureBlobLocationPrefix],
       R
     ]
   )(implicit context: Unit): R =
-    testWith(new AzureFixityChecker())
+    testWith(new AzureFixityChecker() {
+      // We need to override the underlying StreamStore so Mockito can spy
+      // on its interactions during the tests.
+      override val streamStore: AzureStreamStore = underlyingStreamStore
+    })
 
   override def withStreamStore[R](
     testWith: TestWith[AzureStreamStore, R]
