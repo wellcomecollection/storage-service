@@ -5,18 +5,11 @@ import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
-import uk.ac.wellcome.platform.archive.bagverifier.models.{
-  BagVerifyContext,
-  VerificationSummary
-}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{BagVerifyContext, VerificationSummary}
 import uk.ac.wellcome.platform.archive.common.VerifiablePayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestStepResult,
-  IngestStepWorker
-}
-import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestStepResult, IngestStepWorker}
 import uk.ac.wellcome.storage.{Location, Prefix}
 
 import scala.util.Try
@@ -31,21 +24,23 @@ trait BagPayloadTranslator[
 }
 
 class BagVerifierWorker[
+  BagLocation <: Location,
+  BagPrefix <: Prefix[BagLocation],
+  BagContext <: BagVerifyContext[BagPrefix],
   Payload <: VerifiablePayload,
-  BagContext <: BagVerifyContext[S3ObjectLocationPrefix],
   IngestDestination,
   OutgoingDestination
 ](
   val config: AlpakkaSQSWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  verifier: BagVerifier[BagContext, S3ObjectLocation, S3ObjectLocationPrefix],
+  verifier: BagVerifier[BagContext, BagLocation, BagPrefix],
   val metricsNamespace: String,
   bagPayloadTranslator: BagPayloadTranslator[
     Payload,
     BagContext,
-    S3ObjectLocation,
-    S3ObjectLocationPrefix
+    BagLocation,
+    BagPrefix
   ]
 )(
   implicit val mc: MetricsMonitoringClient,

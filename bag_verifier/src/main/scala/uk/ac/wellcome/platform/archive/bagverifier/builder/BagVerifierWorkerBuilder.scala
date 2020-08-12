@@ -9,22 +9,13 @@ import uk.ac.wellcome.messaging.sns.SNSConfig
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
-import uk.ac.wellcome.platform.archive.bagverifier.models.{
-  ReplicatedBagVerifyContext,
-  StandaloneBagVerifyContext
-}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
 import uk.ac.wellcome.platform.archive.bagverifier.services.BagVerifierWorker
-import uk.ac.wellcome.platform.archive.bagverifier.services.s3.{
-  S3ReplicatedBagVerifier,
-  S3StandaloneBagVerifier
-}
+import uk.ac.wellcome.platform.archive.bagverifier.services.s3.{S3ReplicatedBagVerifier, S3StandaloneBagVerifier}
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
-import uk.ac.wellcome.platform.archive.common.{
-  BagRootLocationPayload,
-  ReplicaCompletePayload
-}
-import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
+import uk.ac.wellcome.platform.archive.common.{BagRootLocationPayload, ReplicaCompletePayload}
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 object BagVerifierWorkerBuilder {
@@ -75,12 +66,7 @@ object BagVerifierWorkerBuilder {
     mc: MetricsMonitoringClient,
     as: ActorSystem,
     sc: SqsAsyncClient
-  ): BagVerifierWorker[
-    BagRootLocationPayload,
-    StandaloneBagVerifyContext,
-    IngestDestination,
-    OutgoingDestination
-  ] = {
+  ): BagVerifierWorker[S3ObjectLocation, S3ObjectLocationPrefix, StandaloneBagVerifyContext, BagRootLocationPayload, IngestDestination, OutgoingDestination] = {
     val verifier = new S3StandaloneBagVerifier(primaryBucket)
 
     new BagVerifierWorker(
@@ -105,12 +91,7 @@ object BagVerifierWorkerBuilder {
     mc: MetricsMonitoringClient,
     as: ActorSystem,
     sc: SqsAsyncClient
-  ): BagVerifierWorker[
-    ReplicaCompletePayload,
-    ReplicatedBagVerifyContext[S3ObjectLocationPrefix],
-    IngestDestination,
-    OutgoingDestination
-  ] = {
+  ): BagVerifierWorker[S3ObjectLocation, S3ObjectLocationPrefix, ReplicatedBagVerifyContext[S3ObjectLocationPrefix], ReplicaCompletePayload, IngestDestination, OutgoingDestination] = {
     val verifier = new S3ReplicatedBagVerifier(primaryBucket)
     new BagVerifierWorker(
       config = alpakkaSqsWorkerConfig,
