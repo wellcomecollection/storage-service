@@ -13,34 +13,42 @@ import uk.ac.wellcome.storage.fixtures.AzureFixtures
 import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
 import uk.ac.wellcome.storage.store.azure.{AzureStreamStore, AzureTypedStore}
 
-class AzureFixityCheckerTest extends FixityCheckerTestCases[
-  AzureBlobLocation,
-  AzureBlobLocationPrefix,
-  Container,
-  Unit,
-  AzureStreamStore
-]
-  with AzureFixtures {
+class AzureFixityCheckerTest
+    extends FixityCheckerTestCases[
+      AzureBlobLocation,
+      AzureBlobLocationPrefix,
+      Container,
+      Unit,
+      AzureStreamStore
+    ]
+    with AzureFixtures {
 
   val azureTypedStore: AzureTypedStore[String] = AzureTypedStore[String]
 
   override def withContext[R](testWith: TestWith[Unit, R]): R = testWith(())
 
-  override def putString(location: AzureBlobLocation, contents: String)(implicit context: Unit): Unit = azureTypedStore.put(location)(contents)
+  override def putString(location: AzureBlobLocation, contents: String)(
+    implicit context: Unit
+  ): Unit = azureTypedStore.put(location)(contents)
 
-  override def withFixityChecker[R](streamStore: AzureStreamStore)(testWith: TestWith[FixityChecker[AzureBlobLocation, AzureBlobLocationPrefix], R])(implicit context: Unit): R =
+  override def withFixityChecker[R](streamStore: AzureStreamStore)(
+    testWith: TestWith[
+      FixityChecker[AzureBlobLocation, AzureBlobLocationPrefix],
+      R
+    ]
+  )(implicit context: Unit): R =
     testWith(new AzureFixityChecker())
 
   override def withStreamStore[R](
-    testWith: TestWith[AzureStreamStore, R])(implicit context: Unit
-  ): R =
+    testWith: TestWith[AzureStreamStore, R]
+  )(implicit context: Unit): R =
     testWith(new AzureStreamStore())
 
   override def resolve(location: AzureBlobLocation): URI =
     new AzureResolvable().resolve(location)
 
   override def withNamespace[R](testWith: TestWith[Container, R]): R =
-    withAzureContainer{ container =>
+    withAzureContainer { container =>
       testWith(container)
     }
 
