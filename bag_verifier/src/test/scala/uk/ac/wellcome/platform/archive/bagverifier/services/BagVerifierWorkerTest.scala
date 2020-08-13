@@ -9,12 +9,16 @@ import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.fixtures.PayloadEntry
+import uk.ac.wellcome.platform.archive.common.fixtures.azure.AzureBagBuilder
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, PrimaryS3ReplicaLocation}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, PrimaryS3ReplicaLocation, SecondaryAzureReplicaLocation}
 import uk.ac.wellcome.platform.archive.common.{BagRootLocationPayload, ReplicaCompletePayload}
+import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
+import uk.ac.wellcome.storage.store.azure.AzureTypedStore
+import uk.ac.wellcome.storage.store.s3.S3TypedStore
 
 import scala.util.{Failure, Success, Try}
 
@@ -26,6 +30,7 @@ class BagVerifierWorkerTest
     with BagVerifierFixtures
     with PayloadGenerators{
 val s3BagBuilder = new S3BagBuilder {}
+  val azureBagBuilder = new AzureBagBuilder {}
   val dataFileCount: Int = randomInt(from = 2, to = 10)
   it(
     "updates the ingest monitor and sends an outgoing notification if verification succeeds"
@@ -33,10 +38,10 @@ val s3BagBuilder = new S3BagBuilder {}
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    withLocalS3Bucket { implicit bucket =>
+    withLocalS3Bucket { bucket =>
       val space = createStorageSpace
 
-      val (bagRoot, bagInfo) = s3BagBuilder.storeBagWith(space = space)(bucket, bucket)
+      val (bagRoot, bagInfo) = s3BagBuilder.storeBagWith(space = space)(namespace = bucket, primaryBucket = bucket)
 
       val payload = createBagRootLocationPayloadWith(
         context = createPipelineContextWith(
@@ -72,9 +77,9 @@ val s3BagBuilder = new S3BagBuilder {}
     it("BagRootLocationPayload") {
       val outgoing = new MemoryMessageSender()
 
-      withLocalS3Bucket { implicit bucket =>
+      withLocalS3Bucket { bucket =>
         val space = createStorageSpace
-        val (bagRoot, bagInfo) = s3BagBuilder.storeBagWith(space = space)(bucket, bucket)
+        val (bagRoot, bagInfo) = s3BagBuilder.storeBagWith(space = space)(namespace = bucket, primaryBucket = bucket)
 
         val payload = createBagRootLocationPayloadWith(
           context = createPipelineContextWith(
@@ -100,7 +105,7 @@ val s3BagBuilder = new S3BagBuilder {}
 
       withLocalS3Bucket { bucket =>
         val space = createStorageSpace
-        val (bagRoot, bagInfo) = s3BagBuilder.storeBagWith(space = space)(bucket, bucket)
+        val (bagRoot, bagInfo) = s3BagBuilder.storeBagWith(space = space)(namespace = bucket, primaryBucket = bucket)
 
         val payload = ReplicaCompletePayload(
           context = createPipelineContextWith(
@@ -126,7 +131,47 @@ val s3BagBuilder = new S3BagBuilder {}
       }
     }
 
+    it("ReplicaResultPayload - Azure") {
+      val outgoing = new MemoryMessageSender()
 
+      withLocalS3Bucket { primaryBucket =>
+      withLocalS3Bucket { srcBucket =>
+        withAzureContainer {  container =>
+          val space = createStorageSpace
+          val (bagRoot, bagInfo) = azureBagBuilder.storeBagWith(space = space)(namespace = container, primaryBucket = primaryBucket)
+          val srcBagRoot = S3ObjectLocationPrefix(srcBucket.name, bagRoot.namePrefix)
+          val srcTagManifest = for {
+           tagManifest<- AzureTypedStore[String].get(bagRoot.asLocation("tagmanifest-sha256.txt"))
+                   _                  <- S3TypedStore[String].put(srcBagRoot.asLocation("tagmanifest-sha256.txt"))(tagManifest.identifiedT)
+          } yield ()
+
+          srcTagManifest shouldBe a[Right[_, _]]
+
+          val payload = ReplicaCompletePayload(
+            context = createPipelineContextWith(
+              externalIdentifier = bagInfo.externalIdentifier,
+              storageSpace = space
+            ),
+            srcPrefix = srcBagRoot,
+            dstLocation = SecondaryAzureReplicaLocation(prefix = bagRoot),
+            version = createBagVersion
+          )
+
+          val result =
+            withAzureReplicaBagVerifierWorker(
+              outgoing = outgoing,
+              bucket = primaryBucket
+            ) {
+              _.processMessage(payload)
+            }
+
+          result shouldBe a[Success[_]]
+
+          outgoing.getMessages[ReplicaCompletePayload] shouldBe Seq(payload)
+        }
+      }
+    }
+    }
   }
 
   describe("handling a replicated bag") {
@@ -135,7 +180,7 @@ val s3BagBuilder = new S3BagBuilder {}
 
       withLocalS3Bucket { bucket =>
         val space = createStorageSpace
-        val (bagRoot, bagInfo) = s3BagBuilder.storeBagWith(space = space)(bucket, bucket)
+        val (bagRoot, bagInfo) = s3BagBuilder.storeBagWith(space = space)(namespace = bucket, primaryBucket = bucket)
 
         val payload = ReplicaCompletePayload(
           context = createPipelineContextWith(
@@ -177,7 +222,7 @@ val s3BagBuilder = new S3BagBuilder {}
           )
       }
 
-      val (bagRoot, bagInfo) = badBuilder.storeBagWith()(bucket, bucket)
+      val (bagRoot, bagInfo) = badBuilder.storeBagWith()(namespace = bucket, primaryBucket = bucket)
 
       val payload = createBagRootLocationPayloadWith(
         context = createPipelineContextWith(
@@ -220,7 +265,7 @@ val s3BagBuilder = new S3BagBuilder {}
           None
       }
 
-      val (bagRoot, bagInfo) = badBuilder.storeBagWith()(bucket, bucket)
+      val (bagRoot, bagInfo) = badBuilder.storeBagWith()(namespace = bucket, primaryBucket = bucket)
 
       val payload = createBagRootLocationPayloadWith(
         context = createPipelineContextWith(
@@ -264,7 +309,7 @@ val s3BagBuilder = new S3BagBuilder {}
     withLocalS3Bucket { bucket =>
       val (bagRoot, _) = s3BagBuilder.storeBagWith(
         externalIdentifier = bagInfoExternalIdentifier
-      )(bucket, bucket)
+      )(namespace = bucket, primaryBucket = bucket)
 
       val payload = createBagRootLocationPayloadWith(
         context = createPipelineContextWith(
@@ -307,7 +352,7 @@ val s3BagBuilder = new S3BagBuilder {}
 
     withLocalS3Bucket { bucket =>
       val space = createStorageSpace
-      val (bagRoot, bagInfo) = s3BagBuilder.storeBagWith( space = space)(bucket, bucket)
+      val (bagRoot, bagInfo) = s3BagBuilder.storeBagWith( space = space)(namespace = bucket, primaryBucket = bucket)
 
       val payload = createBagRootLocationPayloadWith(
         context = createPipelineContextWith(
