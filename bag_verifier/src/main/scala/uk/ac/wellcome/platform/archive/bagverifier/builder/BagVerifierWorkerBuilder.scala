@@ -24,7 +24,7 @@ import uk.ac.wellcome.platform.archive.common.{
   BagRootLocationPayload,
   ReplicaCompletePayload
 }
-import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 object BagVerifierWorkerBuilder {
@@ -76,8 +76,10 @@ object BagVerifierWorkerBuilder {
     as: ActorSystem,
     sc: SqsAsyncClient
   ): BagVerifierWorker[
-    BagRootLocationPayload,
+    S3ObjectLocation,
+    S3ObjectLocationPrefix,
     StandaloneBagVerifyContext,
+    BagRootLocationPayload,
     IngestDestination,
     OutgoingDestination
   ] = {
@@ -106,8 +108,10 @@ object BagVerifierWorkerBuilder {
     as: ActorSystem,
     sc: SqsAsyncClient
   ): BagVerifierWorker[
-    ReplicaCompletePayload,
+    S3ObjectLocation,
+    S3ObjectLocationPrefix,
     ReplicatedBagVerifyContext[S3ObjectLocationPrefix],
+    ReplicaCompletePayload,
     IngestDestination,
     OutgoingDestination
   ] = {

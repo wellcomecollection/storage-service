@@ -18,9 +18,10 @@ import uk.ac.wellcome.platform.archive.common.{
   ReplicaCompletePayload
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
+import uk.ac.wellcome.storage.{Location, Prefix}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
+import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -38,8 +39,10 @@ trait BagVerifierFixtures
     stepName: String = randomAlphanumericWithLength()
   )(
     testWith: TestWith[BagVerifierWorker[
-      BagRootLocationPayload,
+      S3ObjectLocation,
+      S3ObjectLocationPrefix,
       StandaloneBagVerifyContext,
+      BagRootLocationPayload,
       String,
       String
     ], R]
@@ -66,7 +69,9 @@ trait BagVerifierFixtures
       }
     }
 
-  def withReplicaBagVerifierWorker[R](
+  def withReplicaBagVerifierWorker[BagLocation <: Location, BagPrefix <: Prefix[
+    BagLocation
+  ], R](
     ingests: MemoryMessageSender = new MemoryMessageSender(),
     outgoing: MemoryMessageSender,
     queue: Queue = dummyQueue,
@@ -74,10 +79,12 @@ trait BagVerifierFixtures
     stepName: String = randomAlphanumericWithLength()
   )(
     testWith: TestWith[BagVerifierWorker[
-      ReplicaCompletePayload,
+      S3ObjectLocation,
+      S3ObjectLocationPrefix,
       ReplicatedBagVerifyContext[
         S3ObjectLocationPrefix
       ],
+      ReplicaCompletePayload,
       String,
       String
     ], R]
