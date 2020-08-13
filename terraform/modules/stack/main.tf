@@ -326,7 +326,7 @@ module "bag_verifier_pre_replication" {
     metrics_namespace  = local.bag_verifier_pre_repl_service_name
     operation_name     = "verification (pre-replicating to archive storage)"
     JAVA_OPTS          = local.java_opts_heap_size
-    is_replica         = "false"
+    bag_verifier_mode  = "standalone"
 
     primary_storage_bucket_name = var.replica_primary_bucket_name
   }
@@ -398,6 +398,7 @@ module "replicator_verifier_primary" {
   replica_display_name = "primary location"
   storage_provider     = "amazon-s3"
   replica_type         = "primary"
+  bag_verifier_mode = "replica-s3"
 
   topic_arns = [
     module.bag_versioner_output_topic.arn,
@@ -451,6 +452,7 @@ module "replicator_verifier_glacier" {
   replica_display_name = "Amazon Glacier"
   storage_provider     = "amazon-s3"
   replica_type         = "secondary"
+  bag_verifier_mode = "replica-s3"
 
   topic_arns = [
     module.bag_versioner_output_topic.arn,
@@ -504,6 +506,7 @@ module "replicator_verifier_azure" {
   replica_display_name = "Azure"
   storage_provider     = "azure-blob-storage"
   replica_type         = "secondary"
+  bag_verifier_mode = "replica-azure"
 
   topic_arns = [
     module.bag_versioner_output_topic.arn,

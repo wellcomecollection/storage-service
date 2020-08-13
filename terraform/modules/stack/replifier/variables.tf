@@ -37,6 +37,9 @@ variable "primary_bucket_name" {
 variable "unpacker_bucket_name" {
   type = string
 }
+variable "bag_verifier_mode" {
+  type = string
+}
 
 # IAM policies
 
