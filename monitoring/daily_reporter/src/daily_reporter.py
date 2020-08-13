@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import datetime
+import json
 
 import boto3
 import httpx
@@ -95,6 +96,8 @@ def prepare_slack_payload(recent_ingests, name, time_period):
     #
     if len(recent_ingests) == 1:
         summary = "1 ingest was updated"
+    elif len(recent_ingests) == 0:
+        summary = "No activity"
     else:
         summary = f"{len(recent_ingests)} ingests were updated"
 
@@ -114,12 +117,21 @@ def prepare_slack_payload(recent_ingests, name, time_period):
         if ingests
     ]
 
-    status_block = {
-        "type": "context",
-        "elements": [{"type": "mrkdwn", "text": " / ".join(pretty_statuses)}],
-    }
+    payload = {"blocks": [summary_block]}
 
-    payload = {"blocks": [summary_block, status_block]}
+    if recent_ingests:
+        if len(ingests_by_status["succeeded"]):
+            status_block = {
+                "type": "context",
+                "elements": [{"type": "mrkdwn", "text": "All succeeded"}],
+            }
+        else:
+            status_block = {
+                "type": "context",
+                "elements": [{"type": "mrkdwn", "text": " / ".join(pretty_statuses)}],
+            }
+
+        payload["blocks"].append(status_block)
 
     # If there were any ingests with unknown failures, we should highlight them!
     #
@@ -186,7 +198,21 @@ def main(*args):
     resp = httpx.post(
         get_secret("storage_service_reporter/slack_webhook"), json=complete_payload
     )
+
     print(f"Sent payload to Slack: {resp}")
+
+    if resp.status_code != 200:
+        print("Non-200 response from Slack:")
+
+        print("")
+
+        print("== request ==")
+        print(json.dumps(complete_payload, indent=2, sort_keys=True))
+
+        print("")
+
+        print("== response ==")
+        print(resp.text)
 
 
 if __name__ == "__main__":

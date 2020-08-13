@@ -7,39 +7,6 @@ locals {
   test_bag_prefix = "test_bags/"
 }
 
-module "bag_with_one_text_file" {
-  source = "./test_bag"
-
-  infra_bucket    = local.infra_bucket
-  test_bag_prefix = local.test_bag_prefix
-
-  filename = "bag_with_one_text_file.tar.gz"
-
-  tags = local.default_tags
-}
-
-module "bag_with_fetch_file_stage" {
-  source = "./test_bag"
-
-  infra_bucket    = local.infra_bucket
-  test_bag_prefix = local.test_bag_prefix
-
-  filename = "bag_with_fetch_file_stage.tar.gz"
-
-  tags = local.default_tags
-}
-
-module "bag_with_fetch_file_prod" {
-  source = "./test_bag"
-
-  infra_bucket    = local.infra_bucket
-  test_bag_prefix = local.test_bag_prefix
-
-  filename = "bag_with_fetch_file_prod.tar.gz"
-
-  tags = local.default_tags
-}
-
 # Give the unpacker tasks permission to read all of the test bags.
 
 data "aws_iam_policy_document" "read_test_bags" {
