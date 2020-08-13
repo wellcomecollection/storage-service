@@ -31,7 +31,7 @@ class BagReplicatorFeatureTest
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
 
-        val (srcBagRoot, _) = createS3BagWith(bucket = srcBucket)
+        val (srcBagRoot, _) = storeBagWith()(namespace = srcBucket, primaryBucket = srcBucket)
 
         val payload = createVersionedBagRootPayloadWith(
           bagRoot = srcBagRoot

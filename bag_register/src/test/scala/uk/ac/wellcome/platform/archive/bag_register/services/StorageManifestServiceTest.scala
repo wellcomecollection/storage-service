@@ -492,7 +492,7 @@ class StorageManifestServiceTest
       bagBuilder.createBagContentsWith(
         space = space,
         version = version
-      )
+      )(namespace = bucket, primaryBucket = bucket)
 
     bagBuilder.storeBagContents(bagContents)
 

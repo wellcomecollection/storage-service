@@ -24,6 +24,8 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
     with BagInfoGenerators
     with S3Fixtures {
 
+  implicit val typedStore: TypedStore[BagLocation,String]
+
   case class BagContents(
     fetchObjects: Map[S3ObjectLocation, String],
     bagObjects: Map[BagLocation, String],
@@ -37,12 +39,25 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     version: BagVersion
-  )(
-    implicit namespace: Namespace
-  ): BagPrefix
+  )(namespace: Namespace): BagPrefix
 
   def createBagLocation(bagRoot: BagPrefix, path: String): BagLocation
+  def storeBagWith(
+                       space: StorageSpace = createStorageSpace,
+                       externalIdentifier: ExternalIdentifier = createExternalIdentifier,
+                       payloadFileCount: Int = randomInt(from = 5, to = 50)
+                     )(namespace: Namespace,primaryBucket: Bucket): (BagPrefix, BagInfo) = {
 
+    val bagContents = createBagContentsWith(
+      space = space,
+      externalIdentifier = externalIdentifier,
+      payloadFileCount = payloadFileCount
+    )(namespace, primaryBucket)
+
+    storeBagContents(bagContents)
+
+    (bagContents.bagRoot, bagContents.bagInfo)
+  }
   def storeBagContents(bagContents: BagContents)(
     implicit typedStore: TypedStore[BagLocation, String]
   ): Unit = {
@@ -67,7 +82,6 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
     version: BagVersion = BagVersion(randomInt(from = 2, to = 10)),
     payloadFileCount: Int = randomInt(from = 5, to = 50)
   )(
-    implicit
     namespace: Namespace,
     primaryBucket: Bucket
   ): BagContents = {
@@ -140,7 +154,7 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
         )
       }
 
-    val bagRoot = createBagRoot(space, externalIdentifier, version)
+    val bagRoot = createBagRoot(space, externalIdentifier, version)(namespace)
 
     val manifestObjects =
       (tagManifestFiles ++ tagManifest.toList).map { manifestFile =>

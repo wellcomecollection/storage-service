@@ -27,7 +27,7 @@ class BagRootFinderFeatureTest
 
   it("detects a bag in the root of the bagLocation") {
     withLocalS3Bucket { bucket =>
-      val (unpackedBagRoot, _) = createS3BagWith(bucket)
+      val (unpackedBagRoot, _) = storeBagWith()(namespace = bucket, primaryBucket = bucket)
 
       val payload = createUnpackedBagLocationPayloadWith(
         unpackedBagLocation = unpackedBagRoot
@@ -85,7 +85,7 @@ class BagRootFinderFeatureTest
         }
       }
 
-      val (unpackedBagRoot, _) = builder.createS3BagWith(bucket)
+      val (unpackedBagRoot, _) = builder.storeBagWith()(namespace = bucket, primaryBucket = bucket)
 
       val (parentDirectory, _) = unpackedBagRoot.keyPrefix.splitAt(
         unpackedBagRoot.keyPrefix.lastIndexOf("/")
@@ -137,7 +137,7 @@ class BagRootFinderFeatureTest
 
   it("errors if the bag is nested too deep") {
     withLocalS3Bucket { bucket =>
-      val (unpackedBagRoot, _) = createS3BagWith(bucket)
+      val (unpackedBagRoot, _) = storeBagWith()(namespace = bucket, primaryBucket = bucket)
 
       val bucketRootLocation = unpackedBagRoot.copy(keyPrefix = "")
 

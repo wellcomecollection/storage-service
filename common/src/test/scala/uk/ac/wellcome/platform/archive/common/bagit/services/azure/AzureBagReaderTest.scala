@@ -1,15 +1,11 @@
 package uk.ac.wellcome.platform.archive.common.bagit.services.azure
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.bagit.services.{
-  BagReader,
-  BagReaderTestCases
-}
+import uk.ac.wellcome.platform.archive.common.bagit.services.{BagReader, BagReaderTestCases}
 import uk.ac.wellcome.platform.archive.common.fixtures.azure.AzureBagBuilder
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
 import uk.ac.wellcome.storage.store.TypedStore
-import uk.ac.wellcome.storage.store.azure.AzureTypedStore
 
 class AzureBagReaderTest
     extends BagReaderTestCases[
@@ -24,7 +20,7 @@ class AzureBagReaderTest
   override def withTypedStore[R](
     testWith: TestWith[TypedStore[AzureBlobLocation, String], R]
   )(implicit context: Unit): R =
-    testWith(AzureTypedStore[String])
+    testWith(typedStore)
 
   override def withBagReader[R](
     testWith: TestWith[BagReader[AzureBlobLocation, AzureBlobLocationPrefix], R]
