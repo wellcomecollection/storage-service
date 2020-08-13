@@ -512,7 +512,7 @@ module "replicator_verifier_azure" {
     module.bag_versioner_output_topic.arn,
   ]
   secrets = {
-    azure_endpoint = var.azure_endpoint_sm_parameter
+    azure_endpoint = var.azure_endpoint_ssm_parameter
   }
   destination_namespace          = var.azure_container_name
   primary_bucket_name  = var.replica_primary_bucket_name
