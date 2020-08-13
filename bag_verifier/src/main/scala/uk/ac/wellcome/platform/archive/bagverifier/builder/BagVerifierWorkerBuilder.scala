@@ -66,7 +66,7 @@ object BagVerifierWorkerBuilder {
         ingestUpdater,
         outgoingPublisher
       )
-      case _ => ???
+      case _ => throw new Exception(s"$verifierMode is not a valid value for bag-verifier.mode")
     }
   }
 
