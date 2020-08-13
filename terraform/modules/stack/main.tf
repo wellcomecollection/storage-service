@@ -571,7 +571,7 @@ module "replica_aggregator" {
     ingest_topic_arn       = module.ingests_topic.arn
     metrics_namespace      = local.bag_register_service_name
     operation_name         = "Aggregating replicas"
-    expected_replica_count = 2
+    expected_replica_count = 3
     JAVA_OPTS              = local.java_opts_heap_size
   }
 
