@@ -126,7 +126,7 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
           Left(
             FileFixityMismatch(
               expectedFileFixity = expectedFileFixity,
-              objectLocation = location,
+              location = location,
               e = new Throwable(
                 s"Lengths do not match: $expectedLength (expected) != $actualLength (actual)"
               )
@@ -150,7 +150,7 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
         Right(
           FileFixityCorrect(
             expectedFileFixity = expectedFileFixity,
-            objectLocation = location,
+            location = location,
             size = size
           )
         )
@@ -159,7 +159,7 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
         Left(
           FileFixityMismatch(
             expectedFileFixity = expectedFileFixity,
-            objectLocation = location,
+            location = location,
             e = new Throwable(
               s"Cached verification tag doesn't match expected checksum for $location: $existingTags (${expectedFileFixity.checksum})"
             )
@@ -204,7 +204,7 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
         Left(
           FileFixityCouldNotGetChecksum(
             expectedFileFixity = expectedFileFixity,
-            objectLocation = location,
+            location = location,
             e = FailedChecksumCreation(algorithm, e)
           )
         )
@@ -213,7 +213,7 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
         Right(
           FileFixityCorrect(
             expectedFileFixity = expectedFileFixity,
-            objectLocation = location,
+            location = location,
             size = inputStream.length
           )
         )
@@ -222,7 +222,7 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
         Left(
           FileFixityMismatch(
             expectedFileFixity = expectedFileFixity,
-            objectLocation = location,
+            location = location,
             e = FailedChecksumNoMatch(
               actual = checksum,
               expected = expectedFileFixity.checksum
@@ -269,7 +269,7 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
         Left(
           FileFixityCouldNotWriteTag(
             expectedFileFixity = expectedFileFixity,
-            objectLocation = location,
+            location = location,
             e = writeError.e
           )
         )

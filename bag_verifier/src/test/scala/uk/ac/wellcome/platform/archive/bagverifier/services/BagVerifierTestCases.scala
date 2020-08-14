@@ -607,7 +607,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
   ): Assertion =
     if (successes
           .map { fixityEntry =>
-            fixityEntry.objectLocation match {
+            fixityEntry.location match {
               case azureBlobLocation: AzureBlobLocation =>
                 azureBlobLocation.name
               case s3ObjectLocation: S3ObjectLocation => s3ObjectLocation.key

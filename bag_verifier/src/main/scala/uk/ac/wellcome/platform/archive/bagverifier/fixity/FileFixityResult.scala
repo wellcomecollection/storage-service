@@ -11,7 +11,7 @@ sealed trait FileFixityError[BagLocation]
 
 case class FileFixityCorrect[BagLocation](
   expectedFileFixity: ExpectedFileFixity,
-  objectLocation: BagLocation,
+  location: BagLocation,
   // We record the size of the files as we verify them, so we can verify
   // the Payload-Oxum in the bag metadata.
   size: Long
@@ -19,7 +19,7 @@ case class FileFixityCorrect[BagLocation](
 
 case class FileFixityMismatch[BagLocation](
   expectedFileFixity: ExpectedFileFixity,
-  objectLocation: BagLocation,
+  location: BagLocation,
   e: Throwable
 ) extends FileFixityError[BagLocation]
 
@@ -30,12 +30,12 @@ case class FileFixityCouldNotRead[BagLocation](
 
 case class FileFixityCouldNotGetChecksum[BagLocation](
   expectedFileFixity: ExpectedFileFixity,
-  objectLocation: BagLocation,
+  location: BagLocation,
   e: Throwable
 ) extends FileFixityError[BagLocation]
 
 case class FileFixityCouldNotWriteTag[BagLocation](
   expectedFileFixity: ExpectedFileFixity,
-  objectLocation: BagLocation,
+  location: BagLocation,
   e: Throwable
 ) extends FileFixityError[BagLocation]
