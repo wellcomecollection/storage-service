@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.s3.S3FixityChecker
+import uk.ac.wellcome.storage.azure.AzureBlobLocation
 import uk.ac.wellcome.storage.{Location, Prefix}
 
 /** Given some Container of files, get the expected fixity information for every
@@ -29,6 +30,24 @@ class FixityListChecker[BagLocation <: Location, BagPrefix <: Prefix[
             case f: FetchFileFixity => fetchEntriesFixityChecker.check(f)
             case d: DataDirectoryFileFixity =>
               dataDirectoryFixityChecker.check(d)
+          }
+          // Although it's annoying if we can't write a fixity tag for an object,
+          // it shouldn't block the verification of the bag.  Adding the fixity tags
+          // isn't a required step to store a bag in the archive.
+          //
+          // Azure does not allow us to write the same fixity tags that we use in S3,
+          // so for now we ignore these errors rather than write mismatched tags.
+          // See https://github.com/wellcomecollection/platform/issues/4730
+          .map {
+            case FileFixityCouldNotWriteTag(expectedFileFixity, location: AzureBlobLocation, e, size) =>
+              warn(s"Ignoring error writing fixity tags to Azure at $location: $e")
+              FileFixityCorrect(
+                expectedFileFixity = expectedFileFixity,
+                location = location,
+                size = size
+              )
+
+            case result => result
           }
           .foldLeft[FixityListCheckingResult[BagLocation]](
             FixityListAllCorrect(Nil)

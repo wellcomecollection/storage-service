@@ -68,7 +68,7 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
         size = size
       )
 
-      _ <- writeFixityTags(expectedFileFixity, location)
+      _ <- writeFixityTags(expectedFileFixity, location, size)
     } yield result
 
     debug(s"Fixity check result for ${expectedFileFixity.uri}: $fixityResult")
@@ -241,7 +241,8 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
 
   private def writeFixityTags(
     expectedFileFixity: ExpectedFileFixity,
-    location: BagLocation
+    location: BagLocation,
+    size: Long
   ): Either[FileFixityCouldNotWriteTag[BagLocation], Unit] =
     tags
       .update(location) { existingTags =>
@@ -270,7 +271,8 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
           FileFixityCouldNotWriteTag(
             expectedFileFixity = expectedFileFixity,
             location = location,
-            e = writeError.e
+            e = writeError.e,
+            size = size
           )
         )
     }

@@ -37,5 +37,8 @@ case class FileFixityCouldNotGetChecksum[BagLocation](
 case class FileFixityCouldNotWriteTag[BagLocation](
   expectedFileFixity: ExpectedFileFixity,
   location: BagLocation,
-  e: Throwable
+  e: Throwable,
+  // If we're at the point where we're writing a fixity checksum to an object,
+  // we've already verified its checksum and size.  Record the size.
+  size: Long
 ) extends FileFixityError[BagLocation]
