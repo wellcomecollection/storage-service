@@ -26,7 +26,7 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     extends Logging {
   protected val streamStore: StreamStore[BagLocation]
   protected val sizeFinder: SizeFinder[BagLocation]
-  val tags: Tags[BagLocation]
+  val tags: Option[Tags[BagLocation]]
   implicit val locator: Locatable[BagLocation, BagPrefix, URI]
 
   def check(
@@ -98,7 +98,7 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     location: BagLocation
   ): Either[FileFixityCouldNotRead[BagLocation], Map[String, String]] =
     handleReadErrors(
-      tags.get(location).map(_.identifiedT),
+      tags.map(_.get(location).map(_.identifiedT)).getOrElse(Right(Map.empty[String,String])),
       expectedFileFixity = expectedFileFixity
     )
 
@@ -243,8 +243,8 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     expectedFileFixity: ExpectedFileFixity,
     location: BagLocation
   ): Either[FileFixityCouldNotWriteTag[BagLocation], Unit] =
-    tags
-      .update(location) { existingTags =>
+    tags.map { t =>
+      t.update(location) { existingTags =>
         val tagName = fixityTagName(expectedFileFixity)
         val tagValue = fixityTagValue(expectedFileFixity)
 
@@ -264,16 +264,17 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
 
         Right(existingTags ++ fixityTags)
       } match {
-      case Right(_) => Right(())
-      case Left(writeError) =>
-        Left(
-          FileFixityCouldNotWriteTag(
-            expectedFileFixity = expectedFileFixity,
-            objectLocation = location,
-            e = writeError.e
+        case Right(_) => Right(())
+        case Left(writeError) =>
+          Left(
+            FileFixityCouldNotWriteTag(
+              expectedFileFixity = expectedFileFixity,
+              objectLocation = location,
+              e = writeError.e
+            )
           )
-        )
-    }
+      }
+    }.getOrElse(Right(()))
 
   // e.g. Content-MD5, Content-SHA256
   private def fixityTagName(expectedFileFixity: ExpectedFileFixity): String =

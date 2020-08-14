@@ -285,12 +285,12 @@ trait FixityCheckerTestCases[
               FileFixityCorrect[_]
             ]
 
-            fixityChecker.tags.get(location).right.value shouldBe Identified(
+            fixityChecker.tags.foreach{t =>t.get(location).right.value shouldBe Identified(
               location,
               Map(
                 "Content-MD5" -> checksumString
               )
-            )
+            )}
           }
         }
       }
@@ -434,10 +434,10 @@ trait FixityCheckerTestCases[
               FileFixityMismatch[_]
             ]
 
-            fixityChecker.tags.get(location).right.value shouldBe Identified(
+            fixityChecker.tags.foreach{t => t.get(location).right.value shouldBe Identified(
               location,
               Map.empty
-            )
+            )}
           }
         }
       }
@@ -477,14 +477,16 @@ trait FixityCheckerTestCases[
               ]
             }
 
-            fixityChecker.tags.get(location).right.value shouldBe Identified(
-              location,
-              Map(
-                "Content-MD5" -> "68e109f0f40ca72a15e05cc22786f8e6",
-                "Content-SHA1" -> "db8ac1c259eb89d4a131b253bacfca5f319d54f2",
-                "Content-SHA256" -> "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
+            fixityChecker.tags.foreach {t =>
+              t.get(location).right.value shouldBe Identified(
+                location,
+                Map(
+                  "Content-MD5" -> "68e109f0f40ca72a15e05cc22786f8e6",
+                  "Content-SHA1" -> "db8ac1c259eb89d4a131b253bacfca5f319d54f2",
+                  "Content-SHA256" -> "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
+                )
               )
-            )
+            }
           }
         }
       }

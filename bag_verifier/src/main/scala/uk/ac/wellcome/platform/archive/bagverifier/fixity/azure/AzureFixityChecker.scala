@@ -6,7 +6,6 @@ import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.AzureLocatable
 import uk.ac.wellcome.platform.archive.common.storage.services.azure.AzureSizeFinder
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.store.azure.AzureStreamStore
-import uk.ac.wellcome.storage.tags.azure.AzureBlobMetadata
 
 class AzureFixityChecker(implicit blobClient: BlobServiceClient)
     extends FixityChecker[AzureBlobLocation, AzureBlobLocationPrefix] {
@@ -16,7 +15,7 @@ class AzureFixityChecker(implicit blobClient: BlobServiceClient)
   override protected val sizeFinder =
     new AzureSizeFinder()
 
-  override val tags = new AzureBlobMetadata()
+  override val tags = None
 
   override implicit val locator: AzureLocatable = new AzureLocatable
 }
