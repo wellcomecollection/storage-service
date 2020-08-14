@@ -261,4 +261,5 @@ trait FixityCheckerTestCases[
       }
     }
   }
+
 }
