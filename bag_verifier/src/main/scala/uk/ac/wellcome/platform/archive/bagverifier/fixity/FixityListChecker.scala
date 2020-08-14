@@ -39,8 +39,15 @@ class FixityListChecker[BagLocation <: Location, BagPrefix <: Prefix[
           // so for now we ignore these errors rather than write mismatched tags.
           // See https://github.com/wellcomecollection/platform/issues/4730
           .map {
-            case FileFixityCouldNotWriteTag(expectedFileFixity, location: AzureBlobLocation, e, size) =>
-              warn(s"Ignoring error writing fixity tags to Azure at $location: $e")
+            case FileFixityCouldNotWriteTag(
+                expectedFileFixity,
+                location: AzureBlobLocation,
+                e,
+                size
+                ) =>
+              warn(
+                s"Ignoring error writing fixity tags to Azure at $location: $e"
+              )
               FileFixityCorrect(
                 expectedFileFixity = expectedFileFixity,
                 location = location,

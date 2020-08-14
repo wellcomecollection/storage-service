@@ -21,7 +21,10 @@ class FixityListCheckerTest extends AnyFunSpec with Matchers with S3Fixtures {
 
       implicit val verifiable: S3FixityChecker = new S3FixityChecker() {
         override val tags: Tags[S3ObjectLocation] = new S3Tags() {
-          override def writeTags(location: S3ObjectLocation, tags: Map[String, String]): Either[WriteError, Map[String, String]] =
+          override def writeTags(
+            location: S3ObjectLocation,
+            tags: Map[String, String]
+          ): Either[WriteError, Map[String, String]] =
             Left(StoreWriteError(new Throwable("BOOM!")))
         }
       }
@@ -31,10 +34,14 @@ class FixityListCheckerTest extends AnyFunSpec with Matchers with S3Fixtures {
       withLocalS3Bucket { bucket =>
         val (bagRoot, _) = bagBuilder.createS3BagWith(bucket)
 
-        implicit val bagExpectedFixity: BagExpectedFixity[S3ObjectLocation, S3ObjectLocationPrefix] =
-          new BagExpectedFixity[S3ObjectLocation, S3ObjectLocationPrefix](bagRoot)
+        implicit val bagExpectedFixity
+          : BagExpectedFixity[S3ObjectLocation, S3ObjectLocationPrefix] =
+          new BagExpectedFixity[S3ObjectLocation, S3ObjectLocationPrefix](
+            bagRoot
+          )
 
-        val fixityListChecker: FixityListChecker[S3ObjectLocation, S3ObjectLocationPrefix, Bag] =
+        val fixityListChecker
+          : FixityListChecker[S3ObjectLocation, S3ObjectLocationPrefix, Bag] =
           new FixityListChecker()
 
         val bag = new S3BagReader().get(bagRoot).right.get
