@@ -10,7 +10,6 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.storage.Identified
 import uk.ac.wellcome.storage.fixtures.{AzureFixtures, S3Fixtures}
-import uk.ac.wellcome.storage.tags.azure.AzureBlobMetadata
 import uk.ac.wellcome.storage.tags.s3.S3Tags
 
 import scala.util.Success
@@ -24,9 +23,8 @@ class ApplyTagsTest
     with StorageManifestGenerators {
 
   val s3Tags = new S3Tags()
-  val azureMetadata = new AzureBlobMetadata()
 
-  val applyTags = new ApplyTags(s3Tags = s3Tags, azureMetadata = azureMetadata)
+  val applyTags = new ApplyTags(s3Tags = s3Tags)
 
   it("updates tags") {
     withLocalS3Bucket { bucket =>
@@ -46,17 +44,7 @@ class ApplyTagsTest
           randomAlphanumeric
         )
 
-        val azureLocation = azurePrefix.asLocation(file.path)
-        azureClient
-          .getBlobContainerClient(azureLocation.container)
-          .getBlobClient(azureLocation.name)
-          .upload(randomInputStream(length = 10), 10)
-
         s3Tags.update(s3Location) { _ =>
-          Right(Map("Content-SHA256" -> "4a5a41ebcf5e2c24c"))
-        }
-
-        azureMetadata.update(azureLocation) { _ =>
           Right(Map("Content-SHA256" -> "4a5a41ebcf5e2c24c"))
         }
 
@@ -72,14 +60,6 @@ class ApplyTagsTest
 
         s3Tags.get(s3Location).right.value shouldBe Identified(
           s3Location,
-          Map(
-            "Content-SHA256" -> "4a5a41ebcf5e2c24c",
-            "Content-Type" -> "application/mxf"
-          )
-        )
-
-        azureMetadata.get(azureLocation).right.value shouldBe Identified(
-          azureLocation,
           Map(
             "Content-SHA256" -> "4a5a41ebcf5e2c24c",
             "Content-Type" -> "application/mxf"

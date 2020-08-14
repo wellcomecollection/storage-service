@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.storage.bag_tagger.services
 
 import com.amazonaws.services.s3.AmazonS3
-import com.azure.storage.blob.BlobServiceClient
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   AzureStorageLocation,
@@ -11,12 +10,11 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.tags.Tags
-import uk.ac.wellcome.storage.tags.azure.AzureBlobMetadata
 import uk.ac.wellcome.storage.tags.s3.S3Tags
 
 import scala.util.Try
 
-class ApplyTags(s3Tags: S3Tags, azureMetadata: AzureBlobMetadata)
+class ApplyTags(s3Tags: S3Tags)
     extends Logging {
   def applyTags(
     storageLocations: Seq[StorageLocation],
@@ -33,12 +31,16 @@ class ApplyTags(s3Tags: S3Tags, azureMetadata: AzureBlobMetadata)
                 tagsToApply = tagsToApply
               )
 
+            // We don't write tags to our replica in Azure -- at present, they're only
+            // used to inform S3 lifecycle rules, which aren't important in Azure.
+            // Additionally, Azure doesn't allow using hyphens (-) in tag names, because
+            // names have to be valid C# identifiers.
+            //
+            // See https://github.com/wellcomecollection/platform/issues/4730
+            // https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-properties-metadata?tabs=dotnet
             case azureLocation: AzureStorageLocation =>
-              applyTagsToPrefix(
-                tags = azureMetadata,
-                prefix = azureLocation.prefix,
-                tagsToApply = tagsToApply
-              )
+              info(s"Azure location: not applying tags to $azureLocation")
+              tagsToApply.map { _ => Right(()) }
           }
         }
 
@@ -84,14 +86,9 @@ class ApplyTags(s3Tags: S3Tags, azureMetadata: AzureBlobMetadata)
 }
 
 object ApplyTags {
-  def apply()(
-    implicit
-    s3Client: AmazonS3,
-    blobServiceClient: BlobServiceClient
-  ): ApplyTags = {
+  def apply()(implicit s3Client: AmazonS3): ApplyTags = {
     val s3Tags = new S3Tags()
-    val azureMetadata = new AzureBlobMetadata()
 
-    new ApplyTags(s3Tags = s3Tags, azureMetadata = azureMetadata)
+    new ApplyTags(s3Tags = s3Tags)
   }
 }
