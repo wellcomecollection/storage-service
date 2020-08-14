@@ -14,8 +14,7 @@ import uk.ac.wellcome.storage.tags.s3.S3Tags
 
 import scala.util.Try
 
-class ApplyTags(s3Tags: S3Tags)
-    extends Logging {
+class ApplyTags(s3Tags: S3Tags) extends Logging {
   def applyTags(
     storageLocations: Seq[StorageLocation],
     tagsToApply: Map[StorageManifestFile, Map[String, String]]
@@ -40,7 +39,9 @@ class ApplyTags(s3Tags: S3Tags)
             // https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-properties-metadata?tabs=dotnet
             case azureLocation: AzureStorageLocation =>
               info(s"Azure location: not applying tags to $azureLocation")
-              tagsToApply.map { _ => Right(()) }
+              tagsToApply.map { _ =>
+                Right(())
+              }
           }
         }
 
