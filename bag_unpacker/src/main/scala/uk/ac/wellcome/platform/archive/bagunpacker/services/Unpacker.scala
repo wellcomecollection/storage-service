@@ -144,7 +144,26 @@ trait Unpacker[
     archiveEntry: ArchiveEntry,
     dstPrefix: DstPrefix
   ): Long = {
-    val uploadLocation = dstPrefix.asLocation(archiveEntry.getName)
+
+    // Sometimes the entries in a tar.gz archive are prefixed with ./, for example:
+    //
+    //      ./PBLBIO/bag-info.txt
+    //
+    // We don't want to include the leading `./` in the names we write to the
+    // unpacked bags bucket, because they can cause issues in the S3 console and the
+    // root finder.
+    //
+    // We do this normalisation manually rather than normalising the whole string,
+    // so that we can spot any weirdness with overlapping entries.  e.g.
+    //
+    //      my_bag/data/cat.jpg
+    //      my_bag/data/pictures/../cat.jpg
+    //
+    // could be two distinct entries in the tar.gz, but different objects.  We don't
+    // want to unpack them to the same object; we want to notice and throw an error.
+    //
+    val name = archiveEntry.getName.stripPrefix("./")
+    val uploadLocation = dstPrefix.asLocation(name)
 
     val archiveEntrySize = archiveEntry.getSize
 

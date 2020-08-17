@@ -15,6 +15,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepResult
 }
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.s3.{
   S3ClientFactory,
@@ -61,6 +62,11 @@ class S3UnpackerTest
     keyPrefix: String
   ): S3ObjectLocationPrefix =
     S3ObjectLocationPrefix(bucket = bucket.name, keyPrefix = keyPrefix)
+
+  override def listKeysUnder(
+    prefix: S3ObjectLocationPrefix
+  )(implicit store: S3StreamStore): Seq[String] =
+    S3ObjectLocationListing().list(prefix).right.value.toSeq.map { _.key }
 
   it("fails if asked to write to a non-existent bucket") {
     val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()

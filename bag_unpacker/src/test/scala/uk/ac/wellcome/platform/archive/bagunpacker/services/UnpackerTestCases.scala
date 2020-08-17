@@ -15,7 +15,10 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
-import uk.ac.wellcome.storage.streaming.StreamAssertions
+import uk.ac.wellcome.storage.streaming.{
+  InputStreamWithLength,
+  StreamAssertions
+}
 import uk.ac.wellcome.storage.{Location, Prefix}
 
 trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
@@ -65,6 +68,8 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
       createDstPrefixWith(namespace)
     }
 
+  def listKeysUnder(prefix: BagPrefix)(implicit store: StoreImpl): Seq[String]
+
   it("unpacks a tgz archive") {
     val (archiveFile, filesInArchive, _) = createTgzArchiveWithRandomFiles()
 
@@ -102,40 +107,40 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
   }
 
   it("normalizes file entries such as './' when unpacking") {
-    val (archiveFile, filesInArchive, _) =
-      createTgzArchiveWithFiles(
-        randomFilesWithNames(
-          List("./testA", "/testB", "/./testC", "//testD")
-        )
-      )
+    // This is a stripped down copy of a bag which got unpacked into a prefix
+    // containing ./ in the S3 key.
+    // See ingest bd5cef81-ea38-4542-b0af-871d70f8d6bf
+    val resource = getClass.getResourceAsStream("/dotted_archive.tar.gz")
+    val inputStream = new InputStreamWithLength(resource, length = 4458)
 
     withNamespace { srcNamespace =>
       withNamespace { dstNamespace =>
         withStreamStore { implicit streamStore =>
-          withArchive(srcNamespace, archiveFile) { archiveLocation =>
-            val dstPrefix =
-              createDstPrefixWith(dstNamespace, pathPrefix = "unpacker")
-            val summaryResult =
-              withUnpacker {
-                _.unpack(
-                  ingestId = createIngestID,
-                  srcLocation = archiveLocation,
-                  dstPrefix = dstPrefix
-                )
-              }
+          val srcLocation = createSrcLocationWith(srcNamespace)
+          streamStore.put(srcLocation)(inputStream) shouldBe a[Right[_, _]]
 
-            val unpacked = summaryResult.success.value
-            unpacked shouldBe a[IngestStepSucceeded[_]]
+          val dstPrefix =
+            createDstPrefixWith(dstNamespace, pathPrefix = "unpacker")
 
-            unpacked.maybeUserFacingMessage.get should fullyMatch regex
-              """Unpacked \d+ [KM]B from \d+ files"""
+          val summaryResult =
+            withUnpacker {
+              _.unpack(
+                ingestId = createIngestID,
+                srcLocation = srcLocation,
+                dstPrefix = dstPrefix
+              )
+            }
 
-            val summary = unpacked.summary
-            summary.fileCount shouldBe filesInArchive.size
-            summary.bytesUnpacked shouldBe totalBytes(filesInArchive)
+          val unpacked = summaryResult.success.value
+          unpacked shouldBe a[IngestStepSucceeded[_]]
 
-            assertEqual(dstPrefix, filesInArchive)
-          }
+          listKeysUnder(dstPrefix) should contain theSameElementsAs Seq(
+            "unpacker/PBLBIO_A_2_1-5adb2889-8556-49f8-a386-440a1d8f57f1/bag-info.txt",
+            "unpacker/PBLBIO_A_2_1-5adb2889-8556-49f8-a386-440a1d8f57f1/bagit.txt",
+            "unpacker/PBLBIO_A_2_1-5adb2889-8556-49f8-a386-440a1d8f57f1/data/README.html",
+            "unpacker/PBLBIO_A_2_1-5adb2889-8556-49f8-a386-440a1d8f57f1/manifest-sha256.txt",
+            "unpacker/PBLBIO_A_2_1-5adb2889-8556-49f8-a386-440a1d8f57f1/tagmanifest-sha256.txt"
+          )
         }
       }
     }
