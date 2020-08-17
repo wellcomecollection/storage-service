@@ -24,7 +24,7 @@ class S3FixityChecker(implicit s3Client: AmazonS3)
   override protected val sizeFinder: S3SizeFinder =
     new S3SizeFinder()
 
-  override val tags: Tags[S3ObjectLocation] = new S3Tags()
+  override val tags: Option[Tags[S3ObjectLocation]] = Some(new S3Tags())
   override implicit val locator
     : Locatable[S3ObjectLocation, S3ObjectLocationPrefix, URI] =
     S3Locatable.s3UriLocatable
