@@ -51,12 +51,15 @@ class MemoryUnpackerTest
   ): MemoryLocationPrefix =
     MemoryLocationPrefix(namespace = namespace, path = pathPrefix)
 
-  override def listKeysUnder(prefix: MemoryLocationPrefix)(implicit store: MemoryStreamStore[MemoryLocation]): Seq[String] =
-    store
-      .memoryStore
-      .entries
-      .keys
-      .filter { loc => loc.namespace == prefix.namespace && loc.path.startsWith(prefix.pathPrefix) }
+  override def listKeysUnder(
+    prefix: MemoryLocationPrefix
+  )(implicit store: MemoryStreamStore[MemoryLocation]): Seq[String] =
+    store.memoryStore.entries.keys
+      .filter { loc =>
+        loc.namespace == prefix.namespace && loc.path.startsWith(
+          prefix.pathPrefix
+        )
+      }
       .map { _.path }
       .toSeq
 }

@@ -15,7 +15,10 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
-import uk.ac.wellcome.storage.streaming.{InputStreamWithLength, StreamAssertions}
+import uk.ac.wellcome.storage.streaming.{
+  InputStreamWithLength,
+  StreamAssertions
+}
 import uk.ac.wellcome.storage.{Location, Prefix}
 
 trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[

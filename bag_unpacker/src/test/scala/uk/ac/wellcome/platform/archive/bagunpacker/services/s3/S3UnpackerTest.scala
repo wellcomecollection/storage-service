@@ -63,7 +63,9 @@ class S3UnpackerTest
   ): S3ObjectLocationPrefix =
     S3ObjectLocationPrefix(bucket = bucket.name, keyPrefix = keyPrefix)
 
-  override def listKeysUnder(prefix: S3ObjectLocationPrefix)(implicit store: S3StreamStore): Seq[String] =
+  override def listKeysUnder(
+    prefix: S3ObjectLocationPrefix
+  )(implicit store: S3StreamStore): Seq[String] =
     S3ObjectLocationListing().list(prefix).right.value.toSeq.map { _.key }
 
   it("fails if asked to write to a non-existent bucket") {
