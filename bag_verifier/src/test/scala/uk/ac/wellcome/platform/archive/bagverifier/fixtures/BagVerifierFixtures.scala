@@ -7,11 +7,17 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagverifier.builder.BagVerifierWorkerBuilder
-import uk.ac.wellcome.platform.archive.bagverifier.models.{ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{
+  ReplicatedBagVerifyContext,
+  StandaloneBagVerifyContext
+}
 import uk.ac.wellcome.platform.archive.bagverifier.services.BagVerifierWorker
 import uk.ac.wellcome.platform.archive.bagverifier.services.s3.S3StandaloneBagVerifier
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
-import uk.ac.wellcome.platform.archive.common.{BagRootLocationPayload, ReplicaCompletePayload}
+import uk.ac.wellcome.platform.archive.common.{
+  BagRootLocationPayload,
+  ReplicaCompletePayload
+}
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.fixtures.{AzureFixtures, S3Fixtures}
@@ -24,7 +30,8 @@ trait BagVerifierFixtures
     with SQS
     with Akka
     with OperationFixtures
-    with S3Fixtures with AzureFixtures{
+    with S3Fixtures
+    with AzureFixtures {
   def withStandaloneBagVerifierWorker[R](
     ingests: MemoryMessageSender = new MemoryMessageSender(),
     outgoing: MemoryMessageSender,
@@ -89,12 +96,12 @@ trait BagVerifierFixtures
         val outgoingPublisher = createOutgoingPublisherWith(outgoing)
 
         val worker = BagVerifierWorkerBuilder.buildReplicaS3BagVerifierWorker(
-            primaryBucket = bucket.name,
-            metricsNamespace = "bag_verifier",
-            alpakkaSqsWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-            ingestUpdater = ingestUpdater,
-            outgoingPublisher = outgoingPublisher
-          )
+          primaryBucket = bucket.name,
+          metricsNamespace = "bag_verifier",
+          alpakkaSqsWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+          ingestUpdater = ingestUpdater,
+          outgoingPublisher = outgoingPublisher
+        )
 
         worker.run()
 
@@ -110,8 +117,8 @@ trait BagVerifierFixtures
     stepName: String = randomAlphanumericWithLength()
   )(
     testWith: TestWith[BagVerifierWorker[
-    AzureBlobLocation,
-    AzureBlobLocationPrefix,
+      AzureBlobLocation,
+      AzureBlobLocationPrefix,
       ReplicatedBagVerifyContext[
         AzureBlobLocationPrefix
       ],
@@ -127,7 +134,8 @@ trait BagVerifierFixtures
 
         val outgoingPublisher = createOutgoingPublisherWith(outgoing)
 
-        val worker = BagVerifierWorkerBuilder.buildReplicaAzureBagVerifierWorker(
+        val worker =
+          BagVerifierWorkerBuilder.buildReplicaAzureBagVerifierWorker(
             primaryBucket = bucket.name,
             metricsNamespace = "bag_verifier",
             alpakkaSqsWorkerConfig = createAlpakkaSQSWorkerConfig(queue),

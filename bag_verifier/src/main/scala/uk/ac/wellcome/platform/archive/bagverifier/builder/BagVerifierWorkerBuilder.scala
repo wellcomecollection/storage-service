@@ -10,13 +10,22 @@ import uk.ac.wellcome.messaging.sns.SNSConfig
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
-import uk.ac.wellcome.platform.archive.bagverifier.models.{ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{
+  ReplicatedBagVerifyContext,
+  StandaloneBagVerifyContext
+}
 import uk.ac.wellcome.platform.archive.bagverifier.services.BagVerifierWorker
 import uk.ac.wellcome.platform.archive.bagverifier.services.azure.AzureReplicatedBagVerifier
-import uk.ac.wellcome.platform.archive.bagverifier.services.s3.{S3ReplicatedBagVerifier, S3StandaloneBagVerifier}
+import uk.ac.wellcome.platform.archive.bagverifier.services.s3.{
+  S3ReplicatedBagVerifier,
+  S3StandaloneBagVerifier
+}
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
-import uk.ac.wellcome.platform.archive.common.{BagRootLocationPayload, ReplicaCompletePayload}
+import uk.ac.wellcome.platform.archive.common.{
+  BagRootLocationPayload,
+  ReplicaCompletePayload
+}
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
@@ -40,33 +49,38 @@ object BagVerifierWorkerBuilder {
       config.requireString("bag-verifier.primary-storage-bucket")
 
     verifierMode match {
-      case "replica-s3" => buildReplicaS3BagVerifierWorker(
-        primaryBucket,
-        metricsNamespace = metricsNamespace,
-        alpakkaSqsWorkerConfig = alpakkaSqsWorkerConfig,
-        ingestUpdater,
-        outgoingPublisher
-      )
+      case "replica-s3" =>
+        buildReplicaS3BagVerifierWorker(
+          primaryBucket,
+          metricsNamespace = metricsNamespace,
+          alpakkaSqsWorkerConfig = alpakkaSqsWorkerConfig,
+          ingestUpdater,
+          outgoingPublisher
+        )
       case "replica-azure" =>
         implicit val azureBlobClient: BlobServiceClient =
           new BlobServiceClientBuilder()
             .endpoint(config.requireString("azure.endpoint"))
             .buildClient()
         buildReplicaAzureBagVerifierWorker(
-        primaryBucket,
-        metricsNamespace = metricsNamespace,
-        alpakkaSqsWorkerConfig = alpakkaSqsWorkerConfig,
-        ingestUpdater,
-        outgoingPublisher
-      )
-      case "standalone" =>       buildStandaloneVerifierWorker(
-        primaryBucket,
-        metricsNamespace = metricsNamespace,
-        alpakkaSqsWorkerConfig = alpakkaSqsWorkerConfig,
-        ingestUpdater,
-        outgoingPublisher
-      )
-      case _ => throw new Exception(s"$verifierMode is not a valid value for bag-verifier.mode")
+          primaryBucket,
+          metricsNamespace = metricsNamespace,
+          alpakkaSqsWorkerConfig = alpakkaSqsWorkerConfig,
+          ingestUpdater,
+          outgoingPublisher
+        )
+      case "standalone" =>
+        buildStandaloneVerifierWorker(
+          primaryBucket,
+          metricsNamespace = metricsNamespace,
+          alpakkaSqsWorkerConfig = alpakkaSqsWorkerConfig,
+          ingestUpdater,
+          outgoingPublisher
+        )
+      case _ =>
+        throw new Exception(
+          s"$verifierMode is not a valid value for bag-verifier.mode"
+        )
     }
   }
 
@@ -137,18 +151,21 @@ object BagVerifierWorkerBuilder {
     )
   }
 
-  def buildReplicaAzureBagVerifierWorker[IngestDestination, OutgoingDestination](
+  def buildReplicaAzureBagVerifierWorker[
+    IngestDestination,
+    OutgoingDestination
+  ](
     primaryBucket: String,
     metricsNamespace: String,
     alpakkaSqsWorkerConfig: AlpakkaSQSWorkerConfig,
     ingestUpdater: IngestUpdater[IngestDestination],
     outgoingPublisher: OutgoingPublisher[OutgoingDestination]
   )(
-                                                                                  implicit s3Client: AmazonS3,
-                                                                                blobClient: BlobServiceClient,
-                                                                                  mc: MetricsMonitoringClient,
-                                                                                  as: ActorSystem,
-                                                                                  sc: SqsAsyncClient
+    implicit s3Client: AmazonS3,
+    blobClient: BlobServiceClient,
+    mc: MetricsMonitoringClient,
+    as: ActorSystem,
+    sc: SqsAsyncClient
   ): BagVerifierWorker[
     AzureBlobLocation,
     AzureBlobLocationPrefix,

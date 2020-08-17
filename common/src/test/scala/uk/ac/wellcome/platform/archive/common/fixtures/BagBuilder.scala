@@ -24,7 +24,7 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
     with BagInfoGenerators
     with S3Fixtures {
 
-  implicit val typedStore: TypedStore[BagLocation,String]
+  implicit val typedStore: TypedStore[BagLocation, String]
 
   case class BagContents(
     fetchObjects: Map[S3ObjectLocation, String],
@@ -43,10 +43,10 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
 
   def createBagLocation(bagRoot: BagPrefix, path: String): BagLocation
   def storeBagWith(
-                       space: StorageSpace = createStorageSpace,
-                       externalIdentifier: ExternalIdentifier = createExternalIdentifier,
-                       payloadFileCount: Int = randomInt(from = 5, to = 50)
-                     )(namespace: Namespace,primaryBucket: Bucket): (BagPrefix, BagInfo) = {
+    space: StorageSpace = createStorageSpace,
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
+    payloadFileCount: Int = randomInt(from = 5, to = 50)
+  )(namespace: Namespace, primaryBucket: Bucket): (BagPrefix, BagInfo) = {
 
     val bagContents = createBagContentsWith(
       space = space,

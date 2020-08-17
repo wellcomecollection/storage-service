@@ -1,6 +1,9 @@
 package uk.ac.wellcome.platform.archive.common.fixtures.azure
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
@@ -12,7 +15,8 @@ import uk.ac.wellcome.storage.store.azure.AzureTypedStore
 trait AzureBagBuilder
     extends BagBuilder[AzureBlobLocation, AzureBlobLocationPrefix, Container]
     with AzureFixtures {
-  implicit val typedStore: TypedStore[AzureBlobLocation, String] = AzureTypedStore[String]
+  implicit val typedStore: TypedStore[AzureBlobLocation, String] =
+    AzureTypedStore[String]
 
   override def createBagRoot(
     space: StorageSpace,

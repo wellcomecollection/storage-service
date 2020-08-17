@@ -1,7 +1,10 @@
 package uk.ac.wellcome.platform.archive.common.bagit.services.azure
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.bagit.services.{BagReader, BagReaderTestCases}
+import uk.ac.wellcome.platform.archive.common.bagit.services.{
+  BagReader,
+  BagReaderTestCases
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.azure.AzureBagBuilder
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container

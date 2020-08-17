@@ -398,7 +398,7 @@ module "replicator_verifier_primary" {
   replica_display_name = "primary location"
   storage_provider     = "amazon-s3"
   replica_type         = "primary"
-  bag_verifier_mode = "replica-s3"
+  bag_verifier_mode    = "replica-s3"
 
   topic_arns = [
     module.bag_versioner_output_topic.arn,
@@ -452,7 +452,7 @@ module "replicator_verifier_glacier" {
   replica_display_name = "Amazon Glacier"
   storage_provider     = "amazon-s3"
   replica_type         = "secondary"
-  bag_verifier_mode = "replica-s3"
+  bag_verifier_mode    = "replica-s3"
 
   topic_arns = [
     module.bag_versioner_output_topic.arn,
@@ -506,7 +506,7 @@ module "replicator_verifier_azure" {
   replica_display_name = "Azure"
   storage_provider     = "azure-blob-storage"
   replica_type         = "secondary"
-  bag_verifier_mode = "replica-azure"
+  bag_verifier_mode    = "replica-azure"
 
   topic_arns = [
     module.bag_versioner_output_topic.arn,
@@ -514,9 +514,9 @@ module "replicator_verifier_azure" {
   secrets = {
     azure_endpoint = var.azure_endpoint_ssm_parameter
   }
-  destination_namespace          = var.azure_container_name
-  primary_bucket_name  = var.replica_primary_bucket_name
-  unpacker_bucket_name = aws_s3_bucket.unpacked_bags.id
+  destination_namespace = var.azure_container_name
+  primary_bucket_name   = var.replica_primary_bucket_name
+  unpacker_bucket_name  = aws_s3_bucket.unpacked_bags.id
 
   ingests_read_policy_json          = data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json
   cloudwatch_metrics_policy_json    = data.aws_iam_policy_document.cloudwatch_putmetrics.json

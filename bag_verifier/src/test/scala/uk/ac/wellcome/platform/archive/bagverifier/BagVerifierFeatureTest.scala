@@ -11,8 +11,14 @@ import uk.ac.wellcome.platform.archive.common.fixtures.PayloadEntry
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestStatusUpdate}
-import uk.ac.wellcome.platform.archive.common.{BagRootLocationPayload, VerifiablePayload}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestStatusUpdate
+}
+import uk.ac.wellcome.platform.archive.common.{
+  BagRootLocationPayload,
+  VerifiablePayload
+}
 
 class BagVerifierFeatureTest
     extends AnyFunSpec
@@ -49,7 +55,10 @@ class BagVerifierFeatureTest
             stepName = "verification"
           ) { _ =>
             val space = createStorageSpace
-            val (bagRoot, bagInfo) = storeBagWith(space = space)(namespace = bucket, primaryBucket = bucket)
+            val (bagRoot, bagInfo) = storeBagWith(space = space)(
+              namespace = bucket,
+              primaryBucket = bucket
+            )
 
             val payload = createBagRootLocationPayloadWith(
               context = createPipelineContextWith(
@@ -106,7 +115,8 @@ class BagVerifierFeatureTest
                   .map { _ + "\nbad123  badName" }
             }
 
-            val (bagRootLocation, bagInfo) = badBuilder.storeBagWith()(namespace = bucket, primaryBucket = bucket)
+            val (bagRootLocation, bagInfo) = badBuilder
+              .storeBagWith()(namespace = bucket, primaryBucket = bucket)
 
             val payload = createVersionedBagRootPayloadWith(
               context = createPipelineContextWith(

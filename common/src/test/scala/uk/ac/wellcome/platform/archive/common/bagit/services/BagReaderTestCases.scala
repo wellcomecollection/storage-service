@@ -200,9 +200,7 @@ trait BagReaderTestCases[
 
   protected def toString(ns: Namespace): String = ns.toString
 
-  protected def createBag()(
-    namespace: Namespace,
-    bucket: Bucket)(
+  protected def createBag()(namespace: Namespace, bucket: Bucket)(
     implicit typedStore: TypedStore[BagLocation, String]
   ): (BagPrefix, BagInfo) = {
     val bagContents = createBagContentsWith()(namespace, bucket)
