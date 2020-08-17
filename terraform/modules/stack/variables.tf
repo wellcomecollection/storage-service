@@ -69,6 +69,10 @@ variable "replica_glacier_bucket_name" {
   type = string
 }
 
+variable "azure_container_name" {
+  type = string
+}
+
 variable "static_content_bucket_name" {
   type = string
 }

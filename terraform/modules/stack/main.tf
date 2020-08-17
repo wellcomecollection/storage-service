@@ -326,7 +326,7 @@ module "bag_verifier_pre_replication" {
     metrics_namespace  = local.bag_verifier_pre_repl_service_name
     operation_name     = "verification (pre-replicating to archive storage)"
     JAVA_OPTS          = local.java_opts_heap_size
-    is_replica         = "false"
+    bag_verifier_mode  = "standalone"
 
     primary_storage_bucket_name = var.replica_primary_bucket_name
   }
@@ -398,6 +398,7 @@ module "replicator_verifier_primary" {
   replica_display_name = "primary location"
   storage_provider     = "amazon-s3"
   replica_type         = "primary"
+  bag_verifier_mode    = "replica-s3"
 
   topic_arns = [
     module.bag_versioner_output_topic.arn,
@@ -451,6 +452,7 @@ module "replicator_verifier_glacier" {
   replica_display_name = "Amazon Glacier"
   storage_provider     = "amazon-s3"
   replica_type         = "secondary"
+  bag_verifier_mode    = "replica-s3"
 
   topic_arns = [
     module.bag_versioner_output_topic.arn,
@@ -495,6 +497,62 @@ module "replicator_verifier_glacier" {
   deployment_service_name_verifier   = "bag-verifier-glacier"
 }
 
+module "replicator_verifier_azure" {
+  source = "./replifier"
+
+  namespace = var.namespace
+
+  replica_id           = "azure"
+  replica_display_name = "Azure"
+  storage_provider     = "azure-blob-storage"
+  replica_type         = "secondary"
+  bag_verifier_mode    = "replica-azure"
+
+  topic_arns = [
+    module.bag_versioner_output_topic.arn,
+  ]
+  secrets = {
+    azure_endpoint = var.azure_endpoint_ssm_parameter
+  }
+  destination_namespace = var.azure_container_name
+  primary_bucket_name   = var.replica_primary_bucket_name
+  unpacker_bucket_name  = aws_s3_bucket.unpacked_bags.id
+
+  ingests_read_policy_json          = data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json
+  cloudwatch_metrics_policy_json    = data.aws_iam_policy_document.cloudwatch_putmetrics.json
+  replicator_lock_table_policy_json = module.replicator_lock_table.iam_policy
+
+  security_group_ids = [
+    aws_security_group.interservice.id,
+    aws_security_group.service_egress.id,
+  ]
+
+  cluster_name = aws_ecs_cluster.cluster.name
+  cluster_arn  = aws_ecs_cluster.cluster.arn
+  subnets      = var.private_subnets
+
+  ingests_topic_arn = module.ingests_topic.arn
+
+  replicator_lock_table_name  = module.replicator_lock_table.table_name
+  replicator_lock_table_index = module.replicator_lock_table.index_name
+
+  bag_replicator_image = local.image_ids["bag_replicator"]
+  bag_verifier_image   = local.image_ids["bag_verifier"]
+
+  min_capacity = var.min_capacity
+  max_capacity = var.max_capacity
+
+  dlq_alarm_arn = var.dlq_alarm_arn
+
+  aws_region = var.aws_region
+
+  service_discovery_namespace_id = local.service_discovery_namespace_id
+
+  deployment_service_env             = var.release_label
+  deployment_service_name_replicator = "bag-replicator-azure"
+  deployment_service_name_verifier   = "bag-verifier-azure"
+}
+
 # replica_aggregator
 
 module "replica_aggregator" {
@@ -513,7 +571,7 @@ module "replica_aggregator" {
     ingest_topic_arn       = module.ingests_topic.arn
     metrics_namespace      = local.bag_register_service_name
     operation_name         = "Aggregating replicas"
-    expected_replica_count = 2
+    expected_replica_count = 3
     JAVA_OPTS              = local.java_opts_heap_size
   }
 

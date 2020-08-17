@@ -13,6 +13,7 @@ storage:
       services:
         - id: bag-replicator-primary
         - id: bag-replicator-glacier
+        - id: bag-replicator-azure
     - id: bag_root_finder
       services:
         - id: bag-root-finder
@@ -30,6 +31,7 @@ storage:
         - id: bag-verifer-pre-replication
         - id: bag-verifier-primary
         - id: bag-verifier-glacier
+        - id: bag-verifier-azure
     - id: bag_versioner
       services:
         - id: bag-versioner

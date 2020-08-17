@@ -70,7 +70,7 @@ trait BagReaderTestCases[
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace, bucket) = fixtures
 
-      val (bagRoot, bagInfo) = createBag()
+      val (bagRoot, bagInfo) = createBag()(namespace, bucket)
 
       val bag = withBagReader {
         _.get(bagRoot).right.value
@@ -84,7 +84,7 @@ trait BagReaderTestCases[
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace, bucket) = fixtures
 
-      val (bagRoot, _) = createBag()
+      val (bagRoot, _) = createBag()(namespace, bucket)
       deleteFile(bagRoot, path = "bag-info.txt")
 
       withBagReader {
@@ -99,7 +99,7 @@ trait BagReaderTestCases[
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace, bucket) = fixtures
 
-      val (bagRoot, _) = createBag()
+      val (bagRoot, _) = createBag()(namespace, bucket)
       scrambleFile(bagRoot, path = "bag-info.txt")
 
       withBagReader {
@@ -114,7 +114,7 @@ trait BagReaderTestCases[
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace, bucket) = fixtures
 
-      val (bagRoot, _) = createBag()
+      val (bagRoot, _) = createBag()(namespace, bucket)
       deleteFile(bagRoot, path = "manifest-sha256.txt")
 
       withBagReader {
@@ -129,7 +129,7 @@ trait BagReaderTestCases[
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace, bucket) = fixtures
 
-      val (bagRoot, _) = createBag()
+      val (bagRoot, _) = createBag()(namespace, bucket)
       scrambleFile(bagRoot, path = "manifest-sha256.txt")
 
       withBagReader {
@@ -144,7 +144,7 @@ trait BagReaderTestCases[
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace, bucket) = fixtures
 
-      val (bagRoot, _) = createBag()
+      val (bagRoot, _) = createBag()(namespace, bucket)
       deleteFile(bagRoot, "tagmanifest-sha256.txt")
 
       withBagReader {
@@ -159,7 +159,7 @@ trait BagReaderTestCases[
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace, bucket) = fixtures
 
-      val (bagRoot, _) = createBag()
+      val (bagRoot, _) = createBag()(namespace, bucket)
       scrambleFile(bagRoot, path = "tagmanifest-sha256.txt")
 
       withBagReader {
@@ -174,7 +174,7 @@ trait BagReaderTestCases[
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace, bucket) = fixtures
 
-      val (bagRoot, _) = createBag()
+      val (bagRoot, _) = createBag()(namespace, bucket)
       deleteFile(bagRoot, path = "fetch.txt")
 
       withBagReader {
@@ -187,7 +187,7 @@ trait BagReaderTestCases[
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace, bucket) = fixtures
 
-      val (bagRoot, _) = createBag()
+      val (bagRoot, _) = createBag()(namespace, bucket)
       scrambleFile(bagRoot, path = "fetch.txt")
 
       withBagReader {
@@ -200,13 +200,10 @@ trait BagReaderTestCases[
 
   protected def toString(ns: Namespace): String = ns.toString
 
-  protected def createBag()(
-    implicit
-    namespace: Namespace,
-    bucket: Bucket,
-    typedStore: TypedStore[BagLocation, String]
+  protected def createBag()(namespace: Namespace, bucket: Bucket)(
+    implicit typedStore: TypedStore[BagLocation, String]
   ): (BagPrefix, BagInfo) = {
-    val bagContents = createBagContentsWith()
+    val bagContents = createBagContentsWith()(namespace, bucket)
 
     storeBagContents(bagContents)
 

@@ -66,10 +66,11 @@ module "bag_verifier" {
     metrics_namespace  = local.bag_verifier_service_name
     operation_name     = "verification (${var.replica_display_name})"
     JAVA_OPTS          = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_verifier_service_name}"
-    is_replica         = "true"
+    bag_verifier_mode  = var.bag_verifier_mode
 
     primary_storage_bucket_name = var.primary_bucket_name
   }
+  secrets = var.secrets
 
   cpu    = 2048
   memory = 4096

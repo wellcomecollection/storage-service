@@ -17,6 +17,8 @@ module "ingests_topic" {
     module.replicator_verifier_primary.verifier_task_role_name,
     module.replicator_verifier_glacier.replicator_task_role_name,
     module.replicator_verifier_glacier.verifier_task_role_name,
+    module.replicator_verifier_azure.replicator_task_role_name,
+    module.replicator_verifier_azure.verifier_task_role_name,
   ]
 }
 
@@ -266,6 +268,7 @@ module "replica_aggregator_input_queue" {
   topic_arns = [
     module.replicator_verifier_primary.verifier_output_topic_arn,
     module.replicator_verifier_glacier.verifier_output_topic_arn,
+    module.replicator_verifier_azure.verifier_output_topic_arn
   ]
 
   role_names = [module.replica_aggregator.task_role_name]

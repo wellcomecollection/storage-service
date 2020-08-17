@@ -157,7 +157,7 @@ trait BagRegisterFixtures
         externalIdentifier = externalIdentifier,
         version = version,
         payloadFileCount = dataFileCount
-      )
+      )(namespace = bucket, primaryBucket = bucket)
 
     storeBagContents(bagContents)
 

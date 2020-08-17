@@ -31,6 +31,7 @@ module "stack_prod" {
 
   replica_primary_bucket_name = data.terraform_remote_state.critical_prod.outputs.replica_primary_bucket_name
   replica_glacier_bucket_name = data.terraform_remote_state.critical_prod.outputs.replica_glacier_bucket_name
+  azure_container_name        = "wellcomecollection-storage-replica-netherlands"
 
   static_content_bucket_name = data.terraform_remote_state.critical_prod.outputs.static_content_bucket_name
 

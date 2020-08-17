@@ -43,8 +43,9 @@ class BagReplicatorWorkerTest
     val outgoing = new MemoryMessageSender()
 
     withLocalS3Bucket { srcBucket =>
-      val (srcBagRoot, _) = createS3BagWith(
-        bucket = srcBucket
+      val (srcBagRoot, _) = storeBagWith()(
+        namespace = srcBucket,
+        primaryBucket = srcBucket
       )
 
       val payload = createVersionedBagRootPayloadWith(
@@ -96,8 +97,9 @@ class BagReplicatorWorkerTest
   describe("copies to the correct destination") {
     it("copies the bag to the configured bucket") {
       withLocalS3Bucket { srcBucket =>
-        val (srcBagRoot, _) = createS3BagWith(
-          bucket = srcBucket
+        val (srcBagRoot, _) = storeBagWith()(
+          namespace = srcBucket,
+          primaryBucket = srcBucket
         )
 
         val payload = createVersionedBagRootPayloadWith(
@@ -121,8 +123,9 @@ class BagReplicatorWorkerTest
     it("constructs the correct key") {
       withLocalS3Bucket { srcBucket =>
         withLocalS3Bucket { dstBucket =>
-          val (srcBagRoot, _) = createS3BagWith(
-            bucket = srcBucket
+          val (srcBagRoot, _) = storeBagWith()(
+            namespace = srcBucket,
+            primaryBucket = srcBucket
           )
 
           val payload = createVersionedBagRootPayloadWith(
@@ -162,10 +165,9 @@ class BagReplicatorWorkerTest
         override def getFetchEntryCount(payloadFileCount: Int): Int = 0
       }
 
-      val (srcBagRoot, _) = bagBuilder.createS3BagWith(
-        bucket = srcBucket,
+      val (srcBagRoot, _) = bagBuilder.storeBagWith(
         payloadFileCount = 50
-      )
+      )(namespace = srcBucket, primaryBucket = srcBucket)
 
       val payload = createVersionedBagRootPayloadWith(
         bagRoot = srcBagRoot
@@ -204,10 +206,9 @@ class BagReplicatorWorkerTest
         override def getFetchEntryCount(payloadFileCount: Int): Int = 0
       }
 
-      val (srcBagRoot, _) = bagBuilder.createS3BagWith(
-        bucket = srcBucket,
+      val (srcBagRoot, _) = bagBuilder.storeBagWith(
         payloadFileCount = 100
-      )
+      )(namespace = srcBucket, primaryBucket = srcBucket)
 
       val payload = createVersionedBagRootPayloadWith(
         bagRoot = srcBagRoot
@@ -258,8 +259,9 @@ class BagReplicatorWorkerTest
     }
 
     withLocalS3Bucket { srcBucket =>
-      val (srcBagRoot, _) = createS3BagWith(
-        bucket = srcBucket
+      val (srcBagRoot, _) = storeBagWith()(
+        namespace = srcBucket,
+        primaryBucket = srcBucket
       )
 
       val payload = createVersionedBagRootPayloadWith(
@@ -313,8 +315,9 @@ class BagReplicatorWorkerTest
       val outgoing = new MemoryMessageSender()
 
       withLocalS3Bucket { srcBucket =>
-        val (srcBagRoot, _) = createS3BagWith(
-          bucket = srcBucket
+        val (srcBagRoot, _) = storeBagWith()(
+          namespace = srcBucket,
+          primaryBucket = srcBucket
         )
 
         val payload = createVersionedBagRootPayloadWith(
@@ -342,8 +345,9 @@ class BagReplicatorWorkerTest
       val outgoing = new MemoryMessageSender()
 
       withLocalS3Bucket { srcBucket =>
-        val (srcBagRoot, _) = createS3BagWith(
-          bucket = srcBucket
+        val (srcBagRoot, _) = storeBagWith()(
+          namespace = srcBucket,
+          primaryBucket = srcBucket
         )
 
         val payload = createVersionedBagRootPayloadWith(

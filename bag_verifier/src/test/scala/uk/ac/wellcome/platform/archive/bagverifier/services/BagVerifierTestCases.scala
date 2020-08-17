@@ -85,7 +85,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
             space = space,
             externalIdentifier = externalIdentifier,
             payloadFileCount = payloadFileCount
-          )
+          )(namespace = namespace, primaryBucket = primaryBucket)
 
           bagBuilder.storeBagContents(bagContents)
 
@@ -110,14 +110,19 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
   def createBagReader: BagReader[BagLocation, BagPrefix]
 
   trait BagBuilderImpl extends BagBuilder[BagLocation, BagPrefix, Namespace] {
+    override implicit val typedStore: TypedStore[BagLocation, String] =
+      bagBuilder.typedStore
+
     override def createBagRoot(
       space: StorageSpace,
       externalIdentifier: ExternalIdentifier,
       version: BagVersion
     )(
-      implicit namespace: Namespace
+      namespace: Namespace
     ): BagPrefix =
-      bagBuilder.createBagRoot(space, externalIdentifier, version)
+      bagBuilder.createBagRoot(space, externalIdentifier, version)(
+        namespace = namespace
+      )
 
     override def createBagLocation(
       bagRoot: BagPrefix,

@@ -11,16 +11,21 @@ import uk.ac.wellcome.storage.providers.memory.{
   MemoryLocation,
   MemoryLocationPrefix
 }
+import uk.ac.wellcome.storage.store.TypedStore
+import uk.ac.wellcome.storage.store.memory.MemoryTypedStore
 
 trait MemoryBagBuilder
     extends BagBuilder[MemoryLocation, MemoryLocationPrefix, String] {
+
+  implicit val typedStore: TypedStore[MemoryLocation, String] =
+    MemoryTypedStore[MemoryLocation, String]()
 
   override def createBagRoot(
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     version: BagVersion
   )(
-    implicit namespace: String
+    namespace: String
   ): MemoryLocationPrefix =
     MemoryLocationPrefix(
       namespace = namespace,
