@@ -1,9 +1,9 @@
-package uk.ac.wellcome.platform.archive.common.storage.services
+package uk.ac.wellcome.platform.archive.bag_tracker.storage
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.store.VersionedStore
+import uk.ac.wellcome.storage.{ReadError, Version, WriteError}
 
 trait StorageManifestDao {
   val vhs: VersionedStore[

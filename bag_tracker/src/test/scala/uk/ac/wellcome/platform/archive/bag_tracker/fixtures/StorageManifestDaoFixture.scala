@@ -2,10 +2,9 @@ package uk.ac.wellcome.platform.archive.bag_tracker.fixtures
 
 import org.scalatest.EitherValues
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
+import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
-
-import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima

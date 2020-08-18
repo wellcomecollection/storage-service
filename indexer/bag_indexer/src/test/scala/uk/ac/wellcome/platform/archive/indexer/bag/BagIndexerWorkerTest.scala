@@ -9,11 +9,11 @@ import uk.ac.wellcome.messaging.worker.models.{
   DeterministicFailure,
   NonDeterministicFailure
 }
+import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
+import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.platform.archive.indexer.IndexerWorkerTestCases
 import uk.ac.wellcome.platform.archive.indexer.bag.fixtures.BagIndexerFixtures
 import uk.ac.wellcome.platform.archive.indexer.bags.BagIndexerWorker

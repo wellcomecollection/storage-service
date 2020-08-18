@@ -13,6 +13,7 @@ import uk.ac.wellcome.platform.archive.bag_tracker.services.{
   GetLatestBag,
   LookupBagVersions
 }
+import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagId,
   BagVersion,
@@ -22,7 +23,6 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageManifest,
   StorageSpace
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContextExecutor, Future}

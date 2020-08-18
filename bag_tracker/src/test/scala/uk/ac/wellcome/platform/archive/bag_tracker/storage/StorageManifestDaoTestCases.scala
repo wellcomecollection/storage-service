@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.storage.services
+package uk.ac.wellcome.platform.archive.bag_tracker.storage
 
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
