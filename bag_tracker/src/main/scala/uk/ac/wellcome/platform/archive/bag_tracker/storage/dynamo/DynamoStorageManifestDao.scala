@@ -22,7 +22,7 @@ import uk.ac.wellcome.storage.store.dynamo.{
   DynamoHybridStoreWithMaxima,
   DynamoVersionedHybridStore
 }
-import uk.ac.wellcome.storage.store.s3.{S3StreamStore, S3TypedStore}
+import uk.ac.wellcome.storage.store.s3.S3TypedStore
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.{ReadError, StoreReadError}
 
@@ -41,9 +41,8 @@ class DynamoStorageManifestDao(
     : DynamoHashRangeStore[BagId, Int, S3ObjectLocation] =
     new DynamoHashRangeStore[BagId, Int, S3ObjectLocation](dynamoConfig)
 
-  implicit val streamStore: S3StreamStore = new S3StreamStore()
   implicit val typedStore: S3TypedStore[StorageManifest] =
-    new S3TypedStore[StorageManifest]()
+    S3TypedStore[StorageManifest]
 
   override val vhs: VersionedStore[BagId, Int, StorageManifest] =
     new DynamoVersionedHybridStore[BagId, Int, StorageManifest](
