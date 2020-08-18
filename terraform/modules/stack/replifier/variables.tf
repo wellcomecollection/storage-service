@@ -97,7 +97,12 @@ variable "bag_verifier_image" {
   type = string
 }
 
-variable "secrets" {
+variable "verifier_secrets" {
+  type    = map(string)
+  default = {}
+}
+
+variable "replicator_secrets" {
   type    = map(string)
   default = {}
 }

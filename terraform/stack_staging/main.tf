@@ -16,7 +16,7 @@ module "stack_staging" {
   min_capacity = 0
   max_capacity = 3
 
-  azure_endpoint_ssm_parameter = "azure/wecostoragestage/wellcomecollection-storage-staging-replica-netherlands/read_write_sas_url"
+  azure_ssm_parameter_base = "azure/wecostoragestage/wellcomecollection-storage-staging-replica-netherlands"
 
   vpc_id = local.vpc_id
 

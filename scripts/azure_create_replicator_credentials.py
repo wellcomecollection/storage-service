@@ -49,8 +49,8 @@ if __name__ == "__main__":
 
         log_event(f"Creating SAS URIs for containers in {account_name}...")
 
-        for container_name, sas_uri in create_prod_sas_uris(connection_string):
-            secret_id = f"azure/{account_name}/{container_name}/read_write_sas_url"
+        for container_name, mode, sas_uri in create_prod_sas_uris(connection_string):
+            secret_id = f"azure/{account_name}/{container_name}/{mode}_sas_url"
             store_secret(secret_id=secret_id, secret_string=sas_uri)
             log_outcome(
                 f"Stored secret:\n - container: {container_name}\n - secret ID: {secret_id}"

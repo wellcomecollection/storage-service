@@ -30,7 +30,7 @@ module "bag_replicator" {
     JAVA_OPTS             = "${local.java_opts_heap_size} ${local.java_opts_metrics_base},metricNameSpace=${local.bag_replicator_service_name}"
   }
 
-  secrets = var.secrets
+  secrets = var.replicator_secrets
 
   cpu    = 1024
   memory = 2048
@@ -70,7 +70,7 @@ module "bag_verifier" {
 
     primary_storage_bucket_name = var.primary_bucket_name
   }
-  secrets = var.secrets
+  secrets = var.verifier_secrets
 
   cpu    = 2048
   memory = 4096
