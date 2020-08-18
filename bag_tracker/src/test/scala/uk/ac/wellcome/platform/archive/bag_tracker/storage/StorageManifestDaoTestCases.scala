@@ -101,6 +101,20 @@ trait StorageManifestDaoTestCases[Context]
       }
     }
 
+    it("allows putting versions in any order") {
+      val storageManifest1 = createStorageManifestWith(version = BagVersion(1))
+      val storageManifest2 = storageManifest1.copy(version = BagVersion(2))
+      val storageManifest3 = storageManifest1.copy(version = BagVersion(3))
+
+      withContext { implicit context =>
+        withDao { dao =>
+          dao.put(storageManifest2).right.value shouldBe storageManifest2
+          dao.put(storageManifest1).right.value shouldBe storageManifest1
+          dao.put(storageManifest3).right.value shouldBe storageManifest3
+        }
+      }
+    }
+
     it("retrieves a list of versions") {
       val storageManifest = createStorageManifest
 
