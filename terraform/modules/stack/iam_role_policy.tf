@@ -181,3 +181,29 @@ resource "aws_iam_role_policy" "notifier_metrics" {
   policy = data.aws_iam_policy_document.cloudwatch_putmetrics.json
 }
 
+# backfill
+
+resource "aws_iam_role_policy" "bags_tracker_vhs_manifests_backfill_readonly" {
+  role   = module.bags_tracker_backfill.task_role_name
+  policy = var.vhs_manifests_readwrite_policy_backfill
+}
+
+resource "aws_iam_role_policy" "bags_tracker_backfill_metrics" {
+  role   = module.bags_tracker_backfill.task_role_name
+  policy = data.aws_iam_policy_document.cloudwatch_putmetrics.json
+}
+
+resource "aws_iam_role_policy" "bag_register_backfill_replica_primary_readonly" {
+  role   = module.bag_register_backfill.task_role_name
+  policy = data.aws_iam_policy_document.replica_primary_readonly.json
+}
+
+resource "aws_iam_role_policy" "bag_register_backfill_metrics" {
+  role   = module.bag_register_backfill.task_role_name
+  policy = data.aws_iam_policy_document.cloudwatch_putmetrics.json
+}
+
+resource "aws_iam_role_policy" "azure_replicator_replica_primary_readonly" {
+  role   = module.replicator_verifier_azure.replicator_task_role_name
+  policy = data.aws_iam_policy_document.replica_primary_readonly.json
+}
