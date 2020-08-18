@@ -40,6 +40,13 @@ module "stack_staging" {
   vhs_manifests_readonly_policy  = data.terraform_remote_state.critical_staging.outputs.vhs_manifests_readonly_policy
   vhs_manifests_readwrite_policy = data.terraform_remote_state.critical_staging.outputs.vhs_manifests_readwrite_policy
 
+  # backfill VHS
+  vhs_manifests_bucket_name_backfill = data.terraform_remote_state.critical_staging.outputs.vhs_manifests_bucket_name_backfill
+  vhs_manifests_table_name_backfill  = data.terraform_remote_state.critical_staging.outputs.vhs_manifests_table_name_backfill
+
+  vhs_manifests_readonly_policy_backfill  = data.terraform_remote_state.critical_staging.outputs.vhs_manifests_readonly_policy_backfill
+  vhs_manifests_readwrite_policy_backfill = data.terraform_remote_state.critical_staging.outputs.vhs_manifests_readwrite_policy_backfill
+
   versioner_versions_table_arn   = data.terraform_remote_state.critical_staging.outputs.versions_table_arn
   versioner_versions_table_name  = data.terraform_remote_state.critical_staging.outputs.versions_table_name
   versioner_versions_table_index = data.terraform_remote_state.critical_staging.outputs.versions_table_index

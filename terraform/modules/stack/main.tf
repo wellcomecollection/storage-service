@@ -695,3 +695,52 @@ module "api" {
 
   static_content_bucket_name = var.static_content_bucket_name
 }
+
+# Backfill infra
+# TODO: delete when all bags are migrated to Azure
+module "bags_tracker_backfill" {
+  source = "../service/bags"
+
+  service_name = "${var.namespace}-bags_tracker_backfill"
+
+  api_container_image     = local.image_ids["bags_api"]
+  tracker_container_image = local.image_ids["bag_tracker"]
+
+  api_environment = {
+    context_url           = "${var.api_url}/context.json"
+    app_base_url          = "${var.api_url}/storage/v1/bags"
+    vhs_bucket_name       = var.vhs_manifests_bucket_name_backfill
+    vhs_table_name        = var.vhs_manifests_table_name_backfill
+    metrics_namespace     = local.bags_api_service_name
+    responses_bucket_name = aws_s3_bucket.large_response_cache.id
+    bags_tracker_host     = "http://localhost:8080"
+  }
+
+  tracker_environment = {
+    vhs_bucket_name = var.vhs_manifests_bucket_name_backfill
+    vhs_table_name  = var.vhs_manifests_table_name_backfill
+  }
+
+  cpu    = 1024
+  memory = 2048
+
+  load_balancer_arn           = ""
+  load_balancer_listener_port = ""
+
+  security_group_ids = [
+    aws_security_group.service_egress.id,
+    aws_security_group.interservice.id
+  ]
+
+  service_discovery_namespace_id = local.service_discovery_namespace_id
+
+  cluster_arn = aws_ecs_cluster.cluster.arn
+
+  use_fargate_spot = var.use_fargate_spot_for_api
+
+  subnets = var.private_subnets
+  vpc_id  = var.vpc_id
+
+  deployment_service_name = "bags-api"
+  deployment_service_env  = var.release_label
+}

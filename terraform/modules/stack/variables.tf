@@ -59,6 +59,24 @@ variable "vhs_manifests_readwrite_policy" {
   type = string
 }
 
+# Storage manifests VHS backfill
+
+variable "vhs_manifests_bucket_name_backfill" {
+  type = string
+}
+
+variable "vhs_manifests_table_name_backfill" {
+  type = string
+}
+
+variable "vhs_manifests_readonly_policy_backfill" {
+  type = string
+}
+
+variable "vhs_manifests_readwrite_policy_backfill" {
+  type = string
+}
+
 # Configuration
 
 variable "replica_primary_bucket_name" {
