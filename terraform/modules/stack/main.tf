@@ -511,9 +511,15 @@ module "replicator_verifier_azure" {
   topic_arns = [
     module.bag_versioner_output_topic.arn,
   ]
-  secrets = {
-    azure_endpoint = var.azure_endpoint_ssm_parameter
+
+  verifier_secrets = {
+    azure_endpoint = "${var.azure_ssm_parameter_base}/read_only_sas_url"
   }
+
+  replicator_secrets = {
+    azure_endpoint = "${var.azure_ssm_parameter_base}/read_write_sas_url"
+  }
+
   destination_namespace = var.azure_container_name
   primary_bucket_name   = var.replica_primary_bucket_name
   unpacker_bucket_name  = aws_s3_bucket.unpacked_bags.id
