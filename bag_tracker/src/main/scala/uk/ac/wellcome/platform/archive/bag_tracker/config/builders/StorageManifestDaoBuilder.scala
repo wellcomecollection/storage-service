@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.config.builders
+package uk.ac.wellcome.platform.archive.bag_tracker.config.builders
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.s3.AmazonS3
