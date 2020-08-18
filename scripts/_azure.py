@@ -19,7 +19,7 @@ def _create_sas_uris(connection_string, *, expiry, ip):
     """
     Creates read/write SAS URIs for all the containers in our Azure storage account.
 
-    Generates (container_name, sas_uri) pairs.
+    Generates (container_name, mode, sas_uri) pairs.
     """
     blob_service_client = BlobServiceClient.from_connection_string(connection_string)
 
@@ -29,21 +29,30 @@ def _create_sas_uris(connection_string, *, expiry, ip):
         if expiry is None:
             raise TypeError(f"expiry cannot be None!")
 
-        token = generate_container_sas(
-            blob_service_client.account_name,
-            container_name=container_name,
-            account_key=blob_service_client.credential.account_key,
-            expiry=expiry,
-            ip=ip,
-            # These permissions are fairly blunt -- there's a single "write"
-            # permission for any modifications to a blob, whether that's the
-            # content or the metadata.
-            permission=ContainerSasPermissions(
-                read=True, write=True, delete=False, list=True
-            ),
-        )
+        for mode, allow_write in (
+            ("read_only", False),
+            ("read_write", True),
+        ):
+            permission = ContainerSasPermissions(
+                read=True,
+                write=allow_write,
+                delete=False,
+                list=True
+            )
 
-        yield (container_name, f"{blob_service_client.url}?{token}")
+            token = generate_container_sas(
+                blob_service_client.account_name,
+                container_name=container_name,
+                account_key=blob_service_client.credential.account_key,
+                expiry=expiry,
+                ip=ip,
+                # These permissions are fairly blunt -- there's a single "write"
+                # permission for any modifications to a blob, whether that's the
+                # content or the metadata.
+                permission=permission,
+            )
+
+            yield (container_name, mode, f"{blob_service_client.url}?{token}")
 
 
 def create_prod_sas_uris(connection_string):
