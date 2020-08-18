@@ -22,13 +22,8 @@ trait StorageManifestDaoFixture extends EitherValues {
       initialEntries = Map.empty
     ) with MemoryMaxima[String, String]
 
-  def createTypedStore: StorageManifestTypedStore = {
-    val memoryStoreForStreamStore =
-      new MemoryStore[String, Array[Byte]](Map.empty)
-    implicit val streamStore: MemoryStreamStore[String] =
-      new MemoryStreamStore[String](memoryStoreForStreamStore)
-    new MemoryTypedStore[String, StorageManifest](Map.empty)
-  }
+  def createTypedStore: StorageManifestTypedStore =
+    MemoryTypedStore[String, StorageManifest](initialEntries = Map.empty)
 
   def createStorageManifestDao(): StorageManifestDao =
     new MemoryStorageManifestDao(
