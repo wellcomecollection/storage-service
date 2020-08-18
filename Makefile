@@ -16,13 +16,14 @@ SBT_APPS = notifier \
            bags_api \
            bag_register \
            bag_tagger \
+           bag_tracker \
            bag_replicator \
 		   bag_root_finder \
            bag_verifier \
            bag_unpacker \
            bag_versioner \
            replica_aggregator
-SBT_NO_DOCKER_APPS = bag_tracker
+SBT_NO_DOCKER_APPS =
 
 SBT_DOCKER_LIBRARIES    = common
 SBT_NO_DOCKER_LIBRARIES = bags_common display

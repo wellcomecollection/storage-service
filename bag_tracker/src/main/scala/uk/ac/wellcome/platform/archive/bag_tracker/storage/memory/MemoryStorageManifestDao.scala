@@ -1,8 +1,8 @@
-package uk.ac.wellcome.platform.archive.common.storage.services.memory
+package uk.ac.wellcome.platform.archive.bag_tracker.storage.memory
 
+import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 
 import uk.ac.wellcome.storage.{ReadError, Version}
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}

@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.storage.services.dynamo
+package uk.ac.wellcome.platform.archive.bag_tracker.storage.dynamo
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.s3.AmazonS3
@@ -6,10 +6,10 @@ import org.scanamo.auto._
 import org.scanamo.{Scanamo, Table => ScanamoTable}
 import org.scanamo.syntax._
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
+import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion._
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
 import uk.ac.wellcome.storage.dynamo.{DynamoConfig, DynamoHashRangeEntry}
 import uk.ac.wellcome.storage.s3.{
   S3Config,

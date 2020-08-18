@@ -8,8 +8,7 @@ import uk.ac.wellcome.platform.archive.bag_tracker.client.{
   AkkaBagTrackerClient,
   BagTrackerClient
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
-
+import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
 trait BagTrackerFixtures extends Akka {
   private val host: String = "localhost"
   private val port: Int = 8080

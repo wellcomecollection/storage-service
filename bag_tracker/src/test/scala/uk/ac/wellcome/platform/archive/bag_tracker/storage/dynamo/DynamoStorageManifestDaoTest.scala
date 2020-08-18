@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.storage.services.dynamo
+package uk.ac.wellcome.platform.archive.bag_tracker.storage.dynamo
 
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
 import org.scanamo.auto._
@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   ExternalIdentifier
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.common.storage.services.{
+import uk.ac.wellcome.platform.archive.bag_tracker.storage.{
   StorageManifestDao,
   StorageManifestDaoTestCases
 }

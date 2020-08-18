@@ -7,13 +7,13 @@ import uk.ac.wellcome.platform.archive.bag_tracker.models.{
   BagVersionEntry,
   BagVersionList
 }
+import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagIdGenerators,
   StorageManifestGenerators
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.storage.{ReadError, StoreReadError}
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 

@@ -4,10 +4,10 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bag_tracker.BagTrackerApi
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
+import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
+import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.common.storage.services.StorageManifestDao
-import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
 trait BagTrackerClientTestBase extends Matchers with BagTrackerFixtures {
