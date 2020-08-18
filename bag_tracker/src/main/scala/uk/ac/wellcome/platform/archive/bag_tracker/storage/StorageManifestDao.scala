@@ -3,7 +3,12 @@ package uk.ac.wellcome.platform.archive.bag_tracker.storage
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.storage.store.VersionedStore
-import uk.ac.wellcome.storage.{HigherVersionExistsError, ReadError, Version, WriteError}
+import uk.ac.wellcome.storage.{
+  HigherVersionExistsError,
+  ReadError,
+  Version,
+  WriteError
+}
 
 trait StorageManifestDao {
   val vhs: VersionedStore[
@@ -34,7 +39,8 @@ trait StorageManifestDao {
       //
       // e.g. once we've written the V2 manifest, it's still okay to write the
       // V1 manifest if it hasn't been written yet.
-      case Left(_: HigherVersionExistsError) => vhs.store.put(id)(storageManifest).map { _.identifiedT }
+      case Left(_: HigherVersionExistsError) =>
+        vhs.store.put(id)(storageManifest).map { _.identifiedT }
 
       case result => result
     }
