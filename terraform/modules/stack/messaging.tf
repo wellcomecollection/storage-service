@@ -333,31 +333,6 @@ module "bag_register_input_queue" {
   visibility_timeout_seconds = 1800
 }
 
-module "bag_register_output_topic" {
-  source = "../topic"
-
-  name = "${var.namespace}_bag_register_output"
-
-  role_names = [
-    module.bag_register.task_role_name,
-  ]
-}
-
-module "bag_register_output_queue" {
-  source = "../queue"
-
-  name = "${var.namespace}_bag_register_output"
-
-  topic_arns = [
-    module.bag_register_output_topic.arn,
-  ]
-
-  role_names = []
-
-  aws_region    = var.aws_region
-  dlq_alarm_arn = var.dlq_alarm_arn
-}
-
 module "registered_bag_notifications_topic" {
   source = "../topic"
 

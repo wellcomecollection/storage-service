@@ -609,7 +609,6 @@ module "bag_register" {
   environment = {
     queue_url               = module.bag_register_input_queue.url
     archive_bucket          = var.replica_primary_bucket_name
-    ongoing_topic_arn       = module.bag_register_output_topic.arn
     ingest_topic_arn        = module.ingests_topic.arn
     registrations_topic_arn = module.registered_bag_notifications_topic.arn
     metrics_namespace       = local.bag_register_service_name
