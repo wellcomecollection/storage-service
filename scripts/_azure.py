@@ -29,15 +29,9 @@ def _create_sas_uris(connection_string, *, expiry, ip):
         if expiry is None:
             raise TypeError(f"expiry cannot be None!")
 
-        for mode, allow_write in (
-            ("read_only", False),
-            ("read_write", True),
-        ):
+        for mode, allow_write in (("read_only", False), ("read_write", True)):
             permission = ContainerSasPermissions(
-                read=True,
-                write=allow_write,
-                delete=False,
-                list=True
+                read=True, write=allow_write, delete=False, list=True
             )
 
             token = generate_container_sas(
