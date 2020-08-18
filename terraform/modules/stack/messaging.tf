@@ -425,3 +425,83 @@ module "bag_tagger_input_queue" {
   aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 }
+
+# bag_register backfill
+
+module "bag_register_backfill_input_queue" {
+  source = "../queue"
+
+  name = "${var.namespace}_bag_register_backfill_input"
+
+  topic_arns = [module.replica_aggregator_output_topic.arn]
+
+  role_names = [module.bag_register_backfill.task_role_name]
+
+  queue_high_actions = [
+    module.bag_register_backfill.scale_up_arn,
+  ]
+
+  queue_low_actions = [
+    module.bag_register_backfill.scale_down_arn,
+  ]
+
+  aws_region    = var.aws_region
+  dlq_alarm_arn = var.dlq_alarm_arn
+
+  # Only a handful of big bags take more than half an hour to assemble
+  # the storage manifest, and currently the bag register doesn't handle getting
+  # duplicate messages well.
+  #
+  # Setting the timeout this high means we'll get fast retries if somebody goes
+  # wrong, but we won't get the register trying to process the same ingest twice
+  # if it's moderately-sized.
+  #
+  # See https://github.com/wellcometrust/platform/issues/3889
+  visibility_timeout_seconds = 1800
+}
+module "ingests_topic_backfill" {
+  source = "../topic"
+
+  name = "${var.namespace}_ingests_backfill"
+
+  role_names = [
+    module.bag_register_backfill.task_role_name,
+  ]
+}
+module "registered_bag_notifications_topic_backfill" {
+  source = "../topic"
+
+  name = "${var.namespace}_registered_bag_notifications_backfill"
+
+  role_names = [
+    module.bag_register_backfill.task_role_name,
+  ]
+}
+module "registered_bag_notifications_queue_backfill" {
+  source = "../queue"
+
+  name = "${var.namespace}_registered_bag_notifications_backfill"
+
+  topic_arns = [
+    module.registered_bag_notifications_topic_backfill.arn
+  ]
+
+  role_names = []
+
+  aws_region    = var.aws_region
+  dlq_alarm_arn = var.dlq_alarm_arn
+}
+module "ingests_queue_backfill" {
+  source = "../queue"
+
+  name = "${var.namespace}_ingests_backfill"
+
+  topic_arns = [
+    module.ingests_topic_backfill.arn
+  ]
+
+  role_names = []
+
+  aws_region    = var.aws_region
+  dlq_alarm_arn = var.dlq_alarm_arn
+}
