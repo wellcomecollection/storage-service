@@ -29,6 +29,13 @@ resource "azurerm_storage_account" "wellcome" {
   access_tier = "Cool"
 }
 
+# These containers both have legal holds enabled, as described in
+# https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-immutable-storage
+#
+# Unfortunately Legal Holds cannot be managed by Terraform (yet)
+# See https://github.com/terraform-providers/terraform-provider-azurerm/issues/3722
+#
+# If/when Legal Holds can be managed in Terraform, do that here.
 resource "azurerm_storage_container" "container" {
   name                  = "wellcomecollection-${var.namespace}-replica-netherlands"
   storage_account_name  = azurerm_storage_account.wellcome.name

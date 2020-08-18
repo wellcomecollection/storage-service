@@ -81,3 +81,13 @@ output "versions_table_name" {
 output "versions_table_index" {
   value = local.versioner_versions_table_index
 }
+
+# Azure containers
+
+output "azure_has_immutability_policy" {
+  value = azurerm_storage_container.container.has_immutability_policy
+}
+
+output "azure_has_legal_hold" {
+  value = azurerm_storage_container.container.has_legal_hold
+}

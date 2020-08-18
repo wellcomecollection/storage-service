@@ -44,12 +44,17 @@ output "vhs_manifests_table_name" {
   value = module.critical.vhs_manifests_table_name
 }
 
+# These two outputs aren't actually sensitive, but they're verbose and clutter
+# up the CLI output.  Adding sensitive = true hides them from the CLI output.
+# See https://www.terraform.io/docs/configuration/outputs.html
 output "vhs_manifests_readonly_policy" {
-  value = module.critical.vhs_manifests_readonly_policy
+  value     = module.critical.vhs_manifests_readonly_policy
+  sensitive = true
 }
 
 output "vhs_manifests_readwrite_policy" {
-  value = module.critical.vhs_manifests_readwrite_policy
+  value     = module.critical.vhs_manifests_readwrite_policy
+  sensitive = true
 }
 
 #
@@ -66,3 +71,12 @@ output "versions_table_index" {
   value = module.critical.versions_table_index
 }
 
+# Azure containers
+
+output "azure_has_immutability_policy" {
+  value = module.critical.azure_has_immutability_policy
+}
+
+output "azure_has_legal_hold" {
+  value = module.critical.azure_has_legal_hold
+}
