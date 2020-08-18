@@ -7,12 +7,12 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
-import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
-import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  OperationFixtures,
+import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{
+  BagTrackerFixtures,
   StorageManifestDaoFixture
 }
+import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
+import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageManifest,
   StorageManifestFile

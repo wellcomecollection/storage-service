@@ -8,12 +8,14 @@ import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.bag_tracker.client.BagTrackerClient
-import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
+import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{
+  BagTrackerFixtures,
+  StorageManifestDaoFixture
+}
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.platform.archive.common.fixtures.{
   HttpFixtures,
-  StorageManifestDaoFixture,
   StorageRandomThings
 }
 import uk.ac.wellcome.platform.archive.common.http.{

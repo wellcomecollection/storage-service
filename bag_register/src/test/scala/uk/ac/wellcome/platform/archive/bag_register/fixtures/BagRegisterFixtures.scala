@@ -14,7 +14,10 @@ import uk.ac.wellcome.platform.archive.bag_register.services.{
   Register,
   S3StorageManifestService
 }
-import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
+import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{
+  BagTrackerFixtures,
+  StorageManifestDaoFixture
+}
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagInfo,
   BagVersion,

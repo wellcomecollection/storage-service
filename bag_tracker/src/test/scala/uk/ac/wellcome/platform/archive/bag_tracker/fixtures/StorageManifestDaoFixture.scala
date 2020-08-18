@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.fixtures
+package uk.ac.wellcome.platform.archive.bag_tracker.fixtures
 
 import org.scalatest.EitherValues
 import uk.ac.wellcome.json.JsonUtil._
