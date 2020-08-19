@@ -25,20 +25,21 @@ if __name__ == "__main__":
         else:
             assert False, f"Unsupported environment: {env}"
 
-        result = {"✔": [], "✘": []}
+        existing_bags = set()
+        backfilled_bags = set()
 
-        for space, externalIdentifier, version in get_bags(vhs_table=vhs_table):
-            manifest_id = f"{space}/{externalIdentifier}/{version}"
+        for space, externalIdentifier, version in get_bags(vhs_table):
+            existing_bags.add(f"{space}/{externalIdentifier}/{version}")
 
-            if has_been_replicated_to_azure(
-                backfill_table=backfill_table,
-                space=space,
-                externalIdentifier=externalIdentifier,
-                version=version,
-            ):
-                result["✔"].append(manifest_id)
-            else:
-                result["✘"].append(manifest_id)
+        for space, externalIdentifier, version in get_bags(backfill_table):
+            backfilled_bags.add(f"{space}/{externalIdentifier}/{version}")
+
+        assert backfilled_bags.issubset(existing_bags)
+
+        result = {
+            "✔": list(backfilled_bags),
+            "✘": list(existing_bags - backfilled_bags)
+        }
 
         json_string = json.dumps(result)
         now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
