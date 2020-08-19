@@ -115,8 +115,7 @@ if __name__ == "__main__":
     sns_client = get_aws_client("sns", role_arn=DEV_ROLE_ARN)
 
     for bag in get_bags_not_in_azure(
-        vhs_table=vhs_table,
-        backfill_table=backfill_table
+        vhs_table=vhs_table, backfill_table=backfill_table
     ):
         manifest_id = f"{bag['space']}/{bag['externalIdentifier']}/{bag['version']}"
         try:
@@ -133,7 +132,7 @@ if __name__ == "__main__":
             "context": context,
             "bagRoot": {
                 "bucket": primary_bucket,
-                "keyPrefix": f"{bag['space']}/{bag['externalIdentifier']}/v{bag['version']}"
+                "keyPrefix": f"{bag['space']}/{bag['externalIdentifier']}/v{bag['version']}",
             },
             "version": bag["version"],
             "type": "VersionedBagRootPayload",
@@ -141,7 +140,7 @@ if __name__ == "__main__":
 
         sns_client.publish(
             TopicArn=f"arn:aws:sns:eu-west-1:975596993436:{azure_replicator_topic}",
-            Message=json.dumps(payload)
+            Message=json.dumps(payload),
         )
 
         print(json.dumps(payload, indent=2, sort_keys=True))

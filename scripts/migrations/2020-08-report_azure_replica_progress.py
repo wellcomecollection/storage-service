@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
         result = {
             "✔": list(backfilled_bags),
-            "✘": list(existing_bags - backfilled_bags)
+            "✘": list(existing_bags - backfilled_bags),
         }
 
         json_string = json.dumps(result)
@@ -51,7 +51,7 @@ if __name__ == "__main__":
             print(
                 termcolor.colored(
                     "%s %s" % (label, humanize.intcomma(len(result[label])).rjust(9)),
-                    colour
+                    colour,
                 )
             )
 
