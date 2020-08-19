@@ -27,6 +27,10 @@ variable "table_name" {
   default = ""
 }
 
+variable "backfill_table_name" {
+  type = string
+}
+
 variable "azure_resource_group_name" {
   type = string
 }

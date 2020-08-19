@@ -34,4 +34,5 @@ module "critical" {
   # The staging service shouldn't be the only copy of any important data, so
   # we don't need S3 versioning.
   enable_s3_versioning = false
+  backfill_table_name = "vhs-storage-staging-manifests-2020-08-19"
 }

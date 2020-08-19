@@ -11,5 +11,5 @@ module "vhs_manifests_backfill" {
   bucket_name_prefix = "wellcomecollection-vhs-backfill-"
   table_name_prefix  = "vhs-backfill"
 
-  table_name = "vhs-storage-staging-manifests-2020-08-19"
+  table_name = var.backfill_table_name
 }

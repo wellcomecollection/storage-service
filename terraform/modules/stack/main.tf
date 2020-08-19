@@ -768,7 +768,7 @@ module "bag_register_backfill" {
     registrations_topic_arn = module.registered_bag_notifications_topic_backfill.arn
     metrics_namespace       = "${local.bag_register_service_name}_backfill"
     operation_name          = "register"
-    bags_tracker_host       = "http://${module.bags_api.name}.${var.namespace}:8080"
+    bags_tracker_host       = "http://${module.bags_tracker_backfill.name}.${var.namespace}:8080"
     JAVA_OPTS               = local.java_opts_heap_size
   }
 
