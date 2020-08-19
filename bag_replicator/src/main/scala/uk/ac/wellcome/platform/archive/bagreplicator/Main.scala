@@ -4,8 +4,6 @@ import akka.actor.ActorSystem
 import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.{BlobServiceClient, BlobServiceClientBuilder}
 import com.typesafe.config.Config
-import org.scanamo.auto._
-import org.scanamo.time.JavaTimeFormats._
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSConfig
