@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+"""
+Sends a message to the Azure replicator requesting a replication of a bag to Azure.
+
+Usage: 2020-08-request_azure_replicas.py (stage|prod)
+
+"""
 
 import datetime
 import json

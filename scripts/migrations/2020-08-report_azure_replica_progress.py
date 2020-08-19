@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+"""
+Reports the state of the Azure backfill task.
+"""
 
 import datetime
 import json
