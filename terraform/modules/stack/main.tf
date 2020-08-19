@@ -510,6 +510,7 @@ module "replicator_verifier_azure" {
 
   topic_arns = [
     module.bag_versioner_output_topic.arn,
+    module.azure_backfill_topic.arn
   ]
 
   verifier_secrets = {

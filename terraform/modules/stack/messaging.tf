@@ -477,6 +477,15 @@ module "registered_bag_notifications_topic_backfill" {
     module.bag_register_backfill.task_role_name,
   ]
 }
+module "azure_backfill_topic" {
+  source = "../topic"
+
+  name = "${var.namespace}_azure_backfill"
+
+  role_names = [
+    module.replicator_verifier_azure.replicator_task_role_name,
+  ]
+}
 module "registered_bag_notifications_queue_backfill" {
   source = "../queue"
 
