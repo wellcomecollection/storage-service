@@ -6,10 +6,8 @@ READ_ONLY_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
 DEV_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
 
 
-sts_client = boto3.client("sts")
-
-
 def get_aws_resource(resource, *, role_arn=READ_ONLY_ROLE_ARN):
+    sts_client = boto3.client("sts")
     assumed_role_object = sts_client.assume_role(
         RoleArn=role_arn, RoleSessionName="AssumeRoleSession1"
     )
@@ -23,6 +21,7 @@ def get_aws_resource(resource, *, role_arn=READ_ONLY_ROLE_ARN):
 
 
 def get_aws_client(resource, *, role_arn=READ_ONLY_ROLE_ARN):
+    sts_client = boto3.client("sts")
     assumed_role_object = sts_client.assume_role(
         RoleArn=role_arn, RoleSessionName="AssumeRoleSession1"
     )
