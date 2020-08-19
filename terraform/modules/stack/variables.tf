@@ -59,24 +59,6 @@ variable "vhs_manifests_readwrite_policy" {
   type = string
 }
 
-# Storage manifests VHS backfill
-
-variable "vhs_manifests_bucket_name_backfill" {
-  type = string
-}
-
-variable "vhs_manifests_table_name_backfill" {
-  type = string
-}
-
-variable "vhs_manifests_readonly_policy_backfill" {
-  type = string
-}
-
-variable "vhs_manifests_readwrite_policy_backfill" {
-  type = string
-}
-
 # Configuration
 
 variable "replica_primary_bucket_name" {
@@ -180,4 +162,23 @@ variable "bag_register_output_subscribe_principals" {
 variable "use_fargate_spot_for_api" {
   type    = bool
   default = false
+}
+
+# Storage manifests VHS backfill
+# TODO: delete everything under this comment once the azure migration is done
+
+variable "vhs_manifests_bucket_name_backfill" {
+  type = string
+}
+
+variable "vhs_manifests_table_name_backfill" {
+  type = string
+}
+
+variable "vhs_manifests_readonly_policy_backfill" {
+  type = string
+}
+
+variable "vhs_manifests_readwrite_policy_backfill" {
+  type = string
 }

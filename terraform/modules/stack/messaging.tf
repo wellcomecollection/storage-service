@@ -426,7 +426,8 @@ module "bag_tagger_input_queue" {
   dlq_alarm_arn = var.dlq_alarm_arn
 }
 
-# bag_register backfill
+# backfill topics and queues
+# TODO: delete everything under this comment once the azure migration is done
 
 module "bag_register_backfill_input_queue" {
   source = "../queue"

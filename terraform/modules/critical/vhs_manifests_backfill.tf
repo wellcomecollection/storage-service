@@ -1,4 +1,4 @@
-# TODO: delete this once all bags are migrated to Azure
+# TODO: this should become the main VHS once the migration to Azure is done
 module "vhs_manifests_backfill" {
   source = "git::github.com/wellcomecollection/terraform-aws-vhs.git//hash-range-store?ref=v3.3.1"
   name   = "${var.namespace}-manifests"

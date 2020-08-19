@@ -181,7 +181,8 @@ resource "aws_iam_role_policy" "notifier_metrics" {
   policy = data.aws_iam_policy_document.cloudwatch_putmetrics.json
 }
 
-# backfill
+# backfill policies
+# TODO: delete everything under this comment once the azure migration is done
 
 resource "aws_iam_role_policy" "bags_tracker_vhs_manifests_backfill_readonly" {
   role   = module.bags_tracker_backfill.task_role_name

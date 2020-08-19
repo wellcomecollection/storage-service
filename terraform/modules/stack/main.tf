@@ -697,7 +697,7 @@ module "api" {
 }
 
 # Backfill infra
-# TODO: delete when all bags are migrated to Azure
+# TODO: delete everything under this comment once the azure migration is done
 
 resource "aws_lb" "backfill_nlb" {
   name               = "${var.namespace}-api-nlb-backfill"
