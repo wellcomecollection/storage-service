@@ -697,10 +697,18 @@ module "api" {
 
 # Backfill infra
 # TODO: delete when all bags are migrated to Azure
+
+resource "aws_lb" "backfill_nlb" {
+  name               = "${var.namespace}-api-nlb-backfill"
+  internal           = true
+  load_balancer_type = "network"
+  subnets            = var.private_subnets
+}
+
 module "bags_tracker_backfill" {
   source = "../service/bags"
 
-  service_name = "${var.namespace}-bags_tracker_backfill"
+  service_name = "${var.namespace}-tracker-backfill"
 
   api_container_image     = local.image_ids["bags_api"]
   tracker_container_image = local.image_ids["bag_tracker"]
@@ -723,8 +731,8 @@ module "bags_tracker_backfill" {
   cpu    = 1024
   memory = 2048
 
-  load_balancer_arn           = ""
-  load_balancer_listener_port = ""
+  load_balancer_arn           = aws_lb.backfill_nlb.arn
+  load_balancer_listener_port = local.bags_listener_port
 
   security_group_ids = [
     aws_security_group.service_egress.id,
