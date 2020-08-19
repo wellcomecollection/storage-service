@@ -18,11 +18,6 @@ from _azure_backfill import get_bags, has_been_replicated_to_azure
 
 
 if __name__ == "__main__":
-    try:
-        env = sys.argv[1]
-    except IndexError:
-        sys.exit(f"Usage: {__file__} (stage|prod)")
-
     for env in ("stage",):
         if env == "stage":
             vhs_table = "vhs-storage-staging-manifests-2020-07-24"
