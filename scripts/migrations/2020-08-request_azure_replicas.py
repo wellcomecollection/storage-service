@@ -13,7 +13,7 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from _aws import get_dynamo_client, scan_table  # noqa
+from _aws import DEV_ROLE_ARN, get_aws_client, get_dynamo_client, scan_table  # noqa
 from _azure_backfill import get_bags, has_been_replicated_to_azure  # noqa
 
 
@@ -106,11 +106,13 @@ if __name__ == "__main__":
         vhs_table = "vhs-storage-staging-manifests-2020-07-24"
         backfill_table = "vhs-storage-staging-manifests-2020-08-19"
         primary_bucket = "wellcomecollection-storage-staging"
-        azure_replicator_topic = None
+        azure_replicator_topic = "storage_staging_azure_backfill"
     else:
         assert False, f"Unsupported environment: {env}"
 
     ingests_lookup = get_ingest_id_lookup(ingests_table=ingests_table)
+
+    sns_client = get_aws_client("sns", role_arn=DEV_ROLE_ARN)
 
     for bag in get_bags_not_in_azure(
         vhs_table=vhs_table,
@@ -136,6 +138,11 @@ if __name__ == "__main__":
             "version": bag["version"],
             "type": "VersionedBagRootPayload",
         }
+
+        sns_client.publish(
+            TopicArn=f"arn:aws:sns:eu-west-1:975596993436:{azure_replicator_topic}",
+            Message=json.dumps(payload)
+        )
 
         print(json.dumps(payload, indent=2, sort_keys=True))
         break
