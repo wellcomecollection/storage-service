@@ -25,10 +25,14 @@ class AzureReplicatorTest
       testWith(container)
     }
 
-  override def withPrefixTransfer[R](testWith: TestWith[S3toAzurePrefixTransfer, R]): R =
+  override def withPrefixTransfer[R](
+    testWith: TestWith[S3toAzurePrefixTransfer, R]
+  ): R =
     testWith(S3toAzurePrefixTransfer())
 
-  override def withReplicator[R](prefixTransferImpl: S3toAzurePrefixTransfer)(testWith: TestWith[ReplicatorImpl, R]): R =
+  override def withReplicator[R](
+    prefixTransferImpl: S3toAzurePrefixTransfer
+  )(testWith: TestWith[ReplicatorImpl, R]): R =
     testWith(new AzureReplicator() {
       override val prefixTransfer: S3toAzurePrefixTransfer = prefixTransferImpl
     })

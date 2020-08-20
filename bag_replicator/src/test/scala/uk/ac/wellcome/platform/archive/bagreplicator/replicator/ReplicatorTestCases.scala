@@ -48,8 +48,7 @@ trait ReplicatorTestCases[
 
   def withPrefixTransfer[R](testWith: TestWith[PrefixTransferImpl, R]): R
 
-  def withReplicator[R](
-    prefixTransferImpl: PrefixTransferImpl)(
+  def withReplicator[R](prefixTransferImpl: PrefixTransferImpl)(
     testWith: TestWith[ReplicatorImpl, R]
   ): R
 
@@ -224,7 +223,9 @@ trait ReplicatorTestCases[
     }
   }
 
-  describe("it only checks for existing objects if the destination is non-empty") {
+  describe(
+    "it only checks for existing objects if the destination is non-empty"
+  ) {
     it("empty destination => don't check") {
       withSrcNamespace { srcNamespace =>
         withDstNamespace { dstNamespace =>
@@ -242,7 +243,7 @@ trait ReplicatorTestCases[
                 ingestId = createIngestID,
                 request = ReplicationRequest(
                   srcPrefix = srcPrefix,
-                  dstPrefix = dstPrefix,
+                  dstPrefix = dstPrefix
                 )
               ) shouldBe a[ReplicationSucceeded[_]]
             }
@@ -262,7 +263,8 @@ trait ReplicatorTestCases[
           val srcLocation = createSrcLocationWith(srcNamespace)
           putSrcObject(srcLocation, contents = randomAlphanumeric)
 
-          val dstLocation = createDstLocationWith(dstNamespace, path = randomAlphanumeric)
+          val dstLocation =
+            createDstLocationWith(dstNamespace, path = randomAlphanumeric)
           putDstObject(dstLocation, contents = randomAlphanumeric)
 
           val srcPrefix = createSrcPrefixWith(srcNamespace)
@@ -276,7 +278,7 @@ trait ReplicatorTestCases[
                 ingestId = createIngestID,
                 request = ReplicationRequest(
                   srcPrefix = srcPrefix,
-                  dstPrefix = dstPrefix,
+                  dstPrefix = dstPrefix
                 )
               ) shouldBe a[ReplicationSucceeded[_]]
             }

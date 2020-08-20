@@ -37,10 +37,14 @@ class S3ReplicatorTest
 
   override val dstStringStore: S3TypedStore[String] = S3TypedStore[String]
 
-  override def withPrefixTransfer[R](testWith: TestWith[S3PrefixTransfer, R]): R =
+  override def withPrefixTransfer[R](
+    testWith: TestWith[S3PrefixTransfer, R]
+  ): R =
     testWith(S3PrefixTransfer())
 
-  override def withReplicator[R](prefixTransferImpl: S3PrefixTransfer)(testWith: TestWith[ReplicatorImpl, R]): R =
+  override def withReplicator[R](
+    prefixTransferImpl: S3PrefixTransfer
+  )(testWith: TestWith[ReplicatorImpl, R]): R =
     testWith(new S3Replicator() {
       override val prefixTransfer: S3PrefixTransfer = prefixTransferImpl
     })
