@@ -9,12 +9,14 @@ import uk.ac.wellcome.storage.store.azure.AzureTypedStore
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.tags.Tags
 import uk.ac.wellcome.storage.tags.azure.AzureBlobMetadata
+import uk.ac.wellcome.storage.transfer.azure.S3toAzurePrefixTransfer
 
 class AzureReplicatorTest
     extends ReplicatorTestCases[
       Container,
       AzureBlobLocation,
-      AzureBlobLocationPrefix
+      AzureBlobLocationPrefix,
+      S3toAzurePrefixTransfer
     ]
     with AzureFixtures {
 
@@ -22,6 +24,14 @@ class AzureReplicatorTest
     withAzureContainer { container =>
       testWith(container)
     }
+
+  override def withPrefixTransfer[R](testWith: TestWith[S3toAzurePrefixTransfer, R]): R =
+    testWith(S3toAzurePrefixTransfer())
+
+  override def withReplicator[R](prefixTransferImpl: S3toAzurePrefixTransfer)(testWith: TestWith[ReplicatorImpl, R]): R =
+    testWith(new AzureReplicator() {
+      override val prefixTransfer: S3toAzurePrefixTransfer = prefixTransferImpl
+    })
 
   override def withReplicator[R](testWith: TestWith[ReplicatorImpl, R]): R =
     testWith(new AzureReplicator())
