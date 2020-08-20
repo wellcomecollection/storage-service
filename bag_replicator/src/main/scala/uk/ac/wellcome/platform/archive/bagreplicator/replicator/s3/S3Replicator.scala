@@ -21,7 +21,7 @@ class S3Replicator(implicit s3Client: AmazonS3)
   //
   implicit val prefixTransfer: S3PrefixTransfer = S3PrefixTransfer()
 
-  override implicit val prefixListing: S3ObjectLocationListing =
+  override implicit val dstListing: S3ObjectLocationListing =
     S3ObjectLocationListing()
 
   override protected def buildDestinationFromParts(

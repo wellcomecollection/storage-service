@@ -33,10 +33,7 @@ trait Replicator[DstLocation <: Location, DstPrefix <: Prefix[DstLocation]]
     DstLocation
   ]
 
-  implicit val prefixListing: Listing[
-    S3ObjectLocationPrefix,
-    S3ObjectLocation
-  ]
+  implicit val dstListing: Listing[DstPrefix, DstLocation]
 
   def buildDestination(
     namespace: String,
@@ -85,7 +82,7 @@ trait Replicator[DstLocation <: Location, DstPrefix <: Prefix[DstLocation]]
     // replicate against a list of existing keys -- but that would make the code
     // even more complicated, and it's not clear it would be beneficial.
     //
-    val checkForExisting = prefixListing.list(request.srcPrefix) match {
+    val checkForExisting = dstListing.list(request.dstPrefix) match {
       case Right(listing) if listing.isEmpty => false
       case _                                 => true
     }
