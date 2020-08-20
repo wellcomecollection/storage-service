@@ -5,17 +5,14 @@ import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
-  ReplicationFailed,
-  ReplicationRequest,
-  ReplicationSucceeded
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{ReplicationFailed, ReplicationRequest, ReplicationSucceeded}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.tags.Tags
 import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.s3.S3TypedStore
 import uk.ac.wellcome.storage.tags.s3.S3Tags
@@ -59,16 +56,18 @@ trait ReplicatorTestCases[
       }
     }
 
-  def createSrcLocationWith(srcBucket: Bucket): S3ObjectLocation =
-    createS3ObjectLocationWith(srcBucket)
+  def createSrcLocationWith(srcBucket: Bucket, prefix: String = ""): S3ObjectLocation = {
+    val key = randomAlphanumeric
+    S3ObjectLocation(srcBucket.name, s"$prefix/$key")
+  }
 
   def createDstLocationWith(
     dstNamespace: DstNamespace,
     path: String
   ): DstLocation
 
-  def createSrcPrefixWith(srcBucket: Bucket): S3ObjectLocationPrefix =
-    S3ObjectLocationPrefix(bucket = srcBucket.name, keyPrefix = "")
+  def createSrcPrefixWith(srcBucket: Bucket, prefix: String = ""): S3ObjectLocationPrefix =
+    S3ObjectLocationPrefix(bucket = srcBucket.name, keyPrefix = prefix)
 
   def createDstPrefixWith(dstNamespace: DstNamespace): DstPrefix
 
@@ -79,6 +78,7 @@ trait ReplicatorTestCases[
     S3TypedStore[String]
 
   val dstStringStore: TypedStore[DstLocation, String]
+  val dstListing: Listing[DstPrefix, DstLocation]
 
   def putSrcObject(location: S3ObjectLocation, contents: String): Unit =
     srcStringStore.put(location)(contents) shouldBe a[Right[_, _]]
@@ -117,6 +117,43 @@ trait ReplicatorTestCases[
 
         result shouldBe a[ReplicationSucceeded[_]]
         result.summary.maybeEndTime.isDefined shouldBe true
+      }
+    }
+  }
+
+  it("does not replicate objects that match the prefix but are in different directory") {
+    withSrcNamespace { srcNamespace =>
+      withDstNamespace { dstNamespace =>
+        val prefix = s"v1"
+        val objectsInPrefix = (1 to 5).map { _ =>
+          (createSrcLocationWith(srcBucket = srcNamespace, prefix = prefix), randomAlphanumeric)
+        }.toMap
+
+        val objectsDifferentPrefix = (1 to 5).map {_ =>
+          (createSrcLocationWith(srcNamespace, s"${prefix}1"), randomAlphanumeric)
+        }.toMap
+
+
+        (objectsInPrefix++objectsDifferentPrefix).foreach {
+          case (loc, contents) => putSrcObject(loc, contents)
+        }
+
+        val srcPrefix = createSrcPrefixWith(srcNamespace, prefix)
+        val dstPrefix = createDstPrefixWith(dstNamespace)
+
+        val result = withReplicator { r:Replicator[DstLocation, DstPrefix] =>
+          r.replicate(
+            ingestId = createIngestID,
+            request = ReplicationRequest(
+              srcPrefix = srcPrefix,
+              dstPrefix = dstPrefix
+            )
+          )
+        }
+
+        result shouldBe a[ReplicationSucceeded[_]]
+        result.summary.maybeEndTime.isDefined shouldBe true
+        dstListing.list(dstPrefix).right.get.toList should have size(objectsInPrefix.size)
       }
     }
   }
@@ -166,8 +203,8 @@ trait ReplicatorTestCases[
   }
 
   it("fails if the underlying replication has an error") {
-    val srcPrefix = withSrcNamespace { createSrcPrefixWith }
-    val dstPrefix = withDstNamespace { createDstPrefixWith }
+    val srcPrefix = withSrcNamespace { bucket => createSrcPrefixWith(bucket) }
+    val dstPrefix = withDstNamespace { namespace => createDstPrefixWith(namespace) }
 
     val result = withReplicator {
       _.replicate(
