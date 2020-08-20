@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.replicator
 
+import org.mockito.Mockito._
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
@@ -18,11 +19,18 @@ import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.s3.S3TypedStore
 import uk.ac.wellcome.storage.tags.s3.S3Tags
+import uk.ac.wellcome.storage.transfer.PrefixTransfer
 
 trait ReplicatorTestCases[
   DstNamespace,
   DstLocation <: Location,
-  DstPrefix <: Prefix[DstLocation]
+  DstPrefix <: Prefix[DstLocation],
+  PrefixTransferImpl <: PrefixTransfer[
+    S3ObjectLocationPrefix,
+    S3ObjectLocation,
+    DstPrefix,
+    DstLocation
+  ]
 ] extends AnyFunSpec
     with Matchers
     with EitherValues
@@ -38,7 +46,18 @@ trait ReplicatorTestCases[
 
   type ReplicatorImpl = Replicator[DstLocation, DstPrefix]
 
-  def withReplicator[R](testWith: TestWith[ReplicatorImpl, R]): R
+  def withPrefixTransfer[R](testWith: TestWith[PrefixTransferImpl, R]): R
+
+  def withReplicator[R](prefixTransferImpl: PrefixTransferImpl)(
+    testWith: TestWith[ReplicatorImpl, R]
+  ): R
+
+  def withReplicator[R](testWith: TestWith[ReplicatorImpl, R]): R =
+    withPrefixTransfer { prefixTransfer =>
+      withReplicator(prefixTransfer) { replicator =>
+        testWith(replicator)
+      }
+    }
 
   def createSrcLocationWith(srcBucket: Bucket): S3ObjectLocation =
     createS3ObjectLocationWith(srcBucket)
@@ -200,6 +219,76 @@ trait ReplicatorTestCases[
           dstLocation,
           Map.empty
         )
+      }
+    }
+  }
+
+  describe(
+    "it only checks for existing objects if the destination is non-empty"
+  ) {
+    it("empty destination => don't check") {
+      withSrcNamespace { srcNamespace =>
+        withDstNamespace { dstNamespace =>
+          val srcLocation = createSrcLocationWith(srcNamespace)
+          putSrcObject(srcLocation, contents = randomAlphanumeric)
+
+          val srcPrefix = createSrcPrefixWith(srcNamespace)
+          val dstPrefix = createDstPrefixWith(dstNamespace)
+
+          withPrefixTransfer { prefixTransfer =>
+            val spyTransfer = spy(prefixTransfer)
+
+            withReplicator(spyTransfer) {
+              _.replicate(
+                ingestId = createIngestID,
+                request = ReplicationRequest(
+                  srcPrefix = srcPrefix,
+                  dstPrefix = dstPrefix
+                )
+              ) shouldBe a[ReplicationSucceeded[_]]
+            }
+
+            verify(spyTransfer, times(1))
+              .transferPrefix(srcPrefix, dstPrefix, checkForExisting = false)
+            verify(spyTransfer, never())
+              .transferPrefix(srcPrefix, dstPrefix, checkForExisting = true)
+          }
+        }
+      }
+    }
+
+    it("non-empty destination => check") {
+      withSrcNamespace { srcNamespace =>
+        withDstNamespace { dstNamespace =>
+          val srcLocation = createSrcLocationWith(srcNamespace)
+          putSrcObject(srcLocation, contents = randomAlphanumeric)
+
+          val dstLocation =
+            createDstLocationWith(dstNamespace, path = randomAlphanumeric)
+          putDstObject(dstLocation, contents = randomAlphanumeric)
+
+          val srcPrefix = createSrcPrefixWith(srcNamespace)
+          val dstPrefix = createDstPrefixWith(dstNamespace)
+
+          withPrefixTransfer { prefixTransfer =>
+            val spyTransfer = spy(prefixTransfer)
+
+            withReplicator(spyTransfer) {
+              _.replicate(
+                ingestId = createIngestID,
+                request = ReplicationRequest(
+                  srcPrefix = srcPrefix,
+                  dstPrefix = dstPrefix
+                )
+              ) shouldBe a[ReplicationSucceeded[_]]
+            }
+
+            verify(spyTransfer, times(1))
+              .transferPrefix(srcPrefix, dstPrefix, checkForExisting = true)
+            verify(spyTransfer, never())
+              .transferPrefix(srcPrefix, dstPrefix, checkForExisting = false)
+          }
+        }
       }
     }
   }

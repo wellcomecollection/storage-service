@@ -63,8 +63,12 @@ lazy val bag_register = setupProject(
   localDependencies = Seq(common, bag_tracker)
 )
 
-lazy val bag_replicator =
-  setupProject(project, "bag_replicator", localDependencies = Seq(common))
+lazy val bag_replicator = setupProject(
+  project,
+  folder = "bag_replicator",
+  localDependencies = Seq(common),
+  externalDependencies = ExternalDependencies.mockitoDependencies
+)
 
 lazy val bag_tracker = setupProject(
   project,

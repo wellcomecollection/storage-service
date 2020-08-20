@@ -4,7 +4,7 @@ import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.BlobServiceClient
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.Replicator
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
-import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
+import uk.ac.wellcome.storage.listing.azure.AzureBlobLocationListing
 import uk.ac.wellcome.storage.transfer.azure.S3toAzurePrefixTransfer
 
 class AzureReplicator(
@@ -12,8 +12,8 @@ class AzureReplicator(
   blobClient: BlobServiceClient
 ) extends Replicator[AzureBlobLocation, AzureBlobLocationPrefix] {
 
-  override implicit val prefixListing: S3ObjectLocationListing =
-    S3ObjectLocationListing()
+  override implicit val dstListing: AzureBlobLocationListing =
+    AzureBlobLocationListing()
 
   override implicit val prefixTransfer: S3toAzurePrefixTransfer =
     S3toAzurePrefixTransfer()
