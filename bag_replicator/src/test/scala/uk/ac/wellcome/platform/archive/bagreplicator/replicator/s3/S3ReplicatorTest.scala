@@ -51,5 +51,6 @@ class S3ReplicatorTest
       override val prefixTransfer: S3PrefixTransfer = prefixTransferImpl
     })
 
-  override val dstListing: Listing[S3ObjectLocationPrefix, S3ObjectLocation] = S3ObjectLocationListing()
+  override val dstListing: Listing[S3ObjectLocationPrefix, S3ObjectLocation] =
+    S3ObjectLocationListing()
 }

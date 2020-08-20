@@ -90,7 +90,11 @@ trait Replicator[DstLocation <: Location, DstPrefix <: Prefix[DstLocation]]
     debug(s"Consistency mode: checkForExisting = $checkForExisting")
 
     val srcKeyPrefix = request.srcPrefix.keyPrefix
-    val srcPrefix = if(srcKeyPrefix.endsWith("/"))request.srcPrefix else {request.srcPrefix.copy(keyPrefix = s"$srcKeyPrefix/")}
+    val srcPrefix =
+      if (srcKeyPrefix.endsWith("/")) request.srcPrefix
+      else {
+        request.srcPrefix.copy(keyPrefix = s"$srcKeyPrefix/")
+      }
     prefixTransfer.transferPrefix(
       srcPrefix = srcPrefix,
       dstPrefix = request.dstPrefix,

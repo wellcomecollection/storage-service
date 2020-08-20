@@ -5,7 +5,11 @@ import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{ReplicationFailed, ReplicationRequest, ReplicationSucceeded}
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
+  ReplicationFailed,
+  ReplicationRequest,
+  ReplicationSucceeded
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
@@ -56,7 +60,10 @@ trait ReplicatorTestCases[
       }
     }
 
-  def createSrcLocationWith(srcBucket: Bucket, prefix: String = ""): S3ObjectLocation = {
+  def createSrcLocationWith(
+    srcBucket: Bucket,
+    prefix: String = ""
+  ): S3ObjectLocation = {
     val key = randomAlphanumeric
     S3ObjectLocation(srcBucket.name, s"$prefix$key")
   }
@@ -66,7 +73,10 @@ trait ReplicatorTestCases[
     path: String
   ): DstLocation
 
-  def createSrcPrefixWith(srcBucket: Bucket, keyPrefix: String = ""): S3ObjectLocationPrefix =
+  def createSrcPrefixWith(
+    srcBucket: Bucket,
+    keyPrefix: String = ""
+  ): S3ObjectLocationPrefix =
     S3ObjectLocationPrefix(bucket = srcBucket.name, keyPrefix = keyPrefix)
 
   def createDstPrefixWith(dstNamespace: DstNamespace): DstPrefix
@@ -121,20 +131,24 @@ trait ReplicatorTestCases[
     }
   }
 
-  it("does not replicate objects that match the prefix but are in different directory") {
+  it(
+    "does not replicate objects that match the prefix but are in different directory"
+  ) {
     withSrcNamespace { srcNamespace =>
       withDstNamespace { dstNamespace =>
         val prefix = s"v1/"
         val objectsInPrefix = (1 to 5).map { _ =>
-          (createSrcLocationWith(srcBucket = srcNamespace, prefix = prefix), randomAlphanumeric)
+          (
+            createSrcLocationWith(srcBucket = srcNamespace, prefix = prefix),
+            randomAlphanumeric
+          )
         }.toMap
 
-        val objectsDifferentPrefix = (1 to 5).map {_ =>
+        val objectsDifferentPrefix = (1 to 5).map { _ =>
           (createSrcLocationWith(srcNamespace, s"v11/"), randomAlphanumeric)
         }.toMap
 
-
-        (objectsInPrefix++objectsDifferentPrefix).foreach {
+        (objectsInPrefix ++ objectsDifferentPrefix).foreach {
           case (loc, contents) => putSrcObject(loc, contents)
         }
 
@@ -153,7 +167,11 @@ trait ReplicatorTestCases[
 
         result shouldBe a[ReplicationSucceeded[_]]
         result.summary.maybeEndTime.isDefined shouldBe true
-        dstListing.list(dstPrefix).right.get.toList should have size(objectsInPrefix.size)
+        dstListing
+          .list(dstPrefix)
+          .right
+          .get
+          .toList should have size (objectsInPrefix.size)
       }
     }
   }
@@ -203,8 +221,12 @@ trait ReplicatorTestCases[
   }
 
   it("fails if the underlying replication has an error") {
-    val srcPrefix = withSrcNamespace { bucket => createSrcPrefixWith(bucket) }
-    val dstPrefix = withDstNamespace { namespace => createDstPrefixWith(namespace) }
+    val srcPrefix = withSrcNamespace { bucket =>
+      createSrcPrefixWith(bucket)
+    }
+    val dstPrefix = withDstNamespace { namespace =>
+      createDstPrefixWith(namespace)
+    }
 
     val result = withReplicator {
       _.replicate(

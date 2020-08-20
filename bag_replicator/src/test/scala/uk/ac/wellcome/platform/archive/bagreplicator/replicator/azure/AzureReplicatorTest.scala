@@ -57,5 +57,6 @@ class AzureReplicatorTest
     AzureTypedStore[String]
 
   override val dstTags: Tags[AzureBlobLocation] = new AzureBlobMetadata()
-  override val dstListing: Listing[AzureBlobLocationPrefix, AzureBlobLocation] = AzureBlobLocationListing()
+  override val dstListing: Listing[AzureBlobLocationPrefix, AzureBlobLocation] =
+    AzureBlobLocationListing()
 }
