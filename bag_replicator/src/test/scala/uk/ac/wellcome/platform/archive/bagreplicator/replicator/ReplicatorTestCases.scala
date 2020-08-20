@@ -131,47 +131,90 @@ trait ReplicatorTestCases[
     }
   }
 
-  it(
-    "does not replicate objects that match the prefix but are in different directory"
-  ) {
-    withSrcNamespace { srcNamespace =>
-      withDstNamespace { dstNamespace =>
-        val prefix = s"v1/"
-        val objectsInPrefix = (1 to 5).map { _ =>
-          (
-            createSrcLocationWith(srcBucket = srcNamespace, prefix = prefix),
-            randomAlphanumeric
-          )
-        }.toMap
-
-        val objectsDifferentPrefix = (1 to 5).map { _ =>
-          (createSrcLocationWith(srcNamespace, s"v11/"), randomAlphanumeric)
-        }.toMap
-
-        (objectsInPrefix ++ objectsDifferentPrefix).foreach {
-          case (loc, contents) => putSrcObject(loc, contents)
-        }
-
-        val srcPrefix = createSrcPrefixWith(srcNamespace, prefix)
-        val dstPrefix = createDstPrefixWith(dstNamespace)
-
-        val result = withReplicator {
-          _.replicate(
-            ingestId = createIngestID,
-            request = ReplicationRequest(
-              srcPrefix = srcPrefix,
-              dstPrefix = dstPrefix
+  describe("only replicates objects in the matching directory") {
+    it("if the prefix has a trailing slash") {
+      withSrcNamespace { srcNamespace =>
+        withDstNamespace { dstNamespace =>
+          val prefix = "v1/"
+          val objectsInPrefix = (1 to 5).map { _ =>
+            (
+              createSrcLocationWith(srcBucket = srcNamespace, prefix = prefix),
+              randomAlphanumeric
             )
-          )
-        }
+          }.toMap
 
-        result shouldBe a[ReplicationSucceeded[_]]
-        result.summary.maybeEndTime.isDefined shouldBe true
-        dstListing
-          .list(dstPrefix)
-          .right
-          .get
-          .toList should have size (objectsInPrefix.size)
+          val objectsDifferentPrefix = (1 to 5).map { _ =>
+            (createSrcLocationWith(srcNamespace, "v11/"), randomAlphanumeric)
+          }.toMap
+
+          (objectsInPrefix ++ objectsDifferentPrefix).foreach {
+            case (loc, contents) => putSrcObject(loc, contents)
+          }
+
+          val srcPrefix = createSrcPrefixWith(srcNamespace, prefix)
+          val dstPrefix = createDstPrefixWith(dstNamespace)
+
+          val result = withReplicator {
+            _.replicate(
+              ingestId = createIngestID,
+              request = ReplicationRequest(
+                srcPrefix = srcPrefix,
+                dstPrefix = dstPrefix
+              )
+            )
+          }
+
+          result shouldBe a[ReplicationSucceeded[_]]
+          result.summary.maybeEndTime.isDefined shouldBe true
+          dstListing
+            .list(dstPrefix)
+            .right
+            .get
+            .toList should have size objectsInPrefix.size
+        }
+      }
+    }
+
+    it("if the prefix omits a trailing slash") {
+      withSrcNamespace { srcNamespace =>
+        withDstNamespace { dstNamespace =>
+          val prefix = "v1"
+          val objectsInPrefix = (1 to 5).map { _ =>
+            (
+              createSrcLocationWith(srcBucket = srcNamespace, prefix = s"$prefix/"),
+              randomAlphanumeric
+            )
+          }.toMap
+
+          val objectsDifferentPrefix = (1 to 5).map { _ =>
+            (createSrcLocationWith(srcNamespace, prefix = "v11/"), randomAlphanumeric)
+          }.toMap
+
+          (objectsInPrefix ++ objectsDifferentPrefix).foreach {
+            case (loc, contents) => putSrcObject(loc, contents)
+          }
+
+          val srcPrefix = createSrcPrefixWith(srcNamespace, prefix)
+          val dstPrefix = createDstPrefixWith(dstNamespace)
+
+          val result = withReplicator {
+            _.replicate(
+              ingestId = createIngestID,
+              request = ReplicationRequest(
+                srcPrefix = srcPrefix,
+                dstPrefix = dstPrefix
+              )
+            )
+          }
+
+          result shouldBe a[ReplicationSucceeded[_]]
+          result.summary.maybeEndTime.isDefined shouldBe true
+          dstListing
+            .list(dstPrefix)
+            .right
+            .get
+            .toList should have size objectsInPrefix.size
+        }
       }
     }
   }
