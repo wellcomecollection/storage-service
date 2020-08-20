@@ -58,7 +58,7 @@ trait ReplicatorTestCases[
 
   def createSrcLocationWith(srcBucket: Bucket, prefix: String = ""): S3ObjectLocation = {
     val key = randomAlphanumeric
-    S3ObjectLocation(srcBucket.name, s"$prefix/$key")
+    S3ObjectLocation(srcBucket.name, s"$prefix$key")
   }
 
   def createDstLocationWith(
@@ -66,8 +66,8 @@ trait ReplicatorTestCases[
     path: String
   ): DstLocation
 
-  def createSrcPrefixWith(srcBucket: Bucket, prefix: String = ""): S3ObjectLocationPrefix =
-    S3ObjectLocationPrefix(bucket = srcBucket.name, keyPrefix = prefix)
+  def createSrcPrefixWith(srcBucket: Bucket, keyPrefix: String = ""): S3ObjectLocationPrefix =
+    S3ObjectLocationPrefix(bucket = srcBucket.name, keyPrefix = keyPrefix)
 
   def createDstPrefixWith(dstNamespace: DstNamespace): DstPrefix
 
@@ -124,13 +124,13 @@ trait ReplicatorTestCases[
   it("does not replicate objects that match the prefix but are in different directory") {
     withSrcNamespace { srcNamespace =>
       withDstNamespace { dstNamespace =>
-        val prefix = s"v1"
+        val prefix = s"v1/"
         val objectsInPrefix = (1 to 5).map { _ =>
           (createSrcLocationWith(srcBucket = srcNamespace, prefix = prefix), randomAlphanumeric)
         }.toMap
 
         val objectsDifferentPrefix = (1 to 5).map {_ =>
-          (createSrcLocationWith(srcNamespace, s"${prefix}1"), randomAlphanumeric)
+          (createSrcLocationWith(srcNamespace, s"v11/"), randomAlphanumeric)
         }.toMap
 
 
@@ -141,8 +141,8 @@ trait ReplicatorTestCases[
         val srcPrefix = createSrcPrefixWith(srcNamespace, prefix)
         val dstPrefix = createDstPrefixWith(dstNamespace)
 
-        val result = withReplicator { r:Replicator[DstLocation, DstPrefix] =>
-          r.replicate(
+        val result = withReplicator {
+          _.replicate(
             ingestId = createIngestID,
             request = ReplicationRequest(
               srcPrefix = srcPrefix,
