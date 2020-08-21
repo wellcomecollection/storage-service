@@ -1,8 +1,5 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.replicator.azure
 
-import java.nio.charset.StandardCharsets
-import java.util.Base64
-
 import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.models.BlobRange
@@ -43,27 +40,22 @@ class AzurePutBlockTransfer(
     val ranges = BlobRangeUtil.getRanges(length = size, blockSize = 100000000L)
     println(ranges)
 
-    val blockIdLength = ranges.length.toString.length
+    val identifiers = BlobRangeUtil.getBlockIdentifiers(count = ranges.size)
 
-    val identifiedRanges: Seq[(String, BlobRange)] = ranges.zipWithIndex.map { case (range, i) =>
-      // https://gauravmantri.com/2013/05/18/windows-azure-blob-storage-dealing-with-the-specified-blob-or-block-content-is-invalid-error/
-      val idNumber = ("0" * blockIdLength + (i + 1).toString).takeRight(blockIdLength)
-
-      Base64.getEncoder.encodeToString(idNumber.getBytes(StandardCharsets.UTF_8)) -> range
-    }
+    val identifiedRanges: Seq[(String, BlobRange)] = identifiers.zip(ranges)
     debug(s"@@AWLC ranges for $src: $identifiedRanges")
 
     Try {
       identifiedRanges.foreach { case (blockId, range) =>
         debug(s"@@AWLC uploading to $dst with range $range / block Id $blockId")
-        val s = blockClient.stageBlock()
+//        val s = blockClient.stageBlock()
         val s = blockClient.stageBlockFromUrl(
           blockId,
           s3PresignedUrl.toString,
           range
         )
         debug(s"@@AWLC reuslt of stageBlockFromURL for $blockId=$range is $s")
-        println(s)
+//        println(s)
       }
 
       blockClient.commitBlockList(identifiedRanges.map { case (blockId, _) => blockId }.toList.asJava)
