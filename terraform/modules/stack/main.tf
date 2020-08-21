@@ -749,7 +749,7 @@ module "bags_tracker_backfill" {
   subnets = var.private_subnets
   vpc_id  = var.vpc_id
 
-  deployment_service_name = "bags-api"
+  deployment_service_name = "bags-api-backfill"
   deployment_service_env  = var.release_label
 }
 
@@ -787,6 +787,6 @@ module "bag_register_backfill" {
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
 
-  deployment_service_name = "bag-register"
+  deployment_service_name = "bag-register-backfill"
   deployment_service_env  = var.release_label
 }
