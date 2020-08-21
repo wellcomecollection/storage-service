@@ -9,6 +9,7 @@ storage:
     - id: bag_register
       services:
         - id: bag-register
+        - id: bag-register-backfill
     - id: bag_replicator
       services:
         - id: bag-replicator-primary
@@ -23,6 +24,7 @@ storage:
     - id: bag_tracker
       services:
         - id: bags-api
+        - id: bags-api-backfill
     - id: bag_unpacker
       services:
         - id: bag-unpacker
@@ -38,6 +40,7 @@ storage:
     - id: bags_api
       services:
         - id: bags-api
+        - id: bags-api-backfill
     - id: notifier
       services:
         - id: notifier
