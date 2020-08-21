@@ -188,13 +188,19 @@ trait ReplicatorTestCases[
           val prefix = "v1"
           val objectsInPrefix = (1 to 5).map { _ =>
             (
-              createSrcLocationWith(srcBucket = srcNamespace, prefix = s"$prefix/"),
+              createSrcLocationWith(
+                srcBucket = srcNamespace,
+                prefix = s"$prefix/"
+              ),
               randomAlphanumeric
             )
           }.toMap
 
           val objectsDifferentPrefix = (1 to 5).map { _ =>
-            (createSrcLocationWith(srcNamespace, prefix = "v11/"), randomAlphanumeric)
+            (
+              createSrcLocationWith(srcNamespace, prefix = "v11/"),
+              randomAlphanumeric
+            )
           }.toMap
 
           (objectsInPrefix ++ objectsDifferentPrefix).foreach {

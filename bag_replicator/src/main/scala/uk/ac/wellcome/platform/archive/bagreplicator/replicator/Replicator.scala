@@ -97,13 +97,17 @@ trait Replicator[DstLocation <: Location, DstPrefix <: Prefix[DstLocation]]
     val srcKeyPrefix = request.srcPrefix.keyPrefix
     val srcDirectoryPrefix =
       if (srcKeyPrefix.endsWith("/")) {
-        debug(s"Prefix ${request.srcPrefix} ends with a trailing slash; replicating as-is")
+        debug(
+          s"Prefix ${request.srcPrefix} ends with a trailing slash; replicating as-is"
+        )
         request.srcPrefix
       } else if (srcKeyPrefix == "") {
         debug(s"Prefix ${request.srcPrefix} is empty; replicating as-is")
         request.srcPrefix
       } else {
-        debug(s"Prefix ${request.srcPrefix} is missing a trailing slash; replicating with a trailing slash")
+        debug(
+          s"Prefix ${request.srcPrefix} is missing a trailing slash; replicating with a trailing slash"
+        )
         request.srcPrefix.copy(keyPrefix = s"$srcKeyPrefix/")
       }
 
