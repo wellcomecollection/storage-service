@@ -1,13 +1,13 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.replicator.azure
 
 import java.nio.charset.StandardCharsets
-import java.util
 import java.util.Base64
 
 import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.models.BlobRange
 import grizzled.slf4j.Logging
+import uk.ac.wellcome.platform.archive.bagreplicator.storage.azure.BlobRangeUtil
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3Uploader
 import uk.ac.wellcome.storage.azure.AzureBlobLocation
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
@@ -23,27 +23,6 @@ class AzurePutBlockTransfer(
 ) extends Transfer[S3ObjectLocation, AzureBlobLocation] with Logging {
 
   implicit val s3Uploader: S3Uploader = new S3Uploader()
-
-  private class RangeEnumeration(
-                                     contentLength: Long,
-                                     bufferSize: Long
-  ) extends util.Enumeration[BlobRange] {
-    var currentPosition = 0L
-    val totalLength: Long = contentLength
-
-    override def hasMoreElements: Boolean =
-      currentPosition < totalLength
-
-    override def nextElement(): BlobRange = {
-      val r = if (currentPosition + bufferSize >= totalLength) {
-        new BlobRange(currentPosition)
-      } else {
-        new BlobRange(currentPosition, bufferSize)
-      }
-      currentPosition += bufferSize
-      r
-    }
-  }
 
   private def singleTransfer(src: S3ObjectLocation, dst: AzureBlobLocation): TransferEither = {
     val size = s3Client.getObject(src.bucket, src.key).getObjectMetadata.getContentLength
@@ -61,7 +40,7 @@ class AzurePutBlockTransfer(
 
     import scala.collection.JavaConverters._
 
-    val ranges = new RangeEnumeration(contentLength = size, bufferSize = 100000000L).asScala.toSeq
+    val ranges = BlobRangeUtil.getRanges(length = size, blockSize = 100000000L)
     println(ranges)
 
     val blockIdLength = ranges.length.toString.length
