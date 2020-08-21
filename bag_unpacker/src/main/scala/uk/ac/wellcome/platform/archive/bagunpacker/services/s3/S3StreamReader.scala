@@ -4,11 +4,11 @@ import java.io.{ByteArrayInputStream, InputStream, SequenceInputStream}
 import java.util
 
 import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.{AmazonS3Exception, GetObjectRequest}
+import com.amazonaws.services.s3.model.GetObjectRequest
 import grizzled.slf4j.Logging
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.s3.S3ObjectLocation
+import uk.ac.wellcome.storage.s3.{S3Errors, S3ObjectLocation}
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
@@ -118,22 +118,6 @@ class S3StreamReader(bufferSize: Long)(implicit s3Client: AmazonS3)
       )
     } match {
       case Success(inputStream) => Right(Identified(location, inputStream))
-      case Failure(err)         => Left(buildGetError(err))
-    }
-
-  private def buildGetError(throwable: Throwable): ReadError =
-    throwable match {
-      case exc: AmazonS3Exception if exc.getMessage.startsWith("Not Found") =>
-        DoesNotExistError(exc)
-      case exc: AmazonS3Exception
-          if exc.getMessage.startsWith("The specified key does not exist") =>
-        DoesNotExistError(exc)
-      case exc: AmazonS3Exception
-          if exc.getMessage.startsWith("The specified bucket does not exist") =>
-        DoesNotExistError(exc)
-      case exc: AmazonS3Exception
-          if exc.getMessage.startsWith("The specified bucket is not valid") =>
-        StoreReadError(exc)
-      case _ => StoreReadError(throwable)
+      case Failure(err)         => Left(S3Errors.readErrors(err))
     }
 }
