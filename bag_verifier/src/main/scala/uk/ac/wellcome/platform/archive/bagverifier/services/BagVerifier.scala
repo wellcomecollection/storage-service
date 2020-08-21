@@ -129,7 +129,8 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
         bag = bag
       )
 
-      actualLocations <- listing.list(root) match {
+      listRoot = if(root.pathPrefix.endsWith("/") || root.pathPrefix.isEmpty) root else addTrailingSlash(root)
+      actualLocations <- listing.list(listRoot) match {
         case Right(iterable) => Right(iterable.toSeq)
         case Left(listingFailure) =>
           Left(BagVerifierError(listingFailure.e))
@@ -238,4 +239,6 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
           maybeUserFacingMessage = Some(userFacingMessage)
         )
     }
+
+  def addTrailingSlash(prefix: BagPrefix): BagPrefix
 }

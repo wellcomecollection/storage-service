@@ -13,7 +13,7 @@ module "stack_staging" {
   domain_name      = local.staging_domain_name
   cert_domain_name = local.cert_domain_name
 
-  min_capacity = 1
+  min_capacity = 0
   max_capacity = 3
 
   azure_ssm_parameter_base = "azure/wecostoragestage/wellcomecollection-storage-staging-replica-netherlands"
