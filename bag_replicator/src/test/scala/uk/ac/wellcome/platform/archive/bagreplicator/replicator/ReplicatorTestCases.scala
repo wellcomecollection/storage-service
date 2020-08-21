@@ -131,6 +131,13 @@ trait ReplicatorTestCases[
     }
   }
 
+  // These test cases are based on a real bug we saw when adding the Azure replica.
+  // We asked for a replication from `v1` (no slash), and it included objects in `v10`.
+  // For example:
+  //
+  //       src://bags/b1234/v10/bag-info.txt
+  //    ~> dst://bags/b1234/v1/0/bag-info.txt
+  //
   describe("only replicates objects in the matching directory") {
     it("if the prefix has a trailing slash") {
       withSrcNamespace { srcNamespace =>
