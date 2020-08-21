@@ -1,12 +1,10 @@
+import functools
 import os
 import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from _aws import get_dynamo_client, scan_table  # noqa
-
-
-dynamodb = get_dynamo_client()
+from _aws import scan_table  # noqa
 
 
 def has_been_replicated_to_azure(backfill_table, *, space, externalIdentifier, version):
@@ -14,17 +12,14 @@ def has_been_replicated_to_azure(backfill_table, *, space, externalIdentifier, v
     Returns True if a bag has been replicated to Azure -- that is, if it has
     an entry in the VHS created for the backfill process.
     """
-    resp = dynamodb.get_item(
-        TableName=backfill_table,
-        Key={"id": f"{space}/{externalIdentifier}", "version": version},
-    )
+    backfilled_bags = get_already_backfilled_bags(backfill_table)
 
-    return "Item" in resp
+    return (space, externalIdentifier, version) in backfilled_bags
 
 
 def get_bags(vhs_table):
     """
-    Generates all the bags in the VHS table that have not been replicated to Azure.
+    Generates all the bags in the VHS table.
     """
     for item in scan_table(TableName=vhs_table):
         space, externalIdentifier = item["id"].split("/", 1)
@@ -32,3 +27,8 @@ def get_bags(vhs_table):
         assert int(item["version"]) == item["version"]
         version = int(item["version"])
         yield (space, externalIdentifier, version)
+
+
+@functools.lru_cache()
+def get_already_backfilled_bags(backfill_table):
+    return set(get_bags(backfill_table))
