@@ -16,6 +16,7 @@ import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.tags.Tags
 import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.s3.S3TypedStore
 import uk.ac.wellcome.storage.tags.s3.S3Tags
@@ -59,16 +60,24 @@ trait ReplicatorTestCases[
       }
     }
 
-  def createSrcLocationWith(srcBucket: Bucket): S3ObjectLocation =
-    createS3ObjectLocationWith(srcBucket)
+  def createSrcLocationWith(
+    srcBucket: Bucket,
+    prefix: String = ""
+  ): S3ObjectLocation = {
+    val key = randomAlphanumeric
+    S3ObjectLocation(srcBucket.name, s"$prefix$key")
+  }
 
   def createDstLocationWith(
     dstNamespace: DstNamespace,
     path: String
   ): DstLocation
 
-  def createSrcPrefixWith(srcBucket: Bucket): S3ObjectLocationPrefix =
-    S3ObjectLocationPrefix(bucket = srcBucket.name, keyPrefix = "")
+  def createSrcPrefixWith(
+    srcBucket: Bucket,
+    keyPrefix: String = ""
+  ): S3ObjectLocationPrefix =
+    S3ObjectLocationPrefix(bucket = srcBucket.name, keyPrefix = keyPrefix)
 
   def createDstPrefixWith(dstNamespace: DstNamespace): DstPrefix
 
@@ -79,6 +88,7 @@ trait ReplicatorTestCases[
     S3TypedStore[String]
 
   val dstStringStore: TypedStore[DstLocation, String]
+  val dstListing: Listing[DstPrefix, DstLocation]
 
   def putSrcObject(location: S3ObjectLocation, contents: String): Unit =
     srcStringStore.put(location)(contents) shouldBe a[Right[_, _]]
@@ -117,6 +127,107 @@ trait ReplicatorTestCases[
 
         result shouldBe a[ReplicationSucceeded[_]]
         result.summary.maybeEndTime.isDefined shouldBe true
+      }
+    }
+  }
+
+  // These test cases are based on a real bug we saw when adding the Azure replica.
+  // We asked for a replication from `v1` (no slash), and it included objects in `v10`.
+  // For example:
+  //
+  //       src://bags/b1234/v10/bag-info.txt
+  //    ~> dst://bags/b1234/v1/0/bag-info.txt
+  //
+  describe("only replicates objects in the matching directory") {
+    it("if the prefix has a trailing slash") {
+      withSrcNamespace { srcNamespace =>
+        withDstNamespace { dstNamespace =>
+          val prefix = "v1/"
+          val objectsInPrefix = (1 to 5).map { _ =>
+            (
+              createSrcLocationWith(srcBucket = srcNamespace, prefix = prefix),
+              randomAlphanumeric
+            )
+          }.toMap
+
+          val objectsDifferentPrefix = (1 to 5).map { _ =>
+            (createSrcLocationWith(srcNamespace, "v11/"), randomAlphanumeric)
+          }.toMap
+
+          (objectsInPrefix ++ objectsDifferentPrefix).foreach {
+            case (loc, contents) => putSrcObject(loc, contents)
+          }
+
+          val srcPrefix = createSrcPrefixWith(srcNamespace, prefix)
+          val dstPrefix = createDstPrefixWith(dstNamespace)
+
+          val result = withReplicator {
+            _.replicate(
+              ingestId = createIngestID,
+              request = ReplicationRequest(
+                srcPrefix = srcPrefix,
+                dstPrefix = dstPrefix
+              )
+            )
+          }
+
+          result shouldBe a[ReplicationSucceeded[_]]
+          result.summary.maybeEndTime.isDefined shouldBe true
+          dstListing
+            .list(dstPrefix)
+            .right
+            .get
+            .toList should have size objectsInPrefix.size
+        }
+      }
+    }
+
+    it("if the prefix omits a trailing slash") {
+      withSrcNamespace { srcNamespace =>
+        withDstNamespace { dstNamespace =>
+          val prefix = "v1"
+          val objectsInPrefix = (1 to 5).map { _ =>
+            (
+              createSrcLocationWith(
+                srcBucket = srcNamespace,
+                prefix = s"$prefix/"
+              ),
+              randomAlphanumeric
+            )
+          }.toMap
+
+          val objectsDifferentPrefix = (1 to 5).map { _ =>
+            (
+              createSrcLocationWith(srcNamespace, prefix = "v11/"),
+              randomAlphanumeric
+            )
+          }.toMap
+
+          (objectsInPrefix ++ objectsDifferentPrefix).foreach {
+            case (loc, contents) => putSrcObject(loc, contents)
+          }
+
+          val srcPrefix = createSrcPrefixWith(srcNamespace, prefix)
+          val dstPrefix = createDstPrefixWith(dstNamespace)
+
+          val result = withReplicator {
+            _.replicate(
+              ingestId = createIngestID,
+              request = ReplicationRequest(
+                srcPrefix = srcPrefix,
+                dstPrefix = dstPrefix
+              )
+            )
+          }
+
+          result shouldBe a[ReplicationSucceeded[_]]
+          result.summary.maybeEndTime.isDefined shouldBe true
+          dstListing
+            .list(dstPrefix)
+            .right
+            .get
+            .toList should have size objectsInPrefix.size
+        }
       }
     }
   }
@@ -166,8 +277,12 @@ trait ReplicatorTestCases[
   }
 
   it("fails if the underlying replication has an error") {
-    val srcPrefix = withSrcNamespace { createSrcPrefixWith }
-    val dstPrefix = withDstNamespace { createDstPrefixWith }
+    val srcPrefix = withSrcNamespace { bucket =>
+      createSrcPrefixWith(bucket)
+    }
+    val dstPrefix = withDstNamespace { namespace =>
+      createDstPrefixWith(namespace)
+    }
 
     val result = withReplicator {
       _.replicate(

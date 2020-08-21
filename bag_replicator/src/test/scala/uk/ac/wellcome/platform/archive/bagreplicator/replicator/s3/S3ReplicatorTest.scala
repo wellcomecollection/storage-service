@@ -4,6 +4,8 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.ReplicatorTestCases
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import uk.ac.wellcome.storage.listing.Listing
+import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.s3.S3TypedStore
 import uk.ac.wellcome.storage.tags.Tags
@@ -48,4 +50,7 @@ class S3ReplicatorTest
     testWith(new S3Replicator() {
       override val prefixTransfer: S3PrefixTransfer = prefixTransferImpl
     })
+
+  override val dstListing: Listing[S3ObjectLocationPrefix, S3ObjectLocation] =
+    S3ObjectLocationListing()
 }

@@ -87,10 +87,39 @@ trait Replicator[DstLocation <: Location, DstPrefix <: Prefix[DstLocation]]
       case _                                 => true
     }
 
-    debug(s"Consistency mode: checkForExisting = $checkForExisting")
+    // It's important that we add slashes to the end of our prefixes, so we're
+    // listing a "directory" in S3, and we don't get partial "directories".
+    //
+    // e.g. if asked to transfer  "s3://bukkit/bags/v1", we shouldn't also
+    // transfer entries in prefix "s3://bukkit/bags/v10"
+    //
+    // See https://github.com/wellcomecollection/platform/issues/4745
+    val srcKeyPrefix = request.srcPrefix.keyPrefix
+    val srcDirectoryPrefix =
+      if (srcKeyPrefix.endsWith("/")) {
+        debug(
+          s"Prefix ${request.srcPrefix} ends with a trailing slash; replicating as-is"
+        )
+        request.srcPrefix
+      } else if (srcKeyPrefix == "") {
+        debug(s"Prefix ${request.srcPrefix} is empty; replicating as-is")
+        request.srcPrefix
+      } else {
+        debug(
+          s"Prefix ${request.srcPrefix} is missing a trailing slash; replicating with a trailing slash"
+        )
+        request.srcPrefix.copy(keyPrefix = s"$srcKeyPrefix/")
+      }
+
+    debug(
+      "Triggering PrefixTransfer: " + "" +
+        s"src = $srcDirectoryPrefix, " +
+        s"dst = ${request.dstPrefix}, " +
+        s"checkForExisting = $checkForExisting"
+    )
 
     prefixTransfer.transferPrefix(
-      srcPrefix = request.srcPrefix,
+      srcPrefix = srcDirectoryPrefix,
       dstPrefix = request.dstPrefix,
       checkForExisting = checkForExisting
     ) match {
