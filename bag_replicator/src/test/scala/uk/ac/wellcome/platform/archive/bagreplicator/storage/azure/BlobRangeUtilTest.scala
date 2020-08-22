@@ -49,4 +49,16 @@ class BlobRangeUtilTest extends AnyFunSpec with Matchers {
       b1.getOffset shouldBe b2.getOffset
     }
   }
+
+  describe("getBlockIdentifiers") {
+    it("creates a single identifier") {
+      BlobRangeUtil.getBlockIdentifiers(count = 1) shouldBe Seq("MQ==")
+    }
+
+    it("always creates identifiers of the same length") {
+      BlobRangeUtil.getBlockIdentifiers(count = 100)
+        .map { _.length }
+        .toSet shouldBe Set(4)
+    }
+  }
 }
