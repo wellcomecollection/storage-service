@@ -13,6 +13,9 @@ class S3RangedReader(implicit s3Client: AmazonS3) extends Logging {
     count: Long,
     totalLength: Long
   ): Array[Byte] = {
+    if (offset >= totalLength)
+      throw new IllegalArgumentException(s"Offset is after the end of the object: $offset >= $totalLength")
+
     val getRequest =
       new GetObjectRequest(location.bucket, location.key)
 
@@ -20,15 +23,17 @@ class S3RangedReader(implicit s3Client: AmazonS3) extends Logging {
     //
     // For example, if you read (start=0, end=5), you get bytes [0, 1, 2, 3, 4, 5].
     // We never want to read more than bufferSize bytes at a time.
+    //
     val requestWithRange =
-    if (offset + count >= totalLength) {
-      debug(s"Reading $location: $offset-[end] / $totalLength")
-      getRequest.withRange(offset)
-    } else {
-      val endRange = offset + count - 1
-      debug(s"Reading $location: $offset-$endRange / $totalLength")
-      getRequest.withRange(offset, endRange)
-    }
+      if (offset + count >= totalLength || isNull(count)) {
+        debug(s"Reading $location: $offset-[end] / $totalLength")
+        getRequest.withRange(offset)
+      } else {
+        val endRange = offset + count - 1
+        assert(endRange >= offset, s"End of range is greater than offset: $endRange >= $offset")
+        debug(s"Reading $location: $offset-$endRange / $totalLength")
+        getRequest.withRange(offset, endRange)
+      }
 
     // Remember to close the input stream afterwards, or we get errors like
     //
@@ -41,4 +46,9 @@ class S3RangedReader(implicit s3Client: AmazonS3) extends Logging {
 
     byteArray
   }
+
+  // If `count` is null, we read to the end.  This is for interop with the BlobRange
+  // class for specifying ranges in Azure objects.
+  private def isNull(count: Long): Boolean =
+    Option(count) == Some(0)
 }
