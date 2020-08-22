@@ -23,7 +23,10 @@ trait AzureTransfer[Context] extends Transfer[S3ObjectLocation, AzureBlobLocatio
 
   private val s3SizeFinder = new S3SizeFinder()
 
-  def runTransfer(src: S3ObjectLocation, dst: AzureBlobLocation): Either[TransferFailure[S3ObjectLocation, AzureBlobLocation], Unit] =
+  def runTransfer(
+    src: S3ObjectLocation,
+    dst: AzureBlobLocation,
+    allowOverwrites: Boolean): Either[TransferFailure[S3ObjectLocation, AzureBlobLocation], Unit] =
     for {
       s3Length <- s3SizeFinder.getSize(src) match {
         case Left(readError) => Left(TransferSourceFailure(src, dst, readError.e))
@@ -32,7 +35,7 @@ trait AzureTransfer[Context] extends Transfer[S3ObjectLocation, AzureBlobLocatio
 
       context <- getContext(src)
 
-      result <- writeBlocks(src = src, dst = dst, s3Length = s3Length, context = context) match {
+      result <- writeBlocks(src = src, dst = dst, s3Length = s3Length, allowOverwrites = allowOverwrites, context = context) match {
         case Success(_)   => Right(())
         case Failure(err) => Left(TransferDestinationFailure(src, dst, err))
       }
@@ -49,10 +52,11 @@ trait AzureTransfer[Context] extends Transfer[S3ObjectLocation, AzureBlobLocatio
     context: Context
   ): Unit
 
-  protected def writeBlocks(
+  private def writeBlocks(
     src: S3ObjectLocation,
     dst: AzureBlobLocation,
     s3Length: Long,
+    allowOverwrites: Boolean,
     context: Context
   ): Try[Unit] = {
     val blockClient = blobServiceClient
@@ -76,15 +80,15 @@ trait AzureTransfer[Context] extends Transfer[S3ObjectLocation, AzureBlobLocatio
         )
       }
 
-      blockClient.commitBlockList(identifiers.toList.asJava)
+      blockClient.commitBlockList(identifiers.toList.asJava, allowOverwrites)
     }
   }
 
   override protected def transferWithCheckForExisting(src: S3ObjectLocation, dst: AzureBlobLocation): TransferEither =
-    runTransfer(src, dst).map { _ => TransferPerformed(src, dst) }
+    runTransfer(src, dst, allowOverwrites = false).map { _ => TransferPerformed(src, dst) }
 
   override protected def transferWithOverwrites(src: S3ObjectLocation, dst: AzureBlobLocation): TransferEither =
-    runTransfer(src, dst).map { _ => TransferPerformed(src, dst) }
+    runTransfer(src, dst, allowOverwrites = true).map { _ => TransferPerformed(src, dst) }
 }
 
 class AzurePutBlockTransfer(
@@ -123,6 +127,6 @@ class AzurePutBlockTransfer(
       .getBlobClient(dst.name)
       .getBlockBlobClient
 
-    blockClient.upload(new ByteArrayInputStream(bytes), bytes.size)
+    blockClient.stageBlock(blockId, new ByteArrayInputStream(bytes), bytes.length)
   }
 }
