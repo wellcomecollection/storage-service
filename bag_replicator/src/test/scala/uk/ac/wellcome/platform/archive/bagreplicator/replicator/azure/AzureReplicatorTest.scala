@@ -38,7 +38,9 @@ class AzureReplicatorTest
   override def withReplicator[R](
     prefixTransferImpl: AzurePrefixTransfer
   )(testWith: TestWith[ReplicatorImpl, R]): R =
-    testWith(new AzureReplicator(transfer = prefixTransferImpl.transfer))
+    testWith(new AzureReplicator(transfer = prefixTransferImpl.transfer) {
+      override val prefixTransfer: AzurePrefixTransfer = prefixTransferImpl
+    })
 
   override def createDstLocationWith(
     dstContainer: Container,
