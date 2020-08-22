@@ -11,7 +11,7 @@ import uk.ac.wellcome.storage.generators.Record
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
 import uk.ac.wellcome.storage.store.azure.AzureTypedStore
 import uk.ac.wellcome.storage.store.s3.S3TypedStore
-import uk.ac.wellcome.storage.transfer.{Transfer, TransferTestCases}
+import uk.ac.wellcome.storage.transfer.{Transfer, TransferPerformed, TransferTestCases}
 
 class AzurePutBlockTransferTest extends TransferTestCases[
   S3ObjectLocation,
@@ -75,4 +75,57 @@ class AzurePutBlockTransferTest extends TransferTestCases[
     testWith(
       new AzurePutBlockTransfer(blockSize = blockSize)
     )
+
+  describe("it copies objects on/off the blockSize boundary") {
+    it("copies an object whose size is an exact multiple of blockSize") {
+      withNamespacePair { case (srcNamespace, dstNamespace) =>
+        val src = createSrcLocation(srcNamespace)
+        val dst = createDstLocation(dstNamespace)
+
+        val t = Record(randomAlphanumericWithLength(length = blockSize * 10))
+
+        withContext { implicit context =>
+          withSrcStore(initialEntries = Map(src -> t)) { srcStore =>
+            withDstStore(initialEntries = Map.empty) { dstStore =>
+              val result =
+                withTransfer(srcStore, dstStore) {
+                  _.transfer(src, dst)
+                }
+
+              result.right.value shouldBe TransferPerformed(src, dst)
+
+              srcStore.get(src).right.value.identifiedT shouldBe t
+              dstStore.get(dst).right.value.identifiedT shouldBe t
+            }
+          }
+        }
+      }
+    }
+
+    it("copies an object whose size is not an exact multiple of blockSize") {
+      withNamespacePair { case (srcNamespace, dstNamespace) =>
+        val src = createSrcLocation(srcNamespace)
+        val dst = createDstLocation(dstNamespace)
+
+        assert(blockSize > 1)
+        val t = Record(randomAlphanumericWithLength(length = blockSize * 10 + 1))
+
+        withContext { implicit context =>
+          withSrcStore(initialEntries = Map(src -> t)) { srcStore =>
+            withDstStore(initialEntries = Map.empty) { dstStore =>
+              val result =
+                withTransfer(srcStore, dstStore) {
+                  _.transfer(src, dst)
+                }
+
+              result.right.value shouldBe TransferPerformed(src, dst)
+
+              srcStore.get(src).right.value.identifiedT shouldBe t
+              dstStore.get(dst).right.value.identifiedT shouldBe t
+            }
+          }
+        }
+      }
+    }
+  }
 }
