@@ -35,7 +35,7 @@ trait AzureTransfer[Context] extends Transfer[S3ObjectLocation, AzureBlobLocatio
         case Right(result)   => Right(result)
       }
 
-      context <- getContext(src)
+      context <- getContext(src, dst)
 
       result <- writeBlocks(src = src, dst = dst, s3Length = s3Length, allowOverwrites = allowOverwrites, context = context) match {
         case Success(_)   => Right(())
