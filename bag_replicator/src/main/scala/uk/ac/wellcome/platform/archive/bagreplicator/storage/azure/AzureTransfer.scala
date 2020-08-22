@@ -1,12 +1,16 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.storage.azure
+
+import java.io.ByteArrayInputStream
+
 import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.models.BlobRange
 import grizzled.slf4j.Logging
+import uk.ac.wellcome.platform.archive.common.storage.s3.S3RangedReader
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3SizeFinder
 import uk.ac.wellcome.storage.azure.AzureBlobLocation
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
-import uk.ac.wellcome.storage.transfer.{Transfer, TransferDestinationFailure, TransferFailure, TransferSourceFailure}
+import uk.ac.wellcome.storage.transfer._
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
@@ -21,14 +25,14 @@ trait AzureTransfer[Context] extends Transfer[S3ObjectLocation, AzureBlobLocatio
 
   def runTransfer(src: S3ObjectLocation, dst: AzureBlobLocation): Either[TransferFailure[S3ObjectLocation, AzureBlobLocation], Unit] =
     for {
-      s3Size <- s3SizeFinder.getSize(src) match {
+      s3Length <- s3SizeFinder.getSize(src) match {
         case Left(readError) => Left(TransferSourceFailure(src, dst, readError.e))
         case Right(result)   => Right(result)
       }
 
       context <- getContext(src)
 
-      result <- writeBlocks(src = src, dst = dst, s3Size = s3Size, context = context) match {
+      result <- writeBlocks(src = src, dst = dst, s3Length = s3Length, context = context) match {
         case Success(_)   => Right(())
         case Failure(err) => Left(TransferDestinationFailure(src, dst, err))
       }
@@ -41,13 +45,14 @@ trait AzureTransfer[Context] extends Transfer[S3ObjectLocation, AzureBlobLocatio
     dst: AzureBlobLocation,
     range: BlobRange,
     blockId: String,
+    s3Length: Long,
     context: Context
   ): Unit
 
   protected def writeBlocks(
     src: S3ObjectLocation,
     dst: AzureBlobLocation,
-    s3Size: Long,
+    s3Length: Long,
     context: Context
   ): Try[Unit] = {
     val blockClient = blobServiceClient
@@ -55,7 +60,7 @@ trait AzureTransfer[Context] extends Transfer[S3ObjectLocation, AzureBlobLocatio
       .getBlobClient(dst.name)
       .getBlockBlobClient
 
-    val ranges = BlobRangeUtil.getRanges(length = s3Size, blockSize = blockSize)
+    val ranges = BlobRangeUtil.getRanges(length = s3Length, blockSize = blockSize)
     val identifiers = BlobRangeUtil.getBlockIdentifiers(count = ranges.size)
 
     Try {
@@ -66,11 +71,58 @@ trait AzureTransfer[Context] extends Transfer[S3ObjectLocation, AzureBlobLocatio
           dst = dst,
           range = range,
           blockId = blockId,
+          s3Length = s3Length,
           context = context
         )
       }
 
       blockClient.commitBlockList(identifiers.toList.asJava)
     }
+  }
+
+  override protected def transferWithCheckForExisting(src: S3ObjectLocation, dst: AzureBlobLocation): TransferEither =
+    runTransfer(src, dst).map { _ => TransferPerformed(src, dst) }
+
+  override protected def transferWithOverwrites(src: S3ObjectLocation, dst: AzureBlobLocation): TransferEither =
+    runTransfer(src, dst).map { _ => TransferPerformed(src, dst) }
+}
+
+class AzurePutBlockTransfer(
+  // The max length you can put in a single Put Block API call is 4000 MiB.
+  // The class will load a block of this size into memory, so setting it too
+  // high may cause issues.
+  val blockSize: Int = 1000000000
+)(
+  implicit
+  val s3Client: AmazonS3,
+  val blobServiceClient: BlobServiceClient
+) extends AzureTransfer[Unit] {
+
+  private val rangedReader = new S3RangedReader()
+
+  override protected def getContext(src: S3ObjectLocation): Either[TransferSourceFailure[S3ObjectLocation, AzureBlobLocation], Unit] =
+    Right(())
+
+  override protected def writeBlockToAzure(
+    src: S3ObjectLocation,
+    dst: AzureBlobLocation,
+    range: BlobRange,
+    blockId: String,
+    s3Length: Long,
+    context: Unit
+  ): Unit = {
+    val bytes = rangedReader.getBytes(
+      location = src,
+      offset = range.getOffset,
+      count = range.getCount,
+      totalLength = s3Length
+    )
+
+    val blockClient = blobServiceClient
+      .getBlobContainerClient(dst.container)
+      .getBlobClient(dst.name)
+      .getBlockBlobClient
+
+    blockClient.upload(new ByteArrayInputStream(bytes), bytes.size)
   }
 }
