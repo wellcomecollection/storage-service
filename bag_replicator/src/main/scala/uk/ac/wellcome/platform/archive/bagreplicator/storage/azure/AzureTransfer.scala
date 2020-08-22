@@ -1,25 +1,27 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.storage.azure
 
 import java.io.ByteArrayInputStream
+import java.net.URL
 
 import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.models.BlobRange
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.storage.s3.S3RangedReader
-import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3SizeFinder
+import uk.ac.wellcome.platform.archive.common.storage.services.s3.{S3SizeFinder, S3Uploader}
 import uk.ac.wellcome.storage.azure.AzureBlobLocation
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
 import uk.ac.wellcome.storage.transfer._
 
 import scala.collection.JavaConverters._
+import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
 trait AzureTransfer[Context] extends Transfer[S3ObjectLocation, AzureBlobLocation] with Logging {
   implicit val s3Client: AmazonS3
   implicit val blobServiceClient: BlobServiceClient
 
-  val blockSize: Int
+  val blockSize: Long
 
   private val s3SizeFinder = new S3SizeFinder()
 
@@ -41,7 +43,7 @@ trait AzureTransfer[Context] extends Transfer[S3ObjectLocation, AzureBlobLocatio
       }
     } yield result
 
-  protected def getContext(src: S3ObjectLocation): Either[TransferSourceFailure[S3ObjectLocation, AzureBlobLocation], Context]
+  protected def getContext(src: S3ObjectLocation, dst: AzureBlobLocation): Either[TransferSourceFailure[S3ObjectLocation, AzureBlobLocation], Context]
 
   protected def writeBlockToAzure(
     src: S3ObjectLocation,
@@ -95,7 +97,7 @@ class AzurePutBlockTransfer(
   // The max length you can put in a single Put Block API call is 4000 MiB.
   // The class will load a block of this size into memory, so setting it too
   // high may cause issues.
-  val blockSize: Int = 1000000000
+  val blockSize: Long = 1000000000
 )(
   implicit
   val s3Client: AmazonS3,
@@ -104,7 +106,7 @@ class AzurePutBlockTransfer(
 
   private val rangedReader = new S3RangedReader()
 
-  override protected def getContext(src: S3ObjectLocation): Either[TransferSourceFailure[S3ObjectLocation, AzureBlobLocation], Unit] =
+  override protected def getContext(src: S3ObjectLocation, dst: AzureBlobLocation): Either[TransferSourceFailure[S3ObjectLocation, AzureBlobLocation], Unit] =
     Right(())
 
   override protected def writeBlockToAzure(
@@ -128,5 +130,37 @@ class AzurePutBlockTransfer(
       .getBlockBlobClient
 
     blockClient.stageBlock(blockId, new ByteArrayInputStream(bytes), bytes.length)
+  }
+}
+
+class AzurePutBlockFromUrlTransfer(
+  implicit
+  val s3Client: AmazonS3,
+  val blobServiceClient: BlobServiceClient
+) extends AzureTransfer[URL] {
+  // The max length you can put in a single Put Block from URL API call is 100 MiB.
+  // The class will load a block of this size into memory, so setting it too
+  // high may cause issues.
+  val blockSize: Long = 100000000L
+
+  private val s3Uploader = new S3Uploader()
+
+  override protected def getContext(src: S3ObjectLocation, dst: AzureBlobLocation): Either[TransferSourceFailure[S3ObjectLocation, AzureBlobLocation], URL] =
+    s3Uploader.getPresignedGetURL(src, expiryLength = 1.hour).left.map { readError => TransferSourceFailure(src, dst, e = readError.e)}
+
+  override protected def writeBlockToAzure(
+    src: S3ObjectLocation,
+    dst: AzureBlobLocation,
+    range: BlobRange,
+    blockId: String,
+    s3Length: Long,
+    presignedUrl: URL
+  ): Unit = {
+    val blockClient = blobServiceClient
+      .getBlobContainerClient(dst.container)
+      .getBlobClient(dst.name)
+      .getBlockBlobClient
+
+    blockClient.stageBlockFromUrl(blockId, presignedUrl.toString, range)
   }
 }
