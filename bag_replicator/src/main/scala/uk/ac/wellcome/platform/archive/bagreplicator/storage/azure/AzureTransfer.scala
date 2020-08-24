@@ -1,12 +1,15 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.storage.azure
 
-import java.io.ByteArrayInputStream
+import java.io.{ByteArrayInputStream, InputStream}
 import java.net.URL
 
 import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.s3.model.S3ObjectInputStream
 import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.models.BlobRange
+import com.azure.storage.blob.specialized.BlobInputStream
 import grizzled.slf4j.Logging
+import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.platform.archive.common.storage.s3.S3RangedReader
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.{S3SizeFinder, S3Uploader}
 import uk.ac.wellcome.storage.azure.AzureBlobLocation
@@ -25,7 +28,7 @@ trait AzureTransfer[Context] extends Transfer[S3ObjectLocation, AzureBlobLocatio
 
   private val s3SizeFinder = new S3SizeFinder()
 
-  def runTransfer(
+  private def runTransfer(
     src: S3ObjectLocation,
     dst: AzureBlobLocation,
     allowOverwrites: Boolean): Either[TransferFailure[S3ObjectLocation, AzureBlobLocation], Unit] =
@@ -87,7 +90,71 @@ trait AzureTransfer[Context] extends Transfer[S3ObjectLocation, AzureBlobLocatio
   }
 
   override protected def transferWithCheckForExisting(src: S3ObjectLocation, dst: AzureBlobLocation): TransferEither =
-    runTransfer(src, dst, allowOverwrites = false).map { _ => TransferPerformed(src, dst) }
+    getAzureStream(dst) match {
+      // If the destination object doesn't exist, we can go ahead and
+      // start the transfer.
+      case Failure(_) =>
+        transferWithOverwrites(src, dst)
+
+      case Success(dstStream) =>
+      getS3Stream(src) match {
+        // If both the source and the destination exist, we can skip
+        // the copy operation.
+        case Success(srcStream) =>
+          val result = compare(
+            src = src,
+            dst = dst,
+            srcStream = srcStream,
+            dstStream = dstStream
+          )
+
+          // Remember to close the streams afterwards, or we might get
+          // errors like
+          //
+          //    Unable to execute HTTP request: Timeout waiting for
+          //    connection from pool
+          //
+          // See: https://github.com/wellcometrust/platform/issues/3600
+          //      https://github.com/aws/aws-sdk-java/issues/269
+          //
+          srcStream.abort()
+          srcStream.close()
+          dstStream.close()
+
+          result
+
+        case Failure(err) =>
+          // As above, we need to abort the input stream so we don't leave streams
+          // open or get warnings from the SDK.
+          dstStream.close()
+          Left(TransferSourceFailure(src, dst, err))
+      }
+    }
+
+  private def getS3Stream(location: S3ObjectLocation): Try[S3ObjectInputStream] =
+    Try {
+      s3Client.getObject(location.bucket, location.key)
+    }.map { _.getObjectContent }
+
+  private def getAzureStream(location: AzureBlobLocation): Try[BlobInputStream] =
+    Try {
+      blobServiceClient
+        .getBlobContainerClient(location.container)
+        .getBlobClient(location.name)
+        .openInputStream()
+    }
+
+  private def compare(src: S3ObjectLocation,
+                      dst: AzureBlobLocation,
+                      srcStream: InputStream,
+                      dstStream: InputStream)
+  : Either[TransferOverwriteFailure[S3ObjectLocation, AzureBlobLocation],
+           TransferNoOp[S3ObjectLocation, AzureBlobLocation]] =
+    if (IOUtils.contentEquals(srcStream, dstStream)) {
+      Right(TransferNoOp(src, dst))
+    } else {
+      Left(TransferOverwriteFailure(src, dst))
+    }
 
   override protected def transferWithOverwrites(src: S3ObjectLocation, dst: AzureBlobLocation): TransferEither =
     runTransfer(src, dst, allowOverwrites = true).map { _ => TransferPerformed(src, dst) }
