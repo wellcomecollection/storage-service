@@ -51,33 +51,35 @@ trait ReplicatedBagVerifierTestCases[
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
 
-    withLocalS3Bucket { srcBucket =>
-      withBag(space, externalIdentifier) {
-        case (primaryBucket, replicaBagRoot) =>
-          val srcBagRoot =
-            S3ObjectLocationPrefix(srcBucket.name, replicaBagRoot.pathPrefix)
-          S3TypedStore[String].put(
-            srcBagRoot.asLocation("tagmanifest-sha256.txt")
-          )(randomAlphanumeric)
-          val ingestStep =
-            withVerifier(primaryBucket) {
-              _.verify(
-                ingestId = createIngestID,
-                bagContext = ReplicatedBagVerifyContext(
-                  srcRoot = srcBagRoot,
-                  replicaRoot = replicaBagRoot
-                ),
-                space = space,
-                externalIdentifier = externalIdentifier
-              )
-            }
+    withNamespace { namespace =>
+      withLocalS3Bucket { srcBucket =>
+        withBag(space, externalIdentifier)(namespace) {
+          case (primaryBucket, replicaBagRoot) =>
+            val srcBagRoot =
+              S3ObjectLocationPrefix(srcBucket.name, replicaBagRoot.pathPrefix)
+            S3TypedStore[String].put(
+              srcBagRoot.asLocation("tagmanifest-sha256.txt")
+            )(randomAlphanumeric)
+            val ingestStep =
+              withVerifier(primaryBucket) {
+                _.verify(
+                  ingestId = createIngestID,
+                  bagContext = ReplicatedBagVerifyContext(
+                    srcRoot = srcBagRoot,
+                    replicaRoot = replicaBagRoot
+                  ),
+                  space = space,
+                  externalIdentifier = externalIdentifier
+                )
+              }
 
-          val result = ingestStep.success.get
+            val result = ingestStep.success.get
 
-          result shouldBe a[IngestFailed[_]]
-          result.summary shouldBe a[VerificationIncompleteSummary]
+            result shouldBe a[IngestFailed[_]]
+            result.summary shouldBe a[VerificationIncompleteSummary]
 
-          result.maybeUserFacingMessage shouldNot be(defined)
+            result.maybeUserFacingMessage shouldNot be(defined)
+        }
       }
     }
   }
@@ -86,30 +88,32 @@ trait ReplicatedBagVerifierTestCases[
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
 
-    withLocalS3Bucket { srcBucket =>
-      withBag(space, externalIdentifier) {
-        case (primaryBucket, replicaBagRoot) =>
-          val srcBagRoot =
-            S3ObjectLocationPrefix(srcBucket.name, replicaBagRoot.pathPrefix)
-          val ingestStep =
-            withVerifier(primaryBucket) {
-              _.verify(
-                ingestId = createIngestID,
-                bagContext = ReplicatedBagVerifyContext(
-                  srcRoot = srcBagRoot,
-                  replicaRoot = replicaBagRoot
-                ),
-                space = space,
-                externalIdentifier = externalIdentifier
-              )
-            }
+    withNamespace { namespace =>
+      withLocalS3Bucket { srcBucket =>
+        withBag(space, externalIdentifier)(namespace) {
+          case (primaryBucket, replicaBagRoot) =>
+            val srcBagRoot =
+              S3ObjectLocationPrefix(srcBucket.name, replicaBagRoot.pathPrefix)
+            val ingestStep =
+              withVerifier(primaryBucket) {
+                _.verify(
+                  ingestId = createIngestID,
+                  bagContext = ReplicatedBagVerifyContext(
+                    srcRoot = srcBagRoot,
+                    replicaRoot = replicaBagRoot
+                  ),
+                  space = space,
+                  externalIdentifier = externalIdentifier
+                )
+              }
 
-          val result = ingestStep.success.get
+            val result = ingestStep.success.get
 
-          result shouldBe a[IngestFailed[_]]
-          result.summary shouldBe a[VerificationIncompleteSummary]
+            result shouldBe a[IngestFailed[_]]
+            result.summary shouldBe a[VerificationIncompleteSummary]
 
-          result.maybeUserFacingMessage shouldNot be(defined)
+            result.maybeUserFacingMessage shouldNot be(defined)
+        }
       }
     }
   }

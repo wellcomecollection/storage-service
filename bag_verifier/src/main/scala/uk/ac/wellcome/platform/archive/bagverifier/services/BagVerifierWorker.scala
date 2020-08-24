@@ -13,6 +13,7 @@ import uk.ac.wellcome.platform.archive.common.VerifiablePayload
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
 import uk.ac.wellcome.platform.archive.common.storage.models.{
+  EnsureTrailingSlash,
   IngestStepResult,
   IngestStepWorker
 }
@@ -52,7 +53,8 @@ class BagVerifierWorker[
   implicit val mc: MetricsMonitoringClient,
   val as: ActorSystem,
   val sc: SqsAsyncClient,
-  val wd: Decoder[Payload]
+  val wd: Decoder[Payload],
+  val et: EnsureTrailingSlash[BagPrefix]
 ) extends IngestStepWorker[Payload, VerificationSummary] {
 
   override def processMessage(

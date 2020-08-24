@@ -9,6 +9,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.bagit.services.azure.AzureBagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
 import uk.ac.wellcome.platform.archive.common.fixtures.azure.AzureBagBuilder
+import uk.ac.wellcome.platform.archive.common.storage.models.EnsureTrailingSlash
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
@@ -26,6 +27,8 @@ class AzureReplicatedBagVerifierTests
     with S3Fixtures
     with AzureFixtures {
 
+  override implicit val et: EnsureTrailingSlash[AzureBlobLocationPrefix] =
+    EnsureTrailingSlash.azurePrefixTrailingSlash
   val azureTypedStore: AzureTypedStore[String] = AzureTypedStore[String]
   override val bagBuilder
     : BagBuilder[AzureBlobLocation, AzureBlobLocationPrefix, Container] =

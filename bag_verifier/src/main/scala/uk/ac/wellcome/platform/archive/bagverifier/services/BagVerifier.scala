@@ -14,6 +14,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.{Location, Prefix}
+import EnsureTrailingSlash._
 
 import scala.util.Try
 
@@ -68,7 +69,7 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
     bagContext: BagContext,
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier
-  ) = Try {
+  )(implicit et: EnsureTrailingSlash[BagPrefix]) = Try {
     val startTime = Instant.now()
 
     val internalResult = for {
@@ -106,6 +107,8 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     bag: Bag
+  )(
+    implicit et: EnsureTrailingSlash[BagPrefix]
   ): Either[BagVerifierError, FixityListResult[BagLocation]] =
     for {
 
@@ -129,7 +132,13 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
         bag = bag
       )
 
-      actualLocations <- listing.list(root) match {
+      // Bags are stored under prefixes of the form $space/$externalIdentifier/$version
+      // where $version is something like v1,v2 etc.
+      // When listing files for a version of a bag, say v1, we need to be sure we don't also include
+      // files from other versions, like v11, v10 etc.
+      // To do that we add a trailing slash if the prefix doesn't already have one
+      listRoot = root.withTrailingSlash
+      actualLocations <- listing.list(listRoot) match {
         case Right(iterable) => Right(iterable.toSeq)
         case Left(listingFailure) =>
           Left(BagVerifierError(listingFailure.e))
@@ -238,4 +247,6 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
           maybeUserFacingMessage = Some(userFacingMessage)
         )
     }
+
+  def addTrailingSlash(prefix: BagPrefix): BagPrefix
 }
