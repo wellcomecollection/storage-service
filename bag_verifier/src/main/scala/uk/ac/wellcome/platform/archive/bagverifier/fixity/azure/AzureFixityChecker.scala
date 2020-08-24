@@ -6,8 +6,9 @@ import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.AzureLocatable
 import uk.ac.wellcome.platform.archive.common.storage.services.azure.AzureSizeFinder
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.store.azure.AzureStreamStore
-
 import java.util.concurrent.TimeoutException
+
+import io.netty.channel.unix.Errors.NativeIoException
 
 class AzureFixityChecker(implicit blobClient: BlobServiceClient)
     extends FixityChecker[AzureBlobLocation, AzureBlobLocationPrefix] {
@@ -27,6 +28,11 @@ class AzureFixityChecker(implicit blobClient: BlobServiceClient)
     //      Could not create checksum: java.util.concurrent.TimeoutException: Did not observe
     //      any item or terminal signal within 60000ms in 'map' (and no fallback has been configured)
     //
+    // and:
+    //
+    //      WARN  r.n.http.client.HttpClientConnect - R:wecostoragestage.blob.core.windows.net/...]
+    //	    io.netty.channel.unix.Errors$NativeIoException: readAddress(..) failed: Connection reset by peer
+    //
     // Retrying the entire bag usually clears up the timeout, so we allow retrying on
     // a pre-file level.
     //
@@ -37,6 +43,10 @@ class AzureFixityChecker(implicit blobClient: BlobServiceClient)
         super.check(expectedFileFixity) match {
           case error: FileFixityError[AzureBlobLocation] if error.e.isInstanceOf[TimeoutException] =>
             Left(error)
+
+          case error: FileFixityError[AzureBlobLocation] if error.e.isInstanceOf[NativeIoException] =>
+            Left(error)
+
           case result => Right(result)
         }
 
