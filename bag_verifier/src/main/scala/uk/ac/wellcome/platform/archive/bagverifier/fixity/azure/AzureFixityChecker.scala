@@ -20,7 +20,9 @@ class AzureFixityChecker(implicit blobClient: BlobServiceClient)
 
   import uk.ac.wellcome.storage.RetryOps._
 
-  override def check(expectedFileFixity: ExpectedFileFixity): FileFixityResult[AzureBlobLocation] = {
+  override def check(
+    expectedFileFixity: ExpectedFileFixity
+  ): FileFixityResult[AzureBlobLocation] = {
 
     // We've seen occasional errors when verifying objects in Azure, which are of
     // the form:
@@ -42,13 +44,18 @@ class AzureFixityChecker(implicit blobClient: BlobServiceClient)
     //
     // The implementation of inner() is working around the slight oddity that RetryOps only
     // knows how to retry a function that returns an Either.
-    def inner: ExpectedFileFixity => Either[FileFixityError[AzureBlobLocation], FileFixityResult[AzureBlobLocation]] =
+    def inner
+      : ExpectedFileFixity => Either[FileFixityError[AzureBlobLocation], FileFixityResult[
+        AzureBlobLocation
+      ]] =
       (expectedFileFixity: ExpectedFileFixity) =>
         super.check(expectedFileFixity) match {
-          case error: FileFixityError[AzureBlobLocation] if error.e.isInstanceOf[TimeoutException] =>
+          case error: FileFixityError[AzureBlobLocation]
+              if error.e.isInstanceOf[TimeoutException] =>
             Left(error)
 
-          case error: FileFixityError[AzureBlobLocation] if error.e.isInstanceOf[NativeIoException] =>
+          case error: FileFixityError[AzureBlobLocation]
+              if error.e.isInstanceOf[NativeIoException] =>
             Left(error)
 
           case result => Right(result)
