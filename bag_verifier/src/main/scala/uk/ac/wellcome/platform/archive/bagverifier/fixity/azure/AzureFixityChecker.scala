@@ -33,6 +33,10 @@ class AzureFixityChecker(implicit blobClient: BlobServiceClient)
     //      WARN  r.n.http.client.HttpClientConnect - R:wecostoragestage.blob.core.windows.net/...]
     //	    io.netty.channel.unix.Errors$NativeIoException: readAddress(..) failed: Connection reset by peer
     //
+    // This isn't handled by retrying logic inside the AzureStreamStore -- that only covers
+    // opening a stream; if the stream errors out after it's been opened, the retrying in the
+    // Store doesn't cover it.
+    //
     // Retrying the entire bag usually clears up the timeout, so we allow retrying on
     // a pre-file level.
     //
