@@ -244,10 +244,19 @@ object BagInfoParser extends Logging {
   //      Contact-Name: Jane Doe
   //
   private val BAG_INFO_FIELD_REGEX = """(.+)\s*:\s(.+)\s*""".r
+  private val BAG_INFO_LABEL_ONLY_REGEX = """(.+)\s*:""".r
 
   private def parseSingleLine(line: String): Either[String, (String, String)] =
     line match {
       case BAG_INFO_FIELD_REGEX(label, value) => Right((label, value))
-      case _                                  => Left(line)
+      // The BagIt spec is a little ambiguous on whether empty values are
+      // allowed.  We do have bag-info.txt files with empty values in the
+      // storage service (e.g. staging, digitised/b20442713/v1), so we
+      // allow them.
+      //
+      // Some values cannot be empty, e.g. ExternalIdentifier; this is enforced
+      // by the type.
+      case BAG_INFO_LABEL_ONLY_REGEX(label) => Right((label, ""))
+      case _                                => Left(line)
     }
 }
