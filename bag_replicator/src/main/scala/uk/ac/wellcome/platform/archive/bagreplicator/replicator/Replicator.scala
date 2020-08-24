@@ -9,7 +9,10 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   ExternalIdentifier
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.storage.models.{EnsureTrailingSlash, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  EnsureTrailingSlash,
+  StorageSpace
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.listing.Listing

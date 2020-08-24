@@ -22,18 +22,22 @@ object EnsureTrailingSlash extends Logging {
       s"$path/"
     }
 
-  implicit class EnsureTrailingSlashOps[BagPrefix <: Prefix[_ <: Location]](prefix: BagPrefix)(
+  implicit class EnsureTrailingSlashOps[BagPrefix <: Prefix[_ <: Location]](
+    prefix: BagPrefix
+  )(
     implicit impl: EnsureTrailingSlash[BagPrefix]
   ) {
     def withTrailingSlash: BagPrefix =
       impl.withTrailingSlash(prefix)
   }
 
-  implicit val s3PrefixTrailingSlash: EnsureTrailingSlash[S3ObjectLocationPrefix] =
+  implicit val s3PrefixTrailingSlash
+    : EnsureTrailingSlash[S3ObjectLocationPrefix] =
     (prefix: S3ObjectLocationPrefix) =>
       prefix.copy(keyPrefix = ensureTrailingSlash(prefix.keyPrefix))
 
-  implicit val azurePrefixTrailingSlash: EnsureTrailingSlash[AzureBlobLocationPrefix] =
+  implicit val azurePrefixTrailingSlash
+    : EnsureTrailingSlash[AzureBlobLocationPrefix] =
     (prefix: AzureBlobLocationPrefix) =>
       prefix.copy(namePrefix = ensureTrailingSlash(prefix.namePrefix))
 }
