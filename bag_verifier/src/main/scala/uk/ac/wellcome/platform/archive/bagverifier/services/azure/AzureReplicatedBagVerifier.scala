@@ -33,5 +33,8 @@ class AzureReplicatedBagVerifier(val primaryBucket: String)(
 
   override val replicaStreamStore: AzureStreamStore = new AzureStreamStore()
 
-  override def addTrailingSlash(prefix: AzureBlobLocationPrefix): AzureBlobLocationPrefix = prefix.copy(namePrefix = s"${prefix.namePrefix}/")
+  override def addTrailingSlash(
+    prefix: AzureBlobLocationPrefix
+  ): AzureBlobLocationPrefix =
+    prefix.copy(namePrefix = s"${prefix.namePrefix}/")
 }

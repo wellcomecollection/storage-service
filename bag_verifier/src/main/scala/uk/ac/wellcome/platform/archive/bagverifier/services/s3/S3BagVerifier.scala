@@ -54,8 +54,9 @@ trait S3BagVerifier[B <: BagVerifyContext[S3ObjectLocationPrefix]]
   ): String =
     location.key.replace(root.keyPrefix, "")
 
-
-  override def addTrailingSlash(prefix: S3ObjectLocationPrefix): S3ObjectLocationPrefix = prefix.copy(keyPrefix = s"${prefix.keyPrefix}/")
+  override def addTrailingSlash(
+    prefix: S3ObjectLocationPrefix
+  ): S3ObjectLocationPrefix = prefix.copy(keyPrefix = s"${prefix.keyPrefix}/")
 }
 
 class S3StandaloneBagVerifier(val primaryBucket: String)(

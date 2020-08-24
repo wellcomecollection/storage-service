@@ -69,7 +69,7 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
     bagContext: BagContext,
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier
-  )(implicit et : EnsureTrailingSlash[BagPrefix]) = Try {
+  )(implicit et: EnsureTrailingSlash[BagPrefix]) = Try {
     val startTime = Instant.now()
 
     val internalResult = for {
@@ -107,7 +107,9 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     bag: Bag
-  )(implicit et : EnsureTrailingSlash[BagPrefix]): Either[BagVerifierError, FixityListResult[BagLocation]] =
+  )(
+    implicit et: EnsureTrailingSlash[BagPrefix]
+  ): Either[BagVerifierError, FixityListResult[BagLocation]] =
     for {
 
       _ <- verifyExternalIdentifier(

@@ -1,7 +1,11 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services.s3
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.models.{BagVerifyContext, ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{
+  BagVerifyContext,
+  ReplicatedBagVerifyContext,
+  StandaloneBagVerifyContext
+}
 import uk.ac.wellcome.platform.archive.bagverifier.services._
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
@@ -26,7 +30,8 @@ trait S3BagVerifierTests[Verifier <: BagVerifier[
     S3ObjectLocationPrefix,
     Bucket
   ] =>
-  override implicit val et: EnsureTrailingSlash[S3ObjectLocationPrefix] = EnsureTrailingSlash.s3PrefixTrailingSlash
+  override implicit val et: EnsureTrailingSlash[S3ObjectLocationPrefix] =
+    EnsureTrailingSlash.s3PrefixTrailingSlash
 
   override def withTypedStore[R](
     testWith: TestWith[TypedStore[S3ObjectLocation, String], R]

@@ -4,14 +4,37 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{Assertion, EitherValues, OptionValues, TryValues}
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FailedChecksumNoMatch, FileFixityCorrect}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  FailedChecksumNoMatch,
+  FileFixityCorrect
+}
 import uk.ac.wellcome.platform.archive.bagverifier.models._
 import uk.ac.wellcome.platform.archive.bagverifier.storage.LocationNotFound
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagPath, BagVersion, ExternalIdentifier, PayloadOxum}
-import uk.ac.wellcome.platform.archive.common.bagit.services.{BagReader, BagUnavailable}
-import uk.ac.wellcome.platform.archive.common.fixtures.{BagBuilder, PayloadEntry}
-import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, StorageSpaceGenerators}
-import uk.ac.wellcome.platform.archive.common.storage.models.{EnsureTrailingSlash, IngestFailed, IngestStepResult, IngestStepSucceeded, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagPath,
+  BagVersion,
+  ExternalIdentifier,
+  PayloadOxum
+}
+import uk.ac.wellcome.platform.archive.common.bagit.services.{
+  BagReader,
+  BagUnavailable
+}
+import uk.ac.wellcome.platform.archive.common.fixtures.{
+  BagBuilder,
+  PayloadEntry
+}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  BagInfoGenerators,
+  StorageSpaceGenerators
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  EnsureTrailingSlash,
+  IngestFailed,
+  IngestStepResult,
+  IngestStepSucceeded,
+  StorageSpace
+}
 import uk.ac.wellcome.storage.azure.AzureBlobLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
@@ -56,20 +79,20 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     bagBuilder: BagBuilder[BagLocation, BagPrefix, Namespace] = bagBuilder,
-                version: BagVersion = BagVersion(randomInt(from = 2, to = 10)),
+    version: BagVersion = BagVersion(randomInt(from = 2, to = 10))
   )(namespace: Namespace)(testWith: TestWith[(Bucket, BagPrefix), R]): R =
     withTypedStore { implicit typedStore =>
-        withLocalS3Bucket { implicit primaryBucket =>
-          val bagContents = bagBuilder.createBagContentsWith(
-            space = space,
-            externalIdentifier = externalIdentifier,
-            payloadFileCount = payloadFileCount,
-            version = version
-          )(namespace = namespace, primaryBucket = primaryBucket)
+      withLocalS3Bucket { implicit primaryBucket =>
+        val bagContents = bagBuilder.createBagContentsWith(
+          space = space,
+          externalIdentifier = externalIdentifier,
+          payloadFileCount = payloadFileCount,
+          version = version
+        )(namespace = namespace, primaryBucket = primaryBucket)
 
-          bagBuilder.storeBagContents(bagContents)
+        bagBuilder.storeBagContents(bagContents)
 
-          testWith((primaryBucket, bagContents.bagRoot))
+        testWith((primaryBucket, bagContents.bagRoot))
       }
     }
 
@@ -113,36 +136,36 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
   it("passes a bag with correct checksum values") {
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
-  withNamespace { namespace =>
-    withBag(space, externalIdentifier)(namespace) {
-      case (primaryBucket, bagRoot) =>
-        val ingestStep =
-          withBagContext(bagRoot) { bagContext =>
-            withVerifier(primaryBucket) {
-              _.verify(
-                ingestId = createIngestID,
-                bagContext = bagContext,
-                space = space,
-                externalIdentifier = externalIdentifier
-              )
+    withNamespace { namespace =>
+      withBag(space, externalIdentifier)(namespace) {
+        case (primaryBucket, bagRoot) =>
+          val ingestStep =
+            withBagContext(bagRoot) { bagContext =>
+              withVerifier(primaryBucket) {
+                _.verify(
+                  ingestId = createIngestID,
+                  bagContext = bagContext,
+                  space = space,
+                  externalIdentifier = externalIdentifier
+                )
+              }
             }
-          }
 
-        val result = ingestStep.success.get
+          val result = ingestStep.success.get
 
-        result shouldBe a[IngestStepSucceeded[_]]
-        result.summary shouldBe a[VerificationSuccessSummary]
+          result shouldBe a[IngestStepSucceeded[_]]
+          result.summary shouldBe a[VerificationSuccessSummary]
 
-        val summary = result.summary
-          .asInstanceOf[VerificationSuccessSummary]
-        val fixityListResult = summary.fixityListResult.value
+          val summary = result.summary
+            .asInstanceOf[VerificationSuccessSummary]
+          val fixityListResult = summary.fixityListResult.value
 
-        verifySuccessCount(
-          fixityListResult.locations,
-          expectedCount = expectedFileCount
-        )
+          verifySuccessCount(
+            fixityListResult.locations,
+            expectedCount = expectedFileCount
+          )
+      }
     }
-  }
   }
 
   it("fails a bag with an incorrect checksum in the file manifest") {
@@ -528,25 +551,25 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
       val externalIdentifier = createExternalIdentifier
 
       withNamespace { namespace =>
-      withBag(space, externalIdentifier) (namespace){
-        case (primaryBucket, bagRoot) =>
-          val location = bagRoot.asLocation("tagmanifest-sha512.txt")
-          writeFile(location)
+        withBag(space, externalIdentifier)(namespace) {
+          case (primaryBucket, bagRoot) =>
+            val location = bagRoot.asLocation("tagmanifest-sha512.txt")
+            writeFile(location)
 
-          val ingestStep =
-            withBagContext(bagRoot) { bagContext =>
-              withVerifier(primaryBucket) {
-                _.verify(
-                  ingestId = createIngestID,
-                  bagContext = bagContext,
-                  space = space,
-                  externalIdentifier = externalIdentifier
-                )
+            val ingestStep =
+              withBagContext(bagRoot) { bagContext =>
+                withVerifier(primaryBucket) {
+                  _.verify(
+                    ingestId = createIngestID,
+                    bagContext = bagContext,
+                    space = space,
+                    externalIdentifier = externalIdentifier
+                  )
+                }
               }
-            }
 
-          ingestStep.success.get shouldBe a[IngestStepSucceeded[_]]
-      }
+            ingestStep.success.get shouldBe a[IngestStepSucceeded[_]]
+        }
       }
 
     }
@@ -590,7 +613,9 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     }
   }
 
-  it("doesn't match locations in a namespace with same prefix but different directory") {
+  it(
+    "doesn't match locations in a namespace with same prefix but different directory"
+  ) {
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
 
@@ -599,7 +624,9 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
       withBag(space, externalIdentifier, version = BagVersion(1))(namespace) {
         case (primaryBucket, bagRoot) =>
           //put another version of the bag in $space/$externalIdentifier/v10
-          withBag(space, externalIdentifier, version = BagVersion(10))(namespace) { _ =>
+          withBag(space, externalIdentifier, version = BagVersion(10))(
+            namespace
+          ) { _ =>
             val ingestStep =
               withBagContext(bagRoot) { bagContext =>
                 withVerifier(primaryBucket) {
