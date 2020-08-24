@@ -129,6 +129,11 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
         bag = bag
       )
 
+      // Bags are stored under prefixes of the form $space/$externalIdentifier/$version
+      // where $version is something like v1,v2 etc.
+      // When listing files for a version of a bag, say v1, we need to be sure we don't also include
+      // files from other versions, like v11, v10 etc.
+      // To do that we add a trailing slash if the prefix doesn't already have one
       listRoot = if(root.pathPrefix.endsWith("/") || root.pathPrefix.isEmpty) root else addTrailingSlash(root)
       actualLocations <- listing.list(listRoot) match {
         case Right(iterable) => Right(iterable.toSeq)
