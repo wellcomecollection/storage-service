@@ -11,15 +11,15 @@ class AzurePrefixTransfer(
   implicit
   s3Client: AmazonS3,
   val transfer: AzureTransfer[_]
-) extends
-  PrefixTransfer[
-    S3ObjectLocationPrefix,
-    S3ObjectLocation,
-    AzureBlobLocationPrefix,
-    AzureBlobLocation
+) extends PrefixTransfer[
+      S3ObjectLocationPrefix,
+      S3ObjectLocation,
+      AzureBlobLocationPrefix,
+      AzureBlobLocation
     ] {
 
-  override implicit val listing: Listing[S3ObjectLocationPrefix, S3ObjectLocation] =
+  override implicit val listing
+    : Listing[S3ObjectLocationPrefix, S3ObjectLocation] =
     S3ObjectLocationListing()
 
   override protected def buildDstLocation(

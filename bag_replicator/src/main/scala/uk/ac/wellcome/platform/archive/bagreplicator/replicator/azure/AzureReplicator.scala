@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.archive.bagreplicator.replicator.azure
 import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.BlobServiceClient
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.Replicator
-import uk.ac.wellcome.platform.archive.bagreplicator.storage.azure.{AzurePrefixTransfer, AzureTransfer}
+import uk.ac.wellcome.platform.archive.bagreplicator.storage.azure.{
+  AzurePrefixTransfer,
+  AzureTransfer
+}
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.listing.azure.AzureBlobLocationListing
 

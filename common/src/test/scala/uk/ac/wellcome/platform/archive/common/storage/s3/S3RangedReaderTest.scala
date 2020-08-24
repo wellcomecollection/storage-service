@@ -14,7 +14,8 @@ class S3RangedReaderTest extends AnyFunSpec with Matchers with S3Fixtures {
 
       s3Client.putObject(location.bucket, location.key, "Hello world")
 
-      rangedReader.getBytes(location, offset = 0, count = 5, totalLength = 11) shouldBe "Hello".getBytes()
+      rangedReader.getBytes(location, offset = 0, count = 5, totalLength = 11) shouldBe "Hello"
+        .getBytes()
     }
   }
 
@@ -24,7 +25,8 @@ class S3RangedReaderTest extends AnyFunSpec with Matchers with S3Fixtures {
 
       s3Client.putObject(location.bucket, location.key, "Hello world")
 
-      rangedReader.getBytes(location, offset = 6, count = 5, totalLength = 11) shouldBe "world".getBytes()
+      rangedReader.getBytes(location, offset = 6, count = 5, totalLength = 11) shouldBe "world"
+        .getBytes()
     }
   }
 
@@ -37,7 +39,12 @@ class S3RangedReaderTest extends AnyFunSpec with Matchers with S3Fixtures {
       val range = new BlobRange(5)
       assert(range.getCount == null)
 
-      rangedReader.getBytes(location, offset = 6, count = range.getCount, totalLength = 11) shouldBe "world".getBytes()
+      rangedReader.getBytes(
+        location,
+        offset = 6,
+        count = range.getCount,
+        totalLength = 11
+      ) shouldBe "world".getBytes()
     }
   }
 

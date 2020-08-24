@@ -36,17 +36,21 @@ class BlobRangeUtilTest extends AnyFunSpec with Matchers {
         new BlobRange(0L, 5L),
         new BlobRange(5L, 5L),
         new BlobRange(10L, 5L),
-        new BlobRange(15L),
+        new BlobRange(15L)
       )
 
       assertEqual(actualRanges, expectedRanges)
     }
   }
 
-  private def assertEqual(seq1: Seq[BlobRange], seq2: Seq[BlobRange]): Seq[Assertion] = {
-    seq1.zip(seq2).map { case (b1, b2) =>
-      b1.getCount shouldBe b2.getCount
-      b1.getOffset shouldBe b2.getOffset
+  private def assertEqual(
+    seq1: Seq[BlobRange],
+    seq2: Seq[BlobRange]
+  ): Seq[Assertion] = {
+    seq1.zip(seq2).map {
+      case (b1, b2) =>
+        b1.getCount shouldBe b2.getCount
+        b1.getOffset shouldBe b2.getOffset
     }
   }
 
@@ -56,7 +60,8 @@ class BlobRangeUtilTest extends AnyFunSpec with Matchers {
     }
 
     it("always creates identifiers of the same length") {
-      BlobRangeUtil.getBlockIdentifiers(count = 100)
+      BlobRangeUtil
+        .getBlockIdentifiers(count = 100)
         .map { _.length }
         .toSet shouldBe Set(4)
     }

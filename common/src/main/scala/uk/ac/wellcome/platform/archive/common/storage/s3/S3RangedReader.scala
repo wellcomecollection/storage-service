@@ -14,7 +14,9 @@ class S3RangedReader(implicit s3Client: AmazonS3) extends Logging {
     totalLength: Long
   ): Array[Byte] = {
     if (offset >= totalLength)
-      throw new IllegalArgumentException(s"Offset is after the end of the object: $offset >= $totalLength")
+      throw new IllegalArgumentException(
+        s"Offset is after the end of the object: $offset >= $totalLength"
+      )
 
     val getRequest =
       new GetObjectRequest(location.bucket, location.key)
@@ -30,7 +32,10 @@ class S3RangedReader(implicit s3Client: AmazonS3) extends Logging {
         getRequest.withRange(offset)
       } else {
         val endRange = offset + count - 1
-        assert(endRange >= offset, s"End of range is greater than offset: $endRange >= $offset")
+        assert(
+          endRange >= offset,
+          s"End of range is greater than offset: $endRange >= $offset"
+        )
         debug(s"Reading $location: $offset-$endRange / $totalLength")
         getRequest.withRange(offset, endRange)
       }
