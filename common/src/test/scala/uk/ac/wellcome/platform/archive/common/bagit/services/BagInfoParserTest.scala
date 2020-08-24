@@ -224,7 +224,8 @@ class BagInfoParserTest
 
     it("allows an External-Description with extra whitespace") {
       // Based on a real bag; digitised/b31366752/v8 in the staging service
-      val bagInfoString = "External-Description: \nExternal-Identifier: b31366752\nPayload-Oxum: 1777806903.3821\nBagging-Date: 2019-09-18"
+      val bagInfoString =
+        "External-Description: \nExternal-Identifier: b31366752\nPayload-Oxum: 1777806903.3821\nBagging-Date: 2019-09-18"
 
       val bagInfo =
         BagInfoParser.create(toInputStream(bagInfoString)).success.value
