@@ -247,6 +247,4 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
           maybeUserFacingMessage = Some(userFacingMessage)
         )
     }
-
-  def addTrailingSlash(prefix: BagPrefix): BagPrefix
 }
