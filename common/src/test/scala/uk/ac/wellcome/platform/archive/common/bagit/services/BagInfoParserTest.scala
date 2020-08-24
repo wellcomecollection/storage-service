@@ -5,7 +5,10 @@ import java.io.InputStream
 import org.scalatest.{Assertion, EitherValues, TryValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagInfo,
+  ExternalDescription
+}
 import uk.ac.wellcome.platform.archive.common.generators.{
   ExternalIdentifierGenerators,
   PayloadOxumGenerators
@@ -147,18 +150,6 @@ class BagInfoParserTest
       )
     }
 
-    it("if a line does not have a value") {
-      val bagInfoString =
-        s"""|label:
-            |""".stripMargin
-
-      assertIsError(
-        bagInfoString,
-        errorMessage =
-          "Unable to parse the following lines in bag-info.txt: label:"
-      )
-    }
-
     it("if the External-Identifier field has an illegal value") {
       // External identifiers are not allowed to start with slashes
       val bagInfoString =
@@ -215,6 +206,35 @@ class BagInfoParserTest
       errorMessage =
         "Multiple values for External-Identifier in bag-info.txt: 1, 2"
     )
+  }
+
+  describe("handling empty values") {
+    it("allows an empty External-Description") {
+      val bagInfoString =
+        s"""|External-Identifier: $createExternalIdentifier
+            |Payload-Oxum: $createPayloadOxum
+            |Bagging-Date: $randomLocalDate
+            |External-Description:
+            |""".stripMargin
+
+      val bagInfo =
+        BagInfoParser.create(toInputStream(bagInfoString)).success.value
+      bagInfo.externalDescription shouldBe Some(ExternalDescription(""))
+    }
+
+    it("blocks an empty External-Identifier") {
+      val bagInfoString =
+        s"""|External-Identifier:
+            |Payload-Oxum: $createPayloadOxum
+            |Bagging-Date: $randomLocalDate
+            |""".stripMargin
+
+      assertIsError(
+        bagInfoString,
+        errorMessage =
+          "Unable to parse External-Identifier in bag-info.txt: External identifier cannot be empty"
+      )
+    }
   }
 
   private def assertIsError(
