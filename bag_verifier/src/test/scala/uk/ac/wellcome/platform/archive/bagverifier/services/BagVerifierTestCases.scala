@@ -166,46 +166,6 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
   }
   }
 
-  it("doesn't match locations in a namespace with same prefix but different directory") {
-    val space = createStorageSpace
-    val externalIdentifier = createExternalIdentifier
-
-    withNamespace { namespace =>
-      //put a bag in $space/$externalIdentifier/v1
-      withBag(space, externalIdentifier, version = BagVersion(1))(namespace) {
-        case (primaryBucket, bagRoot) =>
-          //put another version of the bag in $space/$externalIdentifier/v10
-          withBag(space, externalIdentifier, version = BagVersion(10))(namespace) { _ =>
-            val ingestStep =
-              withBagContext(bagRoot) { bagContext =>
-                withVerifier(primaryBucket) {
-                  _.verify(
-                    ingestId = createIngestID,
-                    bagContext = bagContext,
-                    space = space,
-                    externalIdentifier = externalIdentifier
-                  )
-                }
-              }
-
-            val result = ingestStep.success.get
-
-            result shouldBe a[IngestStepSucceeded[_]]
-            result.summary shouldBe a[VerificationSuccessSummary]
-
-            val summary = result.summary
-              .asInstanceOf[VerificationSuccessSummary]
-            val fixityListResult = summary.fixityListResult.value
-
-            verifySuccessCount(
-              fixityListResult.locations,
-              expectedCount = expectedFileCount
-            )
-          }
-      }
-    }
-  }
-
   it("fails a bag with an incorrect checksum in the file manifest") {
     val badBuilder: BagBuilderImpl = new BagBuilderImpl {
       override protected def createPayloadManifest(
@@ -647,6 +607,46 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
         case (ingestFailed, _) =>
           ingestFailed.maybeUserFacingMessage.get should fullyMatch regex
             s"""Payload-Oxum has the wrong octetstream sum: \\d+ bytes, but bag actually contains \\d+ bytes"""
+      }
+    }
+  }
+
+  it("doesn't match locations in a namespace with same prefix but different directory") {
+    val space = createStorageSpace
+    val externalIdentifier = createExternalIdentifier
+
+    withNamespace { namespace =>
+      //put a bag in $space/$externalIdentifier/v1
+      withBag(space, externalIdentifier, version = BagVersion(1))(namespace) {
+        case (primaryBucket, bagRoot) =>
+          //put another version of the bag in $space/$externalIdentifier/v10
+          withBag(space, externalIdentifier, version = BagVersion(10))(namespace) { _ =>
+            val ingestStep =
+              withBagContext(bagRoot) { bagContext =>
+                withVerifier(primaryBucket) {
+                  _.verify(
+                    ingestId = createIngestID,
+                    bagContext = bagContext,
+                    space = space,
+                    externalIdentifier = externalIdentifier
+                  )
+                }
+              }
+
+            val result = ingestStep.success.get
+
+            result shouldBe a[IngestStepSucceeded[_]]
+            result.summary shouldBe a[VerificationSuccessSummary]
+
+            val summary = result.summary
+              .asInstanceOf[VerificationSuccessSummary]
+            val fixityListResult = summary.fixityListResult.value
+
+            verifySuccessCount(
+              fixityListResult.locations,
+              expectedCount = expectedFileCount
+            )
+          }
       }
     }
   }
