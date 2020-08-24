@@ -9,7 +9,10 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   ExternalIdentifier
 }
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  EnsureTrailingSlash,
+  StorageSpace
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.listing.Listing
@@ -94,32 +97,18 @@ trait Replicator[DstLocation <: Location, DstPrefix <: Prefix[DstLocation]]
     // transfer entries in prefix "s3://bukkit/bags/v10"
     //
     // See https://github.com/wellcomecollection/platform/issues/4745
-    val srcKeyPrefix = request.srcPrefix.keyPrefix
-    val srcDirectoryPrefix =
-      if (srcKeyPrefix.endsWith("/")) {
-        debug(
-          s"Prefix ${request.srcPrefix} ends with a trailing slash; replicating as-is"
-        )
-        request.srcPrefix
-      } else if (srcKeyPrefix == "") {
-        debug(s"Prefix ${request.srcPrefix} is empty; replicating as-is")
-        request.srcPrefix
-      } else {
-        debug(
-          s"Prefix ${request.srcPrefix} is missing a trailing slash; replicating with a trailing slash"
-        )
-        request.srcPrefix.copy(keyPrefix = s"$srcKeyPrefix/")
-      }
+    import EnsureTrailingSlash._
+    val replicaSrcPrefix = request.srcPrefix.withTrailingSlash
 
     debug(
       "Triggering PrefixTransfer: " + "" +
-        s"src = $srcDirectoryPrefix, " +
+        s"src = $replicaSrcPrefix, " +
         s"dst = ${request.dstPrefix}, " +
         s"checkForExisting = $checkForExisting"
     )
 
     prefixTransfer.transferPrefix(
-      srcPrefix = srcDirectoryPrefix,
+      srcPrefix = replicaSrcPrefix,
       dstPrefix = request.dstPrefix,
       checkForExisting = checkForExisting
     ) match {
