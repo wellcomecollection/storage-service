@@ -1,11 +1,13 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity.azure
 
 import com.azure.storage.blob.BlobServiceClient
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityChecker
+import uk.ac.wellcome.platform.archive.bagverifier.fixity._
 import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.AzureLocatable
 import uk.ac.wellcome.platform.archive.common.storage.services.azure.AzureSizeFinder
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.store.azure.AzureStreamStore
+
+import java.util.concurrent.TimeoutException
 
 class AzureFixityChecker(implicit blobClient: BlobServiceClient)
     extends FixityChecker[AzureBlobLocation, AzureBlobLocationPrefix] {
@@ -14,6 +16,32 @@ class AzureFixityChecker(implicit blobClient: BlobServiceClient)
 
   override protected val sizeFinder =
     new AzureSizeFinder()
+
+  import uk.ac.wellcome.storage.RetryOps._
+
+  override def check(expectedFileFixity: ExpectedFileFixity): FileFixityResult[AzureBlobLocation] = {
+
+    // We've seen occasional errors when verifying objects in Azure, which are of
+    // the form:
+    //
+    //      Could not create checksum: java.util.concurrent.TimeoutException: Did not observe
+    //      any item or terminal signal within 60000ms in 'map' (and no fallback has been configured)
+    //
+    // Retrying the entire bag usually clears up the timeout, so we allow retrying on
+    // a pre-file level.
+    //
+    // The implementation of inner() is working around the slight oddity that RetryOps only
+    // knows how to retry a function that returns an Either.
+    def inner: ExpectedFileFixity => Either[FileFixityError[AzureBlobLocation], FileFixityResult[AzureBlobLocation]] =
+      (expectedFileFixity: ExpectedFileFixity) =>
+        super.check(expectedFileFixity) match {
+          case error: FileFixityError[AzureBlobLocation] if error.e.isInstanceOf[TimeoutException] =>
+            Left(error)
+          case result => Right(result)
+        }
+
+    inner.retry(maxAttempts = 3)(expectedFileFixity).right.get
+  }
 
   /**
     * The FixityChecker tags objects with their checksum so that,
