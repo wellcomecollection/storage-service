@@ -19,6 +19,9 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.azure.AzureRepli
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
+import uk.ac.wellcome.platform.archive.bagreplicator.storage.azure.{
+  AzurePutBlockFromUrlTransfer
+}
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
@@ -109,7 +112,9 @@ object Main extends WellcomeTypesafeApp {
 
         createBagReplicatorWorker(
           lockingService = createLockingService[AzureBlobLocationPrefix],
-          replicator = new AzureReplicator()
+          replicator = new AzureReplicator(
+            transfer = new AzurePutBlockFromUrlTransfer()
+          )
         )
     }
   }

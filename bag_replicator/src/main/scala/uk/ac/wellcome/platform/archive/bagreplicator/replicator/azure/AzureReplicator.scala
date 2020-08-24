@@ -3,11 +3,16 @@ package uk.ac.wellcome.platform.archive.bagreplicator.replicator.azure
 import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.BlobServiceClient
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.Replicator
+import uk.ac.wellcome.platform.archive.bagreplicator.storage.azure.{
+  AzurePrefixTransfer,
+  AzureTransfer
+}
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.listing.azure.AzureBlobLocationListing
-import uk.ac.wellcome.storage.transfer.azure.S3toAzurePrefixTransfer
 
 class AzureReplicator(
+  transfer: AzureTransfer[_]
+)(
   implicit s3Client: AmazonS3,
   blobClient: BlobServiceClient
 ) extends Replicator[AzureBlobLocation, AzureBlobLocationPrefix] {
@@ -15,8 +20,8 @@ class AzureReplicator(
   override implicit val dstListing: AzureBlobLocationListing =
     AzureBlobLocationListing()
 
-  override implicit val prefixTransfer: S3toAzurePrefixTransfer =
-    S3toAzurePrefixTransfer()
+  override implicit val prefixTransfer: AzurePrefixTransfer =
+    new AzurePrefixTransfer()(s3Client, transfer)
 
   override protected def buildDestinationFromParts(
     container: String,

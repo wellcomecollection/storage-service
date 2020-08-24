@@ -2,6 +2,10 @@ package uk.ac.wellcome.platform.archive.bagreplicator.replicator.azure
 
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.ReplicatorTestCases
+import uk.ac.wellcome.platform.archive.bagreplicator.storage.azure.{
+  AzurePrefixTransfer,
+  AzurePutBlockTransfer
+}
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.AzureFixtures
 import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
@@ -11,14 +15,13 @@ import uk.ac.wellcome.storage.store.azure.AzureTypedStore
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.tags.Tags
 import uk.ac.wellcome.storage.tags.azure.AzureBlobMetadata
-import uk.ac.wellcome.storage.transfer.azure.S3toAzurePrefixTransfer
 
 class AzureReplicatorTest
     extends ReplicatorTestCases[
       Container,
       AzureBlobLocation,
       AzureBlobLocationPrefix,
-      S3toAzurePrefixTransfer
+      AzurePrefixTransfer
     ]
     with AzureFixtures {
 
@@ -28,19 +31,21 @@ class AzureReplicatorTest
     }
 
   override def withPrefixTransfer[R](
-    testWith: TestWith[S3toAzurePrefixTransfer, R]
-  ): R =
-    testWith(S3toAzurePrefixTransfer())
+    testWith: TestWith[AzurePrefixTransfer, R]
+  ): R = {
+    implicit val transfer: AzurePutBlockTransfer = new AzurePutBlockTransfer(
+      blockSize = 1000
+    )
+
+    testWith(new AzurePrefixTransfer())
+  }
 
   override def withReplicator[R](
-    prefixTransferImpl: S3toAzurePrefixTransfer
+    prefixTransferImpl: AzurePrefixTransfer
   )(testWith: TestWith[ReplicatorImpl, R]): R =
-    testWith(new AzureReplicator() {
-      override val prefixTransfer: S3toAzurePrefixTransfer = prefixTransferImpl
+    testWith(new AzureReplicator(transfer = prefixTransferImpl.transfer) {
+      override val prefixTransfer: AzurePrefixTransfer = prefixTransferImpl
     })
-
-  override def withReplicator[R](testWith: TestWith[ReplicatorImpl, R]): R =
-    testWith(new AzureReplicator())
 
   override def createDstLocationWith(
     dstContainer: Container,

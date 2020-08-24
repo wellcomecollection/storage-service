@@ -4,11 +4,10 @@ import java.io.{ByteArrayInputStream, InputStream, SequenceInputStream}
 import java.util
 
 import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.{AmazonS3Exception, GetObjectRequest}
 import grizzled.slf4j.Logging
-import org.apache.commons.io.IOUtils
+import uk.ac.wellcome.platform.archive.common.storage.s3.S3RangedReader
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.s3.S3ObjectLocation
+import uk.ac.wellcome.storage.s3.{S3Errors, S3ObjectLocation}
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
@@ -35,6 +34,8 @@ class S3StreamReader(bufferSize: Long)(implicit s3Client: AmazonS3)
     extends Readable[S3ObjectLocation, InputStreamWithLength]
     with Logging {
 
+  private val rangedReader = new S3RangedReader()
+
   private class S3StreamEnumeration(
     location: S3ObjectLocation,
     contentLength: Long,
@@ -47,37 +48,14 @@ class S3StreamReader(bufferSize: Long)(implicit s3Client: AmazonS3)
       currentPosition < totalLength
 
     override def nextElement(): InputStream = {
-      val getRequest =
-        new GetObjectRequest(location.bucket, location.key)
-
-      // The S3 Range request is *inclusive* of the boundaries.
-      //
-      // For example, if you read (start=0, end=5), you get bytes [0, 1, 2, 3, 4, 5].
-      // We never want to read more than bufferSize bytes at a time.
-      val requestWithRange =
-        if (currentPosition + bufferSize >= totalLength) {
-          debug(s"Reading $location: $currentPosition-[end] / $contentLength")
-          getRequest.withRange(currentPosition)
-        } else {
-          debug(
-            s"Reading $location: $currentPosition-${currentPosition + bufferSize - 1} / $contentLength"
-          )
-          getRequest.withRange(
-            currentPosition,
-            currentPosition + bufferSize - 1
-          )
-        }
+      val byteArray = rangedReader.getBytes(
+        location = location,
+        offset = currentPosition,
+        count = bufferSize,
+        totalLength = totalLength
+      )
 
       currentPosition += bufferSize
-
-      // Remember to close the input stream afterwards, or we get errors like
-      //
-      //    com.amazonaws.SdkClientException: Unable to execute HTTP request:
-      //    Timeout waiting for connection from pool
-      //
-      val s3InputStream = s3Client.getObject(requestWithRange).getObjectContent
-      val byteArray = IOUtils.toByteArray(s3InputStream)
-      s3InputStream.close()
 
       new ByteArrayInputStream(byteArray)
     }
@@ -91,9 +69,7 @@ class S3StreamReader(bufferSize: Long)(implicit s3Client: AmazonS3)
       // e.g. GetObject will return "The bucket name was invalid" rather than
       // "Bad Request".
       //
-      val getRequest = new GetObjectRequest(location.bucket, location.key)
-
-      val s3Object = s3Client.getObject(getRequest)
+      val s3Object = s3Client.getObject(location.bucket, location.key)
       val metadata = s3Object.getObjectMetadata
       val contentLength = metadata.getContentLength
 
@@ -118,22 +94,6 @@ class S3StreamReader(bufferSize: Long)(implicit s3Client: AmazonS3)
       )
     } match {
       case Success(inputStream) => Right(Identified(location, inputStream))
-      case Failure(err)         => Left(buildGetError(err))
-    }
-
-  private def buildGetError(throwable: Throwable): ReadError =
-    throwable match {
-      case exc: AmazonS3Exception if exc.getMessage.startsWith("Not Found") =>
-        DoesNotExistError(exc)
-      case exc: AmazonS3Exception
-          if exc.getMessage.startsWith("The specified key does not exist") =>
-        DoesNotExistError(exc)
-      case exc: AmazonS3Exception
-          if exc.getMessage.startsWith("The specified bucket does not exist") =>
-        DoesNotExistError(exc)
-      case exc: AmazonS3Exception
-          if exc.getMessage.startsWith("The specified bucket is not valid") =>
-        StoreReadError(exc)
-      case _ => StoreReadError(throwable)
+      case Failure(err)         => Left(S3Errors.readErrors(err))
     }
 }
