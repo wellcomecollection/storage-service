@@ -4,36 +4,14 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{Assertion, EitherValues, OptionValues, TryValues}
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
-  FailedChecksumNoMatch,
-  FileFixityCorrect
-}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FailedChecksumNoMatch, FileFixityCorrect}
 import uk.ac.wellcome.platform.archive.bagverifier.models._
 import uk.ac.wellcome.platform.archive.bagverifier.storage.LocationNotFound
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagPath,
-  BagVersion,
-  ExternalIdentifier,
-  PayloadOxum
-}
-import uk.ac.wellcome.platform.archive.common.bagit.services.{
-  BagReader,
-  BagUnavailable
-}
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagBuilder,
-  PayloadEntry
-}
-import uk.ac.wellcome.platform.archive.common.generators.{
-  BagInfoGenerators,
-  StorageSpaceGenerators
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepResult,
-  IngestStepSucceeded,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagPath, BagVersion, ExternalIdentifier, PayloadOxum}
+import uk.ac.wellcome.platform.archive.common.bagit.services.{BagReader, BagUnavailable}
+import uk.ac.wellcome.platform.archive.common.fixtures.{BagBuilder, PayloadEntry}
+import uk.ac.wellcome.platform.archive.common.generators.{BagInfoGenerators, StorageSpaceGenerators}
+import uk.ac.wellcome.platform.archive.common.storage.models.{EnsureTrailingSlash, IngestFailed, IngestStepResult, IngestStepSucceeded, StorageSpace}
 import uk.ac.wellcome.storage.azure.AzureBlobLocation
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
@@ -59,6 +37,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     with NamespaceFixtures[BagLocation, Namespace]
     with S3Fixtures {
 
+  implicit val et: EnsureTrailingSlash[BagPrefix]
   def withTypedStore[R](
     testWith: TestWith[TypedStore[BagLocation, String], R]
   ): R
