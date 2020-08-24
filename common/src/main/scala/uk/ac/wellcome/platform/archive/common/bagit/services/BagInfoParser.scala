@@ -256,7 +256,7 @@ object BagInfoParser extends Logging {
       //
       // Some values cannot be empty, e.g. ExternalIdentifier; this is enforced
       // by the type.
-      case BAG_INFO_LABEL_ONLY_REGEX(label)   => Right((label, ""))
-      case _                                  => Left(line)
+      case BAG_INFO_LABEL_ONLY_REGEX(label) => Right((label, ""))
+      case _                                => Left(line)
     }
 }
