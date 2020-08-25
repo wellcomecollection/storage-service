@@ -4,27 +4,39 @@ import subprocess
 import sys
 
 
-def check_call(cmd, exit_on_error=True):
-    """
-    A wrapped version of subprocess.check_call() that doesn't print a
-    traceback if the command errors.
-    """
+def _subprocess_run(cmd, exit_on_error=True):
     print("*** Running %r" % " ".join(cmd))
-    try:
-        return subprocess.check_output(cmd).decode("utf8").strip()
-    except subprocess.CalledProcessError as err:
-        if exit_on_error:
-            sys.exit(err.returncode)
-        pass
+
+    output = []
+    pipe = subprocess.Popen(
+        cmd,
+        encoding="utf8",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+
+    # Await command completion and print lines as they come in
+    for stdout_line in iter(pipe.stdout.readline, ""):
+        print(stdout_line.strip())
+        output.append(stdout_line)
+
+    # Extract results
+    pipe.communicate()
+    return_code = pipe.returncode
+
+    if return_code != 0 and exit_on_error:
+        sys.exit(return_code)
+
+    return '\n'.join(output).strip()
 
 
 def make(*args):
     """Run a Make command, and check it completes successfully."""
-    check_call(["make"] + list(args))
+    _subprocess_run(["make"] + list(args))
 
 
 def git(*args, exit_on_error=True):
     """Run a Git command and return its output."""
     cmd = ["git"] + list(args)
 
-    return check_call(cmd, exit_on_error=exit_on_error)
+    return _subprocess_run(cmd, exit_on_error=exit_on_error)
