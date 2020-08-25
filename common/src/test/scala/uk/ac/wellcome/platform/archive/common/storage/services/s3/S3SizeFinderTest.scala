@@ -6,6 +6,7 @@ import uk.ac.wellcome.platform.archive.common.storage.services.{
   SizeFinder,
   SizeFinderTestCases
 }
+import uk.ac.wellcome.storage.DoesNotExistError
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
@@ -37,6 +38,7 @@ class S3SizeFinderTest
 
     val result = sizeFinder.getSize(createS3ObjectLocation)
 
+    result.left.value shouldBe a[DoesNotExistError]
     result.left.value.e shouldBe a[AmazonS3Exception]
   }
 }
