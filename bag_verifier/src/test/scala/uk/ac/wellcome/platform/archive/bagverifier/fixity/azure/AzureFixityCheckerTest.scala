@@ -42,7 +42,9 @@ class AzureFixityCheckerTest
     testWith(new AzureFixityChecker() {
       // We need to override the underlying StreamStore so Mockito can spy
       // on its interactions during the tests.
-      override val streamReader: Readable[AzureBlobLocation, InputStreamWithLength] = underlyingStreamStore
+      override val streamReader
+        : Readable[AzureBlobLocation, InputStreamWithLength] =
+        underlyingStreamStore
     })
 
   override def withStreamStore[R](

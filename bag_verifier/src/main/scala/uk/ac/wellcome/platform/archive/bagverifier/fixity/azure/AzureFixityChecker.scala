@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity.azure
 import com.azure.storage.blob.BlobServiceClient
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.AzureLocatable
-import uk.ac.wellcome.platform.archive.common.storage.services.azure.{AzureLargeStreamReader, AzureSizeFinder}
+import uk.ac.wellcome.platform.archive.common.storage.services.azure.{
+  AzureLargeStreamReader,
+  AzureSizeFinder
+}
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
@@ -18,7 +21,8 @@ class AzureFixityChecker(implicit blobClient: BlobServiceClient)
   // require 830 Read calls.
   //
   // In practice most objects are well under this threshhold, so it won't be maxing out.
-  override protected val streamReader: Readable[AzureBlobLocation, InputStreamWithLength] =
+  override protected val streamReader
+    : Readable[AzureBlobLocation, InputStreamWithLength] =
     new AzureLargeStreamReader(bufferSize = 200 * 1000 * 1000)
 
   override protected val sizeFinder =

@@ -61,7 +61,9 @@ trait LargeStreamReaderTestCases[Ident, Namespace]
     }
   }
 
-  it("combines multiple streams when total size is not a multiple of buffer size") {
+  it(
+    "combines multiple streams when total size is not a multiple of buffer size"
+  ) {
     withNamespace { namespace =>
       val ident = createIdentWith(namespace)
 
