@@ -9,7 +9,7 @@ import uk.ac.wellcome.storage.store.azure.AzureStreamStore
 
 class AzureFixityChecker(implicit blobClient: BlobServiceClient)
     extends FixityChecker[AzureBlobLocation, AzureBlobLocationPrefix] {
-  override protected val streamStore =
+  override protected val streamReader =
     new AzureStreamStore()
 
   override protected val sizeFinder =
