@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import json
 from common import get_aws_resource, scan_table
-
-dynamodb = get_aws_resource("dynamodb")
-s3 = get_aws_resource("s3")
+READ_ONLY_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
+dynamodb = get_aws_resource("dynamodb",role_arn=READ_ONLY_ROLE_ARN)
+s3 = get_aws_resource("s3",role_arn=READ_ONLY_ROLE_ARN)
 
 vhs_table = "vhs-storage-staging-manifests-2020-07-24"
 
@@ -55,4 +55,6 @@ for item in scan_table(TableName=vhs_table):
             backfilled_key = backfilled_item['payload']['key']
             backfilled_json = get_vhs_json(backfilled_bucket, backfilled_key)
             backfilled_json['createdDate'] = created_date
+            put_vhs_json(backfilled_bucket, backfilled_key, backfilled_json)
+            print(f"Updated {id}")
 
