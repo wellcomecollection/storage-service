@@ -1,11 +1,13 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
+import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.storage.models.{ClosedByteRange, OpenByteRange}
+import uk.ac.wellcome.storage.DoesNotExistError
 
-trait RangedReaderTestCases[Ident, Namespace] extends AnyFunSpec with Matchers {
+trait RangedReaderTestCases[Ident, Namespace] extends AnyFunSpec with Matchers with EitherValues {
   def withNamespace[R](testWith: TestWith[Namespace, R]): R
 
   def createIdentWith(namespace: Namespace): Ident
@@ -24,7 +26,7 @@ trait RangedReaderTestCases[Ident, Namespace] extends AnyFunSpec with Matchers {
         _.getBytes(ident, range = ClosedByteRange(start = 1, count = 4))
       }
 
-      receivedBytes shouldBe "ello".getBytes()
+      receivedBytes.right.value shouldBe "ello".getBytes()
     }
   }
 
@@ -38,7 +40,7 @@ trait RangedReaderTestCases[Ident, Namespace] extends AnyFunSpec with Matchers {
         _.getBytes(ident, range = OpenByteRange(start = 6))
       }
 
-      receivedBytes shouldBe "world".getBytes()
+      receivedBytes.right.value shouldBe "world".getBytes()
     }
   }
 
@@ -52,7 +54,19 @@ trait RangedReaderTestCases[Ident, Namespace] extends AnyFunSpec with Matchers {
         _.getBytes(ident, range = ClosedByteRange(start = 6, count = 50))
       }
 
-      receivedBytes shouldBe "world".getBytes()
+      receivedBytes.right.value shouldBe "world".getBytes()
+    }
+  }
+
+  it("returns a DoesNotExistError for a non-existent object") {
+    withNamespace { namespace =>
+      val ident = createIdentWith(namespace)
+
+      val receivedBytes = withRangedReader {
+        _.getBytes(ident, range = ClosedByteRange(start = 6, count = 50))
+      }
+
+      receivedBytes.left.value shouldBe a[DoesNotExistError]
     }
   }
 }

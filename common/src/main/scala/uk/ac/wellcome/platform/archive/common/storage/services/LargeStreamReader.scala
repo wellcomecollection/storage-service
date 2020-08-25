@@ -2,7 +2,8 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 
 import java.io.{ByteArrayInputStream, SequenceInputStream}
 
-import uk.ac.wellcome.storage.Identified
+import uk.ac.wellcome.platform.archive.common.storage.models.ByteRange
+import uk.ac.wellcome.storage.{Identified, ReadError}
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
@@ -33,6 +34,8 @@ import scala.collection.JavaConverters._
 trait LargeStreamReader[Ident] extends Readable[Ident, InputStreamWithLength] {
   val bufferSize: Long
 
+  private val retries: Int = 3
+
   protected val sizeFinder: SizeFinder[Ident]
 
   protected val rangedReader: RangedReader[Ident]
@@ -48,7 +51,7 @@ trait LargeStreamReader[Ident] extends Readable[Ident, InputStreamWithLength] {
 
       individualStreams = ranges
         .iterator
-        .map { range => rangedReader.getBytes(ident, range = range) }
+        .map { range => getBytes(ident, range = range) }
         .map { new ByteArrayInputStream(_) }
         .asJavaEnumeration
 
@@ -56,4 +59,25 @@ trait LargeStreamReader[Ident] extends Readable[Ident, InputStreamWithLength] {
 
       result = Identified(ident, new InputStreamWithLength(combinedStream, size))
     } yield result
+
+  private def getBytes(ident: Ident, range: ByteRange): Array[Byte] = {
+    // If it takes 100 GetBytes calls to read an object, to read the whole object
+    // you need all 100 calls to succeed.  This becomes less likely the larger
+    // the original object.
+    //
+    // We add some retrying logic around each of these individual calls, to increase
+    // the likelihood that the overall operation will succeed.
+    import uk.ac.wellcome.storage.RetryOps._
+
+    def inner: ((Ident, ByteRange)) => Either[ReadError, Array[Byte]] =
+      (args: (Ident, ByteRange)) => {
+        val (ident, range) = args
+        rangedReader.getBytes(ident, range = range)
+      }
+
+    inner.retry(maxAttempts = retries)((ident, range)) match {
+      case Right(bytes) => bytes
+      case Left(err)    => throw new RuntimeException(s"Unable to read range $range from $ident")
+    }
+  }
 }

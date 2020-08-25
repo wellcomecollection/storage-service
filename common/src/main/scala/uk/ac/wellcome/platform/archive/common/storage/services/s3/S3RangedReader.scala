@@ -5,10 +5,13 @@ import com.amazonaws.services.s3.model.GetObjectRequest
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.platform.archive.common.storage.models.{ByteRange, ClosedByteRange, OpenByteRange}
 import uk.ac.wellcome.platform.archive.common.storage.services.RangedReader
+import uk.ac.wellcome.storage.{ReadError, StoreReadError}
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
 
+import scala.util.{Failure, Success, Try}
+
 class S3RangedReader(implicit s3Client: AmazonS3) extends RangedReader[S3ObjectLocation] {
-  override def getBytes(location: S3ObjectLocation, range: ByteRange): Array[Byte] = {
+  override def getBytes(location: S3ObjectLocation, range: ByteRange): Either[ReadError, Array[Byte]] = Try {
 
     // The S3 Range request is *inclusive* of the boundaries.
     //
@@ -35,5 +38,8 @@ class S3RangedReader(implicit s3Client: AmazonS3) extends RangedReader[S3ObjectL
     s3InputStream.close()
 
     byteArray
+  } match {
+    case Success(bytes) => Right(bytes)
+    case Failure(err)   => Left(StoreReadError(err))
   }
 }

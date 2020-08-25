@@ -4,7 +4,7 @@ import com.amazonaws.services.s3.model.GetObjectRequest
 import org.mockito.Mockito
 import org.mockito.Matchers._
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.storage.services.{LargeStreamReader, LargeStreamReaderTestCases}
+import uk.ac.wellcome.platform.archive.common.storage.services.{LargeStreamReader, LargeStreamReaderTestCases, RangedReader}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
@@ -25,6 +25,16 @@ class S3LargeStreamReaderTest extends LargeStreamReaderTestCases[S3ObjectLocatio
   override def withLargeStreamReader[R](bufferSize: Long)(
     testWith: TestWith[LargeStreamReader[S3ObjectLocation], R]): R =
     testWith(new S3LargeStreamReader(bufferSize = bufferSize))
+
+  override def withRangedReader[R](testWith: TestWith[RangedReader[S3ObjectLocation], R]): R =
+    testWith(new S3RangedReader())
+
+  override def withLargeStreamReader[R](bufferSize: Long, rangedReaderImpl: RangedReader[S3ObjectLocation])(testWith: TestWith[LargeStreamReader[S3ObjectLocation], R]): R =
+    testWith(
+      new S3LargeStreamReader(bufferSize = bufferSize) {
+        override protected val rangedReader: RangedReader[S3ObjectLocation] = rangedReaderImpl
+      }
+    )
 
   it("makes multiple GetObject requests") {
     val bufferSize = 500
