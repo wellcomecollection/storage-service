@@ -29,10 +29,13 @@ def get_vhs_json(bucket, key):
     return json.loads(s3.Object(bucket, key).get()['Body'].read().decode('utf-8'))
 
 def put_vhs_json(bucket, key, content):
-    s3object = s3.Object(bucket,key)
-    # s3object.put(
-    #     Body=(bytes(json.dumps(content).encode('UTF-8')))
-    # )
+    try:
+        s3object = s3.Object(bucket,key)
+        # s3object.put(
+        #     Body=(bytes(json.dumps(content).encode('UTF-8')))
+        # )
+    except Error as e:
+        raise RuntimeError(f"Error updating backfill vhs object {bucket} {key}: {e}")
 
 for item in scan_table(TableName=vhs_table):
     id = item["id"]
@@ -49,12 +52,11 @@ for item in scan_table(TableName=vhs_table):
                 "Item"
             ]
         except KeyError:
-            raise RuntimeError(f"Cannot find backfill storage manifest for {id}!!!!")
+            print(f"Cannot find backfill storage manifest for {id}:{version}!!!!")
         else:
             backfilled_bucket = backfilled_item['payload']['bucket']
             backfilled_key = backfilled_item['payload']['key']
             backfilled_json = get_vhs_json(backfilled_bucket, backfilled_key)
             backfilled_json['createdDate'] = created_date
             put_vhs_json(backfilled_bucket, backfilled_key, backfilled_json)
-            print(f"Updated {id}")
 
