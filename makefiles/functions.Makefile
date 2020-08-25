@@ -82,7 +82,7 @@ endef
 define sbt_test
 	$(ROOT)/docker_run.py --dind --sbt --root -- \
 		--net host \
-		wellcome/sbt_wrapper:edge \
+		wellcome/sbt_wrapper \
 		"project $(1)" ";dockerComposeUp;test;dockerComposeStop"
 endef
 
@@ -94,7 +94,7 @@ endef
 define sbt_test_no_docker
 	$(ROOT)/docker_run.py --dind --sbt --root -- \
 		--net host \
-		wellcome/sbt_wrapper:edge \
+		wellcome/sbt_wrapper \
 		"project $(1)" "test"
 endef
 
@@ -106,7 +106,7 @@ endef
 #
 define sbt_build
 	$(ROOT)/docker_run.py --sbt --root -- \
-		wellcome/sbt_wrapper:edge \
+		wellcome/sbt_wrapper \
 		"project $(1)" ";stage"
 endef
 
@@ -119,7 +119,7 @@ endef
 define docker_compose_up
 	$(ROOT)/docker_run.py --dind --sbt --root -- \
 		--net host \
-		wellcome/sbt_wrapper:edge \
+		wellcome/sbt_wrapper \
 		"project $(1)" "dockerComposeUp"
 endef
 
@@ -132,7 +132,7 @@ endef
 define docker_compose_down
 	$(ROOT)/docker_run.py --dind --sbt --root -- \
 		--net host \
-		wellcome/sbt_wrapper:edge \
+		wellcome/sbt_wrapper \
 		"project $(1)" "dockerComposeDown"
 endef
 
