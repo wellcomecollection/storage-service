@@ -36,11 +36,13 @@ def get_vhs_json(bucket, key):
 def put_vhs_json(bucket, key, content):
     try:
         s3object = s3.Object(bucket, key)
-        s3object.put(
-            Body=(bytes(json.dumps(content).encode('UTF-8')))
-        )
+        # s3object.put(
+        #     Body=(bytes(json.dumps(content).encode('UTF-8')))
+        # )
     except ClientError as e:
-        raise RuntimeError(f"Error updating backfill vhs object {bucket} {key}: {e}")
+        raise RuntimeError(f"Error updating backfill vhs object s3://{bucket}/{key}",e)
+    except:
+        raise RuntimeError(f"Unknown error when updating backfill vhs object s3://{bucket}/{key}")
 
 
 for item in scan_table(TableName=vhs_table):
