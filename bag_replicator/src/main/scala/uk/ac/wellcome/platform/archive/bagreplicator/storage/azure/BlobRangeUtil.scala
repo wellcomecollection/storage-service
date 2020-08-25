@@ -3,16 +3,18 @@ package uk.ac.wellcome.platform.archive.bagreplicator.storage.azure
 import java.util.Base64
 
 import com.azure.storage.blob.models.BlobRange
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  ClosedByteRange,
+  OpenByteRange
+}
+import uk.ac.wellcome.platform.archive.common.storage.services.ByteRangeUtil
 
 object BlobRangeUtil {
   def getRanges(length: Long, blockSize: Long): Seq[BlobRange] =
-    ((0L to length - 1) by blockSize)
-      .map { offset: Long =>
-        if (offset + blockSize > length)
-          new BlobRange(offset)
-        else
-          new BlobRange(offset, blockSize)
-      }
+    ByteRangeUtil.partition(length, blockSize).map {
+      case OpenByteRange(start)          => new BlobRange(start)
+      case ClosedByteRange(start, count) => new BlobRange(start, count)
+    }
 
   // Create the block IDs required by the Azure Put Block API.
   //

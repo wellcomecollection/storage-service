@@ -13,6 +13,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepResult,
   IngestStepSucceeded
 }
+import uk.ac.wellcome.storage.store.{Readable, Writable}
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage._
 
@@ -24,15 +25,25 @@ trait Unpacker[
   DstPrefix <: Prefix[DstLocation]
 ] extends Logging {
 
+  protected val reader: Readable[SrcLocation, InputStreamWithLength]
+  protected val writer: Writable[DstLocation, InputStreamWithLength]
+
   // The unpacker asks for separate get/put methods rather than a Store
   // because it might be unpacking/uploading to different providers.
   //
   // e.g. we might unpack a package from an S3 bucket, then upload it to Azure.
   //
-  def get(location: SrcLocation): Either[StorageError, InputStream]
+  def get(location: SrcLocation): Either[StorageError, InputStream] =
+    reader.get(location).map { _.identifiedT }
+
   def put(location: DstLocation)(
     inputStream: InputStreamWithLength
-  ): Either[StorageError, Unit]
+  ): Either[StorageError, Unit] =
+    writer
+      .put(location)(inputStream)
+      .map { _ =>
+        ()
+      }
 
   def unpack(
     ingestId: IngestID,

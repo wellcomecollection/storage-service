@@ -170,6 +170,7 @@ object StorageDependencies {
     ExternalDependencies.commonsIODependencies ++
       ExternalDependencies.akkaDependencies ++
       ExternalDependencies.cloudwatchMetricsDependencies ++
+      ExternalDependencies.mockitoDependencies ++
       ExternalDependencies.scalatestDependencies ++
       WellcomeDependencies.jsonLibrary ++
       WellcomeDependencies.messagingLibrary ++
