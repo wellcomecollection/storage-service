@@ -9,8 +9,8 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   OpenByteRange
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.RangedReader
-import uk.ac.wellcome.storage.{ReadError, StoreReadError}
-import uk.ac.wellcome.storage.s3.S3ObjectLocation
+import uk.ac.wellcome.storage.ReadError
+import uk.ac.wellcome.storage.s3.{S3Errors, S3ObjectLocation}
 
 import scala.util.{Failure, Success, Try}
 
@@ -49,6 +49,6 @@ class S3RangedReader(implicit s3Client: AmazonS3)
       byteArray
     } match {
       case Success(bytes) => Right(bytes)
-      case Failure(err)   => Left(StoreReadError(err))
+      case Failure(err)   => Left(S3Errors.readErrors(err))
     }
 }
