@@ -1,6 +1,8 @@
 package uk.ac.wellcome.platform.archive.common.storage.services.s3
 
-import org.mockito.{Mockito, Matchers => MockitoMatchers}
+import com.amazonaws.services.s3.model.GetObjectRequest
+import org.mockito.Mockito
+import org.mockito.Matchers._
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.storage.services.{LargeStreamReader, LargeStreamReaderTestCases}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
@@ -38,14 +40,10 @@ class S3LargeStreamReaderTest extends LargeStreamReaderTestCases[S3ObjectLocatio
       val inputStream = reader.get(location).right.value.identifiedT
       stringCodec.fromStream(inputStream).right.value
 
-      // We expect to see at least three calls to getObject:
-      //
-      //    - One to get the size of the object
-      //    - Two or more to read the object
-      //
+      // One to get the size of the object, two to read the contents
       Mockito
         .verify(spyClient, Mockito.atLeast(3))
-        .getObject(MockitoMatchers.any())
+        .getObject(any[GetObjectRequest])
     }
   }
 }
