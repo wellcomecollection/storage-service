@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import json
+from botocore.exceptions import ClientError
+
 from common import get_aws_resource, scan_table
 
 READ_ONLY_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
@@ -34,10 +36,10 @@ def get_vhs_json(bucket, key):
 def put_vhs_json(bucket, key, content):
     try:
         s3object = s3.Object(bucket, key)
-        # s3object.put(
-        #     Body=(bytes(json.dumps(content).encode('UTF-8')))
-        # )
-    except Error as e:
+        s3object.put(
+            Body=(bytes(json.dumps(content).encode('UTF-8')))
+        )
+    except ClientError as e:
         raise RuntimeError(f"Error updating backfill vhs object {bucket} {key}: {e}")
 
 
