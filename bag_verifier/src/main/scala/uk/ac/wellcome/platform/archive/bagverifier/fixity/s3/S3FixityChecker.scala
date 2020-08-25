@@ -18,7 +18,7 @@ class S3FixityChecker(implicit s3Client: AmazonS3)
     extends FixityChecker[S3ObjectLocation, S3ObjectLocationPrefix]
     with Logging {
 
-  override protected val streamStore: StreamStore[S3ObjectLocation] =
+  override protected val streamReader: StreamStore[S3ObjectLocation] =
     new S3StreamStore()
 
   override protected val sizeFinder: S3SizeFinder =
