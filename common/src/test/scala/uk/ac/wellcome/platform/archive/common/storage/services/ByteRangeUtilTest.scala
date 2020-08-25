@@ -2,7 +2,10 @@ package uk.ac.wellcome.platform.archive.common.storage.services
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.storage.models.{ClosedByteRange, OpenByteRange}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  ClosedByteRange,
+  OpenByteRange
+}
 
 class ByteRangeUtilTest extends AnyFunSpec with Matchers {
   describe("partition") {

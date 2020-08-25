@@ -4,10 +4,16 @@ import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.storage.models.{ClosedByteRange, OpenByteRange}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  ClosedByteRange,
+  OpenByteRange
+}
 import uk.ac.wellcome.storage.DoesNotExistError
 
-trait RangedReaderTestCases[Ident, Namespace] extends AnyFunSpec with Matchers with EitherValues {
+trait RangedReaderTestCases[Ident, Namespace]
+    extends AnyFunSpec
+    with Matchers
+    with EitherValues {
   def withNamespace[R](testWith: TestWith[Namespace, R]): R
 
   def createIdentWith(namespace: Namespace): Ident

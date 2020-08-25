@@ -1,6 +1,10 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
-import uk.ac.wellcome.platform.archive.common.storage.models.{ByteRange, ClosedByteRange, OpenByteRange}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  ByteRange,
+  ClosedByteRange,
+  OpenByteRange
+}
 
 object ByteRangeUtil {
   // Partitions an object of size 1..length into ranges of size at most `bufferSize`

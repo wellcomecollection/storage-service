@@ -228,9 +228,10 @@ class AzurePutBlockTransfer(
       range = ByteRange(range)
     ) match {
       case Right(value) => value
-      case Left(err)    => throw new RuntimeException(
-        s"Error reading chunk from S3 location $src (range $range): $err"
-      )
+      case Left(err) =>
+        throw new RuntimeException(
+          s"Error reading chunk from S3 location $src (range $range): $err"
+        )
     }
 
     val blockClient = blobServiceClient

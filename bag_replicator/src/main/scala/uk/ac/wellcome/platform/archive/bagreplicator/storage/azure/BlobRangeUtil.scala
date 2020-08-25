@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.archive.bagreplicator.storage.azure
 import java.util.Base64
 
 import com.azure.storage.blob.models.BlobRange
-import uk.ac.wellcome.platform.archive.common.storage.models.{ClosedByteRange, OpenByteRange}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  ClosedByteRange,
+  OpenByteRange
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.ByteRangeUtil
 
 object BlobRangeUtil {

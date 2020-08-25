@@ -12,9 +12,11 @@ import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 class MemoryUnpacker()(implicit streamStore: MemoryStreamStore[MemoryLocation])
     extends Unpacker[MemoryLocation, MemoryLocation, MemoryLocationPrefix] {
-  override protected val reader: store.Readable[MemoryLocation, InputStreamWithLength] =
+  override protected val reader
+    : store.Readable[MemoryLocation, InputStreamWithLength] =
     streamStore
 
-  override protected val writer: Writable[MemoryLocation, InputStreamWithLength] =
+  override protected val writer
+    : Writable[MemoryLocation, InputStreamWithLength] =
     streamStore
 }

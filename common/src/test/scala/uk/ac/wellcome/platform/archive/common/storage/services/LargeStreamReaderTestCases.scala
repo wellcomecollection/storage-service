@@ -6,10 +6,19 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.storage.models.ByteRange
-import uk.ac.wellcome.storage.{DoesNotExistError, ReadError, RetryableError, StoreReadError}
+import uk.ac.wellcome.storage.{
+  DoesNotExistError,
+  ReadError,
+  RetryableError,
+  StoreReadError
+}
 import uk.ac.wellcome.storage.streaming.Codec
 
-trait LargeStreamReaderTestCases[Ident, Namespace] extends AnyFunSpec with Matchers with EitherValues with StorageRandomThings {
+trait LargeStreamReaderTestCases[Ident, Namespace]
+    extends AnyFunSpec
+    with Matchers
+    with EitherValues
+    with StorageRandomThings {
   def withNamespace[R](testWith: TestWith[Namespace, R]): R
 
   def createIdentWith(namespace: Namespace): Ident
@@ -18,12 +27,18 @@ trait LargeStreamReaderTestCases[Ident, Namespace] extends AnyFunSpec with Match
 
   def withRangedReader[R](testWith: TestWith[RangedReader[Ident], R]): R
 
-  def withLargeStreamReader[R](bufferSize: Long, rangedReader: RangedReader[Ident])(testWith: TestWith[LargeStreamReader[Ident], R]): R
+  def withLargeStreamReader[R](
+    bufferSize: Long,
+    rangedReader: RangedReader[Ident]
+  )(testWith: TestWith[LargeStreamReader[Ident], R]): R
 
-  def withLargeStreamReader[R](bufferSize: Long)(testWith: TestWith[LargeStreamReader[Ident], R]): R =
+  def withLargeStreamReader[R](
+    bufferSize: Long
+  )(testWith: TestWith[LargeStreamReader[Ident], R]): R =
     withRangedReader { rangedReader =>
-      withLargeStreamReader(bufferSize, rangedReader = rangedReader) { streamReader =>
-        testWith(streamReader)
+      withLargeStreamReader(bufferSize, rangedReader = rangedReader) {
+        streamReader =>
+          testWith(streamReader)
       }
     }
 
@@ -38,7 +53,8 @@ trait LargeStreamReaderTestCases[Ident, Namespace] extends AnyFunSpec with Match
 
       withLargeStreamReader(bufferSize) { reader =>
         val result = reader.get(ident).right.value
-        val retrievedContents = Codec.stringCodec.fromStream(result.identifiedT).right.value
+        val retrievedContents =
+          Codec.stringCodec.fromStream(result.identifiedT).right.value
 
         retrievedContents shouldBe contents
       }
@@ -65,7 +81,10 @@ trait LargeStreamReaderTestCases[Ident, Namespace] extends AnyFunSpec with Match
       var rangedReaderCalls = 0
 
       val brokenReader = new RangedReader[Ident] {
-        override def getBytes(id: Ident, range: ByteRange): Either[ReadError, Array[Byte]] = {
+        override def getBytes(
+          id: Ident,
+          range: ByteRange
+        ): Either[ReadError, Array[Byte]] = {
           rangedReaderCalls += 1
           Left(new StoreReadError(new Throwable("BOOM!")) with RetryableError)
         }

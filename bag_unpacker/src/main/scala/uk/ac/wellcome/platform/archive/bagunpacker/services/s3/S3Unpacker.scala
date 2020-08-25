@@ -19,10 +19,12 @@ class S3Unpacker(
   bufferSize: Long = 128 * FileUtils.ONE_MB
 )(implicit s3Client: AmazonS3)
     extends Unpacker[S3ObjectLocation, S3ObjectLocation, S3ObjectLocationPrefix] {
-  override protected val writer: Writable[S3ObjectLocation, InputStreamWithLength] =
+  override protected val writer
+    : Writable[S3ObjectLocation, InputStreamWithLength] =
     new S3StreamStore()
 
-  override protected val reader: Readable[S3ObjectLocation, InputStreamWithLength] =
+  override protected val reader
+    : Readable[S3ObjectLocation, InputStreamWithLength] =
     new S3LargeStreamReader(bufferSize = bufferSize)
 
   override def buildMessageFor(

@@ -49,15 +49,19 @@ trait LargeStreamReader[Ident] extends Readable[Ident, InputStreamWithLength] {
 
       ranges = ByteRangeUtil.partition(size, bufferSize = bufferSize)
 
-      individualStreams = ranges
-        .iterator
-        .map { range => getBytes(ident, range = range) }
+      individualStreams = ranges.iterator
+        .map { range =>
+          getBytes(ident, range = range)
+        }
         .map { new ByteArrayInputStream(_) }
         .asJavaEnumeration
 
       combinedStream = new SequenceInputStream(individualStreams)
 
-      result = Identified(ident, new InputStreamWithLength(combinedStream, size))
+      result = Identified(
+        ident,
+        new InputStreamWithLength(combinedStream, size)
+      )
     } yield result
 
   private def getBytes(ident: Ident, range: ByteRange): Array[Byte] = {
@@ -77,7 +81,8 @@ trait LargeStreamReader[Ident] extends Readable[Ident, InputStreamWithLength] {
 
     inner.retry(maxAttempts = retries)((ident, range)) match {
       case Right(bytes) => bytes
-      case Left(err)    => throw new RuntimeException(s"Unable to read range $range from $ident")
+      case Left(err) =>
+        throw new RuntimeException(s"Unable to read range $range from $ident")
     }
   }
 }
