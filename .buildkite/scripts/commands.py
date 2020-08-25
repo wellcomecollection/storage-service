@@ -9,10 +9,7 @@ def _subprocess_run(cmd, exit_on_error=True):
 
     output = []
     pipe = subprocess.Popen(
-        cmd,
-        encoding="utf8",
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
+        cmd, encoding="utf8", stdout=subprocess.PIPE, stderr=subprocess.STDOUT
     )
 
     # Await command completion and print lines as they come in
@@ -27,7 +24,7 @@ def _subprocess_run(cmd, exit_on_error=True):
     if return_code != 0 and exit_on_error:
         sys.exit(return_code)
 
-    return '\n'.join(output).strip()
+    return "\n".join(output).strip()
 
 
 def make(*args):
