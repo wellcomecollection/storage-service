@@ -17,12 +17,12 @@ import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 import uk.ac.wellcome.storage.tags.memory.MemoryTags
 
 class MemoryFixityChecker(
-  val streamStore: MemoryStreamStore[MemoryLocation],
+  val streamReader: MemoryStreamStore[MemoryLocation],
   val tags: Option[MemoryTags[MemoryLocation]]
 ) extends FixityChecker[MemoryLocation, MemoryLocationPrefix] {
 
   override protected val sizeFinder: SizeFinder[MemoryLocation] =
-    new MemorySizeFinder(streamStore.memoryStore)
+    new MemorySizeFinder(streamReader.memoryStore)
 
   override implicit val locator
     : Locatable[MemoryLocation, MemoryLocationPrefix, URI] =

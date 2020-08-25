@@ -56,7 +56,7 @@ class S3FixityCheckerTest
     ]
   )(implicit context: Unit): R =
     testWith(new S3FixityChecker() {
-      override val streamStore: StreamStore[S3ObjectLocation] = s3Store
+      override val streamReader: StreamStore[S3ObjectLocation] = s3Store
     })
 
   implicit val context: Unit = ()

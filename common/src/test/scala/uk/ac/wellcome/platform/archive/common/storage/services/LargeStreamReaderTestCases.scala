@@ -61,6 +61,27 @@ trait LargeStreamReaderTestCases[Ident, Namespace]
     }
   }
 
+  it(
+    "combines multiple streams when total size is not a multiple of buffer size"
+  ) {
+    withNamespace { namespace =>
+      val ident = createIdentWith(namespace)
+
+      val bufferSize = 500
+      val contents = randomAlphanumericWithLength(length = bufferSize * 3 + 1)
+
+      writeString(ident, contents)
+
+      withLargeStreamReader(bufferSize) { reader =>
+        val result = reader.get(ident).right.value
+        val retrievedContents =
+          Codec.stringCodec.fromStream(result.identifiedT).right.value
+
+        retrievedContents shouldBe contents
+      }
+    }
+  }
+
   it("returns a DoesNotExistError for a missing object") {
     withNamespace { namespace =>
       val ident = createIdentWith(namespace)

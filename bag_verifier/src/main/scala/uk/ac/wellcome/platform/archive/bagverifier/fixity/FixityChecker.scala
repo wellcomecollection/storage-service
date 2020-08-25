@@ -12,7 +12,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.storage.{
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
 import uk.ac.wellcome.platform.archive.common.verify._
-import uk.ac.wellcome.storage.store.StreamStore
+import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.tags.Tags
 import uk.ac.wellcome.storage.{DoesNotExistError, Location, Prefix, ReadError}
@@ -24,7 +24,7 @@ import scala.util.{Failure, Success}
   */
 trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     extends Logging {
-  protected val streamStore: StreamStore[BagLocation]
+  protected val streamReader: Readable[BagLocation, InputStreamWithLength]
   protected val sizeFinder: SizeFinder[BagLocation]
   val tags: Option[Tags[BagLocation]]
   implicit val locator: Locatable[BagLocation, BagPrefix, URI]
@@ -109,7 +109,7 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     location: BagLocation
   ): Either[FileFixityCouldNotRead[BagLocation], InputStreamWithLength] =
     handleReadErrors(
-      streamStore.get(location),
+      streamReader.get(location),
       expectedFileFixity = expectedFileFixity
     ).map { _.identifiedT }
 
