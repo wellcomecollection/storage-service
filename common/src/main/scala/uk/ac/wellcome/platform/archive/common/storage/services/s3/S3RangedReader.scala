@@ -5,15 +5,10 @@ import com.amazonaws.services.s3.model.GetObjectRequest
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.platform.archive.common.storage.models.{ByteRange, ClosedByteRange, OpenByteRange}
 import uk.ac.wellcome.platform.archive.common.storage.services.RangedReader
-import uk.ac.wellcome.storage.ReadError
-import uk.ac.wellcome.storage.s3.{S3Errors, S3ObjectLocation}
-
-import scala.util.{Failure, Success, Try}
+import uk.ac.wellcome.storage.s3.S3ObjectLocation
 
 class S3RangedReader(implicit s3Client: AmazonS3) extends RangedReader[S3ObjectLocation] {
-  override def getBytes(
-    location: S3ObjectLocation,
-    range: ByteRange): scala.Either[ReadError, Array[Byte]] = {
+  override def getBytes(location: S3ObjectLocation, range: ByteRange): Array[Byte] = {
 
     // The S3 Range request is *inclusive* of the boundaries.
     //
@@ -29,20 +24,16 @@ class S3RangedReader(implicit s3Client: AmazonS3) extends RangedReader[S3ObjectL
           .withRange(start)
     }
 
+    val s3InputStream = s3Client.getObject(getRequest).getObjectContent
+    val byteArray = IOUtils.toByteArray(s3InputStream)
+
     // Remember to close the input stream afterwards, or we get errors like
     //
     //    com.amazonaws.SdkClientException: Unable to execute HTTP request:
     //    Timeout waiting for connection from pool
     //
-    Try {
-      val s3InputStream = s3Client.getObject(getRequest).getObjectContent
-      val byteArray = IOUtils.toByteArray(s3InputStream)
-      s3InputStream.close()
+    s3InputStream.close()
 
-      byteArray
-    } match {
-      case Success(bytes) => Right(bytes)
-      case Failure(err)   => Left(S3Errors.readErrors(err))
-    }
+    byteArray
   }
 }

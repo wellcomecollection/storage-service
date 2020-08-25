@@ -1,12 +1,11 @@
 package uk.ac.wellcome.platform.archive.common.storage.services
 
-import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.storage.models.{ClosedByteRange, OpenByteRange}
 
-trait RangedReaderTestCases[Ident, Namespace] extends AnyFunSpec with Matchers with EitherValues {
+trait RangedReaderTestCases[Ident, Namespace] extends AnyFunSpec with Matchers {
   def withNamespace[R](testWith: TestWith[Namespace, R]): R
 
   def createIdentWith(namespace: Namespace): Ident
@@ -22,7 +21,7 @@ trait RangedReaderTestCases[Ident, Namespace] extends AnyFunSpec with Matchers w
       writeString(ident, contents = "Hello world")
 
       val receivedBytes = withRangedReader {
-        _.getBytes(ident, range = ClosedByteRange(start = 1, count = 4)).right.value
+        _.getBytes(ident, range = ClosedByteRange(start = 1, count = 4))
       }
 
       receivedBytes shouldBe "ello".getBytes()
@@ -36,7 +35,7 @@ trait RangedReaderTestCases[Ident, Namespace] extends AnyFunSpec with Matchers w
       writeString(ident, contents = "Hello world")
 
       val receivedBytes = withRangedReader {
-        _.getBytes(ident, range = OpenByteRange(start = 6)).right.value
+        _.getBytes(ident, range = OpenByteRange(start = 6))
       }
 
       receivedBytes shouldBe "world".getBytes()
@@ -50,7 +49,7 @@ trait RangedReaderTestCases[Ident, Namespace] extends AnyFunSpec with Matchers w
       writeString(ident, contents = "Hello world")
 
       val receivedBytes = withRangedReader {
-        _.getBytes(ident, range = ClosedByteRange(start = 6, count = 50)).right.value
+        _.getBytes(ident, range = ClosedByteRange(start = 6, count = 50))
       }
 
       receivedBytes shouldBe "world".getBytes()
