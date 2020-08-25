@@ -10,8 +10,9 @@ import com.azure.storage.blob.models.BlobRange
 import com.azure.storage.blob.specialized.BlobInputStream
 import grizzled.slf4j.Logging
 import org.apache.commons.io.IOUtils
-import uk.ac.wellcome.platform.archive.common.storage.s3.S3RangedReader
+import uk.ac.wellcome.platform.archive.common.storage.models.ByteRange
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.{
+  S3RangedReader,
   S3SizeFinder,
   S3Uploader
 }
@@ -220,12 +221,17 @@ class AzurePutBlockTransfer(
     s3Length: Long,
     context: Unit
   ): Unit = {
+    // Note: this class is only used in the tests as a way to exercise the
+    // logic in AzureTransfer[…], so the raw exception here is okay.
     val bytes = rangedReader.getBytes(
       location = src,
-      offset = range.getOffset,
-      count = range.getCount,
-      totalLength = s3Length
-    )
+      range = ByteRange(range)
+    ) match {
+      case Right(value) => value
+      case Left(err)    => throw new RuntimeException(
+        s"Error reading chunk from S3 location $src (range $range): $err"
+      )
+    }
 
     val blockClient = blobServiceClient
       .getBlobContainerClient(dst.container)
