@@ -4,7 +4,7 @@ import subprocess
 import sys
 
 
-def check_call(cmd):
+def check_call(cmd, exit_on_error=True):
     """
     A wrapped version of subprocess.check_call() that doesn't print a
     traceback if the command errors.
@@ -13,7 +13,9 @@ def check_call(cmd):
     try:
         return subprocess.check_output(cmd).decode("utf8").strip()
     except subprocess.CalledProcessError as err:
-        sys.exit(err.returncode)
+        if exit_on_error:
+            sys.exit(err.returncode)
+        pass
 
 
 def make(*args):
@@ -21,8 +23,8 @@ def make(*args):
     check_call(["make"] + list(args))
 
 
-def git(*args):
+def git(*args, exit_on_error=True):
     """Run a Git command and return its output."""
     cmd = ["git"] + list(args)
 
-    return check_call(cmd)
+    return check_call(cmd, exit_on_error=exit_on_error)
