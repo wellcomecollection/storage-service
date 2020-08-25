@@ -8,6 +8,28 @@ import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 import scala.collection.JavaConverters._
 
+/** If you hold open an InputStream for a long time, eventually the network times out
+  * and you get an error.
+  *
+  * For example, from S3:
+  *
+  *     com.amazonaws.SdkClientException: Data read has a different length than the expected:
+  *     dataLength=1234; expectedLength=56789
+  *
+  * and Azure:
+  *
+  *
+  *     Could not create checksum: java.util.concurrent.TimeoutException: Did not observe
+  *     any item or terminal signal within 60000ms in 'map' (and no fallback has been configured)
+  *
+  * To get around this issue, we read large streams in "chunks", making a separate
+  * request for each segment.  The individual streams are then stitched back together
+  * in a SequenceInputStream, so to the caller it's presented as a single continuous stream.
+  *
+  * We're hoping that making regular Get requests will keep the network "fresh", and
+  * reduce the risk of a timeout while we're reading the stream.
+  *
+  */
 trait LargeStreamReader[Ident] extends Readable[Ident, InputStreamWithLength] {
   val bufferSize: Long
 

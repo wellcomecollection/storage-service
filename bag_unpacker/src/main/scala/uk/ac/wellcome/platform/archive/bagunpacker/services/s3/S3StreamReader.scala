@@ -13,23 +13,6 @@ import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 import scala.util.{Failure, Success, Try}
 
-/** If you hold open an S3ObjectInputStream for a long time, eventually the
-  * network times out and you get an error complaining that it hasn't read
-  * all the bytes from the stream.  For example:
-  *
-  *   com.amazonaws.SdkClientException: Data read has a different length than the expected:
-  *   dataLength=1234; expectedLength=56789
-  *
-  * To get around this issue, we read large objects in "chunks", making a
-  * separate GetObject request for each segment.  The individual streams are then
-  * stitched back together in a SequenceInputStream, so to the caller it's
-  * presented as a single continuous stream.
-  *
-  * We're hoping that making regular GetObject requests will keep the
-  * network "fresh", and reduce the risk of a timeout while we're reading
-  * the stream.
-  *
-  */
 class S3StreamReader(bufferSize: Long)(implicit s3Client: AmazonS3)
     extends Readable[S3ObjectLocation, InputStreamWithLength]
     with Logging {
