@@ -30,7 +30,9 @@ object BagInfoParser extends Logging {
   def create(inputStream: InputStream): Try[BagInfo] =
     for {
       bagInfoMetadata <- parse(inputStream)
-      _ = debug(s"Successfully parsed metadata map from bag-info.txt: $bagInfoMetadata")
+      _ = debug(
+        s"Successfully parsed metadata map from bag-info.txt: $bagInfoMetadata"
+      )
 
       // Extract required fields
       externalIdentifier <- extractExternalIdentifier(bagInfoMetadata)

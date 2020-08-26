@@ -106,9 +106,12 @@ class BagInfoParserTest
             |External-Description: John Bishop King: diary 1855-1866.
             |""".stripMargin
 
-      val bagInfo = BagInfoParser.create(toInputStream(bagInfoString)).success.value
+      val bagInfo =
+        BagInfoParser.create(toInputStream(bagInfoString)).success.value
 
-      bagInfo.externalDescription shouldBe Some(ExternalDescription("John Bishop King: diary 1855-1866."))
+      bagInfo.externalDescription shouldBe Some(
+        ExternalDescription("John Bishop King: diary 1855-1866.")
+      )
     }
   }
 
