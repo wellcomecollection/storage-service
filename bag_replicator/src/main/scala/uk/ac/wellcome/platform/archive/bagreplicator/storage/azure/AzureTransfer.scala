@@ -6,16 +6,22 @@ import java.net.URL
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.S3ObjectInputStream
 import com.azure.storage.blob.BlobServiceClient
-import com.azure.storage.blob.models.BlobRange
-import com.azure.storage.blob.specialized.BlobInputStream
+import com.azure.storage.blob.models.{
+  BlobRange,
+  BlobStorageException,
+  BlockListType
+}
+import com.azure.storage.blob.specialized.{BlobInputStream, BlockBlobClient}
 import grizzled.slf4j.Logging
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.platform.archive.common.storage.models.ByteRange
+import uk.ac.wellcome.platform.archive.common.storage.services.azure.AzureSizeFinder
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.{
   S3RangedReader,
   S3SizeFinder,
   S3Uploader
 }
+import uk.ac.wellcome.storage.{RetryableError, StoreWriteError}
 import uk.ac.wellcome.storage.azure.AzureBlobLocation
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
 import uk.ac.wellcome.storage.transfer._
@@ -29,6 +35,8 @@ trait AzureTransfer[Context]
     with Logging {
   implicit val s3Client: AmazonS3
   implicit val blobServiceClient: BlobServiceClient
+
+  import uk.ac.wellcome.storage.RetryOps._
 
   val blockSize: Long
 
@@ -86,27 +94,106 @@ trait AzureTransfer[Context]
       .getBlobClient(dst.name)
       .getBlockBlobClient
 
+    // To write a large blob to Azure, we write a series of individual blocks
+    // Each block has a deterministic ID -- 1, 2, 3, 4, and so on, which then gets
+    // zero-padded to a fixed length and base64 encoded.
+    //
+    // When we've written every block, we "commit" them.  This causes Azure to
+    // stitch them together into a single block.
     val ranges =
       BlobRangeUtil.getRanges(length = s3Length, blockSize = blockSize)
     val identifiers = BlobRangeUtil.getBlockIdentifiers(count = ranges.size)
 
+    // We pay to transfer data out of AWS; look up any blocks that we've already
+    // written (e.g. by an interrupted replicator) and skip rewriting them.
+    // This makes the transfer more reliable and saves money!
+    //
+    // If they do somehow contain corrupt data, it'll be caught by the verifier.
+    val uncommittedBlockIds: Set[String] = getUncommittedBlockIds(blockClient)
+
     Try {
       identifiers.zip(ranges).foreach {
         case (blockId, range) =>
-          debug(s"Uploading to $dst with range $range / block Id $blockId")
-          writeBlockToAzure(
-            src = src,
-            dst = dst,
-            range = range,
-            blockId = blockId,
-            s3Length = s3Length,
-            context = context
-          )
+          if (uncommittedBlockIds.contains(blockId)) {
+            debug(
+              s"Skipping upload to $dst with range $range / block ID $blockId (this block already exists)"
+            )
+          } else {
+            debug(s"Uploading to $dst with range $range / block ID $blockId")
+
+            // For very large objects, we have to successfully Put a lot of blocks for
+            // the transfer to succeed.
+            //
+            // Retry the Put of each individual block three times before we give up.
+            def writeOnce: (
+              (
+                S3ObjectLocation,
+                AzureBlobLocation,
+                BlobRange,
+                String,
+                Long,
+                Context
+              )
+            ) => Either[StoreWriteError with RetryableError, Unit] = {
+              args: (
+                S3ObjectLocation,
+                AzureBlobLocation,
+                BlobRange,
+                String,
+                Long,
+                Context
+              ) =>
+                val (src, dst, range, blockId, s3Length, context) = args
+
+                Try {
+                  writeBlockToAzure(
+                    src = src,
+                    dst = dst,
+                    range = range,
+                    blockId = blockId,
+                    s3Length = s3Length,
+                    context = context
+                  )
+                } match {
+                  case Success(_) => Right(())
+                  case Failure(err) =>
+                    warn(
+                      s"Error while trying to Put Block to $dst range $range: $err"
+                    )
+                    Left(new StoreWriteError(err) with RetryableError)
+                }
+            }
+
+            writeOnce.retry(maxAttempts = 3)(
+              (src, dst, range, blockId, s3Length, context)
+            ) match {
+              case Right(_)  => ()
+              case Left(err) => throw err.e
+            }
+          }
       }
 
       blockClient.commitBlockList(identifiers.toList.asJava, allowOverwrites)
     }
   }
+
+  private def getUncommittedBlockIds(
+    blockClient: BlockBlobClient
+  ): Set[String] =
+    Try {
+      blockClient
+        .listBlocks(BlockListType.UNCOMMITTED)
+        .getUncommittedBlocks
+        .asScala
+        .map { _.getName }
+        .toSet
+    } match {
+      case Success(blockIds) => blockIds
+      // What if we're the first person to write to this blob?
+      case Failure(exc: BlobStorageException) if exc.getStatusCode == 404 =>
+        Set.empty
+      case Failure(err) => throw err
+    }
 
   override protected def transferWithCheckForExisting(
     src: S3ObjectLocation,
@@ -170,7 +257,7 @@ trait AzureTransfer[Context]
         .openInputStream()
     }
 
-  private def compare(
+  protected def compare(
     src: S3ObjectLocation,
     dst: AzureBlobLocation,
     srcStream: InputStream,
@@ -283,4 +370,36 @@ class AzurePutBlockFromUrlTransfer(
 
     blockClient.stageBlockFromUrl(blockId, presignedUrl.toString, range)
   }
+
+  // In the actual replicator, if there's an object in S3 and an object in Azure,
+  // assume they're both the same.  The verifier will validate the checksum later.
+  //
+  // This means that if the replicator is interrupted, it won't wait (and cost money)
+  // to read the existing blob out of Azure.  If the sizes match, it's good enough
+  // for the replicator to assume they're the same.
+  private val s3SizeFinder = new S3SizeFinder()
+  private val azureSizeFinder = new AzureSizeFinder()
+
+  override protected def compare(
+    src: S3ObjectLocation,
+    dst: AzureBlobLocation,
+    srcStream: InputStream,
+    dstStream: InputStream
+  ): Either[
+    TransferOverwriteFailure[S3ObjectLocation, AzureBlobLocation],
+    TransferNoOp[S3ObjectLocation, AzureBlobLocation]
+  ] =
+    (s3SizeFinder.getSize(src), azureSizeFinder.getSize(dst)) match {
+      case (Right(srcSize), Right(dstSize)) if srcSize == dstSize =>
+        Right(TransferNoOp(src, dst))
+
+      case _ =>
+        Left(
+          TransferOverwriteFailure(
+            src,
+            dst,
+            e = new Throwable(s"Sizes of $src and $dst don't match!")
+          )
+        )
+    }
 }
