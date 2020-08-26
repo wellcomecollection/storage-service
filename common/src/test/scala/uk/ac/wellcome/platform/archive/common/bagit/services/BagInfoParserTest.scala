@@ -97,6 +97,19 @@ class BagInfoParserTest
         BagInfoParser.create(toInputStream(bagInfoString)).success.value
       bagInfo.externalIdentifier shouldBe externalIdentifier
     }
+
+    it("handles a colon in a field value") {
+      val bagInfoString =
+        s"""|External-Identifier: $createExternalIdentifier
+            |Payload-Oxum: $createPayloadOxum
+            |Bagging-Date: $randomLocalDate
+            |External-Description: John Bishop King: diary 1855-1866.
+            |""".stripMargin
+
+      val bagInfo = BagInfoParser.create(toInputStream(bagInfoString)).success.value
+
+      bagInfo.externalDescription shouldBe Some(ExternalDescription("John Bishop King: diary 1855-1866."))
+    }
   }
 
   describe("rejects a bag-info.txt that is missing required fields") {
