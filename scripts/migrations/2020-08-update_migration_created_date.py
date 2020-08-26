@@ -30,7 +30,9 @@ def get_bucket_key(item):
             bucket = item["payload"]["bucket"]
             key = item["payload"]["key"]
         except:
-            record_error(item["id"], item["version"], f"Cannot find s3 bucket, key in {item}")
+            record_error(
+                item["id"], item["version"], f"Cannot find s3 bucket, key in {item}"
+            )
         else:
             return bucket, key
     else:
@@ -50,14 +52,14 @@ def put_vhs_json(id, version, bucket, item, content):
     item["payload"]["bucket"] = bucket
     item["payload"]["key"] = key
     try:
-        s3.Object(bucket, key).put(
-            Body=(bytes(json.dumps(content).encode('UTF-8')))
-        )
-        dynamodb.Table(vhs_table).put_item(
-            Item=item
-        )
+        s3.Object(bucket, key).put(Body=(bytes(json.dumps(content).encode("UTF-8"))))
+        dynamodb.Table(vhs_table).put_item(Item=item)
     except ClientError as e:
-        record_error(id, version, f"Error updating backfill vhs object {id}/{version} to s3://{bucket}/{key}: {e}")
+        record_error(
+            id,
+            version,
+            f"Error updating backfill vhs object {id}/{version} to s3://{bucket}/{key}: {e}",
+        )
 
 
 def get_backfill_item(id, version):
@@ -75,7 +77,7 @@ def is_expected_diff(id, version, current_json, backfill_json):
     if diff:
         values_changed = diff.pop("values_changed", None)
         items_added = diff.pop("iterable_item_added", None)
-        if values_changed and values_changed.keys()-["root['createdDate']"]:
+        if values_changed and values_changed.keys() - ["root['createdDate']"]:
             record_error(id, version, f"Unexpected values changed in {values_changed}!")
             return False
         if items_added and items_added.keys() - ["root['replicaLocations'][1]"]:
@@ -99,11 +101,15 @@ for item in scan_table(TableName=vhs_table):
             if backfilled_item:
                 backfilled_bucket = backfilled_item["payload"]["bucket"]
                 backfilled_key = backfilled_item["payload"]["key"]
-                backfilled_json = get_vhs_json(id, version, backfilled_bucket, backfilled_key)
+                backfilled_json = get_vhs_json(
+                    id, version, backfilled_bucket, backfilled_key
+                )
                 if backfilled_json:
-                    if is_expected_diff(id,version,vhs_content, backfilled_json):
+                    if is_expected_diff(id, version, vhs_content, backfilled_json):
                         backfilled_json["createdDate"] = created_date
-                        put_vhs_json(id, version, bucket, backfilled_item, backfilled_json)
+                        put_vhs_json(
+                            id, version, bucket, backfilled_item, backfilled_json
+                        )
 if errors:
     print("\033[91mThere are errors!")
     exit(1)
