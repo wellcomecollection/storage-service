@@ -19,7 +19,8 @@ errors = {}
 
 def record_error(id, version, err):
     print(f"\033[91mError while updating {id}/{version}: {err}")
-    errors[f'{id}/{version}'] = err
+    errors[f"{id}/{version}"] = err
+
 
 def get_bucket_key(item):
     try:
@@ -49,8 +50,7 @@ def get_vhs_json(id, version, bucket, key):
 def put_vhs_json(id, version, bucket, item, content):
     filename = f"{uuid.uuid4()}.json"
     key = f"{id}/{version}/{filename}"
-    item["payload"]["bucket"] = bucket
-    item["payload"]["key"] = key
+    item["payload"] = {"bucket": bucket, "key": key}
     try:
         s3.Object(bucket, key).put(Body=(bytes(json.dumps(content).encode("UTF-8"))))
         dynamodb.Table(vhs_table).put_item(Item=item)
@@ -71,9 +71,7 @@ def get_backfill_item(id, version):
         record_error(id, version, f"Cannot find backfill storage manifest!!!!")
 
 
-def is_expected_diff(id, version, current_json, backfill_json):
-    diff = DeepDiff(current_json, backfill_json, ignore_order=True)
-
+def is_expected_diff(id, version, diff):
     if diff:
         values_changed = diff.pop("values_changed", None)
         items_added = diff.pop("iterable_item_added", None)
@@ -105,7 +103,8 @@ for item in scan_table(TableName=vhs_table):
                     id, version, backfilled_bucket, backfilled_key
                 )
                 if backfilled_json:
-                    if is_expected_diff(id, version, vhs_content, backfilled_json):
+                    diff = DeepDiff(vhs_content, backfilled_json, ignore_order=True)
+                    if diff and is_expected_diff(id, version, diff):
                         backfilled_json["createdDate"] = created_date
                         put_vhs_json(
                             id, version, bucket, backfilled_item, backfilled_json
