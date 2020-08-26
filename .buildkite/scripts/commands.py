@@ -14,7 +14,7 @@ def _subprocess_run(cmd, exit_on_error=True):
 
     # Await command completion and print lines as they come in
     for stdout_line in iter(pipe.stdout.readline, ""):
-        print(stdout_line.strip())
+        print(stdout_line, end="")
         output.append(stdout_line)
 
     # Extract results
