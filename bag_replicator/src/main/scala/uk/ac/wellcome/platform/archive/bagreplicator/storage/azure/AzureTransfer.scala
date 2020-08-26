@@ -6,8 +6,8 @@ import java.net.URL
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.S3ObjectInputStream
 import com.azure.storage.blob.BlobServiceClient
-import com.azure.storage.blob.models.BlobRange
-import com.azure.storage.blob.specialized.BlobInputStream
+import com.azure.storage.blob.models.{BlobRange, BlobStorageException, BlockListType}
+import com.azure.storage.blob.specialized.{BlobInputStream, BlockBlobClient}
 import grizzled.slf4j.Logging
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.platform.archive.common.storage.models.ByteRange
@@ -86,26 +86,57 @@ trait AzureTransfer[Context]
       .getBlobClient(dst.name)
       .getBlockBlobClient
 
+    // To write a large blob to Azure, we write a series of individual blocks
+    // Each block has a deterministic ID -- 1, 2, 3, 4, and so on, which then gets
+    // zero-padded to a fixed length and base64 encoded.
+    //
+    // When we've written every block, we "commit" them.  This causes Azure to
+    // stitch them together into a single block.
     val ranges =
       BlobRangeUtil.getRanges(length = s3Length, blockSize = blockSize)
     val identifiers = BlobRangeUtil.getBlockIdentifiers(count = ranges.size)
 
+    // We pay to transfer data out of AWS; look up any blocks that we've already
+    // written (e.g. by an interrupted replicator) and skip rewriting them.
+    // This makes the transfer more reliable and saves money!
+    //
+    // If they do somehow contain corrupt data, it'll be caught by the verifier.
+    val uncommittedBlockIds: Set[String] = getUncommittedBlockIds(blockClient)
+
     Try {
       identifiers.zip(ranges).foreach {
         case (blockId, range) =>
-          debug(s"Uploading to $dst with range $range / block Id $blockId")
-          writeBlockToAzure(
-            src = src,
-            dst = dst,
-            range = range,
-            blockId = blockId,
-            s3Length = s3Length,
-            context = context
-          )
+          if (uncommittedBlockIds.contains(blockId)) {
+            debug(s"Skipping upload to $dst with range $range / block ID $blockId (this block already exists)")
+          } else {
+            debug(s"Uploading to $dst with range $range / block ID $blockId")
+            writeBlockToAzure(
+              src = src,
+              dst = dst,
+              range = range,
+              blockId = blockId,
+              s3Length = s3Length,
+              context = context
+            )
+          }
       }
 
       blockClient.commitBlockList(identifiers.toList.asJava, allowOverwrites)
     }
+  }
+
+  private def getUncommittedBlockIds(blockClient: BlockBlobClient): Set[String] = Try {
+    blockClient
+      .listBlocks(BlockListType.UNCOMMITTED)
+      .getUncommittedBlocks
+      .asScala
+      .map { _.getName }
+      .toSet
+  } match {
+    case Success(blockIds) => blockIds
+    // What if we're the first person to write to this blob?
+    case Failure(exc: BlobStorageException) if exc.getStatusCode == 404 => Set.empty
+    case Failure(err) => throw err
   }
 
   override protected def transferWithCheckForExisting(

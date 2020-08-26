@@ -1,5 +1,8 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.storage.azure
 
+import java.io.ByteArrayInputStream
+
+import com.azure.storage.blob.models.BlobRange
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
@@ -144,6 +147,49 @@ class AzurePutBlockTransferTest
             }
           }
       }
+    }
+  }
+
+  it("skips blocks that have already been written") {
+    withNamespacePair {
+      case (srcBucket, dstContainer) =>
+        val src = createSrcLocation(srcBucket)
+        val dst = createDstLocation(dstContainer)
+
+        s3Client.putObject(src.bucket, src.key, "Hello world")
+
+        // Write the first block to the destination blob
+        val blockClient = azureClient
+          .getBlobContainerClient(dst.container)
+          .getBlobClient(dst.name)
+          .getBlockBlobClient
+
+        val blockId = BlobRangeUtil.getBlockIdentifiers(count = 3).head
+
+        blockClient.stageBlock(blockId, new ByteArrayInputStream("Hello".getBytes()), 5)
+
+        var howManyBlocksWritten = 0
+
+        val transfer = new AzurePutBlockTransfer(blockSize = 5L) {
+          override def writeBlockToAzure(
+            src: S3ObjectLocation,
+            dst: AzureBlobLocation,
+            range: BlobRange,
+            blockId: String,
+            s3Length: Long,
+            context: Unit
+          ): Unit = {
+            howManyBlocksWritten += 1
+            super.writeBlockToAzure(src, dst, range, blockId, s3Length, context)
+          }
+        }
+
+        val result = transfer.transfer(src, dst)
+        result.right.value shouldBe TransferPerformed(src, dst)
+
+        // "Hello world" is 11 bytes long.  Bytes 1-5 were already written, which means
+        // the transfer should have written 6-10 and 11-.
+        howManyBlocksWritten shouldBe 2
     }
   }
 }
