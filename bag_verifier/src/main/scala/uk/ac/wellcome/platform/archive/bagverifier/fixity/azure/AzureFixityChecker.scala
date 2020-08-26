@@ -14,16 +14,24 @@ import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 class AzureFixityChecker(implicit blobClient: BlobServiceClient)
     extends FixityChecker[AzureBlobLocation, AzureBlobLocationPrefix] {
 
-  // The verifier gets 4GB of memory, and may be processing up to ten objects at once.
-  // Allowing a GB of overhead for other functions, let it read 200MB at a time.
+  // Working out the correct value for this took a bit of experimentation; initially
+  // I tried 200MB at a time, but that hit timeout errors, e.g.
   //
-  // This means reading a 166GB object (the largest so far in the storage service) will
-  // require 830 Read calls.
+  //      java.util.concurrent.TimeoutException: Did not observe any item or terminal
+  //      signal within 60000ms in 'map' (and no fallback has been configured))
   //
-  // In practice most objects are well under this threshhold, so it won't be maxing out.
+  // I had the idea to shrink the size of the buffer by looking at AzCopy, a utility
+  // for downloading large blobs from Azure… as files.  The actual download code seems
+  // to be in the Azure Blob Storage library for Go.  It downloads blobs 4MB at a time.
+  // See https://github.com/Azure/azure-storage-blob-go/blob/48358e1de5110852097ebbc11c53581d64d47300/azblob/highlevel.go#L157-L175
+  //
+  // I went a bit bigger to reduce the number of requests we have to make, but
+  // not by much.
+  //
+  // This bufferSize has successfully verified a blob which was 166 GiB in size.
   override protected val streamReader
     : Readable[AzureBlobLocation, InputStreamWithLength] =
-    new AzureLargeStreamReader(bufferSize = 200 * 1000 * 1000)
+    new AzureLargeStreamReader(bufferSize = 16 * 1000 * 1000)  // 16 MB
 
   override protected val sizeFinder =
     new AzureSizeFinder()
