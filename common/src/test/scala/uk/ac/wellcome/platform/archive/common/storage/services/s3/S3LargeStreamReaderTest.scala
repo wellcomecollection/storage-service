@@ -69,7 +69,11 @@ class S3LargeStreamReaderTest
 
       // One to get the size of the object, two to read the contents
       Mockito
-        .verify(spyClient, Mockito.atLeast(3))
+        .verify(spyClient, Mockito.atLeast(1))
+        .getObjectMetadata(location.bucket, location.key)
+
+      Mockito
+        .verify(spyClient, Mockito.atLeast(2))
         .getObject(any[GetObjectRequest])
     }
   }
