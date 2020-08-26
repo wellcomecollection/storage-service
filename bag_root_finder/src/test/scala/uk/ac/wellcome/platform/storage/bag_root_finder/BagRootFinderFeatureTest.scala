@@ -39,7 +39,7 @@ class BagRootFinderFeatureTest
         bagRoot = unpackedBagRoot
       )
 
-      withLocalSqsQueue() { queue =>
+      withLocalSqsQueue(visibilityTimeout = 5) { queue =>
         val ingests = new MemoryMessageSender()
         val outgoing = new MemoryMessageSender()
         withWorkerService(
