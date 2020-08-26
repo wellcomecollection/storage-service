@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import json
+import uuid
 from botocore.exceptions import ClientError
 from deepdiff import DeepDiff
 
@@ -17,7 +18,7 @@ errors = {}
 
 
 def record_error(id, version, err):
-    print(f"Error while updating {id}/{version}: {err}")
+    print(f"\033[91mError while updating {id}/{version}: {err}")
     errors[f'{id}/{version}'] = err
 
 def get_bucket_key(item):
@@ -47,12 +48,18 @@ def put_vhs_json(id, version, bucket, content):
     bb = uuid.uuid4()
     key = f"{id}/{version}/{bb}"
     try:
-        s3object = s3.Object(bucket, key)
-        # s3object.put(
-        #     Body=(bytes(json.dumps(content).encode('UTF-8')))
-        # )
+        s3.Object(bucket, key).put(
+            Body=(bytes(json.dumps(content).encode('UTF-8')))
+        )
+        dynamodb.Table(vhs_table).update_item(
+            Key={"id": id, "version": version},
+            UpdateExpression='SET payload :newPayload',
+            AttributeUpdates={
+                ':newPayload': {"bucket": { "S" : bucket },    "key" : { "S" : key }}
+            }
+        )
     except ClientError as e:
-        record_error(id, version, f"Error updating backfill vhs object s3://{bucket}/{key}")
+        record_error(id, version, f"Error updating backfill vhs object {id}/{version} to s3://{bucket}/{key}: {e}")
 
 
 def get_backfill_item(id, version):
@@ -98,11 +105,11 @@ for item in scan_table(TableName=vhs_table):
                 if backfilled_json:
                     if is_expected_diff(id,version,vhs_content, backfilled_json):
                         backfilled_json["createdDate"] = created_date
-                        put_vhs_json(id, backfilled_bucket, backfilled_key, backfilled_json)
+                        put_vhs_json(id, version, bucket, backfilled_json)
 
 if errors:
-    print(errors)
+    print("\033[91mThere are errors!")
     exit(1)
 else:
-    print("Finished with no errors!")
+    print("\033[92mFinished with no errors!")
     exit(0)
