@@ -6,7 +6,7 @@ from deepdiff import DeepDiff
 
 from common import get_aws_resource, scan_table
 
-READ_ONLY_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
+READ_ONLY_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
 dynamodb = get_aws_resource("dynamodb", role_arn=READ_ONLY_ROLE_ARN)
 s3 = get_aws_resource("s3", role_arn=READ_ONLY_ROLE_ARN)
 
@@ -44,19 +44,17 @@ def get_vhs_json(id, version, bucket, key):
         record_error(id, version, f"Cannot read s3 entry for {id}: {item}: {e}")
 
 
-def put_vhs_json(id, version, bucket, content):
-    bb = uuid.uuid4()
-    key = f"{id}/{version}/{bb}"
+def put_vhs_json(id, version, bucket, item, content):
+    filename = f"{uuid.uuid4()}.json"
+    key = f"{id}/{version}/{filename}"
+    item["payload"]["bucket"] = bucket
+    item["payload"]["key"] = key
     try:
         s3.Object(bucket, key).put(
             Body=(bytes(json.dumps(content).encode('UTF-8')))
         )
-        dynamodb.Table(vhs_table).update_item(
-            Key={"id": id, "version": version},
-            UpdateExpression='SET payload :newPayload',
-            AttributeUpdates={
-                ':newPayload': {"bucket": { "S" : bucket },    "key" : { "S" : key }}
-            }
+        dynamodb.Table(vhs_table).put_item(
+            Item=item
         )
     except ClientError as e:
         record_error(id, version, f"Error updating backfill vhs object {id}/{version} to s3://{bucket}/{key}: {e}")
@@ -105,8 +103,7 @@ for item in scan_table(TableName=vhs_table):
                 if backfilled_json:
                     if is_expected_diff(id,version,vhs_content, backfilled_json):
                         backfilled_json["createdDate"] = created_date
-                        put_vhs_json(id, version, bucket, backfilled_json)
-
+                        put_vhs_json(id, version, bucket, backfilled_item, backfilled_json)
 if errors:
     print("\033[91mThere are errors!")
     exit(1)
