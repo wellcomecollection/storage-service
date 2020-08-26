@@ -1,6 +1,8 @@
 package uk.ac.wellcome.platform.archive.common.storage.services.s3
 
-import com.amazonaws.services.s3.model.AmazonS3Exception
+import com.amazonaws.services.s3.model._
+import org.mockito.Mockito._
+import org.mockito.Matchers._
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.storage.services.{
   SizeFinder,
@@ -40,5 +42,35 @@ class S3SizeFinderTest
 
     result.left.value shouldBe a[DoesNotExistError]
     result.left.value.e shouldBe a[AmazonS3Exception]
+  }
+
+  it("finds the size of an object in Glacier") {
+    // Note: CloudServer (the Docker image we use for mocking S3 in tests) doesn't
+    // handle objects in Glacier correctly.
+    //
+    // Normally, calling GetObject on something in Glacier will return an error
+    // (InvalidObjectState), but GetObjectMetadata works fine.  We use spy() here
+    // because we can't rely on CloudServer to warn us itself.
+    //
+    // See https://github.com/scality/cloudserver/issues/2977
+    withLocalS3Bucket { bucket =>
+      val location = createS3ObjectLocationWith(bucket)
+
+      val inputStream = randomInputStream()
+
+      s3Client.putObject(
+        new PutObjectRequest(location.bucket, location.key, inputStream, new ObjectMetadata())
+          .withStorageClass(StorageClass.Glacier)
+      )
+
+      val spyClient = spy(s3Client)
+
+      val sizeFinder = new S3SizeFinder()(spyClient)
+
+      sizeFinder.getSize(location).right.value shouldBe inputStream.length
+
+      verify(spyClient, never()).getObject(any[String], any[String])
+      verify(spyClient, never()).getObject(any[GetObjectRequest])
+    }
   }
 }
