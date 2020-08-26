@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import json
 from botocore.exceptions import ClientError
+from deepdiff import DeepDiff
 
 from common import get_aws_resource, scan_table
 
@@ -65,5 +66,18 @@ for item in scan_table(TableName=vhs_table):
             backfilled_bucket = backfilled_item["payload"]["bucket"]
             backfilled_key = backfilled_item["payload"]["key"]
             backfilled_json = get_vhs_json(backfilled_bucket, backfilled_key)
+
+            diff = DeepDiff(vhs_content, backfilled_json, ignore_order=True)
+
+            if diff:
+                values_changed = diff.pop("values_changed", None)
+                items_added = diff.pop("iterable_item_added", None)
+                if values_changed and values_changed.keys()-["root['createdDate']"]:
+                    raise RuntimeError(f"Unexpected values changed in {values_changed} for {id}:{version}!")
+                if items_added and items_added.keys() - ["root['replicaLocations'][1]"]:
+                    raise RuntimeError(f"Unexpected values changed in {items_added} for {id}:{version}!")
+                if diff:
+                    raise RuntimeError(f"Unexpected values changed in {diff} for {id}:{version}!")
+
             backfilled_json["createdDate"] = created_date
             put_vhs_json(backfilled_bucket, backfilled_key, backfilled_json)
