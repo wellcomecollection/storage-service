@@ -15,6 +15,7 @@ import com.azure.storage.blob.specialized.{BlobInputStream, BlockBlobClient}
 import grizzled.slf4j.Logging
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.platform.archive.common.storage.models.ByteRange
+import uk.ac.wellcome.platform.archive.common.storage.services.azure.AzureSizeFinder
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.{
   S3RangedReader,
   S3SizeFinder,
@@ -236,7 +237,7 @@ trait AzureTransfer[Context]
         .openInputStream()
     }
 
-  private def compare(
+  protected def compare(
     src: S3ObjectLocation,
     dst: AzureBlobLocation,
     srcStream: InputStream,
@@ -349,4 +350,29 @@ class AzurePutBlockFromUrlTransfer(
 
     blockClient.stageBlockFromUrl(blockId, presignedUrl.toString, range)
   }
+
+  // In the actual replicator, if there's an object in S3 and an object in Azure,
+  // assume they're both the same.  The verifier will validate the checksum later.
+  //
+  // This means that if the replicator is interrupted, it won't wait (and cost money)
+  // to read the existing blob out of Azure.  If the sizes match, it's good enough
+  // for the replicator to assume they're the same.
+  private val s3SizeFinder = new S3SizeFinder()
+  private val azureSizeFinder = new AzureSizeFinder()
+
+  override protected def compare(
+    src: S3ObjectLocation,
+    dst: AzureBlobLocation,
+    srcStream: InputStream,
+    dstStream: InputStream): Either[
+      TransferOverwriteFailure[S3ObjectLocation, AzureBlobLocation],
+      TransferNoOp[S3ObjectLocation, AzureBlobLocation]
+    ] =
+      (s3SizeFinder.getSize(src), azureSizeFinder.getSize(dst)) match {
+        case (Right(srcSize), Right(dstSize)) if srcSize == dstSize =>
+          Right(TransferNoOp(src, dst))
+
+        case _ =>
+          Left(TransferOverwriteFailure(src, dst, e = new Throwable(s"Sizes of $src and $dst don't match!")))
+      }
 }
