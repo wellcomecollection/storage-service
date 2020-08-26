@@ -59,8 +59,12 @@ class S3SizeFinderTest
       val inputStream = randomInputStream()
 
       s3Client.putObject(
-        new PutObjectRequest(location.bucket, location.key, inputStream, new ObjectMetadata())
-          .withStorageClass(StorageClass.Glacier)
+        new PutObjectRequest(
+          location.bucket,
+          location.key,
+          inputStream,
+          new ObjectMetadata()
+        ).withStorageClass(StorageClass.Glacier)
       )
 
       val spyClient = spy(s3Client)
