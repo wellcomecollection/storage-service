@@ -243,8 +243,8 @@ object BagInfoParser extends Logging {
   //      Organization-Address: 1 Main St., Cupertino, California, 11111
   //      Contact-Name: Jane Doe
   //
-  private val BAG_INFO_FIELD_REGEX = """(.+)\s*:\s(.+)\s*""".r
-  private val BAG_INFO_LABEL_ONLY_REGEX = """(.+)\s*:\s*""".r
+  private val BAG_INFO_FIELD_REGEX = """([^:]+)\s*:\s(.+)\s*""".r
+  private val BAG_INFO_LABEL_ONLY_REGEX = """([^:]+)\s*:\s*""".r
 
   private def parseSingleLine(line: String): Either[String, (String, String)] =
     line match {
