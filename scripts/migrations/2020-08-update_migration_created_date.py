@@ -6,9 +6,9 @@ from deepdiff import DeepDiff
 
 from common import get_aws_resource, scan_table
 
-READ_ONLY_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
-dynamodb = get_aws_resource("dynamodb", role_arn=READ_ONLY_ROLE_ARN)
-s3 = get_aws_resource("s3", role_arn=READ_ONLY_ROLE_ARN)
+DEVELOPER_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
+dynamodb = get_aws_resource("dynamodb", role_arn=DEVELOPER_ROLE_ARN)
+s3 = get_aws_resource("s3", role_arn=DEVELOPER_ROLE_ARN)
 
 vhs_table = "vhs-storage-staging-manifests-2020-07-24"
 
@@ -18,7 +18,7 @@ errors = {}
 
 
 def record_error(id, version, err):
-    print(f"\033[91mError while updating {id}/{version}: {err}")
+    print(f"\033[91mError while updating {id}/{version}: {err}\u001b[0m")
     errors[f"{id}/{version}"] = err
 
 
@@ -90,10 +90,12 @@ def is_expected_diff(id, version, diff):
 for item in scan_table(TableName=vhs_table):
     id = item["id"]
     version = item["version"]
-    bucket, key = get_bucket_key(item)
-    if bucket and key:
+    print(f"Updating {id}/{version}")
+    bucket_key = get_bucket_key(item)
+    if bucket_key:
+        bucket, key = bucket_key
         vhs_content = get_vhs_json(id, version, bucket, key)
-        if vhs_content:
+        if vhs_content and len(vhs_content['replicaLocations']) < 2:
             created_date = vhs_content["createdDate"]
             backfilled_item = get_backfill_item(id, version)
             if backfilled_item:
