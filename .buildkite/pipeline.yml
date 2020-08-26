@@ -1,0 +1,24 @@
+steps:
+  - command: .buildkite/scripts/run_autoformat.py
+  - wait
+  - command: .buildkite/scripts/run_job.py common
+  - command: .buildkite/scripts/run_job.py display
+  - command: .buildkite/scripts/run_job.py indexer_common
+  - wait
+  - command: .buildkite/scripts/run_job.py bags_api
+  - command: .buildkite/scripts/run_job.py bag_register
+  - command: .buildkite/scripts/run_job.py bag_replicator
+  - command: .buildkite/scripts/run_job.py bag_root_finder
+  - command: .buildkite/scripts/run_job.py bag_tagger
+  - command: .buildkite/scripts/run_job.py bag_verifier
+  - command: .buildkite/scripts/run_job.py bag_unpacker
+  - command: .buildkite/scripts/run_job.py bag_versioner
+  - command: .buildkite/scripts/run_job.py replica_aggregator
+  - command: .buildkite/scripts/run_job.py bag_indexer
+  - command: .buildkite/scripts/run_job.py ingests_indexer
+  - command: .buildkite/scripts/run_job.py ingests_worker
+  - command: .buildkite/scripts/run_job.py ingests_tracker
+  - command: .buildkite/scripts/run_job.py ingests_api
+  - command: .buildkite/scripts/run_job.py notifier
+  - wait
+  - command: .buildkite/scripts/complete_build.py
