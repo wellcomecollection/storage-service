@@ -7,7 +7,11 @@ import uk.ac.wellcome.storage.store.azure.AzureTypedStore
 import uk.ac.wellcome.storage.store.s3.S3TypedStore
 import uk.ac.wellcome.storage.transfer.{TransferNoOp, TransferOverwriteFailure}
 
-class AzurePutBlockFromURLTransferTest extends AnyFunSpec with Matchers with S3Fixtures with AzureFixtures {
+class AzurePutBlockFromURLTransferTest
+    extends AnyFunSpec
+    with Matchers
+    with S3Fixtures
+    with AzureFixtures {
   val srcStore: S3TypedStore[String] = S3TypedStore[String]
   val dstStore: AzureTypedStore[String] = AzureTypedStore[String]
 
@@ -23,7 +27,10 @@ class AzurePutBlockFromURLTransferTest extends AnyFunSpec with Matchers with S3F
           srcStore.put(src)("Hello world") shouldBe a[Right[_, _]]
           dstStore.put(dst)("Hello world") shouldBe a[Right[_, _]]
 
-          transfer.transfer(src, dst, checkForExisting = true).right.value shouldBe TransferNoOp(src, dst)
+          transfer
+            .transfer(src, dst, checkForExisting = true)
+            .right
+            .value shouldBe TransferNoOp(src, dst)
         }
       }
     }
@@ -37,7 +44,10 @@ class AzurePutBlockFromURLTransferTest extends AnyFunSpec with Matchers with S3F
           srcStore.put(src)("hello world") shouldBe a[Right[_, _]]
           dstStore.put(dst)("HELLO WORLD") shouldBe a[Right[_, _]]
 
-          transfer.transfer(src, dst, checkForExisting = true).right.value shouldBe TransferNoOp(src, dst)
+          transfer
+            .transfer(src, dst, checkForExisting = true)
+            .right
+            .value shouldBe TransferNoOp(src, dst)
         }
       }
     }
@@ -51,7 +61,10 @@ class AzurePutBlockFromURLTransferTest extends AnyFunSpec with Matchers with S3F
           srcStore.put(src)("Hello world") shouldBe a[Right[_, _]]
           dstStore.put(dst)("Greetings, humans") shouldBe a[Right[_, _]]
 
-          transfer.transfer(src, dst, checkForExisting = true).left.value shouldBe a[TransferOverwriteFailure[_, _]]
+          transfer
+            .transfer(src, dst, checkForExisting = true)
+            .left
+            .value shouldBe a[TransferOverwriteFailure[_, _]]
         }
       }
     }

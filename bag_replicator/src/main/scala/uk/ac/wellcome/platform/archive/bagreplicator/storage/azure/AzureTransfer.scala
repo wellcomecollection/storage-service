@@ -115,7 +115,9 @@ trait AzureTransfer[Context]
       identifiers.zip(ranges).foreach {
         case (blockId, range) =>
           if (uncommittedBlockIds.contains(blockId)) {
-            debug(s"Skipping upload to $dst with range $range / block ID $blockId (this block already exists)")
+            debug(
+              s"Skipping upload to $dst with range $range / block ID $blockId (this block already exists)"
+            )
           } else {
             debug(s"Uploading to $dst with range $range / block ID $blockId")
 
@@ -123,14 +125,24 @@ trait AzureTransfer[Context]
             // the transfer to succeed.
             //
             // Retry the Put of each individual block three times before we give up.
-            def writeOnce: ((S3ObjectLocation,
-                   AzureBlobLocation,
-                   BlobRange,
-                   String,
-                   Long,
-                   Context)) => Either[StoreWriteError with RetryableError,
-                                       Unit] = {
-              args: (S3ObjectLocation, AzureBlobLocation, BlobRange, String, Long, Context) =>
+            def writeOnce: (
+              (
+                S3ObjectLocation,
+                AzureBlobLocation,
+                BlobRange,
+                String,
+                Long,
+                Context
+              )
+            ) => Either[StoreWriteError with RetryableError, Unit] = {
+              args: (
+                S3ObjectLocation,
+                AzureBlobLocation,
+                BlobRange,
+                String,
+                Long,
+                Context
+              ) =>
                 val (src, dst, range, blockId, s3Length, context) = args
 
                 Try {
@@ -143,14 +155,18 @@ trait AzureTransfer[Context]
                     context = context
                   )
                 } match {
-                  case Success(_)   => Right(())
+                  case Success(_) => Right(())
                   case Failure(err) =>
-                    warn(s"Error while trying to Put Block to $dst range $range: $err")
+                    warn(
+                      s"Error while trying to Put Block to $dst range $range: $err"
+                    )
                     Left(new StoreWriteError(err) with RetryableError)
                 }
             }
 
-            writeOnce.retry(maxAttempts = 3)((src, dst, range, blockId, s3Length, context)) match {
+            writeOnce.retry(maxAttempts = 3)(
+              (src, dst, range, blockId, s3Length, context)
+            ) match {
               case Right(_)  => ()
               case Left(err) => throw err.e
             }
@@ -161,19 +177,23 @@ trait AzureTransfer[Context]
     }
   }
 
-  private def getUncommittedBlockIds(blockClient: BlockBlobClient): Set[String] = Try {
-    blockClient
-      .listBlocks(BlockListType.UNCOMMITTED)
-      .getUncommittedBlocks
-      .asScala
-      .map { _.getName }
-      .toSet
-  } match {
-    case Success(blockIds) => blockIds
-    // What if we're the first person to write to this blob?
-    case Failure(exc: BlobStorageException) if exc.getStatusCode == 404 => Set.empty
-    case Failure(err) => throw err
-  }
+  private def getUncommittedBlockIds(
+    blockClient: BlockBlobClient
+  ): Set[String] =
+    Try {
+      blockClient
+        .listBlocks(BlockListType.UNCOMMITTED)
+        .getUncommittedBlocks
+        .asScala
+        .map { _.getName }
+        .toSet
+    } match {
+      case Success(blockIds) => blockIds
+      // What if we're the first person to write to this blob?
+      case Failure(exc: BlobStorageException) if exc.getStatusCode == 404 =>
+        Set.empty
+      case Failure(err) => throw err
+    }
 
   override protected def transferWithCheckForExisting(
     src: S3ObjectLocation,
@@ -364,15 +384,22 @@ class AzurePutBlockFromUrlTransfer(
     src: S3ObjectLocation,
     dst: AzureBlobLocation,
     srcStream: InputStream,
-    dstStream: InputStream): Either[
-      TransferOverwriteFailure[S3ObjectLocation, AzureBlobLocation],
-      TransferNoOp[S3ObjectLocation, AzureBlobLocation]
-    ] =
-      (s3SizeFinder.getSize(src), azureSizeFinder.getSize(dst)) match {
-        case (Right(srcSize), Right(dstSize)) if srcSize == dstSize =>
-          Right(TransferNoOp(src, dst))
+    dstStream: InputStream
+  ): Either[
+    TransferOverwriteFailure[S3ObjectLocation, AzureBlobLocation],
+    TransferNoOp[S3ObjectLocation, AzureBlobLocation]
+  ] =
+    (s3SizeFinder.getSize(src), azureSizeFinder.getSize(dst)) match {
+      case (Right(srcSize), Right(dstSize)) if srcSize == dstSize =>
+        Right(TransferNoOp(src, dst))
 
-        case _ =>
-          Left(TransferOverwriteFailure(src, dst, e = new Throwable(s"Sizes of $src and $dst don't match!")))
-      }
+      case _ =>
+        Left(
+          TransferOverwriteFailure(
+            src,
+            dst,
+            e = new Throwable(s"Sizes of $src and $dst don't match!")
+          )
+        )
+    }
 }

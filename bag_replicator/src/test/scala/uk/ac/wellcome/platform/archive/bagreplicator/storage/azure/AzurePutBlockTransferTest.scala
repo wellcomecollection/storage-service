@@ -167,7 +167,11 @@ class AzurePutBlockTransferTest
 
         val blockId = BlobRangeUtil.getBlockIdentifiers(count = 3).head
 
-        blockClient.stageBlock(blockId, new ByteArrayInputStream("Hello".getBytes()), 5)
+        blockClient.stageBlock(
+          blockId,
+          new ByteArrayInputStream("Hello".getBytes()),
+          5
+        )
 
         var howManyBlocksWritten = 0
 
@@ -195,7 +199,8 @@ class AzurePutBlockTransferTest
   }
 
   describe("retrying a failed Put Block operation") {
-    class AzureFlakyBlockTransfer(maxFailures: Int) extends AzurePutBlockTransfer(blockSize = 5L) {
+    class AzureFlakyBlockTransfer(maxFailures: Int)
+        extends AzurePutBlockTransfer(blockSize = 5L) {
       var failures = 0
 
       override def writeBlockToAzure(
@@ -228,7 +233,11 @@ class AzurePutBlockTransferTest
           val result = transfer.transfer(src, dst)
           result.right.value shouldBe TransferPerformed(src, dst)
 
-          AzureTypedStore[String].get(dst).right.value.identifiedT shouldBe "Hello world"
+          AzureTypedStore[String]
+            .get(dst)
+            .right
+            .value
+            .identifiedT shouldBe "Hello world"
       }
     }
 
