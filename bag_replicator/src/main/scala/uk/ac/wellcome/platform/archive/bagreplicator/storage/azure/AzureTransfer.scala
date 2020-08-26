@@ -6,7 +6,11 @@ import java.net.URL
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.S3ObjectInputStream
 import com.azure.storage.blob.BlobServiceClient
-import com.azure.storage.blob.models.{BlobRange, BlobStorageException, BlockListType}
+import com.azure.storage.blob.models.{
+  BlobRange,
+  BlobStorageException,
+  BlockListType
+}
 import com.azure.storage.blob.specialized.{BlobInputStream, BlockBlobClient}
 import grizzled.slf4j.Logging
 import org.apache.commons.io.IOUtils
@@ -16,6 +20,7 @@ import uk.ac.wellcome.platform.archive.common.storage.services.s3.{
   S3SizeFinder,
   S3Uploader
 }
+import uk.ac.wellcome.storage.{RetryableError, StoreWriteError}
 import uk.ac.wellcome.storage.azure.AzureBlobLocation
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
 import uk.ac.wellcome.storage.transfer._
@@ -29,6 +34,8 @@ trait AzureTransfer[Context]
     with Logging {
   implicit val s3Client: AmazonS3
   implicit val blobServiceClient: BlobServiceClient
+
+  import uk.ac.wellcome.storage.RetryOps._
 
   val blockSize: Long
 
@@ -110,14 +117,42 @@ trait AzureTransfer[Context]
             debug(s"Skipping upload to $dst with range $range / block ID $blockId (this block already exists)")
           } else {
             debug(s"Uploading to $dst with range $range / block ID $blockId")
-            writeBlockToAzure(
-              src = src,
-              dst = dst,
-              range = range,
-              blockId = blockId,
-              s3Length = s3Length,
-              context = context
-            )
+
+            // For very large objects, we have to successfully Put a lot of blocks for
+            // the transfer to succeed.
+            //
+            // Retry the Put of each individual block three times before we give up.
+            def writeOnce: ((S3ObjectLocation,
+                   AzureBlobLocation,
+                   BlobRange,
+                   String,
+                   Long,
+                   Context)) => Either[StoreWriteError with RetryableError,
+                                       Unit] = {
+              args: (S3ObjectLocation, AzureBlobLocation, BlobRange, String, Long, Context) =>
+                val (src, dst, range, blockId, s3Length, context) = args
+
+                Try {
+                  writeBlockToAzure(
+                    src = src,
+                    dst = dst,
+                    range = range,
+                    blockId = blockId,
+                    s3Length = s3Length,
+                    context = context
+                  )
+                } match {
+                  case Success(_)   => Right(())
+                  case Failure(err) =>
+                    warn(s"Error while trying to Put Block to $dst range $range: $err")
+                    Left(new StoreWriteError(err) with RetryableError)
+                }
+            }
+
+            writeOnce.retry(maxAttempts = 3)((src, dst, range, blockId, s3Length, context)) match {
+              case Right(_)  => ()
+              case Left(err) => throw err.e
+            }
           }
       }
 

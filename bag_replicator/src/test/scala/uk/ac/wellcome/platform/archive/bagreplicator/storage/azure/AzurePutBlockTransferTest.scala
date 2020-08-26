@@ -16,6 +16,7 @@ import uk.ac.wellcome.storage.store.azure.AzureTypedStore
 import uk.ac.wellcome.storage.store.s3.S3TypedStore
 import uk.ac.wellcome.storage.transfer.{
   Transfer,
+  TransferDestinationFailure,
   TransferPerformed,
   TransferTestCases
 }
@@ -190,6 +191,60 @@ class AzurePutBlockTransferTest
         // "Hello world" is 11 bytes long.  Bytes 1-5 were already written, which means
         // the transfer should have written 6-10 and 11-.
         howManyBlocksWritten shouldBe 2
+    }
+  }
+
+  describe("retrying a failed Put Block operation") {
+    class AzureFlakyBlockTransfer(maxFailures: Int) extends AzurePutBlockTransfer(blockSize = 5L) {
+      var failures = 0
+
+      override def writeBlockToAzure(
+        src: S3ObjectLocation,
+        dst: AzureBlobLocation,
+        range: BlobRange,
+        blockId: String,
+        s3Length: Long,
+        context: Unit
+      ): Unit = {
+        failures += 1
+        if (failures > maxFailures) {
+          super.writeBlockToAzure(src, dst, range, blockId, s3Length, context)
+        } else {
+          throw new Throwable("BOOM! This is a flaky failure")
+        }
+      }
+    }
+
+    it("retries a single flaky error") {
+      withNamespacePair {
+        case (srcBucket, dstContainer) =>
+          val src = createSrcLocation(srcBucket)
+          val dst = createDstLocation(dstContainer)
+
+          S3TypedStore[String].put(src)("Hello world") shouldBe a[Right[_, _]]
+
+          val transfer = new AzureFlakyBlockTransfer(maxFailures = 1)
+
+          val result = transfer.transfer(src, dst)
+          result.right.value shouldBe TransferPerformed(src, dst)
+
+          AzureTypedStore[String].get(dst).right.value.identifiedT shouldBe "Hello world"
+      }
+    }
+
+    it("does not retry errors forever") {
+      withNamespacePair {
+        case (srcBucket, dstContainer) =>
+          val src = createSrcLocation(srcBucket)
+          val dst = createDstLocation(dstContainer)
+
+          S3TypedStore[String].put(src)("Hello world") shouldBe a[Right[_, _]]
+
+          val transfer = new AzureFlakyBlockTransfer(maxFailures = Int.MaxValue)
+
+          val result = transfer.transfer(src, dst)
+          result.left.value shouldBe a[TransferDestinationFailure[_, _]]
+      }
     }
   }
 }
