@@ -31,7 +31,7 @@ class AzureFixityChecker(implicit blobClient: BlobServiceClient)
   // This bufferSize has successfully verified a blob which was 166 GiB in size.
   override protected val streamReader
     : Readable[AzureBlobLocation, InputStreamWithLength] =
-    new AzureLargeStreamReader(bufferSize = 16 * 1000 * 1000)  // 16 MB
+    new AzureLargeStreamReader(bufferSize = 16 * 1000 * 1000) // 16 MB
 
   override protected val sizeFinder =
     new AzureSizeFinder()
