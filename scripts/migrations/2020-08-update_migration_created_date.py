@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+
+import concurrent.futures
+import itertools
 import json
 import uuid
 from botocore.exceptions import ClientError
@@ -39,6 +42,47 @@ def get_bucket_key(item):
     else:
         return bucket, key
 
+def parallel_scan_table(table_name):
+    table = dynamodb.Table(table_name)
+    total_segments = 50
+
+    max_scans_in_parallel = 10
+    tasks_to_do = [
+        {
+            "Segment": segment,
+            "TotalSegments": total_segments,
+        }
+        for segment in range(total_segments)
+    ]
+
+    scans_to_run = iter(tasks_to_do)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = {
+            executor.submit(table.scan, **scan_params): scan_params
+            for scan_params in itertools.islice(scans_to_run, max_scans_in_parallel)
+        }
+        while futures:
+            # Wait for the first future to complete.
+            done, _ = concurrent.futures.wait(
+                futures, return_when=concurrent.futures.FIRST_COMPLETED
+            )
+
+            for fut in done:
+                yield from fut.result()["Items"]
+
+                scan_params = futures.pop(fut)
+
+                try:
+                    scan_params["ExclusiveStartKey"] = fut.result()["LastEvaluatedKey"]
+                except KeyError:
+                    break
+                tasks_to_do.append(scan_params)
+
+            for scan_params in itertools.islice(scans_to_run, len(done)):
+                futures[
+                    executor.submit(table.scan, **scan_params)
+                ] = scan_params
+
 
 def get_vhs_json(id, version, bucket, key):
     try:
@@ -47,13 +91,13 @@ def get_vhs_json(id, version, bucket, key):
         record_error(id, version, f"Cannot read s3 entry for {id}: {item}: {e}")
 
 
-def put_vhs_json(id, version, bucket, item, content):
+def put_vhs_json(id, version, bucket, item, content, batch_writer):
     filename = f"{uuid.uuid4()}.json"
     key = f"{id}/{version}/{filename}"
     item["payload"] = {"bucket": bucket, "key": key}
     try:
         s3.Object(bucket, key).put(Body=(bytes(json.dumps(content).encode("UTF-8"))))
-        dynamodb.Table(vhs_table).put_item(Item=item)
+        batch_writer.put_item(Item=item)
     except ClientError as e:
         record_error(
             id,
@@ -86,32 +130,33 @@ def is_expected_diff(id, version, diff):
             return False
     return True
 
-
-for item in scan_table(TableName=vhs_table):
-    id = item["id"]
-    version = item["version"]
-    bucket_key = get_bucket_key(item)
-    if bucket_key:
-        bucket, key = bucket_key
-        vhs_content = get_vhs_json(id, version, bucket, key)
-        if vhs_content and len(vhs_content["replicaLocations"]) < 2:
-            created_date = vhs_content["createdDate"]
-            backfilled_item = get_backfill_item(id, version)
-            if backfilled_item:
-                backfilled_bucket = backfilled_item["payload"]["bucket"]
-                backfilled_key = backfilled_item["payload"]["key"]
-                backfilled_json = get_vhs_json(
-                    id, version, backfilled_bucket, backfilled_key
-                )
-                if backfilled_json:
-                    diff = DeepDiff(vhs_content, backfilled_json, ignore_order=True)
-                    if diff and is_expected_diff(id, version, diff):
-                        backfilled_json["createdDate"] = created_date
-                        put_vhs_json(
-                            id, version, bucket, backfilled_item, backfilled_json
-                        )
+with dynamodb.Table(vhs_table).batch_writer() as batch_writer:
+    for item in parallel_scan_table(vhs_table):
+        id = item["id"]
+        version = item["version"]
+        print(f"updating item {id}/{version}")
+        bucket_key = get_bucket_key(item)
+        if bucket_key:
+            bucket, key = bucket_key
+            vhs_content = get_vhs_json(id, version, bucket, key)
+            if vhs_content:
+                created_date = vhs_content["createdDate"]
+                backfilled_item = get_backfill_item(id, version)
+                if backfilled_item:
+                    backfilled_bucket = backfilled_item["payload"]["bucket"]
+                    backfilled_key = backfilled_item["payload"]["key"]
+                    backfilled_json = get_vhs_json(
+                        id, version, backfilled_bucket, backfilled_key
+                    )
+                    if backfilled_json:
+                        diff = DeepDiff(vhs_content, backfilled_json, ignore_order=True)
+                        if diff and is_expected_diff(id, version, diff):
+                            backfilled_json["createdDate"] = created_date
+                            put_vhs_json(
+                                id, version, bucket, backfilled_item, backfilled_json, batch_writer
+                            )
 if errors:
-    print("\033[91mThere are errors!")
+    print("\033[91mThere are errors!\u001b[0m")
     exit(1)
 else:
     print("\033[92mFinished with no errors!")
