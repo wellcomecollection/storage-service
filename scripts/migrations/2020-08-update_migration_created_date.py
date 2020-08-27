@@ -30,7 +30,7 @@ def get_bucket_key(item):
         try:
             bucket = item["payload"]["bucket"]
             key = item["payload"]["key"]
-        except:
+        except KeyError:
             record_error(
                 item["id"], item["version"], f"Cannot find s3 bucket, key in {item}"
             )
@@ -90,12 +90,11 @@ def is_expected_diff(id, version, diff):
 for item in scan_table(TableName=vhs_table):
     id = item["id"]
     version = item["version"]
-    print(f"Updating {id}/{version}")
     bucket_key = get_bucket_key(item)
     if bucket_key:
         bucket, key = bucket_key
         vhs_content = get_vhs_json(id, version, bucket, key)
-        if vhs_content and len(vhs_content['replicaLocations']) < 2:
+        if vhs_content and len(vhs_content["replicaLocations"]) < 2:
             created_date = vhs_content["createdDate"]
             backfilled_item = get_backfill_item(id, version)
             if backfilled_item:
