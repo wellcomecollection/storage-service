@@ -98,7 +98,7 @@ with dynamodb.Table(vhs_table).batch_writer() as batch_writer:
             if bucket_key:
                 bucket, key = bucket_key
                 vhs_content = get_vhs_json(id, version, bucket, key)
-                if vhs_content:
+                if vhs_content and len(vhs_content["replicaLocations"]) < 2:
                     created_date = vhs_content["createdDate"]
                     backfilled_item = get_backfill_item(id, version)
                     if backfilled_item:
