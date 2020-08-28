@@ -89,9 +89,12 @@ def is_expected_diff(id, version, diff):
             return False
     return True
 
+
 with dynamodb.Table(vhs_table).batch_writer() as batch_writer:
     with yaspin():
-        for item in parallel_scan_table(vhs_table,total_segments=400, max_scans_in_parallel=50):
+        for item in parallel_scan_table(
+            vhs_table, total_segments=400, max_scans_in_parallel=50
+        ):
             id = item["id"]
             version = item["version"]
             bucket_key = get_bucket_key(item)
@@ -108,11 +111,18 @@ with dynamodb.Table(vhs_table).batch_writer() as batch_writer:
                             id, version, backfilled_bucket, backfilled_key
                         )
                         if backfilled_json:
-                            diff = DeepDiff(vhs_content, backfilled_json, ignore_order=True)
+                            diff = DeepDiff(
+                                vhs_content, backfilled_json, ignore_order=True
+                            )
                             if diff and is_expected_diff(id, version, diff):
                                 backfilled_json["createdDate"] = created_date
                                 put_vhs_json(
-                                    id, version, bucket, backfilled_item, backfilled_json, batch_writer
+                                    id,
+                                    version,
+                                    bucket,
+                                    backfilled_item,
+                                    backfilled_json,
+                                    batch_writer,
                                 )
 if errors:
     print("\033[91mThere are errors!\u001b[0m")

@@ -39,14 +39,11 @@ def scan_table(*, TableName, **kwargs):
         yield from page["Items"]
 
 
-def parallel_scan_table(table_name,total_segments,max_scans_in_parallel):
+def parallel_scan_table(table_name, total_segments, max_scans_in_parallel):
     dynamodb = get_aws_resource("dynamodb", role_arn=READ_ONLY_ROLE_ARN)
     table = dynamodb.Table(table_name)
     tasks_to_do = [
-        {
-            "Segment": segment,
-            "TotalSegments": total_segments,
-        }
+        {"Segment": segment, "TotalSegments": total_segments}
         for segment in range(total_segments)
     ]
 
@@ -74,9 +71,7 @@ def parallel_scan_table(table_name,total_segments,max_scans_in_parallel):
                 tasks_to_do.append(scan_params)
 
             for scan_params in itertools.islice(scans_to_run, len(done)):
-                futures[
-                    executor.submit(table.scan, **scan_params)
-                ] = scan_params
+                futures[executor.submit(table.scan, **scan_params)] = scan_params
 
 
 sts_client = boto3.client("sts")
