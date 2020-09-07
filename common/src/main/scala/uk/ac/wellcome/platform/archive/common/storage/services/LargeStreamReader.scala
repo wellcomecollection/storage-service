@@ -82,7 +82,7 @@ trait LargeStreamReader[Ident] extends Readable[Ident, InputStreamWithLength] {
     inner.retry(maxAttempts = retries)((ident, range)) match {
       case Right(bytes) => bytes
       case Left(err) =>
-        throw new RuntimeException(s"Unable to read range $range from $ident")
+        throw new RuntimeException(s"Unable to read range $range from $ident: $err")
     }
   }
 }
