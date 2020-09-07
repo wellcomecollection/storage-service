@@ -77,6 +77,7 @@ trait BagReplicatorFixtures
         String,
         String,
         S3ObjectLocation,
+        S3ObjectLocation,
         S3ObjectLocationPrefix
       ],
       R

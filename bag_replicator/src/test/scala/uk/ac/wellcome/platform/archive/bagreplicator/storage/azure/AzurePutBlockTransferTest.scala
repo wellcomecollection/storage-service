@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.bagreplicator.storage.azure
 
 import java.io.ByteArrayInputStream
 
+import com.amazonaws.services.s3.model.S3ObjectSummary
 import com.azure.storage.blob.models.BlobRange
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
@@ -14,16 +15,11 @@ import uk.ac.wellcome.storage.generators.Record
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
 import uk.ac.wellcome.storage.store.azure.AzureTypedStore
 import uk.ac.wellcome.storage.store.s3.S3TypedStore
-import uk.ac.wellcome.storage.transfer.{
-  Transfer,
-  TransferDestinationFailure,
-  TransferPerformed,
-  TransferTestCases
-}
+import uk.ac.wellcome.storage.transfer.{Transfer, TransferDestinationFailure, TransferPerformed, TransferTestCases}
 
 class AzurePutBlockTransferTest
     extends TransferTestCases[
-      S3ObjectLocation,
+      S3ObjectSummary,
       AzureBlobLocation,
       Record,
       Bucket,
@@ -55,20 +51,25 @@ class AzurePutBlockTransferTest
       testWith(container)
     }
 
-  override def createSrcLocation(bucket: Bucket): S3ObjectLocation =
-    createS3ObjectLocationWith(bucket)
+  override def createSrcLocation(bucket: Bucket): S3ObjectSummary = {
+    val src = createS3ObjectLocationWith(bucket)
+    val summary = new S3ObjectSummary()
+    summary.setBucketName(src.bucket)
+    summary.setKey(src.key)
+    summary
+  }
 
   override def createDstLocation(container: Container): AzureBlobLocation =
     createAzureBlobLocationWith(container)
 
   override def withSrcStore[R](
-    initialEntries: Map[S3ObjectLocation, Record]
+    initialEntries: Map[S3ObjectSummary, Record]
   )(testWith: TestWith[S3TypedStore[Record], R])(implicit context: Unit): R = {
     val store = S3TypedStore[Record]
 
     initialEntries.foreach {
       case (location, record) =>
-        store.put(location)(record) shouldBe a[Right[_, _]]
+        store.put(S3ObjectLocation(location.getBucketName, location.getKey))(record) shouldBe a[Right[_, _]]
     }
 
     testWith(store)
@@ -90,7 +91,7 @@ class AzurePutBlockTransferTest
   override def withTransfer[R](
     srcStore: S3TypedStore[Record],
     dstStore: AzureTypedStore[Record]
-  )(testWith: TestWith[Transfer[S3ObjectLocation, AzureBlobLocation], R]): R =
+  )(testWith: TestWith[Transfer[S3ObjectSummary, AzureBlobLocation], R]): R =
     testWith(
       new AzurePutBlockTransfer(blockSize = blockSize)
     )
@@ -114,7 +115,7 @@ class AzurePutBlockTransferTest
 
                 result.right.value shouldBe TransferPerformed(src, dst)
 
-                srcStore.get(src).right.value.identifiedT shouldBe t
+                srcStore.get(S3ObjectLocation(src.getBucketName, src.getKey)).right.value.identifiedT shouldBe t
                 dstStore.get(dst).right.value.identifiedT shouldBe t
               }
             }
@@ -142,7 +143,7 @@ class AzurePutBlockTransferTest
 
                 result.right.value shouldBe TransferPerformed(src, dst)
 
-                srcStore.get(src).right.value.identifiedT shouldBe t
+                srcStore.get(S3ObjectLocation(src.getBucketName, src.getKey)).right.value.identifiedT shouldBe t
                 dstStore.get(dst).right.value.identifiedT shouldBe t
               }
             }
@@ -157,7 +158,7 @@ class AzurePutBlockTransferTest
         val src = createSrcLocation(srcBucket)
         val dst = createDstLocation(dstContainer)
 
-        s3Client.putObject(src.bucket, src.key, "Hello world")
+        s3Client.putObject(src.getBucketName, src.getKey, "Hello world")
 
         // Write the first block to the destination blob
         val blockClient = azureClient
@@ -226,7 +227,7 @@ class AzurePutBlockTransferTest
           val src = createSrcLocation(srcBucket)
           val dst = createDstLocation(dstContainer)
 
-          S3TypedStore[String].put(src)("Hello world") shouldBe a[Right[_, _]]
+          S3TypedStore[String].put(S3ObjectLocation(src.getBucketName, src.getKey))("Hello world") shouldBe a[Right[_, _]]
 
           val transfer = new AzureFlakyBlockTransfer(maxFailures = 1)
 
@@ -247,7 +248,7 @@ class AzurePutBlockTransferTest
           val src = createSrcLocation(srcBucket)
           val dst = createDstLocation(dstContainer)
 
-          S3TypedStore[String].put(src)("Hello world") shouldBe a[Right[_, _]]
+          S3TypedStore[String].put(S3ObjectLocation(src.getBucketName, src.getKey))("Hello world") shouldBe a[Right[_, _]]
 
           val transfer = new AzureFlakyBlockTransfer(maxFailures = Int.MaxValue)
 

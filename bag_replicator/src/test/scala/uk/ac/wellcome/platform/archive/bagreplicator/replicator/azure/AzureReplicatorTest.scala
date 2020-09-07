@@ -1,11 +1,9 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.replicator.azure
 
+import com.amazonaws.services.s3.model.S3ObjectSummary
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.ReplicatorTestCases
-import uk.ac.wellcome.platform.archive.bagreplicator.storage.azure.{
-  AzurePrefixTransfer,
-  AzurePutBlockTransfer
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.storage.azure.{AzurePrefixTransfer, AzurePutBlockTransfer}
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.AzureFixtures
 import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
@@ -19,6 +17,7 @@ import uk.ac.wellcome.storage.tags.azure.AzureBlobMetadata
 class AzureReplicatorTest
     extends ReplicatorTestCases[
       Container,
+      S3ObjectSummary,
       AzureBlobLocation,
       AzureBlobLocationPrefix,
       AzurePrefixTransfer

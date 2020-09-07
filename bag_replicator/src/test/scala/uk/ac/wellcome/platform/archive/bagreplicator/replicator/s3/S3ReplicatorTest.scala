@@ -15,6 +15,7 @@ import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
 class S3ReplicatorTest
     extends ReplicatorTestCases[
       Bucket,
+    S3ObjectLocation,
       S3ObjectLocation,
       S3ObjectLocationPrefix,
       S3PrefixTransfer
