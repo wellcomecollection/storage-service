@@ -22,15 +22,15 @@ class MemoryFixityCheckerTest
       MemoryLocation,
       MemoryLocationPrefix,
       String,
-      (MemoryStreamStore[MemoryLocation], Option[MemoryTags[MemoryLocation]]),
+      (MemoryStreamStore[MemoryLocation], MemoryTags[MemoryLocation]),
       MemoryStreamStore[MemoryLocation]
     ]
     with EitherValues {
   type MemoryContext =
-    (MemoryStreamStore[MemoryLocation], Option[MemoryTags[MemoryLocation]])
+    (MemoryStreamStore[MemoryLocation], MemoryTags[MemoryLocation])
 
-  def createMemoryTags: Option[MemoryTags[MemoryLocation]] =
-    Some(new MemoryTags[MemoryLocation](initialTags = Map.empty) {
+  def createMemoryTags: MemoryTags[MemoryLocation] =
+    new MemoryTags[MemoryLocation](initialTags = Map.empty) {
       override def get(
         location: MemoryLocation
       ): Either[ReadError, Identified[MemoryLocation, Map[String, String]]] =
@@ -40,7 +40,7 @@ class MemoryFixityCheckerTest
             Right(Identified(location, Map[String, String]()))
           case Left(err) => Left(err)
         }
-    })
+    }
 
   override def withContext[R](
     testWith: TestWith[MemoryContext, R]

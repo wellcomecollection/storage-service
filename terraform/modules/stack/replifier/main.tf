@@ -44,6 +44,8 @@ module "bag_replicator" {
 
   deployment_service_name = var.deployment_service_name_replicator
   deployment_service_env  = var.deployment_service_env
+
+  use_fargate_spot = true
 }
 
 # bag_verifier
@@ -84,5 +86,7 @@ module "bag_verifier" {
 
   deployment_service_name = var.deployment_service_name_verifier
   deployment_service_env  = var.deployment_service_env
+
+  use_fargate_spot = true
 }
 

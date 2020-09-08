@@ -108,7 +108,7 @@ class FixityCheckerTests
     it("if it can't write the fixity tags") {
       val streamStore = MemoryStreamStore[MemoryLocation]()
 
-      val tags = Some(new MemoryTags[MemoryLocation](initialTags = Map.empty) {
+      val tags = new MemoryTags[MemoryLocation](initialTags = Map.empty) {
         override def get(
           location: MemoryLocation
         ): Either[ReadError, Identified[MemoryLocation, Map[String, String]]] =
@@ -127,7 +127,7 @@ class FixityCheckerTests
             StoreWriteError(new Throwable("BOOM!"))
           )
         }
-      })
+      }
 
       val contentString = "HelloWorld"
       val checksum =
@@ -248,8 +248,8 @@ class FixityCheckerTests
     }
   }
 
-  def createMemoryTags: Option[MemoryTags[MemoryLocation]] =
-    Some(new MemoryTags[MemoryLocation](initialTags = Map.empty) {
+  def createMemoryTags: MemoryTags[MemoryLocation] =
+    new MemoryTags[MemoryLocation](initialTags = Map.empty) {
       override def get(
         location: MemoryLocation
       ): Either[ReadError, Identified[MemoryLocation, Map[String, String]]] =
@@ -259,5 +259,5 @@ class FixityCheckerTests
             Right(Identified(location, Map[String, String]()))
           case Left(err) => Left(err)
         }
-    })
+    }
 }
