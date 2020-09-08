@@ -281,7 +281,7 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
       .getOrElse(Right(()))
 
   // e.g. Content-MD5, Content-SHA256
-  protected def fixityTagName(expectedFileFixity: ExpectedFileFixity): String =
+  private def fixityTagName(expectedFileFixity: ExpectedFileFixity): String =
     s"Content-${expectedFileFixity.checksum.algorithm.pathRepr.toUpperCase}"
 
   private def fixityTagValue(expectedFileFixity: ExpectedFileFixity): String =
