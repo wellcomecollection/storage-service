@@ -63,8 +63,8 @@ class AzureFixityCheckerTest
 
   override def tagName(algorithm: HashingAlgorithm): String =
     algorithm match {
-      case MD5 => "ContentMD5"
-      case SHA1 => "ContentSHA1"
+      case MD5    => "ContentMD5"
+      case SHA1   => "ContentSHA1"
       case SHA256 => "ContentSHA256"
       case SHA512 => "ContentSHA512"
     }
