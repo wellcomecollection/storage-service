@@ -37,7 +37,7 @@ class AzureFixityChecker(implicit blobClient: BlobServiceClient)
   override protected val sizeFinder =
     new AzureSizeFinder()
 
-  override val tags = new AzureBlobMetadata()
+  override val tags = Some(new AzureBlobMetadata())
 
   // e.g. ContentMD5, ContentSHA256
   // We can't include a hyphen in the name because Azure metadata names have to be

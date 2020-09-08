@@ -47,7 +47,8 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           fixityChecker.check(expectedFileFixity) shouldBe a[
             FileFixityCorrect[_]
           ]
-          fixityChecker.tags.get(location).right.value shouldBe Identified(
+          fixityChecker.tags shouldBe defined
+          fixityChecker.tags.get.get(location).right.value shouldBe Identified(
             location,
             Map(
               tagName(checksum.algorithm) -> checksumString
@@ -196,7 +197,8 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
             FileFixityMismatch[_]
           ]
 
-          fixityChecker.tags.get(location).right.value shouldBe Identified(
+          fixityChecker.tags shouldBe defined
+          fixityChecker.tags.get.get(location).right.value shouldBe Identified(
             location,
             Map.empty
           )
@@ -239,7 +241,8 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
             ]
           }
 
-          fixityChecker.tags.get(location).right.value shouldBe Identified(
+          fixityChecker.tags shouldBe defined
+          fixityChecker.tags.get.get(location).right.value shouldBe Identified(
             location,
             Map(
               tagName(MD5) -> "68e109f0f40ca72a15e05cc22786f8e6",

@@ -26,7 +26,7 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     extends Logging {
   protected val streamReader: Readable[BagLocation, InputStreamWithLength]
   protected val sizeFinder: SizeFinder[BagLocation]
-  val tags: Tags[BagLocation]
+  val tags: Option[Tags[BagLocation]]
   implicit val locator: Locatable[BagLocation, BagPrefix, URI]
 
   def check(
@@ -99,8 +99,8 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
   ): Either[FileFixityCouldNotRead[BagLocation], Map[String, String]] =
     handleReadErrors(
       tags
-        .get(location)
-        .map { _.identifiedT },
+        .map(_.get(location).map(_.identifiedT))
+        .getOrElse(Right(Map.empty[String, String])),
       expectedFileFixity = expectedFileFixity
     )
 
@@ -246,36 +246,39 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     location: BagLocation
   ): Either[FileFixityCouldNotWriteTag[BagLocation], Unit] =
     tags
-      .update(location) { existingTags =>
-        val tagName = fixityTagName(expectedFileFixity)
-        val tagValue = fixityTagValue(expectedFileFixity)
+      .map { t =>
+        t.update(location) { existingTags =>
+          val tagName = fixityTagName(expectedFileFixity)
+          val tagValue = fixityTagValue(expectedFileFixity)
 
-        val fixityTags = Map(tagName -> tagValue)
+          val fixityTags = Map(tagName -> tagValue)
 
-        // We've already checked the tags on this location once, so we shouldn't
-        // see conflicting values here.  Check we're not about to blat some existing
-        // tags just in case.  If we do see conflicting tags here, there's something
-        // badly wrong with the storage service.
-        //
-        // Note: this is a fairly weak guarantee, because tags aren't locked during
-        // an update operation.
-        assert(
-          existingTags.getOrElse(tagName, tagValue) == tagValue,
-          s"Trying to write $fixityTags to $location; existing tags conflict: $existingTags"
-        )
-
-        Right(existingTags ++ fixityTags)
-      } match {
-        case Right(_) => Right(())
-        case Left(writeError) =>
-          Left(
-            FileFixityCouldNotWriteTag(
-              expectedFileFixity = expectedFileFixity,
-              objectLocation = location,
-              e = writeError.e
-            )
+          // We've already checked the tags on this location once, so we shouldn't
+          // see conflicting values here.  Check we're not about to blat some existing
+          // tags just in case.  If we do see conflicting tags here, there's something
+          // badly wrong with the storage service.
+          //
+          // Note: this is a fairly weak guarantee, because tags aren't locked during
+          // an update operation.
+          assert(
+            existingTags.getOrElse(tagName, tagValue) == tagValue,
+            s"Trying to write $fixityTags to $location; existing tags conflict: $existingTags"
           )
+
+          Right(existingTags ++ fixityTags)
+        } match {
+          case Right(_) => Right(())
+          case Left(writeError) =>
+            Left(
+              FileFixityCouldNotWriteTag(
+                expectedFileFixity = expectedFileFixity,
+                objectLocation = location,
+                e = writeError.e
+              )
+            )
+        }
       }
+      .getOrElse(Right(()))
 
   // e.g. Content-MD5, Content-SHA256
   protected def fixityTagName(expectedFileFixity: ExpectedFileFixity): String =
