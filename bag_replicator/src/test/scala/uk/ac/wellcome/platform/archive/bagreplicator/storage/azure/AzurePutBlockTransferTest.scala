@@ -82,14 +82,14 @@ class AzurePutBlockTransferTest
 
       override def get(summary: S3ObjectSummary): ReadEither =
         underlying
-          .get(S3ObjectLocation(summary.getBucketName, summary.getKey))
+          .get(S3ObjectLocation(summary))
           .map { case Identified(_, result) => Identified(summary, result) }
 
       override def put(
         summary: S3ObjectSummary
       )(is: InputStreamWithLength): WriteEither =
         underlying
-          .put(S3ObjectLocation(summary.getBucketName, summary.getKey))(is)
+          .put(S3ObjectLocation(summary))(is)
           .map {
             case Identified(_, result) =>
               summary.setSize(is.length)
@@ -302,7 +302,7 @@ class AzurePutBlockTransferTest
           val dst = createDstLocation(dstContainer)
 
           S3TypedStore[String].put(
-            S3ObjectLocation(src.getBucketName, src.getKey)
+            S3ObjectLocation(src)
           )("Hello world") shouldBe a[Right[_, _]]
 
           val transfer = new AzureFlakyBlockTransfer(maxFailures = Int.MaxValue)

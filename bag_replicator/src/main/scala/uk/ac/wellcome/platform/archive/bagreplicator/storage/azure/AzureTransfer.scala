@@ -40,13 +40,6 @@ trait AzureTransfer[Context]
   import uk.ac.wellcome.storage.RetryOps._
 
   val blockSize: Long
-  implicit class S3ObjectSummaryOps(s3ObjectSummary: S3ObjectSummary) {
-    def toS3ObjectLocation: S3ObjectLocation =
-      S3ObjectLocation(
-        bucket = s3ObjectSummary.getBucketName,
-        key = s3ObjectSummary.getKey
-      )
-  }
 
   private def runTransfer(
     src: S3ObjectSummary,
@@ -58,7 +51,7 @@ trait AzureTransfer[Context]
       context <- getContext(src, dst)
 
       result <- writeBlocks(
-        src = src.toS3ObjectLocation,
+        src = S3ObjectLocation(src),
         dst = dst,
         s3Length = src.getSize,
         allowOverwrites = allowOverwrites,
@@ -210,7 +203,7 @@ trait AzureTransfer[Context]
         transferWithOverwrites(src, dst)
 
       case Success(dstStream) =>
-        val srcObjectLocation = S3ObjectLocation(src.getBucketName, src.getKey)
+        val srcObjectLocation = S3ObjectLocation(src)
         getS3Stream(srcObjectLocation) match {
           // If both the source and the destination exist, we can skip
           // the copy operation.
@@ -356,7 +349,7 @@ class AzurePutBlockFromUrlTransfer(
     dst: AzureBlobLocation
   ): Either[TransferSourceFailure[S3ObjectSummary, AzureBlobLocation], URL] =
     s3Uploader
-      .getPresignedGetURL(src.toS3ObjectLocation, expiryLength = 1.hour)
+      .getPresignedGetURL(S3ObjectLocation(src), expiryLength = 1.hour)
       .left
       .map { readError =>
         TransferSourceFailure(src, dst, e = readError.e)
