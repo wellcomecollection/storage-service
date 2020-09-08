@@ -9,8 +9,10 @@ import uk.ac.wellcome.storage.{Identified, Location, Prefix}
 
 trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
-], Namespace, Context, StreamReaderImpl <: Readable[BagLocation, InputStreamWithLength]]
-    extends FixityCheckerTestCases[
+], Namespace, Context, StreamReaderImpl <: Readable[
+  BagLocation,
+  InputStreamWithLength
+]] extends FixityCheckerTestCases[
       BagLocation,
       BagPrefix,
       Namespace,
@@ -24,8 +26,8 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
 
   def tagName(algorithm: HashingAlgorithm): String =
     algorithm match {
-      case MD5 => "Content-MD5"
-      case SHA1 => "Content-SHA1"
+      case MD5    => "Content-MD5"
+      case SHA1   => "Content-SHA1"
       case SHA256 => "Content-SHA256"
       case SHA512 => "Content-SHA512"
     }
