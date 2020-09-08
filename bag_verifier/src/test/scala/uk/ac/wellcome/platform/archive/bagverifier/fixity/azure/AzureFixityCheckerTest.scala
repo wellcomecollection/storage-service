@@ -12,8 +12,6 @@ import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.AzureFixtures
 import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
 import uk.ac.wellcome.storage.store.azure.{AzureStreamStore, AzureTypedStore}
-import uk.ac.wellcome.storage.store.Readable
-import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 class AzureFixityCheckerTest
     extends FixityCheckerTestCases[
@@ -42,8 +40,7 @@ class AzureFixityCheckerTest
     testWith(new AzureFixityChecker() {
       // We need to override the underlying StreamStore so Mockito can spy
       // on its interactions during the tests.
-      override val streamReader
-        : Readable[AzureBlobLocation, InputStreamWithLength] =
+      override val streamReader: AzureStreamStore =
         underlyingStreamStore
     })
 
