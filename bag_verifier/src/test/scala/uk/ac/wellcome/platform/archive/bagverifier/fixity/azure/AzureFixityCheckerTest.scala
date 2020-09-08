@@ -5,17 +5,16 @@ import java.net.URI
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FixityChecker,
-  FixityCheckerTagsTestCases
+  FixityCheckerTestCases
 }
 import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.AzureResolvable
-import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.AzureFixtures
 import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
 import uk.ac.wellcome.storage.store.azure.{AzureStreamStore, AzureTypedStore}
 
 class AzureFixityCheckerTest
-    extends FixityCheckerTagsTestCases[
+    extends FixityCheckerTestCases[
       AzureBlobLocation,
       AzureBlobLocationPrefix,
       Container,
@@ -60,12 +59,4 @@ class AzureFixityCheckerTest
 
   override def createId(implicit container: Container): AzureBlobLocation =
     createAzureBlobLocationWith(container)
-
-  override def tagName(algorithm: HashingAlgorithm): String =
-    algorithm match {
-      case MD5 => "ContentMD5"
-      case SHA1 => "ContentSHA1"
-      case SHA256 => "ContentSHA256"
-      case SHA512 => "ContentSHA512"
-    }
 }

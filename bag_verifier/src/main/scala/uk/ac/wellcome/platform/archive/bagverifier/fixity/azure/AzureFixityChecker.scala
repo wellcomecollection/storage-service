@@ -10,7 +10,6 @@ import uk.ac.wellcome.platform.archive.common.storage.services.azure.{
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
-import uk.ac.wellcome.storage.tags.azure.AzureBlobMetadata
 
 class AzureFixityChecker(implicit blobClient: BlobServiceClient)
     extends FixityChecker[AzureBlobLocation, AzureBlobLocationPrefix] {
@@ -37,7 +36,13 @@ class AzureFixityChecker(implicit blobClient: BlobServiceClient)
   override protected val sizeFinder =
     new AzureSizeFinder()
 
-  override val tags = Some(new AzureBlobMetadata())
+  /**
+    * The FixityChecker tags objects with their checksum so that,
+    * if they are lifecycled to cold storage, we don't need to read them to know the checksum.
+    * This is useful for files referenced in the fetch file. However, references in the fetch file
+    * will always point to the primary bucket in S3, never Azure, so there's no need to tag in the AzureFixityChecker
+    */
+  override val tags = None
 
   // e.g. ContentMD5, ContentSHA256
   // We can't include a hyphen in the name because Azure metadata names have to be
