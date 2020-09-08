@@ -7,7 +7,11 @@ import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
 
 class S3Replicator(implicit s3Client: AmazonS3)
-    extends Replicator[S3ObjectLocation, S3ObjectLocationPrefix] {
+    extends Replicator[
+      S3ObjectLocation,
+      S3ObjectLocation,
+      S3ObjectLocationPrefix
+    ] {
 
   // We write new objects as Standard, and then rely on bucket management policies
   // to lifecycle objects to Standard-IA or Glacier Deep Archive as appropriate.

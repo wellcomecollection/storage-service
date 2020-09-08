@@ -24,11 +24,12 @@ import uk.ac.wellcome.storage.transfer.PrefixTransfer
 
 trait ReplicatorTestCases[
   DstNamespace,
+  SrcLocation,
   DstLocation <: Location,
   DstPrefix <: Prefix[DstLocation],
   PrefixTransferImpl <: PrefixTransfer[
     S3ObjectLocationPrefix,
-    S3ObjectLocation,
+    SrcLocation,
     DstPrefix,
     DstLocation
   ]
@@ -45,7 +46,7 @@ trait ReplicatorTestCases[
 
   def withDstNamespace[R](testWith: TestWith[DstNamespace, R]): R
 
-  type ReplicatorImpl = Replicator[DstLocation, DstPrefix]
+  type ReplicatorImpl = Replicator[SrcLocation, DstLocation, DstPrefix]
 
   def withPrefixTransfer[R](testWith: TestWith[PrefixTransferImpl, R]): R
 

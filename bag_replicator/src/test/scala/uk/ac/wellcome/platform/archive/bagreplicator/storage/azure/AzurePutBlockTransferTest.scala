@@ -2,18 +2,22 @@ package uk.ac.wellcome.platform.archive.bagreplicator.storage.azure
 
 import java.io.ByteArrayInputStream
 
+import com.amazonaws.services.s3.model.S3ObjectSummary
 import com.azure.storage.blob.models.BlobRange
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
+import uk.ac.wellcome.storage.Identified
 import uk.ac.wellcome.storage.azure.AzureBlobLocation
 import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.fixtures.{AzureFixtures, S3Fixtures}
 import uk.ac.wellcome.storage.generators.Record
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
+import uk.ac.wellcome.storage.store.{StreamStore, TypedStore}
 import uk.ac.wellcome.storage.store.azure.AzureTypedStore
-import uk.ac.wellcome.storage.store.s3.S3TypedStore
+import uk.ac.wellcome.storage.store.s3.{S3StreamStore, S3TypedStore}
+import uk.ac.wellcome.storage.streaming.{Codec, InputStreamWithLength}
 import uk.ac.wellcome.storage.transfer.{
   Transfer,
   TransferDestinationFailure,
@@ -23,12 +27,12 @@ import uk.ac.wellcome.storage.transfer.{
 
 class AzurePutBlockTransferTest
     extends TransferTestCases[
-      S3ObjectLocation,
+      S3ObjectSummary,
       AzureBlobLocation,
       Record,
       Bucket,
       Container,
-      S3TypedStore[Record],
+      TypedStore[S3ObjectSummary, Record],
       AzureTypedStore[Record],
       Unit
     ]
@@ -55,23 +59,73 @@ class AzurePutBlockTransferTest
       testWith(container)
     }
 
-  override def createSrcLocation(bucket: Bucket): S3ObjectLocation =
-    createS3ObjectLocationWith(bucket)
+  override def createSrcLocation(bucket: Bucket): S3ObjectSummary = {
+    val src = createS3ObjectLocationWith(bucket)
+    val summary = new S3ObjectSummary()
+    summary.setBucketName(src.bucket)
+    summary.setKey(src.key)
+
+    // By default, the size of an S3ObjectSummary() is zero.  We don't want it to
+    // be zero, because then the underlying S3 SDK will skip trying to read it;
+    // the correct size will be set in the StreamStore[S3ObjectSummary].
+    summary.setSize(randomInt(from = 1, to = 50))
+
+    summary
+  }
 
   override def createDstLocation(container: Container): AzureBlobLocation =
     createAzureBlobLocationWith(container)
 
-  override def withSrcStore[R](
-    initialEntries: Map[S3ObjectLocation, Record]
-  )(testWith: TestWith[S3TypedStore[Record], R])(implicit context: Unit): R = {
-    val store = S3TypedStore[Record]
+  val summaryStreamStore: StreamStore[S3ObjectSummary] =
+    new StreamStore[S3ObjectSummary] {
+      private val underlying = new S3StreamStore()
 
-    initialEntries.foreach {
-      case (location, record) =>
-        store.put(location)(record) shouldBe a[Right[_, _]]
+      override def get(summary: S3ObjectSummary): ReadEither =
+        underlying
+          .get(S3ObjectLocation(summary.getBucketName, summary.getKey))
+          .map { case Identified(_, result) => Identified(summary, result) }
+
+      override def put(
+        summary: S3ObjectSummary
+      )(is: InputStreamWithLength): WriteEither =
+        underlying
+          .put(S3ObjectLocation(summary.getBucketName, summary.getKey))(is)
+          .map {
+            case Identified(_, result) =>
+              summary.setSize(is.length)
+              Identified(summary, result)
+          }
     }
 
-    testWith(store)
+  val stringStore: TypedStore[S3ObjectSummary, String] =
+    new TypedStore[S3ObjectSummary, String] {
+      override implicit val codec: Codec[String] = Codec.stringCodec
+
+      override implicit val streamStore: StreamStore[S3ObjectSummary] =
+        summaryStreamStore
+    }
+
+  override def withSrcStore[R](
+    initialEntries: Map[S3ObjectSummary, Record]
+  )(
+    testWith: TestWith[TypedStore[S3ObjectSummary, Record], R]
+  )(implicit context: Unit): R = {
+    val c = implicitly[Codec[Record]]
+
+    val typedStore: TypedStore[S3ObjectSummary, Record] =
+      new TypedStore[S3ObjectSummary, Record] {
+        override implicit val codec: Codec[Record] = c
+
+        override implicit val streamStore: StreamStore[S3ObjectSummary] =
+          summaryStreamStore
+      }
+
+    initialEntries.foreach {
+      case (summary, record) =>
+        typedStore.put(summary)(record) shouldBe a[Right[_, _]]
+    }
+
+    testWith(typedStore)
   }
 
   override def withDstStore[R](initialEntries: Map[AzureBlobLocation, Record])(
@@ -88,9 +142,9 @@ class AzurePutBlockTransferTest
   }
 
   override def withTransfer[R](
-    srcStore: S3TypedStore[Record],
+    srcStore: TypedStore[S3ObjectSummary, Record],
     dstStore: AzureTypedStore[Record]
-  )(testWith: TestWith[Transfer[S3ObjectLocation, AzureBlobLocation], R]): R =
+  )(testWith: TestWith[Transfer[S3ObjectSummary, AzureBlobLocation], R]): R =
     testWith(
       new AzurePutBlockTransfer(blockSize = blockSize)
     )
@@ -157,7 +211,7 @@ class AzurePutBlockTransferTest
         val src = createSrcLocation(srcBucket)
         val dst = createDstLocation(dstContainer)
 
-        s3Client.putObject(src.bucket, src.key, "Hello world")
+        stringStore.put(src)("Hello world") shouldBe a[Right[_, _]]
 
         // Write the first block to the destination blob
         val blockClient = azureClient
@@ -226,7 +280,7 @@ class AzurePutBlockTransferTest
           val src = createSrcLocation(srcBucket)
           val dst = createDstLocation(dstContainer)
 
-          S3TypedStore[String].put(src)("Hello world") shouldBe a[Right[_, _]]
+          stringStore.put(src)("Hello world") shouldBe a[Right[_, _]]
 
           val transfer = new AzureFlakyBlockTransfer(maxFailures = 1)
 
@@ -247,7 +301,9 @@ class AzurePutBlockTransferTest
           val src = createSrcLocation(srcBucket)
           val dst = createDstLocation(dstContainer)
 
-          S3TypedStore[String].put(src)("Hello world") shouldBe a[Right[_, _]]
+          S3TypedStore[String].put(
+            S3ObjectLocation(src.getBucketName, src.getKey)
+          )("Hello world") shouldBe a[Right[_, _]]
 
           val transfer = new AzureFlakyBlockTransfer(maxFailures = Int.MaxValue)
 

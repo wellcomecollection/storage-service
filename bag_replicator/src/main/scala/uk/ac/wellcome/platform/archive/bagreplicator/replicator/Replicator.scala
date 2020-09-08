@@ -16,7 +16,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.listing.Listing
-import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.transfer.{PrefixTransfer, PrefixTransferFailure}
 
 // This is a generic replication from one location to another.
@@ -27,11 +27,12 @@ import uk.ac.wellcome.storage.transfer.{PrefixTransfer, PrefixTransferFailure}
 // For example, in the BagReplicator, we verify the tag manifests
 // are the same after replication completes.
 
-trait Replicator[DstLocation <: Location, DstPrefix <: Prefix[DstLocation]]
-    extends Logging {
+trait Replicator[SrcLocation, DstLocation <: Location, DstPrefix <: Prefix[
+  DstLocation
+]] extends Logging {
   implicit val prefixTransfer: PrefixTransfer[
     S3ObjectLocationPrefix,
-    S3ObjectLocation,
+    SrcLocation,
     DstPrefix,
     DstLocation
   ]

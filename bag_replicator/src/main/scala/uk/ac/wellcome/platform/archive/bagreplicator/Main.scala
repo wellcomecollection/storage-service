@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.bagreplicator
 
 import akka.actor.ActorSystem
 import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.s3.model.S3ObjectSummary
 import com.azure.storage.blob.{BlobServiceClient, BlobServiceClientBuilder}
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
@@ -19,9 +20,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.azure.AzureRepli
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
-import uk.ac.wellcome.platform.archive.bagreplicator.storage.azure.{
-  AzurePutBlockFromUrlTransfer
-}
+import uk.ac.wellcome.platform.archive.bagreplicator.storage.azure.AzurePutBlockFromUrlTransfer
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
@@ -33,7 +32,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   StorageProvider
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
-import uk.ac.wellcome.storage.azure.AzureBlobLocationPrefix
+import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.{Location, Prefix}
 import uk.ac.wellcome.storage.locking.dynamo.{
   DynamoLockDao,
@@ -77,14 +76,24 @@ object Main extends WellcomeTypesafeApp {
     def createLockingService[DstPrefix <: Prefix[_ <: Location]] =
       new DynamoLockingService[IngestStepResult[ReplicationSummary[DstPrefix]], Try]()
 
-    def createBagReplicatorWorker[DstLocation <: Location, DstPrefix <: Prefix[
-      DstLocation
-    ]](
+    def createBagReplicatorWorker[
+      SrcLocation,
+      DstLocation <: Location,
+      DstPrefix <: Prefix[
+        DstLocation
+      ]
+    ](
       lockingService: DynamoLockingService[IngestStepResult[
         ReplicationSummary[DstPrefix]
       ], Try],
-      replicator: Replicator[DstLocation, DstPrefix]
-    ): BagReplicatorWorker[SNSConfig, SNSConfig, DstLocation, DstPrefix] =
+      replicator: Replicator[SrcLocation, DstLocation, DstPrefix]
+    ): BagReplicatorWorker[
+      SNSConfig,
+      SNSConfig,
+      SrcLocation,
+      DstLocation,
+      DstPrefix
+    ] =
       new BagReplicatorWorker(
         config = AlpakkaSqsWorkerConfigBuilder.build(config),
         ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
@@ -110,7 +119,11 @@ object Main extends WellcomeTypesafeApp {
             .endpoint(config.requireString("azure.endpoint"))
             .buildClient()
 
-        createBagReplicatorWorker(
+        createBagReplicatorWorker[
+          S3ObjectSummary,
+          AzureBlobLocation,
+          AzureBlobLocationPrefix
+        ](
           lockingService = createLockingService[AzureBlobLocationPrefix],
           replicator = new AzureReplicator(
             transfer = new AzurePutBlockFromUrlTransfer()

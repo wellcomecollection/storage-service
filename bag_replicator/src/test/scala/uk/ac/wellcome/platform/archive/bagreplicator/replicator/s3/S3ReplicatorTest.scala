@@ -16,6 +16,7 @@ class S3ReplicatorTest
     extends ReplicatorTestCases[
       Bucket,
       S3ObjectLocation,
+      S3ObjectLocation,
       S3ObjectLocationPrefix,
       S3PrefixTransfer
     ]

@@ -32,6 +32,7 @@ import scala.util.Try
 class BagReplicatorWorker[
   IngestDestination,
   OutgoingDestination,
+  SrcLocation,
   DstLocation <: Location,
   DstPrefix <: Prefix[DstLocation]
 ](
@@ -45,7 +46,7 @@ class BagReplicatorWorker[
     UUID
   ]],
   destinationConfig: ReplicatorDestinationConfig,
-  replicator: Replicator[DstLocation, DstPrefix],
+  replicator: Replicator[SrcLocation, DstLocation, DstPrefix],
   val metricsNamespace: String
 )(
   implicit
