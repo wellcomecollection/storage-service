@@ -7,14 +7,17 @@ import com.azure.storage.blob.models.BlobRange
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
+import uk.ac.wellcome.storage.Identified
 import uk.ac.wellcome.storage.azure.AzureBlobLocation
 import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.fixtures.{AzureFixtures, S3Fixtures}
 import uk.ac.wellcome.storage.generators.Record
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
+import uk.ac.wellcome.storage.store.{StreamStore, TypedStore}
 import uk.ac.wellcome.storage.store.azure.AzureTypedStore
-import uk.ac.wellcome.storage.store.s3.S3TypedStore
+import uk.ac.wellcome.storage.store.s3.{S3StreamStore, S3TypedStore}
+import uk.ac.wellcome.storage.streaming.{Codec, InputStreamWithLength}
 import uk.ac.wellcome.storage.transfer.{Transfer, TransferDestinationFailure, TransferPerformed, TransferTestCases}
 
 class AzurePutBlockTransferTest
@@ -24,7 +27,7 @@ class AzurePutBlockTransferTest
       Record,
       Bucket,
       Container,
-      S3TypedStore[Record],
+      TypedStore[S3ObjectSummary, Record],
       AzureTypedStore[Record],
       Unit
     ]
@@ -64,15 +67,27 @@ class AzurePutBlockTransferTest
 
   override def withSrcStore[R](
     initialEntries: Map[S3ObjectSummary, Record]
-  )(testWith: TestWith[S3TypedStore[Record], R])(implicit context: Unit): R = {
-    val store = S3TypedStore[Record]
+  )(testWith: TestWith[TypedStore[S3ObjectSummary, Record], R])(implicit context: Unit): R = {
+    val typedStore = new TypedStore[S3ObjectSummary, Record] {
+      override implicit val codec: Codec[Record] = implicitly[Codec[Record]]
+      override implicit val streamStore: StreamStore[S3ObjectSummary] = new StreamStore[S3ObjectSummary]{
+        val s = new S3StreamStore()
+        override def put(id: S3ObjectSummary)(t: InputStreamWithLength): WriteEither = s.put(S3ObjectLocation(id.getBucketName, id.getKey))(t).map{identified =>
+          Identified(id, identified.identifiedT)
+        }
+
+        override def get(id: S3ObjectSummary): ReadEither = s.get(S3ObjectLocation(id.getBucketName, id.getKey)).map { identified =>
+           Identified(id, identified.identifiedT)
+        }
+      }
+    }
 
     initialEntries.foreach {
       case (location, record) =>
-        store.put(S3ObjectLocation(location.getBucketName, location.getKey))(record) shouldBe a[Right[_, _]]
+        typedStore.put(location)(record) shouldBe a[Right[_, _]]
     }
 
-    testWith(store)
+    testWith(typedStore)
   }
 
   override def withDstStore[R](initialEntries: Map[AzureBlobLocation, Record])(
@@ -89,7 +104,7 @@ class AzurePutBlockTransferTest
   }
 
   override def withTransfer[R](
-    srcStore: S3TypedStore[Record],
+    srcStore: TypedStore[S3ObjectSummary, Record],
     dstStore: AzureTypedStore[Record]
   )(testWith: TestWith[Transfer[S3ObjectSummary, AzureBlobLocation], R]): R =
     testWith(
@@ -115,7 +130,7 @@ class AzurePutBlockTransferTest
 
                 result.right.value shouldBe TransferPerformed(src, dst)
 
-                srcStore.get(S3ObjectLocation(src.getBucketName, src.getKey)).right.value.identifiedT shouldBe t
+                srcStore.get(src).right.value.identifiedT shouldBe t
                 dstStore.get(dst).right.value.identifiedT shouldBe t
               }
             }
@@ -143,7 +158,7 @@ class AzurePutBlockTransferTest
 
                 result.right.value shouldBe TransferPerformed(src, dst)
 
-                srcStore.get(S3ObjectLocation(src.getBucketName, src.getKey)).right.value.identifiedT shouldBe t
+                srcStore.get(src).right.value.identifiedT shouldBe t
                 dstStore.get(dst).right.value.identifiedT shouldBe t
               }
             }
