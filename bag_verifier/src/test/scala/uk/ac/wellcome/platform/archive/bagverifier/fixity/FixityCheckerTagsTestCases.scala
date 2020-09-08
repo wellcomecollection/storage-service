@@ -3,18 +3,19 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify}
 import uk.ac.wellcome.platform.archive.common.verify._
-import uk.ac.wellcome.storage.store.StreamStore
+import uk.ac.wellcome.storage.store.Readable
+import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.{Identified, Location, Prefix}
 
 trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
-], Namespace, Context, StreamStoreImpl <: StreamStore[BagLocation]]
+], Namespace, Context, StreamReaderImpl <: Readable[BagLocation, InputStreamWithLength]]
     extends FixityCheckerTestCases[
       BagLocation,
       BagPrefix,
       Namespace,
       Context,
-      StreamStoreImpl
+      StreamReaderImpl
     ] {
 
   val contentString = "HelloWorld"
@@ -59,24 +60,24 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           checksum = checksum
         )
 
-        withStreamStore { streamStore =>
-          val spyStore: StreamStoreImpl = Mockito.spy(streamStore)
+        withStreamReader { streamReader =>
+          val spyReader: StreamReaderImpl = Mockito.spy(streamReader)
 
-          withFixityChecker(spyStore) { fixityChecker =>
+          withFixityChecker(spyReader) { fixityChecker =>
             fixityChecker.check(expectedFileFixity) shouldBe a[
               FileFixityCorrect[_]
             ]
 
-            // StreamStore.get() should have been called to read the object so
+            // Readable.get() should have been called to read the object so
             // it can be verified.
-            verify(spyStore, times(1)).get(location)
+            verify(spyReader, times(1)).get(location)
 
             // It shouldn't be read a second time, because we see the tag written by
             // the previous verification.
             fixityChecker.check(expectedFileFixity) shouldBe a[
               FileFixityCorrect[_]
             ]
-            verify(spyStore, times(1)).get(location)
+            verify(spyReader, times(1)).get(location)
           }
         }
       }
@@ -100,17 +101,17 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           )
         )
 
-        withStreamStore { streamStore =>
-          val spyStore: StreamStoreImpl = Mockito.spy(streamStore)
+        withStreamReader { streamReader =>
+          val spyReader: StreamReaderImpl = Mockito.spy(streamReader)
 
-          withFixityChecker(spyStore) { fixityChecker =>
+          withFixityChecker(spyReader) { fixityChecker =>
             fixityChecker.check(expectedFileFixity) shouldBe a[
               FileFixityCorrect[_]
             ]
 
-            // StreamStore.get() should have been called to read the object so
+            // Readable.get() should have been called to read the object so
             // it can be verified.
-            verify(spyStore, times(1)).get(location)
+            verify(spyReader, times(1)).get(location)
 
             // It shouldn't be read a second time, because we see the tag written by
             // the previous verification.
@@ -122,7 +123,7 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
               .getMessage should startWith(
               "Cached verification tag doesn't match expected checksum"
             )
-            verify(spyStore, times(1)).get(location)
+            verify(spyReader, times(1)).get(location)
           }
         }
       }
@@ -144,17 +145,17 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           length = Some(contentString.length + 1)
         )
 
-        withStreamStore { streamStore =>
-          val spyStore: StreamStoreImpl = Mockito.spy(streamStore)
+        withStreamReader { streamReader =>
+          val spyReadable: StreamReaderImpl = Mockito.spy(streamReader)
 
-          withFixityChecker(spyStore) { fixityChecker =>
+          withFixityChecker(spyReadable) { fixityChecker =>
             fixityChecker.check(expectedFileFixity) shouldBe a[
               FileFixityCorrect[_]
             ]
 
-            // StreamStore.get() should have been called to read the object so
+            // Readable.get() should have been called to read the object so
             // it can be verified.
-            verify(spyStore, times(1)).get(location)
+            verify(spyReadable, times(1)).get(location)
 
             // It shouldn't be read a second time, because we see the tag written by
             // the previous verification.
@@ -164,7 +165,7 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
               .asInstanceOf[FileFixityMismatch[BagLocation]]
               .e
               .getMessage should startWith("Lengths do not match")
-            verify(spyStore, times(1)).get(location)
+            verify(spyReadable, times(1)).get(location)
           }
         }
       }
