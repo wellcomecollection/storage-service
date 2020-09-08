@@ -59,33 +59,50 @@ class AzurePutBlockTransferTest
     val summary = new S3ObjectSummary()
     summary.setBucketName(src.bucket)
     summary.setKey(src.key)
+    summary.setSize(randomInt(from = 1, to = 50))
     summary
   }
 
   override def createDstLocation(container: Container): AzureBlobLocation =
     createAzureBlobLocationWith(container)
 
+  val summaryStreamStore: StreamStore[S3ObjectSummary] = new StreamStore[S3ObjectSummary] {
+    private val underlying = new S3StreamStore()
+
+    override def get(summary: S3ObjectSummary): ReadEither =
+      underlying
+        .get(S3ObjectLocation(summary.getBucketName, summary.getKey))
+        .map { case Identified(_, result) => Identified(summary, result) }
+
+    override def put(summary: S3ObjectSummary)(is: InputStreamWithLength): WriteEither =
+      underlying
+        .put(S3ObjectLocation(summary.getBucketName, summary.getKey))(is)
+        .map { case Identified(_, result) =>
+          summary.setSize(is.length)
+          Identified(summary, result)
+        }
+  }
+
+  val stringStore: TypedStore[S3ObjectSummary, String] = new TypedStore[S3ObjectSummary, String] {
+    override implicit val codec: Codec[String] = Codec.stringCodec
+
+    override implicit val streamStore: StreamStore[S3ObjectSummary] = summaryStreamStore
+  }
+
   override def withSrcStore[R](
     initialEntries: Map[S3ObjectSummary, Record]
   )(testWith: TestWith[TypedStore[S3ObjectSummary, Record], R])(implicit context: Unit): R = {
     val c = implicitly[Codec[Record]]
-    val typedStore = new TypedStore[S3ObjectSummary, Record] {
-      override implicit val codec: Codec[Record] = c
-      override implicit val streamStore: StreamStore[S3ObjectSummary] = new StreamStore[S3ObjectSummary]{
-        val s = new S3StreamStore()
-        override def put(id: S3ObjectSummary)(t: InputStreamWithLength): WriteEither = s.put(S3ObjectLocation(id.getBucketName, id.getKey))(t).map{identified =>
-          Identified(id, identified.identifiedT)
-        }
 
-        override def get(id: S3ObjectSummary): ReadEither = s.get(S3ObjectLocation(id.getBucketName, id.getKey)).map { identified =>
-           Identified(id, identified.identifiedT)
-        }
-      }
+    val typedStore: TypedStore[S3ObjectSummary, Record] = new TypedStore[S3ObjectSummary, Record] {
+      override implicit val codec: Codec[Record] = c
+
+      override implicit val streamStore: StreamStore[S3ObjectSummary] = summaryStreamStore
     }
 
     initialEntries.foreach {
-      case (location, record) =>
-        typedStore.put(location)(record) shouldBe a[Right[_, _]]
+      case (summary, record) =>
+        typedStore.put(summary)(record) shouldBe a[Right[_, _]]
     }
 
     testWith(typedStore)
@@ -174,7 +191,7 @@ class AzurePutBlockTransferTest
         val src = createSrcLocation(srcBucket)
         val dst = createDstLocation(dstContainer)
 
-        s3Client.putObject(src.getBucketName, src.getKey, "Hello world")
+        stringStore.put(src)("Hello world") shouldBe a[Right[_, _]]
 
         // Write the first block to the destination blob
         val blockClient = azureClient
@@ -243,7 +260,7 @@ class AzurePutBlockTransferTest
           val src = createSrcLocation(srcBucket)
           val dst = createDstLocation(dstContainer)
 
-          S3TypedStore[String].put(S3ObjectLocation(src.getBucketName, src.getKey))("Hello world") shouldBe a[Right[_, _]]
+          stringStore.put(src)("Hello world") shouldBe a[Right[_, _]]
 
           val transfer = new AzureFlakyBlockTransfer(maxFailures = 1)
 

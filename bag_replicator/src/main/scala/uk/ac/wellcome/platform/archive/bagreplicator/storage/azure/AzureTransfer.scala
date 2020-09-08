@@ -22,6 +22,8 @@ import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
+class AzureSourceTransferException(msg: String) extends RuntimeException(msg)
+
 trait AzureTransfer[Context]
     extends Transfer[S3ObjectSummary, AzureBlobLocation]
     with Logging {
@@ -52,6 +54,7 @@ trait AzureTransfer[Context]
         context = context
       ) match {
         case Success(_)   => Right(())
+        case Failure(err: AzureSourceTransferException) => Left(TransferSourceFailure(src, dst, err))
         case Failure(err) => Left(TransferDestinationFailure(src, dst, err))
       }
     } yield result
@@ -306,7 +309,7 @@ class AzurePutBlockTransfer(
     ) match {
       case Right(value) => value
       case Left(err) =>
-        throw new RuntimeException(
+        throw new AzureSourceTransferException(
           s"Error reading chunk from S3 location $src (range $range): $err"
         )
     }
