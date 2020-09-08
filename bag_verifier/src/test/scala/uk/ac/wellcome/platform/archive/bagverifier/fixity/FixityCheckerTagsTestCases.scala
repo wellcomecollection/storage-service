@@ -22,6 +22,14 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
   val checksumString = "68e109f0f40ca72a15e05cc22786f8e6"
   val checksum = Checksum(MD5, ChecksumValue(checksumString))
 
+  def tagName(algorithm: HashingAlgorithm): String =
+    algorithm match {
+      case MD5 => "Content-MD5"
+      case SHA1 => "Content-SHA1"
+      case SHA256 => "Content-SHA256"
+      case SHA512 => "Content-SHA512"
+    }
+
   it("sets a tag on a successfully-verified object") {
     withContext { implicit context =>
       withNamespace { implicit namespace =>
@@ -41,7 +49,7 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           fixityChecker.tags.get.get(location).right.value shouldBe Identified(
             location,
             Map(
-              "Content-MD5" -> checksumString
+              tagName(checksum.algorithm) -> checksumString
             )
           )
         }
@@ -235,9 +243,9 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           fixityChecker.tags.get.get(location).right.value shouldBe Identified(
             location,
             Map(
-              "Content-MD5" -> "68e109f0f40ca72a15e05cc22786f8e6",
-              "Content-SHA1" -> "db8ac1c259eb89d4a131b253bacfca5f319d54f2",
-              "Content-SHA256" -> "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
+              tagName(MD5) -> "68e109f0f40ca72a15e05cc22786f8e6",
+              tagName(SHA1) -> "db8ac1c259eb89d4a131b253bacfca5f319d54f2",
+              tagName(SHA256) -> "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
             )
           )
         }
