@@ -3,23 +3,34 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify}
 import uk.ac.wellcome.platform.archive.common.verify._
-import uk.ac.wellcome.storage.store.StreamStore
+import uk.ac.wellcome.storage.store.Readable
+import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.{Identified, Location, Prefix}
 
 trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
-], Namespace, Context, StreamStoreImpl <: StreamStore[BagLocation]]
-    extends FixityCheckerTestCases[
+], Namespace, Context, StreamReaderImpl <: Readable[
+  BagLocation,
+  InputStreamWithLength
+]] extends FixityCheckerTestCases[
       BagLocation,
       BagPrefix,
       Namespace,
       Context,
-      StreamStoreImpl
+      StreamReaderImpl
     ] {
 
   val contentString = "HelloWorld"
   val checksumString = "68e109f0f40ca72a15e05cc22786f8e6"
   val checksum = Checksum(MD5, ChecksumValue(checksumString))
+
+  def tagName(algorithm: HashingAlgorithm): String =
+    algorithm match {
+      case MD5    => "Content-MD5"
+      case SHA1   => "Content-SHA1"
+      case SHA256 => "Content-SHA256"
+      case SHA512 => "Content-SHA512"
+    }
 
   it("sets a tag on a successfully-verified object") {
     withContext { implicit context =>
@@ -40,7 +51,7 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           fixityChecker.tags.get.get(location).right.value shouldBe Identified(
             location,
             Map(
-              "Content-MD5" -> checksumString
+              tagName(checksum.algorithm) -> checksumString
             )
           )
         }
@@ -59,24 +70,24 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           checksum = checksum
         )
 
-        withStreamStore { streamStore =>
-          val spyStore: StreamStoreImpl = Mockito.spy(streamStore)
+        withStreamReader { streamReader =>
+          val spyReader: StreamReaderImpl = Mockito.spy(streamReader)
 
-          withFixityChecker(spyStore) { fixityChecker =>
+          withFixityChecker(spyReader) { fixityChecker =>
             fixityChecker.check(expectedFileFixity) shouldBe a[
               FileFixityCorrect[_]
             ]
 
-            // StreamStore.get() should have been called to read the object so
+            // Readable.get() should have been called to read the object so
             // it can be verified.
-            verify(spyStore, times(1)).get(location)
+            verify(spyReader, times(1)).get(location)
 
             // It shouldn't be read a second time, because we see the tag written by
             // the previous verification.
             fixityChecker.check(expectedFileFixity) shouldBe a[
               FileFixityCorrect[_]
             ]
-            verify(spyStore, times(1)).get(location)
+            verify(spyReader, times(1)).get(location)
           }
         }
       }
@@ -100,17 +111,17 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           )
         )
 
-        withStreamStore { streamStore =>
-          val spyStore: StreamStoreImpl = Mockito.spy(streamStore)
+        withStreamReader { streamReader =>
+          val spyReader: StreamReaderImpl = Mockito.spy(streamReader)
 
-          withFixityChecker(spyStore) { fixityChecker =>
+          withFixityChecker(spyReader) { fixityChecker =>
             fixityChecker.check(expectedFileFixity) shouldBe a[
               FileFixityCorrect[_]
             ]
 
-            // StreamStore.get() should have been called to read the object so
+            // Readable.get() should have been called to read the object so
             // it can be verified.
-            verify(spyStore, times(1)).get(location)
+            verify(spyReader, times(1)).get(location)
 
             // It shouldn't be read a second time, because we see the tag written by
             // the previous verification.
@@ -122,7 +133,7 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
               .getMessage should startWith(
               "Cached verification tag doesn't match expected checksum"
             )
-            verify(spyStore, times(1)).get(location)
+            verify(spyReader, times(1)).get(location)
           }
         }
       }
@@ -144,17 +155,17 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           length = Some(contentString.length + 1)
         )
 
-        withStreamStore { streamStore =>
-          val spyStore: StreamStoreImpl = Mockito.spy(streamStore)
+        withStreamReader { streamReader =>
+          val spyReadable: StreamReaderImpl = Mockito.spy(streamReader)
 
-          withFixityChecker(spyStore) { fixityChecker =>
+          withFixityChecker(spyReadable) { fixityChecker =>
             fixityChecker.check(expectedFileFixity) shouldBe a[
               FileFixityCorrect[_]
             ]
 
-            // StreamStore.get() should have been called to read the object so
+            // Readable.get() should have been called to read the object so
             // it can be verified.
-            verify(spyStore, times(1)).get(location)
+            verify(spyReadable, times(1)).get(location)
 
             // It shouldn't be read a second time, because we see the tag written by
             // the previous verification.
@@ -164,7 +175,7 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
               .asInstanceOf[FileFixityMismatch[BagLocation]]
               .e
               .getMessage should startWith("Lengths do not match")
-            verify(spyStore, times(1)).get(location)
+            verify(spyReadable, times(1)).get(location)
           }
         }
       }
@@ -234,9 +245,9 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           fixityChecker.tags.get.get(location).right.value shouldBe Identified(
             location,
             Map(
-              "Content-MD5" -> "68e109f0f40ca72a15e05cc22786f8e6",
-              "Content-SHA1" -> "db8ac1c259eb89d4a131b253bacfca5f319d54f2",
-              "Content-SHA256" -> "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
+              tagName(MD5) -> "68e109f0f40ca72a15e05cc22786f8e6",
+              tagName(SHA1) -> "db8ac1c259eb89d4a131b253bacfca5f319d54f2",
+              tagName(SHA256) -> "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
             )
           )
         }

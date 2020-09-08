@@ -6,7 +6,7 @@ import org.scalatest.EitherValues
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FixityChecker,
-  FixityCheckerTestCases
+  FixityCheckerTagsTestCases
 }
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.providers.memory.{
@@ -18,7 +18,7 @@ import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.tags.memory.MemoryTags
 
 class MemoryFixityCheckerTest
-    extends FixityCheckerTestCases[
+    extends FixityCheckerTagsTestCases[
       MemoryLocation,
       MemoryLocationPrefix,
       String,
@@ -60,7 +60,7 @@ class MemoryFixityCheckerTest
     streamStore.put(location)(inputStream) shouldBe a[Right[_, _]]
   }
 
-  override def withStreamStore[R](
+  override def withStreamReader[R](
     testWith: TestWith[MemoryStreamStore[MemoryLocation], R]
   )(implicit context: MemoryContext): R = {
     val (streamStore, _) = context
@@ -68,13 +68,13 @@ class MemoryFixityCheckerTest
   }
 
   override def withFixityChecker[R](
-    streamStore: MemoryStreamStore[MemoryLocation]
+    memoryReader: MemoryStreamStore[MemoryLocation]
   )(
     testWith: TestWith[FixityChecker[MemoryLocation, MemoryLocationPrefix], R]
   )(implicit context: MemoryContext): R = {
     val (_, tags) = context
     testWith(
-      new MemoryFixityChecker(streamStore, tags)
+      new MemoryFixityChecker(memoryReader, tags)
     )
   }
 

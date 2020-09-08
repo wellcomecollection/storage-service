@@ -40,7 +40,7 @@ class S3FixityCheckerTest
       contents
     )
 
-  override def withStreamStore[R](
+  override def withStreamReader[R](
     testWith: TestWith[S3StreamStore, R]
   )(implicit context: Unit): R =
     testWith(
@@ -48,7 +48,7 @@ class S3FixityCheckerTest
     )
 
   override def withFixityChecker[R](
-    s3Store: S3StreamStore
+    s3Reader: S3StreamStore
   )(
     testWith: TestWith[
       FixityChecker[S3ObjectLocation, S3ObjectLocationPrefix],
@@ -56,7 +56,7 @@ class S3FixityCheckerTest
     ]
   )(implicit context: Unit): R =
     testWith(new S3FixityChecker() {
-      override val streamReader: StreamStore[S3ObjectLocation] = s3Store
+      override val streamReader: StreamStore[S3ObjectLocation] = s3Reader
     })
 
   implicit val context: Unit = ()
