@@ -514,7 +514,7 @@ module "replicator_verifier_azure" {
   ]
 
   verifier_secrets = {
-    azure_endpoint = "${var.azure_ssm_parameter_base}/read_only_sas_url"
+    azure_endpoint = "${var.azure_ssm_parameter_base}/read_write_sas_url"
   }
 
   replicator_secrets = {
