@@ -6,13 +6,20 @@ import java.net.URL
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.{S3ObjectInputStream, S3ObjectSummary}
 import com.azure.storage.blob.BlobServiceClient
-import com.azure.storage.blob.models.{BlobRange, BlobStorageException, BlockListType}
+import com.azure.storage.blob.models.{
+  BlobRange,
+  BlobStorageException,
+  BlockListType
+}
 import com.azure.storage.blob.specialized.{BlobInputStream, BlockBlobClient}
 import grizzled.slf4j.Logging
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.platform.archive.common.storage.models.ByteRange
 import uk.ac.wellcome.platform.archive.common.storage.services.azure.AzureSizeFinder
-import uk.ac.wellcome.platform.archive.common.storage.services.s3.{S3RangedReader, S3Uploader}
+import uk.ac.wellcome.platform.archive.common.storage.services.s3.{
+  S3RangedReader,
+  S3Uploader
+}
 import uk.ac.wellcome.storage.{RetryableError, StoreWriteError}
 import uk.ac.wellcome.storage.azure.AzureBlobLocation
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
@@ -33,9 +40,13 @@ trait AzureTransfer[Context]
   import uk.ac.wellcome.storage.RetryOps._
 
   val blockSize: Long
- implicit class S3ObjectSummaryOps(s3ObjectSummary: S3ObjectSummary){
-   def toS3ObjectLocation: S3ObjectLocation = S3ObjectLocation(bucket = s3ObjectSummary.getBucketName, key = s3ObjectSummary.getKey)
- }
+  implicit class S3ObjectSummaryOps(s3ObjectSummary: S3ObjectSummary) {
+    def toS3ObjectLocation: S3ObjectLocation =
+      S3ObjectLocation(
+        bucket = s3ObjectSummary.getBucketName,
+        key = s3ObjectSummary.getKey
+      )
+  }
 
   private def runTransfer(
     src: S3ObjectSummary,
@@ -53,8 +64,9 @@ trait AzureTransfer[Context]
         allowOverwrites = allowOverwrites,
         context = context
       ) match {
-        case Success(_)   => Right(())
-        case Failure(err: AzureSourceTransferException) => Left(TransferSourceFailure(src, dst, err))
+        case Success(_) => Right(())
+        case Failure(err: AzureSourceTransferException) =>
+          Left(TransferSourceFailure(src, dst, err))
         case Failure(err) => Left(TransferDestinationFailure(src, dst, err))
       }
     } yield result
@@ -343,10 +355,12 @@ class AzurePutBlockFromUrlTransfer(
     src: S3ObjectSummary,
     dst: AzureBlobLocation
   ): Either[TransferSourceFailure[S3ObjectSummary, AzureBlobLocation], URL] =
-    s3Uploader.getPresignedGetURL(src.toS3ObjectLocation, expiryLength = 1.hour).left.map {
-      readError =>
+    s3Uploader
+      .getPresignedGetURL(src.toS3ObjectLocation, expiryLength = 1.hour)
+      .left
+      .map { readError =>
         TransferSourceFailure(src, dst, e = readError.e)
-    }
+      }
 
   override protected def writeBlockToAzure(
     src: S3ObjectLocation,

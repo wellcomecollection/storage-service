@@ -4,9 +4,15 @@ import java.time.Instant
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.storage.models.{EnsureTrailingSlash, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  EnsureTrailingSlash,
+  StorageSpace
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.listing.Listing
@@ -21,8 +27,9 @@ import uk.ac.wellcome.storage.transfer.{PrefixTransfer, PrefixTransferFailure}
 // For example, in the BagReplicator, we verify the tag manifests
 // are the same after replication completes.
 
-trait Replicator[SrcLocation, DstLocation <: Location, DstPrefix <: Prefix[DstLocation]]
-    extends Logging {
+trait Replicator[SrcLocation, DstLocation <: Location, DstPrefix <: Prefix[
+  DstLocation
+]] extends Logging {
   implicit val prefixTransfer: PrefixTransfer[
     S3ObjectLocationPrefix,
     SrcLocation,

@@ -27,7 +27,8 @@ class AzurePutBlockFromURLTransferTest
           val dst = createAzureBlobLocationWith(dstContainer)
 
           srcStore.put(src)("Hello world") shouldBe a[Right[_, _]]
-          val srcSummary = S3Objects.withPrefix(s3Client, src.bucket, src.key).head
+          val srcSummary =
+            S3Objects.withPrefix(s3Client, src.bucket, src.key).head
 
           dstStore.put(dst)("Hello world") shouldBe a[Right[_, _]]
 
@@ -46,7 +47,8 @@ class AzurePutBlockFromURLTransferTest
           val dst = createAzureBlobLocationWith(dstContainer)
 
           srcStore.put(src)("hello world") shouldBe a[Right[_, _]]
-          val srcSummary = S3Objects.withPrefix(s3Client, src.bucket, src.key).head
+          val srcSummary =
+            S3Objects.withPrefix(s3Client, src.bucket, src.key).head
           dstStore.put(dst)("HELLO WORLD") shouldBe a[Right[_, _]]
 
           transfer
@@ -64,7 +66,8 @@ class AzurePutBlockFromURLTransferTest
           val dst = createAzureBlobLocationWith(dstContainer)
 
           srcStore.put(src)("Hello world") shouldBe a[Right[_, _]]
-          val srcSummary = S3Objects.withPrefix(s3Client, src.bucket, src.key).head
+          val srcSummary =
+            S3Objects.withPrefix(s3Client, src.bucket, src.key).head
           dstStore.put(dst)("Greetings, humans") shouldBe a[Right[_, _]]
 
           transfer

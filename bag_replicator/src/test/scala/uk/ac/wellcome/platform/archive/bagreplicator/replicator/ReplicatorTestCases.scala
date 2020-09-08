@@ -46,7 +46,7 @@ trait ReplicatorTestCases[
 
   def withDstNamespace[R](testWith: TestWith[DstNamespace, R]): R
 
-  type ReplicatorImpl = Replicator[SrcLocation,DstLocation, DstPrefix]
+  type ReplicatorImpl = Replicator[SrcLocation, DstLocation, DstPrefix]
 
   def withPrefixTransfer[R](testWith: TestWith[PrefixTransferImpl, R]): R
 
