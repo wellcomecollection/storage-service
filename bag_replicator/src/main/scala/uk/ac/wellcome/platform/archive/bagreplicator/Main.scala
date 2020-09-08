@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.archive.bagreplicator
 
 import akka.actor.ActorSystem
 import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.S3ObjectSummary
 import com.azure.storage.blob.{BlobServiceClient, BlobServiceClientBuilder}
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
@@ -32,14 +31,14 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   StorageProvider
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
-import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
-import uk.ac.wellcome.storage.{Location, Prefix}
+import uk.ac.wellcome.storage.azure.AzureBlobLocationPrefix
 import uk.ac.wellcome.storage.locking.dynamo.{
   DynamoLockDao,
   DynamoLockingService
 }
 import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.typesafe.{DynamoLockDaoBuilder, S3Builder}
+import uk.ac.wellcome.storage.{Location, Prefix}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
@@ -119,11 +118,7 @@ object Main extends WellcomeTypesafeApp {
             .endpoint(config.requireString("azure.endpoint"))
             .buildClient()
 
-        createBagReplicatorWorker[
-          S3ObjectSummary,
-          AzureBlobLocation,
-          AzureBlobLocationPrefix
-        ](
+        createBagReplicatorWorker(
           lockingService = createLockingService[AzureBlobLocationPrefix],
           replicator = new AzureReplicator(
             transfer = new AzurePutBlockFromUrlTransfer()
