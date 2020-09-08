@@ -59,7 +59,12 @@ class AzurePutBlockTransferTest
     val summary = new S3ObjectSummary()
     summary.setBucketName(src.bucket)
     summary.setKey(src.key)
+
+    // By default, the size of an S3ObjectSummary() is zero.  We don't want it to
+    // be zero, because then the underlying S3 SDK will skip trying to read it;
+    // the correct size will be set in the StreamStore[S3ObjectSummary].
     summary.setSize(randomInt(from = 1, to = 50))
+
     summary
   }
 
