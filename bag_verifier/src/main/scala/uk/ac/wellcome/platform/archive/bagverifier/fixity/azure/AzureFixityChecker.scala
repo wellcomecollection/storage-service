@@ -1,10 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity.azure
 
 import com.azure.storage.blob.BlobServiceClient
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
-  ExpectedFileFixity,
-  FixityChecker
-}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{ExpectedFileFixity, FixityChecker}
 import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.AzureLocatable
 import uk.ac.wellcome.platform.archive.common.storage.services.azure.{
   AzureLargeStreamReader,
@@ -46,9 +43,7 @@ class AzureFixityChecker(implicit blobClient: BlobServiceClient)
   // We can't include a hyphen in the name because Azure metadata names have to be
   // valid C# identifiers.
   // See https://docs.microsoft.com/en-us/rest/api/storageservices/setting-and-retrieving-properties-and-metadata-for-blob-resources#Subheading1
-  override protected def fixityTagName(
-    expectedFileFixity: ExpectedFileFixity
-  ): String =
+  override protected def fixityTagName(expectedFileFixity: ExpectedFileFixity): String =
     s"Content${expectedFileFixity.checksum.algorithm.pathRepr.toUpperCase}"
 
   override implicit val locator: AzureLocatable = new AzureLocatable

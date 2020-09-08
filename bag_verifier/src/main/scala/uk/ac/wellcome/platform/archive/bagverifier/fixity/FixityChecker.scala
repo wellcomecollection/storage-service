@@ -266,16 +266,16 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
 
         Right(existingTags ++ fixityTags)
       } match {
-      case Right(_) => Right(())
-      case Left(writeError) =>
-        Left(
-          FileFixityCouldNotWriteTag(
-            expectedFileFixity = expectedFileFixity,
-            objectLocation = location,
-            e = writeError.e
+        case Right(_) => Right(())
+        case Left(writeError) =>
+          Left(
+            FileFixityCouldNotWriteTag(
+              expectedFileFixity = expectedFileFixity,
+              objectLocation = location,
+              e = writeError.e
+            )
           )
-        )
-    }
+      }
 
   // e.g. Content-MD5, Content-SHA256
   protected def fixityTagName(expectedFileFixity: ExpectedFileFixity): String =
