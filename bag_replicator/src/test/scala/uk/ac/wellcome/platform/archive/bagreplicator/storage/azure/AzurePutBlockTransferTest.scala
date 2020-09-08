@@ -68,8 +68,9 @@ class AzurePutBlockTransferTest
   override def withSrcStore[R](
     initialEntries: Map[S3ObjectSummary, Record]
   )(testWith: TestWith[TypedStore[S3ObjectSummary, Record], R])(implicit context: Unit): R = {
+    val c = implicitly[Codec[Record]]
     val typedStore = new TypedStore[S3ObjectSummary, Record] {
-      override implicit val codec: Codec[Record] = implicitly[Codec[Record]]
+      override implicit val codec: Codec[Record] = c
       override implicit val streamStore: StreamStore[S3ObjectSummary] = new StreamStore[S3ObjectSummary]{
         val s = new S3StreamStore()
         override def put(id: S3ObjectSummary)(t: InputStreamWithLength): WriteEither = s.put(S3ObjectLocation(id.getBucketName, id.getKey))(t).map{identified =>

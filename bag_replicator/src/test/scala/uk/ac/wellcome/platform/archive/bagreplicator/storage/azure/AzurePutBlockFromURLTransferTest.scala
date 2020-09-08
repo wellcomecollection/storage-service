@@ -34,7 +34,7 @@ class AzurePutBlockFromURLTransferTest
           transfer
             .transfer(srcSummary, dst, checkForExisting = true)
             .right
-            .value shouldBe TransferNoOp(src, dst)
+            .value shouldBe TransferNoOp(srcSummary, dst)
         }
       }
     }
@@ -52,7 +52,7 @@ class AzurePutBlockFromURLTransferTest
           transfer
             .transfer(srcSummary, dst, checkForExisting = true)
             .right
-            .value shouldBe TransferNoOp(src, dst)
+            .value shouldBe TransferNoOp(srcSummary, dst)
         }
       }
     }
