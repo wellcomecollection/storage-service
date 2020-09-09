@@ -16,7 +16,10 @@ trait VerifySourceTagManifest[
 
   protected val srcReader: Readable[S3ObjectLocation, InputStreamWithLength] =
     new S3StreamStore()
-  protected val replicaReader: Readable[ReplicaBagLocation, InputStreamWithLength]
+  protected val replicaReader: Readable[
+    ReplicaBagLocation,
+    InputStreamWithLength
+  ]
 
   /** This step is here to check the bag created by the replica and the
     * original bag are the same; the verifier can only check that a
