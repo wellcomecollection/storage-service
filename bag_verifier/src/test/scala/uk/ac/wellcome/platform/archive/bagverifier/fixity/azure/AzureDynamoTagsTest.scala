@@ -9,17 +9,26 @@ import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
 import uk.ac.wellcome.storage.store.azure.AzureTypedStore
 import uk.ac.wellcome.storage.tags.{Tags, TagsTestCases}
 
-class AzureDynamoTagsTest extends TagsTestCases[AzureBlobLocation, Container] with AzureFixtures with DynamoFixtures {
+class AzureDynamoTagsTest
+    extends TagsTestCases[AzureBlobLocation, Container]
+    with AzureFixtures
+    with DynamoFixtures {
   override def withTags[R](
-    initialTags: Map[AzureBlobLocation, Map[String, String]])(
+    initialTags: Map[AzureBlobLocation, Map[String, String]]
+  )(
     testWith: TestWith[Tags[AzureBlobLocation], R]
   ): R =
     withLocalDynamoDbTable { table =>
       val azureTags = new AzureDynamoTags(createDynamoConfigWith(table))
 
-      initialTags.foreach { case (location, tags) =>
-        AzureTypedStore[String].put(location)(randomAlphanumeric) shouldBe a[Right[_, _]]
-        azureTags.update(location) { _ => Right(tags) } shouldBe a[Right[_, _]]
+      initialTags.foreach {
+        case (location, tags) =>
+          AzureTypedStore[String].put(location)(randomAlphanumeric) shouldBe a[
+            Right[_, _]
+          ]
+          azureTags.update(location) { _ =>
+            Right(tags)
+          } shouldBe a[Right[_, _]]
       }
 
       testWith(azureTags)
@@ -34,5 +43,9 @@ class AzureDynamoTagsTest extends TagsTestCases[AzureBlobLocation, Container] wi
     }
 
   override def createTable(table: Table): Table =
-    createTableWithHashKey(table, keyName = "id", keyType = ScalarAttributeType.S)
+    createTableWithHashKey(
+      table,
+      keyName = "id",
+      keyType = ScalarAttributeType.S
+    )
 }

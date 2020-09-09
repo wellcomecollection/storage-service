@@ -12,7 +12,10 @@ import uk.ac.wellcome.storage.dynamo.DynamoConfig
 import uk.ac.wellcome.storage.listing.azure.AzureBlobLocationListing
 import uk.ac.wellcome.storage.store.azure.AzureStreamStore
 
-class AzureReplicatedBagVerifier(val primaryBucket: String, dynamoConfig: DynamoConfig)(
+class AzureReplicatedBagVerifier(
+  val primaryBucket: String,
+  dynamoConfig: DynamoConfig
+)(
   implicit
   val s3Client: AmazonS3,
   val blobClient: BlobServiceClient,

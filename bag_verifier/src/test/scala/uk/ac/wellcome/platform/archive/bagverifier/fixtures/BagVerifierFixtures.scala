@@ -22,7 +22,11 @@ import uk.ac.wellcome.platform.archive.common.{
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.fixtures.{AzureFixtures, DynamoFixtures, S3Fixtures}
+import uk.ac.wellcome.storage.fixtures.{
+  AzureFixtures,
+  DynamoFixtures,
+  S3Fixtures
+}
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -163,5 +167,9 @@ trait BagVerifierFixtures
     )
 
   override def createTable(table: Table): Table =
-    createTableWithHashKey(table, keyName = "id", keyType = ScalarAttributeType.S)
+    createTableWithHashKey(
+      table,
+      keyName = "id",
+      keyType = ScalarAttributeType.S
+    )
 }

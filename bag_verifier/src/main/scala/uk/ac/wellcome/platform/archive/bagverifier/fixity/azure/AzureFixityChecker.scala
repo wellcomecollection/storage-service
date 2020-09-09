@@ -16,8 +16,10 @@ import uk.ac.wellcome.storage.dynamo.DynamoConfig
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
-class AzureFixityChecker(dynamoConfig: DynamoConfig)(implicit blobClient: BlobServiceClient, dynamoClient: AmazonDynamoDB)
-    extends FixityChecker[AzureBlobLocation, AzureBlobLocationPrefix] {
+class AzureFixityChecker(dynamoConfig: DynamoConfig)(
+  implicit blobClient: BlobServiceClient,
+  dynamoClient: AmazonDynamoDB
+) extends FixityChecker[AzureBlobLocation, AzureBlobLocationPrefix] {
 
   // Working out the correct value for this took a bit of experimentation; initially
   // I tried 200MB at a time, but that hit timeout errors, e.g.

@@ -16,14 +16,15 @@ import uk.ac.wellcome.storage._
 //
 // Using DynamoDB to store tags about blobs in Azure is a stopgap until we get
 // access to first-class Azure tags.
-class AzureDynamoTags(
-  dynamoConfig: DynamoConfig)(
+class AzureDynamoTags(dynamoConfig: DynamoConfig)(
   implicit
   blobServiceClient: BlobServiceClient,
-  dynamoClient: AmazonDynamoDB) extends Tags[AzureBlobLocation] {
+  dynamoClient: AmazonDynamoDB
+) extends Tags[AzureBlobLocation] {
   case class DynamoTagsEntry(id: String, tags: Map[String, String])
 
-  private val table: Table[DynamoTagsEntry] = Table[DynamoTagsEntry](dynamoConfig.tableName)
+  private val table: Table[DynamoTagsEntry] =
+    Table[DynamoTagsEntry](dynamoConfig.tableName)
 
   private val scanamo = Scanamo(dynamoClient)
 
@@ -33,7 +34,10 @@ class AzureDynamoTags(
       .getBlobClient(location.name)
       .exists()
 
-  override protected def writeTags(location: AzureBlobLocation, tags: Map[String, String]): Either[WriteError, Map[String, String]] =
+  override protected def writeTags(
+    location: AzureBlobLocation,
+    tags: Map[String, String]
+  ): Either[WriteError, Map[String, String]] =
     if (exists(location)) {
       val ops = if (tags.isEmpty) {
         table.delete('id -> location.toString())
@@ -42,11 +46,22 @@ class AzureDynamoTags(
       }
 
       scanamo.exec(ops) match {
-        case Some(Left(err)) => Left(StoreWriteError(new Throwable(s"Error from Scanamo putting tags to $location: $err")))
-        case _               => Right(tags)
+        case Some(Left(err)) =>
+          Left(
+            StoreWriteError(
+              new Throwable(
+                s"Error from Scanamo putting tags to $location: $err"
+              )
+            )
+          )
+        case _ => Right(tags)
       }
     } else {
-      Left(StoreWriteError(new Throwable(s"Location $location does not exist in Azure!")))
+      Left(
+        StoreWriteError(
+          new Throwable(s"Location $location does not exist in Azure!")
+        )
+      )
     }
 
   override def get(location: AzureBlobLocation): ReadEither =
@@ -54,7 +69,14 @@ class AzureDynamoTags(
       scanamo.exec(table.get('id -> location.toString)) match {
         case Some(Right(entry)) => Right(Identified(location, entry.tags))
         case None               => Right(Identified(location, Map.empty))
-        case result             => Left(StoreReadError(new Throwable(s"Error from Scanamo looking up tags for $location: $result")))
+        case result =>
+          Left(
+            StoreReadError(
+              new Throwable(
+                s"Error from Scanamo looking up tags for $location: $result"
+              )
+            )
+          )
       }
     } else {
       Left(DoesNotExistError())

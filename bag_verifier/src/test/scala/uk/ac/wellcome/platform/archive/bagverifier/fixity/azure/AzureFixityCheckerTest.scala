@@ -76,5 +76,9 @@ class AzureFixityCheckerTest
     }
 
   override def createTable(table: Table): Table =
-    createTableWithHashKey(table, keyName = "id", keyType = ScalarAttributeType.S)
+    createTableWithHashKey(
+      table,
+      keyName = "id",
+      keyType = ScalarAttributeType.S
+    )
 }
