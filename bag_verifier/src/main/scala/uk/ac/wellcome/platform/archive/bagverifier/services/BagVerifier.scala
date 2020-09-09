@@ -28,14 +28,14 @@ trait ReplicatedBagVerifier[
     ]
     with VerifySourceTagManifest[ReplicaBagLocation] {
   override def verifyReplicatedBag(
-    root: ReplicatedBagVerifyContext[ReplicaBagPrefix],
+    context: ReplicatedBagVerifyContext[ReplicaBagPrefix],
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     bag: Bag
   ): Either[BagVerifierError, Unit] =
     verifySourceTagManifestIsTheSame(
-      srcPrefix = root.srcRoot,
-      replicaPrefix = root.replicaRoot
+      srcPrefix = context.srcRoot,
+      replicaPrefix = context.replicaRoot
     )
 }
 
@@ -54,7 +54,7 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
   implicit val fixityChecker: FixityChecker[BagLocation, BagPrefix]
 
   def verifyReplicatedBag(
-    root: BagContext,
+    context: BagContext,
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     bag: Bag

@@ -64,7 +64,7 @@ class S3StandaloneBagVerifier(val primaryBucket: String)(
     ]
     with S3BagVerifier[StandaloneBagVerifyContext] {
   override def verifyReplicatedBag(
-    root: StandaloneBagVerifyContext,
+    context: StandaloneBagVerifyContext,
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     bag: Bag
@@ -81,6 +81,6 @@ class S3ReplicatedBagVerifier(val primaryBucket: String)(
       ReplicatedBagVerifyContext[S3ObjectLocationPrefix]
     ] {
 
-  override val replicaStreamStore: StreamStore[S3ObjectLocation] =
+  override val replicaReader: StreamStore[S3ObjectLocation] =
     new S3StreamStore()
 }

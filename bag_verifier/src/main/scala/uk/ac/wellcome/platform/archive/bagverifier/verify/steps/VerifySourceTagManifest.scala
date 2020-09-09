@@ -4,7 +4,7 @@ import com.amazonaws.services.s3.AmazonS3
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
-import uk.ac.wellcome.storage.store.StreamStore
+import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.{Identified, Location, Prefix}
@@ -14,9 +14,12 @@ trait VerifySourceTagManifest[
 ] {
   implicit val s3Client: AmazonS3
 
-  protected val srcStreamStore: StreamStore[S3ObjectLocation] =
+  protected val srcReader: Readable[S3ObjectLocation, InputStreamWithLength] =
     new S3StreamStore()
-  protected val replicaStreamStore: StreamStore[ReplicaBagLocation]
+  protected val replicaReader: Readable[
+    ReplicaBagLocation,
+    InputStreamWithLength
+  ]
 
   /** This step is here to check the bag created by the replica and the
     * original bag are the same; the verifier can only check that a
@@ -33,8 +36,8 @@ trait VerifySourceTagManifest[
     replicaPrefix: Prefix[ReplicaBagLocation]
   ): Either[BagVerifierError, Unit] = {
     for {
-      srcManifest <- getTagManifest(srcPrefix, srcStreamStore)
-      replicaManifest <- getTagManifest(replicaPrefix, replicaStreamStore)
+      srcManifest <- getTagManifest(srcPrefix, srcReader)
+      replicaManifest <- getTagManifest(replicaPrefix, replicaReader)
 
       result <- if (IOUtils.contentEquals(srcManifest, replicaManifest)) {
         Right(())
@@ -52,7 +55,7 @@ trait VerifySourceTagManifest[
 
   private def getTagManifest[BagLocation <: Location](
     prefix: Prefix[BagLocation],
-    streamStore: StreamStore[BagLocation]
+    streamStore: Readable[BagLocation, InputStreamWithLength]
   ): Either[BagVerifierError, InputStreamWithLength] =
     streamStore.get(prefix.asLocation("tagmanifest-sha256.txt")) match {
       case Right(Identified(_, inputStream)) => Right(inputStream)
