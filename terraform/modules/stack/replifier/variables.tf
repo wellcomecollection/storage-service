@@ -97,6 +97,11 @@ variable "bag_verifier_image" {
   type = string
 }
 
+variable "verifier_environment" {
+  type    = map(string)
+  default = {}
+}
+
 variable "verifier_secrets" {
   type    = map(string)
   default = {}

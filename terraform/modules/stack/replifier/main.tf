@@ -61,7 +61,7 @@ module "bag_verifier" {
   subnets      = var.subnets
   service_name = local.bag_verifier_service_name
 
-  environment = {
+  environment = merge({
     queue_url          = module.bag_verifier_queue.url
     ingest_topic_arn   = var.ingests_topic_arn
     outgoing_topic_arn = module.bag_verifier_output_topic.arn
@@ -71,7 +71,7 @@ module "bag_verifier" {
     bag_verifier_mode  = var.bag_verifier_mode
 
     primary_storage_bucket_name = var.primary_bucket_name
-  }
+  }, var.verifier_environment)
   secrets = var.verifier_secrets
 
   cpu    = 2048

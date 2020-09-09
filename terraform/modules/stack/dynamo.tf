@@ -12,6 +12,18 @@ module "replicator_lock_table" {
   owner     = "replicator"
 }
 
+resource "aws_dynamodb_table" "azure_verifier_tags" {
+  name     = "${var.namespace}_azure_verifier_tags"
+  hash_key = "id"
+
+  billing_mode = "PAY_PER_REQUEST"
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+}
+
 # Versions
 
 data "aws_iam_policy_document" "versioner_versions_table_table_readwrite" {

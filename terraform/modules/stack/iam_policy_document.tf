@@ -180,6 +180,20 @@ data "aws_iam_policy_document" "allow_tagging_objects" {
   }
 }
 
+data "aws_iam_policy_document" "azure_verifier_tags_readwrite" {
+  statement {
+    actions = [
+      "dynamodb:DeleteItem",
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+    ]
+
+    resources = [
+      aws_dynamodb_table.azure_verifier_tags.arn,
+    ]
+  }
+}
+
 # This policy document is specifically to allow subscription across account
 # boundaries.  It will only be used if there is a non-empty list of other
 # account principals to grant access to.
