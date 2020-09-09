@@ -31,5 +31,5 @@ class AzureReplicatedBagVerifier(val primaryBucket: String)(
   ): String =
     location.name.replace(root.namePrefix, "")
 
-  override val replicaStreamStore: AzureStreamStore = new AzureStreamStore()
+  override val replicaReader: AzureStreamStore = new AzureStreamStore()
 }

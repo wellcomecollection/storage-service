@@ -81,6 +81,6 @@ class S3ReplicatedBagVerifier(val primaryBucket: String)(
       ReplicatedBagVerifyContext[S3ObjectLocationPrefix]
     ] {
 
-  override val replicaStreamStore: StreamStore[S3ObjectLocation] =
+  override val replicaReader: StreamStore[S3ObjectLocation] =
     new S3StreamStore()
 }
