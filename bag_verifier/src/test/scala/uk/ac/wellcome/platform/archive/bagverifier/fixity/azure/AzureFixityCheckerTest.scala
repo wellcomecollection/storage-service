@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity.azure
 
 import java.net.URI
 
+import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FixityChecker,
@@ -10,8 +11,9 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
 import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.AzureResolvable
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
-import uk.ac.wellcome.storage.fixtures.AzureFixtures
+import uk.ac.wellcome.storage.fixtures.{AzureFixtures, DynamoFixtures}
 import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
+import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
 import uk.ac.wellcome.storage.store.azure.{AzureStreamStore, AzureTypedStore}
 
 class AzureFixityCheckerTest
@@ -19,17 +21,21 @@ class AzureFixityCheckerTest
       AzureBlobLocation,
       AzureBlobLocationPrefix,
       Container,
-      Unit,
+      Table,
       AzureStreamStore
     ]
+    with DynamoFixtures
     with AzureFixtures {
 
   val azureTypedStore: AzureTypedStore[String] = AzureTypedStore[String]
 
-  override def withContext[R](testWith: TestWith[Unit, R]): R = testWith(())
+  override def withContext[R](testWith: TestWith[Table, R]): R =
+    withLocalDynamoDbTable { table =>
+      testWith(table)
+    }
 
   override def putString(location: AzureBlobLocation, contents: String)(
-    implicit context: Unit
+    implicit context: Table
   ): Unit = azureTypedStore.put(location)(contents)
 
   override def withFixityChecker[R](azureReader: AzureStreamStore)(
@@ -37,8 +43,8 @@ class AzureFixityCheckerTest
       FixityChecker[AzureBlobLocation, AzureBlobLocationPrefix],
       R
     ]
-  )(implicit context: Unit): R =
-    testWith(new AzureFixityChecker() {
+  )(implicit table: Table): R =
+    testWith(new AzureFixityChecker(createDynamoConfigWith(table)) {
       // We need to override the underlying StreamStore so Mockito can spy
       // on its interactions during the tests.
       override val streamReader: AzureStreamStore =
@@ -47,7 +53,7 @@ class AzureFixityCheckerTest
 
   override def withStreamReader[R](
     testWith: TestWith[AzureStreamStore, R]
-  )(implicit context: Unit): R =
+  )(implicit table: Table): R =
     testWith(new AzureStreamStore())
 
   override def resolve(location: AzureBlobLocation): URI =
@@ -68,4 +74,7 @@ class AzureFixityCheckerTest
       case SHA256 => "ContentSHA256"
       case SHA512 => "ContentSHA512"
     }
+
+  override def createTable(table: Table): Table =
+    createTableWithHashKey(table, keyName = "id", keyType = ScalarAttributeType.S)
 }

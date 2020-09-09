@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity.azure
 
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.azure.storage.blob.BlobServiceClient
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   ExpectedFileFixity,
@@ -11,11 +12,11 @@ import uk.ac.wellcome.platform.archive.common.storage.services.azure.{
   AzureSizeFinder
 }
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import uk.ac.wellcome.storage.dynamo.DynamoConfig
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
-import uk.ac.wellcome.storage.tags.azure.AzureBlobMetadata
 
-class AzureFixityChecker(implicit blobClient: BlobServiceClient)
+class AzureFixityChecker(dynamoConfig: DynamoConfig)(implicit blobClient: BlobServiceClient, dynamoClient: AmazonDynamoDB)
     extends FixityChecker[AzureBlobLocation, AzureBlobLocationPrefix] {
 
   // Working out the correct value for this took a bit of experimentation; initially
@@ -40,7 +41,7 @@ class AzureFixityChecker(implicit blobClient: BlobServiceClient)
   override protected val sizeFinder =
     new AzureSizeFinder()
 
-  override val tags = new AzureBlobMetadata()
+  override val tags = new AzureDynamoTags(dynamoConfig)
 
   // e.g. ContentMD5, ContentSHA256
   // We can't include a hyphen in the name because Azure metadata names have to be
