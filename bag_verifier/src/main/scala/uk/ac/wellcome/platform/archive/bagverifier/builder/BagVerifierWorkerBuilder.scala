@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagverifier.builder
 
 import akka.actor.ActorSystem
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.{BlobServiceClient, BlobServiceClientBuilder}
 import com.typesafe.config.Config
@@ -27,7 +28,9 @@ import uk.ac.wellcome.platform.archive.common.{
   ReplicaCompletePayload
 }
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import uk.ac.wellcome.storage.dynamo.DynamoConfig
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.typesafe.DynamoBuilder
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 object BagVerifierWorkerBuilder {
@@ -62,8 +65,16 @@ object BagVerifierWorkerBuilder {
           new BlobServiceClientBuilder()
             .endpoint(config.requireString("azure.endpoint"))
             .buildClient()
+
+        implicit val dynamoClient: AmazonDynamoDB =
+          DynamoBuilder.buildDynamoClient(config)
+
+        val dynamoConfig = DynamoBuilder
+          .buildDynamoConfig(config, namespace = "azure_verifier_cache")
+
         buildReplicaAzureBagVerifierWorker(
           primaryBucket,
+          dynamoConfig = dynamoConfig,
           metricsNamespace = metricsNamespace,
           alpakkaSqsWorkerConfig = alpakkaSqsWorkerConfig,
           ingestUpdater,
@@ -156,6 +167,7 @@ object BagVerifierWorkerBuilder {
     OutgoingDestination
   ](
     primaryBucket: String,
+    dynamoConfig: DynamoConfig,
     metricsNamespace: String,
     alpakkaSqsWorkerConfig: AlpakkaSQSWorkerConfig,
     ingestUpdater: IngestUpdater[IngestDestination],
@@ -163,6 +175,7 @@ object BagVerifierWorkerBuilder {
   )(
     implicit s3Client: AmazonS3,
     blobClient: BlobServiceClient,
+    dynamoClient: AmazonDynamoDB,
     mc: MetricsMonitoringClient,
     as: ActorSystem,
     sc: SqsAsyncClient
@@ -174,7 +187,10 @@ object BagVerifierWorkerBuilder {
     IngestDestination,
     OutgoingDestination
   ] = {
-    val verifier = new AzureReplicatedBagVerifier(primaryBucket)
+    val verifier = new AzureReplicatedBagVerifier(
+      primaryBucket = primaryBucket,
+      dynamoConfig = dynamoConfig
+    )
     new BagVerifierWorker(
       config = alpakkaSqsWorkerConfig,
       ingestUpdater = ingestUpdater,

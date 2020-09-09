@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services.azure
 
+import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagverifier.services.{
   ReplicatedBagVerifier,
@@ -12,8 +13,13 @@ import uk.ac.wellcome.platform.archive.common.fixtures.azure.AzureBagBuilder
 import uk.ac.wellcome.platform.archive.common.storage.models.EnsureTrailingSlash
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
+import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.fixtures.{AzureFixtures, S3Fixtures}
+import uk.ac.wellcome.storage.fixtures.{
+  AzureFixtures,
+  DynamoFixtures,
+  S3Fixtures
+}
 import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.store.azure.AzureTypedStore
 import uk.ac.wellcome.storage.streaming.Codec._
@@ -24,6 +30,7 @@ class AzureReplicatedBagVerifierTests
       AzureBlobLocationPrefix,
       Container
     ]
+    with DynamoFixtures
     with S3Fixtures
     with AzureFixtures {
 
@@ -44,9 +51,14 @@ class AzureReplicatedBagVerifierTests
       R
     ]
   ): R =
-    testWith(
-      new AzureReplicatedBagVerifier(primaryBucket = primaryBucket.name)
-    )
+    withLocalDynamoDbTable { table =>
+      testWith(
+        new AzureReplicatedBagVerifier(
+          primaryBucket = primaryBucket.name,
+          dynamoConfig = createDynamoConfigWith(table)
+        )
+      )
+    }
 
   override def writeFile(location: AzureBlobLocation, contents: String): Unit =
     azureTypedStore.put(location)(contents)
@@ -62,4 +74,11 @@ class AzureReplicatedBagVerifierTests
 
   override def createId(implicit container: Container): AzureBlobLocation =
     createAzureBlobLocationWith(container)
+
+  override def createTable(table: Table): Table =
+    createTableWithHashKey(
+      table,
+      keyName = "id",
+      keyType = ScalarAttributeType.S
+    )
 }

@@ -513,6 +513,10 @@ module "replicator_verifier_azure" {
     module.azure_backfill_topic.arn
   ]
 
+  verifier_environment = {
+    azure_verifier_cache_table_name = aws_dynamodb_table.azure_verifier_tags.name
+  }
+
   verifier_secrets = {
     azure_endpoint = "${var.azure_ssm_parameter_base}/read_write_sas_url"
   }

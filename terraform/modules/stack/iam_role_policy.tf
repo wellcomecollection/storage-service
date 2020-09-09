@@ -181,6 +181,13 @@ resource "aws_iam_role_policy" "notifier_metrics" {
   policy = data.aws_iam_policy_document.cloudwatch_putmetrics.json
 }
 
+# Azure bag verifier
+
+resource "aws_iam_role_policy" "allow_azure_verifier_access_cache" {
+  role   = module.replicator_verifier_azure.verifier_task_role_name
+  policy = data.aws_iam_policy_document.azure_verifier_tags_readwrite.json
+}
+
 # backfill policies
 # TODO: delete everything under this comment once the azure migration is done
 

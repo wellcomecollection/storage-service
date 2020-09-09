@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixtures
 
+import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS
@@ -19,8 +20,13 @@ import uk.ac.wellcome.platform.archive.common.{
   ReplicaCompletePayload
 }
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.fixtures.{AzureFixtures, S3Fixtures}
+import uk.ac.wellcome.storage.fixtures.{
+  AzureFixtures,
+  DynamoFixtures,
+  S3Fixtures
+}
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -31,7 +37,8 @@ trait BagVerifierFixtures
     with Akka
     with OperationFixtures
     with S3Fixtures
-    with AzureFixtures {
+    with AzureFixtures
+    with DynamoFixtures {
   def withStandaloneBagVerifierWorker[R](
     ingests: MemoryMessageSender = new MemoryMessageSender(),
     outgoing: MemoryMessageSender,
@@ -111,7 +118,7 @@ trait BagVerifierFixtures
 
   def withAzureReplicaBagVerifierWorker[R](
     ingests: MemoryMessageSender = new MemoryMessageSender(),
-    outgoing: MemoryMessageSender,
+    outgoing: MemoryMessageSender = new MemoryMessageSender(),
     queue: Queue = dummyQueue,
     bucket: Bucket,
     stepName: String = randomAlphanumericWithLength()
@@ -134,18 +141,21 @@ trait BagVerifierFixtures
 
         val outgoingPublisher = createOutgoingPublisherWith(outgoing)
 
-        val worker =
-          BagVerifierWorkerBuilder.buildReplicaAzureBagVerifierWorker(
-            primaryBucket = bucket.name,
-            metricsNamespace = "bag_verifier",
-            alpakkaSqsWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-            ingestUpdater = ingestUpdater,
-            outgoingPublisher = outgoingPublisher
-          )
+        withLocalDynamoDbTable { table =>
+          val worker =
+            BagVerifierWorkerBuilder.buildReplicaAzureBagVerifierWorker(
+              primaryBucket = bucket.name,
+              dynamoConfig = createDynamoConfigWith(table),
+              metricsNamespace = "bag_verifier",
+              alpakkaSqsWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+              ingestUpdater = ingestUpdater,
+              outgoingPublisher = outgoingPublisher
+            )
 
-        worker.run()
+          worker.run()
 
-        testWith(worker)
+          testWith(worker)
+        }
       }
     }
 
@@ -154,5 +164,12 @@ trait BagVerifierFixtures
   )(testWith: TestWith[S3StandaloneBagVerifier, R]): R =
     testWith(
       new S3StandaloneBagVerifier(primaryBucket = bucket.name)
+    )
+
+  override def createTable(table: Table): Table =
+    createTableWithHashKey(
+      table,
+      keyName = "id",
+      keyType = ScalarAttributeType.S
     )
 }
