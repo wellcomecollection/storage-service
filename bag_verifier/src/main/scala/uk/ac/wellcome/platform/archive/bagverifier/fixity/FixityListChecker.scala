@@ -13,13 +13,12 @@ class FixityListChecker[BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
 ], Container](
   implicit
-  verifiable: ExpectedFixity[Container],
   s3Client: AmazonS3,
   dataDirectoryFixityChecker: FixityChecker[BagLocation, BagPrefix]
 ) extends Logging {
   val fetchEntriesFixityChecker = new S3FixityChecker()
 
-  def check(container: Container): FixityListResult[BagLocation] = {
+  def check(container: Container)(implicit verifiable: ExpectedFixity[Container] ): FixityListResult[BagLocation] = {
     debug(s"Checking the fixity info for $container")
     verifiable.create(container) match {
       case Left(err) => CouldNotCreateExpectedFixityList(err.msg)

@@ -1,26 +1,21 @@
 package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 
-import com.amazonaws.services.s3.AmazonS3
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.Readable
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.{Identified, Location, Prefix}
 
 trait VerifySourceTagManifest[
   ReplicaBagLocation <: Location
 ] {
-  implicit val s3Client: AmazonS3
 
-  protected val srcReader: Readable[S3ObjectLocation, InputStreamWithLength] =
-    new S3StreamStore()
+  protected val srcReader: Readable[S3ObjectLocation, InputStreamWithLength]
   protected val replicaReader: Readable[
     ReplicaBagLocation,
     InputStreamWithLength
   ]
-
   /** This step is here to check the bag created by the replica and the
     * original bag are the same; the verifier can only check that a
     * bag is correctly formed.

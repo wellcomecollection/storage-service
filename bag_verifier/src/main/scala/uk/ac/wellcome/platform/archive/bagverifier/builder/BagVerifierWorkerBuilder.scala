@@ -187,7 +187,7 @@ object BagVerifierWorkerBuilder {
     IngestDestination,
     OutgoingDestination
   ] = {
-    val verifier = new AzureReplicatedBagVerifier(
+    val verifier = AzureReplicatedBagVerifier(
       primaryBucket = primaryBucket,
       dynamoConfig = dynamoConfig
     )
