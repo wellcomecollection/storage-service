@@ -21,9 +21,9 @@ class AzureReplicatedBagVerifier(val primaryBucket: String,
                                   val bagReader: AzureBagReader,
                                   val listing: AzureBlobLocationListing,
                                   val resolvable: AzureResolvable,
+                                 val fixityListChecker: FixityListChecker[AzureBlobLocation, AzureBlobLocationPrefix, Bag],
                                   val replicaReader: AzureStreamStore,
-                                 val srcStreamStore: StreamStore[S3ObjectLocation],
-                                 val fixityListChecker: FixityListChecker[AzureBlobLocation, AzureBlobLocationPrefix, Bag]
+                                 val srcStreamStore: StreamStore[S3ObjectLocation]
                                 )
    extends ReplicatedBagVerifier[AzureBlobLocation, AzureBlobLocationPrefix] {
 
@@ -48,7 +48,6 @@ object AzureReplicatedBagVerifier{
     val replicaReader = new AzureStreamStore()
     val srcStreamStore = new S3StreamStore()
     val fixityListChecker = new FixityListChecker[AzureBlobLocation, AzureBlobLocationPrefix, Bag]()
-    new AzureReplicatedBagVerifier(primaryBucket, bagReader, listing, resolvable, replicaReader,srcStreamStore, fixityListChecker)
-
+    new AzureReplicatedBagVerifier(primaryBucket, bagReader, listing, resolvable, fixityListChecker, replicaReader,srcStreamStore)
   }
 }

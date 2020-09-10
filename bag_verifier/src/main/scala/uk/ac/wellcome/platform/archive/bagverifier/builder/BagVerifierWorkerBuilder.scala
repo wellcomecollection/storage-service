@@ -11,22 +11,13 @@ import uk.ac.wellcome.messaging.sns.SNSConfig
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
-import uk.ac.wellcome.platform.archive.bagverifier.models.{
-  ReplicatedBagVerifyContext,
-  StandaloneBagVerifyContext
-}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
 import uk.ac.wellcome.platform.archive.bagverifier.services.BagVerifierWorker
 import uk.ac.wellcome.platform.archive.bagverifier.services.azure.AzureReplicatedBagVerifier
-import uk.ac.wellcome.platform.archive.bagverifier.services.s3.{
-  S3ReplicatedBagVerifier,
-  S3StandaloneBagVerifier
-}
+import uk.ac.wellcome.platform.archive.bagverifier.services.s3.S3BagVerifier
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
-import uk.ac.wellcome.platform.archive.common.{
-  BagRootLocationPayload,
-  ReplicaCompletePayload
-}
+import uk.ac.wellcome.platform.archive.common.{BagRootLocationPayload, ReplicaCompletePayload}
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.dynamo.DynamoConfig
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
@@ -114,7 +105,7 @@ object BagVerifierWorkerBuilder {
     IngestDestination,
     OutgoingDestination
   ] = {
-    val verifier = new S3StandaloneBagVerifier(primaryBucket)
+    val verifier = S3BagVerifier.standalone(primaryBucket)
 
     new BagVerifierWorker(
       config = alpakkaSqsWorkerConfig,
@@ -146,7 +137,7 @@ object BagVerifierWorkerBuilder {
     IngestDestination,
     OutgoingDestination
   ] = {
-    val verifier = new S3ReplicatedBagVerifier(primaryBucket)
+    val verifier = S3BagVerifier.replicated(primaryBucket)
     new BagVerifierWorker(
       config = alpakkaSqsWorkerConfig,
       ingestUpdater = ingestUpdater,
