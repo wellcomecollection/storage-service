@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.BlobServiceClient
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityListChecker
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.azure.AzureFixityChecker
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.s3.S3FixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.services.ReplicatedBagVerifier
 import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.AzureResolvable
 import uk.ac.wellcome.platform.archive.common.bagit.models.Bag
@@ -45,6 +46,7 @@ object AzureReplicatedBagVerifier{
     val listing = AzureBlobLocationListing()
     val resolvable = new AzureResolvable()
     implicit val fixityChecker = new AzureFixityChecker(dynamoConfig)
+    implicit val fetchDirectoryFixityChecker = new S3FixityChecker()
     val replicaReader = new AzureStreamStore()
     val srcStreamStore = new S3StreamStore()
     val fixityListChecker = new FixityListChecker[AzureBlobLocation, AzureBlobLocationPrefix, Bag]()
