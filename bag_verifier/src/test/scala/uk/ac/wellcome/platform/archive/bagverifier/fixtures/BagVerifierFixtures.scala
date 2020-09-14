@@ -13,7 +13,10 @@ import uk.ac.wellcome.platform.archive.bagverifier.models.{
   StandaloneBagVerifyContext
 }
 import uk.ac.wellcome.platform.archive.bagverifier.services.BagVerifierWorker
-import uk.ac.wellcome.platform.archive.bagverifier.services.s3.S3StandaloneBagVerifier
+import uk.ac.wellcome.platform.archive.bagverifier.services.s3.{
+  S3BagVerifier,
+  S3StandaloneBagVerifier
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.archive.common.{
   BagRootLocationPayload,
@@ -163,7 +166,7 @@ trait BagVerifierFixtures
     bucket: Bucket
   )(testWith: TestWith[S3StandaloneBagVerifier, R]): R =
     testWith(
-      new S3StandaloneBagVerifier(primaryBucket = bucket.name)
+      S3BagVerifier.standalone(primaryBucket = bucket.name)
     )
 
   override def createTable(table: Table): Table =

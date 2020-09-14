@@ -77,7 +77,7 @@ class S3ReplicatedBagVerifierTest
     ]
   ): R =
     testWith(
-      new S3ReplicatedBagVerifier(primaryBucket = primaryBucket.name)
+      S3BagVerifier.replicated(primaryBucket = primaryBucket.name)
     )
 
   override val bagBuilder
@@ -102,7 +102,7 @@ class S3StandaloneBagVerifierTest
     primaryBucket: Bucket
   )(testWith: TestWith[S3StandaloneBagVerifier, R]): R =
     testWith(
-      new S3StandaloneBagVerifier(primaryBucket = primaryBucket.name)
+      S3BagVerifier.standalone(primaryBucket = primaryBucket.name)
     )
 
   override val bagBuilder

@@ -53,7 +53,7 @@ class AzureReplicatedBagVerifierTests
   ): R =
     withLocalDynamoDbTable { table =>
       testWith(
-        new AzureReplicatedBagVerifier(
+        AzureReplicatedBagVerifier(
           primaryBucket = primaryBucket.name,
           dynamoConfig = createDynamoConfigWith(table)
         )

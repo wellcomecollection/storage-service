@@ -51,7 +51,6 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
   implicit val bagReader: BagReader[BagLocation, BagPrefix]
   implicit val listing: Listing[BagPrefix, BagLocation]
   implicit val resolvable: Resolvable[BagLocation]
-  implicit val fixityChecker: FixityChecker[BagLocation, BagPrefix]
 
   def verifyReplicatedBag(
     context: BagContext,
