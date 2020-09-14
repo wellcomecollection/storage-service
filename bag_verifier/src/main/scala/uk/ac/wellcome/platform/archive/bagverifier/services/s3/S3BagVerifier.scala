@@ -51,7 +51,7 @@ class S3ReplicatedBagVerifier(val primaryBucket: String,
                               val listing: Listing[S3ObjectLocationPrefix, S3ObjectLocation],
                               val resolvable: Resolvable[S3ObjectLocation],
                               val fixityListChecker: FixityListChecker[S3ObjectLocation, S3ObjectLocationPrefix, Bag],
-                             val srcStreamStore: StreamStore[S3ObjectLocation],
+                             val srcReader: StreamStore[S3ObjectLocation],
                               val replicaReader: StreamStore[S3ObjectLocation]) extends ReplicatedBagVerifier[
       S3ObjectLocation,
       S3ObjectLocationPrefix
@@ -76,6 +76,6 @@ object S3BagVerifier{
     implicit val fixityChecker=new S3FixityChecker()
     val fixityListChecker = new FixityListChecker[S3ObjectLocation, S3ObjectLocationPrefix, Bag]()
     val streamStore =  new S3StreamStore()
-    new S3ReplicatedBagVerifier(primaryBucket, bagReader, listing, resolvable, fixityListChecker, srcStreamStore = streamStore, replicaReader = streamStore)
+    new S3ReplicatedBagVerifier(primaryBucket, bagReader, listing, resolvable, fixityListChecker, srcReader = streamStore, replicaReader = streamStore)
   }
 }
