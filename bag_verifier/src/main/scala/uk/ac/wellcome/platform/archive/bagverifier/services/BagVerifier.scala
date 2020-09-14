@@ -13,8 +13,9 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
-import uk.ac.wellcome.storage.{Location, Prefix}
+import uk.ac.wellcome.storage.{Location, Prefix, store}
 import EnsureTrailingSlash._
+import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 import scala.util.Try
 
@@ -22,21 +23,24 @@ trait ReplicatedBagVerifier[
   ReplicaBagLocation <: Location,
   ReplicaBagPrefix <: Prefix[ReplicaBagLocation]
 ] extends BagVerifier[
-      ReplicatedBagVerifyContext[ReplicaBagPrefix],
-      ReplicaBagLocation,
-      ReplicaBagPrefix
-    ]
-    with VerifySourceTagManifest[ReplicaBagLocation] {
+  ReplicatedBagVerifyContext[ReplicaBagPrefix],
+  ReplicaBagLocation,
+  ReplicaBagPrefix
+]
+  with VerifySourceTagManifest[ReplicaBagLocation] {
   override def verifyReplicatedBag(
-    context: ReplicatedBagVerifyContext[ReplicaBagPrefix],
-    space: StorageSpace,
-    externalIdentifier: ExternalIdentifier,
-    bag: Bag
-  ): Either[BagVerifierError, Unit] =
+                                    context: ReplicatedBagVerifyContext[ReplicaBagPrefix],
+                                    space: StorageSpace,
+                                    externalIdentifier: ExternalIdentifier,
+                                    bag: Bag
+                                  ): Either[BagVerifierError, Unit] = {
     verifySourceTagManifestIsTheSame(
       srcPrefix = context.srcRoot,
       replicaPrefix = context.replicaRoot
     )
+  }
+
+  override val replicaReader: store.Readable[ReplicaBagLocation, InputStreamWithLength] = bagReader.readable
 }
 
 trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Location, BagPrefix <: Prefix[
@@ -48,9 +52,9 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
     with VerifyPayloadOxum
     with VerifyNoUnreferencedFiles[BagLocation, BagPrefix] {
 
-  implicit val bagReader: BagReader[BagLocation, BagPrefix]
-  implicit val listing: Listing[BagPrefix, BagLocation]
-  implicit val resolvable: Resolvable[BagLocation]
+  val bagReader: BagReader[BagLocation, BagPrefix]
+  val listing: Listing[BagPrefix, BagLocation]
+  val resolvable: Resolvable[BagLocation]
 
   def verifyReplicatedBag(
     context: BagContext,
