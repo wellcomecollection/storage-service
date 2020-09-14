@@ -36,6 +36,8 @@ trait S3BagVerifier[B <: BagVerifyContext[S3ObjectLocationPrefix]]
     location: S3ObjectLocation
   ): String =
     location.key.replace(root.keyPrefix, "")
+
+  override def isRetriable(error: BagVerifierError): Boolean = false
 }
 
 class S3StandaloneBagVerifier(
@@ -60,6 +62,7 @@ class S3StandaloneBagVerifier(
     externalIdentifier: ExternalIdentifier,
     bag: Bag
   ): Either[BagVerifierError, Unit] = Right(())
+
 }
 
 class S3ReplicatedBagVerifier(val primaryBucket: String,
@@ -82,16 +85,9 @@ object S3BagVerifier {
     val bagReader = new S3BagReader()
     val listing = S3ObjectLocationListing()
     val resolvable = new S3Resolvable()
-    implicit val fixityChecker = new S3FixityChecker()
-    val fixityListChecker =
-      new FixityListChecker[S3ObjectLocation, S3ObjectLocationPrefix, Bag]()
-    new S3StandaloneBagVerifier(
-      primaryBucket,
-      bagReader,
-      listing,
-      resolvable,
-      fixityListChecker
-    )
+    implicit val fixityChecker=S3FixityChecker()
+    val fixityListChecker = new FixityListChecker[S3ObjectLocation, S3ObjectLocationPrefix, Bag]()
+    new S3StandaloneBagVerifier(primaryBucket, bagReader, listing, resolvable, fixityListChecker)
   }
   def replicated(
     primaryBucket: String
@@ -99,7 +95,7 @@ object S3BagVerifier {
     val bagReader = new S3BagReader()
     val listing = S3ObjectLocationListing()
     val resolvable = new S3Resolvable()
-    implicit val fixityChecker=new S3FixityChecker()
+    implicit val fixityChecker= S3FixityChecker()
     val fixityListChecker = new FixityListChecker[S3ObjectLocation, S3ObjectLocationPrefix, Bag]()
     val streamStore =  new S3StreamStore()
     new S3ReplicatedBagVerifier(primaryBucket, bagReader, listing, resolvable, fixityListChecker, srcReader = streamStore)

@@ -34,13 +34,10 @@ class AzureLargeStreamReaderTest
     testWith(new AzureRangedReader())
 
   override def withLargeStreamReader[R](
-    bufferSize: Long,
-    rangedReaderImpl: RangedReader[AzureBlobLocation]
+                                         bufferSize: Long,
+                                         rangedReader: RangedReader[AzureBlobLocation]
   )(testWith: TestWith[LargeStreamReader[AzureBlobLocation], R]): R =
     testWith(
-      new AzureLargeStreamReader(bufferSize = bufferSize) {
-        override val rangedReader: RangedReader[AzureBlobLocation] =
-          rangedReaderImpl
-      }
+      new AzureLargeStreamReader(bufferSize = bufferSize, new AzureSizeFinder(), rangedReader)
     )
 }
