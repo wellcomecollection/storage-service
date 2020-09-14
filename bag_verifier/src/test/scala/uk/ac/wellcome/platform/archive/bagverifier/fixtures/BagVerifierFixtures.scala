@@ -8,15 +8,28 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagverifier.builder.BagVerifierWorkerBuilder
-import uk.ac.wellcome.platform.archive.bagverifier.models.{ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
+import uk.ac.wellcome.platform.archive.bagverifier.models.{
+  ReplicatedBagVerifyContext,
+  StandaloneBagVerifyContext
+}
 import uk.ac.wellcome.platform.archive.bagverifier.services.BagVerifierWorker
-import uk.ac.wellcome.platform.archive.bagverifier.services.s3.{S3BagVerifier, S3StandaloneBagVerifier}
+import uk.ac.wellcome.platform.archive.bagverifier.services.s3.{
+  S3BagVerifier,
+  S3StandaloneBagVerifier
+}
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
-import uk.ac.wellcome.platform.archive.common.{BagRootLocationPayload, ReplicaCompletePayload}
+import uk.ac.wellcome.platform.archive.common.{
+  BagRootLocationPayload,
+  ReplicaCompletePayload
+}
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.fixtures.{AzureFixtures, DynamoFixtures, S3Fixtures}
+import uk.ac.wellcome.storage.fixtures.{
+  AzureFixtures,
+  DynamoFixtures,
+  S3Fixtures
+}
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.concurrent.ExecutionContext.Implicits.global

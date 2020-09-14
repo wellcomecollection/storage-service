@@ -16,6 +16,7 @@ trait VerifySourceTagManifest[
     ReplicaBagLocation,
     InputStreamWithLength
   ]
+
   /** This step is here to check the bag created by the replica and the
     * original bag are the same; the verifier can only check that a
     * bag is correctly formed.
