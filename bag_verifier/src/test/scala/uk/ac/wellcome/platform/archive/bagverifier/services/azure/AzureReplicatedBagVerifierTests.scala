@@ -87,7 +87,7 @@ class AzureReplicatedBagVerifierTests
       keyType = ScalarAttributeType.S
     )
 
-  it("retries "){
+  it("marks as retriable a TimeoutException when reading from Azure"){
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
     withNamespace { namespace =>

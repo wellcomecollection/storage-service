@@ -27,7 +27,7 @@ class AzureBagReaderTest
 
   override def withBagReader[R](
     testWith: TestWith[BagReader[AzureBlobLocation, AzureBlobLocationPrefix], R]
-  )(implicit context: Unit): R = testWith(AzureBagReader(azureClient))
+  )(implicit context: Unit): R = testWith(AzureBagReader())
 
   override def withNamespace[R](testWith: TestWith[Container, R]): R =
     withAzureContainer { container =>
