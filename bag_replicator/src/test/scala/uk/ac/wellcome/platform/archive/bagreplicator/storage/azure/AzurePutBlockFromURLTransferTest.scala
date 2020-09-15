@@ -31,7 +31,8 @@ class AzurePutBlockFromURLTransferTest
 
           srcStore.put(src)("Hello world") shouldBe a[Right[_, _]]
           val srcSummary = createS3ObjectSummaryFrom(
-            src, size = "Hello world".getBytes().length
+            src,
+            size = "Hello world".getBytes().length
           )
 
           dstStore.put(dst)("Hello world") shouldBe a[Right[_, _]]
@@ -52,7 +53,8 @@ class AzurePutBlockFromURLTransferTest
 
           srcStore.put(src)("hello world") shouldBe a[Right[_, _]]
           val srcSummary = createS3ObjectSummaryFrom(
-            src, size = "hello world".getBytes().length
+            src,
+            size = "hello world".getBytes().length
           )
           dstStore.put(dst)("HELLO WORLD") shouldBe a[Right[_, _]]
 
@@ -72,7 +74,8 @@ class AzurePutBlockFromURLTransferTest
 
           srcStore.put(src)("Hello world") shouldBe a[Right[_, _]]
           val srcSummary = createS3ObjectSummaryFrom(
-            src, size = "Hello world".getBytes().length
+            src,
+            size = "Hello world".getBytes().length
           )
           dstStore.put(dst)("Greetings, humans") shouldBe a[Right[_, _]]
 
@@ -88,7 +91,7 @@ class AzurePutBlockFromURLTransferTest
   it("handles weird keys") {
     val weirdKeys = Table(
       "key",
-      "born-digital/SATSY/1821/4/v1/data/objects/Disc_4/Outreach_-_misc/PFFD_enquiry_-Dawn_G.",
+      "born-digital/SATSY/1821/4/v1/data/objects/Disc_4/Outreach_-_misc/PFFD_enquiry_-Dawn_G."
     )
 
     withLocalS3Bucket { bucket =>
