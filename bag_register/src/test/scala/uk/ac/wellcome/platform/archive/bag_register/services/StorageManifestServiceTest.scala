@@ -15,15 +15,10 @@ import uk.ac.wellcome.platform.archive.common.generators._
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3SizeFinder
-import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.azure.AzureBlobLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
-import uk.ac.wellcome.storage.store.s3.S3TypedStore
-
-import scala.util.Random
+import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 
 class StorageManifestServiceTest
     extends AnyFunSpec
@@ -34,7 +29,8 @@ class StorageManifestServiceTest
     with StorageSpaceGenerators
     with TimeTestFixture
     with TryValues
-    with S3Fixtures {
+    with S3Fixtures
+    with S3BagBuilder {
 
   describe("checks the replica root paths") {
     describe("primary location") {
@@ -323,17 +319,7 @@ class StorageManifestServiceTest
         manifestEntries = files.map { BagPath(_) -> randomChecksumValue }.toMap
       )
 
-      val err = new Throwable("BOOM!")
-
-      implicit val brokenSizeFinder: S3SizeFinder =
-        new S3SizeFinder() {
-          override def get(location: S3ObjectLocation): ReadEither =
-            Left(StoreReadError(err))
-        }
-
-      val service = new S3StorageManifestService() {
-        override val sizeFinder: S3SizeFinder = brokenSizeFinder
-      }
+      val service = new S3StorageManifestService()
 
       val result = service.createManifest(
         ingestId = createIngestID,
@@ -350,56 +336,44 @@ class StorageManifestServiceTest
       )
     }
 
-    it("uses the size finder to get sizes") {
-      object NoFetchBagBuilder extends S3BagBuilder {
-        override protected def getFetchEntryCount(payloadFileCount: Int): Int =
-          0
-      }
-
+    it("gets the sizes") {
+      val space = createStorageSpace
       val version = createBagVersion
 
       withLocalS3Bucket { implicit bucket =>
-        val (bagRoot, bag) = createStorageManifestBag(
-          version = version,
-          bagBuilder = NoFetchBagBuilder
+        val bagContents =
+          createBagContentsWith(
+            space = space,
+            version = version
+          )(namespace = bucket, primaryBucket = bucket)
+
+        storeBagContents(bagContents)
+
+        val (bagRoot, bag) = (
+          bagContents.bagRoot,
+          new S3BagReader().get(bagContents.bagRoot).right.value
         )
 
         val location = PrimaryS3ReplicaLocation(bagRoot)
 
-        var sizeCache: Map[S3ObjectLocation, Long] = Map.empty
-
-        val cachingSizeFinder: S3SizeFinder = new S3SizeFinder() {
-          override def get(location: S3ObjectLocation): ReadEither = {
-            sizeCache = sizeCache + (location -> Random.nextLong())
-            val size = sizeCache(location)
-            Right(Identified(location, size))
-          }
-        }
-
         val storageManifest = createManifest(
-          bag = bag.copy(
-            tagManifest = bag.tagManifest.copy(entries = Map.empty)
-          ),
+          bag = bag,
           location = location,
-          version = version,
-          sizeFinderImpl = cachingSizeFinder
+          version = version
         )
 
         val storageManifestSizes =
           (storageManifest.manifest.files ++ storageManifest.tagManifest.files)
-            .filterNot {
-              // The size of this tag manifest is fetched when we read the file contents,
-              // not from the size finder.
-              _.name == "tagmanifest-sha256.txt"
-            }
             .map { file =>
               storageManifest.location.prefix.asLocation(file.path) -> file.size
             }
             .toMap
 
-        storageManifestSizes shouldBe sizeCache.map {
-          case (cachedLoc, cachedSize) => cachedLoc -> cachedSize
-        }
+        val expectedSizes =
+          (bagContents.bagObjects ++ bagContents.fetchObjects)
+            .map { case (loc, contents) => loc -> contents.getBytes.length}
+
+        storageManifestSizes shouldBe expectedSizes
       }
     }
 
@@ -414,7 +388,12 @@ class StorageManifestServiceTest
           primaryBucket: Bucket,
           entry: PayloadEntry
         ): String =
-          s"""s3://$primaryBucket/${entry.path} ${entry.contents.getBytes.length} ${entry.bagPath}"""
+          // Deliberately get the size wrong, so we can see if it's getting the
+          // size from the fetch.txt or directly from S3.
+          //
+          // This size will have been checked by the verifier, so we can
+          // usually trust it.
+          s"""s3://$primaryBucket/${entry.path} ${entry.contents.getBytes.length + 1} ${entry.bagPath}"""
       }
 
       val version = createBagVersion
@@ -427,20 +406,12 @@ class StorageManifestServiceTest
 
         val location = PrimaryS3ReplicaLocation(bagRoot)
 
-        val err = new Throwable("This should never be called!")
-
-        val brokenSizeFinder = new S3SizeFinder() {
-          override def get(location: S3ObjectLocation): ReadEither =
-            Left(StoreReadError(err))
-        }
-
         val storageManifest = createManifest(
           bag = bag.copy(
             tagManifest = bag.tagManifest.copy(entries = Map.empty)
           ),
           location = location,
-          version = version,
-          sizeFinderImpl = brokenSizeFinder
+          version = version
         )
 
         val manifestSizes =
@@ -485,9 +456,6 @@ class StorageManifestServiceTest
   )(
     implicit bucket: Bucket
   ): (S3ObjectLocationPrefix, Bag) = {
-    implicit val typedStore: S3TypedStore[String] =
-      S3TypedStore[String]
-
     val bagContents =
       bagBuilder.createBagContentsWith(
         space = space,
@@ -508,12 +476,9 @@ class StorageManifestServiceTest
     location: PrimaryReplicaLocation,
     replicas: Seq[SecondaryReplicaLocation] = Seq.empty,
     space: StorageSpace = createStorageSpace,
-    version: BagVersion,
-    sizeFinderImpl: S3SizeFinder = new S3SizeFinder()
+    version: BagVersion
   ): StorageManifest = {
-    val service: S3StorageManifestService = new S3StorageManifestService() {
-      override val sizeFinder: S3SizeFinder = sizeFinderImpl
-    }
+    val service: S3StorageManifestService = new S3StorageManifestService()
 
     val result = service.createManifest(
       ingestId = ingestId,

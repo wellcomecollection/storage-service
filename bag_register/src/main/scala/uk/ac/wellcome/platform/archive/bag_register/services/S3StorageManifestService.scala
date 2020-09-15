@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
-import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3SizeFinder
+import uk.ac.wellcome.platform.archive.common.storage.services.s3.{S3MultiSizeFinder, S3SizeFinder}
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.azure.AzureBlobLocation
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
@@ -193,6 +193,8 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
     entries: Map[BagPath, (S3ObjectLocation, Option[Long])],
     bagRoot: S3ObjectLocationPrefix
   ): Try[Seq[StorageManifestFile]] = Try {
+    val multiSizeFinder = new S3MultiSizeFinder()
+
     manifest.entries.map {
       case (bagPath, checksumValue) =>
         // This lookup should never file -- the BagMatcher populates the
@@ -215,7 +217,7 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
         val size = maybeSize match {
           case Some(s) => s
           case None =>
-            sizeFinder.getSize(location) match {
+            multiSizeFinder.getSize(location) match {
               case Right(value) => value
               case Left(readError) =>
                 throw new StorageManifestException(

@@ -58,6 +58,7 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
 
     (bagContents.bagRoot, bagContents.bagInfo)
   }
+
   def storeBagContents(bagContents: BagContents)(
     implicit typedStore: TypedStore[BagLocation, String]
   ): Unit = {
@@ -171,10 +172,10 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
     }.toMap
 
     BagContents(
-      fetchObjects,
-      manifestObjects ++ payloadObjects,
-      bagRoot,
-      bagInfo
+      fetchObjects = fetchObjects,
+      bagObjects = manifestObjects ++ payloadObjects,
+      bagRoot = bagRoot,
+      bagInfo = bagInfo
     )
   }
 
