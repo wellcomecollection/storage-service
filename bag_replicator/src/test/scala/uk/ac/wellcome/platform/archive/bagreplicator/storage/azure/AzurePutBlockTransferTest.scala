@@ -6,7 +6,6 @@ import com.amazonaws.services.s3.model.S3ObjectSummary
 import com.azure.storage.blob.models.BlobRange
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.storage.Identified
 import uk.ac.wellcome.storage.azure.AzureBlobLocation
 import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
@@ -38,7 +37,7 @@ class AzurePutBlockTransferTest
     ]
     with S3Fixtures
     with AzureFixtures
-    with StorageRandomThings {
+    with AzureTransferFixtures {
 
   val blockSize: Int = 10000
 
@@ -61,16 +60,7 @@ class AzurePutBlockTransferTest
 
   override def createSrcLocation(bucket: Bucket): S3ObjectSummary = {
     val src = createS3ObjectLocationWith(bucket)
-    val summary = new S3ObjectSummary()
-    summary.setBucketName(src.bucket)
-    summary.setKey(src.key)
-
-    // By default, the size of an S3ObjectSummary() is zero.  We don't want it to
-    // be zero, because then the underlying S3 SDK will skip trying to read it;
-    // the correct size will be set in the StreamStore[S3ObjectSummary].
-    summary.setSize(randomInt(from = 1, to = 50))
-
-    summary
+    createS3ObjectSummaryFrom(src)
   }
 
   override def createDstLocation(container: Container): AzureBlobLocation =
