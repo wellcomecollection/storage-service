@@ -157,7 +157,8 @@ object ExternalDependencies {
   )
 
   val mockitoDependencies: Seq[ModuleID] = Seq(
-    "org.mockito" % "mockito-core" % versions.mockito % "test")
+    "org.mockito" % "mockito-core" % versions.mockito % "test"
+  )
 
   val wiremockDependencies = Seq[ModuleID](
     "com.github.tomakehurst" % "wiremock" % versions.wiremock % "test"

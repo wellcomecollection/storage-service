@@ -16,13 +16,17 @@ import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.tags.Tags
 import uk.ac.wellcome.storage.tags.s3.S3Tags
 
-class S3FixityChecker(val streamReader: store.Readable[S3ObjectLocation, InputStreamWithLength], val sizeFinder: SizeFinder[S3ObjectLocation], val tags: Tags[S3ObjectLocation],val locator: Locatable[S3ObjectLocation, S3ObjectLocationPrefix, URI] )
-    extends FixityChecker[S3ObjectLocation, S3ObjectLocationPrefix]
+class S3FixityChecker(
+  val streamReader: store.Readable[S3ObjectLocation, InputStreamWithLength],
+  val sizeFinder: SizeFinder[S3ObjectLocation],
+  val tags: Tags[S3ObjectLocation],
+  val locator: Locatable[S3ObjectLocation, S3ObjectLocationPrefix, URI]
+) extends FixityChecker[S3ObjectLocation, S3ObjectLocationPrefix]
     with Logging
 
 object S3FixityChecker {
   def apply()(implicit s3Client: AmazonS3) = {
-    val streamReader= new S3StreamStore()
+    val streamReader = new S3StreamStore()
     val sizeFinder = new S3SizeFinder()
     val tags = new S3Tags()
     val locator = S3Locatable.s3UriLocatable

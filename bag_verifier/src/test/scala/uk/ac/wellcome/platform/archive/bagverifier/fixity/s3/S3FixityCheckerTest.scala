@@ -3,9 +3,19 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity.s3
 import java.net.URI
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FileFixityCouldNotRead, FixityChecker, FixityCheckerTagsTestCases}
-import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.{S3Locatable, S3Resolvable}
-import uk.ac.wellcome.platform.archive.bagverifier.storage.{LocationError, LocationNotFound}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  FileFixityCouldNotRead,
+  FixityChecker,
+  FixityCheckerTagsTestCases
+}
+import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.{
+  S3Locatable,
+  S3Resolvable
+}
+import uk.ac.wellcome.platform.archive.bagverifier.storage.{
+  LocationError,
+  LocationNotFound
+}
 import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3SizeFinder
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
@@ -49,7 +59,14 @@ class S3FixityCheckerTest
       R
     ]
   )(implicit context: Unit): R =
-    testWith(new S3FixityChecker(s3Reader,new S3SizeFinder(),new S3Tags(),S3Locatable.s3UriLocatable))
+    testWith(
+      new S3FixityChecker(
+        s3Reader,
+        new S3SizeFinder(),
+        new S3Tags(),
+        S3Locatable.s3UriLocatable
+      )
+    )
 
   implicit val context: Unit = ()
 

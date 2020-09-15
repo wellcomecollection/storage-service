@@ -2,7 +2,10 @@ package uk.ac.wellcome.platform.archive.bagverifier.services.azure
 
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.services.{ReplicatedBagVerifier, ReplicatedBagVerifierTestCases}
+import uk.ac.wellcome.platform.archive.bagverifier.services.{
+  ReplicatedBagVerifier,
+  ReplicatedBagVerifierTestCases
+}
 import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
 import uk.ac.wellcome.platform.archive.common.bagit.services.azure.AzureBagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
@@ -12,7 +15,11 @@ import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.fixtures.{AzureFixtures, DynamoFixtures, S3Fixtures}
+import uk.ac.wellcome.storage.fixtures.{
+  AzureFixtures,
+  DynamoFixtures,
+  S3Fixtures
+}
 import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.store.azure.AzureTypedStore
 import uk.ac.wellcome.storage.streaming.Codec._

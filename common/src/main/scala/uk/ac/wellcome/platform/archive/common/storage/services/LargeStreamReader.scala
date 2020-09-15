@@ -83,7 +83,8 @@ trait LargeStreamReader[Ident] extends Readable[Ident, InputStreamWithLength] {
       case Right(bytes) => bytes
       case Left(err) =>
         throw new RuntimeException(
-          s"Unable to read range $range from $ident: $err", err.e
+          s"Unable to read range $range from $ident: $err",
+          err.e
         )
     }
   }

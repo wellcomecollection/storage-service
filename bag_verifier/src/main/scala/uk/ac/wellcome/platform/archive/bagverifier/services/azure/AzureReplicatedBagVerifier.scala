@@ -20,15 +20,18 @@ import uk.ac.wellcome.storage.s3.S3ObjectLocation
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 
-class AzureReplicatedBagVerifier(val primaryBucket: String,
-                                  val bagReader: BagReader[AzureBlobLocation, AzureBlobLocationPrefix],
-                                  val listing: Listing[AzureBlobLocationPrefix, AzureBlobLocation],
-                                  val resolvable: Resolvable[AzureBlobLocation],
-                                 val fixityListChecker: FixityListChecker[AzureBlobLocation, AzureBlobLocationPrefix, Bag],
-                                 val srcReader: StreamStore[S3ObjectLocation]
-                                )
-   extends ReplicatedBagVerifier[AzureBlobLocation, AzureBlobLocationPrefix] {
-
+class AzureReplicatedBagVerifier(
+  val primaryBucket: String,
+  val bagReader: BagReader[AzureBlobLocation, AzureBlobLocationPrefix],
+  val listing: Listing[AzureBlobLocationPrefix, AzureBlobLocation],
+  val resolvable: Resolvable[AzureBlobLocation],
+  val fixityListChecker: FixityListChecker[
+    AzureBlobLocation,
+    AzureBlobLocationPrefix,
+    Bag
+  ],
+  val srcReader: StreamStore[S3ObjectLocation]
+) extends ReplicatedBagVerifier[AzureBlobLocation, AzureBlobLocationPrefix] {
 
   override def getRelativePath(
     root: AzureBlobLocationPrefix,
@@ -40,15 +43,24 @@ class AzureReplicatedBagVerifier(val primaryBucket: String,
 object AzureReplicatedBagVerifier {
   def apply(primaryBucket: String, dynamoConfig: DynamoConfig)(
     implicit s3Client: AmazonS3,
-   blobClient: BlobServiceClient,
-  dynamoClient: AmazonDynamoDB): AzureReplicatedBagVerifier = {
+    blobClient: BlobServiceClient,
+    dynamoClient: AmazonDynamoDB
+  ): AzureReplicatedBagVerifier = {
     val bagReader = AzureBagReader()
     val listing = AzureBlobLocationListing()
     val resolvable = new AzureResolvable()
     implicit val fixityChecker = AzureFixityChecker(dynamoConfig)
     implicit val fetchDirectoryFixityChecker = S3FixityChecker()
     val srcReader = new S3StreamStore()
-    val fixityListChecker = new FixityListChecker[AzureBlobLocation, AzureBlobLocationPrefix, Bag]()
-    new AzureReplicatedBagVerifier(primaryBucket, bagReader, listing, resolvable, fixityListChecker, srcReader)
+    val fixityListChecker =
+      new FixityListChecker[AzureBlobLocation, AzureBlobLocationPrefix, Bag]()
+    new AzureReplicatedBagVerifier(
+      primaryBucket,
+      bagReader,
+      listing,
+      resolvable,
+      fixityListChecker,
+      srcReader
+    )
   }
 }

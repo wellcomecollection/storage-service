@@ -4,11 +4,17 @@ import java.net.URI
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.azure.storage.blob.BlobServiceClient
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{ExpectedFileFixity, FixityChecker}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  ExpectedFileFixity,
+  FixityChecker
+}
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Locatable
 import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.AzureLocatable
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
-import uk.ac.wellcome.platform.archive.common.storage.services.azure.{AzureLargeStreamReader, AzureSizeFinder}
+import uk.ac.wellcome.platform.archive.common.storage.services.azure.{
+  AzureLargeStreamReader,
+  AzureSizeFinder
+}
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.dynamo.DynamoConfig
 import uk.ac.wellcome.storage.store.Readable
@@ -16,10 +22,10 @@ import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.tags.Tags
 
 class AzureFixityChecker(
-                          val streamReader: Readable[AzureBlobLocation, InputStreamWithLength],
-                          val sizeFinder: SizeFinder[AzureBlobLocation],
-                          val tags: Tags[AzureBlobLocation],
-                          val locator: Locatable[AzureBlobLocation, AzureBlobLocationPrefix, URI]
+  val streamReader: Readable[AzureBlobLocation, InputStreamWithLength],
+  val sizeFinder: SizeFinder[AzureBlobLocation],
+  val tags: Tags[AzureBlobLocation],
+  val locator: Locatable[AzureBlobLocation, AzureBlobLocationPrefix, URI]
 ) extends FixityChecker[AzureBlobLocation, AzureBlobLocationPrefix] {
 
   // e.g. ContentMD5, ContentSHA256
@@ -30,12 +36,12 @@ class AzureFixityChecker(
     expectedFileFixity: ExpectedFileFixity
   ): String =
     s"Content${expectedFileFixity.checksum.algorithm.pathRepr.toUpperCase}"
-  }
+}
 
-object AzureFixityChecker{
-  def apply(dynamoConfig: DynamoConfig)(
-    implicit blobClient: BlobServiceClient,
-    dynamoClient: AmazonDynamoDB) = {
+object AzureFixityChecker {
+  def apply(
+    dynamoConfig: DynamoConfig
+  )(implicit blobClient: BlobServiceClient, dynamoClient: AmazonDynamoDB) = {
 
     // Working out the correct value for this took a bit of experimentation; initially
     // I tried 200MB at a time, but that hit timeout errors, e.g.
