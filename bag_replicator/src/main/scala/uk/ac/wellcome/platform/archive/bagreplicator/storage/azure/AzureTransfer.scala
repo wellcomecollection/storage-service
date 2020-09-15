@@ -401,4 +401,31 @@ class AzurePutBlockFromUrlTransfer(
           )
         )
     }
+
+  // Using PutBlockFromURL requires us to create a pre-signed URL for GETing
+  // the object from S3, but some S3 keys are a bit tricky to use in URLs,
+  // and when Azure tries to read them, it gets an error:
+  //
+  //      com.azure.storage.blob.models.BlobStorageException: Status code 403,
+  //      <?xml version="1.0" encoding="utf-8"?><Error><Code>CannotVerifyCopySource…
+  //
+  // In those cases, fall back to transferring the bytes directly through
+  // the replicator.  We try to avoid this because it's slower and puts more
+  // memory pressure on the replicator, but is acceptable if we're only doing
+  // it for a handful of keys.
+  private val blockTransfer = new AzurePutBlockTransfer(blockSize = blockSize)
+
+  private def isWeirdKey(key: String): Boolean =
+    key.endsWith(".")
+
+  override def transfer(
+    src: S3ObjectSummary,
+    dst: AzureBlobLocation,
+    checkForExisting: Boolean
+  ): TransferEither =
+    if (isWeirdKey(src.getKey)) {
+      blockTransfer.transfer(src, dst, checkForExisting)
+    } else {
+      super.transfer(src, dst, checkForExisting)
+    }
 }
