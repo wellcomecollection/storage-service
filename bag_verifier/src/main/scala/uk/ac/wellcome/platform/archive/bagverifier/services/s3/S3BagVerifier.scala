@@ -36,8 +36,6 @@ trait S3BagVerifier[B <: BagVerifyContext[S3ObjectLocationPrefix]]
     location: S3ObjectLocation
   ): String =
     location.key.replace(root.keyPrefix, "")
-
-  override def isRetriable(error: BagVerifierError): Boolean = false
 }
 
 class S3StandaloneBagVerifier(

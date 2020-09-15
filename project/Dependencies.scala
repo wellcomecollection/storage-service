@@ -71,7 +71,6 @@ object ExternalDependencies {
     val commonsIO = "2.6"
     val elastic4s = "7.6.1"
     val mockito = "1.9.5"
-    val scalatestplusMockito = "3.1.0.0"
     val aws = "1.11.504"
     val scalatest = "3.1.1"
     val wiremock = "2.18.0"
@@ -158,8 +157,7 @@ object ExternalDependencies {
   )
 
   val mockitoDependencies: Seq[ModuleID] = Seq(
-    "org.mockito" % "mockito-core" % versions.mockito % "test",
-    "org.scalatestplus" %% "mockito-1-10" % versions.scalatestplusMockito % "test")
+    "org.mockito" % "mockito-core" % versions.mockito % "test")
 
   val wiremockDependencies = Seq[ModuleID](
     "com.github.tomakehurst" % "wiremock" % versions.wiremock % "test"

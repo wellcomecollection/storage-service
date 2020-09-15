@@ -1,14 +1,11 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services.azure
 
-import java.lang.RuntimeException
-
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.BlobServiceClient
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityListChecker
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.azure.AzureFixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.s3.S3FixityChecker
-import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
 import uk.ac.wellcome.platform.archive.bagverifier.services.ReplicatedBagVerifier
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable
 import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.AzureResolvable
@@ -38,15 +35,6 @@ class AzureReplicatedBagVerifier(val primaryBucket: String,
     location: AzureBlobLocation
   ): String =
     location.name.replace(root.namePrefix, "")
-
-  override def isRetriable(error: BagVerifierError): Boolean = error match {
-      // When reading from Azure, sometimes we see errors like
-    // "StoreReadError(reactor.core.Exceptions$ReactiveException: java.util.concurrent.TimeoutException: Did not
-    // observe any item or terminal signal within 60000ms in 'map' (and no fallback has been configured))"
-      // These are retriable errors so let's mark them as such
-    case BagVerifierError(e: RuntimeException, _) if e.getMessage.contains("TimeoutException") => true
-    case _ => false
-  }
 }
 
 object AzureReplicatedBagVerifier {

@@ -63,7 +63,6 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
     bag: Bag
   ): Either[BagVerifierError, Unit]
 
-  def isRetriable(error: BagVerifierError): Boolean
   // What bucket is storing the "primary" copy of a bag?  This is the bucket
   // that should be referred to in the fetch.txt URIs.
   val primaryBucket: String
@@ -181,17 +180,6 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
     startTime: Instant
   ): IngestStepResult[VerificationSummary] =
     internalResult match {
-      case Left(error) if isRetriable(error)=>
-        IngestShouldRetry(
-          summary = VerificationSummary.incomplete(
-            ingestId = ingestId,
-            root = root,
-            e = error.e,
-            t = startTime
-          ),
-          e = error.e,
-          maybeUserFacingMessage = error.userMessage
-        )
       case Left(error) =>
         IngestFailed(
           summary = VerificationSummary.incomplete(
