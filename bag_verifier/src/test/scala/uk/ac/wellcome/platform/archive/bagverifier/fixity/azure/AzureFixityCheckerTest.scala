@@ -8,7 +8,11 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FixityChecker,
   FixityCheckerTagsTestCases
 }
-import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.AzureResolvable
+import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.{
+  AzureLocatable,
+  AzureResolvable
+}
+import uk.ac.wellcome.platform.archive.common.storage.services.azure.AzureSizeFinder
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.{AzureFixtures, DynamoFixtures}
@@ -43,13 +47,12 @@ class AzureFixityCheckerTest
       FixityChecker[AzureBlobLocation, AzureBlobLocationPrefix],
       R
     ]
-  )(implicit table: Table): R =
-    testWith(new AzureFixityChecker(createDynamoConfigWith(table)) {
-      // We need to override the underlying StreamStore so Mockito can spy
-      // on its interactions during the tests.
-      override val streamReader: AzureStreamStore =
-        azureReader
-    })
+  )(implicit table: Table): R = {
+    val sizeFinder = new AzureSizeFinder()
+    val tags = new AzureDynamoTags(createDynamoConfigWith(table))
+    val locator = new AzureLocatable
+    testWith(new AzureFixityChecker(azureReader, sizeFinder, tags, locator))
+  }
 
   override def withStreamReader[R](
     testWith: TestWith[AzureStreamStore, R]

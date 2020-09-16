@@ -60,6 +60,7 @@ class S3StandaloneBagVerifier(
     externalIdentifier: ExternalIdentifier,
     bag: Bag
   ): Either[BagVerifierError, Unit] = Right(())
+
 }
 
 class S3ReplicatedBagVerifier(
@@ -72,8 +73,7 @@ class S3ReplicatedBagVerifier(
     S3ObjectLocationPrefix,
     Bag
   ],
-  val srcReader: StreamStore[S3ObjectLocation],
-  val replicaReader: StreamStore[S3ObjectLocation]
+  val srcReader: StreamStore[S3ObjectLocation]
 ) extends ReplicatedBagVerifier[
       S3ObjectLocation,
       S3ObjectLocationPrefix
@@ -89,7 +89,7 @@ object S3BagVerifier {
     val bagReader = new S3BagReader()
     val listing = S3ObjectLocationListing()
     val resolvable = new S3Resolvable()
-    implicit val fixityChecker = new S3FixityChecker()
+    implicit val fixityChecker = S3FixityChecker()
     val fixityListChecker =
       new FixityListChecker[S3ObjectLocation, S3ObjectLocationPrefix, Bag]()
     new S3StandaloneBagVerifier(
@@ -106,7 +106,7 @@ object S3BagVerifier {
     val bagReader = new S3BagReader()
     val listing = S3ObjectLocationListing()
     val resolvable = new S3Resolvable()
-    implicit val fixityChecker = new S3FixityChecker()
+    implicit val fixityChecker = S3FixityChecker()
     val fixityListChecker =
       new FixityListChecker[S3ObjectLocation, S3ObjectLocationPrefix, Bag]()
     val streamStore = new S3StreamStore()
@@ -116,8 +116,7 @@ object S3BagVerifier {
       listing,
       resolvable,
       fixityListChecker,
-      srcReader = streamStore,
-      replicaReader = streamStore
+      srcReader = streamStore
     )
   }
 }

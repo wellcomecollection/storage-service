@@ -8,16 +8,20 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FixityChecker,
   FixityCheckerTagsTestCases
 }
-import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.S3Resolvable
+import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.{
+  S3Locatable,
+  S3Resolvable
+}
 import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   LocationError,
   LocationNotFound
 }
+import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3SizeFinder
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
-import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
+import uk.ac.wellcome.storage.tags.s3.S3Tags
 
 class S3FixityCheckerTest
     extends FixityCheckerTagsTestCases[
@@ -55,9 +59,14 @@ class S3FixityCheckerTest
       R
     ]
   )(implicit context: Unit): R =
-    testWith(new S3FixityChecker() {
-      override val streamReader: StreamStore[S3ObjectLocation] = s3Reader
-    })
+    testWith(
+      new S3FixityChecker(
+        s3Reader,
+        new S3SizeFinder(),
+        new S3Tags(),
+        S3Locatable.s3UriLocatable
+      )
+    )
 
   implicit val context: Unit = ()
 

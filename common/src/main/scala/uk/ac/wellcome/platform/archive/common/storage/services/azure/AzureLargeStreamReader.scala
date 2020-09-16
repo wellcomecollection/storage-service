@@ -8,12 +8,18 @@ import uk.ac.wellcome.platform.archive.common.storage.services.{
 }
 import uk.ac.wellcome.storage.azure.AzureBlobLocation
 
-class AzureLargeStreamReader(val bufferSize: Long)(
-  implicit blobServiceClient: BlobServiceClient
-) extends LargeStreamReader[AzureBlobLocation] {
-  override protected val sizeFinder: SizeFinder[AzureBlobLocation] =
-    new AzureSizeFinder()
+class AzureLargeStreamReader(
+  val bufferSize: Long,
+  val sizeFinder: SizeFinder[AzureBlobLocation],
+  val rangedReader: RangedReader[AzureBlobLocation]
+) extends LargeStreamReader[AzureBlobLocation]
 
-  override protected val rangedReader: RangedReader[AzureBlobLocation] =
-    new AzureRangedReader()
+object AzureLargeStreamReader {
+  def apply(bufferSize: Long)(implicit blobServiceClient: BlobServiceClient) = {
+    val sizeFinder: SizeFinder[AzureBlobLocation] = new AzureSizeFinder()
+
+    val rangedReader: RangedReader[AzureBlobLocation] = new AzureRangedReader()
+    new AzureLargeStreamReader(bufferSize, sizeFinder, rangedReader)
+
+  }
 }

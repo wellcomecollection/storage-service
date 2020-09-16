@@ -7,9 +7,13 @@ import uk.ac.wellcome.storage.store
 import uk.ac.wellcome.storage.store.azure.AzureStreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
-class AzureBagReader(implicit blobClient: BlobServiceClient)
-    extends BagReader[AzureBlobLocation, AzureBlobLocationPrefix] {
-  override implicit val readable
-    : store.Readable[AzureBlobLocation, InputStreamWithLength] =
-    new AzureStreamStore()
+class AzureBagReader(
+  val readable: store.Readable[AzureBlobLocation, InputStreamWithLength]
+) extends BagReader[AzureBlobLocation, AzureBlobLocationPrefix]
+
+object AzureBagReader {
+  def apply()(implicit blobClient: BlobServiceClient): AzureBagReader = {
+    val readable = new AzureStreamStore()
+    new AzureBagReader(readable)
+  }
 }
