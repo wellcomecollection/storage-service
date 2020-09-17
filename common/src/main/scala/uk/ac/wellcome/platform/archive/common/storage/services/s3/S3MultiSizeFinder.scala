@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.storage.services.s3
 
 import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.{AmazonS3Exception, ListObjectsV2Request}
+import com.amazonaws.services.s3.model.ListObjectsV2Request
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
 import uk.ac.wellcome.storage.ReadError
 import uk.ac.wellcome.storage.s3.{S3Errors, S3ObjectLocation}
@@ -24,22 +24,30 @@ class S3MultiSizeFinder(val maxRetries: Int = 3)(implicit s3Client: AmazonS3)
   // (bucket) -> Map(key -> size)
   private var cache: Map[S3ObjectLocation, Long] = Map.empty
 
+  private val fallback = new S3SizeFinder(maxRetries = maxRetries)
+
   override protected def retryableGetFunction(location: S3ObjectLocation): Long =
     cache.get(location) match {
       case Some(size) => size
       case None       =>
         freshenCache(location)
 
-        val exc = new AmazonS3Exception(s"Unable to find size of object $location")
-        exc.setStatusCode(404)
-
-        cache.getOrElse(location, throw exc)
+        // It's possible that a ListObjectsV2 result might miss this key --
+        // if there are lots of keys between our StartAfter and the key we're
+        // actually interested in -- so if it's not found, make a second
+        // HeadObject request just in case.
+        cache.getOrElse(location, fallback.retryableGetFunction(location))
     }
 
   private def freshenCache(location: S3ObjectLocation): Unit = {
     val resp = s3Client.listObjectsV2(
       new ListObjectsV2Request()
         .withBucketName(location.bucket)
+        // The StartAfter parameter includes keys after *but not including*
+        // whatever you specify here.
+        // e.g. List(StartAfter="bagit.txt") doesn't actually see "bagit.txt".
+        // Truncating the key is a way to (hopefully) capture the key
+        // we're interested in.
         .withStartAfter(location.key.dropRight(1))
     )
 

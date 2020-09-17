@@ -57,4 +57,26 @@ class S3MultiSizeFinderTest extends SizeFinderTestCases[S3ObjectLocation, Bucket
       verify(spyClient, Mockito.never()).getObjectMetadata(any[GetObjectMetadataRequest])
     }
   }
+
+  it("gets the size of an object missed by ListObjectsV2") {
+    val finder = new S3MultiSizeFinder()
+
+    withLocalS3Bucket { bucket =>
+      // This is because of an S3 ListObjectsV2 API limitation -- you can list
+      // objects *after* a given key, but not *starting* at a given key.
+      //
+      // This means our ListObjects request might miss the object we're interested
+      // in if the key layout causes a lookup miss.
+      (1 to 1000).foreach { i =>
+        s3Client.putObject(bucket.name, s"file-a$i", randomAlphanumeric)
+      }
+
+      val size = randomInt(from = 10, to = 100)
+      s3Client.putObject(bucket.name, "file-b", randomAlphanumericWithLength(size))
+
+      val location = S3ObjectLocation(bucket.name, key = "file-b")
+
+      finder.getSize(location).right.value shouldBe size
+    }
+  }
 }
