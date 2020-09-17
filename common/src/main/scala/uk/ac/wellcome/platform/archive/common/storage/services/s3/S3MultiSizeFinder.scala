@@ -14,9 +14,20 @@ import scala.collection.JavaConverters._
 //
 // It gets up to 1000 objects at once with a single ListObjectsV2 call
 // and caches the result, rather than individual HeadObject requests.
+// This means that the first lookup is slow (ListObjectsV2 call), but
+// subsequent lookups are much faster.
+//
+// e.g. GetSize(a1)    -> (call ListObjects, cache results of a1, ..., a1000)
+//                        return size of a1
+//      GetSize(a2)    -> return cached size of a2
+//      ...
+//      GetSize(a1000) -> return cached size of a1000
+//      GetSize(a1001) -> (call ListObjects, cache results of a1001, ..., a1100)
+//                        return size of 1001
 //
 // Note: there is no cache eviction logic; create a new instance of this
 // class for every new prefix/collection of objects.
+//
 class S3MultiSizeFinder(val maxRetries: Int = 3)(implicit s3Client: AmazonS3)
   extends SizeFinder[S3ObjectLocation]
     with RetryableReadable[S3ObjectLocation, Long] {
@@ -39,7 +50,7 @@ class S3MultiSizeFinder(val maxRetries: Int = 3)(implicit s3Client: AmazonS3)
         //
         // e.g. object-a1, object-a2, ..., object-a1000, object-b
         //
-        // For object-b, calling ListObjects(StartAfter=object-) would actually
+        // For getSize(object-b), calling ListObjects(StartAfter=object-) would
         // find all the object-a* sizes, but not the thing we're interested in!
         cache.getOrElse(location, fallback.retryableGetFunction(location))
     }
