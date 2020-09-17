@@ -68,13 +68,13 @@ class S3MultiSizeFinderTest extends SizeFinderTestCases[S3ObjectLocation, Bucket
       // This means our ListObjects request might miss the object we're interested
       // in if the key layout causes a lookup miss.
       (1 to 1000).foreach { i =>
-        s3Client.putObject(bucket.name, s"file-a$i", randomAlphanumeric)
+        s3Client.putObject(bucket.name, s"object-a$i", randomAlphanumeric)
       }
 
       val size = randomInt(from = 10, to = 100)
-      s3Client.putObject(bucket.name, "file-b", randomAlphanumericWithLength(size))
+      s3Client.putObject(bucket.name, "object-b", randomAlphanumericWithLength(size))
 
-      val location = S3ObjectLocation(bucket.name, key = "file-b")
+      val location = S3ObjectLocation(bucket.name, key = "object-b")
 
       finder.getSize(location).right.value shouldBe size
     }

@@ -36,6 +36,11 @@ class S3MultiSizeFinder(val maxRetries: Int = 3)(implicit s3Client: AmazonS3)
         // if there are lots of keys between our StartAfter and the key we're
         // actually interested in -- so if it's not found, make a second
         // HeadObject request just in case.
+        //
+        // e.g. object-a1, object-a2, ..., object-a1000, object-b
+        //
+        // For object-b, calling ListObjects(StartAfter=object-) would actually
+        // find all the object-a* sizes, but not the thing we're interested in!
         cache.getOrElse(location, fallback.retryableGetFunction(location))
     }
 
@@ -45,7 +50,9 @@ class S3MultiSizeFinder(val maxRetries: Int = 3)(implicit s3Client: AmazonS3)
         .withBucketName(location.bucket)
         // The StartAfter parameter includes keys after *but not including*
         // whatever you specify here.
+        //
         // e.g. List(StartAfter="bagit.txt") doesn't actually see "bagit.txt".
+        //
         // Truncating the key is a way to (hopefully) capture the key
         // we're interested in.
         .withStartAfter(location.key.dropRight(1))
