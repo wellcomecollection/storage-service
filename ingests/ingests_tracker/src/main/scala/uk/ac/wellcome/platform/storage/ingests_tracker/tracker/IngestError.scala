@@ -4,6 +4,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, Ingest}
 import uk.ac.wellcome.storage.{
   NotFoundError,
+  StorageError,
   UpdateNoSourceError,
   VersionAlreadyExistsError
 }
@@ -37,9 +38,8 @@ case class MismatchedVersionUpdateError(
 
 case class NoCallbackOnIngestError() extends IngestStoreError
 
-case class IngestStoreUnexpectedError(e: Throwable) extends IngestStoreError {
-
+case class IngestStoreUnexpectedError(storageError: StorageError) extends IngestStoreError {
   override def toString: String = {
-    s"IngestStoreUnexpectedError: ${e.toString}"
+    s"IngestStoreUnexpectedError: $storageError"
   }
 }
