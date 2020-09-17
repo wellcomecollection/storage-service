@@ -16,7 +16,12 @@ import uk.ac.wellcome.platform.storage.ingests_tracker.services.{
 }
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.IngestStoreUnexpectedError
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.memory.MemoryIngestTracker
-import uk.ac.wellcome.storage.{StoreReadError, StoreWriteError, UpdateWriteError, Version}
+import uk.ac.wellcome.storage.{
+  StoreReadError,
+  StoreWriteError,
+  UpdateWriteError,
+  Version
+}
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
@@ -71,10 +76,16 @@ trait IngestsTrackerApiFixture
         Left(IngestStoreUnexpectedError(StoreReadError(new Throwable("BOOM!"))))
 
       override def init(ingest: Ingest): Result =
-        Left(IngestStoreUnexpectedError(StoreWriteError(new Throwable("BOOM!"))))
+        Left(
+          IngestStoreUnexpectedError(StoreWriteError(new Throwable("BOOM!")))
+        )
 
       override def update(update: IngestUpdate): Result =
-        Left(IngestStoreUnexpectedError(UpdateWriteError(StoreWriteError(new Throwable("BOOM!")))))
+        Left(
+          IngestStoreUnexpectedError(
+            UpdateWriteError(StoreWriteError(new Throwable("BOOM!")))
+          )
+        )
     }
 
     val callbackSender = new MemoryMessageSender()

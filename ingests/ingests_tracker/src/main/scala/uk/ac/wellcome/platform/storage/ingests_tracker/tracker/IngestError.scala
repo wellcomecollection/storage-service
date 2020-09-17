@@ -38,7 +38,8 @@ case class MismatchedVersionUpdateError(
 
 case class NoCallbackOnIngestError() extends IngestStoreError
 
-case class IngestStoreUnexpectedError(storageError: StorageError) extends IngestStoreError {
+case class IngestStoreUnexpectedError(storageError: StorageError)
+    extends IngestStoreError {
   override def toString: String = {
     s"IngestStoreUnexpectedError: $storageError"
   }
