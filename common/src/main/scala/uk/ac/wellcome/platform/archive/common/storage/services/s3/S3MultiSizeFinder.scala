@@ -32,13 +32,12 @@ class S3MultiSizeFinder(val maxRetries: Int = 3)(implicit s3Client: AmazonS3)
   extends SizeFinder[S3ObjectLocation]
     with RetryableReadable[S3ObjectLocation, Long] {
 
-  // (bucket) -> Map(key -> size)
-  private var cache: Map[S3ObjectLocation, Long] = Map.empty
+  private var sizeCache: Map[S3ObjectLocation, Long] = Map.empty
 
   private val fallback = new S3SizeFinder(maxRetries = maxRetries)
 
   override protected def retryableGetFunction(location: S3ObjectLocation): Long =
-    cache.get(location) match {
+    sizeCache.get(location) match {
       case Some(size) => size
       case None       =>
         freshenCache(location)
@@ -52,7 +51,7 @@ class S3MultiSizeFinder(val maxRetries: Int = 3)(implicit s3Client: AmazonS3)
         //
         // For getSize(object-b), calling ListObjects(StartAfter=object-) would
         // find all the object-a* sizes, but not the thing we're interested in!
-        cache.getOrElse(location, fallback.retryableGetFunction(location))
+        sizeCache.getOrElse(location, fallback.retryableGetFunction(location))
     }
 
   private def freshenCache(location: S3ObjectLocation): Unit = {
@@ -69,7 +68,7 @@ class S3MultiSizeFinder(val maxRetries: Int = 3)(implicit s3Client: AmazonS3)
         .withStartAfter(location.key.dropRight(1))
     )
 
-    cache = cache ++ resp.getObjectSummaries.asScala
+    sizeCache = sizeCache ++ resp.getObjectSummaries.asScala
       .map { summary => S3ObjectLocation(location.bucket, summary.getKey) -> summary.getSize }
   }
 
