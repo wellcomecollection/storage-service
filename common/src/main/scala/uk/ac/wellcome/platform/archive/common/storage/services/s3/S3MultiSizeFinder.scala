@@ -29,17 +29,19 @@ import scala.collection.JavaConverters._
 // class for every new prefix/collection of objects.
 //
 class S3MultiSizeFinder(val maxRetries: Int = 3)(implicit s3Client: AmazonS3)
-  extends SizeFinder[S3ObjectLocation]
+    extends SizeFinder[S3ObjectLocation]
     with RetryableReadable[S3ObjectLocation, Long] {
 
   private var sizeCache: Map[S3ObjectLocation, Long] = Map.empty
 
   private val fallback = new S3SizeFinder(maxRetries = maxRetries)
 
-  override protected def retryableGetFunction(location: S3ObjectLocation): Long =
+  override protected def retryableGetFunction(
+    location: S3ObjectLocation
+  ): Long =
     sizeCache.get(location) match {
       case Some(size) => size
-      case None       =>
+      case None =>
         freshenCache(location)
 
         // It's possible that a ListObjectsV2 result might miss this key --
@@ -69,9 +71,10 @@ class S3MultiSizeFinder(val maxRetries: Int = 3)(implicit s3Client: AmazonS3)
     )
 
     sizeCache = sizeCache ++ resp.getObjectSummaries.asScala
-      .map { summary => S3ObjectLocation(location.bucket, summary.getKey) -> summary.getSize }
+      .map { summary =>
+        S3ObjectLocation(location.bucket, summary.getKey) -> summary.getSize
+      }
   }
-
 
   override protected def buildGetError(throwable: Throwable): ReadError =
     S3Errors.readErrors(throwable)

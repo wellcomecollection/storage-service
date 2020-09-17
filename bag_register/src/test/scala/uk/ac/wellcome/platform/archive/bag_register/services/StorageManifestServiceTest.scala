@@ -363,15 +363,14 @@ class StorageManifestServiceTest
         )
 
         val storageManifestSizes =
-          (storageManifest.manifest.files ++ storageManifest.tagManifest.files)
-            .map { file =>
+          (storageManifest.manifest.files ++ storageManifest.tagManifest.files).map {
+            file =>
               storageManifest.location.prefix.asLocation(file.path) -> file.size
-            }
-            .toMap
+          }.toMap
 
         val expectedSizes =
           (bagContents.bagObjects ++ bagContents.fetchObjects)
-            .map { case (loc, contents) => loc -> contents.getBytes.length}
+            .map { case (loc, contents) => loc -> contents.getBytes.length }
 
         storageManifestSizes shouldBe expectedSizes
       }

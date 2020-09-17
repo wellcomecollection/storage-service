@@ -1,17 +1,26 @@
 package uk.ac.wellcome.platform.archive.common.storage.services.s3
 
-import com.amazonaws.services.s3.model.{GetObjectMetadataRequest, ListObjectsV2Request}
+import com.amazonaws.services.s3.model.{
+  GetObjectMetadataRequest,
+  ListObjectsV2Request
+}
 import org.mockito.Matchers._
 import org.mockito.Mockito
 import org.mockito.Mockito._
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
-import uk.ac.wellcome.platform.archive.common.storage.services.{SizeFinder, SizeFinderTestCases}
+import uk.ac.wellcome.platform.archive.common.storage.services.{
+  SizeFinder,
+  SizeFinderTestCases
+}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
 
-class S3MultiSizeFinderTest extends SizeFinderTestCases[S3ObjectLocation, Bucket] with S3Fixtures with StorageRandomThings {
+class S3MultiSizeFinderTest
+    extends SizeFinderTestCases[S3ObjectLocation, Bucket]
+    with S3Fixtures
+    with StorageRandomThings {
   override def withContext[R](testWith: TestWith[Bucket, R]): R =
     withLocalS3Bucket { bucket =>
       testWith(bucket)
@@ -46,15 +55,19 @@ class S3MultiSizeFinderTest extends SizeFinderTestCases[S3ObjectLocation, Bucket
         size -> S3ObjectLocation(bucket.name, key)
       }
 
-      locations.foreach { case (s, loc) =>
-        finder.getSize(loc).right.value shouldBe s
+      locations.foreach {
+        case (s, loc) =>
+          finder.getSize(loc).right.value shouldBe s
       }
 
       // We don't care about the exact number of calls; the important thing is
       // that we're not making 1100 of them!
-      verify(spyClient, Mockito.atMost(5)).listObjectsV2(any[ListObjectsV2Request])
-      verify(spyClient, Mockito.never()).getObjectMetadata(any[String], any[String])
-      verify(spyClient, Mockito.never()).getObjectMetadata(any[GetObjectMetadataRequest])
+      verify(spyClient, Mockito.atMost(5))
+        .listObjectsV2(any[ListObjectsV2Request])
+      verify(spyClient, Mockito.never())
+        .getObjectMetadata(any[String], any[String])
+      verify(spyClient, Mockito.never())
+        .getObjectMetadata(any[GetObjectMetadataRequest])
     }
   }
 
@@ -72,7 +85,11 @@ class S3MultiSizeFinderTest extends SizeFinderTestCases[S3ObjectLocation, Bucket
       }
 
       val size = randomInt(from = 10, to = 100)
-      s3Client.putObject(bucket.name, "object-b", randomAlphanumericWithLength(size))
+      s3Client.putObject(
+        bucket.name,
+        "object-b",
+        randomAlphanumericWithLength(size)
+      )
 
       val location = S3ObjectLocation(bucket.name, key = "object-b")
 

@@ -10,7 +10,10 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
-import uk.ac.wellcome.platform.archive.common.storage.services.s3.{S3MultiSizeFinder, S3SizeFinder}
+import uk.ac.wellcome.platform.archive.common.storage.services.s3.{
+  S3MultiSizeFinder,
+  S3SizeFinder
+}
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.azure.AzureBlobLocation
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
