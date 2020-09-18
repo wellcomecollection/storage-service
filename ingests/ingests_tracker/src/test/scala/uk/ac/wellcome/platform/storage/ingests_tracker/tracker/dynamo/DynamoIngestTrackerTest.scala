@@ -4,7 +4,6 @@ import java.time.temporal.ChronoUnit
 
 import com.amazonaws.services.dynamodbv2.model._
 import org.scalatest.Assertion
-import org.scalatest.concurrent.ScalaFutures
 import org.scanamo.auto._
 import org.scanamo.time.JavaTimeFormats._
 import uk.ac.wellcome.fixtures.TestWith
@@ -31,14 +30,10 @@ import uk.ac.wellcome.storage.generators.RandomThings
 import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.store.dynamo.DynamoHashStore
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-
 class DynamoIngestTrackerTest
     extends IngestTrackerTestCases[DynamoTable]
     with DynamoFixtures
-    with RandomThings
-    with ScalaFutures {
+    with RandomThings {
   override def withContext[R](
     testWith: TestWith[DynamoTable, R]
   ): R =
@@ -161,27 +156,5 @@ class DynamoIngestTrackerTest
     )
 
     adjusted1 shouldBe adjusted2
-  }
-
-  // This test is added temporarily to reproduce https://github.com/wellcomecollection/platform/issues/4781
-  // What does the Dynamo ingest tracker do if you fire in lots of updates
-  // for the same ingest in quick succession?
-  it("reproduces the error") {
-    val ingest = createIngest
-
-    val updates = (1 to 10)
-      .map { _ => createIngestEventUpdateWith(id = ingest.id) }
-
-    withContext { implicit context =>
-      withIngestTracker(initialIngests = Seq(ingest)) { tracker =>
-        val futures = Future.sequence(
-          updates.map { u => Future(tracker.update(u)) }
-        )
-
-        whenReady(futures) { r =>
-          r.foreach { println(_) }
-        }
-      }
-    }
   }
 }
