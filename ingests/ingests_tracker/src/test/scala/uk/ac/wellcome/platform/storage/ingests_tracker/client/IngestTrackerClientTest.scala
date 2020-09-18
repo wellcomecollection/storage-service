@@ -135,7 +135,7 @@ trait IngestTrackerClientTestCases
       it("fails to apply a conflicting update") {
         val initialIngest = createIngestWith(status = Succeeded)
         val failedUpdate = createIngestStatusUpdateWith(
-          id = ingest.id,
+          id = initialIngest.id,
           status = Ingest.Failed
         )
 
