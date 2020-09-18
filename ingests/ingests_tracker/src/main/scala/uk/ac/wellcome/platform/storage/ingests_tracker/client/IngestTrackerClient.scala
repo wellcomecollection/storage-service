@@ -90,6 +90,9 @@ class AkkaIngestTrackerClient(trackerHost: Uri)(implicit as: ActorSystem)
         case StatusCodes.OK =>
           info(f"OK for PATCH to $requestUri with $ingestUpdate")
           Unmarshal(response.entity).to[Ingest].map(Right(_))
+        case StatusCodes.NotFound =>
+          warn(f"Not Found for PATCH to $requestUri with $ingestUpdate")
+          Future(Left(IngestTrackerUpdateNonExistentIngestError(ingestUpdate)))
         case StatusCodes.Conflict =>
           warn(f"Conflict for PATCH to $requestUri with $ingestUpdate")
           Future(Left(IngestTrackerUpdateConflictError(ingestUpdate)))

@@ -22,6 +22,9 @@ sealed trait IngestTrackerUpdateError extends IngestTrackerError {
   val ingestUpdate: IngestUpdate
 }
 
+case class IngestTrackerUpdateNonExistentIngestError(ingestUpdate: IngestUpdate)
+  extends IngestTrackerUpdateError
+
 case class IngestTrackerUpdateConflictError(ingestUpdate: IngestUpdate)
     extends IngestTrackerUpdateError
 

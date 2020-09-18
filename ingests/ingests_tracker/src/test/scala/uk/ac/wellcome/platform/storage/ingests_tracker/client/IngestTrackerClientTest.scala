@@ -157,6 +157,19 @@ trait IngestTrackerClientTestCases
         }
       }
 
+      it("errors if you apply an update to a non-existent ingest") {
+        val ingest = createIngest
+        val update = createIngestEventUpdate
+
+        withIngestsTracker(ingest) { _ =>
+          withIngestTrackerClient(trackerUri) { client =>
+            whenReady(client.updateIngest(update)) {
+              _.left.value shouldBe IngestTrackerUpdateNonExistentIngestError(update)
+            }
+          }
+        }
+      }
+
       it("errors if the tracker API returns a 500 error") {
         withBrokenIngestsTrackerApi { _ =>
           withIngestTrackerClient(trackerUri) { client =>
