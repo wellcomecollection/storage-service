@@ -27,7 +27,8 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
   IngestTrackerClient,
   IngestTrackerUnknownUpdateError,
-  IngestTrackerUpdateConflictError
+  IngestTrackerUpdateConflictError,
+  IngestTrackerUpdateNonExistentIngestError
 }
 import uk.ac.wellcome.typesafe.Runnable
 
@@ -66,6 +67,14 @@ class IngestsWorkerService(
         )
         warn(err)
         DeterministicFailure[Ingest](err)
+      // This may be caused by something like a consistency issue in DynamoDB;
+      // if we retry later the ingest may become available.
+      // See https://github.com/wellcomecollection/platform/issues/4781
+      case Left(IngestTrackerUpdateNonExistentIngestError(_)) =>
+        error(s"Could not apply $ingestUpdate to non-existent ingest")
+        NonDeterministicFailure[Ingest](
+          new Throwable(s"Could not apply $ingestUpdate to non-existent ingest")
+        )
       case Left(IngestTrackerUnknownUpdateError(_, err)) =>
         error(s"Error trying to apply $ingestUpdate, got UnknownError", err)
         NonDeterministicFailure[Ingest](err)
