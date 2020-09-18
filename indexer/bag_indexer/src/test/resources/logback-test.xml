@@ -14,4 +14,7 @@
   <logger name="io.netty" level="ERROR"/>
   <logger name="com.amazonaws" level="WARN"/>
   <logger name="software.amazon.awssdk" level="WARN"/>
+
+  <!-- This class logs the merged Akka config at INFO level -->
+  <logger name="akka.actor.ActorSystemImpl" level="WARN"/>
 </configuration>
