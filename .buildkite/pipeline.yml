@@ -19,6 +19,8 @@ steps:
     label: "bag root finder"
   - command: .buildkite/scripts/run_job.py bag_tagger
     label: "bag tagger"
+  - command: .buildkite/scripts/run_job.py bag_tracker
+    label: "bag tracker"
   - command: .buildkite/scripts/run_job.py bag_verifier
     label: "bag verifier"
   - command: .buildkite/scripts/run_job.py bag_unpacker
