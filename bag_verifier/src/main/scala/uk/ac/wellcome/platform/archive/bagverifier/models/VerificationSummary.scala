@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.models
 
 import java.time.Instant
 
+import org.apache.commons.io.FileUtils
 import uk.ac.wellcome.platform.archive.bagverifier.fixity._
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.operation.models.Summary
@@ -32,9 +33,11 @@ sealed trait VerificationSummary extends Summary {
         )
 
       case Some(FixityListAllCorrect(correct)) =>
+        val totalBytes = correct.map { _.size }.sum
         baseFields ++ Seq(
           ("status", "success"),
-          ("correct", correct.size)
+          ("correct", correct.size),
+          ("totalSize", FileUtils.byteCountToDisplaySize(totalBytes))
         )
 
       case _ =>
