@@ -23,7 +23,7 @@ sealed trait IngestTrackerUpdateError extends IngestTrackerError {
 }
 
 case class IngestTrackerUpdateNonExistentIngestError(ingestUpdate: IngestUpdate)
-  extends IngestTrackerUpdateError
+    extends IngestTrackerUpdateError
 
 case class IngestTrackerUpdateConflictError(ingestUpdate: IngestUpdate)
     extends IngestTrackerUpdateError

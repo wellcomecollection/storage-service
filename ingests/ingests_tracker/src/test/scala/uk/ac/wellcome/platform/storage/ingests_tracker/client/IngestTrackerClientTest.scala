@@ -164,7 +164,9 @@ trait IngestTrackerClientTestCases
         withIngestsTracker(ingest) { _ =>
           withIngestTrackerClient(trackerUri) { client =>
             whenReady(client.updateIngest(update)) {
-              _.left.value shouldBe IngestTrackerUpdateNonExistentIngestError(update)
+              _.left.value shouldBe IngestTrackerUpdateNonExistentIngestError(
+                update
+              )
             }
           }
         }

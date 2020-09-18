@@ -92,7 +92,9 @@ class IngestsWorkerServiceTest
     }
   }
 
-  def withIngestTrackerClient[R](trackerUri: String)(testWith: TestWith[IngestTrackerClient, R]): R =
+  def withIngestTrackerClient[R](
+    trackerUri: String
+  )(testWith: TestWith[IngestTrackerClient, R]): R =
     withActorSystem { implicit actorSystem =>
       val client = new AkkaIngestTrackerClient(trackerHost = Uri(trackerUri))
 
