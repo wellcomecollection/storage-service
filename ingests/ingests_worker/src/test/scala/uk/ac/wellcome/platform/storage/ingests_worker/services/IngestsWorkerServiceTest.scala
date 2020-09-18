@@ -1,8 +1,10 @@
 package uk.ac.wellcome.platform.storage.ingests_worker.services
 
+import akka.http.scaladsl.model.Uri
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
+import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.worker.models.{
   DeterministicFailure,
   NonDeterministicFailure,
@@ -11,6 +13,11 @@ import uk.ac.wellcome.messaging.worker.models.{
 }
 import uk.ac.wellcome.platform.archive.common.fixtures.HttpFixtures
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
+  AkkaIngestTrackerClient,
+  IngestTrackerClient
+}
+import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 import uk.ac.wellcome.platform.storage.ingests_worker.fixtures.IngestsWorkerFixtures
 
 class IngestsWorkerServiceTest
@@ -20,6 +27,7 @@ class IngestsWorkerServiceTest
     with HttpFixtures
     with ScalaFutures
     with IngestsWorkerFixtures
+    with IngestsTrackerApiFixture
     with IntegrationPatience {
 
   val visibilityTimeout = 5
@@ -71,4 +79,26 @@ class IngestsWorkerServiceTest
       }
     }
   }
+
+  it("updating a non-existent ingest is a non-deterministic failure") {
+    withIngestsTrackerApi(initialIngests = Seq.empty) { _ =>
+      withIngestTrackerClient(trackerUri) { client =>
+        withIngestWorker(ingestTrackerClient = client) { worker =>
+          whenReady(worker.processMessage(createIngestEventUpdate)) {
+            _ shouldBe a[NonDeterministicFailure[_]]
+          }
+        }
+      }
+    }
+  }
+
+  def withIngestTrackerClient[R](
+    trackerUri: String
+  )(testWith: TestWith[IngestTrackerClient, R]): R =
+    withActorSystem { implicit actorSystem =>
+      val client = new AkkaIngestTrackerClient(trackerHost = Uri(trackerUri))
+
+      testWith(client)
+    }
+
 }

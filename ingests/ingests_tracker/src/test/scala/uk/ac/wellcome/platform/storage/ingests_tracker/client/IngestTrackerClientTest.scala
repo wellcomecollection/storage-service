@@ -135,7 +135,7 @@ trait IngestTrackerClientTestCases
       it("fails to apply a conflicting update") {
         val initialIngest = createIngestWith(status = Succeeded)
         val failedUpdate = createIngestStatusUpdateWith(
-          id = ingest.id,
+          id = initialIngest.id,
           status = Ingest.Failed
         )
 
@@ -152,6 +152,21 @@ trait IngestTrackerClientTestCases
                 .right
                 .get
                 .identifiedT shouldBe initialIngest
+            }
+          }
+        }
+      }
+
+      it("errors if you apply an update to a non-existent ingest") {
+        val ingest = createIngest
+        val update = createIngestEventUpdate
+
+        withIngestsTracker(ingest) { _ =>
+          withIngestTrackerClient(trackerUri) { client =>
+            whenReady(client.updateIngest(update)) {
+              _.left.value shouldBe IngestTrackerUpdateNonExistentIngestError(
+                update
+              )
             }
           }
         }

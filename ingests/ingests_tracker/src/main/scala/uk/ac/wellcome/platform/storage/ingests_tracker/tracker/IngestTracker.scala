@@ -18,7 +18,7 @@ trait IngestTracker extends Logging {
       case Left(err: VersionAlreadyExistsError) =>
         Left(IngestAlreadyExistsError(err))
       case Left(err: StorageError) =>
-        Left(IngestStoreUnexpectedError(err.e))
+        Left(IngestStoreUnexpectedError(err))
     }
 
   def get(id: IngestID): Result =
@@ -28,7 +28,7 @@ trait IngestTracker extends Logging {
       case Left(err: NotFoundError) =>
         Left(IngestDoesNotExistError(err))
       case Left(err: StorageError) =>
-        Left(IngestStoreUnexpectedError(err.e))
+        Left(IngestStoreUnexpectedError(err))
     }
 
   def update(update: IngestUpdate): Result = {
@@ -44,7 +44,7 @@ trait IngestTracker extends Logging {
               case err: UpdateNoSourceError =>
                 UpdateNonExistentIngestError(err)
               case err =>
-                IngestStoreUnexpectedError(err.e)
+                IngestStoreUnexpectedError(err)
             }
         }
     }

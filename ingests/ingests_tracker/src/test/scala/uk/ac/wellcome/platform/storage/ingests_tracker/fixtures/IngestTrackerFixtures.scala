@@ -64,7 +64,7 @@ trait IngestTrackerFixtures extends EitherValues with TimeTestFixture {
   ): MemoryIngestTracker = {
     initialIngests
       .map { ingest =>
-        store.init(ingest.id)(ingest)
+        store.init(ingest.id)(ingest) shouldBe a[Right[_, _]]
       }
 
     new MemoryIngestTracker(store)

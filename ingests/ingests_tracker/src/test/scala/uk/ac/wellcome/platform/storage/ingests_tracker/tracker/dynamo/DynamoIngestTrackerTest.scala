@@ -37,7 +37,7 @@ class DynamoIngestTrackerTest
   override def withContext[R](
     testWith: TestWith[DynamoTable, R]
   ): R =
-    withSpecifiedTable(createIngestTrackerTable) { ingestTrackerTable =>
+    withLocalDynamoDbTable { ingestTrackerTable =>
       testWith(ingestTrackerTable)
     }
 
