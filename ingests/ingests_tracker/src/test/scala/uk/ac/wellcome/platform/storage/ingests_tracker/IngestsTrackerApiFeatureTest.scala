@@ -374,8 +374,8 @@ class IngestsTrackerApiFeatureTest
       withIngestsTrackerApi() {
         case (callbackSender, ingestsSender, ingestTracker) =>
           whenPatchRequestReady(path, ingestEventEntity) { response =>
-            it("responds with Conflict") {
-              response.status shouldBe StatusCodes.Conflict
+            it("responds with NotFound") {
+              response.status shouldBe StatusCodes.NotFound
             }
 
             it("does not create the Ingest") {
@@ -392,7 +392,6 @@ class IngestsTrackerApiFeatureTest
             it("does not send a CallbackNotification message") {
               callbackSender.getMessages[CallbackNotification] shouldBe empty
             }
-
           }
       }
     }

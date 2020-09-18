@@ -17,7 +17,8 @@ import uk.ac.wellcome.platform.storage.ingests_tracker.services.MessagingService
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.{
   IngestDoesNotExistError,
   IngestTracker,
-  StateConflictError
+  StateConflictError,
+  UpdateNonExistentIngestError
 }
 import uk.ac.wellcome.storage.Identified
 import uk.ac.wellcome.typesafe.Runnable
@@ -70,6 +71,9 @@ class IngestsTrackerApi[CallbackDestination, IngestsDestination](
                     info(s"Updated ingest: $ingest")
                     messagingService.send(ingest)
                     complete(StatusCodes.OK -> ingest)
+                  case Left(UpdateNonExistentIngestError(e)) =>
+                    error(s"Could not find ingest $id to update: $e")
+                    complete(StatusCodes.NotFound)
                   case Left(e: StateConflictError) =>
                     error(s"Ingest $id can not be updated", e)
                     complete(StatusCodes.Conflict)
