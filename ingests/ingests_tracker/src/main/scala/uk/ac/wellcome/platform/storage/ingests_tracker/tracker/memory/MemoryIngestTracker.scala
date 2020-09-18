@@ -7,12 +7,3 @@ import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 class MemoryIngestTracker(
   val underlying: MemoryVersionedStore[IngestID, Ingest]
 ) extends IngestTracker
-
-object MemoryIngestTracker {
-  def apply(): MemoryIngestTracker =
-    new MemoryIngestTracker(
-      underlying = MemoryVersionedStore[IngestID, Ingest](
-        initialEntries = Map.empty
-      )
-    )
-}
