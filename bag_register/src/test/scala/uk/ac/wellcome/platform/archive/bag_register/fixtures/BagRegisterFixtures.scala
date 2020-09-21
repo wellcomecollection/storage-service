@@ -1,14 +1,12 @@
 package uk.ac.wellcome.platform.archive.bag_register.fixtures
 
 import org.scalatest.Assertion
-import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.{Queue, QueuePair}
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.messaging.sqs.SQSClientFactory
 import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
   Register,
@@ -57,14 +55,6 @@ trait BagRegisterFixtures
     with StringNamespaceFixtures
     with StorageSpaceGenerators
     with S3BagBuilder {
-
-  override implicit val asyncSqsClient: SqsAsyncClient =
-    SQSClientFactory.createAsyncClient(
-      region = "localhost",
-      endpoint = "http://localhost:9324",
-      accessKey = "access",
-      secretKey = "secret"
-    )
 
   type Fixtures = (
     BagRegisterWorker[String, String],
