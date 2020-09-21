@@ -3,16 +3,10 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity.memory
 import java.net.URI
 
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityChecker
-import uk.ac.wellcome.platform.archive.bagverifier.storage.{
-  Locatable,
-  LocateFailure
-}
-import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
-import uk.ac.wellcome.platform.archive.common.storage.services.memory.MemorySizeFinder
-import uk.ac.wellcome.storage.providers.memory.{
-  MemoryLocation,
-  MemoryLocationPrefix
-}
+import uk.ac.wellcome.platform.archive.bagverifier.storage.{Locatable, LocateFailure}
+import uk.ac.wellcome.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
+import uk.ac.wellcome.storage.services.SizeFinder
+import uk.ac.wellcome.storage.services.memory.MemorySizeFinder
 import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
 import uk.ac.wellcome.storage.tags.memory.MemoryTags
 

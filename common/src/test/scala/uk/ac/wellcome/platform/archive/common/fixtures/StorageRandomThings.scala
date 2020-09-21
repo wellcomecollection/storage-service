@@ -17,8 +17,6 @@ import uk.ac.wellcome.storage.generators.RandomThings
 import scala.util.Random
 
 trait StorageRandomThings extends RandomThings {
-  def randomAlphanumericWithLength(length: Int = 8): String =
-    Random.alphanumeric take length mkString
 
   def randomChecksumValue = ChecksumValue(randomAlphanumeric)
 

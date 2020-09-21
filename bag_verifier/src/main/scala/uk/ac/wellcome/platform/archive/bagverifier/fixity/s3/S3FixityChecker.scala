@@ -7,9 +7,9 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Locatable
 import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.S3Locatable
-import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
-import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3SizeFinder
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.services.SizeFinder
+import uk.ac.wellcome.storage.services.s3.S3SizeFinder
 import uk.ac.wellcome.storage.store
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength

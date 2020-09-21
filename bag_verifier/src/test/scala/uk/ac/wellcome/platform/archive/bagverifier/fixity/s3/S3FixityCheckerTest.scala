@@ -3,23 +3,13 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity.s3
 import java.net.URI
 
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
-  FileFixityCouldNotRead,
-  FixityChecker,
-  FixityCheckerTagsTestCases
-}
-import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.{
-  S3Locatable,
-  S3Resolvable
-}
-import uk.ac.wellcome.platform.archive.bagverifier.storage.{
-  LocationError,
-  LocationNotFound
-}
-import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3SizeFinder
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FileFixityCouldNotRead, FixityChecker, FixityCheckerTagsTestCases}
+import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.{S3Locatable, S3Resolvable}
+import uk.ac.wellcome.platform.archive.bagverifier.storage.{LocationError, LocationNotFound}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.services.s3.S3SizeFinder
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.tags.s3.S3Tags
 
