@@ -484,10 +484,10 @@ class StorageManifestServiceTest
   )(
     implicit bucket: Bucket
   ): (S3ObjectLocationPrefix, Bag) = {
-    val (bagRoot, _) = bagBuilder.storeBagWith(
+    val (bagRoot, _) = bagBuilder.storeS3BagWith(
       space = space,
       version = version
-    )(namespace = bucket, primaryBucket = bucket)
+    )
 
     (
       bagRoot,
