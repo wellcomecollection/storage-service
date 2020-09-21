@@ -48,7 +48,10 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     version: BagVersion = BagVersion(randomInt(from = 2, to = 10)),
     payloadFileCount: Int = randomInt(from = 5, to = 50)
-  )(implicit namespace: Namespace, primaryBucket: Bucket): (BagPrefix, BagInfo) = {
+  )(
+    implicit namespace: Namespace,
+    primaryBucket: Bucket
+  ): (BagPrefix, BagInfo) = {
 
     val bagContents = createBagContentsWith(
       space = space,

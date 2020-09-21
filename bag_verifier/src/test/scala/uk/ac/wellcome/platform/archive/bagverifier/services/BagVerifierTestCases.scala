@@ -80,7 +80,9 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     externalIdentifier: ExternalIdentifier,
     bagBuilder: BagBuilder[BagLocation, BagPrefix, Namespace] = bagBuilder,
     version: BagVersion = BagVersion(randomInt(from = 2, to = 10))
-  )(testWith: TestWith[(Bucket, BagPrefix), R])(implicit namespace: Namespace): R =
+  )(
+    testWith: TestWith[(Bucket, BagPrefix), R]
+  )(implicit namespace: Namespace): R =
     withTypedStore { implicit typedStore =>
       withLocalS3Bucket { implicit primaryBucket =>
         val (bagRoot, _) = bagBuilder.storeBagWith(

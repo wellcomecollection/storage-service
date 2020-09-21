@@ -107,7 +107,7 @@ class BagRegisterWorkerTest
     withLocalS3Bucket { implicit bucket =>
       val (bagRoot, bagInfo) = storeS3BagWith(
         space = space,
-        version = version,
+        version = version
       )
 
       val primaryLocation = PrimaryS3ReplicaLocation(prefix = bagRoot)
