@@ -39,7 +39,6 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
-import uk.ac.wellcome.storage.store.s3.S3TypedStore
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -140,20 +139,11 @@ trait BagRegisterFixtures
     dataFileCount: Int = randomInt(1, 15)
   )(
     implicit bucket: Bucket
-  ): (S3ObjectLocationPrefix, BagInfo) = {
-    implicit val typedStore: S3TypedStore[String] =
-      S3TypedStore[String]
-
-    val bagContents =
-      createBagContentsWith(
-        space = space,
-        externalIdentifier = externalIdentifier,
-        version = version,
-        payloadFileCount = dataFileCount
-      )(namespace = bucket, primaryBucket = bucket)
-
-    storeBagContents(bagContents)
-
-    (bagContents.bagRoot, bagContents.bagInfo)
-  }
+  ): (S3ObjectLocationPrefix, BagInfo) =
+    storeBagWith(
+      space = space,
+      externalIdentifier = externalIdentifier,
+      version = version,
+      payloadFileCount = dataFileCount
+    )(namespace = bucket, primaryBucket = bucket)
 }

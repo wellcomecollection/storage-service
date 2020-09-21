@@ -46,12 +46,14 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
   def storeBagWith(
     space: StorageSpace = createStorageSpace,
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
+    version: BagVersion = BagVersion(randomInt(from = 2, to = 10)),
     payloadFileCount: Int = randomInt(from = 5, to = 50)
   )(namespace: Namespace, primaryBucket: Bucket): (BagPrefix, BagInfo) = {
 
     val bagContents = createBagContentsWith(
       space = space,
       externalIdentifier = externalIdentifier,
+      version = version,
       payloadFileCount = payloadFileCount
     )(namespace, primaryBucket)
 
@@ -59,6 +61,7 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
 
     (bagContents.bagRoot, bagContents.bagInfo)
   }
+
   def storeBagContents(bagContents: BagContents)(
     implicit typedStore: TypedStore[BagLocation, String]
   ): Unit = {
