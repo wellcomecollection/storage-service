@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 This is a script to track the Azure replicator progress of Chemist & Druggist,
 which has ~1M files in the bag.
@@ -13,6 +13,7 @@ If the script fails, run `az login` to authenticate with Azure.
 import datetime
 import json
 import subprocess
+import sys
 
 
 def exists_in_azure(filename):
@@ -63,15 +64,22 @@ def get_chemist_and_druggist_files():
 
 
 def find_last_replicated_file(files):
-    start = 0
-    end = len(files)
+    iterations = 0
 
-    assert len(files[start:end]) == len(files)
+    try:
+        start = int(sys.argv[1]) - 1  # How far did it get last time?
+    except IndexError:
+        start = 0
+        assert len(files[start:end]) == len(files)
+
+    end = len(files)
 
     while start != end and start != end - 1:
         midpoint = int((start + end) / 2)
         filename = files[midpoint]
         does_it_exist_yet = exists_in_azure(filename)
+
+        iterations += 1
 
         if does_it_exist_yet:
             print("✅", filename)
@@ -79,6 +87,9 @@ def find_last_replicated_file(files):
         else:
             print("❌", filename)
             end = midpoint
+
+    if iterations > 1:
+        print(f"Found in {iterations} steps")
 
     return start, files[start]
 
@@ -107,5 +118,5 @@ if __name__ == "__main__":
     print("")
     print(
         f"This means {round(position/len(files)*100, 1)}% "
-        f"({position}/{len(files)}) of files have been replicated"
+        f"({position} / {len(files)}) of files have been replicated"
     )
