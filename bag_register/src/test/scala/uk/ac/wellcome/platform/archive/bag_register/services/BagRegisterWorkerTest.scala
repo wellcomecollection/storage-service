@@ -29,17 +29,17 @@ class BagRegisterWorkerTest
     val createdAfterDate = Instant.now()
     val space = createStorageSpace
     val version = createBagVersion
-    val dataFileCount = randomInt(1, 15)
+    val payloadFileCount = randomInt(1, 15)
 
     val ingests = new MemoryMessageSender()
 
     val storageManifestDao = createStorageManifestDao()
 
     withLocalS3Bucket { implicit bucket =>
-      val (bagRoot, bagInfo) = createRegisterBagWith(
+      val (bagRoot, bagInfo) = storeS3BagWith(
         space = space,
-        dataFileCount = dataFileCount,
-        version = version
+        version = version,
+        payloadFileCount = payloadFileCount
       )
 
       val primaryLocation = PrimaryS3ReplicaLocation(prefix = bagRoot)
@@ -78,7 +78,7 @@ class BagRegisterWorkerTest
 
       storageManifest.space shouldBe bagId.space
       storageManifest.info shouldBe bagInfo
-      storageManifest.manifest.files should have size dataFileCount
+      storageManifest.manifest.files should have size payloadFileCount
 
       storageManifest.location shouldBe PrimaryS3StorageLocation(
         prefix = bagRoot
@@ -105,9 +105,9 @@ class BagRegisterWorkerTest
     val registrationNotifications = new MemoryMessageSender()
 
     withLocalS3Bucket { implicit bucket =>
-      val (bagRoot, bagInfo) = createRegisterBagWith(
+      val (bagRoot, bagInfo) = storeS3BagWith(
         space = space,
-        version = version
+        version = version,
       )
 
       val primaryLocation = PrimaryS3ReplicaLocation(prefix = bagRoot)
@@ -157,15 +157,15 @@ class BagRegisterWorkerTest
     val externalIdentifier = createExternalIdentifier
 
     withLocalS3Bucket { implicit bucket =>
-      val (bagRoot1, bagInfo1) = createRegisterBagWith(
-        externalIdentifier = externalIdentifier,
+      val (bagRoot1, bagInfo1) = storeS3BagWith(
         space = space,
+        externalIdentifier = externalIdentifier,
         version = version1
       )
 
-      val (bagRoot2, _) = createRegisterBagWith(
-        externalIdentifier = externalIdentifier,
+      val (bagRoot2, _) = storeS3BagWith(
         space = space,
+        externalIdentifier = externalIdentifier,
         version = version2
       )
 
@@ -236,7 +236,7 @@ class BagRegisterWorkerTest
     val storageManifestDao = createStorageManifestDao()
 
     withLocalS3Bucket { implicit bucket =>
-      val (bagRoot, bagInfo) = createRegisterBagWith(
+      val (bagRoot, bagInfo) = storeS3BagWith(
         space = space,
         version = version
       )

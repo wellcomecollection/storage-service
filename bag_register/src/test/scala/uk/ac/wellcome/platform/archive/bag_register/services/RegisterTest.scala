@@ -31,7 +31,7 @@ class RegisterTest
     val version = createBagVersion
 
     withLocalS3Bucket { implicit bucket =>
-      val (bagRoot, bagInfo) = createRegisterBagWith(
+      val (bagRoot, bagInfo) = storeS3BagWith(
         space = space,
         version = version
       )

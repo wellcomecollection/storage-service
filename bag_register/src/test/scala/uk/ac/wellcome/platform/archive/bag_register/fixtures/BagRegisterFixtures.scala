@@ -17,27 +17,15 @@ import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{
   StorageManifestDaoFixture
 }
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagInfo,
-  BagVersion,
-  ExternalIdentifier
-}
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures._
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
-import uk.ac.wellcome.platform.archive.common.generators.{
-  ExternalIdentifierGenerators,
-  StorageSpaceGenerators
-}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
   IngestID,
   IngestStatusUpdate
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -49,10 +37,8 @@ trait BagRegisterFixtures
     with OperationFixtures
     with StorageManifestDaoFixture
     with IngestUpdateAssertions
-    with ExternalIdentifierGenerators
     with BagTrackerFixtures
     with StringNamespaceFixtures
-    with StorageSpaceGenerators
     with S3BagBuilder {
 
   type Fixtures = (
@@ -131,19 +117,4 @@ trait BagRegisterFixtures
       ingestFailed.status shouldBe Ingest.Failed
       ingestFailed.events.head.description shouldBe "Register failed"
     }
-
-  def createRegisterBagWith(
-    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
-    space: StorageSpace,
-    version: BagVersion,
-    dataFileCount: Int = randomInt(1, 15)
-  )(
-    implicit bucket: Bucket
-  ): (S3ObjectLocationPrefix, BagInfo) =
-    storeBagWith(
-      space = space,
-      externalIdentifier = externalIdentifier,
-      version = version,
-      payloadFileCount = dataFileCount
-    )(namespace = bucket, primaryBucket = bucket)
 }
