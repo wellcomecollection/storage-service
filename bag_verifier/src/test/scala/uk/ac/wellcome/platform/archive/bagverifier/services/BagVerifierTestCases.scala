@@ -80,19 +80,17 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     externalIdentifier: ExternalIdentifier,
     bagBuilder: BagBuilder[BagLocation, BagPrefix, Namespace] = bagBuilder,
     version: BagVersion = BagVersion(randomInt(from = 2, to = 10))
-  )(namespace: Namespace)(testWith: TestWith[(Bucket, BagPrefix), R]): R =
+  )(testWith: TestWith[(Bucket, BagPrefix), R])(implicit namespace: Namespace): R =
     withTypedStore { implicit typedStore =>
       withLocalS3Bucket { implicit primaryBucket =>
-        val bagContents = bagBuilder.createBagContentsWith(
+        val (bagRoot, _) = bagBuilder.storeBagWith(
           space = space,
           externalIdentifier = externalIdentifier,
           payloadFileCount = payloadFileCount,
           version = version
-        )(namespace = namespace, primaryBucket = primaryBucket)
+        )
 
-        bagBuilder.storeBagContents(bagContents)
-
-        testWith((primaryBucket, bagContents.bagRoot))
+        testWith((primaryBucket, bagRoot))
       }
     }
 
@@ -136,8 +134,8 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
   it("passes a bag with correct checksum values") {
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
-    withNamespace { namespace =>
-      withBag(space, externalIdentifier)(namespace) {
+    withNamespace { implicit namespace =>
+      withBag(space, externalIdentifier) {
         case (primaryBucket, bagRoot) =>
           val ingestStep =
             withBagContext(bagRoot) { bagContext =>
@@ -296,8 +294,8 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     val payloadExternalIdentifier =
       ExternalIdentifier(externalIdentifier + "_payload")
 
-    withNamespace { namespace =>
-      withBag(space, bagInfoExternalIdentifier)(namespace) {
+    withNamespace { implicit namespace =>
+      withBag(space, bagInfoExternalIdentifier) {
         case (primaryBucket, bagRoot) =>
           val ingestStep =
             withBagContext(bagRoot) { bagContext =>
@@ -550,8 +548,8 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
       val space = createStorageSpace
       val externalIdentifier = createExternalIdentifier
 
-      withNamespace { namespace =>
-        withBag(space, externalIdentifier)(namespace) {
+      withNamespace { implicit namespace =>
+        withBag(space, externalIdentifier) {
           case (primaryBucket, bagRoot) =>
             val location = bagRoot.asLocation("tagmanifest-sha512.txt")
             writeFile(location)
@@ -655,14 +653,12 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
 
-    withNamespace { namespace =>
+    withNamespace { implicit namespace =>
       //put a bag in $space/$externalIdentifier/v1
-      withBag(space, externalIdentifier, version = BagVersion(1))(namespace) {
+      withBag(space, externalIdentifier, version = BagVersion(1)) {
         case (primaryBucket, bagRoot) =>
           //put another version of the bag in $space/$externalIdentifier/v10
-          withBag(space, externalIdentifier, version = BagVersion(10))(
-            namespace
-          ) { _ =>
+          withBag(space, externalIdentifier, version = BagVersion(10)) { _ =>
             val ingestStep =
               withBagContext(bagRoot) { bagContext =>
                 withVerifier(primaryBucket) {
@@ -737,8 +733,8 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
 
-    withNamespace { namespace =>
-      withBag(space, externalIdentifier, bagBuilder = badBuilder)(namespace) {
+    withNamespace { implicit namespace =>
+      withBag(space, externalIdentifier, bagBuilder = badBuilder) {
         case (primaryBucket, bagRoot) =>
           val ingestStep =
             withBagContext(bagRoot) { bagContext =>

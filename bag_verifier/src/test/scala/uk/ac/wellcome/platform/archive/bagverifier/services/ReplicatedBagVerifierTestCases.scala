@@ -51,9 +51,9 @@ trait ReplicatedBagVerifierTestCases[
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
 
-    withNamespace { namespace =>
+    withNamespace { implicit namespace =>
       withLocalS3Bucket { srcBucket =>
-        withBag(space, externalIdentifier)(namespace) {
+        withBag(space, externalIdentifier) {
           case (primaryBucket, replicaBagRoot) =>
             val srcBagRoot =
               S3ObjectLocationPrefix(srcBucket.name, replicaBagRoot.pathPrefix)
@@ -88,9 +88,9 @@ trait ReplicatedBagVerifierTestCases[
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
 
-    withNamespace { namespace =>
+    withNamespace { implicit namespace =>
       withLocalS3Bucket { srcBucket =>
-        withBag(space, externalIdentifier)(namespace) {
+        withBag(space, externalIdentifier) {
           case (primaryBucket, replicaBagRoot) =>
             val srcBagRoot =
               S3ObjectLocationPrefix(srcBucket.name, replicaBagRoot.pathPrefix)
