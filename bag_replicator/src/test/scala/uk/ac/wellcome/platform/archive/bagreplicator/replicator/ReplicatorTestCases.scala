@@ -83,7 +83,6 @@ trait ReplicatorTestCases[
   def createDstPrefixWith(dstNamespace: DstNamespace): DstPrefix
 
   val srcTags: Tags[S3ObjectLocation] = new S3Tags()
-  val dstTags: Tags[DstLocation]
 
   val srcStringStore: TypedStore[S3ObjectLocation, String] =
     S3TypedStore[String]
@@ -297,46 +296,6 @@ trait ReplicatorTestCases[
 
     result shouldBe a[ReplicationFailed[_]]
     result.summary.maybeEndTime.isDefined shouldBe true
-  }
-
-  // The verifier will write a Content-SHA256 checksum tag to objects when it
-  // verifies them.  If an object is then replicated to a new location, any existing
-  // verification tags should be removed.
-  it("doesn't copy tags from the existing objects") {
-    withSrcNamespace { srcNamespace =>
-      withDstNamespace { dstNamespace =>
-        val location = createSrcLocationWith(srcNamespace)
-
-        putSrcObject(location, contents = randomAlphanumeric)
-        srcTags.update(location) { existingTags =>
-          Right(existingTags ++ Map("Content-SHA256" -> "abcdef"))
-        }
-
-        val request = ReplicationRequest(
-          srcPrefix = createSrcPrefixWith(srcNamespace),
-          dstPrefix = createDstPrefixWith(dstNamespace)
-        )
-
-        val result = withReplicator {
-          _.replicate(
-            ingestId = createIngestID,
-            request = request
-          )
-        }
-
-        result shouldBe a[ReplicationSucceeded[_]]
-
-        val dstLocation = createDstLocationWith(
-          dstNamespace,
-          path = location.key
-        )
-
-        dstTags.get(dstLocation).right.value shouldBe Identified(
-          dstLocation,
-          Map.empty
-        )
-      }
-    }
   }
 
   describe(

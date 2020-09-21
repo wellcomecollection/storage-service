@@ -14,8 +14,6 @@ import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.listing.azure.AzureBlobLocationListing
 import uk.ac.wellcome.storage.store.azure.AzureTypedStore
 import uk.ac.wellcome.storage.streaming.Codec._
-import uk.ac.wellcome.storage.tags.Tags
-import uk.ac.wellcome.storage.tags.azure.AzureBlobMetadata
 
 class AzureReplicatorTest
     extends ReplicatorTestCases[
@@ -63,7 +61,6 @@ class AzureReplicatorTest
   override val dstStringStore: AzureTypedStore[String] =
     AzureTypedStore[String]
 
-  override val dstTags: Tags[AzureBlobLocation] = new AzureBlobMetadata()
   override val dstListing: Listing[AzureBlobLocationPrefix, AzureBlobLocation] =
     AzureBlobLocationListing()
 }
