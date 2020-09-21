@@ -4,10 +4,11 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.storage.StorageError
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import uk.ac.wellcome.storage.services.s3.S3ObjectExists
 
 class S3ObjectExistsTest extends AnyFunSpec with Matchers with S3Fixtures {
 
-  import S3ObjectExists._
+  import uk.ac.wellcome.storage.services.s3.S3ObjectExists._
 
   describe("S3ObjectExists") {
     describe("when an object exists in S3") {
