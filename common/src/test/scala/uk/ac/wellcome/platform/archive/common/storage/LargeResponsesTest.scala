@@ -5,7 +5,12 @@ import java.util.UUID
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.headers.{ETag, Location}
-import akka.http.scaladsl.model.{HttpHeader, HttpRequest, HttpResponse, StatusCodes}
+import akka.http.scaladsl.model.{
+  HttpHeader,
+  HttpRequest,
+  HttpResponse,
+  StatusCodes
+}
 import akka.http.scaladsl.server.Directives._
 import akka.stream.Materializer
 import akka.stream.scaladsl.StreamConverters

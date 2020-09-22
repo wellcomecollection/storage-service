@@ -10,7 +10,10 @@ import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.listing.azure.AzureBlobLocationListing
 import uk.ac.wellcome.storage.store.azure.AzureTypedStore
 import uk.ac.wellcome.storage.streaming.Codec._
-import uk.ac.wellcome.storage.transfer.azure.{AzurePrefixTransfer, AzurePutBlockTransfer}
+import uk.ac.wellcome.storage.transfer.azure.{
+  AzurePrefixTransfer,
+  AzurePutBlockTransfer
+}
 
 class AzureReplicatorTest
     extends ReplicatorTestCases[

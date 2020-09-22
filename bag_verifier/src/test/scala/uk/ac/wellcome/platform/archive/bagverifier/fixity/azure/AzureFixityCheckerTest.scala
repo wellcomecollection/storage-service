@@ -4,8 +4,14 @@ import java.net.URI
 
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{FixityChecker, FixityCheckerTagsTestCases}
-import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.{AzureLocatable, AzureResolvable}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  FixityChecker,
+  FixityCheckerTagsTestCases
+}
+import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.{
+  AzureLocatable,
+  AzureResolvable
+}
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container

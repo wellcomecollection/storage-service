@@ -4,7 +4,12 @@ import java.net.URI
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Locatable._
-import uk.ac.wellcome.platform.archive.bagverifier.storage.{Locatable, LocationError, LocationNotFound, LocationParsingError}
+import uk.ac.wellcome.platform.archive.bagverifier.storage.{
+  Locatable,
+  LocationError,
+  LocationNotFound,
+  LocationParsingError
+}
 import uk.ac.wellcome.platform.archive.common.verify._
 import uk.ac.wellcome.storage.services.SizeFinder
 import uk.ac.wellcome.storage.store.Readable

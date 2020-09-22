@@ -7,10 +7,16 @@ import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import uk.ac.wellcome.monitoring.typesafe.CloudWatchBuilder
-import uk.ac.wellcome.platform.archive.bag_tracker.client.{AkkaBagTrackerClient, BagTrackerClient}
+import uk.ac.wellcome.platform.archive.bag_tracker.client.{
+  AkkaBagTrackerClient,
+  BagTrackerClient
+}
 import uk.ac.wellcome.platform.archive.common.config.builders._
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
-import uk.ac.wellcome.platform.archive.common.http.{HttpMetrics, WellcomeHttpApp}
+import uk.ac.wellcome.platform.archive.common.http.{
+  HttpMetrics,
+  WellcomeHttpApp
+}
 import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.services.s3.S3Uploader
 import uk.ac.wellcome.storage.typesafe.S3Builder

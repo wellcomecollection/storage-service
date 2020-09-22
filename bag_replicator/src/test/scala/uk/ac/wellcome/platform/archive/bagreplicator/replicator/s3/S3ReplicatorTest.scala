@@ -2,7 +2,10 @@ package uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3
 
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.ReplicatorTestCases
-import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{ReplicationRequest, ReplicationSucceeded}
+import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
+  ReplicationRequest,
+  ReplicationSucceeded
+}
 import uk.ac.wellcome.storage.Identified
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket

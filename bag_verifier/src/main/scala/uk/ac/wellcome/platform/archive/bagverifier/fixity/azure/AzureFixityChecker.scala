@@ -4,13 +4,19 @@ import java.net.URI
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.azure.storage.blob.BlobServiceClient
-import uk.ac.wellcome.platform.archive.bagverifier.fixity.{ExpectedFileFixity, FixityChecker}
+import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
+  ExpectedFileFixity,
+  FixityChecker
+}
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Locatable
 import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.AzureLocatable
 import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.dynamo.DynamoConfig
 import uk.ac.wellcome.storage.services.SizeFinder
-import uk.ac.wellcome.storage.services.azure.{AzureLargeStreamReader, AzureSizeFinder}
+import uk.ac.wellcome.storage.services.azure.{
+  AzureLargeStreamReader,
+  AzureSizeFinder
+}
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.tags.Tags
