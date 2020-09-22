@@ -70,7 +70,6 @@ def find_last_replicated_file(files):
         start = int(sys.argv[1]) - 1  # How far did it get last time?
     except IndexError:
         start = 0
-        assert len(files[start:end]) == len(files)
 
     end = len(files)
 
