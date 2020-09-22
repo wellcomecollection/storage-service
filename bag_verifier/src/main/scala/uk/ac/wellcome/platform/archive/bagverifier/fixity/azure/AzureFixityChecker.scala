@@ -10,13 +10,13 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
 }
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Locatable
 import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.AzureLocatable
-import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
-import uk.ac.wellcome.platform.archive.common.storage.services.azure.{
+import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import uk.ac.wellcome.storage.dynamo.DynamoConfig
+import uk.ac.wellcome.storage.services.SizeFinder
+import uk.ac.wellcome.storage.services.azure.{
   AzureLargeStreamReader,
   AzureSizeFinder
 }
-import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
-import uk.ac.wellcome.storage.dynamo.DynamoConfig
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.tags.Tags

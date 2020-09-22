@@ -19,7 +19,6 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.azure.AzureRepli
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
-import uk.ac.wellcome.platform.archive.bagreplicator.storage.azure.AzurePutBlockFromUrlTransfer
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
@@ -37,6 +36,7 @@ import uk.ac.wellcome.storage.locking.dynamo.{
   DynamoLockingService
 }
 import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
+import uk.ac.wellcome.storage.transfer.azure.AzurePutBlockFromUrlTransfer
 import uk.ac.wellcome.storage.typesafe.{DynamoLockDaoBuilder, S3Builder}
 import uk.ac.wellcome.storage.{Location, Prefix}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp

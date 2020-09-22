@@ -10,6 +10,7 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
+import uk.ac.wellcome.storage.services.s3.S3Uploader
 
 import scala.concurrent.duration._
 import scala.io.Source

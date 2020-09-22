@@ -13,7 +13,6 @@ import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   LocateFailure,
   LocationParsingError
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.SizeFinder
 import uk.ac.wellcome.platform.archive.common.verify.{
   Checksum,
   ChecksumValue,
@@ -24,6 +23,7 @@ import uk.ac.wellcome.storage.providers.memory.{
   MemoryLocation,
   MemoryLocationPrefix
 }
+import uk.ac.wellcome.storage.services.SizeFinder
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore}
 import uk.ac.wellcome.storage.streaming.Codec.stringCodec
 import uk.ac.wellcome.storage.streaming.{Codec, InputStreamWithLength}

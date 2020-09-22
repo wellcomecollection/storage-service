@@ -4,12 +4,12 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.S3ObjectSummary
 import com.azure.storage.blob.BlobServiceClient
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.Replicator
-import uk.ac.wellcome.platform.archive.bagreplicator.storage.azure.{
+import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import uk.ac.wellcome.storage.listing.azure.AzureBlobLocationListing
+import uk.ac.wellcome.storage.transfer.azure.{
   AzurePrefixTransfer,
   AzureTransfer
 }
-import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
-import uk.ac.wellcome.storage.listing.azure.AzureBlobLocationListing
 
 class AzureReplicator(
   transfer: AzureTransfer[_]

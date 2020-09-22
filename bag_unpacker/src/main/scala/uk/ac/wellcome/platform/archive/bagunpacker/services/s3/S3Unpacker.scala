@@ -8,9 +8,9 @@ import uk.ac.wellcome.platform.archive.bagunpacker.services.{
   UnpackerError,
   UnpackerStorageError
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.s3.S3LargeStreamReader
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import uk.ac.wellcome.storage.services.s3.S3LargeStreamReader
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.store.{Readable, Writable}
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
