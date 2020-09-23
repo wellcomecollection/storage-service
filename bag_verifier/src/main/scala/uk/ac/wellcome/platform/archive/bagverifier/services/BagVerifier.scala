@@ -133,9 +133,8 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
         )
       )
 
-      _ <- verifyLegalFilenames(
-        bag.manifest.entries.map { case (path, _) => path.value }.toSeq
-      )
+      filenames = (bag.manifest.entries ++ bag.tagManifest.entries).map { case (path, _) => path.value }
+      _ <- verifyLegalFilenames(filenames.toSeq)
 
       verificationResult <- verifyChecksumAndSize(
         root = root,
