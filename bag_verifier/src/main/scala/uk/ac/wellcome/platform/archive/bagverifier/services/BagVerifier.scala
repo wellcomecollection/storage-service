@@ -52,6 +52,7 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
     with VerifyExternalIdentifier
     with VerifyFetch[BagLocation, BagPrefix]
     with VerifyPayloadOxum
+    with VerifyLegalFilenames
     with VerifyNoUnreferencedFiles[BagLocation, BagPrefix] {
 
   val bagReader: BagReader[BagLocation, BagPrefix]
@@ -130,6 +131,10 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
           bucket = primaryBucket,
           keyPrefix = s"$space/$externalIdentifier"
         )
+      )
+
+      _ <- verifyLegalFilenames(
+        bag.manifest.entries.map { case (path, _) => path.value }.toSeq
       )
 
       verificationResult <- verifyChecksumAndSize(

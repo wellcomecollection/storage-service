@@ -613,9 +613,22 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     }
   }
 
-  it(
-    "doesn't match locations in a namespace with same prefix but different directory"
-  ) {
+  it("fails if the bag has illegal filenames") {
+    val badBuilder = new BagBuilderImpl {
+      override protected def randomPath: _root_.scala.Predef.String =
+        super.randomPath + "."
+    }
+
+    assertBagResultFails(badBuilder) { result =>
+      result.summary shouldBe a[VerificationIncompleteSummary]
+
+      val summary = result.summary.asInstanceOf[VerificationIncompleteSummary]
+
+      summary.e.getMessage should startWith("Filenames cannot end with a .:")
+    }
+  }
+
+  it("skips locations in a namespace with same prefix but different directory") {
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
 
