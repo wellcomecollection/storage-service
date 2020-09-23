@@ -39,7 +39,8 @@ class FixityListChecker[BagLocation <: Location, BagPrefix <: Prefix[
       // In most cases this won't make any difference to the result; for really
       // large bags it gives us a way to speed up verification.
       case Right(expectedFileFixities: Seq[ExpectedFileFixity]) =>
-        Random.shuffle(expectedFileFixities)
+        Random
+          .shuffle(expectedFileFixities)
           .map {
             case f: FetchFileFixity => fetchEntriesFixityChecker.check(f)
             case d: DataDirectoryFileFixity =>
