@@ -4,12 +4,17 @@ import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
-class VerifyLegalFilenamesTest extends AnyFunSpec with Matchers with EitherValues {
+class VerifyLegalFilenamesTest
+    extends AnyFunSpec
+    with Matchers
+    with EitherValues {
   val verifier: VerifyLegalFilenames =
     new VerifyLegalFilenames {}
 
   it("allows legal filenames") {
-    verifier.verifyLegalFilenames(Seq("cat.jpg", "dog.png", "fish.gif")) shouldBe Right(())
+    verifier.verifyLegalFilenames(Seq("cat.jpg", "dog.png", "fish.gif")) shouldBe Right(
+      ()
+    )
   }
 
   it("flags a file with a trailing dot") {
@@ -19,8 +24,13 @@ class VerifyLegalFilenamesTest extends AnyFunSpec with Matchers with EitherValue
   }
 
   it("flags multiple files with a trailing dot") {
-    val err = verifier.verifyLegalFilenames(Seq("bad.jpg.", "alsobad.png.", "good.tif")).left.value
+    val err = verifier
+      .verifyLegalFilenames(Seq("bad.jpg.", "alsobad.png.", "good.tif"))
+      .left
+      .value
     err.e.getMessage shouldBe "Filenames cannot end with a .: bad.jpg., alsobad.png."
-    err.userMessage shouldBe Some("Filenames cannot end with a .: bad.jpg., alsobad.png.")
+    err.userMessage shouldBe Some(
+      "Filenames cannot end with a .: bad.jpg., alsobad.png."
+    )
   }
 }

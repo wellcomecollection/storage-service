@@ -631,9 +631,13 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
 
     it("fails if the tag manifest has illegal filenames") {
       val badBuilder = new BagBuilderImpl {
-        override protected def createTagManifest(entries: Seq[ManifestFile]): Option[String] =
+        override protected def createTagManifest(
+          entries: Seq[ManifestFile]
+        ): Option[String] =
           super.createTagManifest(
-            entries.map { file => file.copy(name = file.name + ".") }
+            entries.map { file =>
+              file.copy(name = file.name + ".")
+            }
           )
       }
 
