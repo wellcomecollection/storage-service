@@ -5,8 +5,8 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
 class VerifyLegalFilenamesTest extends AnyFunSpec with Matchers with EitherValues {
-  val verifier: VerifyLegalFilenames[String] =
-    (location: String) => location
+  val verifier: VerifyLegalFilenames =
+    new VerifyLegalFilenames {}
 
   it("allows legal filenames") {
     verifier.verifyLegalFilenames(Seq("cat.jpg", "dog.png", "fish.gif")) shouldBe Right(())

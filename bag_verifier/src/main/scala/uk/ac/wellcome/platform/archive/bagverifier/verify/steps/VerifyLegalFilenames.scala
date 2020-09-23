@@ -2,10 +2,8 @@ package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
 
-trait VerifyLegalFilenames[BagLocation] {
-  def verifyLegalFilenames(locations: Seq[BagLocation]): Either[BagVerifierError, Unit] = {
-    val filenames = locations.map { filename }
-
+trait VerifyLegalFilenames {
+  def verifyLegalFilenames(filenames: Seq[String]): Either[BagVerifierError, Unit] = {
     // Azure blob storage does not support blob names that end with a `.`
     // See https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#resource-names
     val endsWithADot = filenames.filter { _.endsWith(".") }
@@ -31,6 +29,4 @@ trait VerifyLegalFilenames[BagLocation] {
       case message => Left(BagVerifierError(message))
     }
   }
-
-  def filename(location: BagLocation): String
 }
