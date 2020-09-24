@@ -42,6 +42,7 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
   )(namespace: Namespace): BagPrefix
 
   def createBagLocation(bagRoot: BagPrefix, path: String): BagLocation
+
   def storeBagWith(
     space: StorageSpace = createStorageSpace,
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
@@ -292,7 +293,7 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
     }
   }
 
-  private def randomPath: String =
+  protected def randomPath: String =
     (1 to randomInt(from = 1, to = 5))
       .map { _ =>
         randomAlphanumeric
