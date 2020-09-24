@@ -40,10 +40,9 @@ module "service" {
 
   target_group_arn = var.target_group_arn
 
-  tags = {
-    "deployment:service" = var.deployment_service_name
-    "deployment:env"     = var.deployment_service_env
-  }
+  deployment_service = var.deployment_service_name
+  deployment_env     = var.deployment_service_env
+  deployment_label   = "initial"
 
   container_name = var.container_name
   container_port = var.container_port
