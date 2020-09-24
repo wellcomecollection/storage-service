@@ -37,14 +37,15 @@ def get_chemist_and_druggist_files():
 
 def get_verified_files(files):
     for batch in tqdm.tqdm(
-        chunked_iterable(files, size=100),
-        total=int(math.ceil(len(files) / 100))
+        chunked_iterable(files, size=100), total=int(math.ceil(len(files) / 100))
     ):
         resp = dynamodb.batch_get_item(
             RequestItems={
-                'storage-prod_azure_verifier_tags': {
-                    'Keys': [
-                        {'id': f'azure://wellcomecollection-storage-replica-netherlands/digitised/b19974760/v1/{filename}'}
+                "storage-prod_azure_verifier_tags": {
+                    "Keys": [
+                        {
+                            "id": f"azure://wellcomecollection-storage-replica-netherlands/digitised/b19974760/v1/{filename}"
+                        }
                         for filename in batch
                     ]
                 }
@@ -52,7 +53,11 @@ def get_verified_files(files):
         )
 
         for item in resp["Responses"]["storage-prod_azure_verifier_tags"]:
-            yield item["id"][len('azure://wellcomecollection-storage-replica-netherlands/digitised/b19974760/v1/'):]
+            yield item["id"][
+                len(
+                    "azure://wellcomecollection-storage-replica-netherlands/digitised/b19974760/v1/"
+                ) :
+            ]
 
 
 if __name__ == "__main__":
