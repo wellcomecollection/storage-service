@@ -45,6 +45,7 @@ import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.util.Try
+import scala.concurrent.duration._
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
@@ -117,11 +118,17 @@ object Main extends WellcomeTypesafeApp {
           new BlobServiceClientBuilder()
             .endpoint(config.requireString("azure.endpoint"))
             .buildClient()
+        // The max length you can put in a single Put Block from URL API call is 100 MiB.
+        // The class will load a block of this size into memory, so setting it too
+        // high may cause issues.
+        val blockSize: Long = 100000000L
 
+        //Some objects can big so we need to set a high validity for the s3 URL
+        val s3UrlValidity = 12 hours
         createBagReplicatorWorker(
           lockingService = createLockingService[AzureBlobLocationPrefix],
           replicator = new AzureReplicator(
-            transfer = new AzurePutBlockFromUrlTransfer()
+            transfer = AzurePutBlockFromUrlTransfer(s3UrlValidity, blockSize)
           )
         )
     }
