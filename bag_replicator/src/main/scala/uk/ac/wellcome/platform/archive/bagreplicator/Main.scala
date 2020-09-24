@@ -123,7 +123,7 @@ object Main extends WellcomeTypesafeApp {
         // high may cause issues.
         val blockSize: Long = 100000000L
 
-        //Some objects can big so we need to set a high validity for the s3 URL
+        //Some objects can big, and take a long time to transfer, so we need to set a high validity for the s3 URL
         val s3UrlValidity = 12 hours
         createBagReplicatorWorker(
           lockingService = createLockingService[AzureBlobLocationPrefix],
