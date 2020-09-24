@@ -125,12 +125,12 @@ object Main extends WellcomeTypesafeApp {
 
         //Some objects can big, and take a long time to transfer, so we need to set a high validity for the s3 URL
         val s3UrlValidity = 12 hours
-        createBagReplicatorWorker(
-          lockingService = createLockingService[AzureBlobLocationPrefix],
-          replicator = new AzureReplicator(
-            transfer = AzurePutBlockFromUrlTransfer(s3UrlValidity, blockSize)
+          createBagReplicatorWorker(
+            lockingService = createLockingService[AzureBlobLocationPrefix],
+            replicator = new AzureReplicator(
+              transfer = AzurePutBlockFromUrlTransfer(s3UrlValidity, blockSize)
+            )
           )
-        )
     }
   }
 }
