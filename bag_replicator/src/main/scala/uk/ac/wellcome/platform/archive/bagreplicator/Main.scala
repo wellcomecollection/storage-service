@@ -7,7 +7,11 @@ import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSConfig
-import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.typesafe.{
+  AlpakkaSqsWorkerConfigBuilder,
+  CloudwatchMonitoringClientBuilder,
+  SQSBuilder
+}
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.Replicator
@@ -15,11 +19,22 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.azure.AzureRepli
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
-import uk.ac.wellcome.platform.archive.common.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{AmazonS3StorageProvider, AzureBlobStorageProvider, StorageProvider}
+import uk.ac.wellcome.platform.archive.common.config.builders.{
+  IngestUpdaterBuilder,
+  OperationNameBuilder,
+  OutgoingPublisherBuilder
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  AmazonS3StorageProvider,
+  AzureBlobStorageProvider,
+  StorageProvider
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
 import uk.ac.wellcome.storage.azure.AzureBlobLocationPrefix
-import uk.ac.wellcome.storage.locking.dynamo.{DynamoLockDao, DynamoLockingService}
+import uk.ac.wellcome.storage.locking.dynamo.{
+  DynamoLockDao,
+  DynamoLockingService
+}
 import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.transfer.azure.AzurePutBlockFromUrlTransfer
 import uk.ac.wellcome.storage.typesafe.{DynamoLockDaoBuilder, S3Builder}
@@ -69,11 +84,11 @@ object Main extends WellcomeTypesafeApp {
         DstLocation
       ]
     ](
-       lockingService: DynamoLockingService[IngestStepResult[
-         ReplicationSummary[DstPrefix]
-       ], Try],
-       replicator: Replicator[SrcLocation, DstLocation, DstPrefix]
-     ): BagReplicatorWorker[
+      lockingService: DynamoLockingService[IngestStepResult[
+        ReplicationSummary[DstPrefix]
+      ], Try],
+      replicator: Replicator[SrcLocation, DstLocation, DstPrefix]
+    ): BagReplicatorWorker[
       SNSConfig,
       SNSConfig,
       SrcLocation,
@@ -111,12 +126,12 @@ object Main extends WellcomeTypesafeApp {
 
         //Some objects can big, and take a long time to transfer, so we need to set a high validity for the s3 URL
         val s3UrlValidity = 12.hours
-          createBagReplicatorWorker(
-            lockingService = createLockingService[AzureBlobLocationPrefix],
-            replicator = new AzureReplicator(
-              transfer = AzurePutBlockFromUrlTransfer(s3UrlValidity, blockSize)
-            )
+        createBagReplicatorWorker(
+          lockingService = createLockingService[AzureBlobLocationPrefix],
+          replicator = new AzureReplicator(
+            transfer = AzurePutBlockFromUrlTransfer(s3UrlValidity, blockSize)
           )
+        )
     }
   }
 }
