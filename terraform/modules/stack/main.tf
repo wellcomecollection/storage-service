@@ -509,8 +509,7 @@ module "replicator_verifier_azure" {
   bag_verifier_mode    = "replica-azure"
 
   topic_arns = [
-    module.bag_versioner_output_topic.arn,
-    module.azure_backfill_topic.arn
+    module.bag_versioner_output_topic.arn
   ]
 
   verifier_environment = {
@@ -698,99 +697,4 @@ module "api" {
   ]
 
   static_content_bucket_name = var.static_content_bucket_name
-}
-
-# Backfill infra
-# TODO: delete everything under this comment once the azure migration is done
-
-resource "aws_lb" "backfill_nlb" {
-  name               = "${var.namespace}-api-nlb-backfill"
-  internal           = true
-  load_balancer_type = "network"
-  subnets            = var.private_subnets
-}
-
-module "bags_tracker_backfill" {
-  source = "../service/bags"
-
-  service_name = "${var.namespace}-tracker-backfill"
-
-  api_container_image     = local.image_ids["bags_api"]
-  tracker_container_image = local.image_ids["bag_tracker"]
-
-  api_environment = {
-    context_url           = "${var.api_url}/context.json"
-    app_base_url          = "${var.api_url}/storage/v1/bags"
-    vhs_bucket_name       = var.vhs_manifests_bucket_name_backfill
-    vhs_table_name        = var.vhs_manifests_table_name_backfill
-    metrics_namespace     = "${local.bags_api_service_name}_backfill"
-    responses_bucket_name = aws_s3_bucket.large_response_cache.id
-    bags_tracker_host     = "http://localhost:8080"
-  }
-
-  tracker_environment = {
-    vhs_bucket_name = var.vhs_manifests_bucket_name_backfill
-    vhs_table_name  = var.vhs_manifests_table_name_backfill
-  }
-
-  cpu    = 1024
-  memory = 2048
-
-  load_balancer_arn           = aws_lb.backfill_nlb.arn
-  load_balancer_listener_port = local.bags_listener_port
-
-  security_group_ids = [
-    aws_security_group.service_egress.id,
-    aws_security_group.interservice.id
-  ]
-
-  service_discovery_namespace_id = local.service_discovery_namespace_id
-
-  cluster_arn = aws_ecs_cluster.cluster.arn
-
-  use_fargate_spot = var.use_fargate_spot_for_api
-
-  subnets = var.private_subnets
-  vpc_id  = var.vpc_id
-
-  deployment_service_name = "bags-api-backfill"
-  deployment_service_env  = var.release_label
-}
-
-module "bag_register_backfill" {
-  source = "../service/worker"
-
-  cluster_name = aws_ecs_cluster.cluster.name
-  cluster_arn  = aws_ecs_cluster.cluster.arn
-
-  subnets      = var.private_subnets
-  service_name = "${var.namespace}-bag_register_backfill"
-
-  environment = {
-    queue_url               = module.bag_register_backfill_input_queue.url
-    archive_bucket          = var.replica_primary_bucket_name
-    ingest_topic_arn        = module.ingests_topic_backfill.arn
-    registrations_topic_arn = module.registered_bag_notifications_topic_backfill.arn
-    metrics_namespace       = "${local.bag_register_service_name}_backfill"
-    operation_name          = "register"
-    bags_tracker_host       = "http://${module.bags_tracker_backfill.name}.${var.namespace}:8080"
-    JAVA_OPTS               = local.java_opts_heap_size
-  }
-
-  min_capacity = var.min_capacity
-  max_capacity = var.max_capacity
-
-  container_image = local.image_ids["bag_register"]
-
-  security_group_ids = [
-    aws_security_group.interservice.id,
-    aws_security_group.service_egress.id,
-  ]
-
-  use_fargate_spot = true
-
-  service_discovery_namespace_id = local.service_discovery_namespace_id
-
-  deployment_service_name = "bag-register-backfill"
-  deployment_service_env  = var.release_label
 }

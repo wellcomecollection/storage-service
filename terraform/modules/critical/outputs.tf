@@ -91,29 +91,3 @@ output "azure_has_immutability_policy" {
 output "azure_has_legal_hold" {
   value = azurerm_storage_container.container.has_legal_hold
 }
-# Storage manifests VHS backfill
-# TODO: delete everything under this comment once the azure migration is done
-
-output "vhs_manifests_bucket_name_backfill" {
-  value = module.vhs_manifests_backfill.bucket_name
-}
-
-output "vhs_manifests_bucket_arn_backfill" {
-  value = module.vhs_manifests_backfill.bucket_arn
-}
-
-output "vhs_manifests_table_name_backfill" {
-  value = module.vhs_manifests_backfill.table_name
-}
-
-output "vhs_manifests_table_arn_backfill" {
-  value = module.vhs_manifests_backfill.table_arn
-}
-
-output "vhs_manifests_readonly_policy_backfill" {
-  value = module.vhs_manifests_backfill.read_policy
-}
-
-output "vhs_manifests_readwrite_policy_backfill" {
-  value = module.vhs_manifests_backfill.full_access_policy
-}

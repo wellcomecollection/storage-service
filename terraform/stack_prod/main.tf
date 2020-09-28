@@ -79,9 +79,5 @@ module "stack_prod" {
   bag_register_output_subscribe_principals = [local.catalogue_pipeline_account_principal]
 
   tags                                    = local.default_tags
-  vhs_manifests_bucket_name_backfill      = data.terraform_remote_state.critical_prod.outputs.vhs_manifests_bucket_name_backfill
-  vhs_manifests_table_name_backfill       = data.terraform_remote_state.critical_prod.outputs.vhs_manifests_table_name_backfill
-  vhs_manifests_readonly_policy_backfill  = data.terraform_remote_state.critical_prod.outputs.vhs_manifests_readonly_policy_backfill
-  vhs_manifests_readwrite_policy_backfill = data.terraform_remote_state.critical_prod.outputs.vhs_manifests_readwrite_policy_backfill
 }
 

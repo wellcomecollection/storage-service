@@ -30,7 +30,6 @@ module "critical" {
   tags = local.default_tags
 
   table_name          = "vhs-storage-manifests-2020-07-24"
-  backfill_table_name = "vhs-storage-manifests-2020-08-19"
 
   # This gives us another layer of protection for the S3 buckets.
   #
