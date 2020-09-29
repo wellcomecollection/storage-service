@@ -4,8 +4,8 @@ locals {
   staging_api_url     = "https://api-stage.wellcomecollection.org"
   staging_domain_name = "storage.api-stage.wellcomecollection.org"
 
-  vpc_id          = data.terraform_remote_state.infra_shared.outputs.storage_vpc_id
-  private_subnets = data.terraform_remote_state.infra_shared.outputs.storage_vpc_private_subnets
+  vpc_id          = local.storage_vpcs["storage_vpc_id"]
+  private_subnets = local.storage_vpcs["storage_vpc_private_subnets"]
 
   cert_domain_name = "storage.api.wellcomecollection.org"
 
