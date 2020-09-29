@@ -9,6 +9,21 @@ terraform {
   }
 }
 
+data "terraform_remote_state" "accounts_storage" {
+  backend = "s3"
+
+  config = {
+    role_arn = "arn:aws:iam::760097843905:role/platform-read_only"
+    bucket   = "wellcomecollection-platform-infra"
+    key      = "terraform/platform-infrastructure/accounts/storage.tfstate"
+    region   = "eu-west-1"
+  }
+}
+
+locals {
+  storage_vpcs = data.terraform_remote_state.accounts_storage.outputs
+}
+
 data "terraform_remote_state" "infra_shared" {
   backend = "s3"
 
