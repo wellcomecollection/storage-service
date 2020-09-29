@@ -78,10 +78,6 @@ module "stack_prod" {
   archivematica_ingests_bucket             = data.terraform_remote_state.archivematica_infra.outputs.ingests_bucket_arn
   bag_register_output_subscribe_principals = [local.catalogue_pipeline_account_principal]
 
-  tags                                    = local.default_tags
-  vhs_manifests_bucket_name_backfill      = data.terraform_remote_state.critical_prod.outputs.vhs_manifests_bucket_name_backfill
-  vhs_manifests_table_name_backfill       = data.terraform_remote_state.critical_prod.outputs.vhs_manifests_table_name_backfill
-  vhs_manifests_readonly_policy_backfill  = data.terraform_remote_state.critical_prod.outputs.vhs_manifests_readonly_policy_backfill
-  vhs_manifests_readwrite_policy_backfill = data.terraform_remote_state.critical_prod.outputs.vhs_manifests_readwrite_policy_backfill
+  tags = local.default_tags
 }
 
