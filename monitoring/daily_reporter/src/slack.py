@@ -66,22 +66,25 @@ def prepare_slack_payload(ingests_by_status, found_everything, days_to_fetch, s3
                     ),
                 },
             },
-
         ]
     }
 
     if not found_everything:
-        result['blocks'].append({
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "Elasticsearch can only return the first 10,000 results. There may be ingests missing from this report."
+        result["blocks"].append(
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "Elasticsearch can only return the first 10,000 results. There may be ingests missing from this report.",
+                },
             }
-        })
+        )
 
-    result['blocks'].append({
-        "type": "section",
-        "text": {"type": "mrkdwn", "text": f"*Full report*: {s3_url}"},
-    })
+    result["blocks"].append(
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": f"*Full report*: {s3_url}"},
+        }
+    )
 
     return result
