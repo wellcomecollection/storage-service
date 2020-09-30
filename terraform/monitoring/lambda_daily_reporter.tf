@@ -7,7 +7,7 @@ module "daily_reporter_lambda" {
   s3_bucket = "wellcomecollection-storage-infra"
   s3_key    = "lambdas/monitoring/daily_reporter.zip"
 
-  timeout = 30
+  timeout = 300
 
   tags = local.default_tags
 }
@@ -51,6 +51,23 @@ data "aws_iam_policy_document" "read_es_secrets" {
 resource "aws_iam_role_policy" "allow_reporter_to_read_es_secrets" {
   role   = module.daily_reporter_lambda.role_name
   policy = data.aws_iam_policy_document.read_es_secrets.json
+}
+
+data "aws_iam_policy_document" "upload_to_s3" {
+  statement {
+    actions = [
+      "s3:Put*",
+    ]
+
+    resources = [
+      "${aws_s3_bucket.daily_reporter.arn}/*",
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "allow_reporter_to_upload_to_s3" {
+  role   = module.daily_reporter_lambda.role_name
+  policy = data.aws_iam_policy_document.upload_to_s3.json
 }
 
 # Schedule the reporter to run at 6am every day

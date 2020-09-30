@@ -52,7 +52,7 @@ def prepare_slack_payload(classified_ingests, found_everything, days_to_fetch, s
         f"in the last {days_to_fetch} day{'s' if days_to_fetch > 1 else ''}?"
     )
 
-    return {
+    result = {
         "blocks": [
             {"type": "header", "text": {"type": "plain_text", "text": heading}},
             {
@@ -73,12 +73,25 @@ def prepare_slack_payload(classified_ingests, found_everything, days_to_fetch, s
                     ),
                 },
             },
-            {
-                "type": "section",
-                "text": {"type": "mrkdwn", "text": f"*Full report*: {s3_url}"},
-            },
+
         ]
     }
+
+    if not found_everything:
+        result['blocks'].append({
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "Elasticsearch can only return the first 10,000 results. There may be ingests missing from this report."
+            }
+        })
+
+    result['blocks'].append({
+        "type": "section",
+        "text": {"type": "mrkdwn", "text": f"*Full report*: {s3_url}"},
+    })
+
+    return result
 
 
 def main(*args):
