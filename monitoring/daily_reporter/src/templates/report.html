@@ -162,19 +162,20 @@
               ] %}
                 {% if classified_ingests[label].get(classification) %}
                   <tr><td colspan="3"><h3>{{ classification }}</h3></td></tr>
-                  {% for ingest in classified_ingests[label].get(classification) %}
+                  {% for ingest in classified_ingests[label].get(classification) | sort(attribute="lastModifiedDate", reverse=True) %}
                   <tr class="status-{{ ingest.status }}">
                     <td class="ingest_id">
                       <a href="https://wellcome-ingest-inspector.glitch.me/ingests/{{ ingest.id }}">{{ ingest.id }}</a></td>
                     <td>{{ ingest.space }}</td>
                     <td>{{ ingest.externalIdentifier }}</td>
                     <td>{{ ingest.version or "(no version)" }}</td>
+                    <td>{{ ingest.lastModifiedDate.strftime("%Y-%m-%d @ %H:%M") }}</td>
                   </tr>
 
                   {% set last_event = ingest|last_event %}
                   {% if last_event and ingest.status != 'succeeded' %}
                   <tr class="status-{{ ingest.status }} last_event">
-                    <td colspan="4" {% if loop.last %}style="padding-bottom: 3px"{% endif %}>
+                    <td colspan="5" {% if loop.last %}style="padding-bottom: 3px"{% endif %}>
                       Last event: {{ last_event.description|add_s3_uri|safe }}<br/>
                       {{ last_event.createdDate.strftime("%d %B %Y @ %H:%M") }}
                     </td>
