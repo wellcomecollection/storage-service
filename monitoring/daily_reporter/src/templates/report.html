@@ -142,7 +142,7 @@
           {% endif %}
         </p>
 
-        {% if not classified_ingests %}
+        {% if not ingests_by_status %}
           <p>No activity!</p>
         {% endif %}
 
@@ -151,7 +151,7 @@
             <tr>
               <th colspan="3"><h1>{{ label }}</h1></th>
             </tr>
-            {% if classified_ingests.get(label, {}) %}
+            {% if ingests_by_status.get(label, {}) %}
               {% for classification in [
                 "failed (unknown reason)",
                 "stalled",
@@ -160,9 +160,9 @@
                 "processing",
                 "succeeded"
               ] %}
-                {% if classified_ingests[label].get(classification) %}
+                {% if ingests_by_status[label].get(classification) %}
                   <tr><td colspan="3"><h3>{{ classification }}</h3></td></tr>
-                  {% for ingest in classified_ingests[label].get(classification) | sort(attribute="lastModifiedDate", reverse=True) %}
+                  {% for ingest in ingests_by_status[label].get(classification) | sort(attribute="lastModifiedDate", reverse=True) %}
                   <tr class="status-{{ ingest.status }}">
                     <td class="ingest_id">
                       <a href="https://wellcome-ingest-inspector.glitch.me/ingests/{{ ingest.id }}">{{ ingest.id }}</a></td>

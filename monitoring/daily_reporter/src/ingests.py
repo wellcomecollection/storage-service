@@ -1,7 +1,7 @@
 import datetime
 
 
-def classify_ingest(ingest):
+def get_dev_status(ingest):
     """
     Get an ingest status that reflects whether we need to pay attention to it.
     For example:

@@ -37,7 +37,7 @@ def add_s3_uri(description):
         )
 
 
-def create_html_report(classified_ingests, found_everything, days_to_fetch):
+def create_html_report(ingests_by_status, found_everything, days_to_fetch):
     template_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "templates")
     env = Environment(
         loader=FileSystemLoader(template_dir), autoescape=select_autoescape(["html"])
@@ -49,7 +49,7 @@ def create_html_report(classified_ingests, found_everything, days_to_fetch):
     template = env.get_template("report.html")
 
     return template.render(
-        classified_ingests=classified_ingests,
+        ingests_by_status=ingests_by_status,
         found_everything=found_everything,
         days_to_fetch=days_to_fetch,
         today=datetime.date.today(),
@@ -58,6 +58,10 @@ def create_html_report(classified_ingests, found_everything, days_to_fetch):
 
 
 def store_s3_report(**kwargs):
+    """
+    Create an HTML report, upload it to the daily-reporting S3 bucket, and
+    return a URL where the report can be found.
+    """
     html = create_html_report(**kwargs)
 
     s3 = boto3.client("s3")
