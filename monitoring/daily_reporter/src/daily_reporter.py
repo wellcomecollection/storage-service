@@ -3,6 +3,7 @@
 import collections
 
 from elasticsearch import get_es_client, get_interesting_ingests
+from html_report import create_html_report
 from ingests import classify_ingest
 
 
@@ -136,17 +137,29 @@ def main(*args):
         es_client, index_name="storage_ingests", days_to_fetch=2
     )
 
+    staging_ingests = get_interesting_ingests(
+        es_client, index_name="storage_stage_ingests", days_to_fetch=2
+    )
+
     classified_ingests = {
         'prod': collections.defaultdict(list),
-        'stage': collections.defaultdict(list),
+        'staging': collections.defaultdict(list),
     }
+
     for ingest in prod_ingests["ingests"]:
         status = classify_ingest(ingest)
         classified_ingests['prod'][status].append(ingest)
 
+    for ingest in staging_ingests["ingests"]:
+        status = classify_ingest(ingest)
+        classified_ingests['staging'][status].append(ingest)
+
     from pprint import pprint
 
-    pprint(classified_ingests['prod'].keys())
+    html = create_html_report(classified_ingests)
+
+    with open('rendered_report.html', 'w') as outfile:
+        outfile.write(html)
 
     #
     #

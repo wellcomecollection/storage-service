@@ -43,19 +43,19 @@ def _parse_ingest_from_hit(hit):
         "space": source["space"]["id"],
         "status": source["status"]["id"],
         "externalIdentifier": source["bag"]["info"]["externalIdentifier"],
-        "version": source["bag"].get("version"),
-        "createdDate": _parse_date(source["lastModifiedDate"]),
+        "version": source["bag"]["info"].get("version"),
+        "createdDate": _parse_date(source["createdDate"]),
         "events": [
             {
                 "description": ev["description"],
                 "createdDate": _parse_date(ev["createdDate"])
-            } for ev in source["events"]
+            } for ev in source.get("events", [])
         ],
     }
 
     try:
         ingest["lastModifiedDate"] = _parse_date(source["lastModifiedDate"])
-    except KeyError:
+    except (KeyError, TypeError):
         ingest["lastModifiedDate"] = ingest["createdDate"]
 
     return ingest
@@ -126,12 +126,16 @@ def get_interesting_ingests(es_client, *, index_name, days_to_fetch):
 
         # We use a dict to de-duplicate result.  The same ingest may appear
         # multiple times in this response -- that's not an issue.
-        for hit in resp.json()["hits"]["hits"]:
+        for hit in resp.json().get("hits", {}).get("hits", []):
             ingests[hit["_id"]] = _parse_ingest_from_hit(hit)
 
         # If there are more than 10000 results, that suggests there are more
         # that we didn't get.  Flag this to the caller.
-        if resp.json()["hits"]["total"]["value"] >= 10000:
-            found_everything = False
+        try:
+            if resp.json()["hits"]["total"]["value"] >= 10000:
+                found_everything = False
+        except KeyError:
+            # Nothing in hits, no results to find
+            pass
 
     return {"ingests": ingests.values(), "found_everything": found_everything}
