@@ -34,7 +34,7 @@ def add_s3_uri(description):
         return description.replace(s3_uri.group(0), f'<a href="{s3_console_link}">{s3_uri.group(0)}</a>')
 
 
-def create_html_report(classified_ingests):
+def create_html_report(classified_ingests, found_everything):
     template_dir = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'templates'
     )
@@ -50,5 +50,6 @@ def create_html_report(classified_ingests):
 
     return template.render(
         classified_ingests=classified_ingests,
+        found_everything=found_everything,
         today=datetime.date.today()
     )

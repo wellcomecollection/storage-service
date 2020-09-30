@@ -154,9 +154,13 @@ def main(*args):
         status = classify_ingest(ingest)
         classified_ingests['staging'][status].append(ingest)
 
+    found_everything = (
+        prod_ingests["found_everything"] and staging_ingests["found_everything"]
+    )
+
     from pprint import pprint
 
-    html = create_html_report(classified_ingests)
+    html = create_html_report(classified_ingests=classified_ingests, found_everything=found_everything)
 
     with open('rendered_report.html', 'w') as outfile:
         outfile.write(html)
