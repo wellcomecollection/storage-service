@@ -55,7 +55,7 @@ def main(*args):
 
     if "--skip-slack" not in sys.argv:
         payload = prepare_slack_payload(
-            classified_ingests=classified_ingests,
+            ingests_by_status=ingests_by_status,
             found_everything=found_everything,
             days_to_fetch=days_to_fetch,
             s3_url=s3_url,

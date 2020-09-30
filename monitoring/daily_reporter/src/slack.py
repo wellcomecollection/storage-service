@@ -39,7 +39,7 @@ def _get_slack_message(label, ingests):
     return result
 
 
-def prepare_slack_payload(classified_ingests, found_everything, days_to_fetch, s3_url):
+def prepare_slack_payload(ingests_by_status, found_everything, days_to_fetch, s3_url):
     heading = (
         f"What happened in the storage service "
         f"in the last {days_to_fetch} day{'s' if days_to_fetch > 1 else ''}?"
@@ -53,7 +53,7 @@ def prepare_slack_payload(classified_ingests, found_everything, days_to_fetch, s
                 "text": {
                     "type": "mrkdwn",
                     "text": _get_slack_message(
-                        "Prod", ingests=classified_ingests["prod"]
+                        "Prod", ingests=ingests_by_status["prod"]
                     ),
                 },
             },
@@ -62,7 +62,7 @@ def prepare_slack_payload(classified_ingests, found_everything, days_to_fetch, s
                 "text": {
                     "type": "mrkdwn",
                     "text": _get_slack_message(
-                        "Staging", ingests=classified_ingests["staging"]
+                        "Staging", ingests=ingests_by_status["staging"]
                     ),
                 },
             },
