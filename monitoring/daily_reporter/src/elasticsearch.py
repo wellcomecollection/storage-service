@@ -1,17 +1,8 @@
 import datetime
 
-import boto3
 import httpx
 
-
-secrets_client = boto3.client("secretsmanager")
-
-
-def get_secret(secret_id):
-    """
-    Get a Secret from Secrets Manager.
-    """
-    return secrets_client.get_secret_value(SecretId=secret_id)["SecretString"]
+from aws import get_secret
 
 
 def get_es_client():
@@ -24,8 +15,7 @@ def get_es_client():
     es_pass = get_secret("storage_service_reporter/es_pass")
 
     return httpx.Client(
-        base_url=f"https://{es_host}:{es_port}",
-        auth=(es_user, es_pass)
+        base_url=f"https://{es_host}:{es_port}", auth=(es_user, es_pass)
     )
 
 
@@ -48,8 +38,9 @@ def _parse_ingest_from_hit(hit):
         "events": [
             {
                 "description": ev["description"],
-                "createdDate": _parse_date(ev["createdDate"])
-            } for ev in source.get("events", [])
+                "createdDate": _parse_date(ev["createdDate"]),
+            }
+            for ev in source.get("events", [])
         ],
     }
 
@@ -94,10 +85,10 @@ def get_interesting_ingests(es_client, *, index_name, days_to_fetch):
     # fact and try to find the most interesting stuff.
     filters = [
         [{"range": {"lastModifiedDate": {"gte": start.strftime("%Y-%m-%d")}}}],
-        [{
-            "range": {"lastModifiedDate": {"gte": start.strftime("%Y-%m-%d")}}},{
-            "terms": {"status.id": ["processing", "accepted", "failed"]},
-        }],
+        [
+            {"range": {"lastModifiedDate": {"gte": start.strftime("%Y-%m-%d")}}},
+            {"terms": {"status.id": ["processing", "accepted", "failed"]}},
+        ],
         [{"terms": {"status.id": ["processing", "accepted"]}}],
     ]
 

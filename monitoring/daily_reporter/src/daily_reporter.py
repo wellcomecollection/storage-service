@@ -1,136 +1,84 @@
 #!/usr/bin/env python
 
 import collections
-import datetime
+import json
 
+import httpx
+
+from aws import get_secret
 from elasticsearch import get_es_client, get_interesting_ingests
 from html_report import store_s3_report
 from ingests import classify_ingest
 
 
-def get_ingests_by_status(recent_ingests):
-    ingests_by_status = {
-        "succeeded": [],
-        "accepted": [],
-        "processing": [],
-        "failed (user error)": [],
-        "failed (unknown reason)": [],
-    }
+def _get_slack_message(label, ingests):
+    result = f"*{label}:* "
 
-    for ingest in recent_ingests:
-        status = ingest["status"]["id"]
+    if not ingests:
+        result += "no activity."
+        return result
 
-        # We sort failures into two groups:
-        #
-        #   -   a user error is one that means there was something wrong with the
-        #       bag, e.g. it couldn't be unpacked correctly, it failed verification
-        #   -   an unknown error is one that we can't categorise, and might indicate
-        #       a storage service error, e.g. a replication failure
-        #
-        if status == "failed":
-            failure_reasons = [
-                event["description"]
-                for event in ingest["events"]
-                if "failed" in event["description"]
-            ]
-
-            if failure_reasons and all(
-                reason.startswith(
-                    (
-                        "Verification (pre-replicating to archive storage) failed",
-                        "Unpacking failed",
-                        "Assigning bag version failed",
-                    )
-                )
-                for reason in failure_reasons
-            ):
-                status = "failed (user error)"
-            else:
-                status = "failed (unknown reason)"
-
-        ingests_by_status[status].append(ingest)
-
-    return ingests_by_status
-
-
-def prepare_slack_payload(recent_ingests, name, time_period):
-    # Create a top-level summary, e.g.
+    # Produce a message of the form
     #
-    #     5 ingests were updated in the storage service in the last 2 days.
+    #     Prod: succeeded (14), failed (user error) (2), stalled (1)
     #
-    if len(recent_ingests) == 1:
-        summary = "1 ingest was updated"
-    elif len(recent_ingests) == 0:
-        summary = "No activity"
-    else:
-        summary = f"{len(recent_ingests)} ingests were updated"
-
-    summary += f" in {name} in the last {time_period}."
-
-    summary_block = {
-        "type": "section",
-        "text": {"type": "mrkdwn", "text": f"*{summary}*"},
-    }
-
-    # Produce a block that summarises what state those ingests were in.
-    ingests_by_status = get_ingests_by_status(recent_ingests)
-
-    pretty_statuses = [
-        f"{len(ingests)} {status}"
-        for status, ingests in ingests_by_status.items()
-        if ingests
-    ]
-
-    payload = {"blocks": [summary_block]}
-
-    if recent_ingests:
-        if len(ingests_by_status["succeeded"]):
-            status_block = {
-                "type": "context",
-                "elements": [{"type": "mrkdwn", "text": "All succeeded"}],
-            }
+    # Highlight unusual statuses.
+    status_descriptions = []
+    for status, individual_ingests in ingests.items():
+        if status in ("stalled", "failed (unknown reason)"):
+            status_descriptions.append(f"*{status} ({len(individual_ingests)})*")
         else:
-            status_block = {
-                "type": "context",
-                "elements": [{"type": "mrkdwn", "text": " / ".join(pretty_statuses)}],
-            }
+            status_descriptions.append(f"{status} ({len(individual_ingests)})")
 
-        payload["blocks"].append(status_block)
+    result += ", ".join(status_descriptions)
 
-    # If there were any ingests with unknown failures, we should highlight them!
-    #
-    # Create a bulleted list of ingest IDs that had unrecognised failures, a link
-    # to the ingest inspector, and a hint as to why they failed.
-    #
-    unknown_failures = ingests_by_status["failed (unknown reason)"]
-    if unknown_failures:
-        if len(unknown_failures) == 1:
-            message = (
-                f"@here There was one failure that might be worth investigating:\n"
-            )
-        else:
-            message = f"@here There were {len(unknown_failures)} failures that might be worth investigating:\n"
+    for status in ("failed (unknown reason)", "stalled"):
+        if ingests.get(status, []):
+            result += "\n" + status.title() + ":"
+            for i in ingests[status][:15]:
+                result += f"\n- <https://wellcome-ingest-inspector.glitch.me/ingests/{i['id']}|`{i['id']}`> – {i['space']}/{i['externalIdentifier']}"
+                if i["version"]:
+                    result += "/" + i["version"]
 
-        for ingest in unknown_failures:
-            ingest_id = ingest["id"]
-            message += f"\n- <https://wellcome-ingest-inspector.glitch.me/ingests/{ingest_id}|`{ingest_id}`>"
+            if len(ingests[status]) >= 15:
+                result += "\n- ..."
 
-            try:
-                failure_description = ingest["failureDescriptions"]
-                if len(failure_description) > 40:
-                    failure_description = failure_description[:38] + "..."
-            except KeyError:
-                pass
-            else:
-                message += f" - {failure_description}"
-
-        payload["blocks"].append(
-            {"type": "section", "text": {"text": message, "type": "mrkdwn"}}
-        )
-
-    return payload
+    return result
 
 
+def prepare_slack_payload(classified_ingests, found_everything, days_to_fetch, s3_url):
+    heading = (
+        f"What happened in the storage service "
+        f"in the last {days_to_fetch} day{'s' if days_to_fetch > 1 else ''}?"
+    )
+
+    return {
+        "blocks": [
+            {"type": "header", "text": {"type": "plain_text", "text": heading}},
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": _get_slack_message(
+                        "Prod", ingests=classified_ingests["prod"]
+                    ),
+                },
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": _get_slack_message(
+                        "Staging", ingests=classified_ingests["staging"]
+                    ),
+                },
+            },
+            {
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": f"*Full report*: {s3_url}"},
+            },
+        ]
+    }
 
 
 def main(*args):
@@ -147,17 +95,17 @@ def main(*args):
     )
 
     classified_ingests = {
-        'prod': collections.defaultdict(list),
-        'staging': collections.defaultdict(list),
+        "prod": collections.defaultdict(list),
+        "staging": collections.defaultdict(list),
     }
 
     for ingest in prod_ingests["ingests"]:
         status = classify_ingest(ingest)
-        classified_ingests['prod'][status].append(ingest)
+        classified_ingests["prod"][status].append(ingest)
 
     for ingest in staging_ingests["ingests"]:
         status = classify_ingest(ingest)
-        classified_ingests['staging'][status].append(ingest)
+        classified_ingests["staging"][status].append(ingest)
 
     found_everything = (
         prod_ingests["found_everything"] and staging_ingests["found_everything"]
@@ -166,44 +114,34 @@ def main(*args):
     s3_url = store_s3_report(
         classified_ingests=classified_ingests,
         found_everything=found_everything,
-        days_to_fetch=days_to_fetch
+        days_to_fetch=days_to_fetch,
     )
 
-    print(s3_url)
+    payload = prepare_slack_payload(
+        classified_ingests=classified_ingests,
+        found_everything=found_everything,
+        days_to_fetch=days_to_fetch,
+        s3_url=s3_url,
+    )
 
-    #
-    #
-    # prod_payload = prepare_slack_payload(
-    #     prod_ingests, name="the storage service", time_period="48 hours"
-    # )
-    # stage_payload = prepare_slack_payload(
-    #     stage_ingests, name="the staging service", time_period="48 hours"
-    # )
-    #
-    # complete_payload = {
-    #     "blocks": prod_payload["blocks"]
-    #     + [{"type": "divider"}]
-    #     + stage_payload["blocks"]
-    # }
-    #
-    # resp = httpx.post(
-    #     get_secret("storage_service_reporter/slack_webhook"), json=complete_payload
-    # )
-    #
-    # print(f"Sent payload to Slack: {resp}")
-    #
-    # if resp.status_code != 200:
-    #     print("Non-200 response from Slack:")
-    #
-    #     print("")
-    #
-    #     print("== request ==")
-    #     print(json.dumps(complete_payload, indent=2, sort_keys=True))
-    #
-    #     print("")
-    #
-    #     print("== response ==")
-    #     print(resp.text)
+    resp = httpx.post(
+        get_secret("storage_service_reporter/slack_webhook"), json=payload
+    )
+
+    print(f"Sent payload to Slack: {resp}")
+
+    if resp.status_code != 200:
+        print("Non-200 response from Slack:")
+
+        print("")
+
+        print("== request ==")
+        print(json.dumps(payload, indent=2, sort_keys=True))
+
+        print("")
+
+        print("== response ==")
+        print(resp.text)
 
 
 if __name__ == "__main__":
