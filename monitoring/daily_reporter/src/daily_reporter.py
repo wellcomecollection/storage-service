@@ -2,6 +2,8 @@
 
 import collections
 import json
+import sys
+import webbrowser
 
 import httpx
 
@@ -130,31 +132,35 @@ def main(*args):
         days_to_fetch=days_to_fetch,
     )
 
-    payload = prepare_slack_payload(
-        classified_ingests=classified_ingests,
-        found_everything=found_everything,
-        days_to_fetch=days_to_fetch,
-        s3_url=s3_url,
-    )
+    if "--browser" in sys.argv:
+        webbrowser.open(s3_url)
 
-    resp = httpx.post(
-        get_secret("storage_service_reporter/slack_webhook"), json=payload
-    )
+    if "--skip-slack" not in sys.argv:
+        payload = prepare_slack_payload(
+            classified_ingests=classified_ingests,
+            found_everything=found_everything,
+            days_to_fetch=days_to_fetch,
+            s3_url=s3_url,
+        )
 
-    print(f"Sent payload to Slack: {resp}")
+        resp = httpx.post(
+            get_secret("storage_service_reporter/slack_webhook"), json=payload
+        )
 
-    if resp.status_code != 200:
-        print("Non-200 response from Slack:")
+        print(f"Sent payload to Slack: {resp}")
 
-        print("")
+        if resp.status_code != 200:
+            print("Non-200 response from Slack:")
 
-        print("== request ==")
-        print(json.dumps(payload, indent=2, sort_keys=True))
+            print("")
 
-        print("")
+            print("== request ==")
+            print(json.dumps(payload, indent=2, sort_keys=True))
 
-        print("== response ==")
-        print(resp.text)
+            print("")
+
+            print("== response ==")
+            print(resp.text)
 
 
 if __name__ == "__main__":
