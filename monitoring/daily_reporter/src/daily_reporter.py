@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 import collections
+import datetime
 
 from elasticsearch import get_es_client, get_interesting_ingests
-from html_report import create_html_report
+from html_report import store_s3_report
 from ingests import classify_ingest
 
 
@@ -130,15 +131,19 @@ def prepare_slack_payload(recent_ingests, name, time_period):
     return payload
 
 
+
+
 def main(*args):
     es_client = get_es_client()
 
+    days_to_fetch = 2
+
     prod_ingests = get_interesting_ingests(
-        es_client, index_name="storage_ingests", days_to_fetch=2
+        es_client, index_name="storage_ingests", days_to_fetch=days_to_fetch
     )
 
     staging_ingests = get_interesting_ingests(
-        es_client, index_name="storage_stage_ingests", days_to_fetch=2
+        es_client, index_name="storage_stage_ingests", days_to_fetch=days_to_fetch
     )
 
     classified_ingests = {
@@ -158,12 +163,13 @@ def main(*args):
         prod_ingests["found_everything"] and staging_ingests["found_everything"]
     )
 
-    from pprint import pprint
+    s3_url = store_s3_report(
+        classified_ingests=classified_ingests,
+        found_everything=found_everything,
+        days_to_fetch=days_to_fetch
+    )
 
-    html = create_html_report(classified_ingests=classified_ingests, found_everything=found_everything)
-
-    with open('rendered_report.html', 'w') as outfile:
-        outfile.write(html)
+    print(s3_url)
 
     #
     #

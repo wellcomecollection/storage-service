@@ -2,6 +2,7 @@ import datetime
 import os
 import re
 
+import boto3
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 
@@ -34,7 +35,7 @@ def add_s3_uri(description):
         return description.replace(s3_uri.group(0), f'<a href="{s3_console_link}">{s3_uri.group(0)}</a>')
 
 
-def create_html_report(classified_ingests, found_everything):
+def create_html_report(classified_ingests, found_everything, days_to_fetch):
     template_dir = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 'templates'
     )
@@ -51,5 +52,27 @@ def create_html_report(classified_ingests, found_everything):
     return template.render(
         classified_ingests=classified_ingests,
         found_everything=found_everything,
-        today=datetime.date.today()
+        days_to_fetch=days_to_fetch,
+        today=datetime.date.today(),
+        now=datetime.datetime.now(),
     )
+
+
+def store_s3_report(**kwargs):
+    html = create_html_report(**kwargs)
+
+    s3 = boto3.client("s3")
+
+    today = datetime.date.today().strftime("%Y-%m-%d")
+
+    daily_reporting_bucket = "wellcomecollection-storage-daily-reporting"
+
+    s3.put_object(
+        Bucket=daily_reporting_bucket,
+        Key=f"{today}.html",
+        Body=html.encode("utf8"),
+        ContentType="text/html",
+        ACL="public-read"
+    )
+
+    return f"https://{daily_reporting_bucket}.s3-eu-west-1.amazonaws.com/{today}.html"
