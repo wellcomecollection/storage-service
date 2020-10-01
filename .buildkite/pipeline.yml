@@ -53,6 +53,7 @@ steps:
   #         workdir: /repo
   #         mount-ssh-agent: true
   #         command: ["--confirm", "release-deploy", "--from-label", "latest", "--environment-id", "stage", "--description", $BUILDKITE_BUILD_URL]
+  - wait
   - label: send a test bag in stage
     if: build.branch == "master"
     plugins:
