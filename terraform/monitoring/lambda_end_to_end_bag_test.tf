@@ -44,7 +44,7 @@ module "end_to_end_bag_tester_prod" {
 resource "aws_lambda_permission" "allow_platform_to_trigger_lambda" {
   action        = "lambda:InvokeFunction"
   function_name = module.end_to_end_bag_tester_stage.function_name
-  principal     = "arn:aws:iam::760097843905:root"  # platform account
+  principal     = "arn:aws:iam::760097843905:root" # platform account
 }
 
 data "aws_iam_policy_document" "allow_ci_to_trigger_test_lambda" {
