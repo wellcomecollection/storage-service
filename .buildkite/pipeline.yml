@@ -53,3 +53,15 @@ steps:
           workdir: /repo
           mount-ssh-agent: true
           command: ["--confirm", "release-deploy", "--from-label", "latest", "--environment-id", "stage", "--description", $BUILDKITE_BUILD_URL]
+  - wait
+  - label: send a test bag in stage
+    if: build.branch == "master"
+    plugins:
+      - docker#v3.5.0:
+          image: "amazon/aws-cli"
+          command: [
+            "lambda",
+            "invoke",
+            "--function-name", "arn:aws:lambda:eu-west-1:975596993436:function:end_to_end_bag_test--staging",
+            "/dev/stdout"
+          ]
