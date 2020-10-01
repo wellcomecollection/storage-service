@@ -1,14 +1,12 @@
 package uk.ac.wellcome.platform.archive.bag_register.fixtures
 
 import org.scalatest.Assertion
-import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.{Queue, QueuePair}
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.messaging.sqs.SQSClientFactory
 import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
   Register,
@@ -19,29 +17,16 @@ import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{
   StorageManifestDaoFixture
 }
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagInfo,
-  BagVersion,
-  ExternalIdentifier
-}
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures._
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
-import uk.ac.wellcome.platform.archive.common.generators.{
-  ExternalIdentifierGenerators,
-  StorageSpaceGenerators
-}
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
   IngestID,
   IngestStatusUpdate
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
-import uk.ac.wellcome.storage.store.s3.S3TypedStore
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -52,19 +37,9 @@ trait BagRegisterFixtures
     with OperationFixtures
     with StorageManifestDaoFixture
     with IngestUpdateAssertions
-    with ExternalIdentifierGenerators
     with BagTrackerFixtures
     with StringNamespaceFixtures
-    with StorageSpaceGenerators
     with S3BagBuilder {
-
-  override implicit val asyncSqsClient: SqsAsyncClient =
-    SQSClientFactory.createAsyncClient(
-      region = "localhost",
-      endpoint = "http://localhost:9324",
-      accessKey = "access",
-      secretKey = "secret"
-    )
 
   type Fixtures = (
     BagRegisterWorker[String, String],
@@ -142,28 +117,4 @@ trait BagRegisterFixtures
       ingestFailed.status shouldBe Ingest.Failed
       ingestFailed.events.head.description shouldBe "Register failed"
     }
-
-  def createRegisterBagWith(
-    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
-    space: StorageSpace,
-    version: BagVersion,
-    dataFileCount: Int = randomInt(1, 15)
-  )(
-    implicit bucket: Bucket
-  ): (S3ObjectLocationPrefix, BagInfo) = {
-    implicit val typedStore: S3TypedStore[String] =
-      S3TypedStore[String]
-
-    val bagContents =
-      createBagContentsWith(
-        space = space,
-        externalIdentifier = externalIdentifier,
-        version = version,
-        payloadFileCount = dataFileCount
-      )(namespace = bucket, primaryBucket = bucket)
-
-    storeBagContents(bagContents)
-
-    (bagContents.bagRoot, bagContents.bagInfo)
-  }
 }

@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.fixtures.s3
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagInfo,
   BagVersion,
   ExternalIdentifier
 }
@@ -38,4 +39,17 @@ trait S3BagBuilder
       bucket = bagRoot.bucket,
       key = path
     )
+
+  def storeS3BagWith(
+    space: StorageSpace = createStorageSpace,
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
+    version: BagVersion = BagVersion(randomInt(from = 2, to = 10)),
+    payloadFileCount: Int = randomInt(from = 5, to = 50)
+  )(implicit bucket: Bucket): (S3ObjectLocationPrefix, BagInfo) =
+    storeBagWith(
+      space = space,
+      externalIdentifier = externalIdentifier,
+      version = version,
+      payloadFileCount = payloadFileCount
+    )(namespace = bucket, primaryBucket = bucket)
 }

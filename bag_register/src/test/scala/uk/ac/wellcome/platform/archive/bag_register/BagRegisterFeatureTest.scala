@@ -29,13 +29,13 @@ class BagRegisterFeatureTest
     val createdAfterDate = Instant.now()
     val space = createStorageSpace
     val version = createBagVersion
-    val dataFileCount = randomInt(1, 15)
+    val payloadFileCount = randomInt(1, 15)
 
     withLocalS3Bucket { implicit bucket =>
-      val (bagRoot, bagInfo) = createRegisterBagWith(
+      val (bagRoot, bagInfo) = storeS3BagWith(
         space = space,
         version = version,
-        dataFileCount = dataFileCount
+        payloadFileCount = payloadFileCount
       )
 
       val bagId = BagId(
@@ -74,7 +74,7 @@ class BagRegisterFeatureTest
 
             storageManifest.space shouldBe bagId.space
             storageManifest.info shouldBe bagInfo
-            storageManifest.manifest.files should have size dataFileCount
+            storageManifest.manifest.files should have size payloadFileCount
 
             storageManifest.location shouldBe PrimaryS3StorageLocation(
               prefix = bagRoot
