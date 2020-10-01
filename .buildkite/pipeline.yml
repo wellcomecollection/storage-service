@@ -1,55 +1,61 @@
 steps:
-  - command: .buildkite/scripts/run_autoformat.py
-    label: "autoformat"
-  - wait
-  - command: .buildkite/scripts/run_job.py common
-    label: "common"
-  - command: .buildkite/scripts/run_job.py display
-    label: "display"
-  - command: .buildkite/scripts/run_job.py indexer_common
-    label: "indexer_common"
-  - wait
-  - command: .buildkite/scripts/run_job.py bags_api
-    label: "bags API"
-  - command: .buildkite/scripts/run_job.py bag_register
-    label: "bag register"
-  - command: .buildkite/scripts/run_job.py bag_replicator
-    label: "bag replicator"
-  - command: .buildkite/scripts/run_job.py bag_root_finder
-    label: "bag root finder"
-  - command: .buildkite/scripts/run_job.py bag_tagger
-    label: "bag tagger"
-  - command: .buildkite/scripts/run_job.py bag_tracker
-    label: "bag tracker"
-  - command: .buildkite/scripts/run_job.py bag_verifier
-    label: "bag verifier"
-  - command: .buildkite/scripts/run_job.py bag_unpacker
-    label: "bag unpacker"
-  - command: .buildkite/scripts/run_job.py bag_versioner
-    label: "bag versioner"
-  - command: .buildkite/scripts/run_job.py replica_aggregator
-    label: "replica aggregator"
-  - command: .buildkite/scripts/run_job.py bag_indexer
-    label: "bag indexer"
-  - command: .buildkite/scripts/run_job.py ingests_indexer
-    label: "ingests indexer"
-  - command: .buildkite/scripts/run_job.py ingests_worker
-    label: "ingests worker"
-  - command: .buildkite/scripts/run_job.py ingests_tracker
-    label: "ingests tracker"
-  - command: .buildkite/scripts/run_job.py ingests_api
-    label: "ingests API"
-  - command: .buildkite/scripts/run_job.py notifier
-    label: "notifier"
-  - wait
-  - command: .buildkite/scripts/complete_build.py
-    label: "complete build"
-  - wait
-  - label: release to stage
-    if: build.branch == "master"
+  # - command: .buildkite/scripts/run_autoformat.py
+  #   label: "autoformat"
+  # - wait
+  # - command: .buildkite/scripts/run_job.py common
+  #   label: "common"
+  # - command: .buildkite/scripts/run_job.py display
+  #   label: "display"
+  # - command: .buildkite/scripts/run_job.py indexer_common
+  #   label: "indexer_common"
+  # - wait
+  # - command: .buildkite/scripts/run_job.py bags_api
+  #   label: "bags API"
+  # - command: .buildkite/scripts/run_job.py bag_register
+  #   label: "bag register"
+  # - command: .buildkite/scripts/run_job.py bag_replicator
+  #   label: "bag replicator"
+  # - command: .buildkite/scripts/run_job.py bag_root_finder
+  #   label: "bag root finder"
+  # - command: .buildkite/scripts/run_job.py bag_tagger
+  #   label: "bag tagger"
+  # - command: .buildkite/scripts/run_job.py bag_tracker
+  #   label: "bag tracker"
+  # - command: .buildkite/scripts/run_job.py bag_verifier
+  #   label: "bag verifier"
+  # - command: .buildkite/scripts/run_job.py bag_unpacker
+  #   label: "bag unpacker"
+  # - command: .buildkite/scripts/run_job.py bag_versioner
+  #   label: "bag versioner"
+  # - command: .buildkite/scripts/run_job.py replica_aggregator
+  #   label: "replica aggregator"
+  # - command: .buildkite/scripts/run_job.py bag_indexer
+  #   label: "bag indexer"
+  # - command: .buildkite/scripts/run_job.py ingests_indexer
+  #   label: "ingests indexer"
+  # - command: .buildkite/scripts/run_job.py ingests_worker
+  #   label: "ingests worker"
+  # - command: .buildkite/scripts/run_job.py ingests_tracker
+  #   label: "ingests tracker"
+  # - command: .buildkite/scripts/run_job.py ingests_api
+  #   label: "ingests API"
+  # - command: .buildkite/scripts/run_job.py notifier
+  #   label: "notifier"
+  # - wait
+  # - command: .buildkite/scripts/complete_build.py
+  #   label: "complete build"
+  # - wait
+  # - label: release to stage
+  #   if: build.branch == "master"
+  #   plugins:
+  #     - docker#v3.5.0:
+  #         image: wellcome/weco-deploy:5.1.1
+  #         workdir: /repo
+  #         mount-ssh-agent: true
+  #         command: ["--confirm", "release-deploy", "--from-label", "latest", "--environment-id", "stage", "--description", $BUILDKITE_BUILD_URL]
+  - label: send a test bag in stage
     plugins:
       - docker#v3.5.0:
-          image: wellcome/weco-deploy:5.1.1
-          workdir: /repo
+          image: "amazon/aws-cli"
           mount-ssh-agent: true
-          command: ["--confirm", "release-deploy", "--from-label", "latest", "--environment-id", "stage", "--description", $BUILDKITE_BUILD_URL]
+          command: ["lambda", "invoke", "--function-name", "end_to_end_bag_test--staging", "/dev/stdout"]
