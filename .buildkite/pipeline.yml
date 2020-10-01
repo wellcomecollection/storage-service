@@ -58,4 +58,9 @@ steps:
       - docker#v3.5.0:
           image: "amazon/aws-cli"
           mount-ssh-agent: true
-          command: ["lambda", "invoke", "--function-name", "end_to_end_bag_test--staging", "/dev/stdout"]
+          command: [
+            "lambda",
+            "invoke",
+            "--function-name", "arn:aws:lambda:eu-west-1:975596993436:function:end_to_end_bag_test--staging",
+            "/dev/stdout"
+          ]
