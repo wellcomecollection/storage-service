@@ -4,7 +4,7 @@
 #
 #    pip-compile
 #
-boto3==1.13.12
+boto3==1.13.12            # via -r requirements.in
 botocore==1.16.12         # via boto3, s3transfer
 certifi==2020.4.5.1       # via httpx
 chardet==3.0.4            # via httpx
@@ -13,10 +13,12 @@ h11==0.9.0                # via httpx
 h2==3.2.0                 # via httpx
 hpack==3.0.0              # via h2
 hstspreload==2020.5.19    # via httpx
-httpx==0.12.1
+httpx==0.12.1             # via -r requirements.in
 hyperframe==5.2.0         # via h2
 idna==2.9                 # via httpx
+jinja2==2.11.2            # via -r requirements.in
 jmespath==0.10.0          # via boto3, botocore
+markupsafe==1.1.1         # via jinja2
 python-dateutil==2.8.1    # via botocore
 rfc3986==1.4.0            # via httpx
 s3transfer==0.3.3         # via boto3
