@@ -59,7 +59,6 @@ steps:
     plugins:
       - docker#v3.5.0:
           image: "amazon/aws-cli"
-          mount-ssh-agent: true
           command: [
             "lambda",
             "invoke",
