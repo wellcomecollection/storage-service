@@ -1,10 +1,13 @@
 #!/usr/bin/env python
+
 import json
 import uuid
+
 from botocore.exceptions import ClientError
 from deepdiff import DeepDiff
+from yaspin import yaspin
 
-from common import get_aws_resource, scan_table
+from common import get_aws_resource, parallel_scan_table
 
 DEVELOPER_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
 dynamodb = get_aws_resource("dynamodb", role_arn=DEVELOPER_ROLE_ARN)
@@ -47,13 +50,13 @@ def get_vhs_json(id, version, bucket, key):
         record_error(id, version, f"Cannot read s3 entry for {id}: {item}: {e}")
 
 
-def put_vhs_json(id, version, bucket, item, content):
+def put_vhs_json(id, version, bucket, item, content, batch_writer):
     filename = f"{uuid.uuid4()}.json"
     key = f"{id}/{version}/{filename}"
     item["payload"] = {"bucket": bucket, "key": key}
     try:
         s3.Object(bucket, key).put(Body=(bytes(json.dumps(content).encode("UTF-8"))))
-        dynamodb.Table(vhs_table).put_item(Item=item)
+        batch_writer.put_item(Item=item)
     except ClientError as e:
         record_error(
             id,
@@ -87,31 +90,42 @@ def is_expected_diff(id, version, diff):
     return True
 
 
-for item in scan_table(TableName=vhs_table):
-    id = item["id"]
-    version = item["version"]
-    bucket_key = get_bucket_key(item)
-    if bucket_key:
-        bucket, key = bucket_key
-        vhs_content = get_vhs_json(id, version, bucket, key)
-        if vhs_content and len(vhs_content["replicaLocations"]) < 2:
-            created_date = vhs_content["createdDate"]
-            backfilled_item = get_backfill_item(id, version)
-            if backfilled_item:
-                backfilled_bucket = backfilled_item["payload"]["bucket"]
-                backfilled_key = backfilled_item["payload"]["key"]
-                backfilled_json = get_vhs_json(
-                    id, version, backfilled_bucket, backfilled_key
-                )
-                if backfilled_json:
-                    diff = DeepDiff(vhs_content, backfilled_json, ignore_order=True)
-                    if diff and is_expected_diff(id, version, diff):
-                        backfilled_json["createdDate"] = created_date
-                        put_vhs_json(
-                            id, version, bucket, backfilled_item, backfilled_json
+with dynamodb.Table(vhs_table).batch_writer() as batch_writer:
+    with yaspin():
+        for item in parallel_scan_table(
+            vhs_table, total_segments=400, max_scans_in_parallel=50
+        ):
+            id = item["id"]
+            version = item["version"]
+            bucket_key = get_bucket_key(item)
+            if bucket_key:
+                bucket, key = bucket_key
+                vhs_content = get_vhs_json(id, version, bucket, key)
+                if vhs_content and len(vhs_content["replicaLocations"]) < 2:
+                    created_date = vhs_content["createdDate"]
+                    backfilled_item = get_backfill_item(id, version)
+                    if backfilled_item:
+                        backfilled_bucket = backfilled_item["payload"]["bucket"]
+                        backfilled_key = backfilled_item["payload"]["key"]
+                        backfilled_json = get_vhs_json(
+                            id, version, backfilled_bucket, backfilled_key
                         )
+                        if backfilled_json:
+                            diff = DeepDiff(
+                                vhs_content, backfilled_json, ignore_order=True
+                            )
+                            if diff and is_expected_diff(id, version, diff):
+                                backfilled_json["createdDate"] = created_date
+                                put_vhs_json(
+                                    id,
+                                    version,
+                                    bucket,
+                                    backfilled_item,
+                                    backfilled_json,
+                                    batch_writer,
+                                )
 if errors:
-    print("\033[91mThere are errors!")
+    print("\033[91mThere are errors!\u001b[0m")
     exit(1)
 else:
     print("\033[92mFinished with no errors!")

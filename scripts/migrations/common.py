@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
+import concurrent.futures
 import decimal
+import itertools
 import json
 
 import boto3
@@ -35,6 +37,41 @@ def scan_table(*, TableName, **kwargs):
 
     for page in paginator.paginate(TableName=TableName, **kwargs):
         yield from page["Items"]
+
+
+def parallel_scan_table(table_name, total_segments, max_scans_in_parallel):
+    dynamodb = get_aws_resource("dynamodb", role_arn=READ_ONLY_ROLE_ARN)
+    table = dynamodb.Table(table_name)
+    tasks_to_do = [
+        {"Segment": segment, "TotalSegments": total_segments}
+        for segment in range(total_segments)
+    ]
+
+    scans_to_run = iter(tasks_to_do)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = {
+            executor.submit(table.scan, **scan_params): scan_params
+            for scan_params in itertools.islice(scans_to_run, max_scans_in_parallel)
+        }
+        while futures:
+            # Wait for the first future to complete.
+            done, _ = concurrent.futures.wait(
+                futures, return_when=concurrent.futures.FIRST_COMPLETED
+            )
+
+            for fut in done:
+                yield from fut.result()["Items"]
+
+                scan_params = futures.pop(fut)
+
+                try:
+                    scan_params["ExclusiveStartKey"] = fut.result()["LastEvaluatedKey"]
+                except KeyError:
+                    break
+                tasks_to_do.append(scan_params)
+
+            for scan_params in itertools.islice(scans_to_run, len(done)):
+                futures[executor.submit(table.scan, **scan_params)] = scan_params
 
 
 sts_client = boto3.client("sts")
