@@ -95,6 +95,15 @@ def get_latest_bags(dynamodb_client, table_name):
     ):
         dynamo_id = item["id"]["S"]
         version = int(item["version"]["N"])
+
+        # Don't index Chemist & Druggist with this script.  It's too big to index
+        # normally, and we have a separate script that breaks it into smaller,
+        # indexable-sized pieces.
+        #
+        # Trying to index C&D like other bags causes an outage in the bags API.
+        if dynamo_id == "digitised/b19974760":
+            continue
+
         stored_version = bags.get(dynamo_id, -1)
 
         seen_bags = seen_bags + 1
