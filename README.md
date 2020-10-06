@@ -1,6 +1,6 @@
 # storage-service
 
-[![Build Status](https://travis-ci.org/wellcomecollection/storage-service.svg?branch=master)](https://travis-ci.org/wellcomecollection/storage-service)
+[![Build status](https://badge.buildkite.com/844e7fa8968b4cea276557cd9886753395d159dc2823eb8249.svg)](https://buildkite.com/wellcomecollection/storage-service)
 
 This repo contains the code for our storage service, which holds Wellcome Collection's digital archive.
 The archive holds our digital collections, including:
