@@ -14,14 +14,14 @@ import org.apache.commons.compress.compressors.{
 }
 import org.apache.commons.io.IOUtils
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
+import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
 import uk.ac.wellcome.storage.Location
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 trait CompressFixture[BagLocation <: Location, Namespace]
-    extends StorageRandomThings
+    extends StorageRandomGenerators
     with S3Fixtures
     with Logging {
 

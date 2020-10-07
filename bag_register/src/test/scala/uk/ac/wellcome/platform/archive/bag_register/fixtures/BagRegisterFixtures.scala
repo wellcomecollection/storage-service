@@ -20,6 +20,7 @@ import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures._
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
+import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
@@ -31,7 +32,7 @@ import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait BagRegisterFixtures
-    extends StorageRandomThings
+    extends StorageRandomGenerators
     with Akka
     with AlpakkaSQSWorkerFixtures
     with OperationFixtures

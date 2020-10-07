@@ -6,7 +6,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
+import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
 import uk.ac.wellcome.platform.archive.common.verify.{
   Checksum,
   ChecksumValue,
@@ -21,7 +21,7 @@ class ChecksumTest
     with Matchers
     with EitherValues
     with ScalaFutures
-    with StorageRandomThings {
+    with StorageRandomGenerators {
 
   private def toInputStream(s: String): InputStream =
     stringCodec.toStream(s).right.value

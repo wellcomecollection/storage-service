@@ -1,10 +1,9 @@
 package uk.ac.wellcome.platform.archive.common.generators
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 
-trait StorageSpaceGenerators extends StorageRandomThings with Logging {
+trait StorageSpaceGenerators extends StorageRandomGenerators with Logging {
   def createStorageSpace = {
     val space = randomAlphanumericWithLength()
     debug(s"Creating StorageSpace: $space")

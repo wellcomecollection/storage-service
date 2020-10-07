@@ -1,5 +1,4 @@
-package uk.ac.wellcome.platform.archive.common.fixtures
-
+package uk.ac.wellcome.platform.archive.common.generators
 import java.io.{File, FileOutputStream}
 import java.nio.file.Paths
 import java.time.LocalDate
@@ -15,7 +14,7 @@ import uk.ac.wellcome.platform.archive.common.verify._
 
 import scala.util.Random
 
-trait StorageRandomThings extends RandomGenerators {
+trait StorageRandomGenerators extends RandomGenerators {
 
   def randomChecksumValue = ChecksumValue(randomAlphanumeric())
 

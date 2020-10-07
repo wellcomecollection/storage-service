@@ -1,9 +1,8 @@
 package uk.ac.wellcome.platform.archive.common.generators
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 
-trait ExternalIdentifierGenerators extends StorageRandomThings {
+trait ExternalIdentifierGenerators extends StorageRandomGenerators {
   // The external identifier can contain slashes, especially in bags whose
   // identifiers come from CALM.
   //

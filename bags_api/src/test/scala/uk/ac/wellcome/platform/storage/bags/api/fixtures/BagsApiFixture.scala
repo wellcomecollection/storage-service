@@ -16,10 +16,8 @@ import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  HttpFixtures,
-  StorageRandomThings
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.HttpFixtures
+import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
 import uk.ac.wellcome.platform.archive.common.http.{
   HttpMetrics,
   WellcomeHttpApp
@@ -37,7 +35,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
 trait BagsApiFixture
-    extends StorageRandomThings
+    extends StorageRandomGenerators
     with ScalaFutures
     with StorageManifestDaoFixture
     with S3Fixtures

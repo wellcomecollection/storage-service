@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
   ReplicationRequest,
   ReplicationSucceeded
 }
-import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
+import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.TypedStore
@@ -36,7 +36,7 @@ trait ReplicatorTestCases[
 ] extends AnyFunSpec
     with Matchers
     with EitherValues
-    with StorageRandomThings
+    with StorageRandomGenerators
     with S3Fixtures {
 
   def withSrcNamespace[R](testWith: TestWith[Bucket, R]): R =
