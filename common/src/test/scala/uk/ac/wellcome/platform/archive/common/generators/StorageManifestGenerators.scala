@@ -7,7 +7,6 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
 import uk.ac.wellcome.platform.archive.common.verify.{HashingAlgorithm, SHA256}
-import uk.ac.wellcome.storage.azure.AzureBlobLocationPrefix
 
 import scala.util.Random
 
@@ -59,12 +58,7 @@ trait StorageManifestGenerators
         chooseFrom(
           Seq(
             SecondaryS3StorageLocation(createS3ObjectLocationPrefix),
-            SecondaryAzureStorageLocation(
-              AzureBlobLocationPrefix(
-                randomAlphanumeric,
-                randomAlphanumeric
-              )
-            )
+            SecondaryAzureStorageLocation(createAzureBlobLocationPrefix)
           )
         )
       },

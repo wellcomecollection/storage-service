@@ -11,16 +11,19 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   SecondaryAzureReplicaLocation,
   SecondaryS3ReplicaLocation
 }
-import uk.ac.wellcome.storage.azure.AzureBlobLocationPrefix
-import uk.ac.wellcome.storage.generators.S3ObjectLocationGenerators
+import uk.ac.wellcome.storage.generators.{
+  AzureBlobLocationGenerators,
+  S3ObjectLocationGenerators
+}
 
-class ReplicationRequestTest extends AnyFunSpec with Matchers with S3ObjectLocationGenerators {
+class ReplicationRequestTest
+  extends AnyFunSpec
+    with Matchers
+    with S3ObjectLocationGenerators
+    with AzureBlobLocationGenerators {
   describe("toReplicaLocation") {
     val s3Prefix = createS3ObjectLocationPrefix
-    val azurePrefix = AzureBlobLocationPrefix(
-      container = randomAlphanumeric,
-      namePrefix = randomAlphanumeric
-    )
+    val azurePrefix = createAzureBlobLocationPrefix
 
     val s3Request = ReplicationRequest(
       srcPrefix = createS3ObjectLocationPrefix,
