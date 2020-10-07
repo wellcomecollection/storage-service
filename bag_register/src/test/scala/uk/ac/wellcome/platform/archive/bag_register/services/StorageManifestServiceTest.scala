@@ -16,7 +16,6 @@ import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.azure.AzureBlobLocationPrefix
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
@@ -266,7 +265,7 @@ class StorageManifestServiceTest
   describe("fails if the fetch.txt is wrong") {
     it("refers to files that aren't in the manifest") {
       val fetchEntries = Map(
-        BagPath(randomAlphanumeric) -> createFetchMetadata
+        createBagPath -> createFetchMetadata
       )
 
       val bag = createBagWith(
@@ -550,7 +549,7 @@ class StorageManifestServiceTest
             .asPrefix
         ),
         SecondaryAzureReplicaLocation(
-          AzureBlobLocationPrefix(randomAlphanumeric, randomAlphanumeric)
+          createAzureBlobLocationPrefix
             .asLocation(version.toString)
             .asPrefix
         )

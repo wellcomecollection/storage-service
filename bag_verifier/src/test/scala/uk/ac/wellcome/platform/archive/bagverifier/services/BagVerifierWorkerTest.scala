@@ -328,7 +328,7 @@ class BagVerifierWorkerTest
     val ingests = new MemoryMessageSender()
     val outgoing = new MemoryMessageSender()
 
-    val externalIdentifier = randomAlphanumeric
+    val externalIdentifier = createExternalIdentifier.underlying
     val bagInfoExternalIdentifier =
       ExternalIdentifier(externalIdentifier + "_bag-info")
     val payloadExternalIdentifier =

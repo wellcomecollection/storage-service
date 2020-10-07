@@ -47,7 +47,7 @@ trait BagVerifierFixtures
     outgoing: MemoryMessageSender,
     queue: Queue = dummyQueue,
     bucket: Bucket,
-    stepName: String = randomAlphanumericWithLength()
+    stepName: String = createStepName
   )(
     testWith: TestWith[BagVerifierWorker[
       S3ObjectLocation,
@@ -85,7 +85,7 @@ trait BagVerifierFixtures
     outgoing: MemoryMessageSender,
     queue: Queue = dummyQueue,
     bucket: Bucket,
-    stepName: String = randomAlphanumericWithLength()
+    stepName: String = createStepName
   )(
     testWith: TestWith[BagVerifierWorker[
       S3ObjectLocation,
@@ -124,7 +124,7 @@ trait BagVerifierFixtures
     outgoing: MemoryMessageSender = new MemoryMessageSender(),
     queue: Queue = dummyQueue,
     bucket: Bucket,
-    stepName: String = randomAlphanumericWithLength()
+    stepName: String = createStepName
   )(
     testWith: TestWith[BagVerifierWorker[
       AzureBlobLocation,

@@ -19,6 +19,7 @@ import uk.ac.wellcome.platform.archive.common.verify.{
   MD5
 }
 import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.generators.MemoryLocationGenerators
 import uk.ac.wellcome.storage.providers.memory.{
   MemoryLocation,
   MemoryLocationPrefix
@@ -33,15 +34,13 @@ class FixityCheckerTests
     extends AnyFunSpec
     with Matchers
     with EitherValues
-    with FixityGenerators[MemoryLocation] {
+    with FixityGenerators[MemoryLocation]
+    with MemoryLocationGenerators {
   override def resolve(location: MemoryLocation): URI =
     new URI(s"mem://$location")
 
   override def createLocation: MemoryLocation =
-    MemoryLocation(
-      namespace = randomAlphanumeric,
-      path = randomAlphanumeric
-    )
+    createMemoryLocation
 
   describe("handles errors correctly") {
     it("turns an error in locate() into a FileFixityCouldNotRead") {
@@ -133,10 +132,7 @@ class FixityCheckerTests
       val checksum =
         Checksum(MD5, ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6"))
 
-      val location = MemoryLocation(
-        namespace = randomAlphanumeric,
-        path = randomAlphanumeric
-      )
+      val location = createMemoryLocation
 
       val inputStream = stringCodec.toStream(contentString).right.value
       streamStore.put(location)(inputStream) shouldBe a[Right[_, _]]

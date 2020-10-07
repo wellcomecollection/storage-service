@@ -171,12 +171,14 @@ class DisplayIngestTest
   def createRequestDisplayIngestWith(
     sourceLocation: DisplayLocation = DisplayLocation(
       provider = DisplayProvider(id = "aws-s3-ia"),
-      bucket = randomAlphanumeric,
+      bucket = createBucketName,
       path = randomAlphanumeric
     ),
     callback: Option[DisplayCallback] = None,
     ingestType: DisplayIngestType = CreateDisplayIngestType,
-    space: DisplayStorageSpace = DisplayStorageSpace(randomAlphanumeric)
+    space: DisplayStorageSpace = DisplayStorageSpace(
+      createStorageSpace.underlying
+    )
   ): RequestDisplayIngest =
     RequestDisplayIngest(
       sourceLocation = sourceLocation,

@@ -6,16 +6,14 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
-import uk.ac.wellcome.storage.providers.memory.{
-  MemoryLocation,
-  MemoryLocationPrefix
-}
+import uk.ac.wellcome.storage.generators.MemoryLocationGenerators
 
 import scala.util.Random
 
 class UnpackerMessageTest
     extends AnyFunSpec
     with Matchers
+    with MemoryLocationGenerators
     with StorageRandomThings {
   it("handles a single file correctly") {
     val summary = createSummaryWith(fileCount = 1)
@@ -47,14 +45,8 @@ class UnpackerMessageTest
   ): UnpackSummary[_, _] =
     UnpackSummary(
       ingestId = createIngestID,
-      srcLocation = MemoryLocation(
-        namespace = randomAlphanumeric,
-        path = randomAlphanumeric
-      ),
-      dstPrefix = MemoryLocationPrefix(
-        namespace = randomAlphanumeric,
-        path = randomAlphanumeric
-      ),
+      srcLocation = createMemoryLocation,
+      dstPrefix = createMemoryLocationPrefix,
       fileCount = fileCount,
       bytesUnpacked = bytesUnpacked,
       startTime = Instant.now()

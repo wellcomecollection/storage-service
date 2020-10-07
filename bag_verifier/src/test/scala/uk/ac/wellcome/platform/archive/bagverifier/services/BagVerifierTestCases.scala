@@ -221,7 +221,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
       ): Option[String] =
         super.createPayloadManifest(
           entries.tail :+ PayloadEntry(
-            bagPath = BagPath(randomAlphanumeric),
+            bagPath = createBagPath,
             path = randomAlphanumeric,
             contents = randomAlphanumeric
           )
@@ -290,7 +290,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
 
   it("fails if the external identifier in the bag-info.txt is incorrect") {
     val space = createStorageSpace
-    val externalIdentifier = randomAlphanumeric
+    val externalIdentifier = createExternalIdentifier.underlying
     val bagInfoExternalIdentifier =
       ExternalIdentifier(externalIdentifier + "_bag-info")
     val payloadExternalIdentifier =

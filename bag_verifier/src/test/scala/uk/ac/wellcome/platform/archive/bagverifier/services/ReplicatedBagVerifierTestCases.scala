@@ -57,9 +57,9 @@ trait ReplicatedBagVerifierTestCases[
           case (primaryBucket, replicaBagRoot) =>
             val srcBagRoot =
               S3ObjectLocationPrefix(srcBucket.name, replicaBagRoot.pathPrefix)
-            S3TypedStore[String].put(
-              srcBagRoot.asLocation("tagmanifest-sha256.txt")
-            )(randomAlphanumeric)
+
+            putStream(srcBagRoot.asLocation("tagmanifest-sha256.txt"))
+
             val ingestStep =
               withVerifier(primaryBucket) {
                 _.verify(

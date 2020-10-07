@@ -92,7 +92,7 @@ class BagUnpackerWorkerTest
     withLocalS3Bucket { srcBucket =>
       val location = createS3ObjectLocationWith(srcBucket)
 
-      s3Client.putObject(location.bucket, location.key, "hello world")
+      putStream(location)
 
       val payload = createSourceLocationPayloadWith(location)
 

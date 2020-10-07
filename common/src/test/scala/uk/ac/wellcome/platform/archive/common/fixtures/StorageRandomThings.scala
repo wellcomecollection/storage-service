@@ -199,4 +199,7 @@ trait StorageRandomThings extends RandomThings {
     StorageProvider(
       id = chooseFrom(StorageProvider.allowedValues)
     )
+
+  def createStepName: String =
+    s"step-$randomAlphanumeric"
 }

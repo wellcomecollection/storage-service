@@ -9,6 +9,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FixityCheckerTagsTestCases
 }
 import uk.ac.wellcome.storage._
+import uk.ac.wellcome.storage.generators.MemoryLocationGenerators
 import uk.ac.wellcome.storage.providers.memory.{
   MemoryLocation,
   MemoryLocationPrefix
@@ -25,7 +26,8 @@ class MemoryFixityCheckerTest
       (MemoryStreamStore[MemoryLocation], MemoryTags[MemoryLocation]),
       MemoryStreamStore[MemoryLocation]
     ]
-    with EitherValues {
+    with EitherValues
+    with MemoryLocationGenerators {
   type MemoryContext =
     (MemoryStreamStore[MemoryLocation], MemoryTags[MemoryLocation])
 
@@ -82,10 +84,7 @@ class MemoryFixityCheckerTest
     testWith(randomAlphanumeric)
 
   override def createId(implicit namespace: String): MemoryLocation =
-    MemoryLocation(
-      namespace = namespace,
-      path = randomAlphanumeric
-    )
+    createMemoryLocation
 
   override def resolve(location: MemoryLocation): URI =
     new URI(s"mem://$location")

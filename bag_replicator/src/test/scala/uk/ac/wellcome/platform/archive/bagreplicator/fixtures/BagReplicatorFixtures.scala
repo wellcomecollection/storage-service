@@ -69,7 +69,7 @@ trait BagReplicatorFixtures
     ingests: MemoryMessageSender = new MemoryMessageSender(),
     outgoing: MemoryMessageSender = new MemoryMessageSender(),
     lockServiceDao: LockDao[String, UUID] = new MemoryLockDao[String, UUID] {},
-    stepName: String = randomAlphanumericWithLength(),
+    stepName: String = createStepName,
     replicaType: ReplicaType = chooseFrom(Seq(PrimaryReplica, SecondaryReplica))
   )(
     testWith: TestWith[
