@@ -46,7 +46,7 @@ class BagExpectedFixityTest
   def createLocationWith(root: MemoryLocation): MemoryLocation =
     MemoryLocation(
       namespace = root.namespace,
-      path = s"${root.path}/$randomAlphanumeric/$randomAlphanumeric"
+      path = s"${root.path}/${randomAlphanumeric()}/${randomAlphanumeric()}"
     )
 
   describe("creates the correct list of VerifiableLocation") {

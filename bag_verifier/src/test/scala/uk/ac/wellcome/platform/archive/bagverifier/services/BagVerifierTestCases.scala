@@ -106,7 +106,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
 
   def writeFile(
     location: BagLocation,
-    contents: String = randomAlphanumeric
+    contents: String = randomAlphanumeric()
   ): Unit
 
   def createBagReader: BagReader[BagLocation, BagPrefix]
@@ -174,7 +174,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
         entries: Seq[PayloadEntry]
       ): Option[String] =
         super.createPayloadManifest(
-          entries.head.copy(contents = randomAlphanumeric) +: entries.tail
+          entries.head.copy(contents = randomAlphanumeric()) +: entries.tail
         )
     }
 
@@ -202,7 +202,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
         entries: Seq[PayloadEntry]
       ): Option[String] =
         super.createPayloadManifest(
-          entries.map { _.copy(contents = randomAlphanumeric) }
+          entries.map { _.copy(contents = randomAlphanumeric()) }
         )
     }
 
@@ -222,8 +222,8 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
         super.createPayloadManifest(
           entries.tail :+ PayloadEntry(
             bagPath = createBagPath,
-            path = randomAlphanumeric,
-            contents = randomAlphanumeric
+            path = randomAlphanumeric(),
+            contents = randomAlphanumeric()
           )
         )
 
@@ -335,7 +335,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
             entries :+ entries.head.copy(
               bagPath = BagPath(entries.head.bagPath + "_extra"),
               path = entries.head.path + "_extra",
-              contents = randomAlphanumeric
+              contents = randomAlphanumeric()
             )
           )
       }

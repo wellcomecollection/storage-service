@@ -23,7 +23,7 @@ class AzureDynamoTagsTest
 
       initialTags.foreach {
         case (location, tags) =>
-          AzureTypedStore[String].put(location)(randomAlphanumeric) shouldBe a[
+          AzureTypedStore[String].put(location)(randomAlphanumeric()) shouldBe a[
             Right[_, _]
           ]
           azureTags.update(location) { _ =>

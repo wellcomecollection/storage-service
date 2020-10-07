@@ -81,7 +81,7 @@ class MemoryFixityCheckerTest
   }
 
   override def withNamespace[R](testWith: TestWith[String, R]): R =
-    testWith(randomAlphanumeric)
+    testWith(randomAlphanumeric())
 
   override def createId(implicit namespace: String): MemoryLocation =
     createMemoryLocation
