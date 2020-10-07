@@ -50,11 +50,12 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
 
   def createSrcLocationWith(
     namespace: Namespace,
-    path: String = randomAlphanumeric
+    path: String = randomAlphanumeric()
   ): BagLocation
+
   def createDstPrefixWith(
     namespace: Namespace,
-    pathPrefix: String = randomAlphanumeric
+    pathPrefix: String = randomAlphanumeric()
   ): BagPrefix
 
   override def createLocationWith(

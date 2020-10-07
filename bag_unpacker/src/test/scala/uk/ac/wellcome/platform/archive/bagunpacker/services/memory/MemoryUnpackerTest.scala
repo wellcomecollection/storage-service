@@ -32,7 +32,7 @@ class MemoryUnpackerTest
     )
 
   override def withNamespace[R](testWith: TestWith[String, R]): R =
-    testWith(randomAlphanumeric)
+    testWith(randomAlphanumeric())
 
   override def withStreamStore[R](
     testWith: TestWith[MemoryStreamStore[MemoryLocation], R]
