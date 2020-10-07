@@ -28,6 +28,3 @@ format: format-terraform format-scala format-python
 
 lint: lint-python
 	git diff --exit-code
-
-travis-format:
-	python3 run_autoformat.py
