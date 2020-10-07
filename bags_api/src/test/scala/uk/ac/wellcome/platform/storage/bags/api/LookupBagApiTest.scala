@@ -331,7 +331,7 @@ class LookupBagApiTest
     }
 
     it("if you ask for a non-numeric version") {
-      val badVersion = randomAlphanumeric
+      val badVersion = randomAlphanumeric()
 
       val bagId = createBagId
 
