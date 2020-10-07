@@ -12,8 +12,6 @@ import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 
-import scala.util.Random
-
 trait IngestGenerators extends BagIdGenerators with S3Fixtures {
 
   def createSourceLocation: SourceLocation =
@@ -25,11 +23,7 @@ trait IngestGenerators extends BagIdGenerators with S3Fixtures {
     new URI("http://www.wellcomecollection.org/callback/ok")
 
   private def maybeVersion: Option[BagVersion] =
-    if (Random.nextBoolean()) {
-      Some(createBagVersion)
-    } else {
-      None
-    }
+    chooseFrom(Some(createBagVersion), None)
 
   def createIngestWith(
     id: IngestID = createIngestID,
