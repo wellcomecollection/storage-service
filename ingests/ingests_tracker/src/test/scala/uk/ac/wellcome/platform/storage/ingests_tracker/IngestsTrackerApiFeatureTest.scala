@@ -48,8 +48,8 @@ class IngestsTrackerApiFeatureTest
   }
 
   val badEntity = HttpEntity(
-    ContentTypes.`application/json`,
-    randomAlphanumeric
+    contentType = ContentTypes.`application/json`,
+    string = randomAlphanumeric()
   )
 
   describe("POST /ingest") {

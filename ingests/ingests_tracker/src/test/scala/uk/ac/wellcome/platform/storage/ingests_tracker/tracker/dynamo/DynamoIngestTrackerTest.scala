@@ -26,14 +26,12 @@ import uk.ac.wellcome.storage.{
 import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures.{Table => DynamoTable}
-import uk.ac.wellcome.storage.generators.RandomThings
 import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.store.dynamo.DynamoHashStore
 
 class DynamoIngestTrackerTest
     extends IngestTrackerTestCases[DynamoTable]
-    with DynamoFixtures
-    with RandomThings {
+    with DynamoFixtures {
   override def withContext[R](
     testWith: TestWith[DynamoTable, R]
   ): R =
