@@ -2,9 +2,9 @@ package uk.ac.wellcome.platform.archive.common.fixtures
 
 import java.io.{File, FileOutputStream}
 import java.nio.file.Paths
-import java.time.{Instant, LocalDate}
-import java.util.UUID
+import java.time.LocalDate
 
+import uk.ac.wellcome.fixtures.RandomGenerators
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.platform.archive.common.bagit.models._
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
@@ -12,18 +12,12 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   StorageProvider
 }
 import uk.ac.wellcome.platform.archive.common.verify._
-import uk.ac.wellcome.storage.generators.RandomThings
 
 import scala.util.Random
 
-trait StorageRandomThings extends RandomThings {
+trait StorageRandomThings extends RandomGenerators {
 
-  def randomChecksumValue = ChecksumValue(randomAlphanumeric)
-
-  def randomInstant: Instant =
-    Instant.now().plusSeconds(Random.nextInt().abs)
-
-  private val collectionMax = 10
+  def randomChecksumValue = ChecksumValue(randomAlphanumeric())
 
   val dummyQueue: Queue = Queue(
     url = "test://test-q",
@@ -31,33 +25,14 @@ trait StorageRandomThings extends RandomThings {
     visibilityTimeout = 1
   )
 
-  def collectionOf[T](min: Int = 0, max: Int = collectionMax)(f: => T): Seq[T] =
-    (1 to randomInt(from = min, to = max)).map { _ =>
-      f
-    }
-
-  def chooseFrom[T](seq: Seq[T]): T =
-    seq(Random.nextInt(seq.size))
-
   def randomPaths(maxDepth: Int = 4, dirs: Int = 4): List[String] = {
     (1 to dirs).map { _ =>
       val depth = Random.nextInt(maxDepth)
 
       (1 to depth).foldLeft("") { (memo, _) =>
-        Paths.get(memo, randomAlphanumeric).toString
+        Paths.get(memo, randomAlphanumeric()).toString
       }
     }.toList
-  }
-
-  def randomAlphanumericWithSpace(length: Int = 8): Array[Char] = {
-    val str = randomAlphanumericWithLength(length).toCharArray
-
-    // Randomly choose an index in the string
-    // to replace with a space,
-    // avoiding the beginning or the end.
-
-    val spaceIndex = Random.nextInt(str.length - 2) + 1
-    str.updated(spaceIndex, ' ')
   }
 
   def randomFilesInDirs(
@@ -86,11 +61,7 @@ trait StorageRandomThings extends RandomThings {
       val path = paths(index)
 
       createFile(
-        Paths
-          .get(
-            path,
-            s"${randomAlphanumericWithLength()}.test"
-          )
+        Paths.get(path, s"${randomAlphanumeric()}.test")
           .toString
       )
     }
@@ -146,30 +117,28 @@ trait StorageRandomThings extends RandomThings {
       val bytes = if (useBytes) {
         randomBytes(size)
       } else {
-        randomAlphanumericWithLength(size).getBytes
+        randomAlphanumeric(size).getBytes
       }
 
       fileOutputStream.write(bytes)
     }
 
-  def randomUUID: UUID = UUID.randomUUID()
-
   def createIngestID: IngestID =
     IngestID(randomUUID)
 
   def randomSourceOrganisation =
-    SourceOrganisation(randomAlphanumericWithLength())
+    SourceOrganisation(randomAlphanumeric())
 
   def randomInternalSenderIdentifier =
-    InternalSenderIdentifier(randomAlphanumericWithLength())
+    InternalSenderIdentifier(randomAlphanumeric())
 
   def randomInternalSenderDescription =
-    InternalSenderDescription(randomAlphanumericWithLength())
+    InternalSenderDescription(randomAlphanumeric())
 
   def randomExternalDescription =
-    ExternalDescription(randomAlphanumericWithLength())
+    ExternalDescription(randomAlphanumeric())
 
-  def randomLocalDate = {
+  def randomLocalDate: LocalDate = {
     val startRange = -999999999
     val maxValue = 1999999998
     LocalDate.ofEpochDay(startRange + Random.nextInt(maxValue))
@@ -184,7 +153,7 @@ trait StorageRandomThings extends RandomThings {
     algorithms(Random.nextInt(algorithms.length))
   }
 
-  def createBagPath: BagPath = BagPath(randomAlphanumeric)
+  def createBagPath: BagPath = BagPath(randomAlphanumeric())
 
   def createBagPathWithPrefix(prefix: String, name: String): BagPath =
     BagPath(s"$prefix/$name")
@@ -197,9 +166,9 @@ trait StorageRandomThings extends RandomThings {
 
   def createProvider: StorageProvider =
     StorageProvider(
-      id = chooseFrom(StorageProvider.allowedValues)
+      id = chooseFrom(StorageProvider.allowedValues: _*)
     )
 
   def createStepName: String =
-    s"step-$randomAlphanumeric"
+    s"step-${randomAlphanumeric()}"
 }
