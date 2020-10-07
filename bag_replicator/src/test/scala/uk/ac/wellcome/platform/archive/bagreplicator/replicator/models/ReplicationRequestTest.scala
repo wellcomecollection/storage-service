@@ -17,7 +17,7 @@ import uk.ac.wellcome.storage.generators.{
 }
 
 class ReplicationRequestTest
-  extends AnyFunSpec
+    extends AnyFunSpec
     with Matchers
     with S3ObjectLocationGenerators
     with AzureBlobLocationGenerators {

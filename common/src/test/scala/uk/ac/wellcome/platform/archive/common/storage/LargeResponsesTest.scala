@@ -27,10 +27,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class LargeResponsesTest
-    extends AnyFunSpec
-    with S3Fixtures
-    with Akka {
+class LargeResponsesTest extends AnyFunSpec with S3Fixtures with Akka {
 
   private val converter = StreamConverters.asInputStream()
 

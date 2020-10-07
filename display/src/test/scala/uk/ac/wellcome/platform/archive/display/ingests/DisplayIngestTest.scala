@@ -176,7 +176,9 @@ class DisplayIngestTest
     ),
     callback: Option[DisplayCallback] = None,
     ingestType: DisplayIngestType = CreateDisplayIngestType,
-    space: DisplayStorageSpace = DisplayStorageSpace(createStorageSpace.underlying)
+    space: DisplayStorageSpace = DisplayStorageSpace(
+      createStorageSpace.underlying
+    )
   ): RequestDisplayIngest =
     RequestDisplayIngest(
       sourceLocation = sourceLocation,

@@ -7,7 +7,10 @@ import uk.ac.wellcome.storage.generators.{
   S3ObjectLocationGenerators
 }
 
-trait ReplicaLocationGenerators extends StorageRandomThings with S3ObjectLocationGenerators with AzureBlobLocationGenerators {
+trait ReplicaLocationGenerators
+    extends StorageRandomThings
+    with S3ObjectLocationGenerators
+    with AzureBlobLocationGenerators {
   def createPrimaryLocation: PrimaryReplicaLocation =
     chooseFrom(
       Seq(
