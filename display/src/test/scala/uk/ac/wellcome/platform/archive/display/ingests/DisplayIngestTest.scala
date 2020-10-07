@@ -172,7 +172,7 @@ class DisplayIngestTest
     sourceLocation: DisplayLocation = DisplayLocation(
       provider = DisplayProvider(id = "aws-s3-ia"),
       bucket = createBucketName,
-      path = randomAlphanumeric
+      path = randomAlphanumeric()
     ),
     callback: Option[DisplayCallback] = None,
     ingestType: DisplayIngestType = CreateDisplayIngestType,
