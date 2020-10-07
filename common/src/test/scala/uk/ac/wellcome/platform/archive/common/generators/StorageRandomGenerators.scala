@@ -60,8 +60,7 @@ trait StorageRandomGenerators extends RandomGenerators {
       val path = paths(index)
 
       createFile(
-        Paths.get(path, s"${randomAlphanumeric()}.test")
-          .toString
+        Paths.get(path, s"${randomAlphanumeric()}.test").toString
       )
     }
   }

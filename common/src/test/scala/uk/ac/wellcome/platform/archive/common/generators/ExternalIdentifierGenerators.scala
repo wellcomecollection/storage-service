@@ -10,7 +10,9 @@ trait ExternalIdentifierGenerators extends StorageRandomGenerators {
   def createExternalIdentifier: ExternalIdentifier =
     ExternalIdentifier(
       (1 to randomInt(from = 1, to = 5))
-        .map { _ => randomAlphanumeric() }
+        .map { _ =>
+          randomAlphanumeric()
+        }
         .mkString("/")
     )
 }
