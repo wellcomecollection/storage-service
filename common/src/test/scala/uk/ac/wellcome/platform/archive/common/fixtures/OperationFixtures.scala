@@ -7,7 +7,7 @@ import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublish
 trait OperationFixtures extends StorageRandomThings {
   def createIngestUpdaterWith(
     messageSender: MemoryMessageSender,
-    stepName: String = randomAlphanumericWithLength()
+    stepName: String = createStepName
   ) =
     new IngestUpdater[String](
       stepName = stepName,

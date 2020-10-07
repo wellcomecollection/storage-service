@@ -29,7 +29,7 @@ trait BagVersionerFixtures
     queue: Queue = dummyQueue,
     ingests: MemoryMessageSender,
     outgoing: MemoryMessageSender,
-    stepName: String = randomAlphanumericWithLength()
+    stepName: String = createStepName
   )(testWith: TestWith[BagVersionerWorker[String, String], R]): R =
     withActorSystem { implicit actorSystem =>
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)

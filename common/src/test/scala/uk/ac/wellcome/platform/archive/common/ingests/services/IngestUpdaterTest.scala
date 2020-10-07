@@ -20,7 +20,7 @@ class IngestUpdaterTest
     with IngestOperationGenerators
     with BagIdGenerators {
 
-  val stepName: String = randomAlphanumericWithLength()
+  val stepName: String = createStepName
 
   val ingestId: IngestID = createIngestID
   val summary: TestSummary = createTestSummary()

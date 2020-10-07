@@ -34,7 +34,7 @@ trait ReplicaAggregatorFixtures
       ),
     ingests: MemoryMessageSender = new MemoryMessageSender(),
     outgoing: MemoryMessageSender = new MemoryMessageSender(),
-    stepName: String = randomAlphanumericWithLength(),
+    stepName: String = createStepName,
     expectedReplicaCount: Int = 1
   )(testWith: TestWith[ReplicaAggregatorWorker[String, String], R]): R =
     withActorSystem { implicit actorSystem =>
