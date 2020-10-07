@@ -118,7 +118,7 @@ class IngestUpdaterTest
       messageSender = messageSender
     )
 
-    val failureMessage = randomAlphanumericWithLength(length = 50)
+    val failureMessage = randomAlphanumeric(length = 50)
 
     val update = ingestUpdater.send(
       ingestId = ingestId,

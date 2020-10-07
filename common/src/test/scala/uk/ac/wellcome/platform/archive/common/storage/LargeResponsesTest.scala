@@ -62,7 +62,7 @@ class LargeResponsesTest extends AnyFunSpec with S3Fixtures with Akka {
             withMaterializer { implicit mat =>
               val maxBytes = 100
               val expectedByteArray = randomBytes(maxBytes + 10)
-              val prefix = randomAlphanumeric
+              val prefix = randomAlphanumeric()
 
               withLargeResponderResult(
                 bucket,
@@ -109,8 +109,8 @@ class LargeResponsesTest extends AnyFunSpec with S3Fixtures with Akka {
             withMaterializer { implicit mat =>
               val maxBytes = 100
               val expectedByteArray = randomBytes(maxBytes + 10)
-              val header = ETag(randomAlphanumeric)
-              val prefix = randomAlphanumeric
+              val header = ETag(randomAlphanumeric())
+              val prefix = randomAlphanumeric()
 
               withLargeResponderResult(
                 bucket,
@@ -159,7 +159,7 @@ class LargeResponsesTest extends AnyFunSpec with S3Fixtures with Akka {
     bucket: Bucket,
     maxBytes: Int,
     testBytes: Array[Byte],
-    prefix: String = randomAlphanumeric,
+    prefix: String = randomAlphanumeric(),
     headers: List[HttpHeader] = Nil
   )(testWith: TestWith[HttpResponse, R])(
     implicit mat: Materializer,

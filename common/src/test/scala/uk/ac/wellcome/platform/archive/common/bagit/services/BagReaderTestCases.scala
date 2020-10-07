@@ -44,7 +44,7 @@ trait BagReaderTestCases[
   def scrambleFile(root: BagPrefix, path: String)(
     implicit typedStore: TypedStore[BagLocation, String]
   ): Assertion =
-    typedStore.put(root.asLocation(path))(randomAlphanumeric) shouldBe a[
+    typedStore.put(root.asLocation(path))(randomAlphanumeric()) shouldBe a[
       Right[_, _]
     ]
 

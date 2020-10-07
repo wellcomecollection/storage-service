@@ -17,9 +17,7 @@ trait PayloadGenerators
     with ReplicaLocationGenerators {
 
   def randomIngestType: IngestType =
-    chooseFrom(
-      Seq(CreateIngestType, UpdateIngestType)
-    )
+    chooseFrom(CreateIngestType, UpdateIngestType)
 
   def createPipelineContextWith(
     ingestId: IngestID = createIngestID,

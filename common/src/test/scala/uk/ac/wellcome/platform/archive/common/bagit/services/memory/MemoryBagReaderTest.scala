@@ -37,7 +37,7 @@ class MemoryBagReaderTest
     testWith(new MemoryBagReader())
 
   override def withNamespace[R](testWith: TestWith[String, R]): R =
-    testWith(randomAlphanumeric)
+    testWith(randomAlphanumeric())
 
   override def deleteFile(root: MemoryLocationPrefix, path: String)(
     implicit context: MemoryStreamStore[MemoryLocation]

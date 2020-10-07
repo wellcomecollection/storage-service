@@ -67,7 +67,7 @@ trait IngestGenerators extends BagIdGenerators with S3Fixtures {
       .sortBy { _.createdDate }
 
   def createIngestEventWith(
-    description: String = randomAlphanumeric,
+    description: String = randomAlphanumeric(),
     createdDate: Instant =
       Instant.now().plusSeconds(randomInt(from = 0, to = 30))
   ): IngestEvent =

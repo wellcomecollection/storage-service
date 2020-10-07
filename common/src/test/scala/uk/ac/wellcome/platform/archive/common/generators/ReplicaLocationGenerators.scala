@@ -11,16 +11,12 @@ trait ReplicaLocationGenerators
     with AzureBlobLocationGenerators {
   def createPrimaryLocation: PrimaryReplicaLocation =
     chooseFrom(
-      Seq(
-        PrimaryS3ReplicaLocation(prefix = createS3ObjectLocationPrefix)
-      )
+      PrimaryS3ReplicaLocation(prefix = createS3ObjectLocationPrefix)
     )
 
   def createSecondaryLocation: SecondaryReplicaLocation =
     chooseFrom(
-      Seq(
-        SecondaryS3ReplicaLocation(prefix = createS3ObjectLocationPrefix),
-        SecondaryAzureReplicaLocation(prefix = createAzureBlobLocationPrefix)
-      )
+      SecondaryS3ReplicaLocation(prefix = createS3ObjectLocationPrefix),
+      SecondaryAzureReplicaLocation(prefix = createAzureBlobLocationPrefix)
     )
 }

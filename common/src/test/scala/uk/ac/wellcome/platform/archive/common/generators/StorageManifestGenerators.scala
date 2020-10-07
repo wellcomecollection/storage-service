@@ -29,8 +29,8 @@ trait StorageManifestGenerators
   }
 
   def createStorageManifestFileWith(
-    pathPrefix: String = randomAlphanumeric,
-    name: String = randomAlphanumeric,
+    pathPrefix: String = randomAlphanumeric(),
+    name: String = randomAlphanumeric(),
     size: Long = Random.nextLong().abs
   ): StorageManifestFile = {
 
@@ -56,10 +56,8 @@ trait StorageManifestGenerators
     replicaLocations: Seq[SecondaryStorageLocation] = (1 to randomInt(0, 5))
       .map { _ =>
         chooseFrom(
-          Seq(
-            SecondaryS3StorageLocation(createS3ObjectLocationPrefix),
-            SecondaryAzureStorageLocation(createAzureBlobLocationPrefix)
-          )
+          SecondaryS3StorageLocation(createS3ObjectLocationPrefix),
+          SecondaryAzureStorageLocation(createAzureBlobLocationPrefix)
         )
       },
     createdDate: Instant = Instant.now,

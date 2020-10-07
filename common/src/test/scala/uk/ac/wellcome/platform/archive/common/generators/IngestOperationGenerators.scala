@@ -11,9 +11,7 @@ trait IngestOperationGenerators extends StorageRandomGenerators {
     override def toString: String = this.description
   }
 
-  def createTestSummary() = TestSummary(
-    randomAlphanumericWithLength()
-  )
+  def createTestSummary() = TestSummary(randomAlphanumeric())
 
   def createOperationSuccess() = createOperationSuccessWith()
 
