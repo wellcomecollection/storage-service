@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{EitherValues, TryValues}
-import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.fixtures.{RandomGenerators, TestWith}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifestFile
 import uk.ac.wellcome.platform.archive.common.verify.{
   ChecksumValue,
@@ -11,7 +11,6 @@ import uk.ac.wellcome.platform.archive.common.verify.{
   SHA256
 }
 import uk.ac.wellcome.storage.StoreReadError
-import uk.ac.wellcome.storage.generators.RandomThings
 import uk.ac.wellcome.storage.providers.memory.{
   MemoryLocation,
   MemoryLocationPrefix
@@ -25,7 +24,7 @@ class TagManifestFileFinderTest
     with Matchers
     with EitherValues
     with TryValues
-    with RandomThings {
+    with RandomGenerators {
 
   def withTagManifestFileFinder[R](
     entries: Map[MemoryLocation, String]
@@ -47,8 +46,8 @@ class TagManifestFileFinderTest
 
   it("handles a bag that contains all four tag manifest files") {
     val prefix = MemoryLocationPrefix(
-      namespace = randomAlphanumeric,
-      path = randomAlphanumeric
+      namespace = randomAlphanumeric(),
+      path = randomAlphanumeric()
     )
 
     val result =
@@ -103,8 +102,8 @@ class TagManifestFileFinderTest
 
   it("uses the selected algorithm to create the checksums") {
     val prefix = MemoryLocationPrefix(
-      namespace = randomAlphanumeric,
-      path = randomAlphanumeric
+      namespace = randomAlphanumeric(),
+      path = randomAlphanumeric()
     )
 
     val result =
@@ -151,8 +150,8 @@ class TagManifestFileFinderTest
 
   it("returns only the tag manifest files that are present") {
     val prefix = MemoryLocationPrefix(
-      namespace = randomAlphanumeric,
-      path = randomAlphanumeric
+      namespace = randomAlphanumeric(),
+      path = randomAlphanumeric()
     )
 
     val result =
@@ -189,8 +188,8 @@ class TagManifestFileFinderTest
 
   it("fails if it doesn't find any files") {
     val prefix = MemoryLocationPrefix(
-      namespace = randomAlphanumeric,
-      path = randomAlphanumeric
+      namespace = randomAlphanumeric(),
+      path = randomAlphanumeric()
     )
 
     val result = withTagManifestFileFinder(entries = Map.empty) {
@@ -203,8 +202,8 @@ class TagManifestFileFinderTest
 
   it("fails if the underlying reader has an error") {
     val prefix = MemoryLocationPrefix(
-      namespace = randomAlphanumeric,
-      path = randomAlphanumeric
+      namespace = randomAlphanumeric(),
+      path = randomAlphanumeric()
     )
 
     implicit val brokenReader =
