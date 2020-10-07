@@ -265,7 +265,7 @@ class StorageManifestServiceTest
   describe("fails if the fetch.txt is wrong") {
     it("refers to files that aren't in the manifest") {
       val fetchEntries = Map(
-        BagPath(randomAlphanumeric) -> createFetchMetadata
+        createBagPath -> createFetchMetadata
       )
 
       val bag = createBagWith(

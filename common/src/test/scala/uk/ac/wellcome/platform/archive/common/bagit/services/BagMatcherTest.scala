@@ -4,7 +4,6 @@ import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagPath,
   MatchedLocation,
   PayloadManifest
 }
@@ -96,7 +95,7 @@ class BagMatcherTest
       )
 
       val fetchMetadata = createFetchMetadata
-      val fetchPath = BagPath(randomAlphanumeric)
+      val fetchPath = createBagPath
       val fetchChecksumValue = randomChecksumValue
 
       val checksumAlgorithm = randomHashingAlgorithm
@@ -134,7 +133,7 @@ class BagMatcherTest
 
   describe("error cases") {
     it("there's a fetch entry for a file that isn't in the bag") {
-      val fetchPath = BagPath(randomAlphanumeric)
+      val fetchPath = createBagPath
       val fetchEntries = Map(fetchPath -> createFetchMetadata)
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
@@ -151,7 +150,7 @@ class BagMatcherTest
 
     it("there are multiple fetch entries for files that aren't in the bag") {
       val fetchEntries = (1 to 3).map { _ =>
-        BagPath(randomAlphanumeric) -> createFetchMetadata
+        createBagPath -> createFetchMetadata
       }.toMap
 
       val result = BagMatcher.correlateFetchEntryToBagFile(

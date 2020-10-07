@@ -221,7 +221,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
       ): Option[String] =
         super.createPayloadManifest(
           entries.tail :+ PayloadEntry(
-            bagPath = BagPath(randomAlphanumeric),
+            bagPath = createBagPath,
             path = randomAlphanumeric,
             contents = randomAlphanumeric
           )
