@@ -4,6 +4,11 @@ provider "aws" {
   }
 
   region  = var.aws_region
-  version = "2.51.0"
+  version = "2.60.0"
+
+  # Ignore deployment tags on services
+  ignore_tags {
+    keys = ["deployment:label"]
+  }
 }
 
