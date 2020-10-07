@@ -34,7 +34,8 @@ trait IngestGenerators extends BagIdGenerators with S3Fixtures {
     status: Status = Ingest.Accepted,
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     version: Option[BagVersion] = maybeVersion,
-    createdDate: Instant = randomInstant,
+    createdDate: Instant =
+      Instant.now().plusSeconds(randomInt(from = 0, to = 30)),
     events: Seq[IngestEvent] = Seq.empty
   ): Ingest =
     Ingest(
