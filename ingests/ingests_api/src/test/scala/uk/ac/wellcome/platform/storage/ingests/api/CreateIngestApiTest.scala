@@ -228,7 +228,7 @@ class CreateIngestApiTest
       }
 
       it("if the field has an invalid value") {
-        val badIngestType = randomAlphanumeric
+        val badIngestType = randomAlphanumeric()
 
         val badJson = root.ingestType.id.string.set(badIngestType)
 
@@ -460,9 +460,9 @@ class CreateIngestApiTest
 
   def createRequestJsonWith(
     ingestType: String = CreateIngestType.id,
-    bucket: String = randomAlphanumeric,
-    key: String = randomAlphanumeric,
-    space: String = randomAlphanumeric,
+    bucket: String = createBucketName,
+    key: String = randomAlphanumeric(),
+    space: String = randomAlphanumeric(),
     externalIdentifier: ExternalIdentifier = createExternalIdentifier
   ): Json =
     parse(
@@ -503,9 +503,9 @@ class CreateIngestApiTest
 
   def createRequestWith(
     ingestType: String = CreateIngestType.id,
-    bucket: String = randomAlphanumeric,
-    key: String = randomAlphanumeric,
-    space: String = randomAlphanumeric,
+    bucket: String = createBucketName,
+    key: String = randomAlphanumeric(),
+    space: String = randomAlphanumeric(),
     externalIdentifier: ExternalIdentifier = createExternalIdentifier
   ): RequestEntity =
     HttpEntity(
