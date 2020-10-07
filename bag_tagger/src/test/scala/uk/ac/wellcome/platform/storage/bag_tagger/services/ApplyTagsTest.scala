@@ -38,11 +38,7 @@ class ApplyTagsTest
         )
 
         val s3Location = s3Prefix.asLocation(file.path)
-        s3Client.putObject(
-          s3Location.bucket,
-          s3Location.key,
-          randomAlphanumeric
-        )
+        putStream(s3Location)
 
         s3Tags.update(s3Location) { _ =>
           Right(Map("Content-SHA256" -> "4a5a41ebcf5e2c24c"))
