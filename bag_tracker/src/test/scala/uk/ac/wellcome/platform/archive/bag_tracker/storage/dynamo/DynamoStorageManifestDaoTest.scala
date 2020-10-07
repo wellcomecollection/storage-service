@@ -135,7 +135,7 @@ class DynamoStorageManifestDaoTest
             BadRow(
               id = bagId.toString,
               version = randomInt(0, 100),
-              data = randomAlphanumeric
+              data = randomAlphanumeric()
             )
           )
         )
@@ -187,7 +187,7 @@ class DynamoStorageManifestDaoTest
             dao.put(storageManifest)
 
             listKeysInBucket(bucket).foreach {
-              s3Client.putObject(bucket.name, _, randomAlphanumeric)
+              s3Client.putObject(bucket.name, _, randomAlphanumeric())
             }
 
             val err = dao.listAllVersions(storageManifest.id).left.value
