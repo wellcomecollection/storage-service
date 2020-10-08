@@ -39,7 +39,7 @@ module "service" {
   use_fargate_spot   = var.use_fargate_spot
 
   target_group_arn = var.target_group_arn
-  
+
   deployment_service = var.deployment_service_name
   deployment_env     = var.deployment_service_env
 
