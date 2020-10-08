@@ -64,7 +64,7 @@ class S3ReplicatorTest
       withDstNamespace { dstNamespace =>
         val location = createSrcLocationWith(srcNamespace)
 
-        putSrcObject(location, contents = randomAlphanumeric)
+        putSrcObject(location, contents = randomAlphanumeric())
         srcTags.update(location) { existingTags =>
           Right(existingTags ++ Map("Content-SHA256" -> "abcdef"))
         }

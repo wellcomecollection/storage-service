@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
   ReplicationRequest,
   ReplicationSucceeded
 }
-import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
+import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.store.TypedStore
@@ -36,7 +36,7 @@ trait ReplicatorTestCases[
 ] extends AnyFunSpec
     with Matchers
     with EitherValues
-    with StorageRandomThings
+    with StorageRandomGenerators
     with S3Fixtures {
 
   def withSrcNamespace[R](testWith: TestWith[Bucket, R]): R =
@@ -65,7 +65,7 @@ trait ReplicatorTestCases[
     srcBucket: Bucket,
     prefix: String = ""
   ): S3ObjectLocation = {
-    val key = randomAlphanumeric
+    val key = randomAlphanumeric()
     S3ObjectLocation(srcBucket.name, s"$prefix$key")
   }
 
@@ -106,7 +106,7 @@ trait ReplicatorTestCases[
           createSrcLocationWith(srcNamespace)
         }
 
-        val objects = locations.map { _ -> randomAlphanumeric }.toMap
+        val objects = locations.map { _ -> randomAlphanumeric() }.toMap
 
         objects.foreach {
           case (loc, contents) => putSrcObject(loc, contents)
@@ -146,12 +146,12 @@ trait ReplicatorTestCases[
           val objectsInPrefix = (1 to 5).map { _ =>
             (
               createSrcLocationWith(srcBucket = srcNamespace, prefix = prefix),
-              randomAlphanumeric
+              randomAlphanumeric()
             )
           }.toMap
 
           val objectsDifferentPrefix = (1 to 5).map { _ =>
-            (createSrcLocationWith(srcNamespace, "v11/"), randomAlphanumeric)
+            (createSrcLocationWith(srcNamespace, "v11/"), randomAlphanumeric())
           }.toMap
 
           (objectsInPrefix ++ objectsDifferentPrefix).foreach {
@@ -192,14 +192,14 @@ trait ReplicatorTestCases[
                 srcBucket = srcNamespace,
                 prefix = s"$prefix/"
               ),
-              randomAlphanumeric
+              randomAlphanumeric()
             )
           }.toMap
 
           val objectsDifferentPrefix = (1 to 5).map { _ =>
             (
               createSrcLocationWith(srcNamespace, prefix = "v11/"),
-              randomAlphanumeric
+              randomAlphanumeric()
             )
           }.toMap
 
@@ -239,7 +239,7 @@ trait ReplicatorTestCases[
           createSrcLocationWith(srcNamespace)
         }
 
-        val objects = locations.map { _ -> randomAlphanumeric }.toMap
+        val objects = locations.map { _ -> randomAlphanumeric() }.toMap
 
         objects.foreach {
           case (loc, contents) => putSrcObject(loc, contents)
@@ -250,7 +250,7 @@ trait ReplicatorTestCases[
 
         // Write something to the first destination.  The replicator should realise
         // this object already exists, and refuse to overwrite it.
-        val badContents = randomAlphanumeric
+        val badContents = randomAlphanumeric()
 
         val dstLocation = createDstLocationWith(
           dstNamespace = dstNamespace,
@@ -305,7 +305,7 @@ trait ReplicatorTestCases[
       withSrcNamespace { srcNamespace =>
         withDstNamespace { dstNamespace =>
           val srcLocation = createSrcLocationWith(srcNamespace)
-          putSrcObject(srcLocation, contents = randomAlphanumeric)
+          putSrcObject(srcLocation, contents = randomAlphanumeric())
 
           val srcPrefix = createSrcPrefixWith(srcNamespace)
           val dstPrefix = createDstPrefixWith(dstNamespace)
@@ -336,11 +336,11 @@ trait ReplicatorTestCases[
       withSrcNamespace { srcNamespace =>
         withDstNamespace { dstNamespace =>
           val srcLocation = createSrcLocationWith(srcNamespace)
-          putSrcObject(srcLocation, contents = randomAlphanumeric)
+          putSrcObject(srcLocation, contents = randomAlphanumeric())
 
           val dstLocation =
-            createDstLocationWith(dstNamespace, path = randomAlphanumeric)
-          putDstObject(dstLocation, contents = randomAlphanumeric)
+            createDstLocationWith(dstNamespace, path = randomAlphanumeric())
+          putDstObject(dstLocation, contents = randomAlphanumeric())
 
           val srcPrefix = createSrcPrefixWith(srcNamespace)
           val dstPrefix = createDstPrefixWith(dstNamespace)

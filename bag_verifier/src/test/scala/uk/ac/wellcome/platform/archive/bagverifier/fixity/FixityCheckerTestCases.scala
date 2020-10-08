@@ -129,7 +129,7 @@ trait FixityCheckerTestCases[
         val checksum = randomChecksum
 
         val location = createLocationWith(namespace)
-        putString(location, randomAlphanumeric)
+        putString(location, randomAlphanumeric())
 
         val expectedFileFixity = createDataDirectoryFileFixityWith(
           location = location,

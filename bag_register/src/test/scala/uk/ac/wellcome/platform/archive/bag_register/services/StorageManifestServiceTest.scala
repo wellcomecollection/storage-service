@@ -542,17 +542,15 @@ class StorageManifestServiceTest
     version: BagVersion
   ): SecondaryReplicaLocation =
     chooseFrom(
-      Seq(
-        SecondaryS3ReplicaLocation(
-          createS3ObjectLocationPrefix
-            .asLocation(version.toString)
-            .asPrefix
-        ),
-        SecondaryAzureReplicaLocation(
-          createAzureBlobLocationPrefix
-            .asLocation(version.toString)
-            .asPrefix
-        )
+      SecondaryS3ReplicaLocation(
+        createS3ObjectLocationPrefix
+          .asLocation(version.toString)
+          .asPrefix
+      ),
+      SecondaryAzureReplicaLocation(
+        createAzureBlobLocationPrefix
+          .asLocation(version.toString)
+          .asPrefix
       )
     )
 

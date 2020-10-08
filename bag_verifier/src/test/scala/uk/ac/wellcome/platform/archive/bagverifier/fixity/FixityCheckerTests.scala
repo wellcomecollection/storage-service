@@ -19,7 +19,10 @@ import uk.ac.wellcome.platform.archive.common.verify.{
   MD5
 }
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.generators.MemoryLocationGenerators
+import uk.ac.wellcome.storage.generators.{
+  MemoryLocationGenerators,
+  StreamGenerators
+}
 import uk.ac.wellcome.storage.providers.memory.{
   MemoryLocation,
   MemoryLocationPrefix
@@ -35,7 +38,8 @@ class FixityCheckerTests
     with Matchers
     with EitherValues
     with FixityGenerators[MemoryLocation]
-    with MemoryLocationGenerators {
+    with MemoryLocationGenerators
+    with StreamGenerators {
   override def resolve(location: MemoryLocation): URI =
     new URI(s"mem://$location")
 
@@ -66,7 +70,7 @@ class FixityCheckerTests
     }
 
     it("handles an error when trying to checksum the object") {
-      val badStream = new FilterInputStream(randomInputStream()) {
+      val badStream = new FilterInputStream(createInputStream()) {
         override def read(b: Array[Byte], off: Int, len: Int): Int =
           throw new Throwable("BOOM!")
       }
@@ -208,7 +212,7 @@ class FixityCheckerTests
       var isClosed: Boolean = false
 
       val inputStream: InputStreamWithLength = new InputStreamWithLength(
-        randomInputStream(),
+        createInputStream(),
         length = randomInt(from = 1, to = 50)
       ) {
         override def close(): Unit = {

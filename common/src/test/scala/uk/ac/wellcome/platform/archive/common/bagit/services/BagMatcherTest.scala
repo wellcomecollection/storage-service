@@ -7,8 +7,10 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   MatchedLocation,
   PayloadManifest
 }
-import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
-import uk.ac.wellcome.platform.archive.common.generators.FetchMetadataGenerators
+import uk.ac.wellcome.platform.archive.common.generators.{
+  FetchMetadataGenerators,
+  StorageRandomGenerators
+}
 import uk.ac.wellcome.platform.archive.common.verify.{Checksum, MD5, SHA256}
 
 class BagMatcherTest
@@ -16,7 +18,7 @@ class BagMatcherTest
     with Matchers
     with EitherValues
     with FetchMetadataGenerators
-    with StorageRandomThings {
+    with StorageRandomGenerators {
 
   describe("creates the correct list of MatchedLocations") {
     it("for an empty bag") {

@@ -244,7 +244,7 @@ class BagVerifierWorkerTest
           entries: Seq[PayloadEntry]
         ): Option[String] =
           super.createPayloadManifest(
-            entries.head.copy(contents = randomAlphanumeric) +: entries.tail
+            entries.head.copy(contents = randomAlphanumeric()) +: entries.tail
           )
       }
 

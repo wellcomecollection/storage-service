@@ -16,7 +16,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
+import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
@@ -34,7 +34,7 @@ class CreateIngestApiTest
     with IngestsApiFixture
     with IntegrationPatience
     with JsonAssertions
-    with StorageRandomThings {
+    with StorageRandomGenerators {
 
   val contextUrlTest =
     "http://api.wellcomecollection.org/storage/v1/context.json"
@@ -228,7 +228,7 @@ class CreateIngestApiTest
       }
 
       it("if the field has an invalid value") {
-        val badIngestType = randomAlphanumeric
+        val badIngestType = randomAlphanumeric()
 
         val badJson = root.ingestType.id.string.set(badIngestType)
 
@@ -460,9 +460,9 @@ class CreateIngestApiTest
 
   def createRequestJsonWith(
     ingestType: String = CreateIngestType.id,
-    bucket: String = randomAlphanumeric,
-    key: String = randomAlphanumeric,
-    space: String = randomAlphanumeric,
+    bucket: String = createBucketName,
+    key: String = randomAlphanumeric(),
+    space: String = randomAlphanumeric(),
     externalIdentifier: ExternalIdentifier = createExternalIdentifier
   ): Json =
     parse(
@@ -503,9 +503,9 @@ class CreateIngestApiTest
 
   def createRequestWith(
     ingestType: String = CreateIngestType.id,
-    bucket: String = randomAlphanumeric,
-    key: String = randomAlphanumeric,
-    space: String = randomAlphanumeric,
+    bucket: String = createBucketName,
+    key: String = randomAlphanumeric(),
+    space: String = randomAlphanumeric(),
     externalIdentifier: ExternalIdentifier = createExternalIdentifier
   ): RequestEntity =
     HttpEntity(

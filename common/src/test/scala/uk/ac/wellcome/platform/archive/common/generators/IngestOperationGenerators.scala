@@ -1,21 +1,17 @@
 package uk.ac.wellcome.platform.archive.common.generators
-
-import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestCompleted,
   IngestFailed,
   IngestStepSucceeded
 }
 
-trait IngestOperationGenerators extends StorageRandomThings {
+trait IngestOperationGenerators extends StorageRandomGenerators {
 
   case class TestSummary(description: String) {
     override def toString: String = this.description
   }
 
-  def createTestSummary() = TestSummary(
-    randomAlphanumericWithLength()
-  )
+  def createTestSummary() = TestSummary(randomAlphanumeric())
 
   def createOperationSuccess() = createOperationSuccessWith()
 

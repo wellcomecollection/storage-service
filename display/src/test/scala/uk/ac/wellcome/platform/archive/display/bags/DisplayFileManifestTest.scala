@@ -66,7 +66,7 @@ class DisplayFileManifestTest
     files: Seq[StorageManifestFile]
   ): FileManifest =
     FileManifest(
-      checksumAlgorithm = chooseFrom(Seq(MD5, SHA1, SHA256, SHA512)),
+      checksumAlgorithm = chooseFrom(MD5, SHA1, SHA256, SHA512),
       files = files
     )
 }

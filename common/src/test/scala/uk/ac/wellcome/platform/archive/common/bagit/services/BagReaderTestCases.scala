@@ -5,10 +5,8 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  BagBuilder,
-  StorageRandomThings
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
+import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.{Location, Prefix}
@@ -22,7 +20,7 @@ trait BagReaderTestCases[
 ] extends AnyFunSpec
     with Matchers
     with EitherValues
-    with StorageRandomThings
+    with StorageRandomGenerators
     with BagBuilder[BagLocation, BagPrefix, Namespace]
     with S3Fixtures {
 
@@ -46,7 +44,7 @@ trait BagReaderTestCases[
   def scrambleFile(root: BagPrefix, path: String)(
     implicit typedStore: TypedStore[BagLocation, String]
   ): Assertion =
-    typedStore.put(root.asLocation(path))(randomAlphanumeric) shouldBe a[
+    typedStore.put(root.asLocation(path))(randomAlphanumeric()) shouldBe a[
       Right[_, _]
     ]
 

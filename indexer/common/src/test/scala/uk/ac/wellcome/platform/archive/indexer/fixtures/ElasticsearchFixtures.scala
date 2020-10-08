@@ -22,14 +22,15 @@ import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
 }
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.{Failure, Random, Success}
+import scala.util.{Failure, Success}
 
 trait ElasticsearchFixtures
     extends Eventually
     with ScalaFutures
     with Matchers
     with JsonAssertions
-    with IntegrationPatience { this: Suite =>
+    with IntegrationPatience
+    with RandomGenerators { this: Suite =>
 
   protected val esHost = "localhost"
   protected val esPort = 9200
@@ -120,6 +121,6 @@ trait ElasticsearchFixtures
 
   private def createIndexWith(prefix: String = "index"): Index =
     Index(
-      name = s"$prefix-${(Random.alphanumeric take 10 mkString).toLowerCase}"
+      name = s"$prefix-${randomAlphanumeric().toLowerCase}"
     )
 }

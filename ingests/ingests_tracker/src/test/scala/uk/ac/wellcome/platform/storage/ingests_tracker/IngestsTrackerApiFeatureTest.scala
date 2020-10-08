@@ -14,10 +14,8 @@ import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.common.fixtures.{
-  HttpFixtures,
-  StorageRandomThings
-}
+import uk.ac.wellcome.platform.archive.common.fixtures.HttpFixtures
+import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
   Failed,
   Succeeded
@@ -35,7 +33,7 @@ class IngestsTrackerApiFeatureTest
     with HttpFixtures
     with IntegrationPatience
     with EitherValues
-    with StorageRandomThings {
+    with StorageRandomGenerators {
 
   describe("GET /healthcheck") {
     val path = s"http://localhost:8080/healthcheck"
@@ -50,8 +48,8 @@ class IngestsTrackerApiFeatureTest
   }
 
   val badEntity = HttpEntity(
-    ContentTypes.`application/json`,
-    randomAlphanumeric
+    contentType = ContentTypes.`application/json`,
+    string = randomAlphanumeric()
   )
 
   describe("POST /ingest") {

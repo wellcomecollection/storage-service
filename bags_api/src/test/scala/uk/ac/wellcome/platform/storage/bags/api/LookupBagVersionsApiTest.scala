@@ -277,7 +277,7 @@ class LookupBagVersionsApiTest
   it(
     "returns a 400 UserError if search for manifests before a non-numeric version"
   ) {
-    val badBefore = randomAlphanumeric
+    val badBefore = randomAlphanumeric()
 
     withConfiguredApp() {
       case (_, metrics, baseUrl) =>

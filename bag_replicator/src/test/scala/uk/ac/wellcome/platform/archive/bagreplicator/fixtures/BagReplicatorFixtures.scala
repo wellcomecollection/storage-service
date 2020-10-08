@@ -70,7 +70,7 @@ trait BagReplicatorFixtures
     outgoing: MemoryMessageSender = new MemoryMessageSender(),
     lockServiceDao: LockDao[String, UUID] = new MemoryLockDao[String, UUID] {},
     stepName: String = createStepName,
-    replicaType: ReplicaType = chooseFrom(Seq(PrimaryReplica, SecondaryReplica))
+    replicaType: ReplicaType = chooseFrom(PrimaryReplica, SecondaryReplica)
   )(
     testWith: TestWith[
       BagReplicatorWorker[
@@ -117,7 +117,7 @@ trait BagReplicatorFixtures
   def createReplicatorDestinationConfigWith(
     bucket: Bucket,
     provider: StorageProvider = createProvider,
-    replicaType: ReplicaType = chooseFrom(Seq(PrimaryReplica, SecondaryReplica))
+    replicaType: ReplicaType = chooseFrom(PrimaryReplica, SecondaryReplica)
   ): ReplicatorDestinationConfig =
     ReplicatorDestinationConfig(
       namespace = bucket.name,

@@ -302,7 +302,7 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
   protected def randomPath: String =
     (1 to randomInt(from = 1, to = 5))
       .map { _ =>
-        randomAlphanumeric
+        randomAlphanumeric()
       }
       .mkString("/")
 

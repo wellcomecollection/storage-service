@@ -63,7 +63,7 @@ class DynamoIngestVersionManagerDaoTest
         )
 
         val record = BadRecord(
-          id = randomAlphanumericWithLength(),
+          id = randomAlphanumeric(),
           ingestId = createIngestID,
           version = 1
         )

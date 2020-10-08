@@ -6,7 +6,7 @@ import org.scalatest.Assertion
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.akka.fixtures.Akka
-import uk.ac.wellcome.platform.archive.common.fixtures.StorageRandomThings
+import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Callback,
@@ -20,7 +20,7 @@ class PrepareNotificationServiceTest
     with Matchers
     with Akka
     with TimeTestFixture
-    with StorageRandomThings {
+    with StorageRandomGenerators {
 
   val id: IngestID = createIngestID
 
