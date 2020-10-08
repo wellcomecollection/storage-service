@@ -71,7 +71,8 @@ class Register(
       result = completedRegistration match {
         case Right(()) => IngestCompleted(registration.complete)
 
-        case Left(createError: BagTrackerCreateError) if createError.isInstanceOf[RetryableError] =>
+        case Left(createError: BagTrackerCreateError)
+            if createError.isInstanceOf[RetryableError] =>
           warn(s"Retryable error updating storage manifest: ${createError.err}")
           IngestShouldRetry(registration, e = createError.err)
 

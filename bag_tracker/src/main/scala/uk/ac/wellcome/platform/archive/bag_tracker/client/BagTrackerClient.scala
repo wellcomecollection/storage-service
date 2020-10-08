@@ -80,11 +80,17 @@ class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem)
     httpResult
       .recover {
         case err: Throwable if isRetryable(err) =>
-          error(s"Retryable error from POST to $requestUri with ${storageManifest.idWithVersion}", err)
+          error(
+            s"Retryable error from POST to $requestUri with ${storageManifest.idWithVersion}",
+            err
+          )
           Left(new BagTrackerCreateError(err) with RetryableError)
 
         case err: Throwable =>
-          error(s"Unknown error from POST to $requestUri with ${storageManifest.idWithVersion}", err)
+          error(
+            s"Unknown error from POST to $requestUri with ${storageManifest.idWithVersion}",
+            err
+          )
           Left(BagTrackerCreateError(err))
       }
   }

@@ -111,7 +111,9 @@ class RegisterTest
       val ingestId = createIngestID
 
       withActorSystem { implicit actorSystem =>
-        val bagTrackerClient = new AkkaBagTrackerClient(trackerHost = Uri("http://localhost:9000/doesnotexist"))
+        val bagTrackerClient = new AkkaBagTrackerClient(
+          trackerHost = Uri("http://localhost:9000/doesnotexist")
+        )
 
         val register = new Register(
           bagReader = new S3BagReader(),
