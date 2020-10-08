@@ -40,8 +40,18 @@ def _get_slack_message(label, ingests):
 
 
 def prepare_slack_payload(ingests_by_status, found_everything, days_to_fetch, s3_url):
+    # Are there any interesting failures that would be worth alerting on?
+    interesting_failures = 0
+
+    for env in ("prod", "staging"):
+        for status in ("failed (unknown reason)", "stalled"):
+            interesting_failures += len(ingests_by_status[env].get(status, []))
+
+    # And use this to customise the heading
+    emoji = ":white_check_mark:" if interesting_failures == 0 else ":interrobang:"
+
     heading = (
-        f"What happened in the storage service "
+        f"{emoji} What happened in the storage service "
         f"in the last {days_to_fetch} day{'s' if days_to_fetch > 1 else ''}?"
     )
 
