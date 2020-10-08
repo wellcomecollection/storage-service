@@ -1,10 +1,12 @@
 package uk.ac.wellcome.platform.archive.bag_register.services
 
+import akka.http.scaladsl.model.Uri
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
+import uk.ac.wellcome.platform.archive.bag_tracker.client.AkkaBagTrackerClient
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
@@ -91,6 +93,47 @@ class RegisterTest
               .copy(keyPrefix = prefix.keyPrefix.stripSuffix(s"/$version"))
           )
         }
+    }
+  }
+
+  it("allows retrying a bag if the bag tracker is temporarily unavailable") {
+    val space = createStorageSpace
+    val version = createBagVersion
+
+    withLocalS3Bucket { implicit bucket =>
+      val (bagRoot, bagInfo) = storeS3BagWith(
+        space = space,
+        version = version
+      )
+
+      val primaryLocation = PrimaryS3ReplicaLocation(bagRoot)
+
+      val ingestId = createIngestID
+
+      withActorSystem { implicit actorSystem =>
+        val bagTrackerClient = new AkkaBagTrackerClient(
+          trackerHost = Uri("http://localhost:9000/doesnotexist")
+        )
+
+        val register = new Register(
+          bagReader = new S3BagReader(),
+          bagTrackerClient = bagTrackerClient,
+          storageManifestService = new S3StorageManifestService()
+        )
+
+        val future = register.update(
+          ingestId = ingestId,
+          location = primaryLocation,
+          replicas = Seq.empty,
+          version = version,
+          space = space,
+          externalIdentifier = bagInfo.externalIdentifier
+        )
+
+        whenReady(future) {
+          _ shouldBe a[IngestShouldRetry[_]]
+        }
+      }
     }
   }
 }

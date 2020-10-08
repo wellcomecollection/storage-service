@@ -38,6 +38,12 @@ class BagRegisterWorker[IngestDestination, NotificationDestination](
 ) extends IngestStepWorker[KnownReplicasPayload, RegistrationSummary] {
   implicit val ec: ExecutionContext = as.dispatcher
 
+  // The bag register can fail if the bag tracker isn't available.  Rather than
+  // retrying immediately, allow a short delay before retrying a registration.
+  //
+  // Registration isn't a time-critical process, so a delay is acceptable.
+  override val visibilityTimeout: Int = 120
+
   override def process(
     payload: KnownReplicasPayload
   ): Future[Result[RegistrationSummary]] =
