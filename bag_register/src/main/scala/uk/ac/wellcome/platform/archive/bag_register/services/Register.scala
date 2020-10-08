@@ -15,6 +15,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
+import uk.ac.wellcome.storage.RetryableError
 import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -69,6 +70,11 @@ class Register(
 
       result = completedRegistration match {
         case Right(()) => IngestCompleted(registration.complete)
+
+        case Left(createError: BagTrackerCreateError) if createError.isInstanceOf[RetryableError] =>
+          warn(s"Retryable error updating storage manifest: ${createError.err}")
+          IngestShouldRetry(registration, e = createError.err)
+
         case Left(BagTrackerCreateError(err)) =>
           error("Unexpected error updating storage manifest", err)
           IngestFailed(registration.complete, err)
