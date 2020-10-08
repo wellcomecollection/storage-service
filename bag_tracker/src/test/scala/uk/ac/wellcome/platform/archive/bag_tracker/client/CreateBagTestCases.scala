@@ -8,7 +8,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
-import uk.ac.wellcome.storage.{StoreWriteError, WriteError}
+import uk.ac.wellcome.storage.{RetryableError, StoreWriteError, WriteError}
 
 trait CreateBagTestCases
     extends AnyFunSpec
@@ -60,13 +60,15 @@ trait CreateBagTestCases
       }
     }
 
-    it("fails if the tracker API is unavailable") {
+    it("returns a retryable error if the tracker API is unavailable") {
       withApi() { _ =>
         withClient("http://localhost.nope:8080") { client =>
           val future = client.createBag(createStorageManifest)
 
-          whenReady(future.failed) {
-            _ shouldBe a[Throwable]
+          whenReady(future) { result =>
+            val err = result.left.value
+            err shouldBe a[BagTrackerCreateError]
+            err shouldBe a[RetryableError]
           }
         }
       }

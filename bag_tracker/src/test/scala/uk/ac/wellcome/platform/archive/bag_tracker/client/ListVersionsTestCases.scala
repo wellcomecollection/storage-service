@@ -14,7 +14,7 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   StorageManifestGenerators
 }
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.storage.{ReadError, StoreReadError}
+import uk.ac.wellcome.storage.{ReadError, RetryableError, StoreReadError}
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 
 trait ListVersionsTestCases
@@ -193,13 +193,15 @@ trait ListVersionsTestCases
       }
     }
 
-    it("fails if the tracker API is unavailable") {
+    it("returns a retryable error if the tracker API is unavailable") {
       withApi() { _ =>
         withClient("http://localhost.nope:8080") { client =>
           val future = client.listVersionsOf(createBagId, maybeBefore = None)
 
-          whenReady(future.failed) {
-            _ shouldBe a[Throwable]
+          whenReady(future) { result =>
+            val err = result.left.value
+            err shouldBe a[BagTrackerUnknownListError]
+            err shouldBe a[RetryableError]
           }
         }
       }
