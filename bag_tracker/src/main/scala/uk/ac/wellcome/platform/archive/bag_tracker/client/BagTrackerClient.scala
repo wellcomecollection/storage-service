@@ -12,6 +12,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bag_tracker.models.BagVersionList
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
+import uk.ac.wellcome.storage.RetryableError
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -37,17 +38,18 @@ trait BagTrackerClient {
 
 class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem)
     extends BagTrackerClient
+    with AkkaTrackerClientBase
     with Logging {
 
   implicit val ec: ExecutionContext = actorSystem.dispatcher
 
   override def createBag(
     storageManifest: StorageManifest
-  ): Future[Either[BagTrackerCreateError, Unit]] =
-    for {
-      manifestEntity <- Marshal(storageManifest).to[RequestEntity]
+  ): Future[Either[BagTrackerCreateError, Unit]] = {
+    val requestUri = trackerHost.withPath(Path("/bags"))
 
-      requestUri = trackerHost.withPath(Path("/bags"))
+    val httpResult = for {
+      manifestEntity <- Marshal(storageManifest).to[RequestEntity]
 
       request = HttpRequest(
         uri = requestUri,
@@ -75,6 +77,18 @@ class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem)
       }
     } yield result
 
+    httpResult
+      .recover {
+        case err: Throwable if isRetryable(err) =>
+          error(s"Retryable error from POST to $requestUri with ${storageManifest.idWithVersion}", err)
+          Left(new BagTrackerCreateError(err) with RetryableError)
+
+        case err: Throwable =>
+          error(s"Unknown error from POST to $requestUri with ${storageManifest.idWithVersion}", err)
+          Left(BagTrackerCreateError(err))
+      }
+  }
+
   override def getLatestBag(
     bagId: BagId
   ): Future[Either[BagTrackerGetError, StorageManifest]] =
@@ -99,7 +113,7 @@ class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem)
     val request = HttpRequest(uri = requestUri, method = HttpMethods.GET)
     info(s"Making request: $request")
 
-    for {
+    val httpResult = for {
       response <- Http().singleRequest(request)
 
       result <- response.status match {
@@ -117,6 +131,17 @@ class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem)
           Future(Left(BagTrackerUnknownGetError(err)))
       }
     } yield result
+
+    httpResult
+      .recover {
+        case err: Throwable if isRetryable(err) =>
+          error(s"Retryable error from GET to $requestUri", err)
+          Left(new BagTrackerUnknownGetError(err) with RetryableError)
+
+        case err: Throwable =>
+          error(s"Unknown error from GET to $requestUri", err)
+          Left(BagTrackerUnknownGetError(err))
+      }
   }
 
   override def listVersionsOf(
@@ -135,7 +160,7 @@ class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem)
 
     info(s"Making request: $request")
 
-    for {
+    val httpResult = for {
       response <- Http().singleRequest(request)
 
       result <- response.status match {
@@ -153,5 +178,16 @@ class AkkaBagTrackerClient(trackerHost: Uri)(implicit actorSystem: ActorSystem)
           Future(Left(BagTrackerUnknownListError(err)))
       }
     } yield result
+
+    httpResult
+      .recover {
+        case err: Throwable if isRetryable(err) =>
+          error(s"Retryable error from GET to $requestUri", err)
+          Left(new BagTrackerUnknownListError(err) with RetryableError)
+
+        case err: Throwable =>
+          error(s"Unknown error from GET to $requestUri", err)
+          Left(BagTrackerUnknownListError(err))
+      }
   }
 }
