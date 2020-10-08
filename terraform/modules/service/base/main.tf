@@ -1,16 +1,16 @@
 module "log_router_container" {
-  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/firelens?ref=v3.2.0"
+  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/firelens?ref=v3.2.2"
   namespace = var.service_name
 }
 
 module "log_router_container_secrets_permissions" {
-  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v3.2.0"
+  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v3.2.2"
   secrets   = module.log_router_container.shared_secrets_logging
   role_name = module.task_definition.task_execution_role_name
 }
 
 module "task_definition" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/task_definition?ref=v3.2.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/task_definition?ref=v3.2.2"
 
   cpu    = var.cpu
   memory = var.memory
@@ -23,7 +23,7 @@ module "task_definition" {
 }
 
 module "service" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/service?ref=v3.2.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/service?ref=v3.2.2"
 
   cluster_arn  = var.cluster_arn
   service_name = var.service_name
@@ -40,9 +40,10 @@ module "service" {
 
   target_group_arn = var.target_group_arn
 
+  propagate_tags = "SERVICE"
+
   deployment_service = var.deployment_service_name
   deployment_env     = var.deployment_service_env
-  deployment_label   = "initial"
 
   container_name = var.container_name
   container_port = var.container_port
