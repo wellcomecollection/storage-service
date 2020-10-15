@@ -5,6 +5,7 @@ import json
 import sys
 import os
 import shutil
+import hashlib
 from tqdm import tqdm
 
 #from wellcome_storage_service import StorageServiceClient
@@ -89,11 +90,11 @@ def query_index(elastic_client, elastic_index, elastic_query, transform):
     with tqdm(total=document_count, file=sys.stdout) as pbar:
         for result in results:
             transform(result)
-            #sys.exit(1)
+            sys.exit(1)
             pbar.update(1)
 
 
-def bag_creator(s3_client):
+def bag_creator(s3_client, s3_upload_bucket):
     def create_bag(result):
         document = result['_source']
 
@@ -110,6 +111,9 @@ def bag_creator(s3_client):
         working_id = id.replace("/","_")
         target_folder = "target"
         working_folder = f"{target_folder}/{working_id}"
+        tagmanifest_name = "tagmanifest-sha256.txt"
+        archive_name = f"{working_id}.tar.gz"
+        s3_upload_prefix = "born-digital/archivematica-uuid-update"
 
         if not os.path.exists(working_folder):
             os.makedirs(working_folder)
@@ -169,13 +173,75 @@ def bag_creator(s3_client):
             shutil.make_archive(working_folder, 'gztar', working_folder)
             shutil.rmtree(working_folder, ignore_errors=True)
 
+        def _generate_checksum(file_location):
+            sha256_hash = hashlib.sha256()
+
+            with open(file_location, "rb") as f:
+                for byte_block in iter(lambda: f.read(4096), b""):
+                    sha256_hash.update(byte_block)
+
+                return sha256_hash.hexdigest()
+
+        def _generate_updated_checksums():
+            files_in_need_of_update = [
+                'bag-info.txt',
+                'fetch.txt'
+            ]
+
+            return {filename: _generate_checksum(
+                f"{working_folder}/{filename}"
+            ) for filename in files_in_need_of_update}
+
+        def _load_existing_checksums():
+            tag_manifest = {}
+
+            with open(f"{working_folder}/{tagmanifest_name}") as fp:
+                for _, line in enumerate(fp):
+                    split_manifest_line = line.split(" ")
+                    checksum = split_manifest_line[0].strip()
+                    filename = split_manifest_line[1].strip()
+
+                    assert checksum
+                    assert filename
+
+                    tag_manifest[filename] = checksum
+
+            return tag_manifest
+
+        def _write_new_tagmanifest():
+            existing_checksums = _load_existing_checksums()
+            new_checksums = _generate_updated_checksums()
+
+            merged_checksums = dict(existing_checksums.items() | new_checksums.items())
+
+            with open(f"{working_folder}/{tagmanifest_name}", "w") as fp:
+                for checksum, filename in merged_checksums.items():
+                    fp.write(f"{filename} {checksum}\n")
+
+        def _update_bag_info():
+            # Get Archivematica UUID ???
+            # Add Archivematica UUID to bag-info.txt as Internal-Sender-Identifier
+            with open(f"{working_folder}/bag-info.txt", "a") as fp:
+                fp.write("Internal-Sender-Identifier: nope")
+
+        def _upload_bag_to_s3():
+            s3_client.upload_file(
+                f"{working_folder}/{archive_name}",
+                s3_upload_bucket,
+                f"{s3_upload_prefix}/{archive_name}"
+            )
+
         _write_fetch_file()
         _get_bag_files()
-        # Get Archivematica UUID ???
-        # Add Archivematica UUID to bag-info.txt as Internal-Sender-Identifier
-        # Update bag-info.txt checksum in tagmanifest-? files
+        _update_bag_info()
+        _write_new_tagmanifest()
+        _upload_bag_to_s3()
+
+        sys.exit(1)
+
         _compress_bag()
         # Upload bag to S3
+        _upload_bag_to_s3()
         # Ingest bag into storage service using client lib using correct space
         #   - born-digital or born-digital-accessions
 
@@ -191,11 +257,11 @@ if __name__ == "__main__":
 
     environments = {
         "prod": {
-            "bucket": "prod-bucket",
+            "bucket": "wellcomecollection-archivematica-ingests",
             "api_url": "https://api.wellcomecollection.org/storage/v1"
         },
         "stage": {
-            "bucket": "stage-bucket",
+            "bucket": "wellcomecollection-archivematica-staging-ingests",
             "api_url": "https://api-stage.wellcomecollection.org/storage/v1"
 
         }
@@ -233,6 +299,7 @@ if __name__ == "__main__":
         }
     }
 
-    transform = bag_creator(s3_client)
+    s3_upload_bucket = environments[environment_id]['bucket']
+    transform = bag_creator(s3_client, s3_upload_bucket)
 
     query_index(elastic_client, index, query, transform)
