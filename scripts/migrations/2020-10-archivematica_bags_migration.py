@@ -2,66 +2,141 @@
 """
 This is a script to append an Archivematica UUID as
 an Internal-Sender-Identifier to existing born-digital bags.
+
+When run this will create a "target" folder in the same directory
+to work within. It will leave "some_bag_id.log" files for each
+bag it migrates.
 """
 
-from elasticsearch import helpers
-import sys
+import datetime
+import hashlib
 import os
 import shutil
-import hashlib
+import sys
+
+from elasticsearch import helpers
 from tqdm import tqdm
 
 from common import get_aws_resource, get_aws_client, get_storage_client, get_secret, get_elastic_client
 
 
-def query_index(elastic_client, elastic_index, elastic_query, transform):
-    initial_query = elastic_client.search(
-        index=elastic_index,
-        body=elastic_query,
-        size=0
+def generate_checksum(file_location):
+    sha256_hash = hashlib.sha256()
+
+    with open(file_location, "rb") as f:
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+
+        return sha256_hash.hexdigest()
+
+
+def compress_folder(folder, remove_folder=True):
+    archive_name = shutil.make_archive(folder, 'gztar', folder)
+    if remove_folder:
+        shutil.rmtree(folder, ignore_errors=True)
+
+    return archive_name
+
+
+def filter_s3_objects(s3_client, bucket, prefix):
+    response = s3_client.list_objects_v2(
+        Bucket=bucket,
+        Prefix=prefix
     )
 
-    document_count = initial_query['hits']['total']['value']
-    results = helpers.scan(
-        client=elastic_client,
-        index=elastic_index,
-        size=5,
-        query=elastic_query
-    )
-
-    with tqdm(total=document_count, file=sys.stdout) as pbar:
-        for result in results:
-            transform(result)
-            sys.exit(1)
-            pbar.update(1)
+    if 'Contents' in response:
+        return [content['Key'] for content in response['Contents']]
+    else:
+        return []
 
 
-def bag_creator(workflow_s3_client, storage_s3_client, storage_client, s3_upload_bucket):
-    def create_bag(result):
-        document = result['_source']
+def load_space_separated_file(file_location, key_first=True):
+    fields = {}
 
-        id = document['id']
-        bucket = document['location']['bucket']
-        path = document['location']['path']
-        version = f"v{document['version']}"
-        space = document['space']
-        external_identifier = document['info']['externalIdentifier']
+    with open(file_location) as fp:
+        for line in fp:
+            split_line = line.split(" ")
+            first = split_line[0].strip()
+            second = split_line[1].strip()
 
-        provider = document['location']['provider']
-        assert provider == 'amazon-s3'
+            assert first
+            assert second
 
+            if key_first:
+                fields[first] = second
+            else:
+                fields[second] = first
+
+    return fields
+
+
+class ArchivematicaUUIDBagMigrator:
+    def __init__(self, workflow_s3_client, storage_s3_client, storage_client, s3_upload_bucket):
+        self.workflow_s3_client = workflow_s3_client
+        self.storage_s3_client = storage_s3_client
+        self.storage_client = storage_client
+        self.s3_upload_bucket = s3_upload_bucket
+
+        self.target_folder = "target"
+        self.tagmanifest_name = "tagmanifest-sha256.txt"
+        self.s3_upload_prefix = "born-digital/archivematica-uuid-update"
+
+    @staticmethod
+    def _get_archivematica_uuid(bucket, path, version):
+        files = filter_s3_objects(
+            s3_client=storage_s3_client,
+            bucket=bucket,
+            prefix=f"{path}/{version}/data/METS."
+        )
+
+        assert len(files) == 1, files
+        mets_file_with_id = files[0]
+
+        archivematica_uuid = (
+            mets_file_with_id.split('/METS.')[-1].split('.xml')[0]
+        )
+
+        assert archivematica_uuid
+        return archivematica_uuid
+
+    @staticmethod
+    def _generate_updated_checksums(working_folder):
+        files_in_need_of_update = [
+            'bag-info.txt',
+            'fetch.txt'
+        ]
+
+        return {filename: generate_checksum(
+            f"{working_folder}/{filename}"
+        ) for filename in files_in_need_of_update}
+
+    def _load_existing_checksums(self, working_folder):
+        tag_manifest = load_space_separated_file(
+            file_location=f"{working_folder}/{self.tagmanifest_name}",
+            key_first=False
+        )
+
+        files_that_should_be_referenced = [
+            'bag-info.txt',
+            'bagit.txt',
+            'manifest-sha256.txt'
+        ]
+
+        assert any(filename in files_that_should_be_referenced for filename in tag_manifest.keys())
+
+        return tag_manifest
+
+    @staticmethod
+    def _write_fetch_file(bucket, path, working_folder, files):
         path_prefix = f"s3://{bucket}/{path}"
 
-        working_id = id.replace("/", "_")
-        target_folder = "target"
-        working_folder = f"{target_folder}/{working_id}"
-        tagmanifest_name = "tagmanifest-sha256.txt"
-        archive_name = f"{working_id}.tar.gz"
-        s3_upload_prefix = "born-digital/archivematica-uuid-update"
+        with open(f"{working_folder}/fetch.txt", "w") as fetch_file:
+            for file in files:
+                s3_uri = f"{path_prefix}/{file['path']}"
+                fetch_file.write(f"{s3_uri}\t{file['size']}\t{file['name']}\n")
 
-        if not os.path.exists(working_folder):
-            os.makedirs(working_folder)
-
+    @staticmethod
+    def _get_bagit_files_from_s3(bucket, path, version, working_folder):
         prefix_patterns = [
             "bagit.txt",
             "bag-info.txt",
@@ -69,145 +144,157 @@ def bag_creator(workflow_s3_client, storage_s3_client, storage_client, s3_upload
             "tagmanifest-"
         ]
 
-        def _write_fetch_file():
-            def _create_fetch_line(file):
-                return f"{path_prefix}/{file['path']}\t{file['size']}\t{file['name']}\n"
-
-            files = document['files']
-
-            fetch_file = open(f"{working_folder}/fetch.txt", 'w')
-            for file in files:
-                fetch_file.write(_create_fetch_line(file))
-            fetch_file.close()
-
-        def _filter_bag_files(prefix):
-            response = storage_s3_client.list_objects_v2(
-                Bucket=bucket,
-                Prefix=f"{path}/{version}/{prefix}"
+        file_locations = []
+        for prefix in prefix_patterns:
+            files_with_prefix = filter_s3_objects(
+                s3_client=storage_s3_client,
+                bucket=bucket,
+                prefix=f"{path}/{version}/{prefix}"
             )
 
-            if 'Contents' in response:
-                return [content['Key'] for content in response['Contents']]
-            else:
-                return []
+            file_locations = file_locations + files_with_prefix
 
-        def _check_expected_prefixes_exist(file_locations):
-            for prefix in prefix_patterns:
-                found_match = False
+        for prefix in prefix_patterns:
+            if not any(prefix in location for location in file_locations):
+                raise RuntimeError(f"Missing any files matching prefix: {prefix}")
 
-                for location in file_locations:
-                    if prefix in location:
-                        found_match = True
+        for location in file_locations:
+            filename = location.split("/")[-1]
+            save_path = f"{working_folder}/{filename}"
+            storage_s3_client.download_file(bucket, location, save_path)
 
-                if not found_match:
-                    raise RuntimeError(f"Missing any files matching prefix: {prefix}")
+    @staticmethod
+    def _append_archivematica_uuid(working_folder, archivematica_uuid):
+        bag_info = load_space_separated_file(
+            file_location=f"{working_folder}/bag-info.txt"
+        )
 
-        def _get_bag_files():
-            file_locations = []
-            for prefix in prefix_patterns:
-                file_locations = file_locations + _filter_bag_files(prefix)
-
-            _check_expected_prefixes_exist(file_locations)
-
-            for location in file_locations:
-                filename = location.split("/")[-1]
-                save_path = f"{working_folder}/{filename}"
-                storage_s3_client.download_file(bucket, location, save_path)
-
-        def _compress_bag():
-            shutil.make_archive(working_folder, 'gztar', working_folder)
-            shutil.rmtree(working_folder, ignore_errors=True)
-
-        def _generate_checksum(file_location):
-            sha256_hash = hashlib.sha256()
-
-            with open(file_location, "rb") as f:
-                for byte_block in iter(lambda: f.read(4096), b""):
-                    sha256_hash.update(byte_block)
-
-                return sha256_hash.hexdigest()
-
-        def _generate_updated_checksums():
-            files_in_need_of_update = [
-                'bag-info.txt',
-                'fetch.txt'
-            ]
-
-            return {filename: _generate_checksum(
-                f"{working_folder}/{filename}"
-            ) for filename in files_in_need_of_update}
-
-        def _load_existing_checksums():
-            tag_manifest = {}
-
-            with open(f"{working_folder}/{tagmanifest_name}") as fp:
-                for _, line in enumerate(fp):
-                    split_manifest_line = line.split(" ")
-                    checksum = split_manifest_line[0].strip()
-                    filename = split_manifest_line[1].strip()
-
-                    assert checksum
-                    assert filename
-
-                    tag_manifest[filename] = checksum
-
-            return tag_manifest
-
-        def _write_new_tagmanifest():
-            existing_checksums = _load_existing_checksums()
-            new_checksums = _generate_updated_checksums()
-
-            merged_checksums = dict(existing_checksums.items() | new_checksums.items())
-
-            with open(f"{working_folder}/{tagmanifest_name}", "w") as fp:
-                for checksum, filename in merged_checksums.items():
-                    fp.write(f"{filename} {checksum}\n")
-
-        def _get_archivematica_uuid():
-            files = _filter_bag_files('data/METS.')
-
-            assert len(files) == 1
-            mets_file_with_id = files[0]
-
-            archivematica_uuid = (
-                mets_file_with_id.split('/METS.')[-1].split('.xml')[0]
-            )
-
-            assert archivematica_uuid
-            return archivematica_uuid
-
-        def _update_bag_info():
-            archivematica_uuid = _get_archivematica_uuid()
+        if 'Internal-Sender-Identifier:' in bag_info:
+            assert bag_info['Internal-Sender-Identifier:'] == archivematica_uuid, archivematica_uuid
+            return False
+        else:
             with open(f"{working_folder}/bag-info.txt", "a") as fp:
-                fp.write(f"Internal-Sender-Identifier: {archivematica_uuid}")
+                fp.write(f"Internal-Sender-Identifier: {archivematica_uuid}\n")
+            return True
 
-        def _upload_bag_to_s3():
-            workflow_s3_client.upload_file(
-                f"{target_folder}/{archive_name}",
-                s3_upload_bucket,
-                f"{s3_upload_prefix}/{archive_name}"
-            )
+    def _update_tagmanifest(self, working_folder):
+        existing_checksums = self._load_existing_checksums(working_folder)
+        new_checksums = self._generate_updated_checksums(working_folder)
 
-        def _request_ingest():
-            response = storage_client.create_s3_ingest(
-                space=space,
-                external_identifier=external_identifier,
-                s3_bucket=s3_upload_bucket,
-                s3_key=f"{s3_upload_prefix}/{archive_name}",
-                ingest_type="update"
-            )
+        merged_checksums = dict(existing_checksums)
+        for k,v in new_checksums.items():
+            merged_checksums[k] = v
 
-        _write_fetch_file()
-        _get_bag_files()
-        _update_bag_info()
-        _write_new_tagmanifest()
-        _compress_bag()
-        _upload_bag_to_s3()
-        _request_ingest()
+        assert 'fetch.txt' in merged_checksums.keys()
 
-        sys.exit(1)
+        old_bag_info_checksum = existing_checksums.get('bag-info.txt')
+        new_bag_info_checksum = merged_checksums.get('bag-info.txt')
 
-    return create_bag
+        assert old_bag_info_checksum != new_bag_info_checksum
+
+        with open(f"{working_folder}/{self.tagmanifest_name}", "w") as fp:
+            for checksum, filename in merged_checksums.items():
+                fp.write(f"{filename} {checksum}\n")
+
+    def _upload_bag_to_s3(self, archive_location, working_id, remove_bag=True):
+        s3_upload_key = f"{self.s3_upload_prefix}/{working_id}.tar.gz"
+        workflow_s3_client.upload_file(
+            Filename=archive_location,
+            Bucket=s3_upload_bucket,
+            Key=s3_upload_key
+        )
+        if remove_bag:
+            os.remove(archive_location)
+
+        return s3_upload_key
+
+    def migrate(self, storage_manifest):
+        id = storage_manifest['id']
+        bucket = storage_manifest['location']['bucket']
+        path = storage_manifest['location']['path']
+        files = storage_manifest['files']
+        version = f"v{storage_manifest['version']}"
+        space = storage_manifest['space']
+        external_identifier = storage_manifest['info']['externalIdentifier']
+        provider = storage_manifest['location']['provider']
+
+        assert provider == 'amazon-s3'
+
+        working_id = id.replace("/", "_")
+        working_folder = f"{self.target_folder}/{working_id}"
+
+        os.makedirs(working_folder, exist_ok=True)
+
+        # Initialise working log
+        with open(f"{self.target_folder}/{working_id}.log", "w") as fp:
+            fp.write(f"{datetime.datetime.now().isoformat()}: Starting migration for {id}\n")
+
+        def _log(msg):
+            with open(f"{self.target_folder}/{working_id}.log", "a") as fp:
+                fp.write(f"{datetime.datetime.now().isoformat()}: {msg}\n")
+
+        # Write fetch.txt
+        self._write_fetch_file(
+            working_folder=working_folder,
+            bucket=bucket,
+            path=path,
+            files=files
+        )
+        _log(f"Wrote fetch.txt")
+
+        # Get required files from bag
+        self._get_bagit_files_from_s3(
+            working_folder=working_folder,
+            bucket=bucket,
+            path=path,
+            version=version,
+        )
+        _log(f"Got BagIt files from S3")
+
+        # Update bag-info.txt
+        archivematica_uuid = self._get_archivematica_uuid(
+            bucket=bucket,
+            path=path,
+            version=version
+        )
+
+        did_append_uuid = self._append_archivematica_uuid(working_folder, archivematica_uuid)
+        if not did_append_uuid:
+            _log(f"Internal-Sender-Identifier found in bag-info.txt: {archivematica_uuid}")
+            _log(f"Not migrating {id} (already migrated)")
+            return
+        else:
+            _log(f"Appended Internal-Sender-Identifier to bag-info.txt: {archivematica_uuid}")
+
+        # Update tagmanifest-sha256.txt
+        self._update_tagmanifest(
+            working_folder=working_folder
+        )
+        _log(f"Updated {self.tagmanifest_name}")
+
+        # Create compressed bag
+        archive_location = compress_folder(
+            folder=working_folder
+        )
+        _log(f"Created archive: {archive_location}")
+
+        # Upload compressed bag to S3
+        s3_upload_key = self._upload_bag_to_s3(
+            archive_location=archive_location,
+            working_id=working_id
+        )
+        _log(f"Uploaded bag to s3://{s3_upload_bucket}/{s3_upload_key}")
+
+        # Request ingest of uploaded bag from Storage Service
+        ingest_uri = storage_client.create_s3_ingest(
+            space=space,
+            external_identifier=external_identifier,
+            s3_bucket=s3_upload_bucket,
+            s3_key=s3_upload_key,
+            ingest_type="update"
+        )
+        _log(f"Requested ingest: {ingest_uri}")
+        _log(f"Completed migration for {id}")
 
 
 if __name__ == "__main__":
@@ -250,10 +337,9 @@ if __name__ == "__main__":
 
     storage_client = get_storage_client(api_url=api_url)
 
-    # TODO: update query to include born-digital-accessions
-    query = {
+    elastic_query = {
         "query": {
-            "term": {
+            "prefix": {
                 "space": {
                     "value": "born-digital"
                 }
@@ -262,6 +348,31 @@ if __name__ == "__main__":
     }
 
     s3_upload_bucket = environments[environment_id]['bucket']
-    transform = bag_creator(workflow_s3_client, storage_s3_client, storage_client, s3_upload_bucket)
 
-    query_index(elastic_client, index, query, transform)
+    bag_migrator = ArchivematicaUUIDBagMigrator(
+        workflow_s3_client=workflow_s3_client,
+        storage_s3_client=storage_s3_client,
+        storage_client=storage_client,
+        s3_upload_bucket=s3_upload_bucket
+    )
+
+    initial_query = elastic_client.search(
+        index=index,
+        body=elastic_query,
+        size=0
+    )
+
+    document_count = initial_query['hits']['total']['value']
+
+    results = helpers.scan(
+        client=elastic_client,
+        index=index,
+        size=5,
+        query=elastic_query
+    )
+
+    with tqdm(total=document_count, file=sys.stdout) as pbar:
+        for result in results:
+            storage_manifest = result['_source']
+            bag_migrator.migrate(storage_manifest)
+            pbar.update(1)

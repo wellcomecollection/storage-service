@@ -79,6 +79,7 @@ def parallel_scan_table(table_name, total_segments, max_scans_in_parallel):
 
 sts_client = boto3.client("sts")
 
+
 @functools.lru_cache
 def get_aws_resource(resource, *, role_arn):
     assumed_role_object = sts_client.assume_role(
@@ -91,6 +92,7 @@ def get_aws_resource(resource, *, role_arn):
         aws_secret_access_key=credentials["SecretAccessKey"],
         aws_session_token=credentials["SessionToken"],
     )
+
 
 @functools.lru_cache
 def get_aws_client(resource, *, role_arn):
@@ -106,6 +108,7 @@ def get_aws_client(resource, *, role_arn):
     )
 
 
+@functools.lru_cache
 def get_storage_client(api_url):
     creds_path = os.path.join(
         os.environ["HOME"], ".wellcome-storage", "oauth-credentials.json"
