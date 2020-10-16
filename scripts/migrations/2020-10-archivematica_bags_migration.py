@@ -13,6 +13,7 @@ import hashlib
 import os
 import shutil
 import sys
+from uuid import UUID
 
 from elasticsearch import helpers
 from tqdm import tqdm
@@ -91,7 +92,7 @@ class ArchivematicaUUIDBagMigrator:
             mets_file_with_id.split('/METS.')[-1].split('.xml')[0]
         )
 
-        assert archivematica_uuid
+        assert UUID(archivematica_uuid, version=4)
         return archivematica_uuid
 
     @staticmethod
@@ -131,27 +132,8 @@ class ArchivematicaUUIDBagMigrator:
                 fetch_file.write(f"{s3_uri}\t{file['size']}\t{file['name']}\n")
 
     @staticmethod
-    def _get_bagit_files_from_s3(bucket, path, version, working_folder):
-        prefix_patterns = [
-            "bagit.txt",
-            "bag-info.txt",
-            "manifest-",
-            "tagmanifest-"
-        ]
-
-        file_locations = []
-        for prefix in prefix_patterns:
-            files_with_prefix = filter_s3_objects(
-                s3_client=storage_s3_client,
-                bucket=bucket,
-                prefix=f"{path}/{version}/{prefix}"
-            )
-
-            file_locations = file_locations + files_with_prefix
-
-        for prefix in prefix_patterns:
-            if not any(prefix in location for location in file_locations):
-                raise RuntimeError(f"Missing any files matching prefix: {prefix}")
+    def _get_bagit_files_from_s3(bucket, path, version, working_folder, tagmanifest_files):
+        file_locations = [f"{path}/{version}/{file['name']}" for file in tagmanifest_files]
 
         for location in file_locations:
             filename = location.split("/")[-1]
@@ -203,15 +185,19 @@ class ArchivematicaUUIDBagMigrator:
 
         return s3_upload_key
 
-    def migrate(self, storage_manifest):
+    def migrate(self, version, space, external_identifier):
+        storage_manifest = storage_client.get_bag(
+            space=space,
+            external_identifier=external_identifier,
+            version=version
+        )
+
         id = storage_manifest['id']
         bucket = storage_manifest['location']['bucket']
         path = storage_manifest['location']['path']
-        files = storage_manifest['files']
-        version = f"v{storage_manifest['version']}"
-        space = storage_manifest['space']
-        external_identifier = storage_manifest['info']['externalIdentifier']
-        provider = storage_manifest['location']['provider']
+        files = storage_manifest['manifest']['files']
+        provider = storage_manifest['location']['provider']['id']
+        tagmanifest_files = storage_manifest['tagManifest']['files']
 
         assert provider == 'amazon-s3'
 
@@ -243,6 +229,7 @@ class ArchivematicaUUIDBagMigrator:
             bucket=bucket,
             path=path,
             version=version,
+            tagmanifest_files=tagmanifest_files
         )
         _log(f"Got BagIt files from S3")
 
@@ -276,19 +263,21 @@ class ArchivematicaUUIDBagMigrator:
         # Upload compressed bag to S3
         s3_upload_key = self._upload_bag_to_s3(
             archive_location=archive_location,
-            working_id=working_id
+            working_id=working_id,
+            remove_bag=False
         )
         _log(f"Uploaded bag to s3://{s3_upload_bucket}/{s3_upload_key}")
 
         # Request ingest of uploaded bag from Storage Service
-        ingest_uri = storage_client.create_s3_ingest(
-            space=space,
-            external_identifier=external_identifier,
-            s3_bucket=s3_upload_bucket,
-            s3_key=s3_upload_key,
-            ingest_type="update"
-        )
-        _log(f"Requested ingest: {ingest_uri}")
+        # ingest_uri = storage_client.create_s3_ingest(
+        #     space=space,
+        #     external_identifier=external_identifier,
+        #     s3_bucket=s3_upload_bucket,
+        #     s3_key=s3_upload_key,
+        #     ingest_type="update"
+        # )
+        # _log(f"Requested ingest: {ingest_uri}")
+        # sys.exit(1)
         _log(f"Completed migration for {id}")
 
 
@@ -299,7 +288,7 @@ if __name__ == "__main__":
     elastic_secret_id = 'archivematica_bags_migration/credentials'
     index = 'storage_bags'
 
-    environment_id = 'stage'
+    environment_id = 'prod'
 
     environments = {
         "prod": {
@@ -368,6 +357,16 @@ if __name__ == "__main__":
 
     with tqdm(total=document_count, file=sys.stdout) as pbar:
         for result in results:
-            storage_manifest = result['_source']
-            bag_migrator.migrate(storage_manifest)
+            document = result['_source']
+
+            version = f"v{document['version']}"
+            space = document['space']
+            external_identifier = document['info']['externalIdentifier']
+
+            bag_migrator.migrate(
+                version=version,
+                space=space,
+                external_identifier=external_identifier
+            )
+
             pbar.update(1)
