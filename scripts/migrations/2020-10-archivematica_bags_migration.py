@@ -1,75 +1,17 @@
-from elasticsearch import Elasticsearch
+#!/usr/bin/env python3
+"""
+This is a script to append an Archivematica UUID as
+an Internal-Sender-Identifier to existing born-digital bags.
+"""
+
 from elasticsearch import helpers
-import boto3
-import json
 import sys
 import os
 import shutil
 import hashlib
 from tqdm import tqdm
 
-import wellcome_storage_service
-
-
-def get_aws_resource(resource, *, role_arn):
-    assumed_role_object = sts_client.assume_role(
-        RoleArn=role_arn, RoleSessionName="AssumeRoleSession1"
-    )
-    credentials = assumed_role_object["Credentials"]
-    return boto3.resource(
-        resource,
-        aws_access_key_id=credentials["AccessKeyId"],
-        aws_secret_access_key=credentials["SecretAccessKey"],
-        aws_session_token=credentials["SessionToken"],
-    )
-
-
-def get_aws_client(resource, *, role_arn):
-    assumed_role_object = sts_client.assume_role(
-        RoleArn=role_arn, RoleSessionName="AssumeRoleSession1"
-    )
-    credentials = assumed_role_object["Credentials"]
-    return boto3.client(
-        resource,
-        aws_access_key_id=credentials["AccessKeyId"],
-        aws_secret_access_key=credentials["SecretAccessKey"],
-        aws_session_token=credentials["SessionToken"],
-    )
-
-
-def get_storage_client(api_url):
-    creds_path = os.path.join(
-        os.environ["HOME"], ".wellcome-storage", "oauth-credentials.json"
-    )
-    oauth_creds = json.load(open(creds_path))
-
-    return wellcome_storage_service.RequestsOAuthStorageServiceClient(
-        api_url=api_url,
-        client_id=oauth_creds["client_id"],
-        client_secret=oauth_creds["client_secret"],
-        token_url=oauth_creds["token_url"],
-    )
-
-
-def get_secret(secretsmanager_client, secret_id):
-    resp = secretsmanager_client.get_secret_value(SecretId=secret_id)
-
-    try:
-        # The secret response may be a JSON string of the form
-        # {"username": "…", "password": "…", "endpoint": "…"}
-        secret = json.loads(resp["SecretString"])
-    except ValueError:
-        secret = resp["SecretString"]
-
-    return secret
-
-
-def get_elastic_client(secretsmanager_client, elastic_secret_id):
-    secret = get_secret(secretsmanager_client, elastic_secret_id)
-
-    return Elasticsearch(
-        secret["endpoint"], http_auth=(secret["username"], secret["password"])
-    )
+from common import get_aws_resource, get_aws_client, get_storage_client, get_secret, get_elastic_client
 
 
 def query_index(elastic_client, elastic_index, elastic_query, transform):
@@ -108,7 +50,7 @@ def bag_creator(workflow_s3_client, storage_s3_client, storage_client, s3_upload
         provider = document['location']['provider']
         assert provider == 'amazon-s3'
 
-        path_prefix = f"s3://{bucket}/{path}/{version}"
+        path_prefix = f"s3://{bucket}/{path}"
 
         working_id = id.replace("/", "_")
         target_folder = "target"
@@ -130,6 +72,7 @@ def bag_creator(workflow_s3_client, storage_s3_client, storage_client, s3_upload
         def _write_fetch_file():
             def _create_fetch_line(file):
                 return f"{path_prefix}/{file['path']}\t{file['size']}\t{file['name']}\n"
+
             files = document['files']
 
             fetch_file = open(f"{working_folder}/fetch.txt", 'w')
@@ -254,8 +197,6 @@ def bag_creator(workflow_s3_client, storage_s3_client, storage_client, s3_upload
                 ingest_type="update"
             )
 
-            print(response)
-
         _write_fetch_file()
         _get_bag_files()
         _update_bag_info()
@@ -292,13 +233,6 @@ if __name__ == "__main__":
 
     api_url = environments[environment_id]['api_url']
 
-    sts_client = boto3.client("sts")
-
-    secretsmanager_client = get_aws_client(
-        resource='secretsmanager',
-        role_arn=storage_role_arn
-    )
-
     workflow_s3_client = get_aws_client(
         resource='s3',
         role_arn=workflow_role_arn
@@ -310,7 +244,7 @@ if __name__ == "__main__":
     )
 
     elastic_client = get_elastic_client(
-        secretsmanager_client=secretsmanager_client,
+        role_arn=storage_role_arn,
         elastic_secret_id=elastic_secret_id
     )
 
