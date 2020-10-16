@@ -8,7 +8,7 @@ import shutil
 import hashlib
 from tqdm import tqdm
 
-#from wellcome_storage_service import StorageServiceClient
+import wellcome_storage_service
 
 
 def get_aws_resource(resource, *, role_arn):
@@ -43,7 +43,7 @@ def get_storage_client(api_url):
     )
     oauth_creds = json.load(open(creds_path))
 
-    return StorageServiceClient(
+    return wellcome_storage_service.RequestsOAuthStorageServiceClient(
         api_url=api_url,
         client_id=oauth_creds["client_id"],
         client_secret=oauth_creds["client_secret"],
@@ -94,7 +94,7 @@ def query_index(elastic_client, elastic_index, elastic_query, transform):
             pbar.update(1)
 
 
-def bag_creator(s3_client, s3_upload_bucket):
+def bag_creator(workflow_s3_client, storage_s3_client, storage_client, s3_upload_bucket):
     def create_bag(result):
         document = result['_source']
 
@@ -102,13 +102,15 @@ def bag_creator(s3_client, s3_upload_bucket):
         bucket = document['location']['bucket']
         path = document['location']['path']
         version = f"v{document['version']}"
+        space = document['space']
+        external_identifier = document['info']['externalIdentifier']
 
         provider = document['location']['provider']
         assert provider == 'amazon-s3'
 
         path_prefix = f"s3://{bucket}/{path}/{version}"
 
-        working_id = id.replace("/","_")
+        working_id = id.replace("/", "_")
         target_folder = "target"
         working_folder = f"{target_folder}/{working_id}"
         tagmanifest_name = "tagmanifest-sha256.txt"
@@ -136,7 +138,7 @@ def bag_creator(s3_client, s3_upload_bucket):
             fetch_file.close()
 
         def _filter_bag_files(prefix):
-            response = s3_client.list_objects_v2(
+            response = storage_s3_client.list_objects_v2(
                 Bucket=bucket,
                 Prefix=f"{path}/{version}/{prefix}"
             )
@@ -167,7 +169,7 @@ def bag_creator(s3_client, s3_upload_bucket):
             for location in file_locations:
                 filename = location.split("/")[-1]
                 save_path = f"{working_folder}/{filename}"
-                s3_client.download_file(bucket, location, save_path)
+                storage_s3_client.download_file(bucket, location, save_path)
 
         def _compress_bag():
             shutil.make_archive(working_folder, 'gztar', working_folder)
@@ -218,38 +220,59 @@ def bag_creator(s3_client, s3_upload_bucket):
                 for checksum, filename in merged_checksums.items():
                     fp.write(f"{filename} {checksum}\n")
 
+        def _get_archivematica_uuid():
+            files = _filter_bag_files('data/METS.')
+
+            assert len(files) == 1
+            mets_file_with_id = files[0]
+
+            archivematica_uuid = (
+                mets_file_with_id.split('/METS.')[-1].split('.xml')[0]
+            )
+
+            assert archivematica_uuid
+            return archivematica_uuid
+
         def _update_bag_info():
-            # Get Archivematica UUID ???
-            # Add Archivematica UUID to bag-info.txt as Internal-Sender-Identifier
+            archivematica_uuid = _get_archivematica_uuid()
             with open(f"{working_folder}/bag-info.txt", "a") as fp:
-                fp.write("Internal-Sender-Identifier: nope")
+                fp.write(f"Internal-Sender-Identifier: {archivematica_uuid}")
 
         def _upload_bag_to_s3():
-            s3_client.upload_file(
-                f"{working_folder}/{archive_name}",
+            workflow_s3_client.upload_file(
+                f"{target_folder}/{archive_name}",
                 s3_upload_bucket,
                 f"{s3_upload_prefix}/{archive_name}"
             )
+
+        def _request_ingest():
+            response = storage_client.create_s3_ingest(
+                space=space,
+                external_identifier=external_identifier,
+                s3_bucket=s3_upload_bucket,
+                s3_key=f"{s3_upload_prefix}/{archive_name}",
+                ingest_type="update"
+            )
+
+            print(response)
 
         _write_fetch_file()
         _get_bag_files()
         _update_bag_info()
         _write_new_tagmanifest()
+        _compress_bag()
         _upload_bag_to_s3()
+        _request_ingest()
 
         sys.exit(1)
-
-        _compress_bag()
-        # Upload bag to S3
-        _upload_bag_to_s3()
-        # Ingest bag into storage service using client lib using correct space
-        #   - born-digital or born-digital-accessions
 
     return create_bag
 
 
 if __name__ == "__main__":
-    role_arn = 'arn:aws:iam::975596993436:role/storage-developer'
+    storage_role_arn = 'arn:aws:iam::975596993436:role/storage-developer'
+    workflow_role_arn = 'arn:aws:iam::299497370133:role/workflow-developer'
+
     elastic_secret_id = 'archivematica_bags_migration/credentials'
     index = 'storage_bags'
 
@@ -273,12 +296,17 @@ if __name__ == "__main__":
 
     secretsmanager_client = get_aws_client(
         resource='secretsmanager',
-        role_arn=role_arn
+        role_arn=storage_role_arn
     )
 
-    s3_client = get_aws_client(
+    workflow_s3_client = get_aws_client(
         resource='s3',
-        role_arn=role_arn
+        role_arn=workflow_role_arn
+    )
+
+    storage_s3_client = get_aws_client(
+        resource='s3',
+        role_arn=storage_role_arn
     )
 
     elastic_client = get_elastic_client(
@@ -286,7 +314,7 @@ if __name__ == "__main__":
         elastic_secret_id=elastic_secret_id
     )
 
-    #storage_client = get_storage_client(api_url=api_url)
+    storage_client = get_storage_client(api_url=api_url)
 
     # TODO: update query to include born-digital-accessions
     query = {
@@ -300,6 +328,6 @@ if __name__ == "__main__":
     }
 
     s3_upload_bucket = environments[environment_id]['bucket']
-    transform = bag_creator(s3_client, s3_upload_bucket)
+    transform = bag_creator(workflow_s3_client, storage_s3_client, storage_client, s3_upload_bucket)
 
     query_index(elastic_client, index, query, transform)
