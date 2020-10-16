@@ -55,17 +55,12 @@ def load_space_separated_file(file_location, key_first=True):
 
     with open(file_location) as fp:
         for line in fp:
-            split_line = line.split(" ")
-            first = split_line[0].strip()
-            second = split_line[1].strip()
-
-            assert first
-            assert second
+            first, second = line.split(" ", 1)
 
             if key_first:
-                fields[first] = second
+                fields[first.strip()] = second.strip()
             else:
-                fields[second] = first
+                fields[second.strip()] = first.strip()
 
     return fields
 
