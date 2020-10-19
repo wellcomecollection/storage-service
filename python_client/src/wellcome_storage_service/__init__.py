@@ -2,6 +2,7 @@
 
 import functools
 import json
+import os
 import time
 
 from oauthlib.oauth2 import BackendApplicationClient
@@ -174,6 +175,11 @@ def needs_token(f):
     return wrapper
 
 
+DEFAULT_CREDENTIALS_PATH = os.path.join(
+    os.environ["HOME"], ".wellcome-storage", "oauth-credentials.json"
+)
+
+
 class RequestsOAuthStorageServiceClient(RequestsStorageServiceClient):
     def __init__(self, api_url, client_id, client_secret, token_url):
         self.api_url = api_url
@@ -187,6 +193,11 @@ class RequestsOAuthStorageServiceClient(RequestsStorageServiceClient):
         super(RequestsOAuthStorageServiceClient, self).__init__(
             api_url=api_url, sess=sess
         )
+
+    @classmethod
+    def from_path(self, api_url, credentials_path=DEFAULT_CREDENTIALS_PATH):
+        oauth_creds = json.load(open(credentials_path))
+        return RequestsOAuthStorageServiceClient(api_url=api_url, **oauth_creds)
 
     @needs_token
     def _http_get(self, url):
