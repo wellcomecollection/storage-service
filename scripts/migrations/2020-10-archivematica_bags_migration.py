@@ -16,9 +16,9 @@ import sys
 from uuid import UUID
 
 from elasticsearch import helpers
-from tqdm import tqdm
+import tqdm
 
-from common import get_aws_resource, get_aws_client, get_storage_client, get_secret, get_elastic_client
+from common import get_aws_client, get_storage_client, get_elastic_client
 
 
 def generate_checksum(file_location):
@@ -51,12 +51,12 @@ def filter_s3_objects(s3_client, bucket, prefix):
         return []
 
 
-def load_space_separated_file(file_location, key_first=True):
+def read_tag_file(file_location, delimiter=" ", key_first=True):
     fields = {}
 
     with open(file_location) as fp:
         for line in fp:
-            first, second = line.split(" ", 1)
+            first, second = line.split(delimiter, 1)
 
             if key_first:
                 fields[first.strip()] = second.strip()
@@ -64,6 +64,25 @@ def load_space_separated_file(file_location, key_first=True):
                 fields[second.strip()] = first.strip()
 
     return fields
+
+
+def write_tag_file(file_location, fields):
+    with open(file_location, "w") as fp:
+        for key, value in fields.items():
+            fp.write(f"{key}: {value}\n")
+
+
+class WorkingLog:
+    def __init__(self, log_location, init_msg):
+        self.log_location = log_location
+
+        # Initialise working log
+        with open(log_location, "w") as fp:
+            fp.write(f"{datetime.datetime.now().isoformat()}: {init_msg}\n")
+
+    def log(self, msg):
+        with open(self.log_location, "a") as fp:
+            fp.write(f"{datetime.datetime.now().isoformat()}: {msg}\n")
 
 
 class ArchivematicaUUIDBagMigrator:
@@ -78,15 +97,13 @@ class ArchivematicaUUIDBagMigrator:
         self.s3_upload_prefix = "born-digital/archivematica-uuid-update"
 
     @staticmethod
-    def _get_archivematica_uuid(bucket, path, version):
-        files = filter_s3_objects(
-            s3_client=storage_s3_client,
-            bucket=bucket,
-            prefix=f"{path}/{version}/data/METS."
-        )
+    def _get_archivematica_uuid(files):
+        mets_files = [f['name'] for f in files if f['name'].startswith(
+            "data/METS."
+        ) and f['name'].endswith(".xml")]
 
-        assert len(files) == 1, files
-        mets_file_with_id = files[0]
+        assert len(mets_files) == 1, mets_files
+        mets_file_with_id = mets_files[0]
 
         archivematica_uuid = (
             mets_file_with_id.split('/METS.')[-1].split('.xml')[0]
@@ -107,7 +124,7 @@ class ArchivematicaUUIDBagMigrator:
         ) for filename in files_in_need_of_update}
 
     def _load_existing_checksums(self, working_folder):
-        tag_manifest = load_space_separated_file(
+        tag_manifest = read_tag_file(
             file_location=f"{working_folder}/{self.tagmanifest_name}",
             key_first=False
         )
@@ -133,33 +150,31 @@ class ArchivematicaUUIDBagMigrator:
 
     @staticmethod
     def _get_bagit_files_from_s3(bucket, path, version, working_folder, tagmanifest_files):
-        file_locations = [f"{path}/{version}/{file['name']}" for file in tagmanifest_files]
+        for file in tagmanifest_files:
+            location = f"{path}/{version}/{file['name']}"
+            save_path = f"{working_folder}/{file['name']}"
 
-        for location in file_locations:
-            filename = location.split("/")[-1]
-            save_path = f"{working_folder}/{filename}"
             storage_s3_client.download_file(bucket, location, save_path)
 
     @staticmethod
     def _append_archivematica_uuid(working_folder, archivematica_uuid):
-        bag_info = load_space_separated_file(
-            file_location=f"{working_folder}/bag-info.txt"
+        bag_info = read_tag_file(
+            file_location=f"{working_folder}/bag-info.txt",
+            delimiter=": "
         )
 
-        if 'Internal-Sender-Identifier:' in bag_info:
-            assert bag_info['Internal-Sender-Identifier:'] == archivematica_uuid, archivematica_uuid
-            return False
-        else:
-            with open(f"{working_folder}/bag-info.txt", "a") as fp:
-                fp.write(f"Internal-Sender-Identifier: {archivematica_uuid}\n")
-            return True
+        assert 'Internal-Sender-Identifier:' not in bag_info
+
+        bag_info['Internal-Sender-Identifier'] = archivematica_uuid
+        bag_info_path = os.path.join(working_folder, 'bag-info.txt')
+        write_tag_file(bag_info_path, bag_info)
 
     def _update_tagmanifest(self, working_folder):
         existing_checksums = self._load_existing_checksums(working_folder)
         new_checksums = self._generate_updated_checksums(working_folder)
 
         merged_checksums = dict(existing_checksums)
-        for k,v in new_checksums.items():
+        for k, v in new_checksums.items():
             merged_checksums[k] = v
 
         assert 'fetch.txt' in merged_checksums.keys()
@@ -195,33 +210,32 @@ class ArchivematicaUUIDBagMigrator:
         id = storage_manifest['id']
         bucket = storage_manifest['location']['bucket']
         path = storage_manifest['location']['path']
-        files = storage_manifest['manifest']['files']
+        payload_files = storage_manifest['manifest']['files']
         provider = storage_manifest['location']['provider']['id']
         tagmanifest_files = storage_manifest['tagManifest']['files']
+        internal_identifier = storage_manifest['info'].get('internalSenderIdentifier')
 
         assert provider == 'amazon-s3'
+        assert internal_identifier is None, internal_identifier
 
         working_id = id.replace("/", "_")
-        working_folder = f"{self.target_folder}/{working_id}"
+        working_folder = os.path.join(self.target_folder, working_id)
 
         os.makedirs(working_folder, exist_ok=True)
 
-        # Initialise working log
-        with open(f"{self.target_folder}/{working_id}.log", "w") as fp:
-            fp.write(f"{datetime.datetime.now().isoformat()}: Starting migration for {id}\n")
-
-        def _log(msg):
-            with open(f"{self.target_folder}/{working_id}.log", "a") as fp:
-                fp.write(f"{datetime.datetime.now().isoformat()}: {msg}\n")
+        logger = WorkingLog(
+            log_location=os.path.join(self.target_folder, f"{working_id}.log"),
+            init_msg=f"Starting migration for {id}"
+        )
 
         # Write fetch.txt
         self._write_fetch_file(
             working_folder=working_folder,
             bucket=bucket,
             path=path,
-            files=files
+            files=payload_files
         )
-        _log(f"Wrote fetch.txt")
+        logger.log(f"Wrote fetch.txt")
 
         # Get required files from bag
         self._get_bagit_files_from_s3(
@@ -231,42 +245,29 @@ class ArchivematicaUUIDBagMigrator:
             version=version,
             tagmanifest_files=tagmanifest_files
         )
-        _log(f"Got BagIt files from S3")
+        logger.log(f"Got BagIt files from S3")
 
         # Update bag-info.txt
-        archivematica_uuid = self._get_archivematica_uuid(
-            bucket=bucket,
-            path=path,
-            version=version
-        )
-
-        did_append_uuid = self._append_archivematica_uuid(working_folder, archivematica_uuid)
-        if not did_append_uuid:
-            _log(f"Internal-Sender-Identifier found in bag-info.txt: {archivematica_uuid}")
-            _log(f"Not migrating {id} (already migrated)")
-            return
-        else:
-            _log(f"Appended Internal-Sender-Identifier to bag-info.txt: {archivematica_uuid}")
+        archivematica_uuid = self._get_archivematica_uuid(files=payload_files)
+        self._append_archivematica_uuid(working_folder, archivematica_uuid)
+        logger.log(f"Appended Internal-Sender-Identifier to bag-info.txt: {archivematica_uuid}")
 
         # Update tagmanifest-sha256.txt
-        self._update_tagmanifest(
-            working_folder=working_folder
-        )
-        _log(f"Updated {self.tagmanifest_name}")
+        self._update_tagmanifest(working_folder=working_folder)
+        logger.log(f"Updated {self.tagmanifest_name}")
 
         # Create compressed bag
         archive_location = compress_folder(
             folder=working_folder
         )
-        _log(f"Created archive: {archive_location}")
+        logger.log(f"Created archive: {archive_location}")
 
         # Upload compressed bag to S3
         s3_upload_key = self._upload_bag_to_s3(
             archive_location=archive_location,
-            working_id=working_id,
-            remove_bag=False
+            working_id=working_id
         )
-        _log(f"Uploaded bag to s3://{s3_upload_bucket}/{s3_upload_key}")
+        logger.log(f"Uploaded bag to s3://{s3_upload_bucket}/{s3_upload_key}")
 
         # Request ingest of uploaded bag from Storage Service
         ingest_uri = storage_client.create_s3_ingest(
@@ -276,9 +277,8 @@ class ArchivematicaUUIDBagMigrator:
             s3_key=s3_upload_key,
             ingest_type="update"
         )
-        _log(f"Requested ingest: {ingest_uri}")
-        _log(f"Completed migration for {id}")
-        sys.exit(1)
+        logger.log(f"Requested ingest: {ingest_uri}")
+        logger.log(f"Completed migration for {id}")
 
 
 if __name__ == "__main__":
@@ -324,10 +324,19 @@ if __name__ == "__main__":
 
     elastic_query = {
         "query": {
-            "prefix": {
-                "space": {
-                    "value": "born-digital"
-                }
+            "bool": {
+                "must": {
+                    "prefix": {
+                        "space": {
+                            "value": "born-digital"
+                        }
+                    }
+                },
+                "must_not": [{
+                    "exists": {
+                        "field": "info.internalSenderIdentifier"
+                    }
+                }]
             }
         }
     }
@@ -354,18 +363,15 @@ if __name__ == "__main__":
         query=elastic_query
     )
 
-    with tqdm(total=document_count, file=sys.stdout) as pbar:
-        for result in results:
-            document = result['_source']
+    for result in tqdm.tqdm(results, total=document_count):
+        document = result['_source']
 
-            version = f"v{document['version']}"
-            space = document['space']
-            external_identifier = document['info']['externalIdentifier']
+        version = f"v{document['version']}"
+        space = document['space']
+        external_identifier = document['info']['externalIdentifier']
 
-            bag_migrator.migrate(
-                version=version,
-                space=space,
-                external_identifier=external_identifier
-            )
-
-            pbar.update(1)
+        bag_migrator.migrate(
+            version=version,
+            space=space,
+            external_identifier=external_identifier
+        )
