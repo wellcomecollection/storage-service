@@ -269,40 +269,41 @@ class ArchivematicaUUIDBagMigrator:
         _log(f"Uploaded bag to s3://{s3_upload_bucket}/{s3_upload_key}")
 
         # Request ingest of uploaded bag from Storage Service
-        # ingest_uri = storage_client.create_s3_ingest(
-        #     space=space,
-        #     external_identifier=external_identifier,
-        #     s3_bucket=s3_upload_bucket,
-        #     s3_key=s3_upload_key,
-        #     ingest_type="update"
-        # )
-        # _log(f"Requested ingest: {ingest_uri}")
-        # sys.exit(1)
+        ingest_uri = storage_client.create_s3_ingest(
+            space=space,
+            external_identifier=external_identifier,
+            s3_bucket=s3_upload_bucket,
+            s3_key=s3_upload_key,
+            ingest_type="update"
+        )
+        _log(f"Requested ingest: {ingest_uri}")
         _log(f"Completed migration for {id}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
     storage_role_arn = 'arn:aws:iam::975596993436:role/storage-developer'
     workflow_role_arn = 'arn:aws:iam::299497370133:role/workflow-developer'
-
     elastic_secret_id = 'archivematica_bags_migration/credentials'
-    index = 'storage_bags'
 
-    environment_id = 'prod'
+    environment_id = 'stage'
 
     environments = {
-        "prod": {
-            "bucket": "wellcomecollection-archivematica-ingests",
-            "api_url": "https://api.wellcomecollection.org/storage/v1"
+        'prod': {
+            'bucket': 'wellcomecollection-archivematica-ingests',
+            'api_url': 'https://api.wellcomecollection.org/storage/v1',
+            'reporting_index': 'storage_bags'
         },
-        "stage": {
-            "bucket": "wellcomecollection-archivematica-staging-ingests",
-            "api_url": "https://api-stage.wellcomecollection.org/storage/v1"
-
+        'stage': {
+            'bucket': 'wellcomecollection-archivematica-staging-ingests',
+            'api_url': 'https://api-stage.wellcomecollection.org/storage/v1',
+            'reporting_index': 'storage_stage_bags'
         }
     }
 
     api_url = environments[environment_id]['api_url']
+    index = environments[environment_id]['reporting_index']
+    s3_upload_bucket = environments[environment_id]['bucket']
 
     workflow_s3_client = get_aws_client(
         resource='s3',
@@ -330,8 +331,6 @@ if __name__ == "__main__":
             }
         }
     }
-
-    s3_upload_bucket = environments[environment_id]['bucket']
 
     bag_migrator = ArchivematicaUUIDBagMigrator(
         workflow_s3_client=workflow_s3_client,
