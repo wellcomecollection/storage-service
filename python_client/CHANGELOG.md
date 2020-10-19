@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v2.2.1 - 2020-10-19
+
+Fix some metadata on the PyPI page.
+
 ## v2.2.0 - 2020-10-19
 
 Add a method to construct an instance of `RequestsOAuthStorageServiceClient` from an API URL and a JSON credentials file.
