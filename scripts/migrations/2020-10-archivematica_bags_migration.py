@@ -72,7 +72,7 @@ def write_tag_file(file_location, fields):
             fp.write(f"{key}: {value}\n")
 
 
-class WorkingLog:
+class SimpleLog:
     def __init__(self, log_location, init_msg):
         self.log_location = log_location
 
@@ -86,13 +86,13 @@ class WorkingLog:
 
 
 class ArchivematicaUUIDBagMigrator:
-    def __init__(self, workflow_s3_client, storage_s3_client, storage_client, s3_upload_bucket):
+    def __init__(self, workflow_s3_client, storage_s3_client, storage_client, s3_upload_bucket, target_folder):
         self.workflow_s3_client = workflow_s3_client
         self.storage_s3_client = storage_s3_client
         self.storage_client = storage_client
         self.s3_upload_bucket = s3_upload_bucket
 
-        self.target_folder = "target"
+        self.target_folder = target_folder
         self.tagmanifest_name = "tagmanifest-sha256.txt"
         self.s3_upload_prefix = "born-digital/archivematica-uuid-update"
 
@@ -102,7 +102,7 @@ class ArchivematicaUUIDBagMigrator:
             "data/METS."
         ) and f['name'].endswith(".xml")]
 
-        assert len(mets_files) == 1, mets_files
+        assert len(mets_files) == 1, "No UUID found in METS file"
         mets_file_with_id = mets_files[0]
 
         archivematica_uuid = (
@@ -135,7 +135,9 @@ class ArchivematicaUUIDBagMigrator:
             'manifest-sha256.txt'
         ]
 
-        assert any(filename in files_that_should_be_referenced for filename in tag_manifest.keys())
+        assert any(
+            filename in files_that_should_be_referenced for filename in tag_manifest.keys()
+        ), "Missing file while loading checksums"
 
         return tag_manifest
 
@@ -163,7 +165,7 @@ class ArchivematicaUUIDBagMigrator:
             delimiter=": "
         )
 
-        assert 'Internal-Sender-Identifier:' not in bag_info
+        assert 'Internal-Sender-Identifier:' not in bag_info, "Found Internal-Sender-Identifier in bag-info.txt"
 
         bag_info['Internal-Sender-Identifier'] = archivematica_uuid
         bag_info_path = os.path.join(working_folder, 'bag-info.txt')
@@ -177,12 +179,12 @@ class ArchivematicaUUIDBagMigrator:
         for k, v in new_checksums.items():
             merged_checksums[k] = v
 
-        assert 'fetch.txt' in merged_checksums.keys()
+        assert 'fetch.txt' in merged_checksums.keys(), "fetch.txt not found in merged checksums"
 
         old_bag_info_checksum = existing_checksums.get('bag-info.txt')
         new_bag_info_checksum = merged_checksums.get('bag-info.txt')
 
-        assert old_bag_info_checksum != new_bag_info_checksum
+        assert old_bag_info_checksum != new_bag_info_checksum, "bag-info.txt checksum is incorrect"
 
         with open(f"{working_folder}/{self.tagmanifest_name}", "w") as fp:
             for checksum, filename in merged_checksums.items():
@@ -215,15 +217,15 @@ class ArchivematicaUUIDBagMigrator:
         tagmanifest_files = storage_manifest['tagManifest']['files']
         internal_identifier = storage_manifest['info'].get('internalSenderIdentifier')
 
-        assert provider == 'amazon-s3'
-        assert internal_identifier is None, internal_identifier
+        assert provider == 'amazon-s3', f"Provider must be amazon-s3, found {provider}"
+        assert internal_identifier is None, internal_identifier, f"Internal identifier found: {internal_identifier}"
 
         working_id = id.replace("/", "_")
         working_folder = os.path.join(self.target_folder, working_id)
 
         os.makedirs(working_folder, exist_ok=True)
 
-        logger = WorkingLog(
+        logger = SimpleLog(
             log_location=os.path.join(self.target_folder, f"{working_id}.log"),
             init_msg=f"Starting migration for {id}"
         )
@@ -287,6 +289,7 @@ if __name__ == "__main__":
     elastic_secret_id = 'archivematica_bags_migration/credentials'
 
     environment_id = 'stage'
+    target_folder = 'target'
 
     environments = {
         'prod': {
@@ -345,7 +348,8 @@ if __name__ == "__main__":
         workflow_s3_client=workflow_s3_client,
         storage_s3_client=storage_s3_client,
         storage_client=storage_client,
-        s3_upload_bucket=s3_upload_bucket
+        s3_upload_bucket=s3_upload_bucket,
+        target_folder=target_folder
     )
 
     initial_query = elastic_client.search(
@@ -363,15 +367,24 @@ if __name__ == "__main__":
         query=elastic_query
     )
 
+    logger = SimpleLog(
+        log_location=os.path.join(target_folder, f"error.log"),
+        init_msg=f"Starting migration of {document_count} bags"
+    )
+
     for result in tqdm.tqdm(results, total=document_count):
         document = result['_source']
 
+        id = document["id"]
         version = f"v{document['version']}"
         space = document['space']
         external_identifier = document['info']['externalIdentifier']
 
-        bag_migrator.migrate(
-            version=version,
-            space=space,
-            external_identifier=external_identifier
-        )
+        try:
+            bag_migrator.migrate(
+                version=version,
+                space=space,
+                external_identifier=external_identifier
+            )
+        except Exception as err:
+            logger.log(f"{id}: {err}")
