@@ -125,10 +125,7 @@ def get_storage_client(api_url):
 
 
 def get_secret(role_arn, secret_id):
-    secretsmanager_client = get_aws_client(
-        resource='secretsmanager',
-        role_arn=role_arn
-    )
+    secretsmanager_client = get_aws_client(resource="secretsmanager", role_arn=role_arn)
 
     response = secretsmanager_client.get_secret_value(SecretId=secret_id)
 
