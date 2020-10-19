@@ -87,7 +87,7 @@ class TestS3IADownload(object):
                 # All files in the compressed bag are under a directory
                 assert tarinfo.name.startswith("b11733330/")
 
-                inner_name = tarinfo.name[len("b11733330/") :]
+                inner_name = tarinfo.name[len("b11733330/"):]
                 assert files[inner_name] == tarinfo.size
 
             bagit = tf.getmember("b11733330/bagit.txt")
