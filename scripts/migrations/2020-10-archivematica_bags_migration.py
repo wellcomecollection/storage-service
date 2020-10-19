@@ -218,7 +218,7 @@ class ArchivematicaUUIDBagMigrator:
         internal_identifier = storage_manifest['info'].get('internalSenderIdentifier')
 
         assert provider == 'amazon-s3', f"Provider must be amazon-s3, found {provider}"
-        assert internal_identifier is None, internal_identifier, f"Internal identifier found: {internal_identifier}"
+        assert internal_identifier is None, f"Internal identifier found: {internal_identifier}"
 
         working_id = id.replace("/", "_")
         working_folder = os.path.join(self.target_folder, working_id)
@@ -284,11 +284,16 @@ class ArchivematicaUUIDBagMigrator:
 
 
 if __name__ == "__main__":
+    try:
+        environment_id = sys.argv[1]
+        document_limit = int(sys.argv[2])
+    except IndexError:
+        sys.exit(f"Usage: {__file__} <ENVIRONMENT> <DOCUMENT_COUNT>")
+
     storage_role_arn = 'arn:aws:iam::975596993436:role/storage-developer'
     workflow_role_arn = 'arn:aws:iam::299497370133:role/workflow-developer'
     elastic_secret_id = 'archivematica_bags_migration/credentials'
 
-    environment_id = 'stage'
     target_folder = 'target'
 
     environments = {
@@ -359,6 +364,9 @@ if __name__ == "__main__":
     )
 
     document_count = initial_query['hits']['total']['value']
+    documents_to_process = min([document_limit, document_count])
+
+    print(f"Found {document_count} to process, limit is {document_limit}.")
 
     results = helpers.scan(
         client=elastic_client,
@@ -367,12 +375,22 @@ if __name__ == "__main__":
         query=elastic_query
     )
 
+    os.makedirs(target_folder, exist_ok=True)
+
     logger = SimpleLog(
         log_location=os.path.join(target_folder, f"error.log"),
-        init_msg=f"Starting migration of {document_count} bags"
+        init_msg=f"Starting migration of {documents_to_process} bags"
     )
 
-    for result in tqdm.tqdm(results, total=document_count):
+    tqdm_iterator = tqdm.tqdm(results, total=documents_to_process)
+
+    processed_documents = 0
+    for result in tqdm_iterator:
+
+        if processed_documents == documents_to_process:
+            tqdm_iterator.close()
+            break
+
         document = result['_source']
 
         id = document["id"]
@@ -388,3 +406,5 @@ if __name__ == "__main__":
             )
         except Exception as err:
             logger.log(f"{id}: {err}")
+
+        processed_documents = processed_documents + 1
