@@ -6,11 +6,23 @@ import org.scalatest.TryValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
-import uk.ac.wellcome.platform.archive.common.generators.{ExternalIdentifierGenerators, StorageSpaceGenerators}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, UpdateIngestType}
-import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestShouldRetry}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  ExternalIdentifierGenerators,
+  StorageSpaceGenerators
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CreateIngestType,
+  UpdateIngestType
+}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  IngestShouldRetry
+}
 import uk.ac.wellcome.platform.storage.bag_versioner.fixtures.BagVersionerFixtures
-import uk.ac.wellcome.platform.storage.bag_versioner.models.{BagVersionerFailureSummary, BagVersionerSuccessSummary}
+import uk.ac.wellcome.platform.storage.bag_versioner.models.{
+  BagVersionerFailureSummary,
+  BagVersionerSuccessSummary
+}
 
 class BagVersionerTest
     extends AnyFunSpec

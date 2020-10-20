@@ -3,7 +3,10 @@ package uk.ac.wellcome.platform.storage.bag_versioner.services
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.ingests.models.{IngestID, IngestType}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  IngestID,
+  IngestType
+}
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.storage.bag_versioner.models._
 import uk.ac.wellcome.platform.storage.bag_versioner.versioning._
@@ -43,7 +46,7 @@ class BagVersioner(versionPicker: VersionPicker) {
             maybeUserFacingMessage = Some(s"Assigned bag version $version")
           )
 
-        case Left(error@UnableToAssignVersion(internalError)) =>
+        case Left(error @ UnableToAssignVersion(internalError)) =>
           IngestFailed(
             BagVersionerFailureSummary(
               ingestId = ingestId,
@@ -67,9 +70,11 @@ class BagVersioner(versionPicker: VersionPicker) {
       }
     }
 
-  private def getUnderlyingThrowable(error: IngestVersionManagerError): Throwable =
+  private def getUnderlyingThrowable(
+    error: IngestVersionManagerError
+  ): Throwable =
     error match {
       case err: IngestVersionManagerDaoError => err.e
-      case err => new Throwable(s"Unexpected error in the bag versioner: $err")
+      case err                               => new Throwable(s"Unexpected error in the bag versioner: $err")
     }
 }

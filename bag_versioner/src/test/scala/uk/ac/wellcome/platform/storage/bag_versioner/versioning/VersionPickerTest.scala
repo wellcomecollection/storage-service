@@ -5,9 +5,18 @@ import java.time.Instant
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
-import uk.ac.wellcome.platform.archive.common.generators.{ExternalIdentifierGenerators, StorageSpaceGenerators}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, UpdateIngestType}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagVersion,
+  ExternalIdentifier
+}
+import uk.ac.wellcome.platform.archive.common.generators.{
+  ExternalIdentifierGenerators,
+  StorageSpaceGenerators
+}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CreateIngestType,
+  UpdateIngestType
+}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.storage.bag_versioner.fixtures.VersionPickerFixtures
 
@@ -161,7 +170,8 @@ class VersionPickerTest
 
         result.left.value shouldBe a[UnableToAssignVersion]
 
-        val err: UnableToAssignVersion = result.left.value.asInstanceOf[UnableToAssignVersion]
+        val err: UnableToAssignVersion =
+          result.left.value.asInstanceOf[UnableToAssignVersion]
         err.ingestVersionManagerError shouldBe a[NewerIngestAlreadyExists]
       }
     }

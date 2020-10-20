@@ -9,7 +9,10 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
-import uk.ac.wellcome.platform.storage.bag_versioner.services.{BagVersioner, BagVersionerWorker}
+import uk.ac.wellcome.platform.storage.bag_versioner.services.{
+  BagVersioner,
+  BagVersionerWorker
+}
 import uk.ac.wellcome.storage.locking.LockDao
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -20,7 +23,9 @@ trait BagVersionerFixtures
     with AlpakkaSQSWorkerFixtures
     with VersionPickerFixtures {
 
-  def withBagVersioner[R](dao: LockDao[String, UUID])(testWith: TestWith[BagVersioner, R]): R =
+  def withBagVersioner[R](
+    dao: LockDao[String, UUID]
+  )(testWith: TestWith[BagVersioner, R]): R =
     withVersionPicker(dao) { versionPicker =>
       testWith(new BagVersioner(versionPicker))
     }
