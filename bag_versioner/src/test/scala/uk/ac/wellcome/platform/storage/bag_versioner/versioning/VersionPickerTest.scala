@@ -1,26 +1,15 @@
 package uk.ac.wellcome.platform.storage.bag_versioner.versioning
 
 import java.time.Instant
-import java.util.UUID
 
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
-import uk.ac.wellcome.platform.archive.common.generators.{
-  ExternalIdentifierGenerators,
-  StorageSpaceGenerators
-}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  CreateIngestType,
-  UpdateIngestType
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.generators.{ExternalIdentifierGenerators, StorageSpaceGenerators}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{CreateIngestType, UpdateIngestType}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.storage.bag_versioner.fixtures.VersionPickerFixtures
-import uk.ac.wellcome.storage.locking.{LockDao, LockFailure, UnlockFailure}
 
 class VersionPickerTest
     extends AnyFunSpec
@@ -172,8 +161,8 @@ class VersionPickerTest
 
         result.left.value shouldBe a[UnableToAssignVersion]
 
-        val err = result.left.value.asInstanceOf[UnableToAssignVersion]
-        err.e shouldBe a[NewerIngestAlreadyExists]
+        val err: UnableToAssignVersion = result.left.value.asInstanceOf[UnableToAssignVersion]
+        err.ingestVersionManagerError shouldBe a[NewerIngestAlreadyExists]
       }
     }
   }
@@ -230,16 +219,8 @@ class VersionPickerTest
     }
   }
 
-  it("fails if the locking dao fails") {
-    val lockDao = new LockDao[String, UUID] {
-      override def lock(id: String, contextId: UUID): LockResult = Left(
-        LockFailure(id, new Throwable("BOOM!"))
-      )
-
-      override def unlock(contextId: UUID): UnlockResult = Left(
-        UnlockFailure(contextId, new Throwable("BOOM!"))
-      )
-    }
+  it("fails with FailedToGetLock if there is a LockFailure") {
+    val lockDao = createBrokenLockDao
 
     withVersionPicker(lockDao) { picker =>
       val result: Either[VersionPickerError, BagVersion] = picker.chooseVersion(
@@ -250,10 +231,7 @@ class VersionPickerTest
         storageSpace = createStorageSpace
       )
 
-      result.left.value shouldBe a[InternalVersionPickerError]
-
-      val err = result.left.value.asInstanceOf[InternalVersionPickerError]
-      err.e.getMessage should startWith("Locking error:")
+      result.left.value shouldBe a[FailedToGetLock]
     }
   }
 
@@ -280,7 +258,7 @@ class VersionPickerTest
       result.left.value shouldBe a[UnableToAssignVersion]
 
       val err = result.left.value.asInstanceOf[UnableToAssignVersion]
-      err.e shouldBe a[ExternalIdentifiersMismatch]
+      err.ingestVersionManagerError shouldBe a[ExternalIdentifiersMismatch]
     }
   }
 }

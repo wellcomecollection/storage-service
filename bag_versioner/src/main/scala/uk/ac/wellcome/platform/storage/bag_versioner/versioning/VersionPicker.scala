@@ -4,17 +4,10 @@ import java.time.Instant
 import java.util.UUID
 
 import cats.{Id, Monad, MonadError}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagId,
-  BagVersion,
-  ExternalIdentifier
-}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
-  IngestID,
-  IngestType
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion, ExternalIdentifier}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{IngestID, IngestType}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
-import uk.ac.wellcome.storage.locking.{FailedProcess, LockDao, LockingService}
+import uk.ac.wellcome.storage.locking.{FailedLockingServiceOp, LockDao, LockingService}
 
 class VersionPicker(
   lockingService: LockingService[
@@ -58,9 +51,8 @@ class VersionPicker(
       case Right(Left(ingestVersionManagerError)) =>
         Left(UnableToAssignVersion(ingestVersionManagerError))
 
-      case Left(FailedProcess(_, err)) => Left(InternalVersionPickerError(err))
-      case Left(err) =>
-        Left(InternalVersionPickerError(new Throwable(s"Locking error: $err")))
+      case Left(err: FailedLockingServiceOp) =>
+        Left(FailedToGetLock(err))
     }
   }
 
