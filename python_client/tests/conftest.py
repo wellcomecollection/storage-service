@@ -45,14 +45,17 @@ with betamax.Betamax.configure() as config:
     config.default_cassette_options["serialize_with"] = PrettyJSONSerializer.name
 
 
+def _get_secret(name):
+    value = os.environ.get(name, "test_%s" % name)
+    config.define_cassette_placeholder("<%s>" % name, value)
+    return value
+
+
 @pytest.fixture
 def client(request):
-    client_id = os.environ.get("CLIENT_ID", "test_client_id")
-    client_secret = os.environ.get("CLIENT_SECRET", "test_client_secret")
+    client_id = _get_secret("CLIENT_ID")
+    client_secret = _get_secret("CLIENT_SECRET")
     token_url = "https://auth.wellcomecollection.org/oauth2/token"
-
-    config.define_cassette_placeholder("<CLIENT_ID>", client_id)
-    config.define_cassette_placeholder("<CLIENT_SECRET>", client_secret)
 
     ss_client = RequestsOAuthStorageServiceClient(
         api_url="https://api.wellcomecollection.org/storage/v1",

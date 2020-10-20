@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## v2.2.1 - 2020-10-19
+
+Fix some metadata on the PyPI page.
+
+## v2.2.0 - 2020-10-19
+
+Add a method to construct an instance of `RequestsOAuthStorageServiceClient` from an API URL and a JSON credentials file.
+The credentials file should have the following keys: `"client_id"`, `"client_secret"` and `"token_url"`.
+
+Example:
+
+```python
+from wellcome_storage_service import RequestsOAuthStorageServiceClient
+
+client = RequestsOAuthStorageServiceClient.from_path(
+    api_url="https://example.org/api/v1/storage",
+    credentials_path="/home/ec2-user/wellcome-storage-credentials.json"
+)
+```
+
+The default value for `credentials_path` is `~/.wellcome-storage/oauth-credentials.json`.
+
 ## v2.1.0 - 2020-07-07
 
 Update the downloader code so it can recognise the `amazon-s3` storage provider

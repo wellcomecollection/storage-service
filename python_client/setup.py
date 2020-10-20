@@ -33,8 +33,8 @@ setup(
     description="A client for the Wellcome Storage Service",
     long_description=open(README).read(),
     author="Wellcome Trust (Digital Platform Team)",
-    author_email="wellcomedigitalplatform@wellcome.ac.uk",
-    url="https://github.com/wellcometrust/storage_service",
+    author_email="wellcomedigitalplatform@wellcome.org",
+    url="https://github.com/wellcomecollection/storage-service",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python :: 2.7",
