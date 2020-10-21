@@ -403,6 +403,14 @@ module "bag_indexer_input_queue" {
 
 # file finder
 
+module "file_reindexer_output_topic" {
+  source = "../topic"
+
+  name = "${var.namespace}_file_reindexer_output"
+
+  role_names = []
+}
+
 module "file_finder_input_queue" {
   source = "../queue"
 
@@ -410,7 +418,8 @@ module "file_finder_input_queue" {
 
   topic_arns = [
     module.registered_bag_notifications_topic.arn,
-    module.bag_reindexer_output_topic.arn
+    module.bag_reindexer_output_topic.arn,
+    module.file_reindexer_output_topic.arn,
   ]
 
   role_names = [module.file_finder.task_role_name]
