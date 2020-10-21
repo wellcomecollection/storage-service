@@ -26,8 +26,8 @@ class FileFinderWorker(
   messageSender: MessageSender[_]
 )(
   implicit
-  val actorSystem: ActorSystem,
-  val sqsAsync: SqsAsyncClient,
+  actorSystem: ActorSystem,
+  sqsAsync: SqsAsyncClient,
   mc: MetricsMonitoringClient,
   wd: Decoder[BagRegistrationNotification],
   ec: ExecutionContext
@@ -51,6 +51,7 @@ class FileFinderWorker(
     }
 
   def processMessage(notification: BagRegistrationNotification): Future[Result[Nothing]] = {
+    debug(s"Processing notification $notification")
     val contexts =
       for {
         version <- Future.fromTry {
@@ -61,6 +62,8 @@ class FileFinderWorker(
           space = notification.space,
           externalIdentifier = notification.externalIdentifier
         )
+
+        _ = debug(s"Fetching bag ID=$bagId version=$version")
 
         bagLookup <- bagTrackerClient.getBag(bagId = bagId, version = version)
 
@@ -93,5 +96,8 @@ class FileFinderWorker(
     }
   }
 
-  override def run(): Future[Any] = worker.start
+  override def run(): Future[Any] = {
+    debug(s"@@AWLC run!")
+    worker.start
+  }
 }

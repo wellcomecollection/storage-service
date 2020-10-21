@@ -25,6 +25,7 @@ class FileFinderFeatureTest
     val dao = createStorageManifestDao()
 
     val manifest = createStorageManifestWithFileCount(fileCount = 3)
+    dao.put(manifest) shouldBe a[Right[_, _]]
 
     val expectedMessages = manifest.manifest.files.map { file =>
       FileContext(manifest = manifest, file = file)
@@ -37,14 +38,14 @@ class FileFinderFeatureTest
             queue,
             BagRegistrationNotification(manifest)
           )
+
+          eventually {
+            messageSender.messages should have size 3
+            messageSender.getMessages[FileContext]() should contain theSameElementsAs expectedMessages
+
+            assertQueueEmpty(queue)
+          }
         }
-      }
-
-      eventually {
-        messageSender.messages should have size 3
-        messageSender.getMessages[FileContext]() should contain theSameElementsAs expectedMessages
-
-        assertQueueEmpty(queue)
       }
     }
   }
