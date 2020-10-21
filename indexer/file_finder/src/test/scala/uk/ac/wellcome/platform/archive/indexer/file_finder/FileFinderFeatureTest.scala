@@ -5,7 +5,6 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.StorageManifestDaoFixture
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.models.FileContext
@@ -17,7 +16,6 @@ class FileFinderFeatureTest
     with Eventually
     with IntegrationPatience
     with WorkerServiceFixture
-    with StorageManifestDaoFixture
     with StorageManifestGenerators {
 
   it("splits a bag into three messages") {
