@@ -14,7 +14,10 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   CreateIngestType,
   UpdateIngestType
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.IngestFailed
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  IngestFailed,
+  IngestShouldRetry
+}
 import uk.ac.wellcome.platform.storage.bag_versioner.fixtures.BagVersionerFixtures
 import uk.ac.wellcome.platform.storage.bag_versioner.models.{
   BagVersionerFailureSummary,
@@ -49,6 +52,25 @@ class BagVersionerTest
         .asInstanceOf[BagVersionerSuccessSummary]
 
       summary.version shouldBe BagVersion(1)
+    }
+  }
+
+  it("is retryable if it encounters a lock failure") {
+    val externalIdentifier = createExternalIdentifier
+    val storageSpace = createStorageSpace
+    val lockDao = createBrokenLockDao
+
+    withBagVersioner(lockDao) { bagVersioner =>
+      val maybeVersion = bagVersioner.getSummary(
+        ingestId = createIngestID,
+        ingestDate = Instant.now,
+        ingestType = CreateIngestType,
+        externalIdentifier = externalIdentifier,
+        storageSpace = storageSpace
+      )
+
+      val result = maybeVersion.success.get
+      result shouldBe a[IngestShouldRetry[_]]
     }
   }
 

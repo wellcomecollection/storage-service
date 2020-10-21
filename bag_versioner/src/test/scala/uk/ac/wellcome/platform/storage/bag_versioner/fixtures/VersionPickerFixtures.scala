@@ -10,10 +10,26 @@ import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
   IngestVersionManagerError,
   VersionPicker
 }
-import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
+import uk.ac.wellcome.storage.locking.{
+  LockDao,
+  LockFailure,
+  LockingService,
+  UnlockFailure
+}
 import uk.ac.wellcome.storage.locking.memory.MemoryLockDao
 
 trait VersionPickerFixtures {
+
+  def createBrokenLockDao: LockDao[String, UUID] = new LockDao[String, UUID] {
+    override def lock(id: String, contextId: UUID): LockResult = Left(
+      LockFailure(id, new Throwable("BOOM!"))
+    )
+
+    override def unlock(contextId: UUID): UnlockResult = Left(
+      UnlockFailure(contextId, new Throwable("BOOM!"))
+    )
+  }
+
   def createLockDao: MemoryLockDao[String, UUID] =
     new MemoryLockDao[String, UUID] {}
 

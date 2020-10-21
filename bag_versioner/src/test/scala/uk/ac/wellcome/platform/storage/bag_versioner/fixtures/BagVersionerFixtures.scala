@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.storage.bag_versioner.fixtures
 
+import java.util.UUID
+
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
@@ -11,6 +13,7 @@ import uk.ac.wellcome.platform.storage.bag_versioner.services.{
   BagVersioner,
   BagVersionerWorker
 }
+import uk.ac.wellcome.storage.locking.LockDao
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -19,6 +22,13 @@ trait BagVersionerFixtures
     with Akka
     with AlpakkaSQSWorkerFixtures
     with VersionPickerFixtures {
+
+  def withBagVersioner[R](
+    dao: LockDao[String, UUID]
+  )(testWith: TestWith[BagVersioner, R]): R =
+    withVersionPicker(dao) { versionPicker =>
+      testWith(new BagVersioner(versionPicker))
+    }
 
   def withBagVersioner[R](testWith: TestWith[BagVersioner, R]): R =
     withVersionPicker { versionPicker =>

@@ -7,19 +7,9 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestID,
   IngestType
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepResult,
-  IngestStepSucceeded,
-  StorageSpace
-}
+import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.platform.storage.bag_versioner.models._
-import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
-  IngestVersionManagerDaoError,
-  UnableToAssignVersion,
-  VersionPicker,
-  VersionPickerError
-}
+import uk.ac.wellcome.platform.storage.bag_versioner.versioning._
 
 import scala.util.Try
 
@@ -56,24 +46,35 @@ class BagVersioner(versionPicker: VersionPicker) {
             maybeUserFacingMessage = Some(s"Assigned bag version $version")
           )
 
-        case Left(error) =>
+        case Left(error @ UnableToAssignVersion(internalError)) =>
           IngestFailed(
             BagVersionerFailureSummary(
               ingestId = ingestId,
               startTime = startTime,
               endTime = Instant.now()
             ),
-            e = getUnderlyingThrowable(error),
+            e = getUnderlyingThrowable(internalError),
             maybeUserFacingMessage =
               UserFacingMessages.createMessage(ingestId, error)
+          )
+
+        case Left(error: FailedToGetLock) =>
+          IngestShouldRetry(
+            BagVersionerFailureSummary(
+              ingestId = ingestId,
+              startTime = startTime,
+              endTime = Instant.now()
+            ),
+            e = new Throwable(s"Failed to get lock: ${error.failedLock}")
           )
       }
     }
 
-  private def getUnderlyingThrowable(error: VersionPickerError): Throwable =
+  private def getUnderlyingThrowable(
+    error: IngestVersionManagerError
+  ): Throwable =
     error match {
-      case UnableToAssignVersion(internalError: IngestVersionManagerDaoError) =>
-        internalError.e
-      case err => new Throwable(s"Unexpected error in the bag versioner: $err")
+      case err: IngestVersionManagerDaoError => err.e
+      case err                               => new Throwable(s"Unexpected error in the bag versioner: $err")
     }
 }
