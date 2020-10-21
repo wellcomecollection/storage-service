@@ -59,7 +59,7 @@ def main(env):
             # at once, to avoid consuming excessive amounts of memory.
             futures = {
                 executor.submit(publish, msg)
-                for msg in itertools.islice(messages, max_parallel_notifications)
+                for msg in itertools.islice(messages, 10)
             }
 
             while futures:
