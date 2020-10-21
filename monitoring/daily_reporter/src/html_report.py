@@ -17,6 +17,17 @@ def last_event(ingest):
             return None
 
 
+def pretty_date(d):
+    if d.date() == datetime.date.today():
+        return d.strftime("today @ %H:%M")
+    elif d.date() == datetime.date.today() - datetime.timedelta(days=1):
+        return d.strftime("yesterday @ %H:%M")
+    elif d.date() == datetime.date.today() - datetime.timedelta(days=2):
+        return d.strftime("2 days ago @ %H:%M")
+    else:
+        return d.strftime("%Y-%m-%d @ %H:%M")
+
+
 def add_s3_uri(description):
     s3_uri = re.search(r"s3://(?P<bucket>[^/]+)/(?P<key>[^\s:]+)", description)
 
@@ -45,6 +56,7 @@ def create_html_report(ingests_by_status, found_everything, days_to_fetch):
 
     env.filters["last_event"] = last_event
     env.filters["add_s3_uri"] = add_s3_uri
+    env.filters["pretty_date"] = pretty_date
 
     template = env.get_template("report.html")
 

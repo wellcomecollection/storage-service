@@ -53,14 +53,16 @@ def main(*args):
     if "--browser" in sys.argv:
         webbrowser.open(s3_url)
 
-    if "--skip-slack" not in sys.argv:
-        payload = prepare_slack_payload(
-            ingests_by_status=ingests_by_status,
-            found_everything=found_everything,
-            days_to_fetch=days_to_fetch,
-            s3_url=s3_url,
-        )
+    payload = prepare_slack_payload(
+        ingests_by_status=ingests_by_status,
+        found_everything=found_everything,
+        days_to_fetch=days_to_fetch,
+        s3_url=s3_url,
+    )
 
+    if "--skip-slack" in sys.argv:
+        print(json.dumps(payload, indent=2, sort_keys=True))
+    else:
         resp = httpx.post(
             get_secret("storage_service_reporter/slack_webhook"), json=payload
         )
