@@ -11,6 +11,7 @@ import uk.ac.wellcome.messaging.worker.models.{
   Successful
 }
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.models.FileContext
 import uk.ac.wellcome.platform.archive.indexer.file_finder.fixtures.WorkerServiceFixture
@@ -33,6 +34,44 @@ class FileFinderWorkerTest
     dao.put(manifest) shouldBe a[Right[_, _]]
 
     val expectedMessages = manifest.manifest.files.map { file =>
+      FileContext(manifest = manifest, file = file)
+    }
+
+    withBagTrackerClient(dao) { bagTrackerClient =>
+      withWorkerService(
+        messageSender = messageSender,
+        bagTrackerClient = bagTrackerClient
+      ) { service =>
+        val future =
+          service.processMessage(
+            BagRegistrationNotification(manifest)
+          )
+
+        whenReady(future) {
+          _ shouldBe a[Successful[_]]
+        }
+
+        messageSender.messages should have size 3
+        messageSender
+          .getMessages[FileContext]() should contain theSameElementsAs expectedMessages
+      }
+    }
+  }
+
+  it("skips files from previous versions") {
+    val messageSender = new MemoryMessageSender()
+    val dao = createStorageManifestDao()
+
+    val v1Files = (1 to 3).map { _ => createStorageManifestFileWith(pathPrefix = "v1") }
+    val v2Files = (1 to 2).map { _ => createStorageManifestFileWith(pathPrefix = "v2") }
+
+    val manifest = createStorageManifestWith(
+      version = BagVersion(2),
+      files = v1Files ++ v2Files
+    )
+    dao.put(manifest) shouldBe a[Right[_, _]]
+
+    val expectedMessages = v2Files.map { file =>
       FileContext(manifest = manifest, file = file)
     }
 

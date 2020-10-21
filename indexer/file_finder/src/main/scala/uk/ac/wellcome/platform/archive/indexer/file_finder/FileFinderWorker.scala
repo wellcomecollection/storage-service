@@ -85,7 +85,13 @@ class FileFinderWorker(
         fileContexts = bagLookup match {
           case Right(bag) =>
             Right(
-              bag.manifest.files.map { f =>
+              bag.manifest.files
+                // Only index files that are new in this version.
+                // e.g. if this is a V2 manifest, skip reindexing files from V1
+                .filter { f =>
+                  f.path.startsWith(s"${bag.version}/")
+                }
+                .map { f =>
                 FileContext(bag, f)
               }
             )
