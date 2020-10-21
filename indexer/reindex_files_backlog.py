@@ -39,6 +39,10 @@ def main(env):
             "type": "RegisteredBagNotification",
         }
 
+        # Skip Chemist & Druggist for now
+        if externalIdentifier == "b19974760":
+            continue
+
         messages.append(json.dumps(notification))
 
     def publish(message):
