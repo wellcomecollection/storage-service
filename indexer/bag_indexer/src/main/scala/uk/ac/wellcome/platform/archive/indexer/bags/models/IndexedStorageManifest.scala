@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.archive.indexer.bags.models
 
 import java.time.{Instant, LocalDate}
 
-import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageLocation,
@@ -35,8 +34,7 @@ object IndexedBagInfo {
 case class IndexedLocation(
   provider: String,
   bucket: String,
-  path: String,
-  @JsonKey("type") ontologyType: String = "Location"
+  path: String
 )
 
 object IndexedLocation {
