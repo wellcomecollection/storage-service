@@ -6,6 +6,7 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.models.FileContext
 import uk.ac.wellcome.platform.archive.indexer.file_finder.fixtures.WorkerServiceFixture
@@ -18,11 +19,16 @@ class FileFinderFeatureTest
     with WorkerServiceFixture
     with StorageManifestGenerators {
 
-  it("splits a bag into three messages") {
+  it("sends all the files from a bag") {
     val messageSender = new MemoryMessageSender()
     val dao = createStorageManifestDao()
 
-    val manifest = createStorageManifestWithFileCount(fileCount = 3)
+    val manifest = createStorageManifestWith(
+      version = BagVersion(1),
+      files = Seq(
+        createStorageManifestFileWith(pathPrefix = "v1")
+      )
+    )
     dao.put(manifest) shouldBe a[Right[_, _]]
 
     val expectedMessages = manifest.manifest.files.map { file =>
@@ -38,9 +44,8 @@ class FileFinderFeatureTest
           )
 
           eventually {
-            messageSender.messages should have size 3
-            messageSender
-              .getMessages[FileContext]() should contain theSameElementsAs expectedMessages
+            messageSender.messages should have size 1
+            messageSender.getMessages[Seq[FileContext]]().head should contain theSameElementsAs expectedMessages
 
             assertQueueEmpty(queue)
           }

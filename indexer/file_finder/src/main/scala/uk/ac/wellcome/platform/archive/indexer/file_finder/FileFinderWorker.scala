@@ -36,7 +36,13 @@ class FileFinderWorker(
   val config: AlpakkaSQSWorkerConfig,
   val bagTrackerClient: BagTrackerClient,
   val metricsNamespace: String,
-  messageSender: MessageSender[_]
+  messageSender: MessageSender[_],
+  // How this default was derived: the max SNS message size is 256KB.
+  // Looking in SQS, the average message size was ~1.42KB, and that's
+  // not going to change much: the only variable part of the message is
+  // the name/path.  That allows ~180 messages in an SNS payload, with
+  // a bit of overhead to be safe.
+  batchSize: Int = 140
 )(
   implicit
   actorSystem: ActorSystem,
@@ -91,9 +97,7 @@ class FileFinderWorker(
                 .filter { f =>
                   f.path.startsWith(s"${bag.version}/")
                 }
-                .map { f =>
-                FileContext(bag, f)
-              }
+                .map { f => FileContext(bag, f) }
             )
           case Left(BagTrackerUnknownGetError(e)) =>
             warn(
@@ -112,12 +116,23 @@ class FileFinderWorker(
 
     contexts.flatMap {
       case Right(fileContexts) =>
-        Future
-          .sequence(
-            fileContexts.map { c =>
-              Future.fromTry(messageSender.sendT(c))
+        // Rather than sending individual files, we send bundles of 1000 files
+        // at a time.  This means we can make more efficient use of the
+        // Elasticsearch bulk API in the file indexer.
+
+        val batches =
+          fileContexts
+            .grouped(batchSize)
+            .toSeq
+
+        val futures =
+          batches
+            .map { b =>
+              Future.fromTry(messageSender.sendT(b))
             }
-          )
+
+        Future
+          .sequence(futures)
           .map { _ =>
             Successful(None)
           }
@@ -127,8 +142,5 @@ class FileFinderWorker(
     }
   }
 
-  override def run(): Future[Any] = {
-    debug(s"@@AWLC run!")
-    worker.start
-  }
+  override def run(): Future[Any] = worker.start
 }

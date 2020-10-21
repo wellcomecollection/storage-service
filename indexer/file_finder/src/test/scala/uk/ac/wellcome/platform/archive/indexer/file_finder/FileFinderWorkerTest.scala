@@ -30,7 +30,12 @@ class FileFinderWorkerTest
     val messageSender = new MemoryMessageSender()
     val dao = createStorageManifestDao()
 
-    val manifest = createStorageManifestWithFileCount(fileCount = 3)
+    val manifest = createStorageManifestWith(
+      version = BagVersion(1),
+      files = Seq(
+        createStorageManifestFileWith(pathPrefix = "v1")
+      )
+    )
     dao.put(manifest) shouldBe a[Right[_, _]]
 
     val expectedMessages = manifest.manifest.files.map { file =>
@@ -51,9 +56,9 @@ class FileFinderWorkerTest
           _ shouldBe a[Successful[_]]
         }
 
-        messageSender.messages should have size 3
+        messageSender.messages should have size 1
         messageSender
-          .getMessages[FileContext]() should contain theSameElementsAs expectedMessages
+          .getMessages[Seq[FileContext]]().head should contain theSameElementsAs expectedMessages
       }
     }
   }
@@ -89,9 +94,41 @@ class FileFinderWorkerTest
           _ shouldBe a[Successful[_]]
         }
 
-        messageSender.messages should have size 3
+        messageSender.messages should have size 1
         messageSender
-          .getMessages[FileContext]() should contain theSameElementsAs expectedMessages
+          .getMessages[Seq[FileContext]]().head should contain theSameElementsAs expectedMessages
+      }
+    }
+  }
+
+  it("splits the files into appropriately-sized batches") {
+    val messageSender = new MemoryMessageSender()
+    val dao = createStorageManifestDao()
+
+    val manifest = createStorageManifestWith(
+      version = BagVersion(1),
+      files = (1 to 100).map { _ =>
+        createStorageManifestFileWith(pathPrefix = "v1")
+      }
+    )
+    dao.put(manifest) shouldBe a[Right[_, _]]
+
+    withBagTrackerClient(dao) { bagTrackerClient =>
+      withWorkerService(
+        messageSender = messageSender,
+        bagTrackerClient = bagTrackerClient,
+        batchSize = 10
+      ) { service =>
+        val future =
+          service.processMessage(
+            BagRegistrationNotification(manifest)
+          )
+
+        whenReady(future) {
+          _ shouldBe a[Successful[_]]
+        }
+
+        messageSender.messages should have size 10
       }
     }
   }
@@ -133,7 +170,12 @@ class FileFinderWorkerTest
     }
     val dao = createStorageManifestDao()
 
-    val manifest = createStorageManifestWithFileCount(fileCount = 3)
+    val manifest = createStorageManifestWith(
+      version = BagVersion(1),
+      files = Seq(
+        createStorageManifestFileWith(pathPrefix = "v1")
+      )
+    )
     dao.put(manifest) shouldBe a[Right[_, _]]
 
     withBagTrackerClient(dao) { bagTrackerClient =>

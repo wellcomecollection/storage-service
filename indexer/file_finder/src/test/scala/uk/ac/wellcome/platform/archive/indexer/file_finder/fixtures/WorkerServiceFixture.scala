@@ -21,7 +21,8 @@ trait WorkerServiceFixture
   def withWorkerService[R](
     queue: Queue = Queue("q", "arn::q", visibilityTimeout = 1),
     messageSender: MemoryMessageSender,
-    bagTrackerClient: BagTrackerClient
+    bagTrackerClient: BagTrackerClient,
+    batchSize: Int = 100
   )(
     testWith: TestWith[FileFinderWorker, R]
   ): R =
@@ -31,7 +32,8 @@ trait WorkerServiceFixture
           config = createAlpakkaSQSWorkerConfig(queue),
           bagTrackerClient = bagTrackerClient,
           metricsNamespace = s"metrics-${randomAlphanumeric()}",
-          messageSender = messageSender
+          messageSender = messageSender,
+          batchSize = batchSize
         )
 
         service.run()
