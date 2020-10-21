@@ -6,7 +6,10 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Successful}
+import uk.ac.wellcome.messaging.worker.models.{
+  NonDeterministicFailure,
+  Successful
+}
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.models.FileContext
@@ -15,7 +18,7 @@ import uk.ac.wellcome.platform.archive.indexer.file_finder.fixtures.WorkerServic
 import scala.util.{Failure, Try}
 
 class FileFinderWorkerTest
-  extends AnyFunSpec
+    extends AnyFunSpec
     with Matchers
     with ScalaFutures
     with IntegrationPatience
@@ -34,7 +37,10 @@ class FileFinderWorkerTest
     }
 
     withBagTrackerClient(dao) { bagTrackerClient =>
-      withWorkerService(messageSender = messageSender, bagTrackerClient = bagTrackerClient) { service =>
+      withWorkerService(
+        messageSender = messageSender,
+        bagTrackerClient = bagTrackerClient
+      ) { service =>
         val future =
           service.processMessage(
             BagRegistrationNotification(manifest)
@@ -45,7 +51,8 @@ class FileFinderWorkerTest
         }
 
         messageSender.messages should have size 3
-        messageSender.getMessages[FileContext]() should contain theSameElementsAs expectedMessages
+        messageSender
+          .getMessages[FileContext]() should contain theSameElementsAs expectedMessages
       }
     }
   }
@@ -91,7 +98,10 @@ class FileFinderWorkerTest
     dao.put(manifest) shouldBe a[Right[_, _]]
 
     withBagTrackerClient(dao) { bagTrackerClient =>
-      withWorkerService(messageSender = brokenSender, bagTrackerClient = bagTrackerClient) { service =>
+      withWorkerService(
+        messageSender = brokenSender,
+        bagTrackerClient = bagTrackerClient
+      ) { service =>
         val future =
           service.processMessage(
             BagRegistrationNotification(manifest)

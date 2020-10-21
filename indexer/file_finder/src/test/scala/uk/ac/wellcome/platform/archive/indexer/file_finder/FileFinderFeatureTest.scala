@@ -11,7 +11,7 @@ import uk.ac.wellcome.platform.archive.indexer.elasticsearch.models.FileContext
 import uk.ac.wellcome.platform.archive.indexer.file_finder.fixtures.WorkerServiceFixture
 
 class FileFinderFeatureTest
-  extends AnyFunSpec
+    extends AnyFunSpec
     with Matchers
     with Eventually
     with IntegrationPatience
@@ -39,7 +39,8 @@ class FileFinderFeatureTest
 
           eventually {
             messageSender.messages should have size 3
-            messageSender.getMessages[FileContext]() should contain theSameElementsAs expectedMessages
+            messageSender
+              .getMessages[FileContext]() should contain theSameElementsAs expectedMessages
 
             assertQueueEmpty(queue)
           }

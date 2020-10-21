@@ -1,6 +1,11 @@
 package uk.ac.wellcome.platform.archive.indexer.files
 
-import com.sksamuel.elastic4s.ElasticDsl.{dateField, keywordField, longField, objectField}
+import com.sksamuel.elastic4s.ElasticDsl.{
+  dateField,
+  keywordField,
+  longField,
+  objectField
+}
 import com.sksamuel.elastic4s.requests.mappings.FieldDefinition
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.IndexConfig
 

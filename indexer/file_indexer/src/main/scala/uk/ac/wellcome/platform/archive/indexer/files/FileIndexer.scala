@@ -8,9 +8,7 @@ import uk.ac.wellcome.platform.archive.indexer.files.models.IndexedFile
 
 import scala.concurrent.ExecutionContext
 
-class FileIndexer(
-  val client: ElasticClient,
-  val index: Index)(
+class FileIndexer(val client: ElasticClient, val index: Index)(
   implicit
   val ec: ExecutionContext,
   val encoder: Encoder[IndexedFile]
@@ -20,5 +18,6 @@ class FileIndexer(
   override protected def toDisplay(context: FileContext): IndexedFile =
     IndexedFile(context)
 
-  override protected def version(context: FileContext): Long = context.createdDate.toEpochMilli
+  override protected def version(context: FileContext): Long =
+    context.createdDate.toEpochMilli
 }

@@ -5,7 +5,12 @@ import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSMessageSender
-import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, CloudwatchMonitoringClientBuilder, SNSBuilder, SQSBuilder}
+import uk.ac.wellcome.messaging.typesafe.{
+  AlpakkaSqsWorkerConfigBuilder,
+  CloudwatchMonitoringClientBuilder,
+  SNSBuilder,
+  SQSBuilder
+}
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.bag_tracker.client.AkkaBagTrackerClient
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
@@ -28,7 +33,10 @@ object Main extends WellcomeTypesafeApp {
       SQSBuilder.buildSQSAsyncClient(config)
 
     implicit val sender: SNSMessageSender =
-      SNSBuilder.buildSNSMessageSender(config, subject = "Sent from the file finder")
+      SNSBuilder.buildSNSMessageSender(
+        config,
+        subject = "Sent from the file finder"
+      )
 
     val bagTrackerClient = new AkkaBagTrackerClient(
       trackerHost = config.requireString("bags.tracker.host")
@@ -42,4 +50,3 @@ object Main extends WellcomeTypesafeApp {
     )
   }
 }
-

@@ -13,8 +13,13 @@ import uk.ac.wellcome.platform.archive.indexer.files.models.IndexedFile
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class FileIndexerTest extends IndexerTestCases[FileContext, IndexedFile] with FileIndexerFixtures {
-  override def createIndexer(client: ElasticClient, index: Index): Indexer[FileContext, IndexedFile] =
+class FileIndexerTest
+    extends IndexerTestCases[FileContext, IndexedFile]
+    with FileIndexerFixtures {
+  override def createIndexer(
+    client: ElasticClient,
+    index: Index
+  ): Indexer[FileContext, IndexedFile] =
     new FileIndexer(client = client, index = index)
 
   override def createDocument: FileContext = {
@@ -24,7 +29,10 @@ class FileIndexerTest extends IndexerTestCases[FileContext, IndexedFile] with Fi
 
   override def id(document: FileContext): String = document.location.toString()
 
-  override def assertMatch(indexedDocument: IndexedFile, context: FileContext): Assertion =
+  override def assertMatch(
+    indexedDocument: IndexedFile,
+    context: FileContext
+  ): Assertion =
     IndexedFile(context) shouldBe indexedDocument
 
   override def getDocument(index: Index, id: String): IndexedFile =

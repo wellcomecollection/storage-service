@@ -12,22 +12,29 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryS3StorageLocation
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.models.FileContext
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{Indexer, IndexerWorker}
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
+  Indexer,
+  IndexerWorker
+}
 import uk.ac.wellcome.platform.archive.indexer.files.models.IndexedFile
-import uk.ac.wellcome.platform.archive.indexer.files.{FileIndexer, FileIndexerWorker, FilesIndexConfig}
+import uk.ac.wellcome.platform.archive.indexer.files.{
+  FileIndexer,
+  FileIndexerWorker,
+  FilesIndexConfig
+}
 import uk.ac.wellcome.platform.archive.indexer.fixtures.IndexerFixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait FileIndexerFixtures
-  extends IndexerFixtures[FileContext, FileContext, IndexedFile]
+    extends IndexerFixtures[FileContext, FileContext, IndexedFile]
     with StorageManifestGenerators { this: Suite =>
   val mapping: MappingDefinition = FilesIndexConfig.mapping
 
   def createT: (FileContext, String) = {
     val context = FileContext(
       space = createStorageSpace,
-      externalIdentifier =createExternalIdentifier,
+      externalIdentifier = createExternalIdentifier,
       hashingAlgorithm = createChecksum.algorithm,
       bagLocation = PrimaryS3StorageLocation(
         createS3ObjectLocationPrefix
@@ -58,5 +65,6 @@ trait FileIndexerFixtures
     }
   }
 
-  def convertToIndexedT(context: FileContext): IndexedFile = IndexedFile(context)
+  def convertToIndexedT(context: FileContext): IndexedFile =
+    IndexedFile(context)
 }

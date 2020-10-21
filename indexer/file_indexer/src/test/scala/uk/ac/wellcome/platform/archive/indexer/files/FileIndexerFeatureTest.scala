@@ -7,5 +7,5 @@ import uk.ac.wellcome.platform.archive.indexer.files.fixtures.FileIndexerFixture
 import uk.ac.wellcome.platform.archive.indexer.files.models.IndexedFile
 
 class FileIndexerFeatureTest
-  extends IndexerFeatureTestCases[FileContext, FileContext, IndexedFile]
+    extends IndexerFeatureTestCases[FileContext, FileContext, IndexedFile]
     with FileIndexerFixtures

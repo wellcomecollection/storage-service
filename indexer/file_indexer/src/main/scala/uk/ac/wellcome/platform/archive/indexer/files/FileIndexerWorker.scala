@@ -6,7 +6,11 @@ import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.models.FileContext
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{Indexer, IndexerWorker, IndexerWorkerError}
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
+  Indexer,
+  IndexerWorker,
+  IndexerWorkerError
+}
 import uk.ac.wellcome.platform.archive.indexer.files.models.IndexedFile
 
 import scala.concurrent.Future
@@ -22,11 +26,13 @@ class FileIndexerWorker(
   val monitoringClient: MetricsMonitoringClient,
   val decoder: Decoder[FileContext]
 ) extends IndexerWorker[FileContext, FileContext, IndexedFile](
-  config,
-  indexer,
-  metricsNamespace
-) {
+      config,
+      indexer,
+      metricsNamespace
+    ) {
 
-  def load(source: FileContext): Future[Either[IndexerWorkerError, FileContext]] =
+  def load(
+    source: FileContext
+  ): Future[Either[IndexerWorkerError, FileContext]] =
     Future.successful(Right(source))
 }

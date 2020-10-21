@@ -3,7 +3,12 @@ package uk.ac.wellcome.platform.archive.indexer.elasticsearch.models
 import java.time.Instant
 
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.storage.models.{PrimaryS3StorageLocation, StorageManifest, StorageManifestFile, StorageSpace}
+import uk.ac.wellcome.platform.archive.common.storage.models.{
+  PrimaryS3StorageLocation,
+  StorageManifest,
+  StorageManifestFile,
+  StorageSpace
+}
 import uk.ac.wellcome.platform.archive.common.verify.HashingAlgorithm
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
 
@@ -20,7 +25,10 @@ case class FileContext(
 }
 
 case object FileContext {
-  def apply(manifest: StorageManifest, file: StorageManifestFile): FileContext = {
+  def apply(
+    manifest: StorageManifest,
+    file: StorageManifestFile
+  ): FileContext = {
     assert(manifest.manifest.files.contains(file))
     FileContext(
       space = manifest.space,

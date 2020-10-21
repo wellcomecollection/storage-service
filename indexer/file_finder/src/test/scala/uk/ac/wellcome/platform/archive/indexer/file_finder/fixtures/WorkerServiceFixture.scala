@@ -6,13 +6,16 @@ import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bag_tracker.client.BagTrackerClient
-import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{BagTrackerFixtures, StorageManifestDaoFixture}
+import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{
+  BagTrackerFixtures,
+  StorageManifestDaoFixture
+}
 import uk.ac.wellcome.platform.archive.indexer.file_finder.FileFinderWorker
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait WorkerServiceFixture
-  extends AlpakkaSQSWorkerFixtures
+    extends AlpakkaSQSWorkerFixtures
     with BagTrackerFixtures
     with StorageManifestDaoFixture {
   def withWorkerService[R](
