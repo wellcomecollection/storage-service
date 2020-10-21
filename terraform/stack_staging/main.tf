@@ -52,34 +52,31 @@ module "stack_staging" {
   replicas_table_arn  = data.terraform_remote_state.critical_staging.outputs.replicas_table_arn
   replicas_table_name = data.terraform_remote_state.critical_staging.outputs.replicas_table_name
 
+  indexer_host_secrets = {
+    es_host     = "staging/indexer/es_host"
+    es_port     = "staging/indexer/es_port"
+    es_protocol = "staging/indexer/es_protocol"
+  }
+
   es_ingests_index_name = "storage_stage_ingests"
 
   ingests_indexer_secrets = {
-    es_host     = "stage/ingests_indexer/es_host"
-    es_port     = "stage/ingests_indexer/es_port"
-    es_protocol = "stage/ingests_indexer/es_protocol"
-    es_username = "stage/ingests_indexer/es_username"
-    es_password = "stage/ingests_indexer/es_password"
+    es_username = "staging/indexer/ingests/es_username"
+    es_password = "staging/indexer/ingests/es_password"
   }
 
   es_bags_index_name = "storage_stage_bags"
 
   bag_indexer_secrets = {
-    es_host     = "stage/bag_indexer/es_host"
-    es_port     = "stage/bag_indexer/es_port"
-    es_protocol = "stage/bag_indexer/es_protocol"
-    es_username = "stage/bag_indexer/es_username"
-    es_password = "stage/bag_indexer/es_password"
+    es_username = "staging/indexer/bags/es_username"
+    es_password = "staging/indexer/bags/es_password"
   }
 
   es_files_index_name = "storage_stage_files"
 
   file_indexer_secrets = {
-    es_host     = "stage/file_indexer/es_host"
-    es_port     = "stage/file_indexer/es_port"
-    es_protocol = "stage/file_indexer/es_protocol"
-    es_username = "stage/file_indexer/es_username"
-    es_password = "stage/file_indexer/es_password"
+    es_username = "staging/indexer/files/es_username"
+    es_password = "staging/indexer/files/es_password"
   }
 
   workflow_bucket_name = local.workflow_staging_bucket_name

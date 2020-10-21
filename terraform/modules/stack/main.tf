@@ -66,7 +66,7 @@ module "ingests_indexer" {
     es_ingests_index_name = var.es_ingests_index_name
   }
 
-  secrets = var.ingests_indexer_secrets
+  secrets = merge(var.indexer_host_secrets, var.ingests_indexer_secrets)
 
   security_group_ids = [
     aws_security_group.service_egress.id,
@@ -107,7 +107,7 @@ module "bag_indexer" {
     es_bags_index_name = var.es_bags_index_name
   }
 
-  secrets = var.bag_indexer_secrets
+  secrets = merge(var.indexer_host_secrets, var.bag_indexer_secrets)
 
   security_group_ids = [
     aws_security_group.service_egress.id,
@@ -180,7 +180,7 @@ module "file_indexer" {
     es_files_index_name = var.es_files_index_name
   }
 
-  secrets = var.file_indexer_secrets
+  secrets = merge(var.indexer_host_secrets, var.file_indexer_secrets)
 
   security_group_ids = [
     aws_security_group.service_egress.id,

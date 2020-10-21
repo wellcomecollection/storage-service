@@ -143,6 +143,10 @@ variable "es_files_index_name" {
   type = string
 }
 
+variable "indexer_host_secrets" {
+  type = map(string)
+}
+
 variable "bag_indexer_secrets" {
   type = map(string)
 }
