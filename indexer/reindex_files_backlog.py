@@ -5,6 +5,7 @@ to be re-indexed in Elasticsearch.
 """
 
 import concurrent.futures
+import itertools
 import json
 
 import click
