@@ -64,9 +64,9 @@ storage:
         - id: ingests-service
     - id: file_finder
       services:
-        - id: file_finder
+        - id: file-finder
     - id: file_indexer
       services:
-        - id: file_indexer
+        - id: file-indexer
   name: Storage service
   role_arn: arn:aws:iam::975596993436:role/storage-ci
