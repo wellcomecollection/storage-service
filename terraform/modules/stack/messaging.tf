@@ -418,7 +418,6 @@ module "file_finder_input_queue" {
 
   topic_arns = [
     module.registered_bag_notifications_topic.arn,
-    module.bag_reindexer_output_topic.arn,
     module.file_reindexer_output_topic.arn,
   ]
 
