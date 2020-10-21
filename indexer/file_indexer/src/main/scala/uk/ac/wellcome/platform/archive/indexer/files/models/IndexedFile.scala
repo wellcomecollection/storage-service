@@ -11,7 +11,7 @@ case class IndexedFile(
   space: StorageSpace,
   externalIdentifier: ExternalIdentifier,
   location: S3ObjectLocation,
-  suffix: String,
+  suffix: Option[String],
   size: Long,
   checksum: IndexedChecksum,
   createdDate: Instant
@@ -23,7 +23,7 @@ case object IndexedFile {
       space = context.space,
       externalIdentifier = context.externalIdentifier,
       location = context.bagLocation.prefix.asLocation(context.file.path),
-      suffix = context.file.name,
+      suffix = FileSuffix.getSuffix(context.file.name),
       size = context.file.size,
       checksum = IndexedChecksum(
         algorithm = context.hashingAlgorithm.toString,

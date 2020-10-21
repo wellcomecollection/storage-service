@@ -27,7 +27,6 @@ class IndexedFileTest extends AnyFunSpec with Matchers with StorageManifestGener
 
     indexedFile.space shouldBe context.space
     indexedFile.externalIdentifier shouldBe context.externalIdentifier
-    context.file.name should endWith(indexedFile.suffix)
     indexedFile.size shouldBe context.file.size
     indexedFile.location shouldBe context.bagLocation.prefix.asLocation(context.file.path)
     indexedFile.createdDate shouldBe context.createdDate
@@ -41,8 +40,8 @@ class IndexedFileTest extends AnyFunSpec with Matchers with StorageManifestGener
   it("uses the correct versioned path") {
     val file = StorageManifestFile(
       checksum = createChecksum.value,
-      name = "bag-info.txt",
-      path = "v1/bag-info.txt",
+      name = "cat.jpg",
+      path = "v1/data/cat.jpg",
       size = 100
     )
 
@@ -64,7 +63,31 @@ class IndexedFileTest extends AnyFunSpec with Matchers with StorageManifestGener
 
     indexedFile.location shouldBe S3ObjectLocation(
       bucket = "example-storage",
-      key = "example/b1234/v1/bag-info.txt"
+      key = "example/b1234/v1/data/cat.jpg"
     )
+  }
+
+  it("uses the correct suffix") {
+    val file = StorageManifestFile(
+      checksum = createChecksum.value,
+      name = "data/cat.jpg",
+      path = "v1/data/cat.jpg",
+      size = 100
+    )
+
+    val context = FileContext(
+      space = createStorageSpace,
+      externalIdentifier = createExternalIdentifier,
+      hashingAlgorithm = chooseFrom(SHA256, SHA512),
+      bagLocation = PrimaryS3StorageLocation(
+        createS3ObjectLocationPrefix
+      ),
+      file = file,
+      createdDate = Instant.now
+    )
+
+    val indexedFile = IndexedFile(context)
+
+    indexedFile.suffix shouldBe Some("jpg")
   }
 }
