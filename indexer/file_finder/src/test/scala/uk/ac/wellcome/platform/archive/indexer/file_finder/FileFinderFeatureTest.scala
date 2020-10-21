@@ -45,7 +45,9 @@ class FileFinderFeatureTest
 
           eventually {
             messageSender.messages should have size 1
-            messageSender.getMessages[Seq[FileContext]]().head should contain theSameElementsAs expectedMessages
+            messageSender
+              .getMessages[Seq[FileContext]]()
+              .head should contain theSameElementsAs expectedMessages
 
             assertQueueEmpty(queue)
           }

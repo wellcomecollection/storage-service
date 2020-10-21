@@ -24,9 +24,13 @@ def main(env):
     table_name = config["table_name"]
 
     if env == "prod":
-        topic_arn = "arn:aws:sns:eu-west-1:975596993436:storage_prod_file_reindexer_output"
+        topic_arn = (
+            "arn:aws:sns:eu-west-1:975596993436:storage_prod_file_reindexer_output"
+        )
     else:
-        topic_arn = "arn:aws:sns:eu-west-1:975596993436:storage_staging_file_reindexer_output"
+        topic_arn = (
+            "arn:aws:sns:eu-west-1:975596993436:storage_staging_file_reindexer_output"
+        )
 
     messages = []
 
@@ -58,8 +62,7 @@ def main(env):
             # Schedule the first N futures.  We don't want to schedule them all
             # at once, to avoid consuming excessive amounts of memory.
             futures = {
-                executor.submit(publish, msg)
-                for msg in itertools.islice(messages, 10)
+                executor.submit(publish, msg) for msg in itertools.islice(messages, 10)
             }
 
             while futures:

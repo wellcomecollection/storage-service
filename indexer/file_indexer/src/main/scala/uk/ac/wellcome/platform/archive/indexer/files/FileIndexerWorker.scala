@@ -4,7 +4,11 @@ import akka.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.messaging.worker.models.{NonDeterministicFailure, Result, Successful}
+import uk.ac.wellcome.messaging.worker.models.{
+  NonDeterministicFailure,
+  Result,
+  Successful
+}
 import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch._
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.models.FileContext
@@ -35,9 +39,13 @@ class FileIndexerWorker(
         Successful(None)
       case Left(failedDocuments) =>
         warn(s"RetryableIndexingError: Unable to index $failedDocuments")
-        NonDeterministicFailure(new Throwable(s"Unable to index ${failedDocuments.size} documents"))
+        NonDeterministicFailure(
+          new Throwable(s"Unable to index ${failedDocuments.size} documents")
+        )
     }
 
-  override def load(source: Seq[FileContext]): Future[Either[IndexerWorkerError, FileContext]] =
+  override def load(
+    source: Seq[FileContext]
+  ): Future[Either[IndexerWorkerError, FileContext]] =
     Future.failed(new Throwable("Should not be called"))
 }

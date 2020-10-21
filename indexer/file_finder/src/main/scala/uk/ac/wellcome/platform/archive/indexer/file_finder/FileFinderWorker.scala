@@ -92,12 +92,14 @@ class FileFinderWorker(
           case Right(bag) =>
             Right(
               bag.manifest.files
-                // Only index files that are new in this version.
-                // e.g. if this is a V2 manifest, skip reindexing files from V1
+              // Only index files that are new in this version.
+              // e.g. if this is a V2 manifest, skip reindexing files from V1
                 .filter { f =>
                   f.path.startsWith(s"${bag.version}/")
                 }
-                .map { f => FileContext(bag, f) }
+                .map { f =>
+                  FileContext(bag, f)
+                }
             )
           case Left(BagTrackerUnknownGetError(e)) =>
             warn(

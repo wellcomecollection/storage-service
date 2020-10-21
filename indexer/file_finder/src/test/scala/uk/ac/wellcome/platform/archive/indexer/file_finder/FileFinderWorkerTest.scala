@@ -58,7 +58,8 @@ class FileFinderWorkerTest
 
         messageSender.messages should have size 1
         messageSender
-          .getMessages[Seq[FileContext]]().head should contain theSameElementsAs expectedMessages
+          .getMessages[Seq[FileContext]]()
+          .head should contain theSameElementsAs expectedMessages
       }
     }
   }
@@ -67,8 +68,12 @@ class FileFinderWorkerTest
     val messageSender = new MemoryMessageSender()
     val dao = createStorageManifestDao()
 
-    val v1Files = (1 to 3).map { _ => createStorageManifestFileWith(pathPrefix = "v1") }
-    val v2Files = (1 to 2).map { _ => createStorageManifestFileWith(pathPrefix = "v2") }
+    val v1Files = (1 to 3).map { _ =>
+      createStorageManifestFileWith(pathPrefix = "v1")
+    }
+    val v2Files = (1 to 2).map { _ =>
+      createStorageManifestFileWith(pathPrefix = "v2")
+    }
 
     val manifest = createStorageManifestWith(
       version = BagVersion(2),
@@ -96,7 +101,8 @@ class FileFinderWorkerTest
 
         messageSender.messages should have size 1
         messageSender
-          .getMessages[Seq[FileContext]]().head should contain theSameElementsAs expectedMessages
+          .getMessages[Seq[FileContext]]()
+          .head should contain theSameElementsAs expectedMessages
       }
     }
   }

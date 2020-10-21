@@ -82,7 +82,9 @@ def create_roles(es, *, index_prefix, doc_type):
         username = role_name
 
         password = secrets.token_hex()
-        es.security.put_user(username=username, body={"password": password, "roles": [role_name]})
+        es.security.put_user(
+            username=username, body={"password": password, "roles": [role_name]}
+        )
 
         yield (role_name, username, password)
 
@@ -111,10 +113,7 @@ def main(username, password, endpoint):
 
     print("")
 
-    for env, index_prefix in [
-        ("staging", "storage_stage"),
-        ("prod", "storage")
-    ]:
+    for env, index_prefix in [("staging", "storage_stage"), ("prod", "storage")]:
         store_secret(secret_id=f"{env}/indexer/es_host", secret_value=host)
         store_secret(secret_id=f"{env}/indexer/es_port", secret_value=port)
         store_secret(secret_id=f"{env}/indexer/es_protocol", secret_value=protocol)
@@ -122,13 +121,21 @@ def main(username, password, endpoint):
         print("")
 
         for doc_type in ("bags", "files", "ingests"):
-            for role_name, username, password in create_roles(es, index_prefix=index_prefix, doc_type=doc_type):
+            for role_name, username, password in create_roles(
+                es, index_prefix=index_prefix, doc_type=doc_type
+            ):
                 click.echo(f"Created role {click.style(role_name, 'green')}")
                 click.echo(f"Created user {click.style(username, 'green')}")
 
                 if username.endswith("_write"):
-                    store_secret(secret_id=f"{env}/indexer/{doc_type}/es_username", secret_value=username)
-                    store_secret(secret_id=f"{env}/indexer/{doc_type}/es_password", secret_value=password)
+                    store_secret(
+                        secret_id=f"{env}/indexer/{doc_type}/es_username",
+                        secret_value=username,
+                    )
+                    store_secret(
+                        secret_id=f"{env}/indexer/{doc_type}/es_password",
+                        secret_value=password,
+                    )
 
             print("")
 

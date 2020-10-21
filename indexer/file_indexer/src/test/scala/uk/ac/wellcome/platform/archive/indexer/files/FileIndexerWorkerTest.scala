@@ -12,7 +12,9 @@ class FileIndexerWorkerTest
     with FileIndexerFixtures {
 
   it("indexes a collection of files") {
-    val files = (1 to 10).map { _ => createContext}
+    val files = (1 to 10).map { _ =>
+      createContext
+    }
 
     withLocalElasticsearchIndex(mapping) { index =>
       withIndexerWorker(index) { indexerWorker =>
@@ -21,7 +23,9 @@ class FileIndexerWorkerTest
         }
 
         files.foreach { context =>
-          getT[IndexedFile](index, id = context.location.toString()) shouldBe IndexedFile(context)
+          getT[IndexedFile](index, id = context.location.toString()) shouldBe IndexedFile(
+            context
+          )
         }
       }
     }

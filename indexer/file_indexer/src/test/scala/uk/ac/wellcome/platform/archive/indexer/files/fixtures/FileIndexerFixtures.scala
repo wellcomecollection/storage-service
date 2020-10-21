@@ -53,7 +53,10 @@ trait FileIndexerFixtures
     new FileIndexer(client = elasticClient, index = index)
 
   override def withIndexerWorker[R](index: Index, queue: Queue)(
-    testWith: TestWith[IndexerWorker[Seq[FileContext], FileContext, IndexedFile], R]
+    testWith: TestWith[
+      IndexerWorker[Seq[FileContext], FileContext, IndexedFile],
+      R
+    ]
   )(implicit decoder: Decoder[Seq[FileContext]]): R = {
     withActorSystem { implicit actorSystem =>
       withFakeMonitoringClient() { implicit monitoringClient =>
