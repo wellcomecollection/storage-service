@@ -90,7 +90,9 @@ class FileFinderWorker(
       case Right(fileContexts) =>
         Future.sequence(
           fileContexts.map { c => Future.fromTry(messageSender.sendT(c)) }
-        ).map { _ => Successful(None) }
+        )
+          .map { _ => Successful(None) }
+          .recover { case t: Throwable => NonDeterministicFailure(t) }
 
       case Left(err) => Future.successful(err)
     }

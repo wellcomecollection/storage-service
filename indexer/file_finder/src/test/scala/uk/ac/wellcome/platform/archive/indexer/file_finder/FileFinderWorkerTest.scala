@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.indexer.file_finder
 
+import io.circe.Encoder
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
@@ -81,7 +82,7 @@ class FileFinderWorkerTest
 
   it("fails if it cannot send a message") {
     val brokenSender = new MemoryMessageSender() {
-      override def send(body: String): Try[Unit] =
+      override def sendT[T](t: T)(implicit encoder: Encoder[T]): Try[Unit] =
         Failure(new Throwable("BOOM!"))
     }
     val dao = createStorageManifestDao()
