@@ -13,9 +13,9 @@ def _get_slack_message(label, ingests):
     status_descriptions = []
     for status, individual_ingests in ingests.items():
         if status in ("stalled", "failed (unknown reason)"):
-            status_descriptions.append(f"*{status} ({len(individual_ingests)})*")
+            status_descriptions.append(f"*len(individual_ingests) {status}*")
         else:
-            status_descriptions.append(f"{status} ({len(individual_ingests)})")
+            status_descriptions.append(f"len(individual_ingests) {status}")
 
     result += ", ".join(status_descriptions)
 
