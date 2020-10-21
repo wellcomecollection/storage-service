@@ -73,7 +73,7 @@ def fake_notification(space, externalIdentifier, version):
         "space": space,
         "externalIdentifier": externalIdentifier,
         "version": f"v{version}",
-        "type:": "RegisteredBagNotification",
+        "type": "RegisteredBagNotification",
     }
 
 
