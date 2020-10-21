@@ -22,10 +22,8 @@ class FileIndexerTest
   ): Indexer[FileContext, IndexedFile] =
     new FileIndexer(client = client, index = index)
 
-  override def createDocument: FileContext = {
-    val (context, _) = createT
-    context
-  }
+  override def createDocument: FileContext =
+    createContext
 
   override def id(document: FileContext): String = document.location.toString()
 

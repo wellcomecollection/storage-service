@@ -27,12 +27,12 @@ import uk.ac.wellcome.platform.archive.indexer.fixtures.IndexerFixtures
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait FileIndexerFixtures
-    extends IndexerFixtures[FileContext, FileContext, IndexedFile]
+    extends IndexerFixtures[Seq[FileContext], FileContext, IndexedFile]
     with StorageManifestGenerators { this: Suite =>
   val mapping: MappingDefinition = FilesIndexConfig.mapping
 
-  def createT: (FileContext, String) = {
-    val context = FileContext(
+  def createContext: FileContext =
+    FileContext(
       space = createStorageSpace,
       externalIdentifier = createExternalIdentifier,
       hashingAlgorithm = createChecksum.algorithm,
@@ -43,15 +43,18 @@ trait FileIndexerFixtures
       createdDate = Instant.now
     )
 
-    (context, context.location.toString())
+  def createT: (Seq[FileContext], String) = {
+    val context = createContext
+
+    (Seq(context), context.location.toString())
   }
 
   def createIndexer(index: Index): Indexer[FileContext, IndexedFile] =
     new FileIndexer(client = elasticClient, index = index)
 
   override def withIndexerWorker[R](index: Index, queue: Queue)(
-    testWith: TestWith[IndexerWorker[FileContext, FileContext, IndexedFile], R]
-  )(implicit decoder: Decoder[FileContext]): R = {
+    testWith: TestWith[IndexerWorker[Seq[FileContext], FileContext, IndexedFile], R]
+  )(implicit decoder: Decoder[Seq[FileContext]]): R = {
     withActorSystem { implicit actorSystem =>
       withFakeMonitoringClient() { implicit monitoringClient =>
         val worker = new FileIndexerWorker(
@@ -65,6 +68,6 @@ trait FileIndexerFixtures
     }
   }
 
-  def convertToIndexedT(context: FileContext): IndexedFile =
-    IndexedFile(context)
+  def convertToIndexedT(contexts: Seq[FileContext]): IndexedFile =
+    IndexedFile(contexts.head)
 }
