@@ -82,3 +82,13 @@ resource "aws_ecr_repository" "replica_aggregator" {
   name = "uk.ac.wellcome/replica_aggregator"
   tags = local.default_tags
 }
+
+resource "aws_ecr_repository" "file_finder" {
+  name = "uk.ac.wellcome/file_finder"
+  tags = local.default_tags
+}
+
+resource "aws_ecr_repository" "file_indexer" {
+  name = "uk.ac.wellcome/file_indexer"
+  tags = local.default_tags
+}
