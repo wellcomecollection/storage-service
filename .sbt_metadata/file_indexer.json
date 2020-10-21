@@ -2,7 +2,6 @@
   "id" : "file_indexer",
   "folder" : "indexer/file_indexer",
   "dependencyIds" : [
-    "display",
     "indexer_common"
   ]
 }

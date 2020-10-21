@@ -1,0 +1,8 @@
+{
+  "id" : "file_finder",
+  "folder" : "indexer/file_finder",
+  "dependencyIds" : [
+    "bag_tracker",
+    "indexer_common"
+  ]
+}

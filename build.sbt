@@ -138,10 +138,16 @@ lazy val bag_indexer = setupProject(
   localDependencies = Seq(display, indexer_common, bag_tracker)
 )
 
+lazy val file_finder = setupProject(
+  project,
+  folder = "indexer/file_finder",
+  localDependencies = Seq(bag_tracker, indexer_common)
+)
+
 lazy val file_indexer = setupProject(
   project,
   folder = "indexer/file_indexer",
-  localDependencies = Seq(display, indexer_common)
+  localDependencies = Seq(indexer_common)
 )
 
 lazy val ingests_indexer = setupProject(
