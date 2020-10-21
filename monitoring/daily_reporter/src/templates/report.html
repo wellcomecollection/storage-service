@@ -173,7 +173,7 @@
                     <td>{{ ingest.space }}</td>
                     <td>{{ ingest.externalIdentifier }}</td>
                     <td>{{ ingest.version or "(no version)" }}</td>
-                    <td>{{ ingest.lastModifiedDate.strftime("%Y-%m-%d @ %H:%M") }}</td>
+                    <td title="{{ ingest.lastModifiedDate }}">{{ ingest.lastModifiedDate | pretty_date }}</td>
                   </tr>
 
                   {% set last_event = ingest|last_event %}
@@ -181,7 +181,7 @@
                   <tr class="status-{{ ingest.status }} last_event">
                     <td colspan="5" {% if loop.last %}style="padding-bottom: 3px"{% endif %}>
                       Last event: {{ last_event.description|add_s3_uri|safe }}<br/>
-                      {{ last_event.createdDate.strftime("%d %B %Y @ %H:%M") }}
+                      <span title="{{ last_event.createdDate }}">{{ last_event.createdDate | pretty_date }}</span>
                     </td>
                   </tr>
                   {% endif %}
