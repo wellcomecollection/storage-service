@@ -445,7 +445,7 @@ module "file_indexer_input_queue" {
   name = "${var.namespace}_file_indexer_input"
 
   topic_arns = [
-    module.registered_bag_notifications_topic.arn,
+    module.file_finder_output_topic.arn,
   ]
 
   role_names = [module.file_indexer.task_role_name]
