@@ -21,12 +21,6 @@ locals {
   ]
 }
 
-data "aws_ssm_parameter" "image_ids" {
-  count = length(local.services)
-
-  name = "/storage/images/${var.release_label}/${local.services[count.index]}"
-}
-
 data "aws_ecr_repository" "service" {
   count = length(local.services)
   name  = "uk.ac.wellcome/${local.services[count.index]}"
