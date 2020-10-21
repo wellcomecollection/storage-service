@@ -16,8 +16,7 @@ case class IndexedBagInfo(
   sourceOrganisation: Option[String] = None,
   externalDescription: Option[String] = None,
   internalSenderIdentifier: Option[String] = None,
-  internalSenderDescription: Option[String] = None,
-  @JsonKey("type") ontologyType: String = "BagInfo"
+  internalSenderDescription: Option[String] = None
 )
 
 object IndexedBagInfo {
@@ -58,8 +57,7 @@ case class IndexedStorageManifest(
   location: IndexedLocation,
   replicaLocations: Seq[IndexedLocation],
   filesCount: Int,
-  filesTotalSize: Long,
-  @JsonKey("type") ontologyType: String = "Bag"
+  filesTotalSize: Long
 )
 
 object IndexedStorageManifest {
