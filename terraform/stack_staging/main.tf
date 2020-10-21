@@ -72,6 +72,16 @@ module "stack_staging" {
     es_password = "stage/bag_indexer/es_password"
   }
 
+  es_files_index_name = "storage_stage_files"
+
+  file_indexer_secrets = {
+    es_host     = "stage/file_indexer/es_host"
+    es_port     = "stage/file_indexer/es_port"
+    es_protocol = "stage/file_indexer/es_protocol"
+    es_username = "stage/file_indexer/es_username"
+    es_password = "stage/file_indexer/es_password"
+  }
+
   workflow_bucket_name = local.workflow_staging_bucket_name
 
   archivematica_ingests_bucket             = local.archivematica_ingests_bucket

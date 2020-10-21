@@ -401,6 +401,68 @@ module "bag_indexer_input_queue" {
   dlq_alarm_arn = var.dlq_alarm_arn
 }
 
+# file finder
+
+module "file_finder_input_queue" {
+  source = "../queue"
+
+  name = "${var.namespace}_file_finder_input"
+
+  topic_arns = [
+    module.registered_bag_notifications_topic.arn,
+    module.bag_reindexer_output_topic.arn
+  ]
+
+  role_names = [module.file_finder.task_role_name]
+
+  queue_high_actions = [
+    module.file_finder.scale_up_arn,
+  ]
+
+  queue_low_actions = [
+    module.file_finder.scale_down_arn,
+  ]
+
+  aws_region    = var.aws_region
+  dlq_alarm_arn = var.dlq_alarm_arn
+}
+
+module "file_finder_output_topic" {
+  source = "../topic"
+
+  name = "${var.namespace}_file_finder_output"
+
+  role_names = [
+    module.file_finder.task_role_name,
+  ]
+}
+
+# file indexer
+
+module "file_indexer_input_queue" {
+  source = "../queue"
+
+  name = "${var.namespace}_file_indexer_input"
+
+  topic_arns = [
+    module.registered_bag_notifications_topic.arn,
+  ]
+
+  role_names = [module.file_indexer.task_role_name]
+
+  queue_high_actions = [
+    module.file_indexer.scale_up_arn,
+  ]
+
+  queue_low_actions = [
+    module.file_indexer.scale_down_arn,
+  ]
+
+  aws_region    = var.aws_region
+  dlq_alarm_arn = var.dlq_alarm_arn
+}
+
+
 # bag tagger
 
 module "bag_tagger_input_queue" {

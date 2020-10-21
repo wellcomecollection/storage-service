@@ -15,6 +15,8 @@ locals {
     "bag_verifier",
     "bag_unpacker",
     "bag_indexer",
+    "file_finder",
+    "file_indexer",
     "replica_aggregator",
   ]
 }
