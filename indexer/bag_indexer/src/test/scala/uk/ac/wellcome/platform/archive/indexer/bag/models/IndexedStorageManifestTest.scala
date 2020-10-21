@@ -8,10 +8,7 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   StorageManifestGenerators
 }
 import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
-import uk.ac.wellcome.platform.archive.indexer.bags.models.{
-  IndexedFileFields,
-  IndexedStorageManifest
-}
+import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
 
 class IndexedStorageManifestTest
     extends AnyFunSpec
@@ -105,8 +102,6 @@ class IndexedStorageManifestTest
 
     indexedManifest.id shouldBe storageManifest.id.toString
     indexedManifest.space shouldBe storageManifest.space.toString
-    indexedManifest.files shouldBe storageManifest.manifest.files
-      .map(IndexedFileFields(_))
     indexedManifest.filesCount shouldBe expectedFileCount
     indexedManifest.filesTotalSize shouldBe expectedFilesTotalSize
   }
