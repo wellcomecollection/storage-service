@@ -7,7 +7,12 @@ import math
 import boto3
 import tqdm
 
-from reindex_bags_backlog import create_client, READ_ONLY_ROLE_ARN, ROLE_ARN, PROD_CONFIG
+from reindex_bags_backlog import (
+    create_client,
+    READ_ONLY_ROLE_ARN,
+    ROLE_ARN,
+    PROD_CONFIG,
+)
 
 
 def chunked_iterable(iterable, size):
@@ -32,17 +37,13 @@ def get_chemist_druggist_bag():
 
     item = dynamodb.get_item(
         TableName=table_name,
-        Key={"id": {"S": "digitised/b19974760"}, "version": {"N": "1"}}
+        Key={"id": {"S": "digitised/b19974760"}, "version": {"N": "1"}},
     )["Item"]
 
     bucket = item["payload"]["M"]["namespace"]["S"]
     key = item["payload"]["M"]["path"]["S"]
 
-    s3.download_file(
-        Bucket=bucket,
-        Key=key,
-        Filename="b19974760.json"
-    )
+    s3.download_file(Bucket=bucket, Key=key, Filename="b19974760.json")
 
     return json.load(open("b19974760.json"))
 
@@ -54,7 +55,7 @@ if __name__ == "__main__":
 
     for file_group in tqdm.tqdm(
         chunked_iterable(bag["manifest"]["files"], size=140),
-        total=int(math.ceil(len(bag["manifest"]["files"]) / 140))
+        total=int(math.ceil(len(bag["manifest"]["files"]) / 140)),
     ):
         contexts = [
             {
@@ -63,14 +64,14 @@ if __name__ == "__main__":
                 "hashingAlgorithm": bag["manifest"]["checksumAlgorithm"],
                 "bagLocation": bag["location"],
                 "file": f,
-                "createdDate": bag["createdDate"]
+                "createdDate": bag["createdDate"],
             }
             for f in file_group
         ]
 
         sns.publish(
             TopicArn="arn:aws:sns:eu-west-1:975596993436:storage_prod_file_finder_output",
-            Message=json.dumps(contexts)
+            Message=json.dumps(contexts),
         )
 
     print(f"Sent {len(bag['manifest']['files'])} for indexing")

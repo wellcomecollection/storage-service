@@ -21,7 +21,9 @@ class AkkaBagTrackerClientTest
       testWith(client)
     }
 
-  override def withStorageManifestDao[R](initialManifests: Seq[StorageManifest])(testWith: TestWith[StorageManifestDao, R]): R = {
+  override def withStorageManifestDao[R](
+    initialManifests: Seq[StorageManifest]
+  )(testWith: TestWith[StorageManifestDao, R]): R = {
     val versionedStore =
       MemoryVersionedStore[BagId, StorageManifest](initialEntries = Map.empty)
 

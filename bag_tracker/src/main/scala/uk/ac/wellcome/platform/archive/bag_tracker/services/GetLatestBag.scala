@@ -13,7 +13,10 @@ import uk.ac.wellcome.storage.{NoVersionExistsError, ReadError}
 trait GetLatestBag extends Logging {
   val storageManifestDao: StorageManifestDao
 
-  protected def handleGetLatestBagErrors(bagId: BagId, readError: ReadError): Route =
+  protected def handleGetLatestBagErrors(
+    bagId: BagId,
+    readError: ReadError
+  ): Route =
     readError match {
       case _: NoVersionExistsError =>
         info(s"Could not find any versions of bag $bagId")

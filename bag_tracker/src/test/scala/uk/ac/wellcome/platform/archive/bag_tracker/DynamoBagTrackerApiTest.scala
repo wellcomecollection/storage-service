@@ -4,7 +4,11 @@ import akka.http.scaladsl.model.Uri
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
 import org.scalatest.concurrent.IntegrationPatience
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bag_tracker.client.{AkkaBagTrackerClient, BagTrackerClient, BagTrackerClientTestCases}
+import uk.ac.wellcome.platform.archive.bag_tracker.client.{
+  AkkaBagTrackerClient,
+  BagTrackerClient,
+  BagTrackerClientTestCases
+}
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.dynamo.DynamoStorageManifestDao
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
@@ -13,7 +17,7 @@ import uk.ac.wellcome.storage.fixtures.{DynamoFixtures, S3Fixtures}
 import uk.ac.wellcome.storage.services.s3.S3Uploader
 
 class DynamoBagTrackerApiTest
-  extends BagTrackerClientTestCases
+    extends BagTrackerClientTestCases
     with IntegrationPatience
     with DynamoFixtures
     with S3Fixtures {
@@ -37,12 +41,16 @@ class DynamoBagTrackerApiTest
       val api =
         dao match {
           case dynamoDao: DynamoStorageManifestDao =>
-            new DynamoBagTrackerApi(dynamoDao, s3Uploader)(host = host, port = port)
-      }
+            new DynamoBagTrackerApi(dynamoDao, s3Uploader)(
+              host = host,
+              port = port
+            )
+        }
 
       val api = new DynamoBagTrackerApi(
         dao.asInstanceOf[DynamoStorageManifestDao],
-        s3Uploader)(host = host, port = port)
+        s3Uploader
+      )(host = host, port = port)
 
       api.run()
 

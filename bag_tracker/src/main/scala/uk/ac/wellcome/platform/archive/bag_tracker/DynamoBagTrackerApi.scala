@@ -14,20 +14,25 @@ import scala.concurrent.duration._
 
 class DynamoBagTrackerApi(
   dynamoStorageManifestDao: DynamoStorageManifestDao,
-  s3Uploader: S3Uploader)(host: String, port: Int)(implicit actorSystem: ActorSystem)
-  extends BagTrackerApi(dynamoStorageManifestDao)(host, port) {
+  s3Uploader: S3Uploader
+)(host: String, port: Int)(implicit actorSystem: ActorSystem)
+    extends BagTrackerApi(dynamoStorageManifestDao)(host, port) {
 
-  private def getPresignedUrl(bagId: BagId, version: Int): Either[ReadError, Route] =
+  private def getPresignedUrl(
+    bagId: BagId,
+    version: Int
+  ): Either[ReadError, Route] =
     dynamoStorageManifestDao.indexedStore.get(Version(bagId, version)) match {
       case Right(Identified(_, location)) =>
         info(s"Found bag id=$bagId version=$version")
-        s3Uploader.getPresignedGetURL(location, expiryLength = 1.hour).map { url =>
-          complete(
-            HttpResponse(
-              status = StatusCodes.TemporaryRedirect,
-              headers = Location(url.toExternalForm) :: Nil
+        s3Uploader.getPresignedGetURL(location, expiryLength = 1.hour).map {
+          url =>
+            complete(
+              HttpResponse(
+                status = StatusCodes.TemporaryRedirect,
+                headers = Location(url.toExternalForm) :: Nil
+              )
             )
-          )
         }
 
       case Left(err) => Left(err)
@@ -35,14 +40,17 @@ class DynamoBagTrackerApi(
 
   override def getBag(bagId: BagId, version: BagVersion): Route =
     getPresignedUrl(bagId, version.underlying) match {
-      case Right(redirect)  => redirect
-      case Left(err)        => handleGetErrors(bagId, version, err)
+      case Right(redirect) => redirect
+      case Left(err)       => handleGetErrors(bagId, version, err)
     }
 
   override def getLatestBag(bagId: BagId): Route = {
     val redirectRoute =
-      dynamoStorageManifestDao.indexedStore.max(bagId)
-        .flatMap { version => getPresignedUrl(bagId, version) }
+      dynamoStorageManifestDao.indexedStore
+        .max(bagId)
+        .flatMap { version =>
+          getPresignedUrl(bagId, version)
+        }
 
     redirectRoute match {
       case Right(redirect) => redirect
