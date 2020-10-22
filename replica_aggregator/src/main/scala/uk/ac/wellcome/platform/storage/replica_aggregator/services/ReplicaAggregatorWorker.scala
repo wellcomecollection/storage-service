@@ -6,7 +6,7 @@ import akka.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
+import uk.ac.wellcome.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
@@ -19,6 +19,7 @@ import uk.ac.wellcome.platform.archive.common.{
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage.{RetryableError, UpdateError, UpdateWriteError}
 
+import scala.concurrent.Future
 import scala.util.{Success, Try}
 
 class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
@@ -29,7 +30,7 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
   val metricsNamespace: String
 )(
-  implicit val mc: MetricsMonitoringClient,
+  implicit val mc: Metrics[Future],
   val as: ActorSystem,
   val sc: SqsAsyncClient,
   val wd: Decoder[ReplicaCompletePayload]

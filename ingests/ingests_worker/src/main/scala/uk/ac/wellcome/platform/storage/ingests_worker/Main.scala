@@ -5,10 +5,10 @@ import akka.http.scaladsl.model.Uri
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder,
   SQSBuilder
 }
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
+import uk.ac.wellcome.monitoring.cloudwatch.CloudWatchMetrics
+import uk.ac.wellcome.monitoring.typesafe.CloudWatchBuilder
 import uk.ac.wellcome.platform.storage.ingests_worker.services.IngestsWorkerService
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -25,8 +25,8 @@ object Main extends WellcomeTypesafeApp {
     implicit val executionContext: ExecutionContext =
       AkkaBuilder.buildExecutionContext()
 
-    implicit val monitoringClient: CloudwatchMetricsMonitoringClient =
-      CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)
+    implicit val metrics: CloudWatchMetrics =
+      CloudWatchBuilder.buildCloudWatchMetrics(config)
 
     implicit val sqsClient: SqsAsyncClient =
       SQSBuilder.buildSQSAsyncClient(config)

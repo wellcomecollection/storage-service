@@ -10,7 +10,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSConfig
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
+import uk.ac.wellcome.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.bagverifier.models.{
   ReplicatedBagVerifyContext,
   StandaloneBagVerifyContext
@@ -30,13 +30,15 @@ import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.typesafe.DynamoBuilder
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
+import scala.concurrent.Future
+
 object BagVerifierWorkerBuilder {
   def buildBagVerifierWorker(config: Config)(
     ingestUpdater: IngestUpdater[SNSConfig],
     outgoingPublisher: OutgoingPublisher[SNSConfig]
   )(
     implicit s3: AmazonS3,
-    mc: MetricsMonitoringClient,
+    metrics: Metrics[Future],
     as: ActorSystem,
     sc: SqsAsyncClient
   ) = {
@@ -100,7 +102,7 @@ object BagVerifierWorkerBuilder {
     outgoingPublisher: OutgoingPublisher[OutgoingDestination]
   )(
     implicit s3: AmazonS3,
-    mc: MetricsMonitoringClient,
+    metrics: Metrics[Future],
     as: ActorSystem,
     sc: SqsAsyncClient
   ): BagVerifierWorker[
@@ -132,7 +134,7 @@ object BagVerifierWorkerBuilder {
     outgoingPublisher: OutgoingPublisher[OutgoingDestination]
   )(
     implicit s3: AmazonS3,
-    mc: MetricsMonitoringClient,
+    metrics: Metrics[Future],
     as: ActorSystem,
     sc: SqsAsyncClient
   ): BagVerifierWorker[
@@ -173,7 +175,7 @@ object BagVerifierWorkerBuilder {
     implicit s3Client: AmazonS3,
     blobClient: BlobServiceClient,
     dynamoClient: AmazonDynamoDB,
-    mc: MetricsMonitoringClient,
+    metrics: Metrics[Future],
     as: ActorSystem,
     sc: SqsAsyncClient
   ): BagVerifierWorker[

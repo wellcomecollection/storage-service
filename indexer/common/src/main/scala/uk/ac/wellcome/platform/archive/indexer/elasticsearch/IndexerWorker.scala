@@ -19,10 +19,8 @@ import uk.ac.wellcome.messaging.worker.models.{
   Result,
   Successful
 }
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.{
-  MetricsMonitoringClient,
-  MetricsMonitoringProcessor
-}
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
+import uk.ac.wellcome.monitoring.Metrics
 import uk.ac.wellcome.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -37,7 +35,7 @@ abstract class IndexerWorker[SourceT, T, IndexedT](
   implicit
   actorSystem: ActorSystem,
   sqsAsync: SqsAsyncClient,
-  monitoringClient: MetricsMonitoringClient,
+  metrics: Metrics[Future],
   decoder: Decoder[SourceT]
 ) extends Runnable
     with Logging {
@@ -80,10 +78,7 @@ abstract class IndexerWorker[SourceT, T, IndexedT](
     new AlpakkaSQSWorker[SourceT, Instant, Instant, Unit](
       config,
       monitoringProcessorBuilder = (ec: ExecutionContext) =>
-        new MetricsMonitoringProcessor[SourceT](metricsNamespace)(
-          monitoringClient,
-          ec
-        )
+        new MetricsMonitoringProcessor[SourceT](metricsNamespace)(metrics, ec)
     )(process) {
       override val retryAction: Message => sqs.MessageAction =
         (message: Message) =>

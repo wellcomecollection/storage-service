@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
+import uk.ac.wellcome.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestEvent,
   IngestID,
@@ -26,6 +26,7 @@ import uk.ac.wellcome.platform.storage.bag_versioner.models.{
   BagVersionerSummary
 }
 
+import scala.concurrent.Future
 import scala.util.{Success, Try}
 
 class BagVersionerWorker[IngestDestination, OutgoingDestination](
@@ -35,7 +36,7 @@ class BagVersionerWorker[IngestDestination, OutgoingDestination](
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
   val metricsNamespace: String
 )(
-  implicit val mc: MetricsMonitoringClient,
+  implicit val mc: Metrics[Future],
   val as: ActorSystem,
   val sc: SqsAsyncClient,
   val wd: Decoder[BagRootLocationPayload]

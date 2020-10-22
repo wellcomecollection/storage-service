@@ -8,7 +8,7 @@ import cats.instances.try_._
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
+import uk.ac.wellcome.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models._
@@ -27,6 +27,7 @@ import uk.ac.wellcome.storage.locking.{
   LockingService
 }
 
+import scala.concurrent.Future
 import scala.util.Try
 
 class BagReplicatorWorker[
@@ -50,7 +51,7 @@ class BagReplicatorWorker[
   val metricsNamespace: String
 )(
   implicit
-  val mc: MetricsMonitoringClient,
+  val mc: Metrics[Future],
   val as: ActorSystem,
   val sc: SqsAsyncClient,
   val wd: Decoder[VersionedBagRootPayload]

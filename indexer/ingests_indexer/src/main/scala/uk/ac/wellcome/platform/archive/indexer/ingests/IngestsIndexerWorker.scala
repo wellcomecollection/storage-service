@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
+import uk.ac.wellcome.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
   Indexer,
@@ -23,7 +23,7 @@ class IngestsIndexerWorker(
   implicit
   val actorSystem: ActorSystem,
   val sqsAsync: SqsAsyncClient,
-  val monitoringClient: MetricsMonitoringClient,
+  val metrics: Metrics[Future],
   val decoder: Decoder[Ingest]
 ) extends IndexerWorker[Ingest, Ingest, IndexedIngest](
       config,

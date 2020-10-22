@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
+import uk.ac.wellcome.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.bagverifier.models.{
   BagVerifyContext,
   VerificationSummary
@@ -19,6 +19,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.storage.{Location, Prefix}
 
+import scala.concurrent.Future
 import scala.util.Try
 
 trait BagPayloadTranslator[
@@ -50,7 +51,7 @@ class BagVerifierWorker[
     BagPrefix
   ]
 )(
-  implicit val mc: MetricsMonitoringClient,
+  implicit val mc: Metrics[Future],
   val as: ActorSystem,
   val sc: SqsAsyncClient,
   val wd: Decoder[Payload],

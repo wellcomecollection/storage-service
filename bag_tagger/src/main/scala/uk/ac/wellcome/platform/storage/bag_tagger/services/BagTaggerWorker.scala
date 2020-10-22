@@ -18,10 +18,8 @@ import uk.ac.wellcome.messaging.worker.models.{
   Result,
   Successful
 }
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.{
-  MetricsMonitoringClient,
-  MetricsMonitoringProcessor
-}
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
+import uk.ac.wellcome.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.bag_tracker.client.BagTrackerClient
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
@@ -41,7 +39,7 @@ class BagTaggerWorker(
   tagRules: StorageManifest => Map[StorageManifestFile, Map[String, String]]
 )(
   implicit
-  val mc: MetricsMonitoringClient,
+  val mc: Metrics[Future],
   val as: ActorSystem,
   val sc: SqsAsyncClient,
   val wd: Decoder[BagRegistrationNotification]

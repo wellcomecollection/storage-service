@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
+import uk.ac.wellcome.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.bag_tracker.client.{
   BagTrackerClient,
   BagTrackerUnknownGetError
@@ -32,7 +32,7 @@ class BagIndexerWorker(
   implicit
   val actorSystem: ActorSystem,
   val sqsAsync: SqsAsyncClient,
-  val monitoringClient: MetricsMonitoringClient,
+  val metrics: Metrics[Future],
   val decoder: Decoder[BagRegistrationNotification]
 ) extends IndexerWorker[
       BagRegistrationNotification,

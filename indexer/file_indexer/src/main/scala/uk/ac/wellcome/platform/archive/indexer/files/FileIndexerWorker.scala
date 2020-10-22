@@ -9,7 +9,7 @@ import uk.ac.wellcome.messaging.worker.models.{
   Result,
   Successful
 }
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
+import uk.ac.wellcome.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch._
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.models.FileContext
 import uk.ac.wellcome.platform.archive.indexer.files.models.IndexedFile
@@ -24,7 +24,7 @@ class FileIndexerWorker(
   implicit
   val actorSystem: ActorSystem,
   val sqsAsync: SqsAsyncClient,
-  val monitoringClient: MetricsMonitoringClient,
+  val metrics: Metrics[Future],
   val decoder: Decoder[FileContext]
 ) extends IndexerWorker[Seq[FileContext], FileContext, IndexedFile](
       config,
