@@ -72,3 +72,5 @@ if __name__ == "__main__":
             TopicArn="arn:aws:sns:eu-west-1:975596993436:storage_prod_file_finder_output",
             Message=json.dumps(contexts)
         )
+
+    print(f"Sent {len(bag['manifest']['files'])} for indexing")
