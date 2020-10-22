@@ -19,6 +19,7 @@ from elasticsearch_dsl import Search
 from tqdm import tqdm
 
 ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
+READ_ONLY_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
 
 ES_SECRETS = {
     "username": "storage_bags_reindex_script/es_username",
