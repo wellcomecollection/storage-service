@@ -27,13 +27,13 @@ ES_SECRETS = {
 }
 
 STAGE_CONFIG = {
-    "table_name": "vhs-storage-staging-manifests",
+    "table_name": "vhs-storage-staging-manifests-2020-07-24",
     "topic_arn": "arn:aws:sns:eu-west-1:975596993436:storage_staging_bag_reindexer_output",
     "es_index": "storage_stage_bags",
 }
 
 PROD_CONFIG = {
-    "table_name": "vhs-storage-manifests",
+    "table_name": "vhs-storage-manifests-2020-07-24",
     "topic_arn": "arn:aws:sns:eu-west-1:975596993436:storage_prod_bag_reindexer_output",
     "es_index": "storage_bags",
 }
@@ -73,7 +73,7 @@ def fake_notification(space, externalIdentifier, version):
         "space": space,
         "externalIdentifier": externalIdentifier,
         "version": f"v{version}",
-        "type:": "RegisteredBagNotification",
+        "type": "RegisteredBagNotification",
     }
 
 

@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.indexer.bag.services
+package uk.ac.wellcome.platform.archive.indexer.files.models
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
@@ -6,7 +6,6 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   IngestGenerators,
   StorageManifestGenerators
 }
-import uk.ac.wellcome.platform.archive.indexer.bags.services.FileSuffix
 
 class FileSuffixTest
     extends AnyFunSpec

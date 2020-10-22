@@ -2,34 +2,10 @@ package uk.ac.wellcome.platform.archive.indexer.bags.models
 
 import java.time.{Instant, LocalDate}
 
-import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageLocation,
-  StorageManifest,
-  StorageManifestFile
-}
-import uk.ac.wellcome.platform.archive.indexer.bags.services.FileSuffix
-
-case class IndexedFileFields(
-  path: String,
-  name: String,
-  suffix: Option[String],
-  size: Long,
-  checksum: String,
-  @JsonKey("type") ontologyType: String = "File"
-)
-
-object IndexedFileFields {
-  def apply(file: StorageManifestFile): IndexedFileFields = {
-    IndexedFileFields(
-      path = file.path,
-      name = file.name,
-      suffix = FileSuffix.getSuffix(file.name),
-      size = file.size,
-      checksum = file.checksum.value
-    )
-  }
+  StorageManifest
 }
 
 case class IndexedBagInfo(
@@ -39,8 +15,7 @@ case class IndexedBagInfo(
   sourceOrganisation: Option[String] = None,
   externalDescription: Option[String] = None,
   internalSenderIdentifier: Option[String] = None,
-  internalSenderDescription: Option[String] = None,
-  @JsonKey("type") ontologyType: String = "BagInfo"
+  internalSenderDescription: Option[String] = None
 )
 
 object IndexedBagInfo {
@@ -59,8 +34,7 @@ object IndexedBagInfo {
 case class IndexedLocation(
   provider: String,
   bucket: String,
-  path: String,
-  @JsonKey("type") ontologyType: String = "Location"
+  path: String
 )
 
 object IndexedLocation {
@@ -80,16 +54,13 @@ case class IndexedStorageManifest(
   info: IndexedBagInfo,
   location: IndexedLocation,
   replicaLocations: Seq[IndexedLocation],
-  files: Seq[IndexedFileFields],
   filesCount: Int,
-  filesTotalSize: Long,
-  @JsonKey("type") ontologyType: String = "Bag"
+  filesTotalSize: Long
 )
 
 object IndexedStorageManifest {
   def apply(storageManifest: StorageManifest): IndexedStorageManifest = {
     val storageManifestFiles = storageManifest.manifest.files
-    val payloadFiles = storageManifestFiles.map(IndexedFileFields(_))
     val replicaLocations =
       storageManifest.replicaLocations.map(IndexedLocation(_))
 
@@ -101,7 +72,6 @@ object IndexedStorageManifest {
       info = IndexedBagInfo(storageManifest.info),
       location = IndexedLocation(storageManifest.location),
       replicaLocations = replicaLocations,
-      files = payloadFiles,
       filesCount = storageManifestFiles.length,
       filesTotalSize = storageManifestFiles.map(_.size).sum
     )

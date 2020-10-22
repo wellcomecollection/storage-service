@@ -1,0 +1,7 @@
+{
+  "id" : "file_indexer",
+  "folder" : "indexer/file_indexer",
+  "dependencyIds" : [
+    "indexer_common"
+  ]
+}

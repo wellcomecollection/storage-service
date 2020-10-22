@@ -53,24 +53,31 @@ module "stack_prod" {
   replicas_table_arn  = data.terraform_remote_state.critical_prod.outputs.replicas_table_arn
   replicas_table_name = data.terraform_remote_state.critical_prod.outputs.replicas_table_name
 
+  indexer_host_secrets = {
+    es_host     = "prod/indexer/es_host"
+    es_port     = "prod/indexer/es_port"
+    es_protocol = "prod/indexer/es_protocol"
+  }
+
   es_ingests_index_name = "storage_ingests"
 
   ingests_indexer_secrets = {
-    es_host     = "prod/ingests_indexer/es_host"
-    es_port     = "prod/ingests_indexer/es_port"
-    es_protocol = "prod/ingests_indexer/es_protocol"
-    es_username = "prod/ingests_indexer/es_username"
-    es_password = "prod/ingests_indexer/es_password"
+    es_username = "prod/indexer/ingests/es_username"
+    es_password = "prod/indexer/ingests/es_password"
   }
 
   es_bags_index_name = "storage_bags"
 
   bag_indexer_secrets = {
-    es_host     = "prod/bag_indexer/es_host"
-    es_port     = "prod/bag_indexer/es_port"
-    es_protocol = "prod/bag_indexer/es_protocol"
-    es_username = "prod/bag_indexer/es_username"
-    es_password = "prod/bag_indexer/es_password"
+    es_username = "prod/indexer/bags/es_username"
+    es_password = "prod/indexer/bags/es_password"
+  }
+
+  es_files_index_name = "storage_files"
+
+  file_indexer_secrets = {
+    es_username = "prod/indexer/files/es_username"
+    es_password = "prod/indexer/files/es_password"
   }
 
   workflow_bucket_name = local.workflow_bucket_name

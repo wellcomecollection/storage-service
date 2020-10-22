@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.indexer.bags.services
+package uk.ac.wellcome.platform.archive.indexer.files.models
 
 object FileSuffix {
   def getSuffix(name: String): Option[String] = {

@@ -33,6 +33,10 @@ steps:
     label: "bag indexer"
   - command: .buildkite/scripts/run_job.py ingests_indexer
     label: "ingests indexer"
+  - command: .buildkite/scripts/run_job.py file_finder
+    label: "file finder"
+  - command: .buildkite/scripts/run_job.py file_indexer
+    label: "file indexer"
   - command: .buildkite/scripts/run_job.py ingests_worker
     label: "ingests worker"
   - command: .buildkite/scripts/run_job.py ingests_tracker

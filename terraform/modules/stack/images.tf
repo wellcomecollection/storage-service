@@ -15,14 +15,10 @@ locals {
     "bag_verifier",
     "bag_unpacker",
     "bag_indexer",
+    "file_finder",
+    "file_indexer",
     "replica_aggregator",
   ]
-}
-
-data "aws_ssm_parameter" "image_ids" {
-  count = length(local.services)
-
-  name = "/storage/images/${var.release_label}/${local.services[count.index]}"
 }
 
 data "aws_ecr_repository" "service" {

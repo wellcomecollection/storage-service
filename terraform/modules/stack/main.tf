@@ -66,7 +66,7 @@ module "ingests_indexer" {
     es_ingests_index_name = var.es_ingests_index_name
   }
 
-  secrets = var.ingests_indexer_secrets
+  secrets = merge(var.indexer_host_secrets, var.ingests_indexer_secrets)
 
   security_group_ids = [
     aws_security_group.service_egress.id,
@@ -107,7 +107,7 @@ module "bag_indexer" {
     es_bags_index_name = var.es_bags_index_name
   }
 
-  secrets = var.bag_indexer_secrets
+  secrets = merge(var.indexer_host_secrets, var.bag_indexer_secrets)
 
   security_group_ids = [
     aws_security_group.service_egress.id,
@@ -122,6 +122,79 @@ module "bag_indexer" {
   service_discovery_namespace_id = local.service_discovery_namespace_id
 
   deployment_service_name = "bags-indexer"
+  deployment_service_env  = var.release_label
+}
+
+# file finder
+
+module "file_finder" {
+  source = "../service/worker"
+
+  container_image = local.image_ids["file_finder"]
+
+  cluster_name = aws_ecs_cluster.cluster.name
+  cluster_arn  = aws_ecs_cluster.cluster.arn
+
+  subnets      = var.private_subnets
+  service_name = "${var.namespace}-file-finder"
+
+  environment = {
+    queue_url                    = module.file_finder_input_queue.url
+    metrics_namespace            = local.file_finder_service_name
+    bags_tracker_host            = "http://${module.bags_api.name}.${var.namespace}:8080"
+    file_finder_output_topic_arn = module.file_finder_output_topic.arn
+  }
+
+  security_group_ids = [
+    aws_security_group.service_egress.id,
+    aws_security_group.interservice.id
+  ]
+
+  min_capacity = 0
+  max_capacity = var.max_capacity
+
+  use_fargate_spot = true
+
+  service_discovery_namespace_id = local.service_discovery_namespace_id
+
+  deployment_service_name = "file-finder"
+  deployment_service_env  = var.release_label
+}
+
+# file indexer
+
+module "file_indexer" {
+  source = "../service/worker"
+
+  container_image = local.image_ids["file_indexer"]
+
+  cluster_name = aws_ecs_cluster.cluster.name
+  cluster_arn  = aws_ecs_cluster.cluster.arn
+
+  subnets      = var.private_subnets
+  service_name = "${var.namespace}-file-indexer"
+
+  environment = {
+    queue_url           = module.file_indexer_input_queue.url
+    metrics_namespace   = local.file_indexer_service_name
+    es_files_index_name = var.es_files_index_name
+  }
+
+  secrets = merge(var.indexer_host_secrets, var.file_indexer_secrets)
+
+  security_group_ids = [
+    aws_security_group.service_egress.id,
+    aws_security_group.interservice.id
+  ]
+
+  min_capacity = 0
+  max_capacity = var.max_capacity
+
+  use_fargate_spot = true
+
+  service_discovery_namespace_id = local.service_discovery_namespace_id
+
+  deployment_service_name = "file-indexer"
   deployment_service_env  = var.release_label
 }
 
