@@ -4,7 +4,6 @@ import itertools
 import json
 import math
 
-import boto3
 import tqdm
 
 from reindex_bags_backlog import create_client, READ_ONLY_ROLE_ARN, ROLE_ARN, PROD_CONFIG
