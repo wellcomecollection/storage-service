@@ -45,7 +45,7 @@ trait IngestsApiFixture
   private def withApp[R](
     ingestTrackerTest: MemoryIngestTracker,
     unpackerSender: MemoryMessageSender,
-    metrics: Metrics[Future, StandardUnit]
+    metrics: Metrics[Future]
   )(testWith: TestWith[WellcomeHttpApp, R]): R =
     withActorSystem { implicit actorSystem =>
       val httpMetrics = new HttpMetrics(
