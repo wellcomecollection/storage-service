@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.storage.ingests.api.fixtures
 
 import java.net.URL
 
-import com.amazonaws.services.cloudwatch.model.StandardUnit
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.MessageSender
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
@@ -84,7 +83,7 @@ trait IngestsApiFixture
       (
         MemoryIngestTracker,
         MemoryMessageSender,
-        MemoryMetrics[StandardUnit],
+        MemoryMetrics,
         String
       ),
       R
@@ -94,7 +93,7 @@ trait IngestsApiFixture
       case (_, _, ingestTracker) =>
         val messageSender = new MemoryMessageSender()
 
-        val metrics = new MemoryMetrics[StandardUnit]()
+        val metrics = new MemoryMetrics()
 
         withApp(ingestTracker, messageSender, metrics) { _ =>
           testWith(
@@ -113,7 +112,7 @@ trait IngestsApiFixture
       (
         MemoryIngestTracker,
         MemoryMessageSender,
-        MemoryMetrics[StandardUnit],
+        MemoryMetrics,
         String
       ),
       R
@@ -123,7 +122,7 @@ trait IngestsApiFixture
       case (_, _, ingestTracker) =>
         val messageSender = new MemoryMessageSender()
 
-        val metrics = new MemoryMetrics[StandardUnit]()
+        val metrics = new MemoryMetrics()
 
         withApp(ingestTracker, messageSender, metrics) { _ =>
           testWith(

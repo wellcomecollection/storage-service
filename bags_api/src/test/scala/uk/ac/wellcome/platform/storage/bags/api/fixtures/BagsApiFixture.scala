@@ -49,7 +49,7 @@ trait BagsApiFixture
   )
 
   private def withApp[R](
-    metrics: MemoryMetrics[Unit],
+    metrics: MemoryMetrics,
     maxResponseByteLength: Long,
     locationPrefix: S3ObjectLocationPrefix,
     storageManifestDao: StorageManifestDao,
@@ -99,7 +99,7 @@ trait BagsApiFixture
     locationPrefix: S3ObjectLocationPrefix = createS3ObjectLocationPrefix,
     maxResponseByteLength: Long = 1048576
   )(
-    testWith: TestWith[(StorageManifestDao, MemoryMetrics[Unit], String), R]
+    testWith: TestWith[(StorageManifestDao, MemoryMetrics, String), R]
   )(implicit s3Client: AmazonS3): R = {
     val dao = createStorageManifestDao()
     val uploader = new S3Uploader()
@@ -108,7 +108,7 @@ trait BagsApiFixture
       dao.put(manifest) shouldBe a[Right[_, _]]
     }
 
-    val metrics = new MemoryMetrics[Unit]()
+    val metrics = new MemoryMetrics()
 
     withApp(
       metrics = metrics,
@@ -122,7 +122,7 @@ trait BagsApiFixture
   }
 
   def withBrokenApp[R](
-    testWith: TestWith[(MemoryMetrics[Unit], String), R]
+    testWith: TestWith[(MemoryMetrics, String), R]
   ): R = {
     val versionedStore = MemoryVersionedStore[BagId, StorageManifest](
       initialEntries = Map.empty
@@ -147,7 +147,7 @@ trait BagsApiFixture
         Left(StoreReadError(new Throwable("BOOM!")))
     }
 
-    val metrics = new MemoryMetrics[Unit]()
+    val metrics = new MemoryMetrics()
     val maxResponseByteLength = 1048576
     val prefix = createS3ObjectLocationPrefix
     val uploader = new S3Uploader()
