@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringClient
+import uk.ac.wellcome.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.common._
 import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
 import uk.ac.wellcome.platform.archive.common.operation.services._
@@ -18,6 +18,7 @@ import uk.ac.wellcome.platform.storage.bag_root_finder.models.{
   RootFinderSummary
 }
 
+import scala.concurrent.Future
 import scala.util.{Success, Try}
 
 class BagRootFinderWorker[IngestDestination, OutgoingDestination](
@@ -28,7 +29,7 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
   val metricsNamespace: String
 )(
   implicit
-  val mc: MetricsMonitoringClient,
+  val mc: Metrics[Future],
   val as: ActorSystem,
   val sc: SqsAsyncClient,
   val wd: Decoder[UnpackedBagLocationPayload]

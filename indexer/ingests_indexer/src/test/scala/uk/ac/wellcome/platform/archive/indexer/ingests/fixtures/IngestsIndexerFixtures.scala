@@ -7,6 +7,7 @@ import org.scalatest.Suite
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS
+import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
@@ -41,15 +42,15 @@ trait IngestsIndexerFixtures
     testWith: TestWith[IndexerWorker[Ingest, Ingest, IndexedIngest], R]
   )(implicit decoder: Decoder[Ingest]): R = {
     withActorSystem { implicit actorSystem =>
-      withFakeMonitoringClient() { implicit monitoringClient =>
-        val worker = new IngestsIndexerWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
-          indexer = createIndexer(index),
-          metricsNamespace = "indexer"
-        )
+      implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
-        testWith(worker)
-      }
+      val worker = new IngestsIndexerWorker(
+        config = createAlpakkaSQSWorkerConfig(queue),
+        indexer = createIndexer(index),
+        metricsNamespace = "indexer"
+      )
+
+      testWith(worker)
     }
   }
 

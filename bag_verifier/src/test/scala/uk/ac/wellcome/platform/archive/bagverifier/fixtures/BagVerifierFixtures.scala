@@ -7,6 +7,7 @@ import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.bagverifier.builder.BagVerifierWorkerBuilder
 import uk.ac.wellcome.platform.archive.bagverifier.models.{
   ReplicatedBagVerifyContext,
@@ -32,8 +33,6 @@ import uk.ac.wellcome.storage.fixtures.{
 }
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 trait BagVerifierFixtures
     extends AlpakkaSQSWorkerFixtures
     with SQS
@@ -58,26 +57,26 @@ trait BagVerifierFixtures
       String
     ], R]
   ): R =
-    withFakeMonitoringClient() { implicit monitoringClient =>
-      withActorSystem { implicit actorSystem =>
-        val ingestUpdater =
-          createIngestUpdaterWith(ingests, stepName = stepName)
+    withActorSystem { implicit actorSystem =>
+      implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
-        val outgoingPublisher = createOutgoingPublisherWith(outgoing)
+      val ingestUpdater =
+        createIngestUpdaterWith(ingests, stepName = stepName)
 
-        val worker = BagVerifierWorkerBuilder
-          .buildStandaloneVerifierWorker(
-            primaryBucket = bucket.name,
-            metricsNamespace = "bag_verifier",
-            alpakkaSqsWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-            ingestUpdater = ingestUpdater,
-            outgoingPublisher = outgoingPublisher
-          )
+      val outgoingPublisher = createOutgoingPublisherWith(outgoing)
 
-        worker.run()
+      val worker = BagVerifierWorkerBuilder
+        .buildStandaloneVerifierWorker(
+          primaryBucket = bucket.name,
+          metricsNamespace = "bag_verifier",
+          alpakkaSqsWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+          ingestUpdater = ingestUpdater,
+          outgoingPublisher = outgoingPublisher
+        )
 
-        testWith(worker)
-      }
+      worker.run()
+
+      testWith(worker)
     }
 
   def withS3ReplicaBagVerifierWorker[R](
@@ -98,25 +97,25 @@ trait BagVerifierFixtures
       String
     ], R]
   ): R =
-    withFakeMonitoringClient() { implicit monitoringClient =>
-      withActorSystem { implicit actorSystem =>
-        val ingestUpdater =
-          createIngestUpdaterWith(ingests, stepName = stepName)
+    withActorSystem { implicit actorSystem =>
+      implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
-        val outgoingPublisher = createOutgoingPublisherWith(outgoing)
+      val ingestUpdater =
+        createIngestUpdaterWith(ingests, stepName = stepName)
 
-        val worker = BagVerifierWorkerBuilder.buildReplicaS3BagVerifierWorker(
-          primaryBucket = bucket.name,
-          metricsNamespace = "bag_verifier",
-          alpakkaSqsWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-          ingestUpdater = ingestUpdater,
-          outgoingPublisher = outgoingPublisher
-        )
+      val outgoingPublisher = createOutgoingPublisherWith(outgoing)
 
-        worker.run()
+      val worker = BagVerifierWorkerBuilder.buildReplicaS3BagVerifierWorker(
+        primaryBucket = bucket.name,
+        metricsNamespace = "bag_verifier",
+        alpakkaSqsWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+        ingestUpdater = ingestUpdater,
+        outgoingPublisher = outgoingPublisher
+      )
 
-        testWith(worker)
-      }
+      worker.run()
+
+      testWith(worker)
     }
 
   def withAzureReplicaBagVerifierWorker[R](
@@ -137,28 +136,28 @@ trait BagVerifierFixtures
       String
     ], R]
   ): R =
-    withFakeMonitoringClient() { implicit monitoringClient =>
-      withActorSystem { implicit actorSystem =>
-        val ingestUpdater =
-          createIngestUpdaterWith(ingests, stepName = stepName)
+    withActorSystem { implicit actorSystem =>
+      implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
-        val outgoingPublisher = createOutgoingPublisherWith(outgoing)
+      val ingestUpdater =
+        createIngestUpdaterWith(ingests, stepName = stepName)
 
-        withLocalDynamoDbTable { table =>
-          val worker =
-            BagVerifierWorkerBuilder.buildReplicaAzureBagVerifierWorker(
-              primaryBucket = bucket.name,
-              dynamoConfig = createDynamoConfigWith(table),
-              metricsNamespace = "bag_verifier",
-              alpakkaSqsWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-              ingestUpdater = ingestUpdater,
-              outgoingPublisher = outgoingPublisher
-            )
+      val outgoingPublisher = createOutgoingPublisherWith(outgoing)
 
-          worker.run()
+      withLocalDynamoDbTable { table =>
+        val worker =
+          BagVerifierWorkerBuilder.buildReplicaAzureBagVerifierWorker(
+            primaryBucket = bucket.name,
+            dynamoConfig = createDynamoConfigWith(table),
+            metricsNamespace = "bag_verifier",
+            alpakkaSqsWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+            ingestUpdater = ingestUpdater,
+            outgoingPublisher = outgoingPublisher
+          )
 
-          testWith(worker)
-        }
+        worker.run()
+
+        testWith(worker)
       }
     }
 

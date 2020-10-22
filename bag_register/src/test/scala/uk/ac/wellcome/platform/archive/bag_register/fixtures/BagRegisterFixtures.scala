@@ -7,6 +7,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.{Queue, QueuePair}
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
   Register,
@@ -59,31 +60,31 @@ trait BagRegisterFixtures
     testWith: TestWith[BagRegisterWorker[String, String], R]
   ): R =
     withActorSystem { implicit actorSystem =>
-      withFakeMonitoringClient() { implicit monitoringClient =>
-        val bagReader = new S3BagReader()
+      implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
-        val storageManifestService = new S3StorageManifestService()
+      val bagReader = new S3BagReader()
 
-        withBagTrackerClient(storageManifestDao) { bagTrackerClient =>
-          val register = new Register(
-            bagReader = bagReader,
-            bagTrackerClient = bagTrackerClient,
-            storageManifestService = storageManifestService
-          )
+      val storageManifestService = new S3StorageManifestService()
 
-          val service = new BagRegisterWorker(
-            config = createAlpakkaSQSWorkerConfig(queue),
-            ingestUpdater =
-              createIngestUpdaterWith(ingests, stepName = "register"),
-            registrationNotifications = registrationNotifications,
-            register = register,
-            metricsNamespace = "bag_register"
-          )
+      withBagTrackerClient(storageManifestDao) { bagTrackerClient =>
+        val register = new Register(
+          bagReader = bagReader,
+          bagTrackerClient = bagTrackerClient,
+          storageManifestService = storageManifestService
+        )
 
-          service.run()
+        val service = new BagRegisterWorker(
+          config = createAlpakkaSQSWorkerConfig(queue),
+          ingestUpdater =
+            createIngestUpdaterWith(ingests, stepName = "register"),
+          registrationNotifications = registrationNotifications,
+          register = register,
+          metricsNamespace = "bag_register"
+        )
 
-          testWith(service)
-        }
+        service.run()
+
+        testWith(service)
       }
     }
 

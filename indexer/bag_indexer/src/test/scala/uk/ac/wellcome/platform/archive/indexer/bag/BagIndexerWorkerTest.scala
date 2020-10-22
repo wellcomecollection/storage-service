@@ -9,6 +9,7 @@ import uk.ac.wellcome.messaging.worker.models.{
   DeterministicFailure,
   NonDeterministicFailure
 }
+import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
@@ -21,8 +22,6 @@ import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifes
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.IndexerWorker
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 import uk.ac.wellcome.storage.{DoesNotExistError, ReadError, StoreReadError}
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class BagIndexerWorkerTest
     extends IndexerWorkerTestCases[
@@ -43,30 +42,30 @@ class BagIndexerWorkerTest
     ]
   )(implicit decoder: Decoder[BagRegistrationNotification]): R = {
     withActorSystem { implicit actorSystem =>
-      withFakeMonitoringClient() { implicit monitoringClient =>
-        val storageManifestDao: StorageManifestDao =
-          new MemoryStorageManifestDao(
-            MemoryVersionedStore[BagId, StorageManifest](
-              initialEntries = Map.empty
-            )
-          ) {
-            override def get(
-              id: BagId,
-              version: BagVersion
-            ): Either[ReadError, StorageManifest] = {
-              Left(StoreReadError(new Exception("BOOM!")))
-            }
-          }
-        withBagTrackerClient(storageManifestDao) { trackerClient =>
-          val worker = new BagIndexerWorker(
-            config = createAlpakkaSQSWorkerConfig(queue),
-            indexer = createIndexer(index),
-            metricsNamespace = "indexer",
-            bagTrackerClient = trackerClient
-          )
+      implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
-          testWith(worker)
+      val storageManifestDao: StorageManifestDao =
+        new MemoryStorageManifestDao(
+          MemoryVersionedStore[BagId, StorageManifest](
+            initialEntries = Map.empty
+          )
+        ) {
+          override def get(
+            id: BagId,
+            version: BagVersion
+          ): Either[ReadError, StorageManifest] = {
+            Left(StoreReadError(new Exception("BOOM!")))
+          }
         }
+      withBagTrackerClient(storageManifestDao) { trackerClient =>
+        val worker = new BagIndexerWorker(
+          config = createAlpakkaSQSWorkerConfig(queue),
+          indexer = createIndexer(index),
+          metricsNamespace = "indexer",
+          bagTrackerClient = trackerClient
+        )
+
+        testWith(worker)
       }
     }
   }
@@ -82,30 +81,30 @@ class BagIndexerWorkerTest
     ]
   )(implicit decoder: Decoder[BagRegistrationNotification]): R = {
     withActorSystem { implicit actorSystem =>
-      withFakeMonitoringClient() { implicit monitoringClient =>
-        val storageManifestDao: StorageManifestDao =
-          new MemoryStorageManifestDao(
-            MemoryVersionedStore[BagId, StorageManifest](
-              initialEntries = Map.empty
-            )
-          ) {
-            override def get(
-              id: BagId,
-              version: BagVersion
-            ): Either[ReadError, StorageManifest] = {
-              Left(DoesNotExistError(new Exception("BOOM!")))
-            }
-          }
-        withBagTrackerClient(storageManifestDao) { trackerClient =>
-          val worker = new BagIndexerWorker(
-            config = createAlpakkaSQSWorkerConfig(queue),
-            indexer = createIndexer(index),
-            metricsNamespace = "indexer",
-            bagTrackerClient = trackerClient
-          )
+      implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
-          testWith(worker)
+      val storageManifestDao: StorageManifestDao =
+        new MemoryStorageManifestDao(
+          MemoryVersionedStore[BagId, StorageManifest](
+            initialEntries = Map.empty
+          )
+        ) {
+          override def get(
+            id: BagId,
+            version: BagVersion
+          ): Either[ReadError, StorageManifest] = {
+            Left(DoesNotExistError(new Exception("BOOM!")))
+          }
         }
+      withBagTrackerClient(storageManifestDao) { trackerClient =>
+        val worker = new BagIndexerWorker(
+          config = createAlpakkaSQSWorkerConfig(queue),
+          indexer = createIndexer(index),
+          metricsNamespace = "indexer",
+          bagTrackerClient = trackerClient
+        )
+
+        testWith(worker)
       }
     }
   }

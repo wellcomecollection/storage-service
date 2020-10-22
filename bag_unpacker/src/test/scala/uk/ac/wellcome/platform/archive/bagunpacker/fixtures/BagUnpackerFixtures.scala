@@ -7,6 +7,7 @@ import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
 import uk.ac.wellcome.platform.archive.bagunpacker.services.BagUnpackerWorker
 import uk.ac.wellcome.platform.archive.bagunpacker.services.s3.S3Unpacker
@@ -16,8 +17,6 @@ import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 trait BagUnpackerFixtures
     extends SQS
@@ -36,20 +35,21 @@ trait BagUnpackerFixtures
     withActorSystem { implicit actorSystem =>
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
       val outgoingPublisher = createOutgoingPublisherWith(outgoing)
-      withFakeMonitoringClient() { implicit monitoringClient =>
-        val bagUnpackerWorker = new BagUnpackerWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
-          bagUnpackerWorkerConfig = BagUnpackerWorkerConfig(dstBucket.name),
-          ingestUpdater = ingestUpdater,
-          outgoingPublisher = outgoingPublisher,
-          unpacker = new S3Unpacker(),
-          metricsNamespace = "bag_unpacker"
-        )
 
-        bagUnpackerWorker.run()
+      implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
-        testWith(bagUnpackerWorker)
-      }
+      val bagUnpackerWorker = new BagUnpackerWorker(
+        config = createAlpakkaSQSWorkerConfig(queue),
+        bagUnpackerWorkerConfig = BagUnpackerWorkerConfig(dstBucket.name),
+        ingestUpdater = ingestUpdater,
+        outgoingPublisher = outgoingPublisher,
+        unpacker = new S3Unpacker(),
+        metricsNamespace = "bag_unpacker"
+      )
+
+      bagUnpackerWorker.run()
+
+      testWith(bagUnpackerWorker)
     }
 
   def withBagUnpackerApp[R](stepName: String)(

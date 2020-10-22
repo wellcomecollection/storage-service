@@ -6,6 +6,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
   AggregatorInternalRecord,
@@ -18,8 +19,6 @@ import uk.ac.wellcome.platform.storage.replica_aggregator.services.{
 }
 import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 trait ReplicaAggregatorFixtures
     extends OperationFixtures
@@ -41,20 +40,20 @@ trait ReplicaAggregatorFixtures
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
       val outgoingPublisher = createOutgoingPublisherWith(outgoing)
 
-      withFakeMonitoringClient() { implicit monitoringClient =>
-        val worker = new ReplicaAggregatorWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
-          replicaAggregator = new ReplicaAggregator(versionedStore),
-          replicaCounter =
-            new ReplicaCounter(expectedReplicaCount = expectedReplicaCount),
-          ingestUpdater = ingestUpdater,
-          outgoingPublisher = outgoingPublisher,
-          metricsNamespace = "replica_aggregator"
-        )
+      implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
-        worker.run()
+      val worker = new ReplicaAggregatorWorker(
+        config = createAlpakkaSQSWorkerConfig(queue),
+        replicaAggregator = new ReplicaAggregator(versionedStore),
+        replicaCounter =
+          new ReplicaCounter(expectedReplicaCount = expectedReplicaCount),
+        ingestUpdater = ingestUpdater,
+        outgoingPublisher = outgoingPublisher,
+        metricsNamespace = "replica_aggregator"
+      )
 
-        testWith(worker)
-      }
+      worker.run()
+
+      testWith(worker)
     }
 }

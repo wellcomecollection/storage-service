@@ -4,11 +4,9 @@ import akka.actor.ActorSystem
 import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import uk.ac.wellcome.messaging.typesafe.{
-  CloudwatchMonitoringClientBuilder,
-  SQSBuilder
-}
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
+import uk.ac.wellcome.messaging.typesafe.SQSBuilder
+import uk.ac.wellcome.monitoring.cloudwatch.CloudWatchMetrics
+import uk.ac.wellcome.monitoring.typesafe.CloudWatchBuilder
 import uk.ac.wellcome.platform.archive.bagverifier.builder.BagVerifierWorkerBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
@@ -32,8 +30,8 @@ object Main extends WellcomeTypesafeApp {
     implicit val s3Client: AmazonS3 =
       S3Builder.buildS3Client(config)
 
-    implicit val monitoringClient: CloudwatchMetricsMonitoringClient =
-      CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)
+    implicit val metrics: CloudWatchMetrics =
+      CloudWatchBuilder.buildCloudWatchMetrics(config)
 
     implicit val sqsClient: SqsAsyncClient =
       SQSBuilder.buildSQSAsyncClient(config)

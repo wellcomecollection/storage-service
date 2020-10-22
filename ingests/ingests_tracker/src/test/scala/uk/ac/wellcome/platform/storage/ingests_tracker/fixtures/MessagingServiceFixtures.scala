@@ -10,8 +10,6 @@ import uk.ac.wellcome.platform.storage.ingests_tracker.services.{
   MessagingService
 }
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 trait MessagingServiceFixtures
     extends ScalaFutures
     with Akka
@@ -31,19 +29,17 @@ trait MessagingServiceFixtures
       R
     ]
   ): R =
-    withFakeMonitoringClient() { implicit monitoringClient =>
-      withActorSystem { implicit actorSystem =>
-        val callbackNotificationService =
-          new CallbackNotificationService(callbackSender)
+    withActorSystem { implicit actorSystem =>
+      val callbackNotificationService =
+        new CallbackNotificationService(callbackSender)
 
-        val messagingService = new MessagingService(
-          callbackNotificationService = callbackNotificationService,
-          updatedIngestsMessageSender = ingestsSender
-        )
+      val messagingService = new MessagingService(
+        callbackNotificationService = callbackNotificationService,
+        updatedIngestsMessageSender = ingestsSender
+      )
 
-        val out = (callbackSender, ingestsSender, messagingService)
+      val out = (callbackSender, ingestsSender, messagingService)
 
-        testWith(out)
-      }
+      testWith(out)
     }
 }

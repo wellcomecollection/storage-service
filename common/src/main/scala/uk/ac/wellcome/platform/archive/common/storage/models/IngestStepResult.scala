@@ -19,10 +19,8 @@ import uk.ac.wellcome.messaging.worker.models.{
   Result,
   Successful
 }
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.{
-  MetricsMonitoringClient,
-  MetricsMonitoringProcessor
-}
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
+import uk.ac.wellcome.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.common.PipelinePayload
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.typesafe.Runnable
@@ -72,7 +70,7 @@ trait IngestStepWorker[Work <: PipelinePayload, Summary]
   val config: AlpakkaSQSWorkerConfig
   val visibilityTimeout = 0
 
-  implicit val mc: MetricsMonitoringClient
+  implicit val mc: Metrics[Future]
   implicit val as: ActorSystem
   implicit val wd: Decoder[Work]
   implicit val sc: SqsAsyncClient

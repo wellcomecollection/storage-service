@@ -5,12 +5,10 @@ import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.json.JsonUtil._
+import uk.ac.wellcome.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
 import uk.ac.wellcome.messaging.typesafe.SQSBuilder.buildSQSAsyncClient
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
-import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder
-}
+import uk.ac.wellcome.monitoring.cloudwatch.CloudWatchMetrics
+import uk.ac.wellcome.monitoring.typesafe.CloudWatchBuilder
 import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.UnpackerWorkerConfigBuilder
 import uk.ac.wellcome.platform.archive.bagunpacker.services.BagUnpackerWorker
 import uk.ac.wellcome.platform.archive.bagunpacker.services.s3.S3Unpacker
@@ -37,8 +35,8 @@ object Main extends WellcomeTypesafeApp {
     implicit val s3Client: AmazonS3 =
       buildS3Client(config)
 
-    implicit val monitoringClient: CloudwatchMetricsMonitoringClient =
-      CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)
+    implicit val metrics: CloudWatchMetrics =
+      CloudWatchBuilder.buildCloudWatchMetrics(config)
 
     implicit val sqsClient: SqsAsyncClient =
       buildSQSAsyncClient(config)

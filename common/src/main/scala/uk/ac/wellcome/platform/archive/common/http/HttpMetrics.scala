@@ -11,7 +11,7 @@ object HttpMetricResults extends Enumeration {
   val Success, UserError, ServerError, Unrecognised = Value
 }
 
-class HttpMetrics(name: String, metrics: Metrics[Future, _]) extends Logging {
+class HttpMetrics(name: String, metrics: Metrics[Future]) extends Logging {
 
   def sendMetric(resp: HttpResponse): Future[Unit] =
     sendMetricForStatus(resp.status)

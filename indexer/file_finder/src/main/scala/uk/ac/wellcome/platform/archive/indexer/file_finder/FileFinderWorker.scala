@@ -17,10 +17,8 @@ import uk.ac.wellcome.messaging.worker.models.{
   Result,
   Successful
 }
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.{
-  MetricsMonitoringClient,
-  MetricsMonitoringProcessor
-}
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
+import uk.ac.wellcome.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.bag_tracker.client.{
   BagTrackerClient,
   BagTrackerUnknownGetError
@@ -47,7 +45,7 @@ class FileFinderWorker(
   implicit
   actorSystem: ActorSystem,
   sqsAsync: SqsAsyncClient,
-  mc: MetricsMonitoringClient,
+  mc: Metrics[Future],
   wd: Decoder[BagRegistrationNotification],
   ec: ExecutionContext
 ) extends Runnable

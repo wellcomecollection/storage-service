@@ -6,9 +6,10 @@ import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder,
   SQSBuilder
 }
+import uk.ac.wellcome.monitoring.cloudwatch.CloudWatchMetrics
+import uk.ac.wellcome.monitoring.typesafe.CloudWatchBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
@@ -31,7 +32,6 @@ import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 import org.scanamo.auto._
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
 
 import scala.concurrent.ExecutionContextExecutor
 
@@ -43,8 +43,8 @@ object Main extends WellcomeTypesafeApp {
     implicit val executionContext: ExecutionContextExecutor =
       actorSystem.dispatcher
 
-    implicit val monitoringClient: CloudwatchMetricsMonitoringClient =
-      CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)
+    implicit val metrics: CloudWatchMetrics =
+      CloudWatchBuilder.buildCloudWatchMetrics(config)
 
     implicit val sqsClient: SqsAsyncClient =
       SQSBuilder.buildSQSAsyncClient(config)

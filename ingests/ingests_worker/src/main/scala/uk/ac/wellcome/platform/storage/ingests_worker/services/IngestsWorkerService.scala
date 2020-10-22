@@ -16,10 +16,8 @@ import uk.ac.wellcome.messaging.worker.models.{
   Result,
   Successful
 }
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.{
-  MetricsMonitoringClient,
-  MetricsMonitoringProcessor
-}
+import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
+import uk.ac.wellcome.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
   IngestUpdate
@@ -40,7 +38,7 @@ class IngestsWorkerService(
   ingestTrackerClient: IngestTrackerClient
 )(
   implicit actorSystem: ActorSystem,
-  mc: MetricsMonitoringClient,
+  mc: Metrics[Future],
   sc: SqsAsyncClient
 ) extends Runnable
     with Logging {

@@ -8,6 +8,7 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.notifier.services.{
   CallbackUrlService,
   NotifierWorker
@@ -29,20 +30,20 @@ trait NotifierFixtures extends Akka with AlpakkaSQSWorkerFixtures {
   private def withApp[R](queue: Queue, messageSender: MemoryMessageSender)(
     testWith: TestWith[NotifierWorker[String], R]
   ): R =
-    withFakeMonitoringClient() { implicit monitoringClient =>
-      withActorSystem { implicit actorSystem =>
-        withCallbackUrlService { callbackUrlService =>
-          val workerService = new NotifierWorker(
-            alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
-            callbackUrlService = callbackUrlService,
-            messageSender = messageSender,
-            metricsNamespace = "notifier"
-          )
+    withActorSystem { implicit actorSystem =>
+      withCallbackUrlService { callbackUrlService =>
+        implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
-          workerService.run()
+        val workerService = new NotifierWorker(
+          alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+          callbackUrlService = callbackUrlService,
+          messageSender = messageSender,
+          metricsNamespace = "notifier"
+        )
 
-          testWith(workerService)
-        }
+        workerService.run()
+
+        testWith(workerService)
       }
     }
 

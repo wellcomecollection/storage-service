@@ -7,11 +7,11 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSMessageSender
 import uk.ac.wellcome.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
-  CloudwatchMonitoringClientBuilder,
   SNSBuilder,
   SQSBuilder
 }
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.cloudwatch.CloudwatchMetricsMonitoringClient
+import uk.ac.wellcome.monitoring.cloudwatch.CloudWatchMetrics
+import uk.ac.wellcome.monitoring.typesafe.CloudWatchBuilder
 import uk.ac.wellcome.platform.archive.bag_tracker.client.AkkaBagTrackerClient
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -26,8 +26,8 @@ object Main extends WellcomeTypesafeApp {
     implicit val executionContext: ExecutionContextExecutor =
       actorSystem.dispatcher
 
-    implicit val monitoringClient: CloudwatchMetricsMonitoringClient =
-      CloudwatchMonitoringClientBuilder.buildCloudwatchMonitoringClient(config)
+    implicit val metrics: CloudWatchMetrics =
+      CloudWatchBuilder.buildCloudWatchMetrics(config)
 
     implicit val sqsClient: SqsAsyncClient =
       SQSBuilder.buildSQSAsyncClient(config)

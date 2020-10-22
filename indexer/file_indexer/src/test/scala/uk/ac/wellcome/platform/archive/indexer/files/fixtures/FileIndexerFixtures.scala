@@ -9,6 +9,7 @@ import org.scalatest.Suite
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
+import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryS3StorageLocation
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.models.FileContext
@@ -59,15 +60,15 @@ trait FileIndexerFixtures
     ]
   )(implicit decoder: Decoder[Seq[FileContext]]): R = {
     withActorSystem { implicit actorSystem =>
-      withFakeMonitoringClient() { implicit monitoringClient =>
-        val worker = new FileIndexerWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
-          indexer = createIndexer(index),
-          metricsNamespace = "indexer"
-        )
+      implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
-        testWith(worker)
-      }
+      val worker = new FileIndexerWorker(
+        config = createAlpakkaSQSWorkerConfig(queue),
+        indexer = createIndexer(index),
+        metricsNamespace = "indexer"
+      )
+
+      testWith(worker)
     }
   }
 
