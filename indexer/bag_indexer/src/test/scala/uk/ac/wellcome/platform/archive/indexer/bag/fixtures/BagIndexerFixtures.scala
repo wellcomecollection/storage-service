@@ -7,6 +7,7 @@ import org.scalatest.Suite
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS
+import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{
   BagTrackerFixtures,
   StorageManifestDaoFixture
@@ -93,23 +94,23 @@ trait BagIndexerFixtures
     ]
   )(implicit decoder: Decoder[BagRegistrationNotification]): R =
     withActorSystem { implicit actorSystem =>
-      withFakeMonitoringClient() { implicit monitoringClient =>
-        val storageManifestDao: StorageManifestDao = createStorageManifestDao()
+      implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
-        val result = storageManifestDao.put(storageManifest)
+      val storageManifestDao: StorageManifestDao = createStorageManifestDao()
 
-        assert(result.isRight)
+      val result = storageManifestDao.put(storageManifest)
 
-        withBagTrackerClient(storageManifestDao) { bagTrackerClient =>
-          val worker = new BagIndexerWorker(
-            config = createAlpakkaSQSWorkerConfig(queue),
-            indexer = createIndexer(index),
-            metricsNamespace = "indexer",
-            bagTrackerClient = bagTrackerClient
-          )
+      assert(result.isRight)
 
-          testWith(worker)
-        }
+      withBagTrackerClient(storageManifestDao) { bagTrackerClient =>
+        val worker = new BagIndexerWorker(
+          config = createAlpakkaSQSWorkerConfig(queue),
+          indexer = createIndexer(index),
+          metricsNamespace = "indexer",
+          bagTrackerClient = bagTrackerClient
+        )
+
+        testWith(worker)
       }
     }
 }

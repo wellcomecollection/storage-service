@@ -6,14 +6,13 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.storage.bag_root_finder.services.{
   BagRootFinder,
   BagRootFinderWorker
 }
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 trait BagRootFinderFixtures
     extends OperationFixtures
@@ -30,18 +29,19 @@ trait BagRootFinderFixtures
     withActorSystem { implicit actorSystem =>
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
       val outgoingPublisher = createOutgoingPublisherWith(outgoing)
-      withFakeMonitoringClient() { implicit monitoringClient =>
-        val worker = new BagRootFinderWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
-          bagRootFinder = new BagRootFinder(),
-          ingestUpdater = ingestUpdater,
-          outgoingPublisher = outgoingPublisher,
-          metricsNamespace = "bag_root_finder"
-        )
 
-        worker.run()
+      implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
-        testWith(worker)
-      }
+      val worker = new BagRootFinderWorker(
+        config = createAlpakkaSQSWorkerConfig(queue),
+        bagRootFinder = new BagRootFinder(),
+        ingestUpdater = ingestUpdater,
+        outgoingPublisher = outgoingPublisher,
+        metricsNamespace = "bag_root_finder"
+      )
+
+      worker.run()
+
+      testWith(worker)
     }
 }

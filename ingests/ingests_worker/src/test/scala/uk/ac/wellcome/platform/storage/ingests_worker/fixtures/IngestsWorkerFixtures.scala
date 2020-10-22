@@ -7,6 +7,7 @@ import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Succeeded
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
@@ -18,7 +19,6 @@ import uk.ac.wellcome.platform.storage.ingests_tracker.client._
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestTrackerFixtures
 import uk.ac.wellcome.platform.storage.ingests_worker.services.IngestsWorkerService
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 trait IngestsWorkerFixtures
@@ -83,17 +83,17 @@ trait IngestsWorkerFixtures
     queue: Queue = dummyQueue,
     ingestTrackerClient: IngestTrackerClient
   )(testWith: TestWith[IngestsWorkerService, R]): R =
-    withFakeMonitoringClient() { implicit monitoringClient =>
-      withActorSystem { implicit actorSystem =>
-        val service = new IngestsWorkerService(
-          workerConfig = createAlpakkaSQSWorkerConfig(queue),
-          metricsNamespace = "ingests_worker",
-          ingestTrackerClient = ingestTrackerClient
-        )
+    withActorSystem { implicit actorSystem =>
+      implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
-        service.run()
+      val service = new IngestsWorkerService(
+        workerConfig = createAlpakkaSQSWorkerConfig(queue),
+        metricsNamespace = "ingests_worker",
+        ingestTrackerClient = ingestTrackerClient
+      )
 
-        testWith(service)
-      }
+      service.run()
+
+      testWith(service)
     }
 }

@@ -9,6 +9,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.models._
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationSummary
@@ -30,7 +31,6 @@ import uk.ac.wellcome.storage.locking.memory.{
 import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
 
 trait BagReplicatorFixtures
@@ -86,32 +86,33 @@ trait BagReplicatorFixtures
     withActorSystem { implicit actorSystem =>
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
       val outgoingPublisher = createOutgoingPublisherWith(outgoing)
-      withFakeMonitoringClient() { implicit monitoringClient =>
-        val lockingService = createLockingServiceWith(lockServiceDao)
 
-        val replicatorDestinationConfig =
-          createReplicatorDestinationConfigWith(
-            bucket = bucket,
-            provider = AmazonS3StorageProvider,
-            replicaType = replicaType
-          )
+      implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
-        val replicator = new S3Replicator()
+      val lockingService = createLockingServiceWith(lockServiceDao)
 
-        val service = new BagReplicatorWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
-          ingestUpdater = ingestUpdater,
-          outgoingPublisher = outgoingPublisher,
-          lockingService = lockingService,
-          destinationConfig = replicatorDestinationConfig,
-          replicator = replicator,
-          metricsNamespace = "bag_replicator"
+      val replicatorDestinationConfig =
+        createReplicatorDestinationConfigWith(
+          bucket = bucket,
+          provider = AmazonS3StorageProvider,
+          replicaType = replicaType
         )
 
-        service.run()
+      val replicator = new S3Replicator()
 
-        testWith(service)
-      }
+      val service = new BagReplicatorWorker(
+        config = createAlpakkaSQSWorkerConfig(queue),
+        ingestUpdater = ingestUpdater,
+        outgoingPublisher = outgoingPublisher,
+        lockingService = lockingService,
+        destinationConfig = replicatorDestinationConfig,
+        replicator = replicator,
+        metricsNamespace = "bag_replicator"
+      )
+
+      service.run()
+
+      testWith(service)
     }
 
   def createReplicatorDestinationConfigWith(

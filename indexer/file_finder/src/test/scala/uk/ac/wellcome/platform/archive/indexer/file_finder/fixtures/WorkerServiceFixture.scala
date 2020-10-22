@@ -5,6 +5,7 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.bag_tracker.client.BagTrackerClient
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{
   BagTrackerFixtures,
@@ -27,19 +28,19 @@ trait WorkerServiceFixture
     testWith: TestWith[FileFinderWorker, R]
   ): R =
     withActorSystem { implicit actorSystem =>
-      withFakeMonitoringClient() { implicit metrics =>
-        val service = new FileFinderWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
-          bagTrackerClient = bagTrackerClient,
-          metricsNamespace = s"metrics-${randomAlphanumeric()}",
-          messageSender = messageSender,
-          batchSize = batchSize
-        )
+      implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
-        service.run()
+      val service = new FileFinderWorker(
+        config = createAlpakkaSQSWorkerConfig(queue),
+        bagTrackerClient = bagTrackerClient,
+        metricsNamespace = s"metrics-${randomAlphanumeric()}",
+        messageSender = messageSender,
+        batchSize = batchSize
+      )
 
-        testWith(service)
-      }
+      service.run()
+
+      testWith(service)
     }
 
   def withWorkerService[R](

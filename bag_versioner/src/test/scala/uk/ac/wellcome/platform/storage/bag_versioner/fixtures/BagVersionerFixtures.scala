@@ -8,14 +8,13 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.storage.bag_versioner.services.{
   BagVersioner,
   BagVersionerWorker
 }
 import uk.ac.wellcome.storage.locking.LockDao
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 trait BagVersionerFixtures
     extends OperationFixtures
@@ -44,20 +43,21 @@ trait BagVersionerFixtures
     withActorSystem { implicit actorSystem =>
       val ingestUpdater = createIngestUpdaterWith(ingests, stepName = stepName)
       val outgoingPublisher = createOutgoingPublisherWith(outgoing)
-      withFakeMonitoringClient() { implicit monitoringClient =>
-        withBagVersioner { bagVersioner =>
-          val worker = new BagVersionerWorker(
-            config = createAlpakkaSQSWorkerConfig(queue),
-            bagVersioner = bagVersioner,
-            ingestUpdater = ingestUpdater,
-            outgoingPublisher = outgoingPublisher,
-            metricsNamespace = "bag_versioner"
-          )
 
-          worker.run()
+      implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
-          testWith(worker)
-        }
+      withBagVersioner { bagVersioner =>
+        val worker = new BagVersionerWorker(
+          config = createAlpakkaSQSWorkerConfig(queue),
+          bagVersioner = bagVersioner,
+          ingestUpdater = ingestUpdater,
+          outgoingPublisher = outgoingPublisher,
+          metricsNamespace = "bag_versioner"
+        )
+
+        worker.run()
+
+        testWith(worker)
       }
     }
 }
