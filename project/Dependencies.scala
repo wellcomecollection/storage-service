@@ -1,7 +1,7 @@
 import sbt._
 
 object WellcomeDependencies {
-  lazy val defaultVersion = "24.0.0"
+  lazy val defaultVersion = "24.1.0"
 
   lazy val versions = new {
     val fixtures = defaultVersion
@@ -92,8 +92,8 @@ object ExternalDependencies {
     //
     // To work this out:
     //
-    //   1. Look at the version of alpakka-streams used by scala-messaging:
-    //      https://github.com/wellcomecollection/scala-messaging/blob/master/project/Dependencies.scala
+    //   1. Look at the version of alpakka-streams used by scala-libs:
+    //      https://github.com/wellcomecollection/scala-libs/blob/master/project/Dependencies.scala
     //      (At time of writing, v1.1.2)
     //
     //   2. Look at the corresponding akka-http dependency in alpakka:
