@@ -47,7 +47,7 @@ class IndexedFileTest
   it("uses the correct versioned path") {
     val file = StorageManifestFile(
       checksum = createChecksum.value,
-      name = "cat.jpg",
+      name = "data/cat.jpg",
       path = "v1/data/cat.jpg",
       size = 100
     )
