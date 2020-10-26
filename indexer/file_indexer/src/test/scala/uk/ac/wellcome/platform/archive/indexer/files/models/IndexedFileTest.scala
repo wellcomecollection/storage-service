@@ -33,6 +33,7 @@ class IndexedFileTest
 
     indexedFile.space shouldBe context.space
     indexedFile.externalIdentifier shouldBe context.externalIdentifier
+    indexedFile.name shouldBe context.file.name
     indexedFile.size shouldBe context.file.size
     indexedFile.location shouldBe context.bagLocation.prefix
       .asLocation(context.file.path)
@@ -67,6 +68,8 @@ class IndexedFileTest
     )
 
     val indexedFile = IndexedFile(context)
+
+    indexedFile.name shouldBe "data/cat.jpg"
 
     indexedFile.location shouldBe S3ObjectLocation(
       bucket = "example-storage",

@@ -4,7 +4,8 @@ import com.sksamuel.elastic4s.ElasticDsl.{
   dateField,
   keywordField,
   longField,
-  objectField
+  objectField,
+  textField
 }
 import com.sksamuel.elastic4s.requests.mappings.FieldDefinition
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.IndexConfig
@@ -25,6 +26,7 @@ object FilesIndexConfig extends IndexConfig {
       keywordField("space"),
       keywordField("externalIdentifier"),
       objectField("location").fields(locationFields),
+      keywordField("name").fields(textField("text")),
       keywordField("suffix"),
       longField("size"),
       objectField("checksum").fields(checksumFields),
