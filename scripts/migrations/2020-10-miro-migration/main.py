@@ -59,10 +59,12 @@ def s3_miro_objects(s3_client):
         )
 
         for s3_object in filtered_s3_objects:
+            truncated_path = s3_object['Key'].replace(filtered_path_prefix, '')
+
             yield {
-                'truncated_path': s3_object['Key'].replace(filtered_path_prefix, ''),
+                'truncated_path': truncated_path,
                 'prefix_path': prefix_path,
-                'chunk': prefix_path.split('/')[0],
+                'chunk': truncated_path.split('/')[0],
                 's3_object': s3_object
             }
 
@@ -88,7 +90,7 @@ def reporting_miro_inventory(elastic_client, query_string):
 @click.pass_context
 def create_files_index(ctx):
     local_elastic_client = ctx.obj['local_elastic_client']
-    reporting_elastic_client = ctx.obj['local_elastic_client']
+    reporting_elastic_client = ctx.obj['reporting_elastic_client']
 
     expected_file_count = 223528
     local_file_index = 'files'
