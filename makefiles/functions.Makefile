@@ -64,7 +64,7 @@ endef
 define publish_service
 	$(ROOT)/docker_run.py \
         --aws --dind -- \
-            wellcome/weco-deploy:5.5.3 \
+            wellcome/weco-deploy:5.5.7 \
             --project-id="$(2)" \
             --verbose \
             publish \
