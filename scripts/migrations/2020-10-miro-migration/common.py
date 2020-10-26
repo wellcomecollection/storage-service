@@ -148,7 +148,4 @@ def get_elastic_client(role_arn, elastic_secret_id):
 
 
 def get_local_elastic_client(host, port=9200):
-    return Elasticsearch(
-        host=host,
-        port=9200
-    )
+    return Elasticsearch(host=host, port=9200)
