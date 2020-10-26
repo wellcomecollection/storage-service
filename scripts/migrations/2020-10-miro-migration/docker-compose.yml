@@ -1,0 +1,60 @@
+version: "3.3"
+services:
+  migration:
+    image: migration
+    build:
+      context: .
+    environment:
+      - RUNNING_IN_COMPOSE=true
+      - LOCAL_ELASTIC_HOST=elasticsearch
+    volumes:
+      - .:/migration
+      - ~/.aws:/root/.aws:ro
+    command: [ "create-files-index" ]
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:7.9.3
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - 5601:5601
+    expose:
+      - 5601
+    depends_on:
+      - elasticsearch
+    logging:
+      driver: none
+  elasticsearch:
+    image: elasticsearch:7.9.3
+    container_name: elasticsearch
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - ./elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9300:9300
+    expose:
+      - 9200
+      - 9300
+    # Comment this line out to see ES logs
+    logging:
+      driver: none

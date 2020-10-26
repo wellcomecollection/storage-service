@@ -1,0 +1,5 @@
+boto3
+click
+elasticsearch
+tqdm
+wellcome_storage_service
