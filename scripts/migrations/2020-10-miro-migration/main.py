@@ -17,7 +17,6 @@ from iter_helpers import chunked_iterable
 ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
 ELASTIC_SECRET_ID = "miro_storage_migration/credentials"
 LOCAL_ELASTIC_HOST = os.getenv("LOCAL_ELASTIC_HOST", "localhost")
-RUNNING_IN_COMPOSE = os.getenv("RUNNING_IN_COMPOSE", False)
 
 REMOTE_INVENTORY_INDEX = "miro_inventory"
 LOCAL_INVENTORY_INDEX = "reporting_miro_inventory"

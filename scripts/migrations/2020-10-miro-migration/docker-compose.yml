@@ -5,7 +5,6 @@ services:
     build:
       context: .
     environment:
-      - RUNNING_IN_COMPOSE=true
       - LOCAL_ELASTIC_HOST=elasticsearch
     volumes:
       - .:/migration
