@@ -117,9 +117,20 @@ def get_documents_for_local_file_index(local_elastic_client, s3_client):
     # We use a btch of 500 because that means these should be matched to
     # the bulk index requests.
     for batch in chunked_iterable(s3_miro_objects(s3_client=s3_client), size=500):
-        queries = [
-            {"query": {"query_string": {"query": '"' + miro_object["truncated_path"] + '"'}}}
+
+        # truncated_path instances we need to handle:
+        #
+        #   L0023499-LH-CS.jp2
+        #   B0001840_orig.jp2
+        #
+        miro_ids = [
+            os.path.basename(miro_object["truncated_path"]).split("-")[0].replace("_orig", "")
             for miro_object in batch
+        ]
+
+        queries = [
+            {"query": {"query_string": {"query": f'"{id}"'}}}
+            for id in miro_ids
         ]
 
         body = "\n".join('{}\n' + json.dumps(q) for q in queries)
