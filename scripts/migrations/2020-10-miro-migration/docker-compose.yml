@@ -11,6 +11,7 @@ services:
       - .:/migration
       - ~/.aws:/root/.aws:ro
     command: [ "create-files-index" ]
+    tty: true
     depends_on:
       elasticsearch:
         condition: service_healthy

@@ -13,6 +13,7 @@ from elasticsearch import helpers
 import tqdm
 
 from common import get_aws_client, get_elastic_client, get_local_elastic_client
+from iter_helpers import chunked_iterable
 
 ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
 ELASTIC_SECRET_ID = "miro_storage_migration/credentials"
@@ -119,6 +120,24 @@ def mirror_miro_inventory_locally(*, local_elastic_client, reporting_elastic_cli
     )
 
 
+def get_documents_for_local_file_index(local_elastic_client, s3_client):
+    """
+    Generates the documents that should be indexed in the local file index.
+    """
+    for miro_object in s3_miro_objects(s3_client=s3_client):
+        miro_object_id = miro_object["truncated_path"]
+
+        results = reporting_miro_inventory(
+            local_elastic_client, query_string=miro_object_id
+        )
+
+        if results:
+            assert len(results) == 1
+            miro_object["matched_inventory_hit"] = results[0]["_source"]
+
+        yield (miro_object_id, miro_object)
+
+
 @click.command()
 @click.pass_context
 def create_files_index(ctx):
@@ -138,45 +157,36 @@ def create_files_index(ctx):
         return
 
     click.echo(f"Recreating files index ({local_file_index})")
-
     local_elastic_client.indices.delete(index=local_file_index, ignore=[400, 404])
-
     create_index(elastic_client=local_elastic_client, index_name=local_file_index)
 
-    miro_object_iterator = s3_miro_objects(s3_client=ctx.obj["s3_client"])
+    # We use the Elasticsearch bulk API to index documents, to reduce the number
+    # of network requests we need to make.
+    # See https://elasticsearch-py.readthedocs.io/en/7.9.1/helpers.html#bulk-helpers
+    documents = get_documents_for_local_file_index(
+        local_elastic_client=local_elastic_client,
+        s3_client=ctx.obj["s3_client"]
+    )
 
-    if not RUNNING_IN_COMPOSE:
-        miro_object_iterator = tqdm.tqdm(
-            s3_miro_objects(s3_client=ctx.obj["s3_client"]), total=expected_file_count
-        )
+    bulk_actions = (
+        {
+            "_index": local_file_index,
+            "_id": id,
+            "_source": source
+        }
+        for (id, source) in documents
+    )
 
-    processed_files = 0
-    for miro_object in miro_object_iterator:
-        miro_object_id = miro_object["truncated_path"]
+    successes, errors = helpers.bulk(
+        local_elastic_client,
+        actions=tqdm.tqdm(bulk_actions, total=expected_file_count)
+    )
 
-        results = reporting_miro_inventory(
-            local_elastic_client, query_string=miro_object_id
-        )
+    if errors:
+        click.echo(f"Errors indexing documents! {errors}")
 
-        if results:
-            assert len(results) == 1
-            miro_object["matched_inventory_hit"] = results[0]["_source"]
-
-        local_elastic_client.create(
-            index=local_file_index, id=miro_object_id, body=miro_object
-        )
-        processed_files = processed_files + 1
-
-        # tqdm/tty things do not work properly in Compose
-        if RUNNING_IN_COMPOSE and not processed_files % 500:
-            current_time = datetime.now().isoformat()
-            percent_complete = int((processed_files / expected_file_count) * 100)
-            click.echo(
-                f"Processed {processed_files:6d} at {current_time} - {percent_complete}%"
-            )
-
-    click.echo(f"Total processed {processed_files:6d}")
-    assert processed_files == expected_file_count
+    assert successes == expected_file_count
+    assert get_document_count(local_elastic_client, index=local_file_index) == expected_file_count
 
 
 @click.group()
