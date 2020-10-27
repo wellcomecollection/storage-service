@@ -4,13 +4,12 @@ This is a script to assist in the migration of miro content
 into the storage service.
 """
 
-from datetime import datetime
+import json
 import os
 
 import click
 import elasticsearch
 from elasticsearch import helpers
-import tqdm
 
 from common import get_aws_client, get_elastic_client, get_local_elastic_client
 from iter_helpers import chunked_iterable
@@ -80,18 +79,6 @@ def s3_miro_objects(s3_client):
             }
 
 
-def reporting_miro_inventory(local_elastic_client, *, query_string):
-    """
-    Return the result of querying the miro_inventory index for the given query string.
-    """
-    query_results = local_elastic_client.search(
-        index=LOCAL_INVENTORY_INDEX,
-        body={"query": {"query_string": {"query": '"' + query_string + '"'}}},
-    )
-
-    return query_results["hits"]["hits"]
-
-
 def mirror_miro_inventory_locally(*, local_elastic_client, reporting_elastic_client):
     """
     Create a local mirror of the miro_inventory index in the reporting cluster.
@@ -124,18 +111,33 @@ def get_documents_for_local_file_index(local_elastic_client, s3_client):
     """
     Generates the documents that should be indexed in the local file index.
     """
-    for miro_object in s3_miro_objects(s3_client=s3_client):
-        miro_object_id = miro_object["truncated_path"]
+    # To reduce the number of searches we have to make, we batch the Miro
+    # objects into groups of 500 and use the Multi-Search API to make
+    # multiple queries in a single HTTP request.
+    #
+    # We use a btch of 500 because that means these should be matched to
+    # the bulk index requests.
+    for batch in chunked_iterable(s3_miro_objects(s3_client=s3_client), size=500):
+        queries = [
+            {"query": {"query_string": {"query": '"' + miro_object["truncated_path"] + '"'}}}
+            for miro_object in batch
+        ]
 
-        results = reporting_miro_inventory(
-            local_elastic_client, query_string=miro_object_id
-        )
+        body = "\n".join('{}\n' + json.dumps(q) for q in queries)
 
-        if results:
-            assert len(results) == 1
-            miro_object["matched_inventory_hit"] = results[0]["_source"]
+        msearch_resp = local_elastic_client.msearch(body, index=LOCAL_INVENTORY_INDEX)
+        responses = msearch_resp["responses"]
 
-        yield (miro_object_id, miro_object)
+        assert len(responses) == len(batch), (len(responses), len(batch))
+
+        for miro_object, query_resp in zip(batch, responses):
+            hits = query_resp["hits"]["hits"]
+
+            if hits:
+                assert len(hits) == 1
+                miro_object["matched_inventory_hit"] = hits[0]["_source"]
+
+            yield (miro_object["truncated_path"], miro_object)
 
 
 @click.command()
@@ -177,10 +179,7 @@ def create_files_index(ctx):
         for (id, source) in documents
     )
 
-    successes, errors = helpers.bulk(
-        local_elastic_client,
-        actions=tqdm.tqdm(bulk_actions, total=expected_file_count)
-    )
+    successes, errors = helpers.bulk(local_elastic_client, actions=bulk_actions)
 
     if errors:
         click.echo(f"Errors indexing documents! {errors}")
@@ -203,8 +202,6 @@ def cli(ctx):
         "local_elastic_client": local_elastic_client,
         "reporting_elastic_client": reporting_elastic_client,
     }
-
-    pass
 
 
 cli.add_command(create_files_index)
