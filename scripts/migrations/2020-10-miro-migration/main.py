@@ -8,6 +8,8 @@ from datetime import datetime
 import os
 
 import click
+import elasticsearch
+from elasticsearch import helpers
 import tqdm
 
 from common import get_aws_client, get_elastic_client, get_local_elastic_client
@@ -16,6 +18,9 @@ ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
 ELASTIC_SECRET_ID = "miro_storage_migration/credentials"
 LOCAL_ELASTIC_HOST = os.getenv("LOCAL_ELASTIC_HOST", "localhost")
 RUNNING_IN_COMPOSE = os.getenv("RUNNING_IN_COMPOSE", False)
+
+REMOTE_INVENTORY_INDEX = "miro_inventory"
+LOCAL_INVENTORY_INDEX = "reporting_miro_inventory"
 
 S3_MIRO_BUCKET = "wellcomecollection-assets-workingstorage"
 S3_MIRO_IMAGES_PATH = "miro/Wellcome_Images_Archive"
@@ -64,15 +69,43 @@ def s3_miro_objects(s3_client):
             }
 
 
-def reporting_miro_inventory(elastic_client, query_string):
-    reporting_index = "miro_inventory"
-
-    query_results = elastic_client.search(
-        index=reporting_index,
+def reporting_miro_inventory(local_elastic_client, *, query_string):
+    """
+    Return the result of querying the miro_inventory index for the given query string.
+    """
+    query_results = local_elastic_client.search(
+        index=LOCAL_INVENTORY_INDEX,
         body={"query": {"query_string": {"query": '"' + query_string + '"'}}},
     )
 
     return query_results["hits"]["hits"]
+
+
+def mirror_miro_inventory_locally(*, local_elastic_client, reporting_elastic_client):
+    """
+    Create a local mirror of the miro_inventory index in the reporting cluster.
+    """
+    remote_resp = reporting_elastic_client.count(index=REMOTE_INVENTORY_INDEX)
+
+    try:
+        local_resp = local_elastic_client.count(index=LOCAL_INVENTORY_INDEX)
+    except elasticsearch.exceptions.NotFoundError:
+        click.echo("miro_inventory index has not been mirrored locally before")
+    else:
+        if local_resp["count"] == remote_resp["count"]:
+            click.echo("miro_inventory index has been mirrored locally, nothing to do")
+            return
+        else:
+            click.echo("miro_inventory index has not been fully mirrored")
+
+    click.echo("Downloading the complete miro_inventory index from the reporting cluster")
+
+    helpers.reindex(
+        client=reporting_elastic_client,
+        source_index=REMOTE_INVENTORY_INDEX,
+        target_index=LOCAL_INVENTORY_INDEX,
+        target_client=local_elastic_client
+    )
 
 
 @click.command()
@@ -80,6 +113,11 @@ def reporting_miro_inventory(elastic_client, query_string):
 def create_files_index(ctx):
     local_elastic_client = ctx.obj["local_elastic_client"]
     reporting_elastic_client = ctx.obj["reporting_elastic_client"]
+
+    mirror_miro_inventory_locally(
+        local_elastic_client=local_elastic_client,
+        reporting_elastic_client=reporting_elastic_client
+    )
 
     expected_file_count = 223_528
     local_file_index = "files"
@@ -102,7 +140,7 @@ def create_files_index(ctx):
         miro_object_id = miro_object["truncated_path"]
 
         results = reporting_miro_inventory(
-            elastic_client=reporting_elastic_client, query_string=miro_object_id
+            local_elastic_client, query_string=miro_object_id
         )
 
         if results:
