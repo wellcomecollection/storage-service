@@ -150,7 +150,7 @@ def create_files_index(ctx):
         reporting_elastic_client=reporting_elastic_client
     )
 
-    expected_file_count = 223_528
+    expected_file_count = 222_996
     local_file_index = "files"
 
     if get_document_count(local_elastic_client, index=local_file_index) == expected_file_count:
