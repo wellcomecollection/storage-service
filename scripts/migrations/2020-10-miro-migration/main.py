@@ -119,10 +119,10 @@ def create_files_index(ctx):
             current_time = datetime.now().isoformat()
             percent_complete = int((processed_files / expected_file_count) * 100)
             click.echo(
-                f"Processed {processed_files} at {current_time} - {percent_complete}%"
+                f"Processed {processed_files:6d} at {current_time} - {percent_complete}%"
             )
 
-    click.echo(f"Total processed {processed_files}")
+    click.echo(f"Total processed {processed_files:6d}")
     assert processed_files == expected_file_count
 
 
