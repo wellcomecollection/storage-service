@@ -82,9 +82,7 @@ def mirror_miro_inventory_locally(*, local_elastic_client, reporting_elastic_cli
     """
     Create a local mirror of the miro_inventory index in the reporting cluster.
     """
-    local_count = get_document_count(
-        local_elastic_client, index=LOCAL_INVENTORY_INDEX
-    )
+    local_count = get_document_count(local_elastic_client, index=LOCAL_INVENTORY_INDEX)
 
     remote_count = get_document_count(
         reporting_elastic_client, index=REMOTE_INVENTORY_INDEX
@@ -96,13 +94,15 @@ def mirror_miro_inventory_locally(*, local_elastic_client, reporting_elastic_cli
     else:
         click.echo("miro_inventory index has not been mirrored locally")
 
-    click.echo("Downloading the complete miro_inventory index from the reporting cluster")
+    click.echo(
+        "Downloading the complete miro_inventory index from the reporting cluster"
+    )
 
     helpers.reindex(
         client=reporting_elastic_client,
         source_index=REMOTE_INVENTORY_INDEX,
         target_index=LOCAL_INVENTORY_INDEX,
-        target_client=local_elastic_client
+        target_client=local_elastic_client,
     )
 
 
@@ -133,7 +133,6 @@ def get_miro_id(truncated_path):
     return miro_id
 
 
-
 def get_documents_for_local_file_index(local_elastic_client, s3_client):
     """
     Generates the documents that should be indexed in the local file index.
@@ -151,17 +150,11 @@ def get_documents_for_local_file_index(local_elastic_client, s3_client):
         #   L0023499-LH-CS.jp2
         #   B0001840_orig.jp2
         #
-        miro_ids = [
-            get_miro_id(miro_object["truncated_path"])
-            for miro_object in batch
-        ]
+        miro_ids = [get_miro_id(miro_object["truncated_path"]) for miro_object in batch]
 
-        queries = [
-            {"query": {"query_string": {"query": f'"{id}"'}}}
-            for id in miro_ids
-        ]
+        queries = [{"query": {"query_string": {"query": f'"{id}"'}}} for id in miro_ids]
 
-        body = "\n".join('{}\n' + json.dumps(q) for q in queries)
+        body = "\n".join("{}\n" + json.dumps(q) for q in queries)
 
         msearch_resp = local_elastic_client.msearch(body, index=LOCAL_INVENTORY_INDEX)
         responses = msearch_resp["responses"]
@@ -186,13 +179,16 @@ def create_files_index(ctx):
 
     mirror_miro_inventory_locally(
         local_elastic_client=local_elastic_client,
-        reporting_elastic_client=reporting_elastic_client
+        reporting_elastic_client=reporting_elastic_client,
     )
 
     expected_file_count = sum(S3_MIRO_PREFIX_PATHS.values())
     local_file_index = "files"
 
-    if get_document_count(local_elastic_client, index=local_file_index) == expected_file_count:
+    if (
+        get_document_count(local_elastic_client, index=local_file_index)
+        == expected_file_count
+    ):
         click.echo(f"Already created files index {local_file_index}, nothing to do")
         return
 
@@ -204,16 +200,11 @@ def create_files_index(ctx):
     # of network requests we need to make.
     # See https://elasticsearch-py.readthedocs.io/en/7.9.1/helpers.html#bulk-helpers
     documents = get_documents_for_local_file_index(
-        local_elastic_client=local_elastic_client,
-        s3_client=ctx.obj["s3_client"]
+        local_elastic_client=local_elastic_client, s3_client=ctx.obj["s3_client"]
     )
 
     bulk_actions = (
-        {
-            "_index": local_file_index,
-            "_id": id,
-            "_source": source
-        }
+        {"_index": local_file_index, "_id": id, "_source": source}
         for (id, source) in documents
     )
 
@@ -223,7 +214,10 @@ def create_files_index(ctx):
         click.echo(f"Errors indexing documents! {errors}")
 
     assert successes == expected_file_count
-    assert get_document_count(local_elastic_client, index=local_file_index) == expected_file_count
+    assert (
+        get_document_count(local_elastic_client, index=local_file_index)
+        == expected_file_count
+    )
 
 
 @click.group()
