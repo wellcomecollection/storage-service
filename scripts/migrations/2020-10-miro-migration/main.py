@@ -23,19 +23,19 @@ LOCAL_INVENTORY_INDEX = "reporting_miro_inventory"
 
 S3_MIRO_BUCKET = "wellcomecollection-assets-workingstorage"
 S3_MIRO_IMAGES_PATH = "miro/Wellcome_Images_Archive"
-S3_MIRO_PREFIX_PATHS = [
-    "A Images",
-    "AS Images",
-    "B Images",
-    "C Scanned",
-    "FP Images",
-    "L Images",
-    "M Images",
-    "N Images",
-    "S Images",
-    "V Images",
-    "W Images",
-]
+S3_MIRO_PREFIX_PATHS = {
+    "A Images": 1473,
+    "AS Images": 4470,
+    "B Images": 9693,
+    # "C Scanned": 4997,
+    "FP Images": 800,
+    "L Images": 88486,
+    "M Images": 16881,
+    "N Images": 34071,
+    "S Images": 18,
+    "V Images": 59452,
+    "W Images": 2655,
+}
 
 
 def create_index(elastic_client, index_name):
@@ -106,6 +106,34 @@ def mirror_miro_inventory_locally(*, local_elastic_client, reporting_elastic_cli
     )
 
 
+def get_miro_id(truncated_path):
+    """
+    Get the Miro ID for a given S3 key.
+    """
+    # These files won't return any results and don't need to be preserved.
+    if truncated_path.endswith("/Thumbs.db"):
+        return truncated_path
+
+    # truncated_path instances we need to handle:
+    #
+    #   L0023499-LH-CS.jp2
+    #   B0001840_orig.jp2
+    #   M0008000/M0008124EM-LS-LS.jp2
+    #
+    miro_id = os.path.basename(truncated_path).split("-")[0].replace("_orig", "")
+
+    # e.g. M0008124EM
+    try:
+        while not miro_id[-1].isnumeric():
+            miro_id = miro_id[:-1]
+    except IndexError:
+        print(truncated_path)
+        raise
+
+    return miro_id
+
+
+
 def get_documents_for_local_file_index(local_elastic_client, s3_client):
     """
     Generates the documents that should be indexed in the local file index.
@@ -124,7 +152,7 @@ def get_documents_for_local_file_index(local_elastic_client, s3_client):
         #   B0001840_orig.jp2
         #
         miro_ids = [
-            os.path.basename(miro_object["truncated_path"]).split("-")[0].replace("_orig", "")
+            get_miro_id(miro_object["truncated_path"])
             for miro_object in batch
         ]
 
@@ -143,8 +171,8 @@ def get_documents_for_local_file_index(local_elastic_client, s3_client):
         for miro_object, query_resp in zip(batch, responses):
             hits = query_resp["hits"]["hits"]
 
-            if hits:
-                assert len(hits) == 1
+            if hits and len(hits) == 1:
+                assert len(hits) == 1, (miro_object, hits)
                 miro_object["matched_inventory_hit"] = hits[0]["_source"]
 
             yield (miro_object["truncated_path"], miro_object)
@@ -161,7 +189,7 @@ def create_files_index(ctx):
         reporting_elastic_client=reporting_elastic_client
     )
 
-    expected_file_count = 222_996
+    expected_file_count = sum(S3_MIRO_PREFIX_PATHS.values())
     local_file_index = "files"
 
     if get_document_count(local_elastic_client, index=local_file_index) == expected_file_count:
