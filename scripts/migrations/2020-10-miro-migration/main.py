@@ -232,8 +232,8 @@ def build_transfer_packages(ctx):
             "miro/Wellcome_Images_Archive/A Images/A0000000/A0000001-CS-LS.jp2",
             "miro/Wellcome_Images_Archive/A Images/A0000000/A0000003-CS-LS.jp2",
             "miro/Wellcome_Images_Archive/A Images/A0000000/A0000004-CS-LS.jp2",
-            "miro/Wellcome_Images_Archive/A Images/A0000000/A0000005-CS-LS.jp2"
-        ]
+            "miro/Wellcome_Images_Archive/A Images/A0000000/A0000005-CS-LS.jp2",
+        ],
     )
 
 

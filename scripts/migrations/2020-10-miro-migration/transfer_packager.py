@@ -1,4 +1,3 @@
-
 import concurrent
 import itertools
 import os
@@ -33,7 +32,7 @@ def _download_objects_from_s3(s3_client, target_folder, s3_bucket, s3_key_list):
 
             for fut in done:
                 futures.pop(fut)
-                #print(f"The outcome of {original_task} is {fut.result()}")
+                # print(f"The outcome of {original_task} is {fut.result()}")
 
             # Schedule the next set of futures.  We don't want more than N futures
             # in the pool at a time, to keep memory consumption down.
@@ -51,15 +50,12 @@ def _compress_folder(target_folder, remove_folder=True):
 
 
 def _create_metadata(target_folder, group_name):
-    metadata_folder = os.path.join(target_folder, 'metadata')
-    metadata_file_location = os.path.join(metadata_folder, 'metadata.csv')
+    metadata_folder = os.path.join(target_folder, "metadata")
+    metadata_file_location = os.path.join(metadata_folder, "metadata.csv")
 
     os.makedirs(metadata_folder, exist_ok=True)
 
-    metadata_lines = [
-        "filename, group_name",
-        f"objects/, {group_name}"
-    ]
+    metadata_lines = ["filename, group_name", f"objects/, {group_name}"]
 
     metadata_contents = "\n".join(metadata_lines)
 
@@ -77,16 +73,9 @@ def create_transfer_package(s3_client, group_name, s3_bucket, s3_key_list):
         s3_client=s3_client,
         target_folder=target_folder,
         s3_bucket=s3_bucket,
-        s3_key_list=s3_key_list
+        s3_key_list=s3_key_list,
     )
 
-    _create_metadata(
-        target_folder=target_folder,
-        group_name=group_name
-    )
+    _create_metadata(target_folder=target_folder, group_name=group_name)
 
-    _compress_folder(
-        target_folder=target_folder
-    )
-
-
+    _compress_folder(target_folder=target_folder)
