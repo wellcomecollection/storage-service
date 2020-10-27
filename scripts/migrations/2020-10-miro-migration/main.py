@@ -51,6 +51,16 @@ def filter_s3_objects(s3_client, bucket, prefix):
             yield content
 
 
+def get_document_count(client, *, index):
+    """
+    How many documents are there in an Elasticsearch index?
+    """
+    try:
+        return client.count(index=index)["count"]
+    except elasticsearch.exceptions.NotFoundError:
+        return 0
+
+
 def s3_miro_objects(s3_client):
     for prefix_path in S3_MIRO_PREFIX_PATHS:
         filtered_path_prefix = f"{S3_MIRO_IMAGES_PATH}/{prefix_path}/"
@@ -85,18 +95,19 @@ def mirror_miro_inventory_locally(*, local_elastic_client, reporting_elastic_cli
     """
     Create a local mirror of the miro_inventory index in the reporting cluster.
     """
-    remote_resp = reporting_elastic_client.count(index=REMOTE_INVENTORY_INDEX)
+    local_count = get_document_count(
+        local_elastic_client, index=LOCAL_INVENTORY_INDEX
+    )
 
-    try:
-        local_resp = local_elastic_client.count(index=LOCAL_INVENTORY_INDEX)
-    except elasticsearch.exceptions.NotFoundError:
-        click.echo("miro_inventory index has not been mirrored locally before")
+    remote_count = get_document_count(
+        reporting_elastic_client, index=REMOTE_INVENTORY_INDEX
+    )
+
+    if local_count == remote_count:
+        click.echo("miro_inventory index has been mirrored locally, nothing to do")
+        return
     else:
-        if local_resp["count"] == remote_resp["count"]:
-            click.echo("miro_inventory index has been mirrored locally, nothing to do")
-            return
-        else:
-            click.echo("miro_inventory index has not been fully mirrored")
+        click.echo("miro_inventory index has not been mirrored locally")
 
     click.echo("Downloading the complete miro_inventory index from the reporting cluster")
 
@@ -121,6 +132,10 @@ def create_files_index(ctx):
 
     expected_file_count = 223_528
     local_file_index = "files"
+
+    if get_document_count(local_elastic_client, index=local_file_index) == expected_file_count:
+        click.echo(f"Already created files index {local_file_index}, nothing to do")
+        return
 
     click.echo(f"Recreating files index ({local_file_index})")
 
