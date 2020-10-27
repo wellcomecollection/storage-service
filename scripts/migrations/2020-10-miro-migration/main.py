@@ -12,6 +12,7 @@ import elasticsearch
 from elasticsearch import helpers
 
 from common import get_aws_client, get_elastic_client, get_local_elastic_client
+from transfer_packager import create_transfer_package
 from iter_helpers import chunked_iterable
 
 ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
@@ -220,6 +221,22 @@ def create_files_index(ctx):
     )
 
 
+@click.command()
+@click.pass_context
+def build_transfer_packages(ctx):
+    create_transfer_package(
+        s3_client=ctx.obj["s3_client"],
+        group_name="foo",
+        s3_bucket=S3_MIRO_BUCKET,
+        s3_key_list=[
+            "miro/Wellcome_Images_Archive/A Images/A0000000/A0000001-CS-LS.jp2",
+            "miro/Wellcome_Images_Archive/A Images/A0000000/A0000003-CS-LS.jp2",
+            "miro/Wellcome_Images_Archive/A Images/A0000000/A0000004-CS-LS.jp2",
+            "miro/Wellcome_Images_Archive/A Images/A0000000/A0000005-CS-LS.jp2"
+        ]
+    )
+
+
 @click.group()
 @click.pass_context
 def cli(ctx):
@@ -237,6 +254,7 @@ def cli(ctx):
 
 
 cli.add_command(create_files_index)
+cli.add_command(build_transfer_packages)
 
 if __name__ == "__main__":
     cli()
