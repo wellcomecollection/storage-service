@@ -67,7 +67,9 @@ def s3_miro_objects(s3_client):
         )
 
         for s3_object in filtered_s3_objects:
-            truncated_path = os.path.relpath(s3_object["Key"], relpath=filtered_path_prefix)
+            truncated_path = os.path.relpath(
+                s3_object["Key"], relpath=filtered_path_prefix
+            )
             chunk = os.path.basename(truncated_path)
 
             yield {
@@ -193,15 +195,9 @@ def create_files_index(ctx):
         return
 
     click.echo(f"Recreating files index ({local_file_index})")
-    local_elastic_client.indices.delete(
-        index=local_file_index,
-        ignore=[400, 404]
-    )
+    local_elastic_client.indices.delete(index=local_file_index, ignore=[400, 404])
 
-    local_elastic_client.indices.create(
-        index=index_name,
-        ignore=400
-    )
+    local_elastic_client.indices.create(index=index_name, ignore=400)
 
     # We use the Elasticsearch bulk API to index documents, to reduce the number
     # of network requests we need to make.
@@ -239,14 +235,14 @@ def build_transfer_packages(ctx):
             "miro/Wellcome_Images_Archive/A Images/A0000000/A0000003-CS-LS.jp2",
             "miro/Wellcome_Images_Archive/A Images/A0000000/A0000004-CS-LS.jp2",
             "miro/Wellcome_Images_Archive/A Images/A0000000/A0000005-CS-LS.jp2",
-        ]
+        ],
     )
 
     upload_transfer_package(
         s3_client=ctx.obj["s3_client"],
         s3_bucket=S3_ARCHIVEMATICA_BUCKET,
         s3_path="miro",
-        file_location=transfer_package_file_location
+        file_location=transfer_package_file_location,
     )
 
 

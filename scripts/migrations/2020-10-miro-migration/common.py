@@ -110,9 +110,7 @@ def get_aws_client(resource, *, role_arn):
 
 @functools.lru_cache
 def get_storage_client(api_url):
-    return RequestsOAuthStorageServiceClient.from_path(
-        api_url=api_url
-    )
+    return RequestsOAuthStorageServiceClient.from_path(api_url=api_url)
 
 
 def get_secret(role_arn, secret_id):

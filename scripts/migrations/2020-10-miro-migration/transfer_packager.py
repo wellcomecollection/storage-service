@@ -9,18 +9,15 @@ S3_DOWNLOAD_CONCURRENCY = 3
 def _assert_local_content_length(file_location, expected_content_length):
     # Assert we have the correct number of bytes
     local_content_length = os.path.getsize(file_location)
-    assert local_content_length == expected_content_length, (
-        f"Content length mismatch: {file_location}!"
-    )
+    assert (
+        local_content_length == expected_content_length
+    ), f"Content length mismatch: {file_location}!"
 
 
 def _get_s3_content_length(s3_client, s3_bucket, s3_key):
-    s3_head_object_response = s3_client.head_object(
-        Bucket=s3_bucket,
-        Key=s3_key
-    )
+    s3_head_object_response = s3_client.head_object(Bucket=s3_bucket, Key=s3_key)
 
-    return s3_head_object_response['ContentLength']
+    return s3_head_object_response["ContentLength"]
 
 
 def _download_s3_object(s3_client, s3_bucket, s3_key, target_folder):
@@ -28,17 +25,11 @@ def _download_s3_object(s3_client, s3_bucket, s3_key, target_folder):
     file_location = os.path.join(target_folder, file_name)
 
     s3_content_length = _get_s3_content_length(
-        s3_client=s3_client,
-        s3_bucket=s3_bucket,
-        s3_key=s3_key
+        s3_client=s3_client, s3_bucket=s3_bucket, s3_key=s3_key
     )
 
     def _download():
-        s3_client.download_file(
-            Bucket=s3_bucket,
-            Key=s3_key,
-            Filename=file_location
-        )
+        s3_client.download_file(Bucket=s3_bucket, Key=s3_key, Filename=file_location)
 
     # Check if we already have this file
     if os.path.isfile(file_location):
@@ -49,8 +40,7 @@ def _download_s3_object(s3_client, s3_bucket, s3_key, target_folder):
         _download()
 
     _assert_local_content_length(
-        file_location=file_location,
-        expected_content_length=s3_content_length
+        file_location=file_location, expected_content_length=s3_content_length
     )
 
 
@@ -60,7 +50,7 @@ def _download_objects_from_s3(s3_client, target_folder, s3_bucket, s3_key_list):
             s3_client=s3_client,
             s3_bucket=s3_bucket,
             s3_key=s3_key,
-            target_folder=target_folder
+            target_folder=target_folder,
         )
 
     # itertools below expects an iterator
@@ -90,9 +80,9 @@ def _download_objects_from_s3(s3_client, target_folder, s3_bucket, s3_key_list):
                 fut = executor.submit(_get_s3_object, task)
                 futures[fut] = task
 
-    assert len(os.listdir(target_folder)) == len(s3_key_list), (
-        f"Unexpected file count in {target_folder}!"
-    )
+    assert len(os.listdir(target_folder)) == len(
+        s3_key_list
+    ), f"Unexpected file count in {target_folder}!"
 
 
 def _compress_folder(target_folder, remove_folder=True):
@@ -120,21 +110,14 @@ def upload_transfer_package(s3_client, s3_bucket, s3_path, file_location, cleanu
     filename = os.path.basename(file_location)
     s3_key = f"{s3_path}/{filename}"
 
-    s3_client.upload_file(
-        Filename=file_location,
-        Bucket=s3_bucket,
-        Key=s3_key
-    )
+    s3_client.upload_file(Filename=file_location, Bucket=s3_bucket, Key=s3_key)
 
     s3_content_length = _get_s3_content_length(
-        s3_client=s3_client,
-        s3_bucket=s3_bucket,
-        s3_key=s3_key
+        s3_client=s3_client, s3_bucket=s3_bucket, s3_key=s3_key
     )
 
     _assert_local_content_length(
-        file_location=file_location,
-        expected_content_length=s3_content_length
+        file_location=file_location, expected_content_length=s3_content_length
     )
 
     if cleanup:
