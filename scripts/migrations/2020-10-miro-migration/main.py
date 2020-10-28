@@ -12,7 +12,7 @@ import elasticsearch
 from elasticsearch import helpers
 
 from common import get_aws_client, get_elastic_client, get_local_elastic_client
-from transfer_packager import create_transfer_package
+from transfer_packager import create_transfer_package, upload_transfer_package
 from iter_helpers import chunked_iterable
 
 ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
@@ -21,6 +21,8 @@ LOCAL_ELASTIC_HOST = os.getenv("LOCAL_ELASTIC_HOST", "localhost")
 
 REMOTE_INVENTORY_INDEX = "miro_inventory"
 LOCAL_INVENTORY_INDEX = "reporting_miro_inventory"
+
+S3_ARCHIVEMATICA_BUCKET = "wellcomecollection-archivematica-staging-transfer-source"
 
 S3_MIRO_BUCKET = "wellcomecollection-assets-workingstorage"
 S3_MIRO_IMAGES_PATH = "miro/Wellcome_Images_Archive"
@@ -224,7 +226,7 @@ def create_files_index(ctx):
 @click.command()
 @click.pass_context
 def build_transfer_packages(ctx):
-    create_transfer_package(
+    transfer_package_file_location = create_transfer_package(
         s3_client=ctx.obj["s3_client"],
         group_name="foo",
         s3_bucket=S3_MIRO_BUCKET,
@@ -233,7 +235,14 @@ def build_transfer_packages(ctx):
             "miro/Wellcome_Images_Archive/A Images/A0000000/A0000003-CS-LS.jp2",
             "miro/Wellcome_Images_Archive/A Images/A0000000/A0000004-CS-LS.jp2",
             "miro/Wellcome_Images_Archive/A Images/A0000000/A0000005-CS-LS.jp2",
-        ],
+        ]
+    )
+
+    upload_transfer_package(
+        s3_client=ctx.obj["s3_client"],
+        s3_bucket=S3_ARCHIVEMATICA_BUCKET,
+        s3_path="miro",
+        file_location=transfer_package_file_location
     )
 
 
