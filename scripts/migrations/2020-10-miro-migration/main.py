@@ -41,10 +41,6 @@ S3_MIRO_PREFIX_PATHS = {
 }
 
 
-def create_index(elastic_client, index_name):
-    elastic_client.indices.create(index=index_name, ignore=400)
-
-
 def filter_s3_objects(s3_client, bucket, prefix):
     paginator = s3_client.get_paginator("list_objects_v2")
 
@@ -71,12 +67,13 @@ def s3_miro_objects(s3_client):
         )
 
         for s3_object in filtered_s3_objects:
-            truncated_path = s3_object["Key"].replace(filtered_path_prefix, "")
+            truncated_path = os.path.relpath(s3_object["Key"], relpath=filtered_path_prefix)
+            chunk = os.path.basename(truncated_path)
 
             yield {
                 "truncated_path": truncated_path,
                 "prefix_path": prefix_path,
-                "chunk": truncated_path.split("/")[0],
+                "chunk": chunk,
                 "s3_object": s3_object,
             }
 
@@ -196,8 +193,15 @@ def create_files_index(ctx):
         return
 
     click.echo(f"Recreating files index ({local_file_index})")
-    local_elastic_client.indices.delete(index=local_file_index, ignore=[400, 404])
-    create_index(elastic_client=local_elastic_client, index_name=local_file_index)
+    local_elastic_client.indices.delete(
+        index=local_file_index,
+        ignore=[400, 404]
+    )
+
+    local_elastic_client.indices.create(
+        index=index_name,
+        ignore=400
+    )
 
     # We use the Elasticsearch bulk API to index documents, to reduce the number
     # of network requests we need to make.

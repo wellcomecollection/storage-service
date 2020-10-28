@@ -9,7 +9,7 @@ import os
 
 import boto3
 from elasticsearch import Elasticsearch
-import wellcome_storage_service
+from wellcome_storage_service import RequestsOAuthStorageServiceClient
 
 READ_ONLY_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
 
@@ -110,17 +110,8 @@ def get_aws_client(resource, *, role_arn):
 
 @functools.lru_cache
 def get_storage_client(api_url):
-    creds_path = os.path.join(
-        os.environ["HOME"], ".wellcome-storage", "oauth-credentials.json"
-    )
-
-    oauth_creds = json.load(open(creds_path))
-
-    return wellcome_storage_service.RequestsOAuthStorageServiceClient(
-        api_url=api_url,
-        client_id=oauth_creds["client_id"],
-        client_secret=oauth_creds["client_secret"],
-        token_url=oauth_creds["token_url"],
+    return RequestsOAuthStorageServiceClient.from_path(
+        api_url=api_url
     )
 
 
