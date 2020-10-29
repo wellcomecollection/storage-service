@@ -261,6 +261,7 @@ ENV/
 /site
 
 ### Scala ###
+.bsp
 
 ### TextMate ###
 *.tmproj

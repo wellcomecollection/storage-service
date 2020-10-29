@@ -137,6 +137,22 @@ if __name__ == "__main__":
         cmd += ["--volume", "%s/.sbt:/root/.sbt" % os.environ["HOME"]]
         cmd += ["--volume", "%s/.ivy2:/root/.ivy2" % os.environ["HOME"]]
 
+        # Coursier cache location is platform-dependent
+        # https://get-coursier.io/docs/cache.html#default-location
+        linux_coursier_cache = ".cache/coursier/v1"
+        if sys.platform == "darwin":
+            cmd += [
+                "--volume",
+                "%s/Library/Caches/Coursier/v1:/root/%s"
+                % (os.environ["HOME"], linux_coursier_cache),
+            ]
+        else:
+            cmd += [
+                "--volume",
+                "%s/%s:/root/%s"
+                % (os.environ["HOME"], linux_coursier_cache, linux_coursier_cache),
+            ]
+
         if not namespace.share_aws_creds:
             cmd += _aws_credentials_args()
 
