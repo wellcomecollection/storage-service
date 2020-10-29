@@ -9,6 +9,10 @@ S3_DOWNLOAD_CONCURRENCY = 3
 def _assert_local_content_length(file_location, expected_content_length):
     # Assert we have the correct number of bytes
     local_content_length = os.path.getsize(file_location)
+
+    # Check that content length is non-zero
+    assert local_content_length > 0
+
     assert (
         local_content_length == expected_content_length
     ), f"Content length mismatch: {file_location}!"
