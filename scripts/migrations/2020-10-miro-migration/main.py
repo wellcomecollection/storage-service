@@ -15,7 +15,8 @@ from common import get_aws_client, get_elastic_client, get_local_elastic_client
 from transfer_packager import create_transfer_package, upload_transfer_package
 from iter_helpers import chunked_iterable
 
-ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
+WORKFLOW_ROLE_ARN = "arn:aws:iam::299497370133:role/workflow-developer"
+STORAGE_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
 ELASTIC_SECRET_ID = "miro_storage_migration/credentials"
 LOCAL_ELASTIC_HOST = os.getenv("LOCAL_ELASTIC_HOST", "localhost")
 
@@ -203,7 +204,7 @@ def create_files_index(ctx):
     # of network requests we need to make.
     # See https://elasticsearch-py.readthedocs.io/en/7.9.1/helpers.html#bulk-helpers
     documents = get_documents_for_local_file_index(
-        local_elastic_client=local_elastic_client, s3_client=ctx.obj["s3_client"]
+        local_elastic_client=local_elastic_client, s3_client=ctx.obj["storage_s3_client"]
     )
 
     bulk_actions = (
@@ -227,7 +228,7 @@ def create_files_index(ctx):
 @click.pass_context
 def build_transfer_packages(ctx):
     transfer_package_file_location = create_transfer_package(
-        s3_client=ctx.obj["s3_client"],
+        s3_client=ctx.obj["storage_s3_client"],
         group_name="foo",
         s3_bucket=S3_MIRO_BUCKET,
         s3_key_list=[
@@ -239,9 +240,9 @@ def build_transfer_packages(ctx):
     )
 
     upload_transfer_package(
-        s3_client=ctx.obj["s3_client"],
+        s3_client=ctx.obj["workflow_s3_client"],
         s3_bucket=S3_ARCHIVEMATICA_BUCKET,
-        s3_path="miro",
+        s3_path="born-digital/miro",
         file_location=transfer_package_file_location,
     )
 
@@ -249,14 +250,16 @@ def build_transfer_packages(ctx):
 @click.group()
 @click.pass_context
 def cli(ctx):
-    s3_client = get_aws_client(resource="s3", role_arn=ROLE_ARN)
+    storage_s3_client = get_aws_client(resource="s3", role_arn=STORAGE_ROLE_ARN)
+    workflow_s3_client = get_aws_client(resource="s3", role_arn=WORKFLOW_ROLE_ARN)
     local_elastic_client = get_local_elastic_client(host=LOCAL_ELASTIC_HOST)
     reporting_elastic_client = get_elastic_client(
-        role_arn=ROLE_ARN, elastic_secret_id=ELASTIC_SECRET_ID
+        role_arn=STORAGE_ROLE_ARN, elastic_secret_id=ELASTIC_SECRET_ID
     )
 
     ctx.obj = {
-        "s3_client": s3_client,
+        "workflow_s3_client": workflow_s3_client,
+        "storage_s3_client": storage_s3_client,
         "local_elastic_client": local_elastic_client,
         "reporting_elastic_client": reporting_elastic_client,
     }

@@ -103,18 +103,26 @@ def _create_metadata(target_folder, group_name):
 
     os.makedirs(metadata_folder, exist_ok=True)
 
-    metadata_lines = ["filename, group_name", f"objects/, {group_name}"]
+    metadata_lines = [
+        "filename,dc.identifier,isMiro",
+        f"objects/,{group_name},true"
+    ]
+
     metadata_contents = "\n".join(metadata_lines)
 
     with open(metadata_file_location, "w") as fp:
         fp.write(metadata_contents)
 
 
-def upload_transfer_package(s3_client, s3_bucket, s3_path, file_location, cleanup=True):
+def upload_transfer_package(s3_client, s3_bucket, s3_path, file_location, cleanup=False):
     filename = os.path.basename(file_location)
     s3_key = f"{s3_path}/{filename}"
 
-    s3_client.upload_file(Filename=file_location, Bucket=s3_bucket, Key=s3_key)
+    s3_client.upload_file(
+        Filename=file_location,
+        Bucket=s3_bucket,
+        Key=s3_key
+    )
 
     s3_content_length = _get_s3_content_length(
         s3_client=s3_client, s3_bucket=s3_bucket, s3_key=s3_key
