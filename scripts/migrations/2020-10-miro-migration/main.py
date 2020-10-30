@@ -204,7 +204,8 @@ def create_files_index(ctx):
     # of network requests we need to make.
     # See https://elasticsearch-py.readthedocs.io/en/7.9.1/helpers.html#bulk-helpers
     documents = get_documents_for_local_file_index(
-        local_elastic_client=local_elastic_client, s3_client=ctx.obj["storage_s3_client"]
+        local_elastic_client=local_elastic_client,
+        s3_client=ctx.obj["storage_s3_client"],
     )
 
     bulk_actions = (
