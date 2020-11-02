@@ -224,7 +224,8 @@ def create_files_index(ctx):
     local_file_index = "files"
 
     documents = get_documents_for_local_file_index(
-        local_elastic_client=local_elastic_client, s3_client=ctx.obj["storage_s3_client"]
+        local_elastic_client=local_elastic_client,
+        s3_client=ctx.obj["storage_s3_client"],
     )
 
     index_iterator(
