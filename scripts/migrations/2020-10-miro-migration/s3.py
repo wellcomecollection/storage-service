@@ -33,7 +33,6 @@ def list_s3_objects_from(*, bucket, prefix=""):
                     yield s3_obj
                     s3_obj["LastModified"] = s3_obj["LastModified"].isoformat()
                     cache_file.write(json.dumps(s3_obj) + "\n")
-                break
 
         os.rename(tmp_path, out_path)
 
