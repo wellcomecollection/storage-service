@@ -92,7 +92,7 @@ def decide_based_on_reporting_inventory(s3_key, miro_id):
 def get_wellcome_images_by_size():
     wc_images_by_size = collections.defaultdict(lambda: collections.defaultdict(set))
 
-    for s3_obj in get_s3_objects_from(bucket="wellcomecollection-images"):
+    for s3_obj in list_s3_objects_from(bucket="wellcomecollection-images"):
         wc_images_by_size[s3_obj["Size"]][s3_obj["ETag"]].add(s3_obj["Key"])
 
     return wc_images_by_size
