@@ -9,7 +9,7 @@ services:
     volumes:
       - .:/migration
       - ~/.aws:/root/.aws:ro
-    command: [ "create-files-index" ]
+    command: [ "create-decisions-index" ]
     tty: true
     depends_on:
       elasticsearch:
