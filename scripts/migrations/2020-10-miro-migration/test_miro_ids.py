@@ -5,12 +5,11 @@ from miro_ids import (
     IsCorporatePhotographyError,
     IsMiroMoviesError,
     NotMiroAssetError,
-    UnknownMiroIDError,
 )
 
 
 @pytest.mark.parametrize(
-    "s3_key", ["miro/Wellcome_Images_Archive/.apdisk", "Thumbs.db", ".DS_Store",]
+    "s3_key", ["miro/Wellcome_Images_Archive/.apdisk", "Thumbs.db", ".DS_Store"]
 )
 def test_raises_not_miro_asset_error(s3_key):
     with pytest.raises(NotMiroAssetError):
