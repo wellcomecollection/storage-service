@@ -5,7 +5,6 @@ from miro_ids import (
     IsCorporatePhotographyError,
     IsMiroMoviesError,
     NotMiroAssetError,
-    UnknownMiroIDError,
 )
 
 
