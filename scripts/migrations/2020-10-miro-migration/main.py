@@ -4,9 +4,10 @@ This is a script to assist in the migration of miro content
 into the storage service.
 """
 
-import click
-from elasticsearch import helpers
+import os
+import re
 
+import click
 from decisions import get_decisions, count_decisions
 from elastic_helpers import (
     get_elastic_client,
@@ -14,7 +15,8 @@ from elastic_helpers import (
     index_iterator,
     get_document_count,
 )
-
+import elasticsearch
+from elasticsearch import helpers
 
 STORAGE_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
 ELASTIC_SECRET_ID = "miro_storage_migration/credentials"
@@ -54,19 +56,15 @@ def mirror_miro_inventory_locally(*, local_elastic_client, reporting_elastic_cli
 @click.command()
 @click.pass_context
 def create_decisions_index(ctx):
-    reporting_elastic_client = get_elastic_client(
-        role_arn=STORAGE_ROLE_ARN, elastic_secret_id=ELASTIC_SECRET_ID
-    )
-
-    local_elastic_client = get_local_elastic_client()
+    reporting_elastic_client = ctx.obj['reporting_elastic_client']
+    local_elastic_client = ctx.obj['local_elastic_client']
+    local_decisions_index = ctx.obj['local_decisions_index']
 
     # Required for decisions
     mirror_miro_inventory_locally(
         local_elastic_client=local_elastic_client,
         reporting_elastic_client=reporting_elastic_client,
     )
-
-    local_file_index = "decisions"
 
     expected_decision_count = count_decisions()
 
@@ -76,18 +74,68 @@ def create_decisions_index(ctx):
 
     index_iterator(
         elastic_client=local_elastic_client,
-        index_name=local_file_index,
+        index_name=local_decisions_index,
         expected_doc_count=expected_decision_count,
         documents=_documents(),
     )
 
 
+@click.command()
+@click.pass_context
+def create_chunks(ctx):
+    local_elastic_client = ctx.obj['local_elastic_client']
+    local_decisions_index = ctx.obj['local_decisions_index']
+
+    all_results = elasticsearch.helpers.scan(local_elastic_client,
+        query={
+            "query": {
+                "match_all": {}
+            }
+        },
+        index=local_decisions_index
+    )
+
+    groups = {}
+
+    for result in all_results:
+        defer = result['_source']['defer']
+        skip = result['_source']['skip']
+
+        if not (defer or skip):
+            s3_key = result['_source']['s3_key']
+            (_, filename) = os.path.split(s3_key)
+            matched = re.search('([^0-9]*)(.*)', filename)
+            letter_prefix = matched.group(1)
+            numeric_id_chunk = matched.group(2)[:4]
+
+            chunk_id = letter_prefix + numeric_id_chunk
+
+            if chunk_id in groups:
+                groups[chunk_id] = groups[chunk_id] + 1
+            else:
+                groups[chunk_id] = 1
+
+    print(groups)   
+
+
 @click.group()
 @click.pass_context
 def cli(ctx):
-    pass
+    reporting_elastic_client = get_elastic_client(
+        role_arn=STORAGE_ROLE_ARN, 
+        elastic_secret_id=ELASTIC_SECRET_ID
+    )
+
+    local_elastic_client = get_local_elastic_client()
+
+    ctx.obj = {
+        'local_decisions_index': 'decisions',
+        'local_elastic_client': local_elastic_client,
+        'reporting_elastic_client': reporting_elastic_client,
+    }
 
 
+cli.add_command(create_chunks)
 cli.add_command(create_decisions_index)
 
 if __name__ == "__main__":
