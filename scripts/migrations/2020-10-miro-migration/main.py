@@ -8,7 +8,12 @@ import click
 from elasticsearch import helpers
 
 from decisions import get_decisions, count_decisions
-from elastic_helpers import get_elastic_client, get_local_elastic_client, index_iterator, get_document_count
+from elastic_helpers import (
+    get_elastic_client,
+    get_local_elastic_client,
+    index_iterator,
+    get_document_count,
+)
 
 
 STORAGE_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
