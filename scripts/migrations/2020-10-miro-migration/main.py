@@ -11,7 +11,13 @@ import click
 import elasticsearch
 from elasticsearch import helpers
 
-from common import get_aws_client, get_elastic_client, get_local_elastic_client, gz_json_loader, gz_json_line_count
+from common import (
+    get_aws_client,
+    get_elastic_client,
+    get_local_elastic_client,
+    gz_json_loader,
+    gz_json_line_count,
+)
 from transfer_packager import create_transfer_package, upload_transfer_package
 from iter_helpers import chunked_iterable
 
@@ -78,7 +84,7 @@ def s3_miro_objects(s3_client):
                 "truncated_path": truncated_path,
                 "prefix_path": prefix_path,
                 "chunk": chunk,
-                'filename': filename,
+                "filename": filename,
                 "s3_object": s3_object,
             }
 
@@ -195,7 +201,8 @@ def index_iterator(elastic_client, index_name, expected_doc_count, documents):
 
     bulk_actions = (
         {"_index": index_name, "_id": id, "_source": source}
-        for batch in chunked_iterable(documents, size=500) for (id, source) in batch
+        for batch in chunked_iterable(documents, size=500)
+        for (id, source) in batch
     )
 
     successes, errors = helpers.bulk(elastic_client, actions=bulk_actions)
@@ -205,8 +212,12 @@ def index_iterator(elastic_client, index_name, expected_doc_count, documents):
 
     updated_doc_count = get_document_count(elastic_client, index=index_name)
 
-    assert successes == expected_doc_count, f"Unexpected index success count: {successes}"
-    assert updated_doc_count == expected_doc_count, f"Unexpected index doc count: {updated_doc_count}"
+    assert (
+        successes == expected_doc_count
+    ), f"Unexpected index success count: {successes}"
+    assert (
+        updated_doc_count == expected_doc_count
+    ), f"Unexpected index doc count: {updated_doc_count}"
 
 
 @click.command()
@@ -232,24 +243,24 @@ def create_files_index(ctx):
         elastic_client=local_elastic_client,
         index_name=local_file_index,
         expected_doc_count=expected_file_count,
-        documents=documents
+        documents=documents,
     )
 
 
 def _build_location_index(elastic_client):
-    resource_name = 'where_did_stuff_go.19.json.gz'
-    index_name = 'locations'
+    resource_name = "where_did_stuff_go.19.json.gz"
+    index_name = "locations"
     doc_count = gz_json_line_count(resource_name)
 
     def _where_stuff_go():
         for line in gz_json_loader(resource_name):
-            yield line['key'], line
+            yield line["key"], line
 
     index_iterator(
         elastic_client=elastic_client,
         index_name=index_name,
         expected_doc_count=doc_count,
-        documents=_where_stuff_go()
+        documents=_where_stuff_go(),
     )
 
 

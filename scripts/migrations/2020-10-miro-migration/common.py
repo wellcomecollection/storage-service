@@ -142,7 +142,7 @@ def get_local_elastic_client(host, port=9200):
 
 
 def gz_json_line_count(filename):
-    with gzip.open(os.path.join("resources", filename), 'rb') as infile:
+    with gzip.open(os.path.join("resources", filename), "rb") as infile:
         for i, _ in enumerate(infile):
             pass
 
