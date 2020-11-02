@@ -11,7 +11,7 @@ import click
 import elasticsearch
 from elasticsearch import helpers
 
-from common import get_aws_client, get_elastic_client, get_local_elastic_client
+from common import get_aws_client, get_elastic_client, get_local_elastic_client, gz_json_loader, gz_json_line_count
 from transfer_packager import create_transfer_package, upload_transfer_package
 from iter_helpers import chunked_iterable
 
@@ -69,14 +69,16 @@ def s3_miro_objects(s3_client):
 
         for s3_object in filtered_s3_objects:
             truncated_path = os.path.relpath(
-                s3_object["Key"], relpath=filtered_path_prefix
+                s3_object["Key"], start=filtered_path_prefix
             )
-            chunk = os.path.basename(truncated_path)
+
+            (chunk, filename) = os.path.split(truncated_path)
 
             yield {
                 "truncated_path": truncated_path,
                 "prefix_path": prefix_path,
                 "chunk": chunk,
+                'filename': filename,
                 "s3_object": s3_object,
             }
 
@@ -144,7 +146,7 @@ def get_documents_for_local_file_index(local_elastic_client, s3_client):
     # objects into groups of 500 and use the Multi-Search API to make
     # multiple queries in a single HTTP request.
     #
-    # We use a btch of 500 because that means these should be matched to
+    # We use a batch of 500 because that means these should be matched to
     # the bulk index requests.
     for batch in chunked_iterable(s3_miro_objects(s3_client=s3_client), size=500):
 
@@ -174,6 +176,39 @@ def get_documents_for_local_file_index(local_elastic_client, s3_client):
             yield (miro_object["truncated_path"], miro_object)
 
 
+def index_iterator(elastic_client, index_name, expected_doc_count, documents):
+    """
+    Indexes documents from an iterator into elasticsearch
+    """
+
+    click.echo(f"Indexing {expected_doc_count} docs into {index_name}")
+    elastic_client.indices.create(index=index_name, ignore=400)
+    actual_doc_count = get_document_count(elastic_client, index=index_name)
+
+    if actual_doc_count == expected_doc_count:
+        click.echo(f"Already created index {index_name}, nothing to do")
+        return
+
+    click.echo(f"Recreating files index ({index_name})")
+    elastic_client.indices.delete(index=index_name, ignore=[400, 404])
+    elastic_client.indices.create(index=index_name, ignore=400)
+
+    bulk_actions = (
+        {"_index": index_name, "_id": id, "_source": source}
+        for batch in chunked_iterable(documents, size=500) for (id, source) in batch
+    )
+
+    successes, errors = helpers.bulk(elastic_client, actions=bulk_actions)
+
+    if errors:
+        click.echo(f"Errors indexing documents! {errors}")
+
+    updated_doc_count = get_document_count(elastic_client, index=index_name)
+
+    assert successes == expected_doc_count, f"Unexpected index success count: {successes}"
+    assert updated_doc_count == expected_doc_count, f"Unexpected index doc count: {updated_doc_count}"
+
+
 @click.command()
 @click.pass_context
 def create_files_index(ctx):
@@ -188,63 +223,60 @@ def create_files_index(ctx):
     expected_file_count = sum(S3_MIRO_PREFIX_PATHS.values())
     local_file_index = "files"
 
-    if (
-        get_document_count(local_elastic_client, index=local_file_index)
-        == expected_file_count
-    ):
-        click.echo(f"Already created files index {local_file_index}, nothing to do")
-        return
-
-    click.echo(f"Recreating files index ({local_file_index})")
-    local_elastic_client.indices.delete(index=local_file_index, ignore=[400, 404])
-
-    local_elastic_client.indices.create(index=index_name, ignore=400)
-
-    # We use the Elasticsearch bulk API to index documents, to reduce the number
-    # of network requests we need to make.
-    # See https://elasticsearch-py.readthedocs.io/en/7.9.1/helpers.html#bulk-helpers
     documents = get_documents_for_local_file_index(
         local_elastic_client=local_elastic_client, s3_client=ctx.obj["storage_s3_client"]
     )
 
-    bulk_actions = (
-        {"_index": local_file_index, "_id": id, "_source": source}
-        for (id, source) in documents
+    index_iterator(
+        elastic_client=local_elastic_client,
+        index_name=local_file_index,
+        expected_doc_count=expected_file_count,
+        documents=documents
     )
 
-    successes, errors = helpers.bulk(local_elastic_client, actions=bulk_actions)
 
-    if errors:
-        click.echo(f"Errors indexing documents! {errors}")
+def _build_location_index(elastic_client):
+    resource_name = 'where_did_stuff_go.19.json.gz'
+    index_name = 'locations'
+    doc_count = gz_json_line_count(resource_name)
 
-    assert successes == expected_file_count
-    assert (
-        get_document_count(local_elastic_client, index=local_file_index)
-        == expected_file_count
+    def _where_stuff_go():
+        for line in gz_json_loader(resource_name):
+            yield line['key'], line
+
+    index_iterator(
+        elastic_client=elastic_client,
+        index_name=index_name,
+        expected_doc_count=doc_count,
+        documents=_where_stuff_go()
     )
 
 
 @click.command()
 @click.pass_context
 def build_transfer_packages(ctx):
-    transfer_package_file_location = create_transfer_package(
-        s3_client=ctx.obj["storage_s3_client"],
-        group_name="foo",
-        s3_bucket=S3_MIRO_BUCKET,
-        s3_key_list=[
-            "miro/Wellcome_Images_Archive/A Images/A0000000/A0000001-CS-LS.jp2",
-            "miro/Wellcome_Images_Archive/A Images/A0000000/A0000003-CS-LS.jp2",
-            "miro/Wellcome_Images_Archive/A Images/A0000000/A0000004-CS-LS.jp2",
-            "miro/Wellcome_Images_Archive/A Images/A0000000/A0000005-CS-LS.jp2",
-        ],
-    )
+    local_elastic_client = ctx.obj["local_elastic_client"]
 
-    upload_transfer_package(
-        s3_client=ctx.obj["workflow_s3_client"],
-        s3_bucket=S3_ARCHIVEMATICA_BUCKET,
-        s3_path="born-digital/miro",
-        file_location=transfer_package_file_location,
-    )
+    _build_location_index(local_elastic_client)
+
+    # transfer_package_file_location = create_transfer_package(
+    #     s3_client=ctx.obj["storage_s3_client"],
+    #     group_name="miro_test",
+    #     s3_bucket=S3_MIRO_BUCKET,
+    #     s3_key_list=[
+    #         "miro/Wellcome_Images_Archive/A Images/A0000000/A0000001-CS-LS.jp2",
+    #         "miro/Wellcome_Images_Archive/A Images/A0000000/A0000003-CS-LS.jp2",
+    #         "miro/Wellcome_Images_Archive/A Images/A0000000/A0000004-CS-LS.jp2",
+    #         "miro/Wellcome_Images_Archive/A Images/A0000000/A0000005-CS-LS.jp2",
+    #     ],
+    # )
+    #
+    # upload_transfer_package(
+    #     s3_client=ctx.obj["workflow_s3_client"],
+    #     s3_bucket=S3_ARCHIVEMATICA_BUCKET,
+    #     s3_path="born-digital/miro",
+    #     file_location=transfer_package_file_location,
+    # )
 
 
 @click.group()

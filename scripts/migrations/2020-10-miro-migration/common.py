@@ -3,6 +3,7 @@
 import concurrent.futures
 import decimal
 import functools
+import gzip
 import itertools
 import json
 import os
@@ -138,3 +139,17 @@ def get_elastic_client(role_arn, elastic_secret_id):
 
 def get_local_elastic_client(host, port=9200):
     return Elasticsearch(host=host, port=9200)
+
+
+def gz_json_line_count(filename):
+    with gzip.open(os.path.join("resources", filename), 'rb') as infile:
+        for i, _ in enumerate(infile):
+            pass
+
+    return i + 1
+
+
+def gz_json_loader(filename):
+    with gzip.open(os.path.join("resources", filename)) as infile:
+        for line in infile:
+            yield json.loads(line)
