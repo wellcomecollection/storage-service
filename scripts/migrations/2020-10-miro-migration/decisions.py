@@ -26,12 +26,12 @@ class Decision:
 
     def as_dict(self):
         return {
-            's3_key': self.s3_key,
-            'skip': self.skip,
-            'defer': self.defer,
-            'miro_id': self.miro_id,
-            'destinations': self.destinations,
-            'notes': self.notes,
+            "s3_key": self.s3_key,
+            "skip": self.skip,
+            "defer": self.defer,
+            "miro_id": self.miro_id,
+            "destinations": self.destinations,
+            "notes": self.notes,
         }
 
     @classmethod
@@ -249,8 +249,8 @@ def make_decision(s3_obj):
 def count_decisions():
     decision_count = 0
     for s3_obj in list_s3_objects_from(
-            bucket="wellcomecollection-assets-workingstorage",
-            prefix="miro/Wellcome_Images_Archive",
+        bucket="wellcomecollection-assets-workingstorage",
+        prefix="miro/Wellcome_Images_Archive",
     ):
         decision_count = decision_count + 1
 
