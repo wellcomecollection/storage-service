@@ -1,5 +1,6 @@
 import collections
 import functools
+import json
 import os
 import re
 
@@ -246,4 +247,4 @@ def get_decisions():
 
 if __name__ == "__main__":
     for d in get_decisions():
-        print(d)
+        print(json.dumps(attr.asdict(d)))
