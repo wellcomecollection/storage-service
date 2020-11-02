@@ -25,16 +25,6 @@ class Decision:
     destinations = attr.ib()
     notes = attr.ib()
 
-    def as_dict(self):
-        return {
-            "s3_key": self.s3_key,
-            "skip": self.skip,
-            "defer": self.defer,
-            "miro_id": self.miro_id,
-            "destinations": self.destinations,
-            "notes": self.notes,
-        }
-
     @classmethod
     def from_skip(cls, *, s3_key, reason):
         return cls(

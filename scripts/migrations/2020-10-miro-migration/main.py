@@ -72,7 +72,7 @@ def create_decisions_index(ctx):
 
     def _documents():
         for decision in get_decisions():
-            yield decision.s3_key, decision.as_dict()
+            yield decision.s3_key, decision.asdict()
 
     index_iterator(
         elastic_client=local_elastic_client,
