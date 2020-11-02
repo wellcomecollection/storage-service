@@ -99,11 +99,11 @@ def create_chunks(ctx):
         skip = result["_source"]["skip"]
 
         if not (defer or skip):
-            s3_key = result['_source']['s3_key']
-            destinations = result['_source']['destinations']
+            s3_key = result["_source"]["s3_key"]
+            destinations = result["_source"]["destinations"]
 
-            miro_id = result['_source']['miro_id']
-            matched = re.search('([A-Z]{1,2})(\d{4,})', miro_id)
+            miro_id = result["_source"]["miro_id"]
+            matched = re.search("([A-Z]{1,2})(\d{4,})", miro_id)
 
             letter_prefix = matched.group(1)
             numeric_id_chunk = matched.group(2)[:4] + "000"
@@ -117,6 +117,7 @@ def create_chunks(ctx):
                     groups[chunk_id] = [s3_key]
 
     import pprint
+
     pprint.pprint(groups.keys())
 
 
