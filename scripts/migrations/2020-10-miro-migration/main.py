@@ -56,9 +56,9 @@ def mirror_miro_inventory_locally(*, local_elastic_client, reporting_elastic_cli
 @click.command()
 @click.pass_context
 def create_decisions_index(ctx):
-    reporting_elastic_client = ctx.obj['reporting_elastic_client']
-    local_elastic_client = ctx.obj['local_elastic_client']
-    local_decisions_index = ctx.obj['local_decisions_index']
+    reporting_elastic_client = ctx.obj["reporting_elastic_client"]
+    local_elastic_client = ctx.obj["local_elastic_client"]
+    local_decisions_index = ctx.obj["local_decisions_index"]
 
     # Required for decisions
     mirror_miro_inventory_locally(
@@ -83,28 +83,25 @@ def create_decisions_index(ctx):
 @click.command()
 @click.pass_context
 def create_chunks(ctx):
-    local_elastic_client = ctx.obj['local_elastic_client']
-    local_decisions_index = ctx.obj['local_decisions_index']
+    local_elastic_client = ctx.obj["local_elastic_client"]
+    local_decisions_index = ctx.obj["local_decisions_index"]
 
-    all_results = elasticsearch.helpers.scan(local_elastic_client,
-        query={
-            "query": {
-                "match_all": {}
-            }
-        },
-        index=local_decisions_index
+    all_results = elasticsearch.helpers.scan(
+        local_elastic_client,
+        query={"query": {"match_all": {}}},
+        index=local_decisions_index,
     )
 
     groups = {}
 
     for result in all_results:
-        defer = result['_source']['defer']
-        skip = result['_source']['skip']
+        defer = result["_source"]["defer"]
+        skip = result["_source"]["skip"]
 
         if not (defer or skip):
-            s3_key = result['_source']['s3_key']
+            s3_key = result["_source"]["s3_key"]
             (_, filename) = os.path.split(s3_key)
-            matched = re.search('([^0-9]*)(.*)', filename)
+            matched = re.search("([^0-9]*)(.*)", filename)
             letter_prefix = matched.group(1)
             numeric_id_chunk = matched.group(2)[:4]
 
@@ -115,23 +112,22 @@ def create_chunks(ctx):
             else:
                 groups[chunk_id] = 1
 
-    print(groups)   
+    print(groups)
 
 
 @click.group()
 @click.pass_context
 def cli(ctx):
     reporting_elastic_client = get_elastic_client(
-        role_arn=STORAGE_ROLE_ARN, 
-        elastic_secret_id=ELASTIC_SECRET_ID
+        role_arn=STORAGE_ROLE_ARN, elastic_secret_id=ELASTIC_SECRET_ID
     )
 
     local_elastic_client = get_local_elastic_client()
 
     ctx.obj = {
-        'local_decisions_index': 'decisions',
-        'local_elastic_client': local_elastic_client,
-        'reporting_elastic_client': reporting_elastic_client,
+        "local_decisions_index": "decisions",
+        "local_elastic_client": local_elastic_client,
+        "reporting_elastic_client": reporting_elastic_client,
     }
 
 
