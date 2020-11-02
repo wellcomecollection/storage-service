@@ -148,6 +148,7 @@ def create_transfer_package(s3_client, group_name, s3_bucket, s3_key_list):
 
     return _compress_folder(target_folder=target_folder)
 
+
 # transfer_package_file_location = create_transfer_package(
 #     s3_client=ctx.obj["storage_s3_client"],
 #     group_name="miro_test",
