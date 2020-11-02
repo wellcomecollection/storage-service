@@ -50,7 +50,9 @@ def parse_miro_id(s3_key):
         raise IsMiroMoviesError(s3_key)
 
     # Similarly corporate photography will be handled separately.
-    elif s3_key.startswith("miro/Wellcome_Images_Archive/Corporate_Photography/"):
+    elif s3_key.startswith(
+        "miro/Wellcome_Images_Archive/Corporate_Photography/"
+    ) or name.startswith("C"):
         raise IsCorporatePhotographyError(s3_key)
 
     # e.g. A0000001-CS-LS.jp2

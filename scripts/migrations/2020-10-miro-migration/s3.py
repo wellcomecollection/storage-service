@@ -5,7 +5,7 @@ import os
 from common import get_aws_client
 
 
-def get_s3_objects_from(*, bucket, prefix=""):
+def list_s3_objects_from(*, bucket, prefix=""):
     """
     Generates all the objects under a given bucket/prefix.
     """
@@ -36,3 +36,21 @@ def get_s3_objects_from(*, bucket, prefix=""):
                 break
 
         os.rename(tmp_path, out_path)
+
+
+def get_s3_object(*, bucket, key):
+    """
+    Retrieves the contents of an object from S3.
+    """
+    out_path = os.path.join(f"_cache", bucket, key)
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+
+    try:
+        return open(out_path, "rb")
+    except FileNotFoundError:
+        print(f"Downloading s3://{bucket}/{key}")
+        s3 = get_aws_client(
+            "s3", role_arn="arn:aws:iam::760097843905:role/platform-read_only"
+        )
+        s3.download_file(Bucket=bucket, Key=key, Filename=out_path)
+        return open(out_path, "rb")
