@@ -103,19 +103,24 @@ def create_chunks(ctx):
 
         if not (defer or skip):
             s3_key = result['_source']['s3_key']
-            (_, filename) = os.path.split(s3_key)
-            matched = re.search('([^0-9]*)(.*)', filename)
+            destinations = result['_source']['destinations']
+
+            miro_id = result['_source']['miro_id']
+            matched = re.search('([A-Z]{1,2})(\d{4,})', miro_id)
+
             letter_prefix = matched.group(1)
-            numeric_id_chunk = matched.group(2)[:4]
+            numeric_id_chunk = matched.group(2)[:4] + "000"
 
-            chunk_id = letter_prefix + numeric_id_chunk
+            for destination in destinations:
+                chunk_id = letter_prefix + numeric_id_chunk + "/" + destination
 
-            if chunk_id in groups:
-                groups[chunk_id] = groups[chunk_id] + 1
-            else:
-                groups[chunk_id] = 1
+                if chunk_id in groups:
+                    groups[chunk_id].append(s3_key)
+                else:
+                    groups[chunk_id] = [s3_key]
 
-    print(groups)   
+    import pprint
+    pprint.pprint(groups.keys())
 
 
 @click.group()
