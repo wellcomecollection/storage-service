@@ -242,3 +242,8 @@ def get_decisions():
         prefix="miro/Wellcome_Images_Archive",
     ):
         yield make_decision(s3_obj)
+
+
+if __name__ == "__main__":
+    for d in get_decisions():
+        print(d)
