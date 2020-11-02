@@ -1,15 +1,9 @@
 #!/usr/bin/env python
 
 import functools
-import gzip
 import json
-import os
 
 import boto3
-from elasticsearch import Elasticsearch
-from wellcome_storage_service import RequestsOAuthStorageServiceClient
-
-READ_ONLY_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
 
 sts_client = boto3.client("sts")
 
@@ -28,11 +22,6 @@ def get_aws_client(resource, *, role_arn):
     )
 
 
-@functools.lru_cache
-def get_storage_client(api_url):
-    return RequestsOAuthStorageServiceClient.from_path(api_url=api_url)
-
-
 def get_secret(role_arn, secret_id):
     secretsmanager_client = get_aws_client(resource="secretsmanager", role_arn=role_arn)
 
@@ -46,29 +35,3 @@ def get_secret(role_arn, secret_id):
         secret = response["SecretString"]
 
     return secret
-
-
-def get_elastic_client(role_arn, elastic_secret_id):
-    secret = get_secret(role_arn, elastic_secret_id)
-
-    return Elasticsearch(
-        secret["endpoint"], http_auth=(secret["username"], secret["password"])
-    )
-
-
-def get_local_elastic_client(host, port=9200):
-    return Elasticsearch(host=host, port=9200)
-
-
-def gz_json_line_count(filename):
-    with gzip.open(os.path.join("resources", filename), "rb") as infile:
-        for i, _ in enumerate(infile):
-            pass
-
-    return i + 1
-
-
-def gz_json_loader(filename):
-    with gzip.open(os.path.join("resources", filename)) as infile:
-        for line in infile:
-            yield json.loads(line)

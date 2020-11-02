@@ -147,3 +147,22 @@ def create_transfer_package(s3_client, group_name, s3_bucket, s3_key_list):
     _create_metadata(target_folder=target_folder, group_name=group_name)
 
     return _compress_folder(target_folder=target_folder)
+
+# transfer_package_file_location = create_transfer_package(
+#     s3_client=ctx.obj["storage_s3_client"],
+#     group_name="miro_test",
+#     s3_bucket=S3_MIRO_BUCKET,
+#     s3_key_list=[
+#         "miro/Wellcome_Images_Archive/A Images/A0000000/A0000001-CS-LS.jp2",
+#         "miro/Wellcome_Images_Archive/A Images/A0000000/A0000003-CS-LS.jp2",
+#         "miro/Wellcome_Images_Archive/A Images/A0000000/A0000004-CS-LS.jp2",
+#         "miro/Wellcome_Images_Archive/A Images/A0000000/A0000005-CS-LS.jp2",
+#     ],
+# )
+#
+# upload_transfer_package(
+#     s3_client=ctx.obj["workflow_s3_client"],
+#     s3_bucket=S3_ARCHIVEMATICA_BUCKET,
+#     s3_path="born-digital/miro",
+#     file_location=transfer_package_file_location,
+# )

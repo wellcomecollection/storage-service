@@ -24,6 +24,16 @@ class Decision:
     destinations = attr.ib()
     notes = attr.ib()
 
+    def as_dict(self):
+        return {
+            's3_key': self.s3_key,
+            'skip': self.skip,
+            'defer': self.defer,
+            'miro_id': self.miro_id,
+            'destinations': self.destinations,
+            'notes': self.notes,
+        }
+
     @classmethod
     def from_skip(cls, *, s3_key, reason):
         return cls(
@@ -234,6 +244,17 @@ def make_decision(s3_obj):
         destinations=[],
         notes=["??? I don't know how to handle this object"],
     )
+
+
+def count_decisions():
+    decision_count = 0
+    for s3_obj in list_s3_objects_from(
+            bucket="wellcomecollection-assets-workingstorage",
+            prefix="miro/Wellcome_Images_Archive",
+    ):
+        decision_count = decision_count + 1
+
+    return decision_count
 
 
 def get_decisions():
