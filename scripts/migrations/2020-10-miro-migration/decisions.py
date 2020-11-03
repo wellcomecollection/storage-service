@@ -158,20 +158,21 @@ def get_trimmed_metadata_for_prefix(prefix):
             continue
         interesting_lines.append(line.strip())
 
-    result = b"\n".join(interesting_lines).decode("utf8")
+    result = b"\n".join(interesting_lines)
 
     # Throw away a bunch of stuff we know is going to be XML tags, which
     # aren't actually useful for determining if we know about a Miro ID.
-    result = re.sub(r"</?[a-z_]+>", "", result)
+    result = re.sub(b"</?[a-z_]+>", b"", result)
 
-    return result
+    # Miro IDs are only ASCII, so discard non-ASCII data
+    return result.decode("ascii", errors="ignore")
 
 
 def decide_based_on_miro_metadata(s3_key, miro_id):
     if miro_id.startswith(("AS", "FP")):
         prefix = miro_id[:2]
     else:
-        prefix = miro_id[0]
+        prefix = miro_id[0].upper()
 
     metadata = get_trimmed_metadata_for_prefix(prefix)
 
@@ -238,11 +239,20 @@ def make_decision(s3_obj):
 
 
 def get_decisions():
-    for s3_obj in list_s3_objects_from(
-        bucket="wellcomecollection-assets-workingstorage",
-        prefix="miro/Wellcome_Images_Archive",
+    import tqdm
+
+    for s3_obj in tqdm.tqdm(
+        list_s3_objects_from(
+            bucket="wellcomecollection-assets-workingstorage",
+            prefix="miro/Wellcome_Images_Archive",
+        ),
+        total=368392,
     ):
-        yield make_decision(s3_obj)
+        try:
+            yield make_decision(s3_obj)
+        except Exception:
+            print(s3_obj["Key"])
+            raise
 
 
 if __name__ == "__main__":

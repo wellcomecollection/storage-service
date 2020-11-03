@@ -27,7 +27,6 @@ class IsCorporatePhotographyError(UnknownMiroIDError):
     """
     Raised if you try to get the Miro ID from somethign that's Editorial Photography.
     """
-
     pass
 
 
@@ -52,7 +51,7 @@ def parse_miro_id(s3_key):
     # Similarly corporate photography will be handled separately.
     elif s3_key.startswith(
         "miro/Wellcome_Images_Archive/Corporate_Photography/"
-    ) or name.startswith("C"):
+    ) or name.startswith(("C", "c", "Ç", "ç")):
         raise IsCorporatePhotographyError(s3_key)
 
     # e.g. A0000001-CS-LS.jp2
