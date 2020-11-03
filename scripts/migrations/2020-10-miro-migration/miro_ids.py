@@ -5,7 +5,15 @@ class UnknownMiroIDError(Exception):
     pass
 
 
-class NotMiroAssetError(UnknownMiroIDError):
+class IgnoreMiroIDError(Exception):
+    """
+    Raised if this is the Miro ID of an object that we can ignore.
+    """
+
+    pass
+
+
+class NotMiroAssetError(IgnoreMiroIDError):
     """
     Raised if you try to get the Miro ID from an object which isn't a Miro asset,
     e.g. .DS_Store or thumbs.db
@@ -14,7 +22,7 @@ class NotMiroAssetError(UnknownMiroIDError):
     pass
 
 
-class IsMiroMoviesError(UnknownMiroIDError):
+class IsMiroMoviesError(IgnoreMiroIDError):
     """
     Raised if you try to get the Miro ID from something in the Movies directory.
     """
@@ -22,7 +30,7 @@ class IsMiroMoviesError(UnknownMiroIDError):
     pass
 
 
-class IsCorporatePhotographyError(UnknownMiroIDError):
+class IsCorporatePhotographyError(IgnoreMiroIDError):
     """
     Raised if you try to get the Miro ID from somethign that's Editorial Photography.
     """
@@ -35,6 +43,23 @@ def parse_miro_id(s3_key):
     Returns the Miro ID from an S3 key.
     """
     filename = os.path.basename(s3_key)
+
+    # These are some keys with very odd filenames.  We should probably preserve
+    # the original filename so all the metadata files match, but get
+    # the numeric ID for our own processing purposes.
+    # e.g. miro/Wellcome_Images_Archive/N Images/N0019000/NOO19209.jp2
+    if filename.startswith("NOO"):
+        filename = filename.replace("NOO", "N00")
+
+    # e.g. n0022479.jp2
+    if not filename[0].isupper():
+        filename = filename.upper()
+
+    # Handle some cases where L filenames aren't zero-padded correctly.
+    # If it starts L00 and the eighth character is non-numeric, pad it out.
+    if filename.startswith("L00") and not filename[7].isnumeric():
+        filename = filename.replace("L00", "L000")
+
     name, ext = os.path.splitext(filename)
 
     # We're going to ignore metadata files, so we don't need to parse a Miro ID
@@ -51,7 +76,7 @@ def parse_miro_id(s3_key):
     # Similarly corporate photography will be handled separately.
     elif s3_key.startswith(
         "miro/Wellcome_Images_Archive/Corporate_Photography/"
-    ) or name.startswith("C"):
+    ) or name.startswith(("C", "c", "Ç", "ç")):
         raise IsCorporatePhotographyError(s3_key)
 
     # e.g. A0000001-CS-LS.jp2
