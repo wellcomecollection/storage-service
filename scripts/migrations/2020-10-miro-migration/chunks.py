@@ -24,7 +24,7 @@ class Chunk:
         self.s3_keys = self.s3_keys + chunk.s3_keys
 
     def chunk_id(self):
-        return f"{self.miro_shard}/{self.destination}"
+        return f"{self.miro_shard}-{self.destination}"
 
 
 def gather_chunks(local_decisions_index):
@@ -53,7 +53,6 @@ def gather_chunks(local_decisions_index):
     )
 
     groups = {}
-
     click.echo(f"Gathering chunks from {total_chunkable_decisions} decisions.")
     for result in tqdm.tqdm(chunkable_decisions, total=total_chunkable_decisions):
         decision = Decision(**result["_source"])

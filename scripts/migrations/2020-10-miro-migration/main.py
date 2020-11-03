@@ -6,13 +6,21 @@ into the storage service.
 
 import attr
 import click
-from decisions import get_decisions, count_decisions
+from decisions import (
+    get_decisions,
+    count_decisions
+)
 from chunks import gather_chunks
 from elastic_helpers import (
     get_elastic_client,
     get_local_elastic_client,
     index_iterator,
     get_document_count,
+)
+from chunk_transfer import (
+    get_chunks,
+    create_chunk_package,
+    upload_chunk_package
 )
 
 DECISIONS_INDEX = 'decisions'
@@ -56,6 +64,15 @@ def create_chunks_index(ctx):
     )
 
 
+@click.command()
+@click.pass_context
+def transfer_package_chunks(ctx):
+    # TODO: Perform some partitioning on chunks to distribute work
+    for chunk in get_chunks(CHUNKS_INDEX):
+        chunk_package_file_location = create_chunk_package(chunk)
+        upload_chunk_package(chunk_package_file_location)
+
+
 @click.group()
 @click.pass_context
 def cli(ctx):
@@ -64,6 +81,7 @@ def cli(ctx):
 
 cli.add_command(create_chunks_index)
 cli.add_command(create_decisions_index)
+cli.add_command(transfer_package_chunks)
 
 if __name__ == "__main__":
     cli()
