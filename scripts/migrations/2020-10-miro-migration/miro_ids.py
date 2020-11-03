@@ -52,6 +52,10 @@ def parse_miro_id(s3_key):
     if filename.startswith("NOO"):
         filename = filename.replace("NOO", "N00")
 
+    # e.g. n0022479.jp2
+    if not filename[0].isupper():
+        filename = filename.upper()
+
     name, ext = os.path.splitext(filename)
 
     # We're going to ignore metadata files, so we don't need to parse a Miro ID
