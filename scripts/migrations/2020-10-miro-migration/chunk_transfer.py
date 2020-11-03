@@ -3,10 +3,7 @@ import elasticsearch
 from chunks import Chunk
 from common import get_aws_client
 from elastic_helpers import get_local_elastic_client
-from transfer_packager import (
-    create_transfer_package,
-    upload_transfer_package
-)
+from transfer_packager import create_transfer_package, upload_transfer_package
 
 STORAGE_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
 WORKFLOW_ROLE_ARN = "arn:aws:iam::299497370133:role/workflow-developer"
@@ -21,9 +18,7 @@ def get_chunks(chunks_index):
     local_elastic_client = get_local_elastic_client()
 
     results = elasticsearch.helpers.scan(
-        local_elastic_client,
-        query={"query": {"match_all": {}}},
-        index=chunks_index,
+        local_elastic_client, query={"query": {"match_all": {}}}, index=chunks_index
     )
 
     return [Chunk(**result["_source"]) for result in results]
@@ -49,4 +44,3 @@ def upload_chunk_package(file_location):
         s3_path="born-digital/miro",
         file_location=file_location,
     )
-

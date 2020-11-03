@@ -6,10 +6,7 @@ into the storage service.
 
 import attr
 import click
-from decisions import (
-    get_decisions,
-    count_decisions
-)
+from decisions import get_decisions, count_decisions
 from chunks import gather_chunks
 from elastic_helpers import (
     get_elastic_client,
@@ -17,11 +14,7 @@ from elastic_helpers import (
     index_iterator,
     get_document_count,
 )
-from chunk_transfer import (
-    get_chunks,
-    create_chunk_package,
-    upload_chunk_package
-)
+from chunk_transfer import get_chunks, create_chunk_package, upload_chunk_package
 
 DECISIONS_INDEX = "decisions"
 CHUNKS_INDEX = "chunks"

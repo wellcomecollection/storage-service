@@ -130,10 +130,7 @@ def upload_transfer_package(
             pbar.update(num_bytes)
 
         s3_client.upload_file(
-            Filename=file_location,
-            Bucket=s3_bucket,
-            Key=s3_key,
-            Callback=_update_pbar
+            Filename=file_location, Bucket=s3_bucket, Key=s3_key, Callback=_update_pbar
         )
 
         s3_content_length = _get_s3_content_length(
@@ -147,10 +144,7 @@ def upload_transfer_package(
         if cleanup:
             os.remove(file_location)
 
-    return {
-        's3_content_length': s3_content_length,
-        's3_key': s3_key
-    }
+    return {"s3_content_length": s3_content_length, "s3_key": s3_key}
 
 
 def create_transfer_package(s3_client, group_name, s3_bucket, s3_key_list):
