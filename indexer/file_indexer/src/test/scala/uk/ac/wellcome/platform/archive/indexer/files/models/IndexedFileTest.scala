@@ -33,6 +33,7 @@ class IndexedFileTest
 
     indexedFile.space shouldBe context.space
     indexedFile.externalIdentifier shouldBe context.externalIdentifier
+    indexedFile.name shouldBe context.file.name
     indexedFile.size shouldBe context.file.size
     indexedFile.location shouldBe context.bagLocation.prefix
       .asLocation(context.file.path)
@@ -47,7 +48,7 @@ class IndexedFileTest
   it("uses the correct versioned path") {
     val file = StorageManifestFile(
       checksum = createChecksum.value,
-      name = "cat.jpg",
+      name = "data/cat.jpg",
       path = "v1/data/cat.jpg",
       size = 100
     )
@@ -67,6 +68,8 @@ class IndexedFileTest
     )
 
     val indexedFile = IndexedFile(context)
+
+    indexedFile.name shouldBe "data/cat.jpg"
 
     indexedFile.location shouldBe S3ObjectLocation(
       bucket = "example-storage",
