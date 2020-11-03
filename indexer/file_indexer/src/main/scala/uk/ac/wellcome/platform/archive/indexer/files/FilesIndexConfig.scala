@@ -25,6 +25,7 @@ object FilesIndexConfig extends IndexConfig {
       keywordField("space"),
       keywordField("externalIdentifier"),
       objectField("location").fields(locationFields),
+      keywordField("name"),
       keywordField("suffix"),
       longField("size"),
       objectField("checksum").fields(checksumFields),

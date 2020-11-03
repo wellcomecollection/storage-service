@@ -13,6 +13,7 @@ from miro_ids import (
     IsMiroMoviesError,
     IsCorporatePhotographyError,
 )
+from miro_shards import choose_miro_shard
 from s3 import get_s3_object, list_s3_objects_from
 
 
@@ -22,6 +23,7 @@ class Decision:
     skip = attr.ib()
     defer = attr.ib()
     miro_id = attr.ib()
+    miro_shard = attr.ib()
     destinations = attr.ib()
     notes = attr.ib()
 
@@ -32,6 +34,7 @@ class Decision:
             skip=True,
             defer=False,
             miro_id=None,
+            miro_shard=None,
             destinations=[],
             notes=[f"Skipped because: {reason}"],
         )
@@ -43,6 +46,7 @@ class Decision:
             skip=False,
             defer=True,
             miro_id=None,
+            miro_shard=None,
             destinations=[],
             notes=[f"Deferred because: {reason}"],
         )
@@ -82,6 +86,7 @@ def decide_based_on_reporting_inventory(s3_key, miro_id):
             return Decision(
                 s3_key=s3_key,
                 miro_id=miro_id,
+                miro_shard=choose_miro_shard(miro_id),
                 skip=False,
                 defer=False,
                 destinations=destinations,
@@ -127,6 +132,7 @@ def decide_based_on_wellcome_images_bucket(s3_obj, miro_id):
         return Decision(
             s3_key=s3_obj["Key"],
             miro_id=miro_id,
+            miro_shard=choose_miro_shard(miro_id),
             skip=False,
             defer=False,
             destinations=destinations,
@@ -158,20 +164,21 @@ def get_trimmed_metadata_for_prefix(prefix):
             continue
         interesting_lines.append(line.strip())
 
-    result = b"\n".join(interesting_lines).decode("utf8")
+    result = b"\n".join(interesting_lines)
 
     # Throw away a bunch of stuff we know is going to be XML tags, which
     # aren't actually useful for determining if we know about a Miro ID.
-    result = re.sub(r"</?[a-z_]+>", "", result)
+    result = re.sub(b"</?[a-z_]+>", b"", result)
 
-    return result
+    # Miro IDs are only ASCII, so discard non-ASCII data
+    return result.decode("ascii", errors="ignore")
 
 
 def decide_based_on_miro_metadata(s3_key, miro_id):
     if miro_id.startswith(("AS", "FP")):
         prefix = miro_id[:2]
     else:
-        prefix = miro_id[0]
+        prefix = miro_id[0].upper()
 
     metadata = get_trimmed_metadata_for_prefix(prefix)
 
@@ -179,6 +186,7 @@ def decide_based_on_miro_metadata(s3_key, miro_id):
         return Decision(
             s3_key=s3_key,
             miro_id=miro_id,
+            miro_shard=choose_miro_shard(miro_id),
             skip=False,
             defer=False,
             destinations=["none"],
@@ -230,6 +238,7 @@ def make_decision(s3_obj):
     return Decision(
         s3_key=s3_obj["Key"],
         miro_id=miro_id,
+        miro_shard=choose_miro_shard(miro_id),
         skip=False,
         defer=True,
         destinations=[],
@@ -249,11 +258,20 @@ def count_decisions():
 
 
 def get_decisions():
-    for s3_obj in list_s3_objects_from(
-        bucket="wellcomecollection-assets-workingstorage",
-        prefix="miro/Wellcome_Images_Archive",
+    import tqdm
+
+    for s3_obj in tqdm.tqdm(
+        list_s3_objects_from(
+            bucket="wellcomecollection-assets-workingstorage",
+            prefix="miro/Wellcome_Images_Archive",
+        ),
+        total=368_392,
     ):
-        yield make_decision(s3_obj)
+        try:
+            yield make_decision(s3_obj)
+        except Exception:
+            print(s3_obj["Key"])
+            raise
 
 
 if __name__ == "__main__":
