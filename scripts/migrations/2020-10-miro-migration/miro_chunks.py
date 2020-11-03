@@ -1,3 +1,6 @@
+import re
+
+
 class CannotGetMiroChunk(Exception):
     pass
 
@@ -5,8 +8,20 @@ class CannotGetMiroChunk(Exception):
 def choose_miro_chunk(miro_id):
     """
     Decides the chunk that a Miro ID belongs to.
+
+    We group the Miro IDs into per-thousand "chunks".  This is an organisational
+    scheme inherited from the way Miro assets were laid out from disk in the old
+    Miro fileshare.
+
+    We reconstruct them ourselves -- they weren't always consistent or correct
+    in the old scheme, but we try to stay as close to the previous scheme as possible.
     """
-    raise CannotGetMiroChunk(miro_id)
+    match = re.match(r"(?P<letter_prefix>[A-Z]{1,2})(?P<digits>\d{4,})", miro_id)
+
+    letter_prefix = match.group("letter_prefix")
+    numeric_chunk = match.group("digits")[:4] + "000"
+
+    return letter_prefix + numeric_chunk
 
 
 if __name__ == "__main__":
