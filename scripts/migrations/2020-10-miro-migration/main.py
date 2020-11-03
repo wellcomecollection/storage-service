@@ -23,8 +23,8 @@ from chunk_transfer import (
     upload_chunk_package
 )
 
-DECISIONS_INDEX = 'decisions'
-CHUNKS_INDEX = 'chunks'
+DECISIONS_INDEX = "decisions"
+CHUNKS_INDEX = "chunks"
 
 
 @click.command()

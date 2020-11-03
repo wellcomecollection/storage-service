@@ -32,24 +32,16 @@ def gather_chunks(local_decisions_index):
 
     query_body = {
         "query": {
-            "bool": {
-                "must_not": [
-                    {"term": {"skip": True}},
-                    {"term": {"defer": True}}
-                ]
-            }
+            "bool": {"must_not": [{"term": {"skip": True}}, {"term": {"defer": True}}]}
         }
     }
 
     total_chunkable_decisions = local_elastic_client.count(
-        body=query_body,
-        index=local_decisions_index
+        body=query_body, index=local_decisions_index
     )["count"]
 
     chunkable_decisions = elasticsearch.helpers.scan(
-        local_elastic_client,
-        query=query_body,
-        index=local_decisions_index,
+        local_elastic_client, query=query_body, index=local_decisions_index
     )
 
     groups = {}
@@ -61,7 +53,7 @@ def gather_chunks(local_decisions_index):
             new_chunk = Chunk(
                 miro_shard=decision.miro_shard,
                 destination=destination,
-                s3_keys=[decision.s3_key]
+                s3_keys=[decision.s3_key],
             )
 
             chunk_id = new_chunk.chunk_id()
