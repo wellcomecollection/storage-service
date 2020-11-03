@@ -6,7 +6,15 @@ class UnknownMiroIDError(Exception):
     pass
 
 
-class NotMiroAssetError(UnknownMiroIDError):
+class IgnoreMiroIDError(Exception):
+    """
+    Raised if this is the Miro ID of an object that we can ignore.
+    """
+
+    pass
+
+
+class NotMiroAssetError(IgnoreMiroIDError):
     """
     Raised if you try to get the Miro ID from an object which isn't a Miro asset,
     e.g. .DS_Store or thumbs.db
@@ -15,7 +23,7 @@ class NotMiroAssetError(UnknownMiroIDError):
     pass
 
 
-class IsMiroMoviesError(UnknownMiroIDError):
+class IsMiroMoviesError(IgnoreMiroIDError):
     """
     Raised if you try to get the Miro ID from something in the Movies directory.
     """
@@ -23,10 +31,11 @@ class IsMiroMoviesError(UnknownMiroIDError):
     pass
 
 
-class IsCorporatePhotographyError(UnknownMiroIDError):
+class IsCorporatePhotographyError(IgnoreMiroIDError):
     """
     Raised if you try to get the Miro ID from somethign that's Editorial Photography.
     """
+
     pass
 
 
