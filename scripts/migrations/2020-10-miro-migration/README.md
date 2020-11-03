@@ -6,7 +6,7 @@ This folder contains of a `docker-compose.yml` intended to help run Elasticsearc
 
 ## Running
 
-If you run `docker-compose up` the `create-files-index` command will be run on the migration container built from `Dockerfile`.
+If you run `docker-compose up` the `create-decisions-index` command will be run on the migration container built from `Dockerfile`.
 
 Kibana will be available at http://localhost:5601 to explore the data.
 
