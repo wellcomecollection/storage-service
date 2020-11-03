@@ -57,6 +57,16 @@ def test_spots_corporate_photography(s3_key):
         ),
         ("miro/Wellcome_Images_Archive/B Images/B0000000/B0000103.tif", "B0000103"),
         ("miro/Wellcome_Images_Archive/L Images/L0056000/L0056873.dt", "L0056873"),
+        # Given how unusual these keys are, we can just exhaustively test all the
+        # possibilities here.
+        ("miro/Wellcome_Images_Archive/N Images/N0019000/NOO19209.jp2", "N0019209"),
+        ("miro/Wellcome_Images_Archive/N Images/N0019000/NOO19210.jp2", "N0019210"),
+        ("miro/Wellcome_Images_Archive/N Images/N0019000/NOO19212.jp2", "N0019212"),
+        ("miro/Wellcome_Images_Archive/N Images/N0019000/NOO19213.jp2", "N0019213"),
+        ("miro/Wellcome_Images_Archive/N Images/N0019000/NOO19214.jp2", "N0019214"),
+        ("miro/Wellcome_Images_Archive/N Images/N0019000/NOO19215.jp2", "N0019215"),
+        ("miro/Wellcome_Images_Archive/N Images/N0019000/NOO19983.jp2", "N0019983"),
+        ("miro/Wellcome_Images_Archive/N Images/N0019000/NOO19987.jp2", "N0019987"),
     ],
 )
 def test_parses_miro_id(s3_key, miro_id):

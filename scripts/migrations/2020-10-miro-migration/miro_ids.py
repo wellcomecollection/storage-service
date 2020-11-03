@@ -44,6 +44,14 @@ def parse_miro_id(s3_key):
     Returns the Miro ID from an S3 key.
     """
     filename = os.path.basename(s3_key)
+
+    # These are some keys with very odd filenames.  We should probably preserve
+    # the original filename so all the metadata files match, but get
+    # the numeric ID for our own processing purposes.
+    # e.g. miro/Wellcome_Images_Archive/N Images/N0019000/NOO19209.jp2
+    if filename.startswith("NOO"):
+        filename = filename.replace("NOO", "N00")
+
     name, ext = os.path.splitext(filename)
 
     # We're going to ignore metadata files, so we don't need to parse a Miro ID
