@@ -254,7 +254,7 @@ def get_decisions():
             bucket="wellcomecollection-assets-workingstorage",
             prefix="miro/Wellcome_Images_Archive",
         ),
-        total=368392,
+        total=368_392,
     ):
         try:
             yield make_decision(s3_obj)
