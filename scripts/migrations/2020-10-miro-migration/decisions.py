@@ -5,8 +5,15 @@ import os
 import re
 
 import attr
-import httpx
+import click
+import elasticsearch
+import tqdm
 
+from elastic_helpers import (
+    get_local_elastic_client,
+    get_elastic_client,
+    get_document_count
+)
 from miro_ids import (
     parse_miro_id,
     NotMiroAssetError,
@@ -15,6 +22,12 @@ from miro_ids import (
 )
 from miro_shards import choose_miro_shard
 from s3 import get_s3_object, list_s3_objects_from
+
+REMOTE_INVENTORY_INDEX = "miro_inventory"
+LOCAL_INVENTORY_INDEX = "reporting_miro_inventory"
+
+STORAGE_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
+ELASTIC_SECRET_ID = "miro_storage_migration/credentials"
 
 
 @attr.s
@@ -52,15 +65,53 @@ class Decision:
         )
 
 
-def find_inventory_hits_for_query(query_string):
-    resp = httpx.request(
-        "GET",
-        "http://localhost:9200/reporting_miro_inventory/_search",
-        json={"query": {"query_string": {"query": f'"{query_string}"'}}},
+def mirror_miro_inventory_locally():
+    """
+    Create a local mirror of the miro_inventory index in the reporting cluster.
+    """
+    local_elastic_client = get_local_elastic_client()
+    reporting_elastic_client = get_elastic_client(
+        role_arn=STORAGE_ROLE_ARN, elastic_secret_id=ELASTIC_SECRET_ID
     )
 
-    if len(resp.json()["hits"]["hits"]) == 1:
-        return resp.json()["hits"]["hits"][0]["_source"]
+    local_count = get_document_count(local_elastic_client, index=LOCAL_INVENTORY_INDEX)
+
+    remote_count = get_document_count(
+        reporting_elastic_client, index=REMOTE_INVENTORY_INDEX
+    )
+
+    if local_count == remote_count:
+        click.echo("miro_inventory index has been mirrored locally, nothing to do")
+        return
+    else:
+        click.echo("miro_inventory index has not been mirrored locally")
+
+    click.echo(
+        "Downloading the complete miro_inventory index from the reporting cluster"
+    )
+
+    elasticsearch.helpers.reindex(
+        client=reporting_elastic_client,
+        source_index=REMOTE_INVENTORY_INDEX,
+        target_index=LOCAL_INVENTORY_INDEX,
+        target_client=local_elastic_client,
+    )
+
+
+def find_inventory_hits_for_query(query_string):
+    local_elastic_client = get_local_elastic_client()
+
+    results = local_elastic_client.search(
+        body={
+            "query": {
+                "query_string": {"query": f'"{query_string}"'}
+            }
+        },
+        index=LOCAL_INVENTORY_INDEX,
+    )
+
+    if len(results["hits"]["hits"]) == 1:
+        return results["hits"]["hits"][0]["_source"]
 
 
 def decide_based_on_reporting_inventory(s3_key, miro_id):
@@ -258,7 +309,7 @@ def count_decisions():
 
 
 def get_decisions():
-    import tqdm
+    mirror_miro_inventory_locally()
 
     for s3_obj in tqdm.tqdm(
         list_s3_objects_from(
