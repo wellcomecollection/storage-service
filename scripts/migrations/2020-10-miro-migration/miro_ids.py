@@ -56,6 +56,11 @@ def parse_miro_id(s3_key):
     if not filename[0].isupper():
         filename = filename.upper()
 
+    # Handle some cases where L filenames aren't zero-padded correctly.
+    # If it starts L00 and the eighth character is non-numeric, pad it out.
+    if filename.startswith("L00") and not filename[7].isnumeric():
+        filename = filename.replace("L00", "L000")
+
     name, ext = os.path.splitext(filename)
 
     # We're going to ignore metadata files, so we don't need to parse a Miro ID

@@ -58,6 +58,11 @@ def test_spots_corporate_photography(s3_key):
         ("miro/Wellcome_Images_Archive/B Images/B0000000/B0000103.tif", "B0000103"),
         ("miro/Wellcome_Images_Archive/L Images/L0056000/L0056873.dt", "L0056873"),
         ("miro/Wellcome_Images_Archive/N Images/N0022000/n0022479.jp2", "N0022479"),
+        ("miro/Wellcome_Images_Archive/L Images/L0008000/L008405B.jp2", "L0008405B"),
+        (
+            "miro/Wellcome_Images_Archive/L Images/L0001000/L001771EA-LH-LH.jp2",
+            "L0001771EA",
+        ),
         # Given how unusual these keys are, we can just exhaustively test all the
         # possibilities here.
         ("miro/Wellcome_Images_Archive/N Images/N0019000/NOO19209.jp2", "N0019209"),
