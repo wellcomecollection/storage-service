@@ -15,8 +15,8 @@ from elastic_helpers import (
     get_document_count,
 )
 
-DECISIONS_INDEX = 'decisions'
-CHUNKS_INDEX = 'chunks'
+DECISIONS_INDEX = "decisions"
+CHUNKS_INDEX = "chunks"
 
 
 @click.command()

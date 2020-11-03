@@ -12,7 +12,7 @@ import tqdm
 from elastic_helpers import (
     get_local_elastic_client,
     get_elastic_client,
-    get_document_count
+    get_document_count,
 )
 from miro_ids import (
     parse_miro_id,
@@ -102,11 +102,7 @@ def find_inventory_hits_for_query(query_string):
     local_elastic_client = get_local_elastic_client()
 
     results = local_elastic_client.search(
-        body={
-            "query": {
-                "query_string": {"query": f'"{query_string}"'}
-            }
-        },
+        body={"query": {"query_string": {"query": f'"{query_string}"'}}},
         index=LOCAL_INVENTORY_INDEX,
     )
 
