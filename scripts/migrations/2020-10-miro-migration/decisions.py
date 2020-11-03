@@ -13,6 +13,7 @@ from miro_ids import (
     IsMiroMoviesError,
     IsCorporatePhotographyError,
 )
+from miro_shards import choose_miro_shard
 from s3 import get_s3_object, list_s3_objects_from
 
 
@@ -22,6 +23,7 @@ class Decision:
     skip = attr.ib()
     defer = attr.ib()
     miro_id = attr.ib()
+    miro_shard = attr.ib()
     destinations = attr.ib()
     notes = attr.ib()
 
@@ -32,6 +34,7 @@ class Decision:
             skip=True,
             defer=False,
             miro_id=None,
+            miro_shard=None,
             destinations=[],
             notes=[f"Skipped because: {reason}"],
         )
@@ -43,6 +46,7 @@ class Decision:
             skip=False,
             defer=True,
             miro_id=None,
+            miro_shard=None,
             destinations=[],
             notes=[f"Deferred because: {reason}"],
         )
@@ -82,6 +86,7 @@ def decide_based_on_reporting_inventory(s3_key, miro_id):
             return Decision(
                 s3_key=s3_key,
                 miro_id=miro_id,
+                miro_shard=choose_miro_shard(miro_id),
                 skip=False,
                 defer=False,
                 destinations=destinations,
@@ -127,6 +132,7 @@ def decide_based_on_wellcome_images_bucket(s3_obj, miro_id):
         return Decision(
             s3_key=s3_obj["Key"],
             miro_id=miro_id,
+            miro_shard=choose_miro_shard(miro_id),
             skip=False,
             defer=False,
             destinations=destinations,
@@ -180,6 +186,7 @@ def decide_based_on_miro_metadata(s3_key, miro_id):
         return Decision(
             s3_key=s3_key,
             miro_id=miro_id,
+            miro_shard=choose_miro_shard(miro_id),
             skip=False,
             defer=False,
             destinations=["none"],
@@ -231,6 +238,7 @@ def make_decision(s3_obj):
     return Decision(
         s3_key=s3_obj["Key"],
         miro_id=miro_id,
+        miro_shard=choose_miro_shard(miro_id),
         skip=False,
         defer=True,
         destinations=[],
