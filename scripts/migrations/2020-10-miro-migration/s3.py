@@ -53,3 +53,12 @@ def get_s3_object(*, bucket, key):
         )
         s3.download_file(Bucket=bucket, Key=key, Filename=out_path)
         return open(out_path, "rb")
+
+
+def get_s3_content_length(s3_client, s3_bucket, s3_key):
+    """
+    Retrieves the content length of an object from S3.
+    """
+    s3_head_object_response = s3_client.head_object(Bucket=s3_bucket, Key=s3_key)
+
+    return s3_head_object_response["ContentLength"]

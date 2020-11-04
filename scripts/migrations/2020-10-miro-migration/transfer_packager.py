@@ -5,6 +5,8 @@ import shutil
 
 from tqdm import tqdm
 
+from s3 import get_s3_content_length
+
 S3_DOWNLOAD_CONCURRENCY = 3
 
 
@@ -20,17 +22,11 @@ def _assert_local_content_length(file_location, expected_content_length):
     ), f"Content length mismatch: {file_location}!"
 
 
-def _get_s3_content_length(s3_client, s3_bucket, s3_key):
-    s3_head_object_response = s3_client.head_object(Bucket=s3_bucket, Key=s3_key)
-
-    return s3_head_object_response["ContentLength"]
-
-
 def _download_s3_object(s3_client, s3_bucket, s3_key, target_folder):
     file_name = s3_key.split("/")[-1]
     file_location = os.path.join(target_folder, file_name)
 
-    s3_content_length = _get_s3_content_length(
+    s3_content_length = get_s3_content_length(
         s3_client=s3_client, s3_bucket=s3_bucket, s3_key=s3_key
     )
 
