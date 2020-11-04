@@ -16,14 +16,9 @@ def _check_local_content_length(file_location, expected_content_length):
     """
     local_content_length = os.path.getsize(file_location)
 
-    assert local_content_length > 0, (
-        "Content length is zero: "
-        f"{file_location}"
-    )
+    assert local_content_length > 0, "Content length is zero: " f"{file_location}"
 
-    assert (
-        local_content_length == expected_content_length
-    ), (
+    assert local_content_length == expected_content_length, (
         "Content length mismatch "
         f"({local_content_length} != {expected_content_length}): "
         f"{file_location}"
