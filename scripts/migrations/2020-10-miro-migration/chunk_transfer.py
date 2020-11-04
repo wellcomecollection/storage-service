@@ -5,7 +5,7 @@ from common import get_aws_client
 from elastic_helpers import get_local_elastic_client
 from transfer_packager import create_transfer_package, upload_transfer_package
 
-STORAGE_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
+STORAGE_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
 WORKFLOW_ROLE_ARN = "arn:aws:iam::299497370133:role/workflow-developer"
 S3_ARCHIVEMATICA_BUCKET = "wellcomecollection-archivematica-staging-transfer-source"
 S3_MIRO_BUCKET = "wellcomecollection-assets-workingstorage"
