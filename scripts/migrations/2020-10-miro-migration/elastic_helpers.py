@@ -62,11 +62,6 @@ def index_iterator(elastic_client, index_name, documents, expected_doc_count=Non
     if errors:
         click.echo(f"Errors indexing documents! {errors}")
 
-    updated_doc_count = get_document_count(elastic_client, index=index_name)
-
     assert (
         successes == expected_doc_count
     ), f"Unexpected index success count: {successes}"
-    assert (
-        updated_doc_count == expected_doc_count
-    ), f"Unexpected index doc count: {updated_doc_count}"

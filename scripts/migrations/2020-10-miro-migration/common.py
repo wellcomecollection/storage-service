@@ -35,3 +35,18 @@ def get_secret(role_arn, secret_id):
         secret = response["SecretString"]
 
     return secret
+
+
+def file_exists(file_location, expected_content_length):
+    """
+    Check that a file has the expected content length in bytes
+    """
+    local_content_length = os.path.getsize(file_location)
+
+    assert local_content_length > 0, "Content length is zero: " f"{file_location}"
+
+    assert local_content_length == expected_content_length, (
+        "Content length mismatch "
+        f"({local_content_length} != {expected_content_length}): "
+        f"{file_location}"
+    )

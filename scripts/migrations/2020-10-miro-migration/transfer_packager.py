@@ -3,11 +3,19 @@ import itertools
 import os
 import shutil
 
+import attr
 from tqdm import tqdm
 
 from s3 import get_s3_content_length
 
 S3_DOWNLOAD_CONCURRENCY = 3
+
+
+@attr.s
+class TransferPackage:
+    local_location = attr.ib()
+    content_length = attr.ib()
+    s3_location = attr.ib(default=None)
 
 
 def _check_local_content_length(file_location, expected_content_length):
@@ -116,8 +124,10 @@ def _create_metadata(target_folder, group_name):
 
 
 def upload_transfer_package(
-    s3_client, s3_bucket, s3_path, file_location, cleanup=False
+    s3_client, s3_bucket, s3_path, transfer_package, cleanup=False
 ):
+    file_location = transfer_package.local_location
+
     filename = os.path.basename(file_location)
     s3_key = f"{s3_path}/{filename}"
 
@@ -143,7 +153,9 @@ def upload_transfer_package(
         if cleanup:
             os.remove(file_location)
 
-    return {"s3_content_length": s3_content_length, "s3_key": s3_key}
+    transfer_package.s3_location = s3_key
+
+    return transfer_package
 
 
 def create_transfer_package(s3_client, group_name, s3_bucket, s3_key_list):
@@ -162,4 +174,10 @@ def create_transfer_package(s3_client, group_name, s3_bucket, s3_key_list):
 
     _create_metadata(target_folder=target_folder, group_name=group_name)
 
-    return _compress_folder(target_folder=target_folder)
+    archive_location = _compress_folder(target_folder=target_folder)
+    archive_content_length = os.path.getsize(archive_location)
+
+    return TransferPackage(
+        local_location=archive_location,
+        content_length=archive_content_length
+    )

@@ -14,7 +14,12 @@ from elastic_helpers import (
     index_iterator,
     get_document_count,
 )
-from chunk_transfer import get_chunks, create_chunk_package, upload_chunk_package
+from chunk_transfer import (
+    get_chunks,
+    create_chunk_package,
+    upload_chunk_package,
+    update_chunk_record
+)
 
 DECISIONS_INDEX = "decisions"
 CHUNKS_INDEX = "chunks"
@@ -62,8 +67,21 @@ def create_chunks_index(ctx):
 def transfer_package_chunks(ctx):
     # TODO: Perform some partitioning on chunks to distribute work
     for chunk in get_chunks(CHUNKS_INDEX):
-        chunk_package_file_location = create_chunk_package(chunk)
-        upload_chunk_package(chunk_package_file_location)
+        created_transfer_package = create_chunk_package(chunk)
+
+        update_chunk_record(
+            CHUNKS_INDEX,
+            chunk.chunk_id(),
+            {'transfer_package': attr.asdict(created_transfer_package)}
+        )
+
+        updated_transfer_package = upload_chunk_package(created_transfer_package)
+
+        update_chunk_record(
+            CHUNKS_INDEX,
+            chunk.chunk_id(),
+            {'transfer_package': attr.asdict(updated_transfer_package)}
+        )
 
 
 @click.group()
