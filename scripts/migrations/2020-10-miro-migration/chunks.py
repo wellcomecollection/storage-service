@@ -19,9 +19,9 @@ class Chunk:
     destination = attr.ib()
     s3_keys = attr.ib(default=[])
 
-    def merge_chunk(self, chunk):
-        assert chunk.chunk_id() == self.chunk_id()
-        self.s3_keys = self.s3_keys + chunk.s3_keys
+    def merge_chunk(self, other):
+        assert other.chunk_id() == self.chunk_id()
+        self.s3_keys = self.s3_keys + other.s3_keys
 
     def chunk_id(self):
         return f"{self.miro_shard}-{self.destination}"
