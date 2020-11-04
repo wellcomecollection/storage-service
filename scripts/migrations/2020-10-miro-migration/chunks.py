@@ -17,7 +17,7 @@ from elastic_helpers import get_local_elastic_client
 class Chunk:
     miro_shard = attr.ib()
     destination = attr.ib()
-    s3_keys = attr.ib(default=[])
+    s3_keys = attr.ib(default=list)
 
     def merge_chunk(self, other):
         assert other.chunk_id() == self.chunk_id()
