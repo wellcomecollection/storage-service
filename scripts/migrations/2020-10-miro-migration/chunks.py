@@ -4,6 +4,8 @@ Functions related to gathering migration chunk information
 for creating transfer packages
 """
 
+import collections
+
 import attr
 import click
 import elasticsearch
@@ -44,25 +46,20 @@ def gather_chunks(local_decisions_index):
         local_elastic_client, query=query_body, index=local_decisions_index
     )
 
-    groups = {}
     click.echo(f"Gathering chunks from {total_chunkable_decisions} decisions.")
-    for result in tqdm.tqdm(chunkable_decisions, total=total_chunkable_decisions):
+
+    # Dict (shard, destination) -> set(s3 keys)
+    groups = collections.defaultdict(set)
+
+    for result in chunkable_decisions:
         decision = Decision(**result["_source"])
-
         for destination in decision.destinations:
-            new_chunk = Chunk(
-                miro_shard=decision.miro_shard,
-                destination=destination,
-                s3_keys=[decision.s3_key],
-            )
-
-            chunk_id = new_chunk.chunk_id()
-
-            if chunk_id in groups:
-                groups[chunk_id].merge_chunk(new_chunk)
-            else:
-                groups[chunk_id] = new_chunk
+            groups[(decision.miro_shard, destination)].add(decision.s3_key)
 
     click.echo(f"Found {len(groups)} chunks.")
 
-    return groups.values()
+    return [Chunk(
+        miro_shard=miro_shard,
+        destination=destination,
+        s3_keys=s3_keys,
+    ) for (miro_shard, destination), s3_keys in groups.items()]
