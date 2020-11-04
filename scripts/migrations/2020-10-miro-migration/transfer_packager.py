@@ -10,16 +10,24 @@ from s3 import get_s3_content_length
 S3_DOWNLOAD_CONCURRENCY = 3
 
 
-def _assert_local_content_length(file_location, expected_content_length):
-    # Assert we have the correct number of bytes
+def _check_local_content_length(file_location, expected_content_length):
+    """
+    Check that a file has the expected content length in bytes
+    """
     local_content_length = os.path.getsize(file_location)
 
-    # Check that content length is non-zero
-    assert local_content_length > 0
+    assert local_content_length > 0, (
+        "Content length is zero: "
+        f"{file_location}"
+    )
 
     assert (
         local_content_length == expected_content_length
-    ), f"Content length mismatch: {file_location}!"
+    ), (
+        "Content length mismatch "
+        f"({local_content_length} != {expected_content_length}): "
+        f"{file_location}"
+    )
 
 
 def _download_s3_object(s3_client, s3_bucket, s3_key, target_folder):
@@ -41,7 +49,7 @@ def _download_s3_object(s3_client, s3_bucket, s3_key, target_folder):
     else:
         _download()
 
-    _assert_local_content_length(
+    _check_local_content_length(
         file_location=file_location, expected_content_length=s3_content_length
     )
 
@@ -133,7 +141,7 @@ def upload_transfer_package(
             s3_client=s3_client, s3_bucket=s3_bucket, s3_key=s3_key
         )
 
-        _assert_local_content_length(
+        _check_local_content_length(
             file_location=file_location, expected_content_length=s3_content_length
         )
 
