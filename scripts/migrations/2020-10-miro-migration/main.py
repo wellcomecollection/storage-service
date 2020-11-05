@@ -66,7 +66,9 @@ def create_chunks_index(ctx):
 @click.pass_context
 def transfer_package_chunks(ctx):
     # TODO: Perform some partitioning on chunks to distribute work
-    for chunk in get_chunks(CHUNKS_INDEX):
+    chunks = get_chunks(CHUNKS_INDEX)
+
+    for chunk in chunks:
         created_transfer_package = create_chunk_package(chunk)
 
         update_chunk_record(

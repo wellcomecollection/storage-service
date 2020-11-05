@@ -67,5 +67,10 @@ def gather_chunks(local_decisions_index):
 
 
 if __name__ == "__main__":
+    tally = collections.Counter()
+
     for chunk in gather_chunks('decisions'):
-        print(json.dumps(attr.asdict(chunk)))
+        tally[chunk.chunk_id()] = len(chunk.s3_keys)
+
+    from pprint import pprint
+    pprint(tally.items())

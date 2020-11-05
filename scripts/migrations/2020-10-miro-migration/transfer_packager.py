@@ -2,6 +2,7 @@ import concurrent
 import itertools
 import os
 import shutil
+import uuid
 
 import attr
 from tqdm import tqdm
@@ -38,7 +39,7 @@ def _download_s3_object(s3_client, s3_bucket, s3_key, target_folder, prefix):
         f"{s3_key} does not start with {prefix}"
     )
 
-    file_name = s3_key[len(prefix):]
+    file_name = s3_key[len(prefix):].strip("/")
     file_location = os.path.join(target_folder, file_name)
 
     s3_content_length = get_s3_content_length(
@@ -46,6 +47,8 @@ def _download_s3_object(s3_client, s3_bucket, s3_key, target_folder, prefix):
     )
 
     def _download():
+        required_dir = os.path.dirname(file_location)
+        os.makedirs(required_dir, exist_ok=True)
         s3_client.download_file(Bucket=s3_bucket, Key=s3_key, Filename=file_location)
 
     # Check if we already have this file
@@ -101,11 +104,11 @@ def _download_objects_from_s3(s3_client, target_folder, s3_bucket, s3_key_list, 
                     fut = executor.submit(_get_s3_object, task)
                     futures[fut] = task
 
-        target_folder_list = os.listdir(target_folder)
+        target_folder_count = sum([len(files) for r, d, files in os.walk(target_folder)])
 
-        assert len(target_folder_list) == len(s3_key_list), (
+        assert target_folder_count == len(s3_key_list), (
             f"Unexpected file count in {target_folder}: "
-            f"{len(target_folder_list)} != {len(s3_key_list)}"
+            f"{target_folder_count} != {len(s3_key_list)}"
         )
 
 
@@ -168,7 +171,9 @@ def upload_transfer_package(
 
 def create_transfer_package(s3_client, group_name, s3_bucket, s3_key_list, prefix):
     target_base_folder = "target"
-    target_folder = os.path.join(target_base_folder, group_name)
+    folder_id = str(uuid.uuid4())
+
+    target_folder = os.path.join(target_base_folder, folder_id)
 
     os.makedirs(target_folder, exist_ok=True)
 
