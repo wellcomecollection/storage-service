@@ -33,8 +33,12 @@ def _check_local_content_length(file_location, expected_content_length):
     )
 
 
-def _download_s3_object(s3_client, s3_bucket, s3_key, target_folder):
-    file_name = s3_key.split("/")[-1]
+def _download_s3_object(s3_client, s3_bucket, s3_key, target_folder, prefix):
+    assert s3_key.startswith(prefix), (
+        f"{s3_key} does not start with {prefix}"
+    )
+
+    file_name = s3_key[len(prefix):]
     file_location = os.path.join(target_folder, file_name)
 
     s3_content_length = get_s3_content_length(
@@ -57,13 +61,14 @@ def _download_s3_object(s3_client, s3_bucket, s3_key, target_folder):
     )
 
 
-def _download_objects_from_s3(s3_client, target_folder, s3_bucket, s3_key_list):
+def _download_objects_from_s3(s3_client, target_folder, s3_bucket, s3_key_list, prefix):
     def _get_s3_object(s3_key):
         _download_s3_object(
             s3_client=s3_client,
             s3_bucket=s3_bucket,
             s3_key=s3_key,
             target_folder=target_folder,
+            prefix=prefix
         )
 
     # itertools below expects an iterator
@@ -161,7 +166,7 @@ def upload_transfer_package(
     return transfer_package
 
 
-def create_transfer_package(s3_client, group_name, s3_bucket, s3_key_list):
+def create_transfer_package(s3_client, group_name, s3_bucket, s3_key_list, prefix):
     target_base_folder = "target"
     target_folder = os.path.join(target_base_folder, group_name)
 
@@ -172,6 +177,7 @@ def create_transfer_package(s3_client, group_name, s3_bucket, s3_key_list):
         target_folder=target_folder,
         s3_bucket=s3_bucket,
         s3_key_list=s3_key_list,
+        prefix=prefix
     )
 
     _create_metadata(target_folder=target_folder, group_name=group_name)

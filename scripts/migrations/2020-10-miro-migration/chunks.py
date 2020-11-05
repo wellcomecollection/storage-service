@@ -5,6 +5,7 @@ for creating transfer packages
 """
 
 import collections
+import json
 
 import attr
 import click
@@ -16,7 +17,7 @@ from elastic_helpers import get_local_elastic_client
 
 @attr.s
 class Chunk:
-    miro_shard = attr.ib()
+    group_name = attr.ib()
     destination = attr.ib()
     s3_keys = attr.ib(default=list)
     transfer_package = attr.ib(default=None)
@@ -26,7 +27,7 @@ class Chunk:
         self.s3_keys = self.s3_keys + other.s3_keys
 
     def chunk_id(self):
-        return f"{self.miro_shard}-{self.destination}"
+        return f"{self.destination}/{self.group_name}"
 
 
 def gather_chunks(local_decisions_index):
@@ -34,7 +35,7 @@ def gather_chunks(local_decisions_index):
 
     query_body = {
         "query": {
-            "bool": {"must_not": [{"term": {"skip": True}}, {"term": {"defer": True}}]}
+            "bool": {"must_not": [{"term": {"skip": True}}]}
         }
     }
 
@@ -54,12 +55,17 @@ def gather_chunks(local_decisions_index):
     for result in chunkable_decisions:
         decision = Decision(**result["_source"])
         for destination in decision.destinations:
-            groups[(decision.miro_shard, destination)].add(decision.s3_key)
+            groups[(decision.group_name, destination)].add(decision.s3_key)
 
     click.echo(f"Found {len(groups)} chunks.")
 
     return [Chunk(
-        miro_shard=miro_shard,
+        group_name=group_name,
         destination=destination,
         s3_keys=s3_keys,
-    ) for (miro_shard, destination), s3_keys in groups.items()]
+    ) for (group_name, destination), s3_keys in groups.items()]
+
+
+if __name__ == "__main__":
+    for chunk in gather_chunks('decisions'):
+        print(json.dumps(attr.asdict(chunk)))

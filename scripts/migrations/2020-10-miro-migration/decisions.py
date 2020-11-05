@@ -20,7 +20,7 @@ from miro_ids import (
     IsMiroMoviesError,
     IsCorporatePhotographyError,
 )
-from miro_shards import choose_miro_shard
+from file_groups import choose_group_name
 from s3 import get_s3_object, list_s3_objects_from
 
 REMOTE_INVENTORY_INDEX = "miro_inventory"
@@ -28,15 +28,14 @@ LOCAL_INVENTORY_INDEX = "reporting_miro_inventory"
 
 STORAGE_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
 ELASTIC_SECRET_ID = "miro_storage_migration/credentials"
-
+S3_PREFIX = "miro/Wellcome_Images_Archive"
 
 @attr.s
 class Decision:
     s3_key = attr.ib()
     skip = attr.ib()
-    defer = attr.ib()
     miro_id = attr.ib()
-    miro_shard = attr.ib()
+    group_name = attr.ib()
     destinations = attr.ib()
     notes = attr.ib()
 
@@ -45,23 +44,10 @@ class Decision:
         return cls(
             s3_key=s3_key,
             skip=True,
-            defer=False,
             miro_id=None,
-            miro_shard=None,
+            group_name=None,
             destinations=[],
             notes=[f"Skipped because: {reason}"],
-        )
-
-    @classmethod
-    def from_defer(cls, *, s3_key, reason):
-        return cls(
-            s3_key=s3_key,
-            skip=False,
-            defer=True,
-            miro_id=None,
-            miro_shard=None,
-            destinations=[],
-            notes=[f"Deferred because: {reason}"],
         )
 
 
@@ -133,9 +119,8 @@ def decide_based_on_reporting_inventory(s3_key, miro_id):
             return Decision(
                 s3_key=s3_key,
                 miro_id=miro_id,
-                miro_shard=choose_miro_shard(miro_id),
+                group_name=choose_group_name(S3_PREFIX, s3_key),
                 skip=False,
-                defer=False,
                 destinations=destinations,
                 notes=notes,
             )
@@ -179,9 +164,8 @@ def decide_based_on_wellcome_images_bucket(s3_obj, miro_id):
         return Decision(
             s3_key=s3_obj["Key"],
             miro_id=miro_id,
-            miro_shard=choose_miro_shard(miro_id),
+            group_name=choose_group_name(S3_PREFIX, s3_obj["Key"]),
             skip=False,
-            defer=False,
             destinations=destinations,
             notes=notes,
         )
@@ -233,9 +217,8 @@ def decide_based_on_miro_metadata(s3_key, miro_id):
         return Decision(
             s3_key=s3_key,
             miro_id=miro_id,
-            miro_shard=choose_miro_shard(miro_id),
+            group_name=choose_group_name(S3_PREFIX, s3_key),
             skip=False,
-            defer=False,
             destinations=["none"],
             notes=[
                 f"There is no mention of Miro ID {miro_id} in the metadata for prefix {prefix}"
@@ -250,16 +233,26 @@ def make_decision(s3_obj):
     try:
         miro_id = parse_miro_id(s3_obj["Key"])
     except NotMiroAssetError:
-        return Decision.from_defer(
+        return Decision.from_skip(
             s3_key=s3_obj["Key"], reason="This isn't a Miro asset we want to keep"
         )
     except IsMiroMoviesError:
-        return Decision.from_defer(
-            s3_key=s3_obj["Key"], reason="We're doing Movies later"
+        return Decision(
+            s3_key=s3_obj["Key"],
+            miro_id=None,
+            group_name=choose_group_name(S3_PREFIX, s3_obj["Key"]),
+            skip=False,
+            destinations=[],
+            notes=["This is a movie"],
         )
     except IsCorporatePhotographyError:
-        return Decision.from_defer(
-            s3_key=s3_obj["Key"], reason="We're doing Corporate_Photography later"
+        return Decision(
+            s3_key=s3_obj["Key"],
+            miro_id=None,
+            group_name=choose_group_name(S3_PREFIX, s3_obj["Key"]),
+            skip=False,
+            destinations=[],
+            notes=["Corporate photography"],
         )
 
     # Can we find a matching entry in the miro_reporting inventory?  If so, we
@@ -285,9 +278,8 @@ def make_decision(s3_obj):
     return Decision(
         s3_key=s3_obj["Key"],
         miro_id=miro_id,
-        miro_shard=choose_miro_shard(miro_id),
+        group_name=choose_group_name(S3_PREFIX, s3_obj["Key"]),
         skip=False,
-        defer=True,
         destinations=[],
         notes=["??? I don't know how to handle this object"],
     )
@@ -295,9 +287,9 @@ def make_decision(s3_obj):
 
 def count_decisions():
     decision_count = 0
-    for s3_obj in list_s3_objects_from(
+    for _ in list_s3_objects_from(
         bucket="wellcomecollection-assets-workingstorage",
-        prefix="miro/Wellcome_Images_Archive",
+        prefix=S3_PREFIX,
     ):
         decision_count = decision_count + 1
 
@@ -310,7 +302,7 @@ def get_decisions():
     for s3_obj in tqdm.tqdm(
         list_s3_objects_from(
             bucket="wellcomecollection-assets-workingstorage",
-            prefix="miro/Wellcome_Images_Archive",
+            prefix=S3_PREFIX,
         ),
         total=368_392,
     ):

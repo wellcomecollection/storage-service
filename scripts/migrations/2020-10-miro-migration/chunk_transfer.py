@@ -13,6 +13,7 @@ STORAGE_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
 WORKFLOW_ROLE_ARN = "arn:aws:iam::299497370133:role/workflow-developer"
 S3_ARCHIVEMATICA_BUCKET = "wellcomecollection-archivematica-staging-transfer-source"
 S3_MIRO_BUCKET = "wellcomecollection-assets-workingstorage"
+S3_PREFIX = "miro/Wellcome_Images_Archive"
 
 storage_s3_client = get_aws_client("s3", role_arn=STORAGE_ROLE_ARN)
 workflow_s3_client = get_aws_client("s3", role_arn=WORKFLOW_ROLE_ARN)
@@ -50,6 +51,7 @@ def create_chunk_package(chunk):
         group_name=chunk.chunk_id(),
         s3_bucket=S3_MIRO_BUCKET,
         s3_key_list=chunk.s3_keys,
+        prefix=S3_PREFIX
     )
 
     click.echo(
