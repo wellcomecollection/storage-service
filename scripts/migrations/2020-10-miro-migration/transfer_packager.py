@@ -96,9 +96,12 @@ def _download_objects_from_s3(s3_client, target_folder, s3_bucket, s3_key_list):
                     fut = executor.submit(_get_s3_object, task)
                     futures[fut] = task
 
-        assert len(os.listdir(target_folder)) == len(
-            s3_key_list
-        ), f"Unexpected file count in {target_folder}!"
+        target_folder_list = os.listdir(target_folder)
+
+        assert len(target_folder_list) == len(s3_key_list), (
+            f"Unexpected file count in {target_folder}: "
+            f"{len(target_folder_list)} != {len(s3_key_list)}"
+        )
 
 
 def _compress_folder(target_folder, remove_folder=True):
@@ -142,7 +145,7 @@ def upload_transfer_package(
             Filename=file_location, Bucket=s3_bucket, Key=s3_key, Callback=_update_pbar
         )
 
-        s3_content_length = _get_s3_content_length(
+        s3_content_length = get_s3_content_length(
             s3_client=s3_client, s3_bucket=s3_bucket, s3_key=s3_key
         )
 
@@ -164,7 +167,6 @@ def create_transfer_package(s3_client, group_name, s3_bucket, s3_key_list):
 
     os.makedirs(target_folder, exist_ok=True)
 
-    # TODO: We must account for downloading multiple same name files and not overwrite
     _download_objects_from_s3(
         s3_client=s3_client,
         target_folder=target_folder,

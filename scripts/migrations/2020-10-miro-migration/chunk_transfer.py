@@ -1,5 +1,6 @@
 import os
 
+import click
 import elasticsearch
 
 from chunks import Chunk
@@ -28,23 +29,44 @@ def get_chunks(chunks_index):
 
 
 def create_chunk_package(chunk):
+    click.echo(f"Creating transfer package for {chunk.chunk_id()}")
     if chunk.transfer_package:
         file_location = chunk.transfer_package.local_location
         expected_content_length = chunk.transfer_package.content_length
 
         if os.path.isfile(file_location):
-            assert os.path.getsize(file_location) == expected_content_length
+            assert os.path.getsize(file_location) == expected_content_length, (
+                f"Local transfer package content length mismatch: "
+                f"{os.path.getsize(file_location)} != {expected_content_length}"
+            )
+            click.echo(
+                f"Local transfer package for {chunk.chunk_id()} found: "
+                f"{file_location} - skipping download."
+            )
             return chunk.transfer_package
 
-    return create_transfer_package(
+    transfer_package = create_transfer_package(
         s3_client=storage_s3_client,
         group_name=chunk.chunk_id(),
         s3_bucket=S3_MIRO_BUCKET,
         s3_key_list=chunk.s3_keys,
     )
 
+    click.echo(
+        f"Local transfer package created:\n"
+        f"  Source: {transfer_package.local_location}\n"
+        f"  Content-Length: ({transfer_package.content_length} bytes"
+    )
+
+    return transfer_package
+
 
 def upload_chunk_package(transfer_package):
+    click.echo(
+        f"Uploading transfer package:\n"
+        f"  Destination: {transfer_package.local_location}"
+    )
+
     if transfer_package.s3_location:
         s3_content_length = get_s3_content_length(
             s3_client=storage_s3_client,
@@ -55,15 +77,27 @@ def upload_chunk_package(transfer_package):
             f"Content length mismatch for {transfer_package.s3_location}: "
             f"{s3_content_length} != {transfer_package.content_length}"
         )
-
+        click.echo(
+            f"Found uploaded transfer package: "
+            f"{transfer_package.s3_location} - skipping upload."
+        )
         return transfer_package
 
-    return upload_transfer_package(
+    transfer_package = upload_transfer_package(
         s3_client=workflow_s3_client,
         s3_bucket=S3_ARCHIVEMATICA_BUCKET,
         s3_path="born-digital/miro",
-        file_location=transfer_package.local_location,
+        transfer_package=transfer_package,
     )
+
+    click.echo(
+        f"Transfer package uploaded:\n"
+        f"  Source: {transfer_package.local_location}\n"
+        f"  Destination: s3://{S3_ARCHIVEMATICA_BUCKET}/{transfer_package.s3_location}\n"
+        f"  Content-Length: {transfer_package.content_length} bytes"
+    )
+
+    return transfer_package
 
 
 def update_chunk_record(chunks_index, chunk_id, update):
