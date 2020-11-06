@@ -10,6 +10,12 @@ If you run `docker-compose up` the `create-decisions-index` command will be run 
 
 Kibana will be available at http://localhost:5601 to explore the data.
 
+It's intended that commands will be run in the following order:
+
+- `create-decisions-index`: Build an Elasticsearch index of locations from S3, along with a reference for where that asset was stored after miro decommisioning.
+- `create-chunks-index`: Build an Elasticsearch index of "chunks" indicating which files should be in which transfer package.
+= `transfer-package-chunks`: Create and upload transfer packages to Archivematica, recording progress in the chunks index.
+
 ## Developing
 
 You can modify the `docker-compose.yml` to run any command you wish on the migration container.

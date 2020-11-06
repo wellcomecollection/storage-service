@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Functions related to gathering migration information
-about where things were stored after miro decommision
+about where things were stored after miro decommission
 """
 
 import collections

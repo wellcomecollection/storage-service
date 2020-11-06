@@ -5,7 +5,6 @@ for creating transfer packages
 """
 
 import collections
-import json
 
 import attr
 import click
@@ -30,7 +29,7 @@ class Chunk:
         return f"{self.destination}/{self.group_name}"
 
 
-def gather_chunks(local_decisions_index):
+def gather_chunks(decisions_index):
     local_elastic_client = get_local_elastic_client()
 
     query_body = {
@@ -40,11 +39,11 @@ def gather_chunks(local_decisions_index):
     }
 
     total_chunkable_decisions = local_elastic_client.count(
-        body=query_body, index=local_decisions_index
+        body=query_body, index=decisions_index
     )["count"]
 
     chunkable_decisions = elasticsearch.helpers.scan(
-        local_elastic_client, query=query_body, index=local_decisions_index
+        local_elastic_client, query=query_body, index=decisions_index
     )
 
     click.echo(f"Gathering chunks from {total_chunkable_decisions} decisions.")

@@ -65,10 +65,9 @@ def create_chunks_index(ctx):
 @click.command()
 @click.pass_context
 def transfer_package_chunks(ctx):
-    # TODO: Perform some partitioning on chunks to distribute work
     chunks = get_chunks(CHUNKS_INDEX)
 
-    for chunk in chunks[1:]:
+    for chunk in chunks:
         if chunk.transfer_package:
             if chunk.transfer_package.s3_location:
                 click.echo(
