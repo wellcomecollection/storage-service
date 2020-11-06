@@ -32,7 +32,7 @@ from s3 import get_s3_object, list_s3_objects_from
 REMOTE_INVENTORY_INDEX = "miro_inventory"
 LOCAL_INVENTORY_INDEX = "reporting_miro_inventory"
 
-STORAGE_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
+STORAGE_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
 ELASTIC_SECRET_ID = "miro_storage_migration/credentials"
 S3_PREFIX = "miro/Wellcome_Images_Archive"
 
