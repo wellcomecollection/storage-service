@@ -68,7 +68,14 @@ def transfer_package_chunks(ctx):
     # TODO: Perform some partitioning on chunks to distribute work
     chunks = get_chunks(CHUNKS_INDEX)
 
-    for chunk in chunks:
+    for chunk in chunks[1:]:
+        if chunk.transfer_package:
+            if chunk.transfer_package.s3_location:
+                click.echo(
+                    "Transfer package has S3 Location, skipping."
+                )
+                continue
+
         created_transfer_package = create_chunk_package(chunk)
 
         update_chunk_record(

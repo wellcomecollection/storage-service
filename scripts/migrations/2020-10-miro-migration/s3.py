@@ -55,7 +55,7 @@ def get_s3_object(*, bucket, key):
         return open(out_path, "rb")
 
 
-def get_s3_content_length(s3_client, s3_bucket, s3_key):
+def get_s3_object_size(s3_client, s3_bucket, s3_key):
     """
     Retrieves the content length of an object from S3.
     """

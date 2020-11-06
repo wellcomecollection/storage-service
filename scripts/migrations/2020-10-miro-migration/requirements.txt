@@ -4,3 +4,4 @@ elasticsearch
 tqdm
 attrs
 wellcome_storage_service
+unidecode

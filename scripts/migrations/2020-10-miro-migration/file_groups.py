@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-This file contains functions related to assiging a file
+This file contains functions related to assigning a file
 a group name based on its path in S3
 """
 

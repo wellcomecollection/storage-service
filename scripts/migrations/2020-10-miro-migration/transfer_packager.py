@@ -7,7 +7,8 @@ import uuid
 import attr
 from tqdm import tqdm
 
-from s3 import get_s3_content_length
+from common import slugify
+from s3 import get_s3_object_size
 
 S3_DOWNLOAD_CONCURRENCY = 3
 
@@ -19,7 +20,7 @@ class TransferPackage:
     s3_location = attr.ib(default=None)
 
 
-def _check_local_content_length(file_location, expected_content_length):
+def _check_file_size_matches(file_location, expected_content_length):
     """
     Check that a file has the expected content length in bytes
     """
@@ -42,7 +43,7 @@ def _download_s3_object(s3_client, s3_bucket, s3_key, target_folder, prefix):
     file_name = s3_key[len(prefix):].strip("/")
     file_location = os.path.join(target_folder, file_name)
 
-    s3_content_length = get_s3_content_length(
+    s3_content_length = get_s3_object_size(
         s3_client=s3_client, s3_bucket=s3_bucket, s3_key=s3_key
     )
 
@@ -54,12 +55,12 @@ def _download_s3_object(s3_client, s3_bucket, s3_key, target_folder, prefix):
     # Check if we already have this file
     if os.path.isfile(file_location):
         # If the length doesn't match overwrite
-        if not os.path.getsize(file_location) == s3_content_length:
+        if os.path.getsize(file_location) != s3_content_length:
             _download()
     else:
         _download()
 
-    _check_local_content_length(
+    _check_file_size_matches(
         file_location=file_location, expected_content_length=s3_content_length
     )
 
@@ -104,7 +105,9 @@ def _download_objects_from_s3(s3_client, target_folder, s3_bucket, s3_key_list, 
                     fut = executor.submit(_get_s3_object, task)
                     futures[fut] = task
 
-        target_folder_count = sum([len(files) for r, d, files in os.walk(target_folder)])
+        target_folder_count = sum(
+            [len(files) for _, _, files in os.walk(target_folder)]
+        )
 
         assert target_folder_count == len(s3_key_list), (
             f"Unexpected file count in {target_folder}: "
@@ -112,10 +115,9 @@ def _download_objects_from_s3(s3_client, target_folder, s3_bucket, s3_key_list, 
         )
 
 
-def _compress_folder(target_folder, remove_folder=True):
+def _compress_folder(target_folder):
     archive_name = shutil.make_archive(target_folder, "zip", target_folder)
-    if remove_folder:
-        shutil.rmtree(target_folder, ignore_errors=True)
+    shutil.rmtree(target_folder, ignore_errors=True)
 
     return archive_name
 
@@ -153,25 +155,28 @@ def upload_transfer_package(
             Filename=file_location, Bucket=s3_bucket, Key=s3_key, Callback=_update_pbar
         )
 
-        s3_content_length = get_s3_content_length(
+        s3_content_length = get_s3_object_size(
             s3_client=s3_client, s3_bucket=s3_bucket, s3_key=s3_key
         )
 
-        _check_local_content_length(
+        _check_file_size_matches(
             file_location=file_location, expected_content_length=s3_content_length
         )
 
         if cleanup:
             os.remove(file_location)
 
-    transfer_package.s3_location = s3_key
+    transfer_package.s3_location = {
+        's3_bucket': s3_bucket,
+        's3_key': s3_key
+    }
 
     return transfer_package
 
 
 def create_transfer_package(s3_client, group_name, s3_bucket, s3_key_list, prefix):
     target_base_folder = "target"
-    folder_id = str(uuid.uuid4())
+    folder_id = slugify(group_name)
 
     target_folder = os.path.join(target_base_folder, folder_id)
 

@@ -2,8 +2,10 @@
 
 import functools
 import json
+import re
 
 import boto3
+from unidecode import unidecode
 
 sts_client = boto3.client("sts")
 
@@ -50,3 +52,15 @@ def file_exists(file_location, expected_content_length):
         f"({local_content_length} != {expected_content_length}): "
         f"{file_location}"
     )
+
+def slugify(u):
+    """
+    Convert Unicode string into blog slug.
+    """
+    u = re.sub(u'[–—/:;,.]', '-', u)  # replace separating punctuation
+    a = unidecode(u).lower()          # best ASCII substitutions, lowercased
+    a = re.sub(r'[^a-z0-9 -]', '', a) # delete any other characters
+    a = a.replace(' ', '-')           # spaces to hyphens
+    a = re.sub(r'-+', '-', a)         # condense repeated hyphens
+    return a
+

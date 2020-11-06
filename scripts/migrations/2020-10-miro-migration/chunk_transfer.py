@@ -6,7 +6,7 @@ import elasticsearch
 from chunks import Chunk
 from common import get_aws_client
 from elastic_helpers import get_local_elastic_client
-from s3 import get_s3_content_length
+from s3 import get_s3_object_size
 from transfer_packager import create_transfer_package, upload_transfer_package
 
 STORAGE_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
@@ -57,20 +57,17 @@ def create_chunk_package(chunk):
     click.echo(
         f"Local transfer package created:\n"
         f"  Source: {transfer_package.local_location}\n"
-        f"  Content-Length: ({transfer_package.content_length} bytes"
+        f"  Content-Length: {transfer_package.content_length} bytes"
     )
 
     return transfer_package
 
 
 def upload_chunk_package(transfer_package):
-    click.echo(
-        f"Uploading transfer package:\n"
-        f"  Destination: {transfer_package.local_location}"
-    )
+    click.echo(f"Uploading transfer package.")
 
     if transfer_package.s3_location:
-        s3_content_length = get_s3_content_length(
+        s3_content_length = get_s3_object_size(
             s3_client=storage_s3_client,
             s3_bucket=S3_ARCHIVEMATICA_BUCKET,
             s3_key=transfer_package.s3_location
@@ -80,7 +77,7 @@ def upload_chunk_package(transfer_package):
             f"{s3_content_length} != {transfer_package.content_length}"
         )
         click.echo(
-            f"Found uploaded transfer package: "
+            f"Found uploaded transfer package: \n"
             f"{transfer_package.s3_location} - skipping upload."
         )
         return transfer_package
