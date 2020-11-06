@@ -32,11 +32,7 @@ class Chunk:
 def gather_chunks(decisions_index):
     local_elastic_client = get_local_elastic_client()
 
-    query_body = {
-        "query": {
-            "bool": {"must_not": [{"term": {"skip": True}}]}
-        }
-    }
+    query_body = {"query": {"bool": {"must_not": [{"term": {"skip": True}}]}}}
 
     total_chunkable_decisions = local_elastic_client.count(
         body=query_body, index=decisions_index
@@ -58,18 +54,18 @@ def gather_chunks(decisions_index):
 
     click.echo(f"Found {len(groups)} chunks.")
 
-    return [Chunk(
-        group_name=group_name,
-        destination=destination,
-        s3_keys=s3_keys,
-    ) for (group_name, destination), s3_keys in groups.items()]
+    return [
+        Chunk(group_name=group_name, destination=destination, s3_keys=s3_keys)
+        for (group_name, destination), s3_keys in groups.items()
+    ]
 
 
 if __name__ == "__main__":
     tally = collections.Counter()
 
-    for chunk in gather_chunks('decisions'):
+    for chunk in gather_chunks("decisions"):
         tally[chunk.chunk_id()] = len(chunk.s3_keys)
 
     from pprint import pprint
+
     pprint(tally.items())

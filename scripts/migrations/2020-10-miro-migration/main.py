@@ -18,7 +18,7 @@ from chunk_transfer import (
     get_chunks,
     create_chunk_package,
     upload_chunk_package,
-    update_chunk_record
+    update_chunk_record,
 )
 
 DECISIONS_INDEX = "decisions"
@@ -70,9 +70,7 @@ def transfer_package_chunks(ctx):
     for chunk in chunks:
         if chunk.transfer_package:
             if chunk.transfer_package.s3_location:
-                click.echo(
-                    "Transfer package has S3 Location, skipping."
-                )
+                click.echo("Transfer package has S3 Location, skipping.")
                 continue
 
         created_transfer_package = create_chunk_package(chunk)
@@ -80,7 +78,7 @@ def transfer_package_chunks(ctx):
         update_chunk_record(
             CHUNKS_INDEX,
             chunk.chunk_id(),
-            {'transfer_package': attr.asdict(created_transfer_package)}
+            {"transfer_package": attr.asdict(created_transfer_package)},
         )
 
         updated_transfer_package = upload_chunk_package(created_transfer_package)
@@ -88,7 +86,7 @@ def transfer_package_chunks(ctx):
         update_chunk_record(
             CHUNKS_INDEX,
             chunk.chunk_id(),
-            {'transfer_package': attr.asdict(updated_transfer_package)}
+            {"transfer_package": attr.asdict(updated_transfer_package)},
         )
 
 

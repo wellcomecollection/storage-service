@@ -51,7 +51,7 @@ def create_chunk_package(chunk):
         group_name=chunk.chunk_id(),
         s3_bucket=S3_MIRO_BUCKET,
         s3_key_list=chunk.s3_keys,
-        prefix=S3_PREFIX
+        prefix=S3_PREFIX,
     )
 
     click.echo(
@@ -70,7 +70,7 @@ def upload_chunk_package(transfer_package):
         s3_content_length = get_s3_object_size(
             s3_client=storage_s3_client,
             s3_bucket=S3_ARCHIVEMATICA_BUCKET,
-            s3_key=transfer_package.s3_location
+            s3_key=transfer_package.s3_location,
         )
         assert s3_content_length == transfer_package.content_length, (
             f"Content length mismatch for {transfer_package.s3_location}: "
@@ -101,8 +101,4 @@ def upload_chunk_package(transfer_package):
 
 def update_chunk_record(chunks_index, chunk_id, update):
     local_elastic_client = get_local_elastic_client()
-    local_elastic_client.update(
-        index=chunks_index,
-        id=chunk_id,
-        body={"doc": update}
-    )
+    local_elastic_client.update(index=chunks_index, id=chunk_id, body={"doc": update})

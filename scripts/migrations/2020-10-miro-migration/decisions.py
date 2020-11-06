@@ -36,6 +36,7 @@ STORAGE_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
 ELASTIC_SECRET_ID = "miro_storage_migration/credentials"
 S3_PREFIX = "miro/Wellcome_Images_Archive"
 
+
 @attr.s
 class Decision:
     s3_key = attr.ib()
@@ -294,8 +295,7 @@ def make_decision(s3_obj):
 def count_decisions():
     decision_count = 0
     for _ in list_s3_objects_from(
-        bucket="wellcomecollection-assets-workingstorage",
-        prefix=S3_PREFIX,
+        bucket="wellcomecollection-assets-workingstorage", prefix=S3_PREFIX
     ):
         decision_count = decision_count + 1
 
@@ -307,8 +307,7 @@ def get_decisions():
 
     for s3_obj in tqdm.tqdm(
         list_s3_objects_from(
-            bucket="wellcomecollection-assets-workingstorage",
-            prefix=S3_PREFIX,
+            bucket="wellcomecollection-assets-workingstorage", prefix=S3_PREFIX
         ),
         total=368_392,
     ):
