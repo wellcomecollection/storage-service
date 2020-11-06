@@ -53,14 +53,14 @@ def file_exists(file_location, expected_content_length):
         f"{file_location}"
     )
 
+
 def slugify(u):
     """
     Convert Unicode string into blog slug.
     """
-    u = re.sub(u'[–—/:;,.]', '-', u)  # replace separating punctuation
-    a = unidecode(u).lower()          # best ASCII substitutions, lowercased
-    a = re.sub(r'[^a-z0-9 -]', '', a) # delete any other characters
-    a = a.replace(' ', '-')           # spaces to hyphens
-    a = re.sub(r'-+', '-', a)         # condense repeated hyphens
+    u = re.sub("[–—/:;,.]", "-", u)  # replace separating punctuation
+    a = unidecode(u).lower()  # best ASCII substitutions, lowercased
+    a = re.sub(r"[^a-z0-9 -]", "", a)  # delete any other characters
+    a = a.replace(" ", "-")  # spaces to hyphens
+    a = re.sub(r"-+", "-", a)  # condense repeated hyphens
     return a
-
