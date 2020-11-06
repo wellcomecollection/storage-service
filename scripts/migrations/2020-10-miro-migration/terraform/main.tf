@@ -44,7 +44,7 @@ resource "aws_iam_role" "dev_instance_role" {
 
   tags = {
     DeveloperName = var.dev_name
-    LastUpdated = timestamp()
+    LastUpdated   = timestamp()
   }
 }
 
@@ -54,9 +54,9 @@ resource "aws_security_group" "allow_ssh_dev_ip" {
   vpc_id      = local.developer_vpc_id
 
   ingress {
-    from_port = 22
-    to_port = 22
-    protocol = "TCP"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "TCP"
     cidr_blocks = ["${local.ifconfig_co_json.ip}/32"]
   }
 
@@ -69,7 +69,7 @@ resource "aws_security_group" "allow_ssh_dev_ip" {
 
   tags = {
     DeveloperName = var.dev_name
-    LastUpdated = timestamp()
+    LastUpdated   = timestamp()
   }
 }
 
