@@ -2,7 +2,7 @@ module "dev_instance" {
   source = "./dev_instance"
 
   assumable_roles = local.assumable_roles
-  dev_name = ""
+  dev_name        = ""
 }
 
 locals {
