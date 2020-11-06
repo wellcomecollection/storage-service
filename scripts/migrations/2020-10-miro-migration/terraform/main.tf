@@ -86,7 +86,7 @@ locals {
   assumable_roles = [
     "arn:aws:iam::975596993436:role/storage-read_only",
     "arn:aws:iam::299497370133:role/workflow-developer",
-    "arn:aws:iam::760097843905:role/platform-read_onl2y"
+    "arn:aws:iam::760097843905:role/platform-read_only"
   ]
 }
 

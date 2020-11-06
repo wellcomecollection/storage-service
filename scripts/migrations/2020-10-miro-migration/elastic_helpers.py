@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import os
+import time
+import sys
 
 import click
 import elasticsearch
@@ -21,7 +23,29 @@ def get_elastic_client(role_arn, elastic_secret_id):
 
 
 def get_local_elastic_client(host=LOCAL_ELASTIC_HOST, port=9200):
-    return Elasticsearch(host=host, port=port)
+    elastic_client = Elasticsearch(host=host, port=port)
+
+    interval_time = 5
+    max_retry_attempts = 12
+
+    retry_attempts = 0
+
+    while retry_attempts < max_retry_attempts:
+        try:
+            elastic_client.cluster.health()
+            return elastic_client
+        except elasticsearch.exceptions.ConnectionError:
+            retry_attempts = retry_attempts + 1
+
+            click.echo(
+                f"{LOCAL_ELASTIC_HOST} not yet available, "
+                f"tried {retry_attempts} times. "
+                f"Retrying in {interval_time} seconds."
+            )
+            time.sleep(interval_time)
+
+    click.echo(f"Elasticsearch host {LOCAL_ELASTIC_HOST} not available!")
+    sys.exit(1)
 
 
 def get_document_count(elastic_client, *, index):
