@@ -13,7 +13,7 @@ STORAGE_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
 WORKFLOW_ROLE_ARN = "arn:aws:iam::299497370133:role/workflow-developer"
 S3_ARCHIVEMATICA_BUCKET = os.getenv(
     "S3_ARCHIVEMATICA_BUCKET",
-    "wellcomecollection-archivematica-staging-transfer-source"
+    "wellcomecollection-archivematica-staging-transfer-source",
 )
 S3_MIRO_BUCKET = "wellcomecollection-assets-workingstorage"
 S3_PREFIX = "miro/Wellcome_Images_Archive"
