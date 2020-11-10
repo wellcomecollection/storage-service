@@ -1,4 +1,4 @@
-resources/miro_inventory_snapshot.json.gz
+resources
 elasticsearch-data/nodes
 decisions.json
 decisions.json.gz
