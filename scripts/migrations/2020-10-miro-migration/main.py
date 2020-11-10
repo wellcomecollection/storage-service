@@ -63,6 +63,79 @@ def create_chunks_index(ctx):
 
 
 @click.command()
+@click.option('--index-name', required=True)
+@click.pass_context
+def save_index_to_disk(ctx, index_name):
+    import json
+    import os
+
+    import elasticsearch
+    from tqdm import tqdm
+
+    local_elastic_client = get_local_elastic_client()
+    document_count = get_document_count(local_elastic_client, index=index_name)
+
+    query_body = {
+        "query": {
+            "match_all": {}
+        }
+    }
+
+    all_documents = elasticsearch.helpers.scan(
+        local_elastic_client, query=query_body, index=index_name
+    )
+
+    save_location = f"_cache/index_{index_name}.json"
+    click.echo(f"Saving index {index_name} to {save_location}")
+
+    if os.path.isfile(save_location):
+        if not click.confirm(f"File exists at {save_location}, overwrite?"):
+            return
+
+        with open(f"_cache/index_{index_name}.json", 'a') as f:
+            f.truncate(0)
+
+    with open(f"_cache/index_{index_name}.json", 'a') as f:
+        for document in tqdm(all_documents, total=document_count):
+            f.write(f"{json.dumps(document)}\n")
+
+
+@click.command()
+@click.option('--index-name', required=True)
+@click.option('--target-index-name', required=False)
+@click.pass_context
+def load_index_from_disk(ctx, index_name, target_index_name):
+    import json
+    import os
+
+    if not target_index_name:
+        target_index_name = index_name
+
+    local_elastic_client = get_local_elastic_client()
+    save_location = f"_cache/index_{index_name}.json"
+
+    if not os.path.isfile(save_location):
+        click.echo(f"No index file found at {save_location}")
+        return
+
+    line_count = sum(1 for _ in open(save_location))
+
+    with open(f"_cache/index_{index_name}.json", 'r') as f:
+        def _documents():
+            for line in f:
+                doc = json.loads(line)
+                print(doc)
+                return doc['_id'], doc['_source']
+
+        index_iterator(
+            elastic_client=local_elastic_client,
+            index_name=target_index_name,
+            expected_doc_count=line_count,
+            documents=_documents(),
+        )
+
+
+@click.command()
 @click.pass_context
 def transfer_package_chunks(ctx):
     chunks = get_chunks(CHUNKS_INDEX)
@@ -99,6 +172,8 @@ def cli(ctx):
 cli.add_command(create_chunks_index)
 cli.add_command(create_decisions_index)
 cli.add_command(transfer_package_chunks)
+cli.add_command(save_index_to_disk)
+cli.add_command(load_index_from_disk)
 
 if __name__ == "__main__":
     cli()

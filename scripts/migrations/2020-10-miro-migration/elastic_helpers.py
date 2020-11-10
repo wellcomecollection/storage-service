@@ -71,7 +71,7 @@ def index_iterator(elastic_client, index_name, documents, expected_doc_count=Non
         click.echo(f"Already created index {index_name}, nothing to do")
         return
 
-    click.echo(f"Recreating files index ({index_name})")
+    click.echo(f"Recreating index ({index_name})")
     elastic_client.indices.delete(index=index_name, ignore=[400, 404])
     elastic_client.indices.create(index=index_name, ignore=400)
 
