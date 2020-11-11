@@ -1,17 +1,15 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import functools
 import json
+import os
 import re
 
 import boto3
 from unidecode import unidecode
 
-sts_client = boto3.client("sts")
 
-
-@functools.lru_cache
 def get_aws_client(resource, *, role_arn):
+    sts_client = boto3.client("sts")
     assumed_role_object = sts_client.assume_role(
         RoleArn=role_arn, RoleSessionName="AssumeRoleSession1"
     )

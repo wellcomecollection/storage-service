@@ -2,12 +2,14 @@ import concurrent
 import itertools
 import os
 import shutil
-import uuid
 
 import attr
 from tqdm import tqdm
 
-from common import slugify
+from common import (
+    slugify,
+    file_exists
+)
 from s3 import get_s3_object_size
 
 S3_DOWNLOAD_CONCURRENCY = 3
@@ -18,21 +20,6 @@ class TransferPackage:
     local_location = attr.ib()
     content_length = attr.ib()
     s3_location = attr.ib(default=None)
-
-
-def _check_file_size_matches(file_location, expected_content_length):
-    """
-    Check that a file has the expected content length in bytes
-    """
-    local_content_length = os.path.getsize(file_location)
-
-    assert local_content_length > 0, "Content length is zero: " f"{file_location}"
-
-    assert local_content_length == expected_content_length, (
-        "Content length mismatch "
-        f"({local_content_length} != {expected_content_length}): "
-        f"{file_location}"
-    )
 
 
 def _download_s3_object(s3_client, s3_bucket, s3_key, target_folder, prefix):
@@ -58,7 +45,7 @@ def _download_s3_object(s3_client, s3_bucket, s3_key, target_folder, prefix):
     else:
         _download()
 
-    _check_file_size_matches(
+    file_exists(
         file_location=file_location, expected_content_length=s3_content_length
     )
 
@@ -157,7 +144,7 @@ def upload_transfer_package(
             s3_client=s3_client, s3_bucket=s3_bucket, s3_key=s3_key
         )
 
-        _check_file_size_matches(
+        file_exists(
             file_location=file_location, expected_content_length=s3_content_length
         )
 
