@@ -58,7 +58,7 @@ def get_document_count(elastic_client, *, index):
         return 0
 
 
-def index_iterator(elastic_client, index_name, documents, expected_doc_count=None):
+def index_iterator(elastic_client, index_name, documents, expected_doc_count=None, overwrite=False):
     """
     Indexes documents from an iterator into elasticsearch
     """
@@ -67,7 +67,7 @@ def index_iterator(elastic_client, index_name, documents, expected_doc_count=Non
     elastic_client.indices.create(index=index_name, ignore=400)
     actual_doc_count = get_document_count(elastic_client, index=index_name)
 
-    if actual_doc_count == expected_doc_count:
+    if not overwrite and actual_doc_count == expected_doc_count:
         click.echo(f"Already created index {index_name}, nothing to do")
         return
 

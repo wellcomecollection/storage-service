@@ -64,8 +64,9 @@ def create_chunks_index(ctx):
 
 @click.command()
 @click.option('--index-name', required=True)
+@click.option('--overwrite', '-o', is_flag=True)
 @click.pass_context
-def save_index_to_disk(ctx, index_name):
+def save_index_to_disk(ctx, index_name, overwrite):
     import json
     import os
 
@@ -89,7 +90,7 @@ def save_index_to_disk(ctx, index_name):
     click.echo(f"Saving index {index_name} to {save_location}")
 
     if os.path.isfile(save_location):
-        if not click.confirm(f"File exists at {save_location}, overwrite?"):
+        if not overwrite and not click.confirm(f"File exists at {save_location}, overwrite?"):
             return
 
         with open(f"_cache/index_{index_name}.json", 'a') as f:
@@ -103,8 +104,9 @@ def save_index_to_disk(ctx, index_name):
 @click.command()
 @click.option('--index-name', required=True)
 @click.option('--target-index-name', required=False)
+@click.option('--overwrite', '-o', is_flag=True)
 @click.pass_context
-def load_index_from_disk(ctx, index_name, target_index_name):
+def load_index_from_disk(ctx, index_name, target_index_name, overwrite):
     import json
     import os
 
@@ -124,14 +126,14 @@ def load_index_from_disk(ctx, index_name, target_index_name):
         def _documents():
             for line in f:
                 doc = json.loads(line)
-                print(doc)
-                return doc['_id'], doc['_source']
+                yield doc['_id'], doc['_source']
 
         index_iterator(
             elastic_client=local_elastic_client,
             index_name=target_index_name,
             expected_doc_count=line_count,
             documents=_documents(),
+            overwrite=overwrite
         )
 
 
