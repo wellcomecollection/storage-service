@@ -3,6 +3,7 @@
 import json
 import os
 import re
+import shutil
 
 import boto3
 from unidecode import unidecode
@@ -50,6 +51,13 @@ def file_exists(file_location, expected_content_length):
         f"({local_content_length} != {expected_content_length}): "
         f"{file_location}"
     )
+
+
+def compress_folder(target_folder):
+    archive_name = shutil.make_archive(target_folder, "zip", target_folder)
+    shutil.rmtree(target_folder, ignore_errors=True)
+
+    return archive_name
 
 
 def slugify(u):

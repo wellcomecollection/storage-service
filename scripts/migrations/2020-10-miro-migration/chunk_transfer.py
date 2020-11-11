@@ -7,7 +7,10 @@ from chunks import Chunk
 from common import get_aws_client
 from elastic_helpers import get_local_elastic_client
 from s3 import get_s3_object_size
-from transfer_packager import create_transfer_package, upload_transfer_package
+from transfer_packager import (
+    create_transfer_package,
+    upload_transfer_package
+)
 
 STORAGE_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
 WORKFLOW_ROLE_ARN = "arn:aws:iam::299497370133:role/workflow-developer"
@@ -17,9 +20,6 @@ S3_ARCHIVEMATICA_BUCKET = os.getenv(
 )
 S3_MIRO_BUCKET = "wellcomecollection-assets-workingstorage"
 S3_PREFIX = "miro/Wellcome_Images_Archive"
-
-storage_s3_client = get_aws_client("s3", role_arn=STORAGE_ROLE_ARN)
-workflow_s3_client = get_aws_client("s3", role_arn=WORKFLOW_ROLE_ARN)
 
 
 def get_chunks(chunks_index):
@@ -49,6 +49,8 @@ def create_chunk_package(chunk):
             )
             return chunk.transfer_package
 
+    storage_s3_client = get_aws_client("s3", role_arn=STORAGE_ROLE_ARN)
+
     transfer_package = create_transfer_package(
         s3_client=storage_s3_client,
         group_name=chunk.chunk_id(),
@@ -69,6 +71,8 @@ def create_chunk_package(chunk):
 def upload_chunk_package(transfer_package):
     click.echo(f"Uploading transfer package.")
 
+    storage_s3_client = get_aws_client("s3", role_arn=STORAGE_ROLE_ARN)
+
     if transfer_package.s3_location:
         s3_content_length = get_s3_object_size(
             s3_client=storage_s3_client,
@@ -84,6 +88,8 @@ def upload_chunk_package(transfer_package):
             f"{transfer_package.s3_location} - skipping upload."
         )
         return transfer_package
+
+    workflow_s3_client = get_aws_client("s3", role_arn=WORKFLOW_ROLE_ARN)
 
     transfer_package = upload_transfer_package(
         s3_client=workflow_s3_client,

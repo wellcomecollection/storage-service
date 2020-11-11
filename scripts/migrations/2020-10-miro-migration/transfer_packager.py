@@ -1,16 +1,18 @@
 import concurrent
 import itertools
 import os
-import shutil
 
 import attr
 from tqdm import tqdm
 
 from common import (
+    compress_folder,
+    file_exists,
     slugify,
-    file_exists
 )
-from s3 import get_s3_object_size
+from s3 import (
+    get_s3_object_size,
+)
 
 S3_DOWNLOAD_CONCURRENCY = 3
 
@@ -100,13 +102,6 @@ def _download_objects_from_s3(s3_client, target_folder, s3_bucket, s3_key_list, 
         )
 
 
-def _compress_folder(target_folder):
-    archive_name = shutil.make_archive(target_folder, "zip", target_folder)
-    shutil.rmtree(target_folder, ignore_errors=True)
-
-    return archive_name
-
-
 def _create_metadata(target_folder, group_name):
     metadata_folder = os.path.join(target_folder, "metadata")
     metadata_file_location = os.path.join(metadata_folder, "metadata.csv")
@@ -174,7 +169,7 @@ def create_transfer_package(s3_client, group_name, s3_bucket, s3_key_list, prefi
 
     _create_metadata(target_folder=target_folder, group_name=group_name)
 
-    archive_location = _compress_folder(target_folder=target_folder)
+    archive_location = compress_folder(target_folder=target_folder)
     archive_content_length = os.path.getsize(archive_location)
 
     return TransferPackage(

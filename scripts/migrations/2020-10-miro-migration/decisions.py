@@ -15,6 +15,7 @@ import click
 import elasticsearch
 import tqdm
 
+from common import get_aws_client
 from elastic_helpers import (
     get_local_elastic_client,
     get_elastic_client,
@@ -33,6 +34,7 @@ REMOTE_INVENTORY_INDEX = "miro_inventory"
 LOCAL_INVENTORY_INDEX = "reporting_miro_inventory"
 
 STORAGE_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
+PLATFORM_ROLE_ARN = "arn:aws:iam::760097843905:role/platform-read_only"
 ELASTIC_SECRET_ID = "miro_storage_migration/credentials"
 S3_PREFIX = "miro/Wellcome_Images_Archive"
 
@@ -137,7 +139,14 @@ def decide_based_on_reporting_inventory(s3_key, miro_id):
 def get_wellcome_images_by_size():
     wc_images_by_size = collections.defaultdict(lambda: collections.defaultdict(set))
 
-    for s3_obj in list_s3_objects_from(bucket="wellcomecollection-images"):
+    s3_client = get_aws_client(
+        "s3", role_arn=PLATFORM_ROLE_ARN
+    )
+
+    for s3_obj in list_s3_objects_from(
+            s3_client=s3_client,
+            bucket="wellcomecollection-images"
+    ):
         wc_images_by_size[s3_obj["Size"]][s3_obj["ETag"]].add(s3_obj["Key"])
 
     return wc_images_by_size
@@ -186,7 +195,11 @@ def get_trimmed_metadata_for_prefix(prefix):
 
     This allows us to do 'if miro_id in metadata' but improve the performance.
     """
+
+    s3_client = get_aws_client("s3", role_arn=PLATFORM_ROLE_ARN)
+
     images_xml = get_s3_object(
+        s3_client=s3_client,
         bucket="wellcomecollection-assets-workingstorage",
         key=f"miro/source_data/images-{prefix}.xml",
     )
@@ -294,8 +307,15 @@ def make_decision(s3_obj):
 
 def count_decisions():
     decision_count = 0
+
+    s3_client = get_aws_client(
+        "s3", role_arn=PLATFORM_ROLE_ARN
+    )
+
     for _ in list_s3_objects_from(
-        bucket="wellcomecollection-assets-workingstorage", prefix=S3_PREFIX
+        s3_client=s3_client,
+        bucket="wellcomecollection-assets-workingstorage",
+        prefix=S3_PREFIX
     ):
         decision_count = decision_count + 1
 
@@ -305,9 +325,15 @@ def count_decisions():
 def get_decisions():
     mirror_miro_inventory_locally()
 
+    s3_client = get_aws_client(
+        "s3", role_arn=PLATFORM_ROLE_ARN
+    )
+
     for s3_obj in tqdm.tqdm(
         list_s3_objects_from(
-            bucket="wellcomecollection-assets-workingstorage", prefix=S3_PREFIX
+            s3_client=s3_client,
+            bucket="wellcomecollection-assets-workingstorage",
+            prefix=S3_PREFIX
         ),
         total=368_392,
     ):
