@@ -6,6 +6,7 @@ into the storage service.
 
 import attr
 import click
+
 from decisions import get_decisions, count_decisions
 from chunks import gather_chunks
 from elastic_helpers import (

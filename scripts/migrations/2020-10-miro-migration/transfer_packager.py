@@ -3,6 +3,7 @@ import itertools
 import os
 
 import attr
+from boto3.s3.transfer import TransferConfig
 from tqdm import tqdm
 
 from common import (
@@ -126,13 +127,24 @@ def upload_transfer_package(
 
     bytes_to_upload = os.path.getsize(file_location)
 
+    config = TransferConfig(
+        multipart_threshold=1024 * 25,
+        max_concurrency=10,
+        multipart_chunksize=1024 * 25,
+        use_threads=True
+    )
+
     with tqdm(total=bytes_to_upload) as pbar:
 
         def _update_pbar(num_bytes):
             pbar.update(num_bytes)
 
         s3_client.upload_file(
-            Filename=file_location, Bucket=s3_bucket, Key=s3_key, Callback=_update_pbar
+            Filename=file_location,
+            Bucket=s3_bucket,
+            Key=s3_key,
+            Callback=_update_pbar,
+            Config=config
         )
 
         s3_content_length = get_s3_object_size(
