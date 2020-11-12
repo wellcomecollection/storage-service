@@ -28,6 +28,13 @@ class Chunk:
     def chunk_id(self):
         return f"{self.destination}/{self.group_name}"
 
+    def is_uploaded(self):
+        if self.transfer_package:
+            if self.transfer_package.s3_location:
+                return True
+
+        return False
+
 
 def gather_chunks(decisions_index):
     local_elastic_client = get_local_elastic_client()

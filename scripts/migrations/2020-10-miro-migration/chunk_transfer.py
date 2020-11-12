@@ -8,6 +8,7 @@ from common import get_aws_client
 from elastic_helpers import get_local_elastic_client
 from s3 import get_s3_object_size
 from transfer_packager import (
+    TransferPackage,
     create_transfer_package,
     upload_transfer_package
 )
@@ -29,7 +30,45 @@ def get_chunks(chunks_index):
         local_elastic_client, query={"query": {"match_all": {}}}, index=chunks_index
     )
 
-    return [Chunk(**result["_source"]) for result in results]
+    chunks = []
+    for result in results:
+        chunk = Chunk(**result["_source"])
+        transfer_package = None
+        if result["_source"]['transfer_package']:
+            transfer_package = TransferPackage(**result["_source"]['transfer_package'])
+
+        chunk.transfer_package = transfer_package
+        chunks.append(chunk)
+
+    return chunks
+
+
+def check_chunk_uploaded(chunk):
+    assert chunk.transfer_package is not None, (
+        "chunk.transfer_package is None"
+    )
+    assert chunk.transfer_package.s3_location is not None, (
+        "chunk.transfer_package.s3_location is None"
+    )
+    assert chunk.transfer_package.s3_location['s3_bucket'] == S3_ARCHIVEMATICA_BUCKET, (
+        f"{chunk.transfer_package.s3_location['s3_bucket']}, does not match expected {S3_ARCHIVEMATICA_BUCKET}"
+    )
+
+    content_length = chunk.transfer_package.content_length
+    s3_bucket = chunk.transfer_package.s3_location['s3_bucket']
+    s3_key = chunk.transfer_package.s3_location['s3_key']
+
+    storage_s3_client = get_aws_client("s3", role_arn=WORKFLOW_ROLE_ARN)
+
+    s3_object_size = get_s3_object_size(
+        s3_client=storage_s3_client,
+        s3_bucket=s3_bucket,
+        s3_key=s3_key
+    )
+
+    assert content_length == s3_object_size, (
+        f"Content length mismatch: {content_length} != {s3_object_size}"
+    )
 
 
 def create_chunk_package(chunk):

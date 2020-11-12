@@ -19,6 +19,7 @@ from elastic_helpers import (
 )
 from chunk_transfer import (
     get_chunks,
+    check_chunk_uploaded,
     create_chunk_package,
     upload_chunk_package,
     update_chunk_record,
@@ -107,10 +108,14 @@ def transfer_package_chunks(ctx):
     chunks = get_chunks(CHUNKS_INDEX)
 
     for chunk in chunks:
-        if chunk.transfer_package:
-            if chunk.transfer_package.s3_location:
+        if chunk.is_uploaded():
+            try:
+                check_chunk_uploaded(chunk)
                 click.echo("Transfer package has S3 Location, skipping.")
                 continue
+            except AssertionError as e:
+                click.echo(f"Uploaded chunk check failed: {e}")
+                click.echo(f"Retrying chunk: {chunk.chunk_id()}")
 
         created_transfer_package = create_chunk_package(chunk)
 
