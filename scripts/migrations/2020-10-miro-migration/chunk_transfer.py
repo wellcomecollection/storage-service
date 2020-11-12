@@ -110,24 +110,6 @@ def create_chunk_package(chunk):
 def upload_chunk_package(transfer_package):
     click.echo(f"Uploading transfer package.")
 
-    storage_s3_client = get_aws_client("s3", role_arn=STORAGE_ROLE_ARN)
-
-    if transfer_package.s3_location:
-        s3_content_length = get_s3_object_size(
-            s3_client=storage_s3_client,
-            s3_bucket=S3_ARCHIVEMATICA_BUCKET,
-            s3_key=transfer_package.s3_location,
-        )
-        assert s3_content_length == transfer_package.content_length, (
-            f"Content length mismatch for {transfer_package.s3_location}: "
-            f"{s3_content_length} != {transfer_package.content_length}"
-        )
-        click.echo(
-            f"Found uploaded transfer package: \n"
-            f"{transfer_package.s3_location} - skipping upload."
-        )
-        return transfer_package
-
     workflow_s3_client = get_aws_client("s3", role_arn=WORKFLOW_ROLE_ARN)
 
     transfer_package = upload_transfer_package(
