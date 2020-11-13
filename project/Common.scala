@@ -21,6 +21,9 @@ object Common {
       "-Ypartial-unification",
       "-Xcheckinit"
     ),
-    parallelExecution in Test := false
+    parallelExecution in Test := false,
+    // Don't build scaladocs
+    // https://www.scala-sbt.org/sbt-native-packager/formats/universal.html#skip-packagedoc-task-on-stage
+    mappings in (Compile, packageDoc) := Nil
   )
 }
