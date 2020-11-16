@@ -8,7 +8,11 @@ from botocore.exceptions import ClientError
 from tenacity import retry, stop_after_delay, wait_fixed
 
 
+ACCOUNT_ID = "975596993436"
+
+READ_ONLY_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
 DEV_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
+ADMIN_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-admin"
 
 
 sts_client = boto3.client("sts")
@@ -114,12 +118,14 @@ def temporary_iam_credentials(*, admin_role_arn, policy_document):
     # credentials (see below).
     temporary_policy_name = f"policy-{secrets.token_hex(6)}"
 
-    policy_document["Statement"].append({
-        "Sid": "",
-        "Effect": "Allow",
-        "Action": ["ec2:DescribeRegions"],
-        "Resource": ["*"],
-    })
+    policy_document["Statement"].append(
+        {
+            "Sid": "",
+            "Effect": "Allow",
+            "Action": ["ec2:DescribeRegions"],
+            "Resource": ["*"],
+        }
+    )
 
     iam_client.put_role_policy(
         RoleName=temporary_role_name,

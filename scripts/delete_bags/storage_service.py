@@ -12,7 +12,7 @@ def lookup_ingest(ingest_id):
     prod and staging API, and returns a tuple (API name, API URL, ingest_data) if
     it finds the ingest -- or IngestNotFound if not.
     """
-    api_variants = {"stage": "api-stage", "prod": "api"}
+    api_variants = {"staging": "api-stage", "prod": "api"}
 
     for api_name, api_host in API_VARIANTS.items():
         api_url = f"https://{api_host}.wellcomecollection.org/storage/v1"
