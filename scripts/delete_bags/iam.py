@@ -8,6 +8,9 @@ from botocore.exceptions import ClientError
 from tenacity import retry, stop_after_delay, wait_fixed
 
 
+DEV_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
+
+
 sts_client = boto3.client("sts")
 
 
@@ -32,6 +35,22 @@ def create_aws_client_from_credentials(resource, *, credentials):
         aws_secret_access_key=credentials["SecretAccessKey"],
         aws_session_token=credentials["SessionToken"],
     )
+
+
+def create_dynamo_client_from_role_arn(*, role_arn):
+    """
+    Create a DynamoDB client using the given role.
+    """
+    assumed_role_object = sts_client.assume_role(
+        RoleArn=role_arn, RoleSessionName="AssumeRoleSession1"
+    )
+    credentials = assumed_role_object["Credentials"]
+    return boto3.resource(
+        "dynamodb",
+        aws_access_key_id=credentials["AccessKeyId"],
+        aws_secret_access_key=credentials["SecretAccessKey"],
+        aws_session_token=credentials["SessionToken"],
+    ).meta.client
 
 
 @contextlib.contextmanager
@@ -189,3 +208,14 @@ def temporary_iam_credentials(*, admin_role_arn, policy_document):
         )
 
         iam_client.delete_role(RoleName=temporary_role_name)
+
+
+def get_underlying_role_arn():
+    """
+    Returns the original role ARN.
+
+    e.g. at Wellcome we have a base role, but then we assume roles into different
+    accounts.  This returns the ARN of the base role.
+    """
+    client = boto3.client("sts")
+    return client.get_caller_identity()["Arn"]

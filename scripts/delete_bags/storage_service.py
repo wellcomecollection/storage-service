@@ -44,3 +44,41 @@ def get_latest_version_of(*, api_url, space, external_identifier):
 
     bag = client.get_bag(space=space, external_identifier=external_identifier)
     return bag["version"]
+
+
+def get_locations_to_delete(*, api_url, space, external_identifier, version):
+    """
+    Gets all the locations of this bag that we need to delete.
+
+    Note: this is different from the "location" in the bags API response --
+    in particular, we scope it to the individual version prefix, whereas the
+    "location" in the bags API refers to *all versions* of a bag.
+    """
+    client = RequestsOAuthStorageServiceClient.from_path(api_url=api_url)
+
+    bag = client.get_bag(space=space, external_identifier=external_identifier)
+    assert (
+        bag["version"] == version
+    )  # Should be checked by get_latest_version_of, but can't hurt to double check
+
+    locations = [bag["location"]] + bag["replicaLocations"]
+    result = []
+
+    for loc in locations:
+        uri_schemes = {
+            "amazon-s3": "s3",
+            "azure-blob-storage": "azure",
+        }
+
+        assert loc["provider"]["id"] in uri_schemes, loc
+
+        result.append(
+            {
+                "provider": loc["provider"]["id"],
+                "uri": uri_schemes[loc["provider"]["id"]],
+                "bucket": loc["bucket"],
+                "prefix": loc["path"] + "/" + version,
+            }
+        )
+
+    return result

@@ -1,15 +1,15 @@
+import datetime
 import sys
 
 import click
 import humanize
 from wellcome_storage_service import IngestNotFound
 
-from iam import get_underlying_role_arn
-from storage_service import get_latest_version_of, lookup_ingest
+from iam import DEV_ROLE_ARN, create_dynamo_client_from_role_arn, get_underlying_role_arn
+from storage_service import get_latest_version_of, get_locations_to_delete, lookup_ingest
 
 
 def hilight(s):
-    return click.style(s, "green")
     return click.style(str(s), "green")
 
 
@@ -17,7 +17,42 @@ def abort(msg):
     sys.exit(click.style(msg, "red"))
 
 
-def delete_ingest(ingest_id):
+def delete_ingest(*, ingest_id, locations, space, external_identifier, version, reason):
+    """
+    Purge all the information about an ingest from the storage service.
+    """
+    # Record the fact that this bag is being deleted in DynamoDB.
+    event = {
+        "requested_by": get_underlying_role_arn(),
+        "deleted_at": datetime.datetime.now().isoformat(),
+        "reason": reason,
+    }
+
+    dynamodb = create_dynamo_client_from_role_arn(role_arn=DEV_ROLE_ARN)
+    dynamodb.update_item(
+        TableName="deleted_bags",
+        Key={"ingest_id": ingest_id},
+        UpdateExpression="""
+            SET
+            #space = :space,
+            #externalIdentifier = :externalIdentifier,
+            #version = :version,
+            #events = list_append(if_not_exists(#events, :empty_list), :event)
+        """,
+        ExpressionAttributeNames={
+            "#space": "space",
+            "#externalIdentifier": "externalIdentifier",
+            "#version": "version",
+            "#events": "events",
+        },
+        ExpressionAttributeValues={
+            ":space": space,
+            ":externalIdentifier": external_identifier,
+            ":version": version,
+            ":event": [event],
+            ":empty_list": [],
+        }
+    )
     print(ingest_id)
 
 
@@ -101,15 +136,50 @@ def main(ingest_id):
     # click.confirm("Are you sure you want to delete this bag?", abort=True)
 
     click.echo("")
+    reason = "I'm testing the script for deleting bags"
     # reason = click.prompt("Why are you deleting this bag?")
 
     _check_is_latest_version(
         api_url=api_url, space=space, external_identifier=external_identifier, version=version
     )
 
-    # print(reason)
+    # Now get the list of locations/prefixes we're going to delete from permanent
+    # storage.  This is another place for the user to intervene if something seems
+    # wrong.  It presents a prompt of the following form:
+    #
+    #       This bag is stored in 3 locations:
+    #       - s3://wc-storage-staging/testing/test_bag/v132
+    #       - s3://wc-storage-staging-replica-ireland/testing/test_bag/v132
+    #       - azure://wc-storage-staging-replica-netherlands/testing/test_bag/v132
+    #
+    #       Does this look right? [y/N]: y
+    #
+    locations = get_locations_to_delete(
+        api_url=api_url,
+        space=space,
+        external_identifier=external_identifier,
+        version=version,
+    )
 
-    delete_ingest(ingest_id)
+    click.echo("")
+    click.echo(
+        f"This bag is stored in {hilight(len(locations))} location{'s' if len(locations) > 1 else ''}:"
+    )
+    for loc in locations:
+        display_uri = loc["uri"] + "://" + loc["bucket"] + "/" + loc["prefix"]
+        click.echo(f"- {hilight(display_uri)}")
+
+    click.echo("")
+#    click.confirm("Does this look right?", abort=True)
+
+    delete_ingest(
+        ingest_id=ingest_id,
+        locations=locations,
+        space=space,
+        external_identifier=external_identifier,
+        version=version,
+        reason=reason
+    )
 
 
 if __name__ == "__main__":
