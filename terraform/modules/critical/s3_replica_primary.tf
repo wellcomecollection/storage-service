@@ -30,6 +30,25 @@ resource "aws_s3_bucket" "replica_primary" {
     }
   }
 
+  lifecycle_rule {
+    id      = "expire_noncurrent_versions"
+    enabled = var.enable_s3_versioning
+
+    noncurrent_version_transition {
+      days          = 30
+      storage_class = "STANDARD_IA"
+    }
+
+    noncurrent_version_transition {
+      days          = 60
+      storage_class = "GLACIER"
+    }
+
+    noncurrent_version_expiration {
+      days = 90
+    }
+  }
+
   tags = var.tags
 }
 
