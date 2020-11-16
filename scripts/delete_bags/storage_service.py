@@ -65,10 +65,7 @@ def get_locations_to_delete(*, api_url, space, external_identifier, version):
     result = []
 
     for loc in locations:
-        uri_schemes = {
-            "amazon-s3": "s3",
-            "azure-blob-storage": "azure",
-        }
+        uri_schemes = {"amazon-s3": "s3", "azure-blob-storage": "azure"}
 
         assert loc["provider"]["id"] in uri_schemes, loc
 
