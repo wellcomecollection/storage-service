@@ -30,6 +30,13 @@ resource "aws_s3_bucket" "replica_primary" {
     }
   }
 
+  # In general, these permanent storage buckets should follow
+  # Write-Once, Read-Many (WORM).
+  #
+  # It's extremely unusual for us to delete objects.  Enabling versioning gives
+  # us a safety net against accidental deletions -- if we delete something, we can
+  # recover it -- but we do want deleted objects to disappear eventually,
+  # e.g. for data protection.
   lifecycle_rule {
     id      = "expire_noncurrent_versions"
     enabled = var.enable_s3_versioning
