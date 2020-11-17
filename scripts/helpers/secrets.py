@@ -1,3 +1,6 @@
+from botocore.exceptions import ClientError
+
+
 def write_secret(secrets_client, *, id, value):
     """
     Store a new secret in Secrets Manager, or update an existing secret.
