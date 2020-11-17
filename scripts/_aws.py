@@ -1,5 +1,6 @@
 import boto3
-from botocore.exceptions import ClientError
+
+from helpers import write_secret
 
 
 READ_ONLY_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
@@ -64,11 +65,4 @@ def store_secret(*, secret_id, secret_string):
     Store a SecretString in Secrets Manager.
     """
     secrets_client = get_aws_client("secretsmanager", role_arn=DEV_ROLE_ARN)
-
-    try:
-        secrets_client.put_secret_value(SecretId=secret_id, SecretString=secret_string)
-    except ClientError as err:
-        if err.response["Error"]["Code"] == "ResourceNotFoundException":
-            secrets_client.create_secret(Name=secret_id, SecretString=secret_string)
-        else:
-            raise
+    write_secret(secrets_client, id=secret_id, value=secret_string)
