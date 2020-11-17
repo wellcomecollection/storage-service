@@ -1,5 +1,6 @@
 import boto3
-from botocore.exceptions import ClientError
+
+from helpers import write_secret
 
 
 READ_ONLY_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
@@ -35,12 +36,6 @@ def get_aws_client(resource, *, role_arn=READ_ONLY_ROLE_ARN):
     )
 
 
-def get_dynamo_client(*, role_arn=READ_ONLY_ROLE_ARN):
-    # The DynamoDB resource removes a layer of indirection from the stored
-    # DynamoDB items, e.g. {"id": "b1234"} rather than {"id": {"S": "b1234"}}
-    return get_aws_resource("dynamodb", role_arn=role_arn).meta.client
-
-
 def get_elastic_ip():
     """
     Our VPCs have exactly one elastic IP associated with them.
@@ -70,29 +65,4 @@ def store_secret(*, secret_id, secret_string):
     Store a SecretString in Secrets Manager.
     """
     secrets_client = get_aws_client("secretsmanager", role_arn=DEV_ROLE_ARN)
-
-    try:
-        secrets_client.put_secret_value(SecretId=secret_id, SecretString=secret_string)
-    except ClientError as err:
-        if err.response["Error"]["Code"] == "ResourceNotFoundException":
-            secrets_client.create_secret(Name=secret_id, SecretString=secret_string)
-        else:
-            raise
-
-
-def scan_table(*, TableName, **kwargs):
-    """
-    Generates all the items in a DynamoDB table.
-
-    :param TableName: The name of the table to scan.
-
-    Other keyword arguments will be passed directly to the Scan operation.
-    See https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Client.scan
-
-    """
-    dynamodb_client = get_dynamo_client()
-
-    paginator = dynamodb_client.get_paginator("scan")
-
-    for page in paginator.paginate(TableName=TableName, **kwargs):
-        yield from page["Items"]
+    write_secret(secrets_client, id=secret_id, value=secret_string)
