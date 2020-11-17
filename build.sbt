@@ -23,7 +23,6 @@ def setupProject(
   project
     .in(new File(folder))
     .settings(Common.settings: _*)
-    .settings(DockerCompose.settings: _*)
     .enablePlugins(DockerComposePlugin)
     .enablePlugins(JavaAppPackaging)
     .dependsOn(dependsOn: _*)
