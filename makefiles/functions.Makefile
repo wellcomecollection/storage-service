@@ -5,9 +5,6 @@ DEV_ROLE_ARN := arn:aws:iam::975596993436:role/storage-developer
 INFRA_BUCKET = wellcomecollection-storage-infra
 
 
-include $(ROOT)/makefiles/terraform.Makefile
-
-
 # Publish a ZIP file containing a Lambda definition to S3.
 #
 # Args:
@@ -275,9 +272,6 @@ endef
 #	$PYTHON_APPS              A space delimited list of ECS services
 #	$LAMBDAS                A space delimited list of Lambdas in this stack
 #
-#	$TF_NAME                Name of the associated Terraform stack
-#	$TF_PATH                Path to the associated Terraform stack
-#
 define stack_setup
 
 # The structure of each of these lines is as follows:
@@ -297,5 +291,4 @@ $(foreach library,$(SBT_DOCKER_LIBRARIES),$(eval $(call __sbt_library_docker_tem
 $(foreach library,$(SBT_NO_DOCKER_LIBRARIES),$(eval $(call __sbt_library_template,$(library))))
 $(foreach task,$(PYTHON_APPS),$(eval $(call __python_ssm_target,$(task),$(STACK_ROOT)/$(task)/Dockerfile,$(PROJECT_ID),$(ACCOUNT_ID))))
 $(foreach lamb,$(LAMBDAS),$(eval $(call __lambda_target_template,$(lamb),$(STACK_ROOT)/$(lamb))))
-$(foreach name,$(TF_NAME),$(eval $(call __terraform_target_template,$(TF_NAME),$(TF_PATH))))
 endef

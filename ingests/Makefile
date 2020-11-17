@@ -13,7 +13,4 @@ SBT_NO_DOCKER_LIBRARIES =
 PYTHON_APPS =
 LAMBDAS 	=
 
-TF_NAME =
-TF_PATH =
-
 $(val $(call stack_setup))
