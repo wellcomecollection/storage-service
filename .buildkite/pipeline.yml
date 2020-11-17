@@ -45,6 +45,11 @@ steps:
     label: "ingests API"
   - command: .buildkite/scripts/run_job.py notifier
     label: "notifier"
+  - command:
+      pip3 install --user tox &&
+      cd scripts &&
+      /var/lib/buildkite-agent/.local/bin/tox -e py3
+    label: "Test Python scripts"
   - wait
   - command: .buildkite/scripts/complete_build.py
     label: "complete build"
