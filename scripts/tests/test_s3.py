@@ -4,7 +4,7 @@ import boto3
 import moto
 import pytest
 
-from helpers import copy_s3_prefix, delete_s3_prefix, list_s3_keys_in
+from helpers import copy_s3_prefix, delete_s3_prefix, list_s3_prefix
 
 
 @pytest.fixture
@@ -13,7 +13,7 @@ def client():
         yield boto3.client("s3", region_name="us-east-1")
 
 
-def test_list_s3_keys_in(client):
+def test_list_s3_prefix(client):
     client.create_bucket(Bucket="my-bukkit")
 
     for folder_id in range(2):
@@ -24,13 +24,13 @@ def test_list_s3_keys_in(client):
         for object_id in range(1001):
             client.put_object(Bucket="my-bukkit", Key=f"{prefix}/object-{object_id}")
 
-    assert len(list(list_s3_keys_in(client, bucket="my-bukkit"))) == 2002
+    assert len(list(list_s3_prefix(client, bucket="my-bukkit"))) == 2002
     assert all(
         key.startswith("folder-0/")
-        for key in list_s3_keys_in(client, bucket="my-bukkit", prefix="folder-0")
+        for key in list_s3_prefix(client, bucket="my-bukkit", prefix="folder-0")
     )
 
-    result = list(list_s3_keys_in(client, bucket="my-bukkit", prefix="folder-0/"))
+    result = list(list_s3_prefix(client, bucket="my-bukkit", prefix="folder-0/"))
     assert len(result) == 1001
     assert result[:10] == [
         "folder-0/object-0",
@@ -48,15 +48,15 @@ def test_list_s3_keys_in(client):
     # If we now delete a batch of objects, we can still retrieve the remaining
     # objects.
     delete_s3_prefix(client, bucket="my-bukkit", prefix="folder-0/")
-    result = list(list_s3_keys_in(client, bucket="my-bukkit"))
+    result = list(list_s3_prefix(client, bucket="my-bukkit"))
     assert len(result) == 1001
     assert all(key.startswith("folder-1/") for key in result)
 
 
-def test_list_s3_keys_in_empty_bucket(client):
+def test_list_s3_prefix_empty_bucket(client):
     client.create_bucket(Bucket="my-bukkit")
 
-    assert list(list_s3_keys_in(client, bucket="my-bukkit")) == []
+    assert list(list_s3_prefix(client, bucket="my-bukkit")) == []
 
 
 def test_copy_s3_prefix(client):
@@ -81,7 +81,7 @@ def test_copy_s3_prefix(client):
     )
 
     dst_objects = {}
-    for dst_key in list_s3_keys_in(client, bucket="bukkit-2"):
+    for dst_key in list_s3_prefix(client, bucket="bukkit-2"):
         body = client.get_object(Bucket="bukkit-2", Key=dst_key)["Body"].read()
         dst_objects[dst_key] = body
 
