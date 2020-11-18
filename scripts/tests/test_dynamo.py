@@ -16,13 +16,13 @@ def client():
 def test_can_delete_single_item(client):
     client.create_table(
         TableName="my-table",
-        KeySchema=[{"AttributeName": "id", "KeyType": "HASH"},],
-        AttributeDefinitions=[{"AttributeName": "id", "AttributeType": "N"},],
+        KeySchema=[{"AttributeName": "id", "KeyType": "HASH"}],
+        AttributeDefinitions=[{"AttributeName": "id", "AttributeType": "N"}],
     )
 
     for i in range(5):
         client.put_item(
-            TableName="my-table", Item={"id": i, "value": secrets.token_bytes()},
+            TableName="my-table", Item={"id": i, "value": secrets.token_bytes()}
         )
 
     # We've written 5 items to the table
@@ -39,13 +39,13 @@ def test_can_delete_single_item(client):
 def test_can_delete_multiple_items(client):
     client.create_table(
         TableName="my-table",
-        KeySchema=[{"AttributeName": "id", "KeyType": "HASH"},],
-        AttributeDefinitions=[{"AttributeName": "id", "AttributeType": "N"},],
+        KeySchema=[{"AttributeName": "id", "KeyType": "HASH"}],
+        AttributeDefinitions=[{"AttributeName": "id", "AttributeType": "N"}],
     )
 
     for i in range(50):
         client.put_item(
-            TableName="my-table", Item={"id": i, "value": secrets.token_bytes()},
+            TableName="my-table", Item={"id": i, "value": secrets.token_bytes()}
         )
 
     # We've written 50 items to the table

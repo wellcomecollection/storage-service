@@ -16,8 +16,6 @@ def bulk_delete_dynamo_items(dynamo_client, *, table_name, keys):
     for batch in chunked_iterable(keys, size=25):
         dynamo_client.batch_write_item(
             RequestItems={
-                table_name: [
-                    {"DeleteRequest": {"Key": key}} for key in batch
-                ]
+                table_name: [{"DeleteRequest": {"Key": key}} for key in batch]
             }
         )
