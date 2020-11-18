@@ -1,8 +1,10 @@
+import secrets
+
 import boto3
 import moto
 import pytest
 
-from helpers import list_s3_keys_in
+from helpers import copy_s3_prefix, list_s3_keys_in
 
 
 @pytest.fixture
@@ -48,3 +50,35 @@ def test_list_s3_keys_in_empty_bucket(client):
     client.create_bucket(Bucket="my-bukkit")
 
     assert list(list_s3_keys_in(client, bucket="my-bukkit")) == []
+
+
+def test_copy_s3_prefix(client):
+    client.create_bucket(Bucket="bukkit-1")
+    client.create_bucket(Bucket="bukkit-2")
+
+    files = {
+        "greeting.en.txt": b"Hello world",
+        "greeting.fr.txt": b"Bonjour le monde",
+        "greeting.de.txt": b"Hallo Weld",
+    }
+
+    for name, body in files.items():
+        client.put_object(Bucket="bukkit-1", Key=f"dir1/{name}", Body=body)
+
+    copy_s3_prefix(
+        client,
+        src_bucket="bukkit-1",
+        src_prefix="dir1/",
+        dst_bucket="bukkit-2",
+        dst_prefix="dir2/"
+    )
+
+    dst_objects = {}
+    for dst_key in list_s3_keys_in(client, bucket="bukkit-2"):
+        body = client.get_object(Bucket="bukkit-2", Key=dst_key)["Body"].read()
+        dst_objects[dst_key] = body
+
+    assert dst_objects == {
+        f"dir2/{name}": body
+        for name, body in files.items()
+    }
