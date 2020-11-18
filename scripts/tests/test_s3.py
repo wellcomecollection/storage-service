@@ -4,7 +4,7 @@ import boto3
 import moto
 import pytest
 
-from helpers import copy_s3_prefix, list_s3_keys_in
+from helpers import copy_s3_prefix, delete_s3_prefix, list_s3_keys_in
 
 
 @pytest.fixture
@@ -44,6 +44,13 @@ def test_list_s3_keys_in(client):
         "folder-0/object-104",
         "folder-0/object-105",
     ]
+
+    # If we now delete a batch of objects, we can still retrieve the remaining
+    # objects.
+    delete_s3_prefix(client, bucket="my-bukkit", prefix="folder-0/")
+    result = list(list_s3_keys_in(client, bucket="my-bukkit"))
+    assert len(result) == 1001
+    assert all(key.startswith("folder-1/") for key in result)
 
 
 def test_list_s3_keys_in_empty_bucket(client):
