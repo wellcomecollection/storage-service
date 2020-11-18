@@ -30,9 +30,9 @@ def test_list_s3_keys_in(client):
         for key in list_s3_keys_in(client, bucket="my-bukkit", prefix="folder-0")
     )
 
-    result = list_s3_keys_in(client, bucket="my-bukkit", prefix="folder-0/")
+    result = list(list_s3_keys_in(client, bucket="my-bukkit", prefix="folder-0/"))
     assert len(result) == 1001
-    assert list(result)[:10] == [
+    assert result[:10] == [
         "folder-0/object-0",
         "folder-0/object-1",
         "folder-0/object-10",
