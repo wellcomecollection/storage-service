@@ -49,7 +49,7 @@ def _get_legal_hold_tags(*, account, container):
 
 
 @contextlib.contextmanager
-def unlocked_container(*, account, container):
+def unlocked_azure_container(*, account, container):
     """
     By default, we have legal holds on our Azure containers that prevent us from
     deleting any blobs.
