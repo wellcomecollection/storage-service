@@ -7,14 +7,24 @@ This script will delete a bag from the storage service.  Start by running:
 and follow the instructions from there.
 """
 
+import datetime
 import json
 import os
 import sys
 
 import click
+from elasticsearch.exceptions import NotFoundError as ElasticNotFoundError
 import humanize
 from wellcome_storage_service import IngestNotFound, RequestsOAuthStorageServiceClient
 
+from helpers.iam import (
+    ADMIN_ROLE_ARN,
+    DEV_ROLE_ARN,
+    create_aws_client_from_role_arn,
+    create_dynamo_client_from_role_arn,
+    get_underlying_role_arn,
+)
+from helpers.reporting import get_reporting_client
 from helpers.storage_service import lookup_ingest
 
 
@@ -75,10 +85,45 @@ def main(ingest_id):
         space=space, external_identifier=external_identifier, version=version,
     )
 
+    # We only want to delete files that were newly introduced in this version --
+    # we shouldn't delete files fetch.txt'd from a prior version.
+    files_to_delete = [
+        f
+        for f in bag["manifest"]["files"] + bag["tagManifest"]["files"]
+        if f["path"].startswith(f"{version}/")
+    ]
+
     locations = _confirm_user_wants_to_delete_locations(bag)
     assert all(
         loc["prefix"].endswith(f"/{version}")
         for loc in locations["s3"] + [locations["azure"]]
+    )
+
+    environment = api_name
+    assert environment in ("prod", "staging")
+
+    # At this point, we've checked everything -- we're good to go!  Let's
+    # make a record of the deletion we're about to do.
+    dynamo_client = create_dynamo_client_from_role_arn(role_arn=DEV_ROLE_ARN)
+    _record_deletion(
+        dynamo_client,
+        environment=api_name,
+        ingest_id=ingest_id,
+        space=space,
+        external_identifier=external_identifier,
+        version=version,
+        reason=reason,
+    )
+
+    # And now start deleting stuff!
+    _delete_reporting_cluster_entries(
+        environment=environment,
+        ingest_id=ingest_id,
+        space=space,
+        external_identifier=external_identifier,
+        version=version,
+        s3_location=locations["s3"][0],
+        files_to_delete=files_to_delete,
     )
 
 
@@ -121,7 +166,7 @@ def _confirm_user_wants_to_delete_bag(
     click.echo(f"Date created: {hilight(date_str)}")
 
     click.echo("")
-    click.confirm("Are you sure you want to delete this bag?", abort=True)
+    # click.confirm("Are you sure you want to delete this bag?", abort=True)
 
 
 def _ask_reason_for_deleting_bag(*, space, external_identifier, version):
@@ -131,7 +176,8 @@ def _ask_reason_for_deleting_bag(*, space, external_identifier, version):
     """
     click.echo("")
     bag_id = f"{space}/{external_identifier}/{version}"
-    return click.prompt(f"Why are you deleting {hilight(bag_id)}?")
+    # return click.prompt(f"Why are you deleting {hilight(bag_id)}?")
+    return "Testing the bag deletion script"
 
 
 def _confirm_is_latest_version_of_bag(
@@ -259,9 +305,136 @@ def _confirm_user_wants_to_delete_locations(bag):
     for loc in loc_uris:
         click.echo(f"- {hilight(loc)}")
     click.echo("")
-    click.confirm("Does this look right?", abort=True)
+    # click.confirm("Does this look right?", abort=True)
 
     return locations
+
+
+def _record_deletion(
+    dynamo_client,
+    *,
+    environment,
+    ingest_id,
+    space,
+    external_identifier,
+    version,
+    reason,
+):
+    """
+    Create a record of this deletion event in DynamoDB.
+    """
+    event = {
+        "requested_by": get_underlying_role_arn(),
+        "deleted_at": datetime.datetime.now().isoformat(),
+        "reason": reason,
+    }
+
+    dynamo_client.update_item(
+        TableName="deleted_bags",
+        Key={"ingest_id": ingest_id},
+        UpdateExpression="""
+             SET
+             #space = :space,
+             #externalIdentifier = :externalIdentifier,
+             #version = :version,
+             #environment = :environment,
+             #events = list_append(if_not_exists(#events, :empty_list), :event)
+        """,
+        ExpressionAttributeNames={
+            "#environment": "environment",
+            "#space": "space",
+            "#externalIdentifier": "externalIdentifier",
+            "#version": "version",
+            "#events": "events",
+        },
+        ExpressionAttributeValues={
+            ":environment": environment,
+            ":space": space,
+            ":externalIdentifier": external_identifier,
+            ":version": version,
+            ":event": [event],
+            ":empty_list": [],
+        },
+    )
+
+
+def _delete_reporting_cluster_entries(
+    *,
+    environment,
+    ingest_id,
+    space,
+    external_identifier,
+    version,
+    s3_location,
+    files_to_delete,
+):
+    click.echo("")
+    click.echo("Deleting entries in the reporting cluster...")
+
+    index_pattern = {"staging": "storage_stage_{doc}", "prod": "storage_{doc}*"}[
+        environment
+    ]
+
+    secrets_client = create_aws_client_from_role_arn(
+        "secretsmanager", role_arn=ADMIN_ROLE_ARN
+    )
+
+    # Delete the ingest.
+    #
+    # In particular, delete the entry in the ingests index with this ingest ID.
+    #
+    click.echo("Deleting this ingest from the ingests index...")
+    ingests_reporting_client = get_reporting_client(
+        secrets_client, environment=environment, app_name="ingests"
+    )
+    try:
+        ingests_reporting_client.delete(
+            index=index_pattern.format(doc="ingests"), id=ingest_id
+        )
+    except ElasticNotFoundError:
+        pass
+
+    # Delete the bag.
+    #
+    # In particular, delete the entry in the bags index with the ID
+    # {space}/{external_identifier}
+    #
+    # Note: this assumes a single version of each bag will be indexed.  If we change
+    # this, we'll need to change this code to match.
+    #
+    # Note: this will cause the bag to disappear from the reporting cluster until
+    # we reindex and/or another version of this bag gets ingested.
+    #
+    click.echo("Deleting this bag from the bags index...")
+    bags_reporting_client = get_reporting_client(
+        secrets_client, environment=environment, app_name="bags"
+    )
+    try:
+        bags_reporting_client.delete(
+            index=index_pattern.format(doc="bags"), id=f"{space}/{external_identifier}"
+        )
+    except ElasticNotFoundError:
+        pass
+
+    # Delete all the files.
+    #
+    # In particular, delete all files whose key matches the common prefix
+    # in all our locations.
+    #
+    click.echo("Deleting all the matching files from the files index...")
+    assert all(f["path"].startswith(f"{version}/") for f in files_to_delete)
+    files_reporting_client = get_reporting_client(
+        secrets_client, environment=environment, app_name="files"
+    )
+
+    for f in files_to_delete:
+        try:
+            files_reporting_client.delete(
+                index=index_pattern.format(doc="files"),
+                id=f"{s3_location['prefix']}/{f['name']}",
+            )
+        except ElasticNotFoundError:
+            pass
 
 
 if __name__ == "__main__":
