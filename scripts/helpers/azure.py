@@ -139,3 +139,38 @@ def unlocked_azure_container(*, account, container):
             f"Unable to restore legal hold tags from Azure container {container} "
             f" ({' '.join(existing_legal_hold_tags)})"
         )
+
+
+def list_azure_prefix(*, account, container, prefix=""):
+    """
+    Lists all the blob names in a given Azure container/prefix.
+    """
+    cmd = [
+        "storage",
+        "blob",
+        "list",
+        "--account-name",
+        account,
+        "--container-name",
+        container,
+        # Return all the results
+        "--num-results=*",
+    ]
+
+    if prefix:
+        cmd += ["--prefix", prefix]
+
+    list_resp = az(
+        *cmd,
+        # Otherwise we get warnings like:
+        #
+        #       Please provide --connection-string, --account-key or --sas-token
+        #       as credential, or use `--auth-mode login` if you have required RBAC
+        #       roles in your command. For more information about RBAC roles in
+        #       storage, you can see
+        #       https://docs.microsoft.com/en-us/azure/storage/common/storage-auth-aad-rbac-cli.
+        #
+        stderr=subprocess.DEVNULL,
+    )
+
+    return [azure_obj["name"] for azure_obj in list_resp]
