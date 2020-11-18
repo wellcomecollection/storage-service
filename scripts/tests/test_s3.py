@@ -1,5 +1,3 @@
-import secrets
-
 import boto3
 import moto
 import pytest
