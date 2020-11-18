@@ -12,6 +12,7 @@ import elasticsearch
 
 from decisions import Decision
 from elastic_helpers import get_local_elastic_client
+from iter_helpers import chunked_iterable
 
 
 @attr.s
@@ -20,6 +21,7 @@ class Chunk:
     destination = attr.ib()
     s3_keys = attr.ib(default=list)
     transfer_package = attr.ib(default=None)
+    total_size = attr.ib(default=None)
 
     def merge_chunk(self, other):
         assert other.chunk_id() == self.chunk_id()
@@ -51,20 +53,60 @@ def gather_chunks(decisions_index):
 
     click.echo(f"Gathering chunks from {total_chunkable_decisions} decisions.")
 
-    # Dict (shard, destination) -> set(s3 keys)
-    groups = collections.defaultdict(set)
+    # Dict (shard, destination) -> list(s3 keys)
+    groups = collections.defaultdict(list)
 
     for result in chunkable_decisions:
         decision = Decision(**result["_source"])
         for destination in decision.destinations:
-            groups[(decision.group_name, destination)].add(decision.s3_key)
+            groups[(decision.group_name, destination)].append(decision)
 
     click.echo(f"Found {len(groups)} chunks.")
 
-    return [
-        Chunk(group_name=group_name, destination=destination, s3_keys=s3_keys)
-        for (group_name, destination), s3_keys in groups.items()
+    def _build_chunks(group_name, destination, decisions):
+        total_size = 0
+        s3_keys = []
+        chunked_s3_keys = []
+
+        for decision in decisions:
+            s3_keys.append(decision.s3_key)
+            total_size = total_size + decision.s3_size
+
+            if total_size > 15_000_000_000:
+                chunked_s3_keys.append({
+                    's3_keys': s3_keys,
+                    'total_size': total_size
+                })
+                s3_keys = []
+                total_size = 0
+
+        chunked_s3_keys.append({
+            's3_keys': s3_keys,
+            'total_size': total_size
+        })
+
+        chunks = []
+        for i, s3_keys_chunk in enumerate(chunked_s3_keys):
+            if len(chunked_s3_keys) > 1:
+                new_group_name = f"{group_name}_{i+1}"
+            else:
+                new_group_name = group_name
+
+            chunks.append(Chunk(
+                group_name=new_group_name,
+                destination=destination,
+                s3_keys=s3_keys_chunk['s3_keys'],
+                total_size=s3_keys_chunk['total_size']
+            ))
+
+        return chunks
+
+    chunks_list = [
+        _build_chunks(group_name=group_name, destination=destination, decisions=decisions)
+        for (group_name, destination), decisions in groups.items()
     ]
+
+    return [item for sublist in chunks_list for item in sublist]
 
 
 if __name__ == "__main__":

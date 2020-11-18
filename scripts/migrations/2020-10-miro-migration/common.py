@@ -4,9 +4,27 @@ import json
 import os
 import re
 import shutil
+from zipfile import ZipFile
 
 import boto3
 from unidecode import unidecode
+from elasticsearch import Elasticsearch
+import wellcome_storage_service
+
+
+def get_storage_client(api_url):
+    creds_path = os.path.join(
+        os.environ["HOME"], ".wellcome-storage", "oauth-credentials.json"
+    )
+
+    oauth_creds = json.load(open(creds_path))
+
+    return wellcome_storage_service.RequestsOAuthStorageServiceClient(
+        api_url=api_url,
+        client_id=oauth_creds["client_id"],
+        client_secret=oauth_creds["client_secret"],
+        token_url=oauth_creds["token_url"],
+    )
 
 
 def get_aws_client(resource, *, role_arn):
@@ -36,6 +54,14 @@ def get_secret(role_arn, secret_id):
         secret = response["SecretString"]
 
     return secret
+
+
+def get_elastic_client(role_arn, elastic_secret_id):
+    secret = get_secret(role_arn, elastic_secret_id)
+
+    return Elasticsearch(
+        secret["endpoint"], http_auth=(secret["username"], secret["password"])
+    )
 
 
 def file_exists(file_location, expected_content_length):

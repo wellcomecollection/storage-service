@@ -47,6 +47,7 @@ class Decision:
     group_name = attr.ib()
     destinations = attr.ib()
     notes = attr.ib()
+    s3_size = attr.ib(default=None)
 
     @classmethod
     def from_skip(cls, *, s3_key, reason):
@@ -105,7 +106,7 @@ def find_inventory_hits_for_query(query_string):
         return results["hits"]["hits"][0]["_source"]
 
 
-def decide_based_on_reporting_inventory(s3_key, miro_id):
+def decide_based_on_reporting_inventory(s3_key, s3_size, miro_id):
     for name in (
         os.path.basename(s3_key).split(".")[0].split("-")[0],
         os.path.basename(s3_key).split(".")[0],
@@ -127,6 +128,7 @@ def decide_based_on_reporting_inventory(s3_key, miro_id):
             notes.append(f"Matched to miro_inventory record ID={resp['id']!r}")
             return Decision(
                 s3_key=s3_key,
+                s3_size=s3_size,
                 miro_id=miro_id,
                 group_name=choose_group_name(S3_PREFIX, s3_key),
                 skip=False,
@@ -179,6 +181,7 @@ def decide_based_on_wellcome_images_bucket(s3_obj, miro_id):
 
         return Decision(
             s3_key=s3_obj["Key"],
+            s3_size=s3_obj["Size"],
             miro_id=miro_id,
             group_name=choose_group_name(S3_PREFIX, s3_obj["Key"]),
             skip=False,
@@ -225,7 +228,7 @@ def get_trimmed_metadata_for_prefix(prefix):
     return result.decode("ascii", errors="ignore")
 
 
-def decide_based_on_miro_metadata(s3_key, miro_id):
+def decide_based_on_miro_metadata(s3_key, s3_size, miro_id):
     if miro_id.startswith(("AS", "FP")):
         prefix = miro_id[:2]
     else:
@@ -236,6 +239,7 @@ def decide_based_on_miro_metadata(s3_key, miro_id):
     if miro_id not in metadata:
         return Decision(
             s3_key=s3_key,
+            s3_size=s3_size,
             miro_id=miro_id,
             group_name=choose_group_name(S3_PREFIX, s3_key),
             skip=False,
@@ -259,6 +263,7 @@ def make_decision(s3_obj):
     except IsMiroMoviesError:
         return Decision(
             s3_key=s3_obj["Key"],
+            s3_size=s3_obj["Size"],
             miro_id=None,
             group_name=choose_group_name(S3_PREFIX, s3_obj["Key"]),
             skip=False,
@@ -268,6 +273,7 @@ def make_decision(s3_obj):
     except IsCorporatePhotographyError:
         return Decision(
             s3_key=s3_obj["Key"],
+            s3_size=s3_obj["Size"],
             miro_id=None,
             group_name=choose_group_name(S3_PREFIX, s3_obj["Key"]),
             skip=False,
@@ -279,24 +285,32 @@ def make_decision(s3_obj):
     # use that as the basis for decision making.
     # Note: This assumes the miro_reporting inventory has been mirrored locally.
     decision = decide_based_on_reporting_inventory(
-        s3_key=s3_obj["Key"], miro_id=miro_id
+        s3_key=s3_obj["Key"], s3_size=s3_obj["Size"], miro_id=miro_id
     )
     if decision is not None:
         return decision
 
     # Can we find a matching entry in the wellcomecollection-images bucket?  If so,
     # we can use that as the basis for decision making.
-    decision = decide_based_on_wellcome_images_bucket(s3_obj=s3_obj, miro_id=miro_id)
+    decision = decide_based_on_wellcome_images_bucket(
+        s3_obj=s3_obj,
+        miro_id=miro_id,
+    )
     if decision is not None:
         return decision
 
     # Is this image completely missing from the Miro metadata?
-    decision = decide_based_on_miro_metadata(s3_key=s3_obj["Key"], miro_id=miro_id)
+    decision = decide_based_on_miro_metadata(
+        s3_key=s3_obj["Key"],
+        s3_size=s3_obj["Size"],
+        miro_id=miro_id
+    )
     if decision is not None:
         return decision
 
     return Decision(
         s3_key=s3_obj["Key"],
+        s3_size=s3_obj["Size"],
         miro_id=miro_id,
         group_name=choose_group_name(S3_PREFIX, s3_obj["Key"]),
         skip=False,

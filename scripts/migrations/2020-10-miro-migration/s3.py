@@ -2,6 +2,8 @@ import datetime
 import json
 import os
 
+import botocore
+
 
 def list_s3_objects_from(s3_client, bucket, prefix=""):
     """
@@ -50,6 +52,10 @@ def get_s3_object_size(s3_client, s3_bucket, s3_key):
     """
     Retrieves the content length of an object from S3.
     """
-    s3_head_object_response = s3_client.head_object(Bucket=s3_bucket, Key=s3_key)
+    try:
+        s3_head_object_response = s3_client.head_object(Bucket=s3_bucket, Key=s3_key)
+    except botocore.exceptions.ClientError as e:
+        if e.response['Error']['Code'] == "404":
+            return None
 
     return s3_head_object_response["ContentLength"]

@@ -17,7 +17,6 @@ def choose_group_name(prefix, s3_key):
         "New_Scans_Edited_Images",
         "FP Images",
         "A Images",
-        "B Images",
         "AS Images",
         "C Scanned",
         "W Images",
