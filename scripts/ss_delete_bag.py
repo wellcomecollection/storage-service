@@ -167,7 +167,7 @@ def _confirm_user_wants_to_delete_bag(
     click.echo(f"Date created: {hilight(date_str)}")
 
     click.echo("")
-    # click.confirm("Are you sure you want to delete this bag?", abort=True)
+    click.confirm("Are you sure you want to delete this bag?", abort=True)
 
 
 def _ask_reason_for_deleting_bag(*, space, external_identifier, version):
@@ -177,8 +177,7 @@ def _ask_reason_for_deleting_bag(*, space, external_identifier, version):
     """
     click.echo("")
     bag_id = f"{space}/{external_identifier}/{version}"
-    # return click.prompt(f"Why are you deleting {hilight(bag_id)}?")
-    return "Testing the bag deletion script"
+    return click.prompt(f"Why are you deleting {hilight(bag_id)}?")
 
 
 def _confirm_is_latest_version_of_bag(
@@ -306,7 +305,7 @@ def _confirm_user_wants_to_delete_locations(bag):
     for loc in loc_uris:
         click.echo(f"- {hilight(loc)}")
     click.echo("")
-    # click.confirm("Does this look right?", abort=True)
+    click.confirm("Does this look right?", abort=True)
 
     return locations
 
