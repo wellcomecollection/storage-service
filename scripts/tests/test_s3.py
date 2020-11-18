@@ -75,7 +75,7 @@ def test_copy_s3_prefix(client):
         src_bucket="bukkit-1",
         src_prefix="dir1/",
         dst_bucket="bukkit-2",
-        dst_prefix="dir2/"
+        dst_prefix="dir2/",
     )
 
     dst_objects = {}
@@ -83,7 +83,4 @@ def test_copy_s3_prefix(client):
         body = client.get_object(Bucket="bukkit-2", Key=dst_key)["Body"].read()
         dst_objects[dst_key] = body
 
-    assert dst_objects == {
-        f"dir2/{name}": body
-        for name, body in files.items()
-    }
+    assert dst_objects == {f"dir2/{name}": body for name, body in files.items()}

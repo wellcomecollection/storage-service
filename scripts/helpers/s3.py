@@ -22,9 +22,7 @@ def copy_s3_prefix(s3_client, *, src_bucket, src_prefix, dst_bucket, dst_prefix)
     Copies all the objects between two prefixes in S3.
     """
     for src_key in list_s3_prefix(s3_client, bucket=src_bucket, prefix=src_prefix):
-        dst_key = os.path.join(
-            dst_prefix, os.path.relpath(src_key, start=src_prefix)
-        )
+        dst_key = os.path.join(dst_prefix, os.path.relpath(src_key, start=src_prefix))
         s3_client.copy(
             CopySource={"Bucket": src_bucket, "Key": src_key},
             Bucket=dst_bucket,
@@ -42,8 +40,5 @@ def delete_s3_prefix(s3_client, *, bucket, prefix=""):
     ):
         assert all(s3_key.startswith(prefix) for s3_key in batch)
         s3_client.delete_objects(
-            Bucket=bucket,
-            Delete={
-                "Objects": [{"Key": s3_key} for s3_key in batch]
-            }
+            Bucket=bucket, Delete={"Objects": [{"Key": s3_key} for s3_key in batch]}
         )
