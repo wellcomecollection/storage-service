@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import functools
 import json
 import os
 import re
@@ -41,6 +42,7 @@ def get_aws_client(resource, *, role_arn):
     )
 
 
+@functools.lru_cache
 def get_secret(role_arn, secret_id):
     secretsmanager_client = get_aws_client(resource="secretsmanager", role_arn=role_arn)
 

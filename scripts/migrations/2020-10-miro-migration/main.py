@@ -24,6 +24,9 @@ from chunk_transfer import (
     upload_chunk_package,
     update_chunk_record,
 )
+from uploads import (
+    check_package_upload
+)
 
 DECISIONS_INDEX = "decisions"
 CHUNKS_INDEX = "chunks"
@@ -134,6 +137,15 @@ def transfer_package_chunks(ctx):
         )
 
 
+@click.command()
+@click.pass_context
+def upload_transfer_packages(ctx):
+    chunks = get_chunks(CHUNKS_INDEX)
+
+    for chunk in chunks:
+        check_package_upload(chunk)
+
+
 @click.group()
 @click.pass_context
 def cli(ctx):
@@ -143,6 +155,7 @@ def cli(ctx):
 cli.add_command(create_chunks_index)
 cli.add_command(create_decisions_index)
 cli.add_command(transfer_package_chunks)
+cli.add_command(upload_transfer_packages)
 cli.add_command(save_index)
 cli.add_command(load_index)
 
