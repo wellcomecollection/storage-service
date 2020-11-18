@@ -9,7 +9,10 @@ def az(*args, **kwargs):
     """
     cmd = ["az"] + list(args) + ["--output=json"]
     output = subprocess.check_output(cmd, **kwargs)
-    return json.loads(output)
+    try:
+        return json.loads(output)
+    except json.JSONDecodeError:
+        return output
 
 
 def _get_legal_hold_tags(*, account, container):
@@ -174,3 +177,37 @@ def list_azure_prefix(*, account, container, prefix=""):
     )
 
     return [azure_obj["name"] for azure_obj in list_resp]
+
+
+def delete_azure_blob(*, account, container, blob):
+    """
+    Deletes an individual Azure blob.
+    """
+    az(
+        "storage",
+        "blob",
+        "delete",
+        "--account-name",
+        account,
+        "--container-name",
+        container,
+        "--name",
+        blob,
+        # Otherwise we get warnings like:
+        #
+        #       Please provide --connection-string, --account-key or --sas-token
+        #       as credential, or use `--auth-mode login` if you have required RBAC
+        #       roles in your command. For more information about RBAC roles in
+        #       storage, you can see
+        #       https://docs.microsoft.com/en-us/azure/storage/common/storage-auth-aad-rbac-cli.
+        #
+        stderr=subprocess.DEVNULL,
+    )
+
+
+def delete_azure_prefix(*, account, container, prefix):
+    """
+    Delete all the objects in a given S3 bucket/prefix.
+    """
+    for blob in list_azure_prefix(account=account, container=container, prefix=prefix):
+        delete_azure_blob(account=account, container=container, blob=blob)
