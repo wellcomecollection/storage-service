@@ -18,6 +18,7 @@ import humanize
 from wellcome_storage_service import IngestNotFound, RequestsOAuthStorageServiceClient
 
 from helpers.iam import (
+    ACCOUNT_ID,
     ADMIN_ROLE_ARN,
     DEV_ROLE_ARN,
     create_aws_client_from_role_arn,
@@ -402,9 +403,6 @@ def _delete_reporting_cluster_entries(
     # Note: this assumes a single version of each bag will be indexed.  If we change
     # this, we'll need to change this code to match.
     #
-    # Note: this will cause the bag to disappear from the reporting cluster until
-    # we reindex and/or another version of this bag gets ingested.
-    #
     click.echo("Deleting this bag from the bags index...")
     bags_reporting_client = get_reporting_client(
         secrets_client, environment=environment, app_name="bags"
@@ -415,6 +413,27 @@ def _delete_reporting_cluster_entries(
         )
     except ElasticNotFoundError:
         pass
+
+    # If this wasn't v1 of the bag, trigger a reindex so we get the bag in the
+    # reporting cluster.
+    if version != "v1":
+        version_i = int(version[1:])
+
+        reindexer_topic_arn = f"arn:aws:sns:eu-west-1:{ACCOUNT_ID}:storage_{environment}_bag_reindexer_output"
+        sns_client = create_aws_client_from_role_arn("sns", role_arn=DEV_ROLE_ARN)
+
+        payload = {
+            "space": space,
+            "externalIdentifier": external_identifier,
+            "version": f"v{version_i - 1}",
+            "type": "RegisteredBagNotification",
+        }
+
+        sns_client.publish(
+            TopicArn=reindexer_topic_arn,
+            Subject=f"Sent by {__file__}",
+            Message=json.dumps(payload),
+        )
 
     # Delete all the files.
     #
