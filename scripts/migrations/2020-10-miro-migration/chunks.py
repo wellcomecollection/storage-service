@@ -65,12 +65,15 @@ def gather_chunks(decisions_index):
 
     def _build_chunks(group_name, destination, decisions):
         total_size = 0
+        sum_total_size = 0
+
         s3_keys = []
         chunked_s3_keys = []
 
         for decision in decisions:
             s3_keys.append(decision.s3_key)
             total_size = total_size + decision.s3_size
+            sum_total_size = sum_total_size + decision.s3_size
 
             if total_size > 15_000_000_000:
                 chunked_s3_keys.append({
@@ -98,6 +101,21 @@ def gather_chunks(decisions_index):
                 s3_keys=s3_keys_chunk['s3_keys'],
                 total_size=s3_keys_chunk['total_size']
             ))
+
+        actual_total_files = 0
+        actual_total_size = 0
+
+        for chunk in chunks:
+            actual_total_files = actual_total_files + len(chunk.s3_keys)
+            actual_total_size = actual_total_size + chunk.total_size
+
+        assert sum_total_size == actual_total_size, (
+            f"Total size mismatch ({sum_total_size} == {actual_total_size})"
+        )
+
+        assert len(decisions) == actual_total_files, (
+            f"Total file count mismatch ({len(decisions)} == {actual_total_files})"
+        )
 
         return chunks
 
