@@ -42,3 +42,9 @@ def test_list_s3_keys_in(client):
         "folder-0/object-104",
         "folder-0/object-105",
     ]
+
+
+def test_list_s3_keys_in_empty_bucket(client):
+    client.create_bucket(Bucket="my-bukkit")
+
+    assert list(list_s3_keys_in(client, bucket="my-bukkit")) == []
