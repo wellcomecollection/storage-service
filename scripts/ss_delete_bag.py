@@ -186,7 +186,7 @@ def main(ingest_id, skip_azure_login):
     A temporary copy has been saved in s3://wellcomecollection-platform-infra,
     but this will only be kept for 30 days.
     """
-            ),
+            ).strip(),
             "red",
         )
     )
