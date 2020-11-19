@@ -7,6 +7,7 @@ import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import uk.ac.wellcome.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.bag_tracker.client.{
   BagTrackerClient,
+  BagTrackerNotFoundError,
   BagTrackerUnknownGetError
 }
 import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
@@ -67,6 +68,21 @@ class BagIndexerWorker(
               cause = e
             )
           )
+
+        // It's unusual for the bag indexer to be asked to index a non-existent
+        // bag.  Since the cost of retrying is small and this might be a consistency
+        // issue, allow retrying the bag in a few minutes.
+        // See https://github.com/wellcomecollection/platform/issues/4873
+        case Left(BagTrackerNotFoundError()) =>
+          val message = s"Bag indexer asked to index $notification, but the bag tracker doesn't know about that"
+          warn(message)
+          Left(
+            RetryableIndexingError(
+              payload = notification,
+              cause = new Throwable(message)
+            )
+          )
+
         case Left(e) =>
           error(new Exception(f"Failed to load $notification, got $e"))
           Left(FatalIndexingError(payload = notification))
