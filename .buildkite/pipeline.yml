@@ -58,7 +58,7 @@ steps:
     if: build.branch == "master"
     plugins:
       - docker#v3.5.0:
-          image: wellcome/weco-deploy:5.5.7
+          image: "760097843905.dkr.ecr.eu-west-1.amazonaws.com/wellcome/weco-deploy:5.5.7"
           workdir: /repo
           mount-ssh-agent: true
           command: [
@@ -73,7 +73,7 @@ steps:
     if: build.branch == "master"
     plugins:
       - docker#v3.5.0:
-          image: "amazon/aws-cli"
+          image: "760097843905.dkr.ecr.eu-west-1.amazonaws.com/amazon/aws-cli"
           command: [
             "lambda",
             "invoke",
