@@ -145,13 +145,14 @@ def _confirm_user_wants_to_delete_bag(
 
     It presents a prompt of the following form:
 
-          This is the bag you are about to delete:
-          Space:        testing
-          External ID:  test_bag
-          Version:      v132
-          Date created: Friday, 13 November 2020 @ 11:10 (2 days ago)
+        This is the bag you are about to delete:
+        Environment:  prod
+        Space:        testing
+        External ID:  test_bag
+        Version:      v132
+        Date created: Friday, 13 November 2020 @ 11:10 (2 days ago)
 
-          Are you sure you want to delete this bag? [y/N]: y
+        Are you sure you want to delete this bag? [y/N]: y
 
     """
     delta = humanize.naturaltime(date_created)
