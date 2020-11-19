@@ -1,4 +1,4 @@
-FROM nginx:1.15.8-alpine
+FROM 760097843905.dkr.ecr.eu-west-1.amazonaws.com/nginx:1.15.8-alpine
 
 COPY nginx.conf /etc/nginx/nginx.conf.template
 
