@@ -17,6 +17,7 @@ from elasticsearch.exceptions import NotFoundError as ElasticNotFoundError
 import humanize
 from wellcome_storage_service import IngestNotFound, RequestsOAuthStorageServiceClient
 
+from helpers import azure
 from helpers.iam import (
     ACCOUNT_ID,
     ADMIN_ROLE_ARN,
@@ -131,6 +132,7 @@ def main(ingest_id):
     )
 
     _delete_s3_objects(s3_locations=locations["s3"])
+    _delete_azure_blobs(azure_location=locations["azure"])
 
 
 def hilight(s):
@@ -502,6 +504,24 @@ def _delete_s3_objects(*, s3_locations):
         for loc in s3_locations:
             click.echo(f"Deleting objects in s3://{loc['bucket']}/{loc['prefix']}")
             delete_s3_prefix(s3_client, bucket=loc["bucket"], prefix=loc["prefix"])
+
+
+def _delete_azure_blobs(*, azure_location):
+    click.echo("")
+    click.echo("Deleting blobs from Azure...")
+
+    click.echo(
+        f"Deleting blobs in azure://{azure_location['container']}/{azure_location['prefix']}"
+    )
+
+    with azure.unlocked_azure_container(
+        account=azure_location["account"], container=azure_location["container"]
+    ):
+        azure.delete_azure_prefix(
+            account=azure_location["account"],
+            container=azure_location["container"],
+            prefix=azure_location["prefix"],
+        )
 
 
 if __name__ == "__main__":
