@@ -1,6 +1,3 @@
-# -*- encoding: utf-8
-
-import itertools
 import json
 import logging
 import os
@@ -43,12 +40,3 @@ def get_storage_client(api_url):
         client_secret=oauth_creds["client_secret"],
         token_url=oauth_creds["token_url"],
     )
-
-
-def chunked_iterable(iterable, size):
-    it = iter(iterable)
-    while True:
-        chunk = tuple(itertools.islice(it, size))
-        if not chunk:
-            break
-        yield chunk

@@ -1,5 +1,5 @@
 s3:
-  image: "zenko/cloudserver:8.1.8"
+  image: "760097843905.dkr.ecr.eu-west-1.amazonaws.com/zenko/cloudserver:8.1.8"
   environment:
     - "S3BACKEND=mem"
   ports:

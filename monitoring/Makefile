@@ -15,7 +15,4 @@ SBT_NO_DOCKER_LIBRARIES =
 PYTHON_APPS =
 LAMBDAS 	= daily_reporter end_to_end_bag_test
 
-TF_NAME =
-TF_PATH =
-
 $(val $(call stack_setup))

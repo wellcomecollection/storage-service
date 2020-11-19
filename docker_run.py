@@ -133,6 +133,11 @@ if __name__ == "__main__":
     if namespace.docker_in_docker:
         cmd += ["--volume", "/var/run/docker.sock:/var/run/docker.sock"]
 
+        # Mount the ~/.docker directory inside the container, so auth is
+        # available inside the container.
+        # In particular, auth that lets us talk to ECR.
+        cmd += ["--volume", "%s/.docker:/root/.docker" % os.environ["HOME"]]
+
     if namespace.share_sbt_dirs:
         cmd += ["--volume", "%s/.sbt:/root/.sbt" % os.environ["HOME"]]
         cmd += ["--volume", "%s/.ivy2:/root/.ivy2" % os.environ["HOME"]]
