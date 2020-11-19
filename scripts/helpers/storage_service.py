@@ -26,12 +26,12 @@ def lookup_ingest(ingest_id):
             pass
         else:
             ingest_data = {
-                 "space": ingest["space"]["id"],
-                 "external_identifier": ingest["bag"]["info"]["externalIdentifier"],
-                 "version": ingest["bag"]["info"]["version"],
-                 "date_created": datetime.datetime.strptime(
+                "space": ingest["space"]["id"],
+                "external_identifier": ingest["bag"]["info"]["externalIdentifier"],
+                "version": ingest["bag"]["info"]["version"],
+                "date_created": datetime.datetime.strptime(
                     ingest["createdDate"], "%Y-%m-%dT%H:%M:%S.%fZ"
-                 ),
+                ),
             }
             return api_name, api_url, ingest_data
 
