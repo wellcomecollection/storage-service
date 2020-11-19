@@ -83,7 +83,7 @@ def main(ingest_id):
     )
 
     bag = storage_client.get_bag(
-        space=space, external_identifier=external_identifier, version=version,
+        space=space, external_identifier=external_identifier, version=version
     )
 
     # We only want to delete files that were newly introduced in this version --
