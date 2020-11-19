@@ -7,6 +7,7 @@ This script will delete a bag from the storage service.  Start by running:
 and follow the instructions from there.
 """
 
+import collections
 import datetime
 import json
 import os
@@ -17,11 +18,12 @@ from elasticsearch.exceptions import NotFoundError as ElasticNotFoundError
 import humanize
 from wellcome_storage_service import IngestNotFound, RequestsOAuthStorageServiceClient
 
-from helpers import azure
+from helpers import azure, dynamo
 from helpers.iam import (
     ACCOUNT_ID,
     ADMIN_ROLE_ARN,
     DEV_ROLE_ARN,
+    READ_ONLY_ROLE_ARN,
     create_aws_client_from_credentials,
     create_aws_client_from_role_arn,
     create_dynamo_client_from_role_arn,
@@ -69,9 +71,9 @@ def main(ingest_id):
         date_created=date_created,
     )
 
-    reason = _ask_reason_for_deleting_bag(
-        space=space, external_identifier=external_identifier, version=version
-    )
+    # reason = _ask_reason_for_deleting_bag(
+    #     space=space, external_identifier=external_identifier, version=version
+    # )
 
     # Do various other checks that this bag is correctly formed before we go
     # ahead and start deleting stuff.  The deletion should be as close to atomic
@@ -106,6 +108,37 @@ def main(ingest_id):
 
     environment = api_name
     assert environment in ("prod", "staging")
+
+    dynamo_client = create_dynamo_client_from_role_arn(role_arn=READ_ONLY_ROLE_ARN)
+
+    for it in _get_dynamodb_items_to_delete(
+        dynamo_client,
+        environment=api_name,
+        ingest_id=ingest_id,
+        space=space,
+        external_identifier=external_identifier,
+        version=version,
+        files_to_delete=files_to_delete,
+        azure_location=locations["azure"],
+    ):
+        print(it)
+
+    items_to_delete = list(
+        _get_dynamodb_items_to_delete(
+            dynamo_client,
+            environment=api_name,
+            ingest_id=ingest_id,
+            space=space,
+            external_identifier=external_identifier,
+            version=version,
+            files_to_delete=files_to_delete,
+            azure_location=locations["azure"],
+        )
+    )
+
+    from pprint import pprint
+
+    pprint(items_to_delete)
 
     # At this point, we've checked everything -- we're good to go!  Let's
     # make a record of the deletion we're about to do.
@@ -175,7 +208,7 @@ def _confirm_user_wants_to_delete_bag(
     click.echo(f"Date created: {hilight(date_str)}")
 
     click.echo("")
-    click.confirm("Are you sure you want to delete this bag?", abort=True)
+    # click.confirm("Are you sure you want to delete this bag?", abort=True)
 
 
 def _ask_reason_for_deleting_bag(*, space, external_identifier, version):
@@ -313,9 +346,86 @@ def _confirm_user_wants_to_delete_locations(bag):
     for loc in loc_uris:
         click.echo(f"- {hilight(loc)}")
     click.echo("")
-    click.confirm("Does this look right?", abort=True)
+    # click.confirm("Does this look right?", abort=True)
 
     return locations
+
+
+DynamoItem = collections.namedtuple("DynamoItem", ["table", "key"])
+
+
+def _get_dynamodb_items_to_delete(
+    dynamo_client,
+    *,
+    environment,
+    ingest_id,
+    space,
+    external_identifier,
+    version,
+    files_to_delete,
+    azure_location,
+):
+    """
+    Returns all the DynamoDB items that should be deleted, as a list of tuples
+
+        (table, key)
+
+    """
+    table_names = set(dynamo.list_dynamo_tables(dynamo_client))
+    table_prefix = "storage" if environment == "prod" else f"storage-{environment}"
+
+    # All the tags from the Azure verifier table.  There should be one item
+    # per file.  Note: these will eventually be removed when Azure get supported
+    # for index tags directly on blobs.
+    #
+    # This information can be reconstructed by running the verifier over the
+    # Azure replica.
+    assert all(
+        f["path"].startswith(f"{version}/") for f in files_to_delete
+    ), files_to_delete
+    assert azure_location["prefix"].endswith(f"/{version}")
+
+    azure_table_name = f"storage-{environment}_azure_verifier_tags"
+    assert azure_table_name in table_names
+
+    for f in files_to_delete:
+        azure_uri = f"azure://{azure_location['container']}/{azure_location['prefix']}/{f['name']}"
+        yield DynamoItem(table=azure_table_name, key={"id": azure_uri})
+
+    # The replicas table.  We delete this next -- this information can be
+    # reconstructed by running the verifier over the replicas.
+    replicas_table_name = f"{table_prefix}_replicas_table"
+    assert replicas_table_name in table_names
+
+    yield DynamoItem(
+        table=replicas_table_name,
+        key={"id": f"{space}/{external_identifier}/{version}"},
+    )
+
+    # The versions table.  This information can be reconstructed; at this point
+    # most references to this version of the bag have been deleted.
+    versions_table_name = f"{table_prefix}_versioner_versions_table"
+    assert versions_table_name in table_names
+
+    yield DynamoItem(
+        table=replicas_table_name,
+        key={"id": f"{space}/{external_identifier}", "version": int(version[1:])},
+    )
+
+    # The storage manifest table.
+    manifests_table_name = dynamo.find_manifests_dynamo_table(
+        dynamo_client, table_prefix=table_prefix
+    )
+    assert manifests_table_name in table_names
+
+    yield DynamoItem(
+        table=manifests_table_name,
+        key={"id": f"{space}/{external_identifier}", "version": int(version[1:])},
+    )
+
+    # The ingests table
+    ingests_table_name = f"{table_prefix}-ingests"
+    yield DynamoItem(table=ingests_table_name, key={"id": ingest_id})
 
 
 def _record_deletion(
