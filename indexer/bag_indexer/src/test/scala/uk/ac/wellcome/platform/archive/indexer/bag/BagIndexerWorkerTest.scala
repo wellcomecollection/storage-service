@@ -5,10 +5,7 @@ import io.circe.Decoder
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS
-import uk.ac.wellcome.messaging.worker.models.{
-  DeterministicFailure,
-  NonDeterministicFailure
-}
+import uk.ac.wellcome.messaging.worker.models.NonDeterministicFailure
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
@@ -124,15 +121,13 @@ class BagIndexerWorkerTest
     }
   }
 
-  it(
-    "fails with a DeterministicFailure when a DoesNotExistError is encountered"
-  ) {
+  it("fails with a NonDeterministicFailure if a bag doesn't exist") {
     val (t, _) = createT
     withLocalElasticsearchIndex(mapping) { index =>
       withLocalSqsQueue() { queue =>
         withDoesNotExistErrorIndexerWorker(index, queue) { worker =>
           whenReady(worker.process(t)) {
-            _ shouldBe a[DeterministicFailure[_]]
+            _ shouldBe a[NonDeterministicFailure[_]]
           }
         }
       }
