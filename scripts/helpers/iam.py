@@ -1,6 +1,7 @@
 import contextlib
 import json
 import secrets
+import time
 
 import boto3
 from botocore.exceptions import ClientError
@@ -196,7 +197,6 @@ def temporary_iam_credentials(*, admin_role_arn, policy_document):
         # Even a single DryRunOperation error isn't proof that the credentials
         # are working -- wait for five in a row.  I don't know exactly how
         # flaky this is, but waiting for three in a row wasn't enough to squash
-
         for _ in range(5):
             try:
                 ec2_client.describe_regions(DryRun=True)
@@ -205,6 +205,10 @@ def temporary_iam_credentials(*, admin_role_arn, policy_document):
                     pass
                 else:
                     raise
+
+        # It's still flaky, even if we wait this long.  Sleep another10 seconds
+        # just to be sure.
+        time.sleep(10)
 
         return credentials
 
