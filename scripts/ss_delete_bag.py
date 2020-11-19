@@ -17,15 +17,19 @@ from elasticsearch.exceptions import NotFoundError as ElasticNotFoundError
 import humanize
 from wellcome_storage_service import IngestNotFound, RequestsOAuthStorageServiceClient
 
+from helpers import azure
 from helpers.iam import (
     ACCOUNT_ID,
     ADMIN_ROLE_ARN,
     DEV_ROLE_ARN,
+    create_aws_client_from_credentials,
     create_aws_client_from_role_arn,
     create_dynamo_client_from_role_arn,
     get_underlying_role_arn,
+    temporary_iam_credentials,
 )
 from helpers.reporting import get_reporting_client
+from helpers.s3 import delete_s3_prefix
 from helpers.storage_service import lookup_ingest
 
 
@@ -126,6 +130,9 @@ def main(ingest_id):
         s3_location=locations["s3"][0],
         files_to_delete=files_to_delete,
     )
+
+    _delete_s3_objects(s3_locations=locations["s3"])
+    _delete_azure_blobs(azure_location=locations["azure"])
 
 
 def hilight(s):
@@ -454,6 +461,67 @@ def _delete_reporting_cluster_entries(
             )
         except ElasticNotFoundError:
             pass
+
+
+def _delete_s3_objects(*, s3_locations):
+    click.echo("")
+    click.echo("Deleting objects from S3...")
+    # Now get AWS credentials to delete the S3 objects from the storage service.
+    # Our standard storage-dev and storage-admin roles have a blanket Deny
+    # on anything in the live storage service, so we'll have to create a one-off
+    # user with the exact set of permissions we need.
+    #
+    # Creating a user with fine-grained permissions is an attempt to reduce the
+    # risk of programming errors elsewhere screwing up the storage service -- if
+    # the code gets overzealous and tries to delete extra stuff, the permissions
+    # will protect us.
+    policy_document = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": f"DeleteInBucket{i}",
+                "Effect": "Allow",
+                "Action": ["s3:DeleteObject"],
+                "Resource": [f"arn:aws:s3:::{loc['bucket']}/{loc['prefix']}*"],
+            }
+            for i, loc in enumerate(s3_locations)
+        ]
+        + [
+            {
+                "Sid": "ListAll",
+                "Effect": "Allow",
+                "Action": ["s3:List*"],
+                "Resource": ["*"],
+            }
+        ],
+    }
+
+    with temporary_iam_credentials(
+        admin_role_arn=ADMIN_ROLE_ARN, policy_document=policy_document
+    ) as credentials:
+        s3_client = create_aws_client_from_credentials("s3", credentials=credentials)
+
+        for loc in s3_locations:
+            click.echo(f"Deleting objects in s3://{loc['bucket']}/{loc['prefix']}")
+            delete_s3_prefix(s3_client, bucket=loc["bucket"], prefix=loc["prefix"])
+
+
+def _delete_azure_blobs(*, azure_location):
+    click.echo("")
+    click.echo("Deleting blobs from Azure...")
+
+    click.echo(
+        f"Deleting blobs in azure://{azure_location['container']}/{azure_location['prefix']}"
+    )
+
+    with azure.unlocked_azure_container(
+        account=azure_location["account"], container=azure_location["container"]
+    ):
+        azure.delete_azure_prefix(
+            account=azure_location["account"],
+            container=azure_location["container"],
+            prefix=azure_location["prefix"],
+        )
 
 
 if __name__ == "__main__":
