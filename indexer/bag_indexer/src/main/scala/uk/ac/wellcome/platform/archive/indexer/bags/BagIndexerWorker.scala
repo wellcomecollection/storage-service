@@ -74,7 +74,8 @@ class BagIndexerWorker(
         // issue, allow retrying the bag in a few minutes.
         // See https://github.com/wellcomecollection/platform/issues/4873
         case Left(BagTrackerNotFoundError()) =>
-          val message = s"Bag indexer asked to index $notification, but the bag tracker doesn't know about that"
+          val message =
+            s"Bag indexer asked to index $notification, but the bag tracker doesn't know about that"
           warn(message)
           Left(
             RetryableIndexingError(
