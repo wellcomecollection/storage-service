@@ -49,7 +49,7 @@ def test_list_s3_prefix(client):
         s3_list_client=client,
         s3_delete_client=client,
         bucket="my-bukkit",
-        prefix="folder-0/"
+        prefix="folder-0/",
     )
     result = list(list_s3_prefix(client, bucket="my-bukkit"))
     assert len(result) == 1001
