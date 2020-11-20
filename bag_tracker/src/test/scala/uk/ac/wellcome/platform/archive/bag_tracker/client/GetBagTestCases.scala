@@ -4,7 +4,11 @@ import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.funspec.AnyFunSpec
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagId,
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagIdGenerators,
   StorageManifestGenerators
@@ -43,6 +47,26 @@ trait GetBagTestCases
 
           whenReady(future) {
             _.right.value shouldBe manifests(4)
+          }
+        }
+      }
+    }
+
+    it("finds a bag with spaces in the identifier") {
+      val space = createStorageSpace
+      val externalIdentifier = ExternalIdentifier("miro images")
+
+      val manifest = createStorageManifestWith(
+        space = space,
+        bagInfo = createBagInfoWith(externalIdentifier = externalIdentifier)
+      )
+
+      withApi(initialManifests = Seq(manifest)) { _ =>
+        withClient(trackerHost) { client =>
+          val future = client.getBag(bagId = manifest.id, version = manifest.version)
+
+          whenReady(future) {
+            _.right.value shouldBe manifest
           }
         }
       }
