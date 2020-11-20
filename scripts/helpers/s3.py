@@ -30,15 +30,15 @@ def copy_s3_prefix(s3_client, *, src_bucket, src_prefix, dst_bucket, dst_prefix)
         )
 
 
-def delete_s3_prefix(s3_client, *, bucket, prefix=""):
+def delete_s3_prefix(*, s3_list_client, s3_delete_client, bucket, prefix=""):
     """
     Delete all the objects in a given S3 bucket/prefix.
     """
     # We can delete up to 1000 objects in a single DeleteObjects request.
     for batch in chunked_iterable(
-        list_s3_prefix(s3_client, bucket=bucket, prefix=prefix), size=1000
+        list_s3_prefix(s3_list_client, bucket=bucket, prefix=prefix), size=1000
     ):
         assert all(s3_key.startswith(prefix) for s3_key in batch)
-        s3_client.delete_objects(
+        s3_delete_client.delete_objects(
             Bucket=bucket, Delete={"Objects": [{"Key": s3_key} for s3_key in batch]}
         )

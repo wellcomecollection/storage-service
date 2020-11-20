@@ -7,21 +7,25 @@ This script will delete a bag from the storage service.  Start by running:
 and follow the instructions from there.
 """
 
+import collections
 import datetime
 import json
 import os
 import sys
+import textwrap
 
+import boto3
 import click
 from elasticsearch.exceptions import NotFoundError as ElasticNotFoundError
 import humanize
 from wellcome_storage_service import IngestNotFound, RequestsOAuthStorageServiceClient
 
-from helpers import azure
+from helpers import azure, dynamo, s3
 from helpers.iam import (
     ACCOUNT_ID,
     ADMIN_ROLE_ARN,
     DEV_ROLE_ARN,
+    READ_ONLY_ROLE_ARN,
     create_aws_client_from_credentials,
     create_aws_client_from_role_arn,
     create_dynamo_client_from_role_arn,
@@ -35,7 +39,8 @@ from helpers.storage_service import lookup_ingest
 
 @click.command()
 @click.argument("ingest_id", required=True)
-def main(ingest_id):
+@click.option("--skip-azure-login", is_flag=True, default=False)
+def main(ingest_id, skip_azure_login):
     """
     Delete an ingest and the corresponding bag from the storage service.
 
@@ -107,6 +112,41 @@ def main(ingest_id):
     environment = api_name
     assert environment in ("prod", "staging")
 
+    dynamo_client = create_dynamo_client_from_role_arn(role_arn=READ_ONLY_ROLE_ARN)
+
+    items_to_delete = list(
+        _get_dynamodb_items_to_delete(
+            dynamo_client,
+            environment=api_name,
+            ingest_id=ingest_id,
+            space=space,
+            external_identifier=external_identifier,
+            version=version,
+            files_to_delete=files_to_delete,
+            azure_location=locations["azure"],
+        )
+    )
+
+    click.echo("")
+    click.echo(
+        "Creating a temporary backup copy of the bag in s3://wellcomecollection-storage-infra..."
+    )
+    s3.copy_s3_prefix(
+        create_aws_client_from_role_arn("s3", role_arn=DEV_ROLE_ARN),
+        src_bucket=locations["s3"][0]["bucket"],
+        src_prefix=locations["s3"][0]["prefix"],
+        dst_bucket="wellcomecollection-storage-infra",
+        # Note: we drop the version and external identifier.  The version is
+        # a property of the storage sevrice; the external identifier is part of
+        # the bag-info.txt.
+        dst_prefix=f"tmp/deleted_bags/{space}/{ingest_id}",
+    )
+
+    if not skip_azure_login:
+        click.echo("")
+        click.echo("Logging in to Azure...")
+        azure.az("login")
+
     # At this point, we've checked everything -- we're good to go!  Let's
     # make a record of the deletion we're about to do.
     dynamo_client = create_dynamo_client_from_role_arn(role_arn=DEV_ROLE_ARN)
@@ -133,6 +173,23 @@ def main(ingest_id):
 
     _delete_s3_objects(s3_locations=locations["s3"])
     _delete_azure_blobs(azure_location=locations["azure"])
+
+    _delete_dynamodb_items(items_to_delete)
+
+    click.echo("")
+    click.echo(
+        click.style(
+            textwrap.dedent(
+                """
+    This bag has been deleted.
+
+    A temporary copy has been saved in s3://wellcomecollection-platform-infra,
+    but this will only be kept for 30 days.
+    """
+            ).strip(),
+            "red",
+        )
+    )
 
 
 def hilight(s):
@@ -318,6 +375,83 @@ def _confirm_user_wants_to_delete_locations(bag):
     return locations
 
 
+DynamoItem = collections.namedtuple("DynamoItem", ["table", "key"])
+
+
+def _get_dynamodb_items_to_delete(
+    dynamo_client,
+    *,
+    environment,
+    ingest_id,
+    space,
+    external_identifier,
+    version,
+    files_to_delete,
+    azure_location,
+):
+    """
+    Returns all the DynamoDB items that should be deleted, as a list of tuples
+
+        (table, key)
+
+    """
+    table_names = set(dynamo.list_dynamo_tables(dynamo_client))
+    table_prefix = "storage" if environment == "prod" else f"storage-{environment}"
+
+    # All the tags from the Azure verifier table.  There should be one item
+    # per file.  Note: these will eventually be removed when Azure get supported
+    # for index tags directly on blobs.
+    #
+    # This information can be reconstructed by running the verifier over the
+    # Azure replica.
+    assert all(
+        f["path"].startswith(f"{version}/") for f in files_to_delete
+    ), files_to_delete
+    assert azure_location["prefix"].endswith(f"/{version}")
+
+    azure_table_name = f"storage-{environment}_azure_verifier_tags"
+    assert azure_table_name in table_names
+
+    for f in files_to_delete:
+        azure_uri = f"azure://{azure_location['container']}/{azure_location['prefix']}/{f['name']}"
+        yield DynamoItem(table=azure_table_name, key={"id": azure_uri})
+
+    # The replicas table.  We delete this next -- this information can be
+    # reconstructed by running the verifier over the replicas.
+    replicas_table_name = f"{table_prefix}_replicas_table"
+    assert replicas_table_name in table_names
+
+    yield DynamoItem(
+        table=replicas_table_name,
+        key={"id": f"{space}/{external_identifier}/{version}"},
+    )
+
+    # The versions table.  This information can be reconstructed; at this point
+    # most references to this version of the bag have been deleted.
+    versions_table_name = f"{table_prefix}_versioner_versions_table"
+    assert versions_table_name in table_names
+
+    yield DynamoItem(
+        table=versions_table_name,
+        key={"id": f"{space}/{external_identifier}", "version": int(version[1:])},
+    )
+
+    # The storage manifest table.
+    manifests_table_name = dynamo.find_manifests_dynamo_table(
+        dynamo_client, table_prefix=table_prefix
+    )
+    assert manifests_table_name in table_names
+
+    yield DynamoItem(
+        table=manifests_table_name,
+        key={"id": f"{space}/{external_identifier}", "version": int(version[1:])},
+    )
+
+    # The ingests table
+    ingests_table_name = f"{table_prefix}-ingests"
+    yield DynamoItem(table=ingests_table_name, key={"id": ingest_id})
+
+
 def _record_deletion(
     dynamo_client,
     *,
@@ -499,11 +633,21 @@ def _delete_s3_objects(*, s3_locations):
     with temporary_iam_credentials(
         admin_role_arn=ADMIN_ROLE_ARN, policy_document=policy_document
     ) as credentials:
-        s3_client = create_aws_client_from_credentials("s3", credentials=credentials)
+        s3_list_client = create_aws_client_from_role_arn(
+            "s3", role_arn=READ_ONLY_ROLE_ARN
+        )
+        s3_delete_client = create_aws_client_from_credentials(
+            "s3", credentials=credentials
+        )
 
         for loc in s3_locations:
             click.echo(f"Deleting objects in s3://{loc['bucket']}/{loc['prefix']}")
-            delete_s3_prefix(s3_client, bucket=loc["bucket"], prefix=loc["prefix"])
+            delete_s3_prefix(
+                s3_list_client=s3_list_client,
+                s3_delete_client=s3_delete_client,
+                bucket=loc["bucket"],
+                prefix=loc["prefix"],
+            )
 
 
 def _delete_azure_blobs(*, azure_location):
@@ -522,6 +666,74 @@ def _delete_azure_blobs(*, azure_location):
             container=azure_location["container"],
             prefix=azure_location["prefix"],
         )
+
+
+def _delete_dynamodb_items(items_to_delete):
+    click.echo("")
+    click.echo("Deleting items from DynamoDB...")
+
+    # Now get AWS credentials to delete the DynamoDB items from the storage service.
+
+    # The Azure verifier tags table may have arbitrarily many items, and the
+    # entire table can be reconstructed, so it doesn't have delete protections.
+    azure_verifier_tags = [
+        it for it in items_to_delete if it.table.endswith("_azure_verifier_tags")
+    ]
+
+    remaining_items = [
+        it for it in items_to_delete if not it.table.endswith("_azure_verifier_tags")
+    ]
+
+    assert len(azure_verifier_tags) + len(remaining_items) == len(items_to_delete)
+
+    dynamo_client = create_dynamo_client_from_role_arn(role_arn=DEV_ROLE_ARN)
+
+    # The table should be unique
+    assert len({it.table for it in azure_verifier_tags}) == 1
+
+    # there should always be some files, so this [0] will never throw an IndexError
+    azure_verifier_tags_table = azure_verifier_tags[0].table
+
+    dynamo.bulk_delete_dynamo_items(
+        dynamo_client,
+        table_name=azure_verifier_tags_table,
+        keys=[it.key for it in azure_verifier_tags],
+    )
+
+    # Now go through the remaining items.  There should only be a few; enough
+    # that we can delete them all in one batch.
+    policy_document = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": f"DeleteItem{i}",
+                "Effect": "Allow",
+                "Action": ["dynamodb:DeleteItem"],
+                "Resource": [
+                    f"arn:aws:dynamodb:eu-west-1:{ACCOUNT_ID}:table/{item.table}"
+                ],
+                "Condition": {
+                    "ForAllValues:StringEquals": {
+                        "dynamodb:LeadingKeys": [item.key["id"]]
+                    }
+                },
+            }
+            for i, item in enumerate(remaining_items)
+        ],
+    }
+
+    with temporary_iam_credentials(
+        admin_role_arn=ADMIN_ROLE_ARN, policy_document=policy_document
+    ) as credentials:
+        dynamo_client = boto3.resource(
+            "dynamodb",
+            aws_access_key_id=credentials["AccessKeyId"],
+            aws_secret_access_key=credentials["SecretAccessKey"],
+            aws_session_token=credentials["SessionToken"],
+        ).meta.client
+
+        for item in remaining_items:
+            dynamo_client.delete_item(TableName=item.table, Key=item.key)
 
 
 if __name__ == "__main__":
