@@ -63,7 +63,8 @@ trait GetBagTestCases
 
       withApi(initialManifests = Seq(manifest)) { _ =>
         withClient(trackerHost) { client =>
-          val future = client.getBag(bagId = manifest.id, version = manifest.version)
+          val future =
+            client.getBag(bagId = manifest.id, version = manifest.version)
 
           whenReady(future) {
             _.right.value shouldBe manifest
