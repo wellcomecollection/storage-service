@@ -45,7 +45,12 @@ def test_list_s3_prefix(client):
 
     # If we now delete a batch of objects, we can still retrieve the remaining
     # objects.
-    delete_s3_prefix(client, bucket="my-bukkit", prefix="folder-0/")
+    delete_s3_prefix(
+        s3_list_client=client,
+        s3_delete_client=client,
+        bucket="my-bukkit",
+        prefix="folder-0/"
+    )
     result = list(list_s3_prefix(client, bucket="my-bukkit"))
     assert len(result) == 1001
     assert all(key.startswith("folder-1/") for key in result)
