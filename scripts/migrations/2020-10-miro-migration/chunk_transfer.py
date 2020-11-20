@@ -10,14 +10,13 @@ from s3 import get_s3_object_size
 from transfer_packager import (
     TransferPackage,
     create_transfer_package,
-    upload_transfer_package
+    upload_transfer_package,
 )
 
 STORAGE_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
 WORKFLOW_ROLE_ARN = "arn:aws:iam::299497370133:role/workflow-developer"
 S3_ARCHIVEMATICA_BUCKET = os.getenv(
-    "S3_ARCHIVEMATICA_BUCKET",
-    "wellcomecollection-archivematica-miro-ingests",
+    "S3_ARCHIVEMATICA_BUCKET", "wellcomecollection-archivematica-miro-ingests"
 )
 S3_MIRO_BUCKET = "wellcomecollection-assets-workingstorage"
 S3_PREFIX = "miro/Wellcome_Images_Archive"
@@ -34,8 +33,8 @@ def get_chunks(chunks_index):
     for result in results:
         chunk = Chunk(**result["_source"])
         transfer_package = None
-        if result["_source"]['transfer_package']:
-            transfer_package = TransferPackage(**result["_source"]['transfer_package'])
+        if result["_source"]["transfer_package"]:
+            transfer_package = TransferPackage(**result["_source"]["transfer_package"])
 
         chunk.transfer_package = transfer_package
         chunks.append(chunk)
@@ -44,31 +43,27 @@ def get_chunks(chunks_index):
 
 
 def check_chunk_uploaded(chunk):
-    assert chunk.transfer_package is not None, (
-        "chunk.transfer_package is None"
-    )
-    assert chunk.transfer_package.s3_location is not None, (
-        "chunk.transfer_package.s3_location is None"
-    )
-    assert chunk.transfer_package.s3_location['s3_bucket'] == S3_ARCHIVEMATICA_BUCKET, (
-        f"{chunk.transfer_package.s3_location['s3_bucket']}, does not match expected {S3_ARCHIVEMATICA_BUCKET}"
-    )
+    assert chunk.transfer_package is not None, "chunk.transfer_package is None"
+    assert (
+        chunk.transfer_package.s3_location is not None
+    ), "chunk.transfer_package.s3_location is None"
+    assert (
+        chunk.transfer_package.s3_location["s3_bucket"] == S3_ARCHIVEMATICA_BUCKET
+    ), f"{chunk.transfer_package.s3_location['s3_bucket']}, does not match expected {S3_ARCHIVEMATICA_BUCKET}"
 
     content_length = chunk.transfer_package.content_length
-    s3_bucket = chunk.transfer_package.s3_location['s3_bucket']
-    s3_key = chunk.transfer_package.s3_location['s3_key']
+    s3_bucket = chunk.transfer_package.s3_location["s3_bucket"]
+    s3_key = chunk.transfer_package.s3_location["s3_key"]
 
     storage_s3_client = get_aws_client("s3", role_arn=WORKFLOW_ROLE_ARN)
 
     s3_object_size = get_s3_object_size(
-        s3_client=storage_s3_client,
-        s3_bucket=s3_bucket,
-        s3_key=s3_key
+        s3_client=storage_s3_client, s3_bucket=s3_bucket, s3_key=s3_key
     )
 
-    assert content_length == s3_object_size, (
-        f"Content length mismatch: {content_length} != {s3_object_size}"
-    )
+    assert (
+        content_length == s3_object_size
+    ), f"Content length mismatch: {content_length} != {s3_object_size}"
 
 
 def create_chunk_package(chunk):

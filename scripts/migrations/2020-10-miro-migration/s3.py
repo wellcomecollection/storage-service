@@ -55,7 +55,7 @@ def get_s3_object_size(s3_client, s3_bucket, s3_key):
     try:
         s3_head_object_response = s3_client.head_object(Bucket=s3_bucket, Key=s3_key)
     except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == "404":
+        if e.response["Error"]["Code"] == "404":
             return None
         print(f"Failed to get object size for s3://{s3_bucket}/{s3_key}")
         raise e

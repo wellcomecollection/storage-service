@@ -76,17 +76,11 @@ def gather_chunks(decisions_index):
             sum_total_size = sum_total_size + decision.s3_size
 
             if total_size > 15_000_000_000:
-                chunked_s3_keys.append({
-                    's3_keys': s3_keys,
-                    'total_size': total_size
-                })
+                chunked_s3_keys.append({"s3_keys": s3_keys, "total_size": total_size})
                 s3_keys = []
                 total_size = 0
 
-        chunked_s3_keys.append({
-            's3_keys': s3_keys,
-            'total_size': total_size
-        })
+        chunked_s3_keys.append({"s3_keys": s3_keys, "total_size": total_size})
 
         chunks = []
         for i, s3_keys_chunk in enumerate(chunked_s3_keys):
@@ -95,12 +89,14 @@ def gather_chunks(decisions_index):
             else:
                 new_group_name = group_name
 
-            chunks.append(Chunk(
-                group_name=new_group_name,
-                destination=destination,
-                s3_keys=s3_keys_chunk['s3_keys'],
-                total_size=s3_keys_chunk['total_size']
-            ))
+            chunks.append(
+                Chunk(
+                    group_name=new_group_name,
+                    destination=destination,
+                    s3_keys=s3_keys_chunk["s3_keys"],
+                    total_size=s3_keys_chunk["total_size"],
+                )
+            )
 
         actual_total_files = 0
         actual_total_size = 0
@@ -109,18 +105,20 @@ def gather_chunks(decisions_index):
             actual_total_files = actual_total_files + len(chunk.s3_keys)
             actual_total_size = actual_total_size + chunk.total_size
 
-        assert sum_total_size == actual_total_size, (
-            f"Total size mismatch ({sum_total_size} == {actual_total_size})"
-        )
+        assert (
+            sum_total_size == actual_total_size
+        ), f"Total size mismatch ({sum_total_size} == {actual_total_size})"
 
-        assert len(decisions) == actual_total_files, (
-            f"Total file count mismatch ({len(decisions)} == {actual_total_files})"
-        )
+        assert (
+            len(decisions) == actual_total_files
+        ), f"Total file count mismatch ({len(decisions)} == {actual_total_files})"
 
         return chunks
 
     chunks_list = [
-        _build_chunks(group_name=group_name, destination=destination, decisions=decisions)
+        _build_chunks(
+            group_name=group_name, destination=destination, decisions=decisions
+        )
         for (group_name, destination), decisions in groups.items()
     ]
 

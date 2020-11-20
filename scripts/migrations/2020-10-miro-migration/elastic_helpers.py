@@ -60,7 +60,9 @@ def get_document_count(elastic_client, *, index):
         return 0
 
 
-def index_iterator(elastic_client, index_name, documents, expected_doc_count=None, overwrite=False):
+def index_iterator(
+    elastic_client, index_name, documents, expected_doc_count=None, overwrite=False
+):
     """
     Indexes documents from an iterator into elasticsearch
     """
@@ -100,11 +102,7 @@ def save_index_to_disk(elastic_client, index_name, overwrite):
 
     document_count = get_document_count(elastic_client, index=index_name)
 
-    query_body = {
-        "query": {
-            "match_all": {}
-        }
-    }
+    query_body = {"query": {"match_all": {}}}
 
     all_documents = elasticsearch.helpers.scan(
         elastic_client, query=query_body, index=index_name
@@ -114,16 +112,18 @@ def save_index_to_disk(elastic_client, index_name, overwrite):
     click.echo(f"Saving index {index_name} to {save_location}")
 
     if os.path.isfile(save_location):
-        if not overwrite and not click.confirm(f"File exists at {save_location}, overwrite?"):
+        if not overwrite and not click.confirm(
+            f"File exists at {save_location}, overwrite?"
+        ):
             return None
 
-        with open(f"_cache/index_{index_name}.json", 'a') as f:
+        with open(f"_cache/index_{index_name}.json", "a") as f:
             f.truncate(0)
 
-    with open(f"_cache/index_{index_name}.json", 'a') as f:
+    with open(f"_cache/index_{index_name}.json", "a") as f:
         for document in tqdm(all_documents, total=document_count):
             f.write(f"{json.dumps(document)}\n")
-            
+
     return save_location
 
 
@@ -140,16 +140,17 @@ def load_index_from_disk(elastic_client, index_name, target_index_name, overwrit
 
     line_count = sum(1 for _ in open(save_location))
 
-    with open(f"_cache/index_{index_name}.json", 'r') as f:
+    with open(f"_cache/index_{index_name}.json", "r") as f:
+
         def _documents():
             for line in f:
                 doc = json.loads(line)
-                yield doc['_id'], doc['_source']
+                yield doc["_id"], doc["_source"]
 
         index_iterator(
             elastic_client=elastic_client,
             index_name=target_index_name,
             expected_doc_count=line_count,
             documents=_documents(),
-            overwrite=overwrite
+            overwrite=overwrite,
         )

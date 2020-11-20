@@ -6,14 +6,8 @@ import attr
 from boto3.s3.transfer import TransferConfig
 from tqdm import tqdm
 
-from common import (
-    compress_folder,
-    file_exists,
-    slugify,
-)
-from s3 import (
-    get_s3_object_size,
-)
+from common import compress_folder, file_exists, slugify
+from s3 import get_s3_object_size
 
 S3_DOWNLOAD_CONCURRENCY = 3
 
@@ -48,9 +42,7 @@ def _download_s3_object(s3_client, s3_bucket, s3_key, target_folder, prefix):
     else:
         _download()
 
-    file_exists(
-        file_location=file_location, expected_content_length=s3_content_length
-    )
+    file_exists(file_location=file_location, expected_content_length=s3_content_length)
 
 
 def _download_objects_from_s3(s3_client, target_folder, s3_bucket, s3_key_list, prefix):
@@ -131,7 +123,7 @@ def upload_transfer_package(
         multipart_threshold=1024 * 25,
         max_concurrency=10,
         multipart_chunksize=1024 * 25,
-        use_threads=True
+        use_threads=True,
     )
 
     with tqdm(total=bytes_to_upload) as pbar:
@@ -144,7 +136,7 @@ def upload_transfer_package(
             Bucket=s3_bucket,
             Key=s3_key,
             Callback=_update_pbar,
-            Config=config
+            Config=config,
         )
 
         s3_content_length = get_s3_object_size(
