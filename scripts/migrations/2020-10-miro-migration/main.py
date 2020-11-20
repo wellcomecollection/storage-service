@@ -25,7 +25,8 @@ from chunk_transfer import (
     update_chunk_record,
 )
 from uploads import (
-    check_package_upload
+    check_package_upload,
+    copy_transfer_package
 )
 
 DECISIONS_INDEX = "decisions"
@@ -138,12 +139,43 @@ def transfer_package_chunks(ctx):
 
 
 @click.command()
+@click.option('--skip-upload', '-s', is_flag=True)
+@click.option('--overwrite', '-o', is_flag=True)
 @click.pass_context
-def upload_transfer_packages(ctx):
+def upload_transfer_packages(ctx, skip_upload, overwrite):
     chunks = get_chunks(CHUNKS_INDEX)
 
     for chunk in chunks:
-        check_package_upload(chunk)
+        upload = check_package_upload(chunk, overwrite)
+
+        if upload is not None:
+            if (upload['upload_transfer'] is None or overwrite) and not skip_upload:
+                new_upload_transfer = copy_transfer_package(chunk)
+
+                s3_bucket = new_upload_transfer['s3_bucket']
+                s3_key = new_upload_transfer['s3_key']
+
+                click.echo(f"Not found. Copying transfer package to s3://{s3_bucket}/{s3_key}")
+            else:
+                s3_bucket = upload['upload_transfer']['s3_bucket']
+                s3_key = upload['upload_transfer']['s3_key']
+
+                click.echo(f"Found uploaded package at s3://{s3_bucket}/{s3_key}")
+
+            from pprint import pprint
+
+            if upload['storage_service']['ingest'] is not None:
+                ingest_id = upload['storage_service']['ingest']['id']
+                ingest_status = upload['storage_service']['ingest']['status']['id']
+                click.echo(f"Found ingest {ingest_id}, with status: {ingest_status}")
+
+            if upload['storage_service']['bag'] is not None:
+                pprint(upload['storage_service']['bag'])
+
+                import sys
+                sys.exit(1)
+
+            click.echo("--------")
 
 
 @click.group()
