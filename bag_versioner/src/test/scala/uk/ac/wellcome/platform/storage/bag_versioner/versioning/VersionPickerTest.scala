@@ -203,32 +203,6 @@ class VersionPickerTest
     }
   }
 
-  it("escape the lock names") {
-    val lockDao = createLockDao
-
-    withVersionPicker(lockDao) { picker =>
-      val ingestId = createIngestID
-      val externalIdentifier = ExternalIdentifier("x:y")
-      val storageSpace = StorageSpace("a:b")
-
-      picker.chooseVersion(
-        externalIdentifier = externalIdentifier,
-        ingestId = ingestId,
-        ingestType = CreateIngestType,
-        ingestDate = Instant.now(),
-        storageSpace = storageSpace
-      )
-
-      lockDao.getCurrentLocks shouldBe empty
-    // TODO: Restore history on the MemoryLockDao
-    // TODO: Why?
-//      lockDao.history.map { _.id } should contain theSameElementsAs List(
-//        s"ingest:$ingestId",
-//        s"external:a%3Ab:x%3Ay"
-//      )
-    }
-  }
-
   it("fails with FailedToGetLock if there is a LockFailure") {
     val lockDao = createBrokenLockDao
 
