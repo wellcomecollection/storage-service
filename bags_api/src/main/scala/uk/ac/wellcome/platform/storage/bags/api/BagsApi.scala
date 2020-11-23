@@ -1,8 +1,5 @@
 package uk.ac.wellcome.platform.storage.bags.api
 
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
-
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
@@ -11,6 +8,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagId,
   ExternalIdentifier
 }
+import uk.ac.wellcome.platform.archive.common.http.LookupExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.storage.LargeResponses
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.storage.bags.api.responses.{
@@ -21,7 +19,12 @@ import uk.ac.wellcome.storage.s3.S3ObjectLocation
 
 import scala.concurrent.duration._
 
-trait BagsApi extends LargeResponses with LookupBag with LookupBagVersions {
+trait BagsApi
+  extends LargeResponses
+    with LookupBag
+    with LookupBagVersions
+    with LookupExternalIdentifier {
+
   private val routes: Route = pathPrefix("bags") {
     concat(
       // We look for /versions at the end of the path: this means we should
@@ -104,25 +107,6 @@ trait BagsApi extends LargeResponses with LookupBag with LookupBagVersions {
         }
       }
     )
-  }
-
-  private def decodeExternalIdentifier(
-    remaining: String
-  ): ExternalIdentifier = {
-    // Sometimes we have an external identifier with slashes.
-    // For maximum flexibility, we want to support both URL-encoded
-    // and complete path versions.
-    //
-    // For example, if the external identifier is "alfa/bravo",
-    // you could look up both of:
-    //
-    //    /bags/space-id/alfa/bravo
-    //    /bags/space-id/alfa%2Fbravo
-    //
-    val underlying =
-      URLDecoder.decode(remaining, StandardCharsets.UTF_8.toString)
-
-    ExternalIdentifier(underlying)
   }
 
   val bags: Route = wrapLargeResponses(routes)
