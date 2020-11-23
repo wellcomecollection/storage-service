@@ -241,27 +241,46 @@ class LookupBagApiTest
       ("manifest", "path"),
       // when the identifier is URL encoded
       (manifestWithSlash, s"${manifestWithSlash.space}/alfa%2Fbravo"),
-      (manifestWithSlash, s"${manifestWithSlash.space}/alfa%2Fbravo?version=${manifestWithSlash.version}"),
+      (
+        manifestWithSlash,
+        s"${manifestWithSlash.space}/alfa%2Fbravo?version=${manifestWithSlash.version}"
+      ),
       // when the identifier is not URL encoded
       (manifestWithSlash, s"${manifestWithSlash.space}/alfa/bravo"),
-      (manifestWithSlash, s"${manifestWithSlash.space}/alfa/bravo?version=${manifestWithSlash.version}"),
+      (
+        manifestWithSlash,
+        s"${manifestWithSlash.space}/alfa/bravo?version=${manifestWithSlash.version}"
+      ),
       // when the identifier has a space
-      (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro/A%20images"),
-      (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro/A%20images?version=${manifestWithSlashAndSpace.version}"),
-      (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro%2FA%20images"),
-      (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro%2FA%20images?version=${manifestWithSlashAndSpace.version}"),
+      (
+        manifestWithSlashAndSpace,
+        s"${manifestWithSlashAndSpace.space}/miro/A%20images"
+      ),
+      (
+        manifestWithSlashAndSpace,
+        s"${manifestWithSlashAndSpace.space}/miro/A%20images?version=${manifestWithSlashAndSpace.version}"
+      ),
+      (
+        manifestWithSlashAndSpace,
+        s"${manifestWithSlashAndSpace.space}/miro%2FA%20images"
+      ),
+      (
+        manifestWithSlashAndSpace,
+        s"${manifestWithSlashAndSpace.space}/miro%2FA%20images?version=${manifestWithSlashAndSpace.version}"
+      )
     )
 
-    forAll(lookupPaths) { case (manifest, path) =>
-      withConfiguredApp(initialManifests = Seq(manifest)) {
-        case (_, _, baseUrl) =>
-          whenGetRequestReady(s"$baseUrl/bags/$path") { response =>
-            response.status shouldBe StatusCodes.OK
+    forAll(lookupPaths) {
+      case (manifest, path) =>
+        withConfiguredApp(initialManifests = Seq(manifest)) {
+          case (_, _, baseUrl) =>
+            whenGetRequestReady(s"$baseUrl/bags/$path") { response =>
+              response.status shouldBe StatusCodes.OK
 
-            withStringEntity(response.entity) {
-              assertJsonMatches(_, manifest)
+              withStringEntity(response.entity) {
+                assertJsonMatches(_, manifest)
+              }
             }
-          }
         }
     }
   }

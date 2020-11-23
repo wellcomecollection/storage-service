@@ -20,7 +20,7 @@ import uk.ac.wellcome.storage.s3.S3ObjectLocation
 import scala.concurrent.duration._
 
 trait BagsApi
-  extends LargeResponses
+    extends LargeResponses
     with LookupBag
     with LookupBagVersions
     with LookupExternalIdentifier {

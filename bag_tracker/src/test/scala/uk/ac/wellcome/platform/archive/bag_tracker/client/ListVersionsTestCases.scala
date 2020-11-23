@@ -152,7 +152,9 @@ trait ListVersionsTestCases
 
         withApi(initialManifests = Seq(manifest)) { _ =>
           withClient(trackerHost) { client =>
-            whenReady(client.listVersionsOf(bagId = manifest.id, maybeBefore = None)) {
+            whenReady(
+              client.listVersionsOf(bagId = manifest.id, maybeBefore = None)
+            ) {
               _.right.value shouldBe expectedList
             }
           }

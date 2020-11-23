@@ -212,24 +212,31 @@ class LookupBagVersionsApiTest
       // when the identifier is not URL encoded
       (manifestWithSlash, s"${manifestWithSlash.space}/alfa/bravo/versions"),
       // when the identifier has s apce
-      (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro/A%20images/versions"),
-      (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro%2FA%20images/versions"),
+      (
+        manifestWithSlashAndSpace,
+        s"${manifestWithSlashAndSpace.space}/miro/A%20images/versions"
+      ),
+      (
+        manifestWithSlashAndSpace,
+        s"${manifestWithSlashAndSpace.space}/miro%2FA%20images/versions"
+      )
     )
 
-    forAll(testCases) { case (manifest, path) =>
-      withConfiguredApp(initialManifests = Seq(manifest)) {
-        case (_, _, baseUrl) =>
-          val expectedJson = expectedVersionList(
-            expectedVersionJson(manifest)
-          )
+    forAll(testCases) {
+      case (manifest, path) =>
+        withConfiguredApp(initialManifests = Seq(manifest)) {
+          case (_, _, baseUrl) =>
+            val expectedJson = expectedVersionList(
+              expectedVersionJson(manifest)
+            )
 
-          whenGetRequestReady(s"$baseUrl/bags/$path") { response =>
-            response.status shouldBe StatusCodes.OK
+            whenGetRequestReady(s"$baseUrl/bags/$path") { response =>
+              response.status shouldBe StatusCodes.OK
 
-            withStringEntity(response.entity) {
-              assertJsonStringsAreEqual(_, expectedJson)
+              withStringEntity(response.entity) {
+                assertJsonStringsAreEqual(_, expectedJson)
+              }
             }
-          }
         }
     }
   }
