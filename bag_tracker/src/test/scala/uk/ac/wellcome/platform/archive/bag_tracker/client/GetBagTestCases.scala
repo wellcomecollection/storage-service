@@ -3,6 +3,7 @@ package uk.ac.wellcome.platform.archive.bag_tracker.client
 import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.prop.TableDrivenPropertyChecks
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagId,
@@ -23,7 +24,8 @@ trait GetBagTestCases
     with ScalaFutures
     with BagIdGenerators
     with BagTrackerClientTestBase
-    with StorageManifestGenerators {
+    with StorageManifestGenerators
+    with TableDrivenPropertyChecks {
   describe("getBag") {
     it("finds the correct version of a bag") {
       val space = createStorageSpace
@@ -52,21 +54,26 @@ trait GetBagTestCases
       }
     }
 
+    val spaceEncodedIdentifiers = Table(
+      "externalIdentifier",
+      "miro images",
+      "miro+images",
+      "miro%20images"
+    )
+
     it("finds a bag with spaces in the identifier") {
-      val space = createStorageSpace
-      val externalIdentifier = ExternalIdentifier("miro images")
+      forAll(spaceEncodedIdentifiers) { identifier =>
+        val manifest = createStorageManifestWith(
+          bagInfo = createBagInfoWith(
+            externalIdentifier = ExternalIdentifier(identifier)
+          )
+        )
 
-      val manifest = createStorageManifestWith(
-        space = space,
-        bagInfo = createBagInfoWith(externalIdentifier = externalIdentifier)
-      )
-
-      withApi(initialManifests = Seq(manifest)) { _ =>
-        withClient(trackerHost) { client =>
-          val future = client.getBag(bagId = manifest.id, version = manifest.version)
-
-          whenReady(future) {
-            _.right.value shouldBe manifest
+        withApi(initialManifests = Seq(manifest)) { _ =>
+          withClient(trackerHost) { client =>
+            whenReady(client.getBag(bagId = manifest.id, version = manifest.version)) {
+              _.right.value shouldBe manifest
+            }
           }
         }
       }

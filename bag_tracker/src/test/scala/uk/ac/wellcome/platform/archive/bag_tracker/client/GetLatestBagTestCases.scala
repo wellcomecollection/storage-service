@@ -3,8 +3,13 @@ package uk.ac.wellcome.platform.archive.bag_tracker.client
 import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.prop.TableDrivenPropertyChecks
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagId,
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagIdGenerators,
   StorageManifestGenerators
@@ -19,7 +24,8 @@ trait GetLatestBagTestCases
     with ScalaFutures
     with BagIdGenerators
     with BagTrackerClientTestBase
-    with StorageManifestGenerators {
+    with StorageManifestGenerators
+    with TableDrivenPropertyChecks {
 
   describe("getLatestBag()") {
     it("finds the latest version of a bag") {
@@ -42,6 +48,31 @@ trait GetLatestBagTestCases
 
           whenReady(future) {
             _.right.value shouldBe manifests.last
+          }
+        }
+      }
+    }
+
+    val spaceEncodedIdentifiers = Table(
+      "externalIdentifier",
+      "miro images",
+      "miro+images",
+      "miro%20images"
+    )
+
+    it("finds a bag with spaces in the identifier") {
+      forAll(spaceEncodedIdentifiers) { identifier =>
+        val manifest = createStorageManifestWith(
+          bagInfo = createBagInfoWith(
+            externalIdentifier = ExternalIdentifier(identifier)
+          )
+        )
+
+        withApi(initialManifests = Seq(manifest)) { _ =>
+          withClient(trackerHost) { client =>
+            whenReady(client.getLatestBag(bagId = manifest.id)) {
+              _.right.value shouldBe manifest
+            }
           }
         }
       }

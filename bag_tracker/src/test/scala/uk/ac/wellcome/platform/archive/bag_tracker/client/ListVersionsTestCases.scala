@@ -3,12 +3,17 @@ package uk.ac.wellcome.platform.archive.bag_tracker.client
 import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.prop.TableDrivenPropertyChecks
 import uk.ac.wellcome.platform.archive.bag_tracker.models.{
   BagVersionEntry,
   BagVersionList
 }
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagId,
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagIdGenerators,
   StorageManifestGenerators
@@ -23,7 +28,8 @@ trait ListVersionsTestCases
     with ScalaFutures
     with BagTrackerClientTestBase
     with BagIdGenerators
-    with StorageManifestGenerators {
+    with StorageManifestGenerators
+    with TableDrivenPropertyChecks {
   describe("listVersionsOf") {
     it("finds a single version of a bag") {
       val manifest = createStorageManifest
@@ -119,6 +125,41 @@ trait ListVersionsTestCases
 
             bagVersionList.id shouldBe bagId
             bagVersionList.versions should contain theSameElementsAs expectedEntries
+          }
+        }
+      }
+    }
+
+    val spaceEncodedIdentifiers = Table(
+      "externalIdentifier",
+      "miro images",
+      "miro+images",
+      "miro%20images"
+    )
+
+    it("lists versions of a bag with spaces in the identifier") {
+      forAll(spaceEncodedIdentifiers) { identifier =>
+        val manifest = createStorageManifestWith(
+          bagInfo = createBagInfoWith(
+            externalIdentifier = ExternalIdentifier(identifier)
+          )
+        )
+
+        val expectedList = BagVersionList(
+          id = manifest.id,
+          versions = Seq(
+            BagVersionEntry(
+              version = manifest.version,
+              createdDate = manifest.createdDate
+            )
+          )
+        )
+
+        withApi(initialManifests = Seq(manifest)) { _ =>
+          withClient(trackerHost) { client =>
+            whenReady(client.listVersionsOf(bagId = manifest.id, maybeBefore = None)) {
+              _.right.value shouldBe expectedList
+            }
           }
         }
       }
