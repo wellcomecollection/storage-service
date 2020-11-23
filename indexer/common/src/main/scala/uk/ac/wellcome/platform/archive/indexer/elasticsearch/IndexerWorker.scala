@@ -80,9 +80,16 @@ abstract class IndexerWorker[SourceT, T, IndexedT](
       monitoringProcessorBuilder = (ec: ExecutionContext) =>
         new MetricsMonitoringProcessor[SourceT](metricsNamespace)(metrics, ec)
     )(process) {
+      // If we retry set a non-zero visibility timeout to give
+      // whatever dependency isn't working time to recover
+      val visibilityTimeoutInSeconds = 5
+
       override val retryAction: Message => sqs.MessageAction =
         (message: Message) =>
-          MessageAction.changeMessageVisibility(message, visibilityTimeout = 0)
+          MessageAction.changeMessageVisibility(
+            message = message,
+            visibilityTimeout = visibilityTimeoutInSeconds
+          )
     }
 
   def run(): Future[Any] = worker.start
