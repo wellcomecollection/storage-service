@@ -9,6 +9,7 @@ import io.circe.parser.parse
 import org.scalatest.Assertion
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.prop.TableDrivenPropertyChecks
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagVersion,
@@ -33,7 +34,8 @@ class LookupBagApiTest
     with DisplayJsonHelpers
     with BagIdGenerators
     with StorageManifestGenerators
-    with BagsApiFixture {
+    with BagsApiFixture
+    with TableDrivenPropertyChecks {
 
   describe("finding the latest version of a bag") {
     it("returns the latest version") {
@@ -222,43 +224,49 @@ class LookupBagApiTest
     }
   }
 
-  describe("looking up a bag with a slash in the external identifier") {
-    val storageManifestWithSlash: StorageManifest = createStorageManifestWith(
+  it("finds bag with unusual external identifiers") {
+    val manifestWithSlash: StorageManifest = createStorageManifestWith(
       bagInfo = createBagInfoWith(
         externalIdentifier = ExternalIdentifier("alfa/bravo")
       )
     )
 
-    it("when the identifier is URL encoded") {
-      withConfiguredApp(initialManifests = Seq(storageManifestWithSlash)) {
-        case (_, _, baseUrl) =>
-          val url =
-            s"$baseUrl/bags/${storageManifestWithSlash.id.space}/alfa%2Fbravo?version=${storageManifestWithSlash.version}"
+    val manifestWithSlashAndSpace: StorageManifest = createStorageManifestWith(
+      bagInfo = createBagInfoWith(
+        externalIdentifier = ExternalIdentifier("miro/A images")
+      )
+    )
 
-          whenGetRequestReady(url) { response =>
+    val lookupPaths = Table(
+      ("manifest", "path"),
+      // when the identifier is URL encoded
+      (manifestWithSlash, s"${manifestWithSlash.space}/alfa%2Fbravo"),
+      (manifestWithSlash, s"${manifestWithSlash.space}/alfa%2Fbravo?version=${manifestWithSlash.version}"),
+      // when the identifier is not URL encoded
+      (manifestWithSlash, s"${manifestWithSlash.space}/alfa/bravo"),
+      (manifestWithSlash, s"${manifestWithSlash.space}/alfa/bravo?version=${manifestWithSlash.version}"),
+      // when the identifier has a space
+      (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro/A%20images"),
+      (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro/A%20images?version=${manifestWithSlashAndSpace.version}"),
+      (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro/A images"),
+      (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro/A images?version=${manifestWithSlashAndSpace.version}"),
+      (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro%2FA%20images"),
+      (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro%2FA%20images?version=${manifestWithSlashAndSpace.version}"),
+      (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro%2FA images"),
+      (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro%2FA images?version=${manifestWithSlashAndSpace.version}"),
+    )
+
+    forAll(lookupPaths) { case (manifest, path) =>
+      withConfiguredApp(initialManifests = Seq(manifest)) {
+        case (_, _, baseUrl) =>
+          whenGetRequestReady(s"$baseUrl/bags/$path") { response =>
             response.status shouldBe StatusCodes.OK
 
             withStringEntity(response.entity) {
-              assertJsonMatches(_, storageManifestWithSlash)
+              assertJsonMatches(_, manifest)
             }
           }
-      }
-    }
-
-    it("when the identifier is not URL-encoded") {
-      withConfiguredApp(initialManifests = Seq(storageManifestWithSlash)) {
-        case (_, _, baseUrl) =>
-          val url =
-            s"$baseUrl/bags/${storageManifestWithSlash.id.space}/alfa/bravo?version=${storageManifestWithSlash.version}"
-
-          whenGetRequestReady(url) { response =>
-            response.status shouldBe StatusCodes.OK
-
-            withStringEntity(response.entity) {
-              assertJsonMatches(_, storageManifestWithSlash)
-            }
-          }
-      }
+        }
     }
   }
 
