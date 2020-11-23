@@ -29,6 +29,9 @@ class DynamoStorageManifestDao(
   s3Client: AmazonS3
 ) extends StorageManifestDao {
 
+  //  By default reads are eventually consistent
+  //  See https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html
+  //  The StronglyConsistent mode ensures that we always read the most recent data
   implicit val consistencyMode: ConsistencyMode =
     StronglyConsistent
 
