@@ -47,12 +47,11 @@ trait BagTrackerClientTestCases
     with GetLatestBagTestCases
     with ListVersionsTestCases
     with TableDrivenPropertyChecks {
+
   val unusualIdentifiers: TableFor1[String] = Table(
     "externalIdentifier",
+    "alfa/bravo",
     "miro images",
-    "miro+images",
-    "miro%20images",
-    "miro/A images",
-    "alfa/bravo"
+    "miro/A images"
   )
 }
