@@ -3,8 +3,13 @@ package uk.ac.wellcome.platform.archive.bag_tracker.client
 import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor1}
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
+import uk.ac.wellcome.platform.archive.common.bagit.models.{
+  BagId,
+  BagVersion,
+  ExternalIdentifier
+}
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagIdGenerators,
   StorageManifestGenerators
@@ -19,7 +24,10 @@ trait GetBagTestCases
     with ScalaFutures
     with BagIdGenerators
     with BagTrackerClientTestBase
-    with StorageManifestGenerators {
+    with StorageManifestGenerators
+    with TableDrivenPropertyChecks {
+  val unusualIdentifiers: TableFor1[String]
+
   describe("getBag") {
     it("finds the correct version of a bag") {
       val space = createStorageSpace
@@ -43,6 +51,26 @@ trait GetBagTestCases
 
           whenReady(future) {
             _.right.value shouldBe manifests(4)
+          }
+        }
+      }
+    }
+
+    it("finds a bag with unusual identifiers") {
+      forAll(unusualIdentifiers) { identifier =>
+        val manifest = createStorageManifestWith(
+          bagInfo = createBagInfoWith(
+            externalIdentifier = ExternalIdentifier(identifier)
+          )
+        )
+
+        withApi(initialManifests = Seq(manifest)) { _ =>
+          withClient(trackerHost) { client =>
+            whenReady(
+              client.getBag(bagId = manifest.id, version = manifest.version)
+            ) {
+              _.right.value shouldBe manifest
+            }
           }
         }
       }
