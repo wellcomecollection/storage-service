@@ -73,6 +73,18 @@ class ExternalIdentifierTest extends AnyFunSpec with Matchers {
     )
   }
 
+  it("blocks creating an external identifier with unusual characters") {
+    assertFailsRequirement(
+      identifier = "miro+space",
+      message = "External identifier must match regex: ^[a-zA-Z0-9_\\-/ ]+$"
+    )
+
+    assertFailsRequirement(
+      identifier = "miro%20space",
+      message = "External identifier must match regex: ^[a-zA-Z0-9_\\-/ ]+$"
+    )
+  }
+
   private def assertFailsRequirement(
     identifier: String,
     message: String
