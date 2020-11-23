@@ -248,12 +248,8 @@ class LookupBagApiTest
       // when the identifier has a space
       (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro/A%20images"),
       (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro/A%20images?version=${manifestWithSlashAndSpace.version}"),
-      (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro/A images"),
-      (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro/A images?version=${manifestWithSlashAndSpace.version}"),
       (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro%2FA%20images"),
       (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro%2FA%20images?version=${manifestWithSlashAndSpace.version}"),
-      (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro%2FA images"),
-      (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro%2FA images?version=${manifestWithSlashAndSpace.version}"),
     )
 
     forAll(lookupPaths) { case (manifest, path) =>

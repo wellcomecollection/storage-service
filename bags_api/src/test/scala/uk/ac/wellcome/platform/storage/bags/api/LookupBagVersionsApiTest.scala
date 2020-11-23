@@ -210,12 +210,10 @@ class LookupBagVersionsApiTest
       // when the identifier is URL encoded
       (manifestWithSlash, s"${manifestWithSlash.space}/alfa%2Fbravo/versions"),
       // when the identifier is not URL encoded
-      (manifestWithSlash, s"${manifestWithSlash.space}/alfa/bravo/version"),
+      (manifestWithSlash, s"${manifestWithSlash.space}/alfa/bravo/versions"),
       // when the identifier has s apce
       (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro/A%20images/versions"),
       (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro%2FA%20images/versions"),
-      (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro%2FA images/versions"),
-      (manifestWithSlashAndSpace, s"${manifestWithSlashAndSpace.space}/miro/A images/versions"),
     )
 
     forAll(testCases) { case (manifest, path) =>
