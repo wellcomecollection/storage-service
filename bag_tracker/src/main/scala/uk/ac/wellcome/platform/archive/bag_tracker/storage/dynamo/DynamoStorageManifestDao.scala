@@ -18,9 +18,11 @@ import uk.ac.wellcome.storage.s3.{
 }
 import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.store.dynamo.{
+  ConsistencyMode,
   DynamoHashRangeStore,
   DynamoHybridStoreWithMaxima,
-  DynamoVersionedHybridStore
+  DynamoVersionedHybridStore,
+  StronglyConsistent
 }
 import uk.ac.wellcome.storage.store.s3.S3TypedStore
 import uk.ac.wellcome.storage.streaming.Codec._
@@ -36,6 +38,12 @@ class DynamoStorageManifestDao(
   dynamoClient: AmazonDynamoDB,
   s3Client: AmazonS3
 ) extends StorageManifestDao {
+
+  //  By default reads are eventually consistent
+  //  See https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html
+  //  The StronglyConsistent mode ensures that we always read the most recent data
+  implicit val consistencyMode: ConsistencyMode =
+    StronglyConsistent
 
   implicit val indexedStore
     : DynamoHashRangeStore[BagId, Int, S3ObjectLocation] =
