@@ -62,6 +62,21 @@ class ExternalIdentifier(val underlying: String) {
     "External identifier cannot contain consecutive slashes"
   )
 
+  // We're super careful about the characters we allow in external identifiers,
+  // because anything we use will end up in a URL for the bags API:
+  //
+  //    /bags/{space}/{externalIdentifier}
+  //
+  // It's easier to block characters that don't URL-encode well rather than
+  // trying to handle the mess that is URL-encoding.
+  //
+  // If we need to revisit this, we should consider rethinking the bags API.
+  val regex: String = "^[a-zA-Z0-9_\\-/ ]+$"
+  require(
+    underlying.matches(regex),
+    s"External identifier must match regex: $regex"
+  )
+
   // Normally we use case classes for immutable data, which provide these
   // methods for us.
   //

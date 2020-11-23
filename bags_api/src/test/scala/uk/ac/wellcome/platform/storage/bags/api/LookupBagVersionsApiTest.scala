@@ -6,6 +6,7 @@ import akka.http.scaladsl.model._
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.prop.TableDrivenPropertyChecks
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagVersion,
@@ -35,7 +36,8 @@ class LookupBagVersionsApiTest
     with DisplayJsonHelpers
     with JsonAssertions
     with S3Fixtures
-    with IntegrationPatience {
+    with IntegrationPatience
+    with TableDrivenPropertyChecks {
 
   it("returns a 404 NotFound if there are no manifests for this bag ID") {
     withConfiguredApp() {
@@ -190,52 +192,51 @@ class LookupBagVersionsApiTest
     }
   }
 
-  val storageManifestWithSlash: StorageManifest = createStorageManifestWith(
-    bagInfo = createBagInfoWith(
-      externalIdentifier = ExternalIdentifier("alfa/bravo")
+  it("finds versions of bags with unusual external identifiers") {
+    val manifestWithSlash: StorageManifest = createStorageManifestWith(
+      bagInfo = createBagInfoWith(
+        externalIdentifier = ExternalIdentifier("alfa/bravo")
+      )
     )
-  )
 
-  it(
-    "finds versions of a bag with a slash in the external identifier (URL-encoded)"
-  ) {
-    withConfiguredApp(initialManifests = Seq(storageManifestWithSlash)) {
-      case (_, _, baseUrl) =>
-        val url =
-          s"$baseUrl/bags/${storageManifestWithSlash.id.space}/alfa%2Fbravo/versions"
+    val manifestWithSlashAndSpace: StorageManifest = createStorageManifestWith(
+      bagInfo = createBagInfoWith(
+        externalIdentifier = ExternalIdentifier("miro/A images")
+      )
+    )
 
-        val expectedJson = expectedVersionList(
-          expectedVersionJson(storageManifestWithSlash)
-        )
+    val testCases = Table(
+      ("manifest", "path"),
+      // when the identifier is URL encoded
+      (manifestWithSlash, s"${manifestWithSlash.space}/alfa%2Fbravo/versions"),
+      // when the identifier is not URL encoded
+      (manifestWithSlash, s"${manifestWithSlash.space}/alfa/bravo/versions"),
+      // when the identifier has s apce
+      (
+        manifestWithSlashAndSpace,
+        s"${manifestWithSlashAndSpace.space}/miro/A%20images/versions"
+      ),
+      (
+        manifestWithSlashAndSpace,
+        s"${manifestWithSlashAndSpace.space}/miro%2FA%20images/versions"
+      )
+    )
 
-        whenGetRequestReady(url) { response =>
-          response.status shouldBe StatusCodes.OK
+    forAll(testCases) {
+      case (manifest, path) =>
+        withConfiguredApp(initialManifests = Seq(manifest)) {
+          case (_, _, baseUrl) =>
+            val expectedJson = expectedVersionList(
+              expectedVersionJson(manifest)
+            )
 
-          withStringEntity(response.entity) {
-            assertJsonStringsAreEqual(_, expectedJson)
-          }
-        }
-    }
-  }
+            whenGetRequestReady(s"$baseUrl/bags/$path") { response =>
+              response.status shouldBe StatusCodes.OK
 
-  it(
-    "finds versions of a bag with a slash in the external identifier (not URL-encoded)"
-  ) {
-    withConfiguredApp(initialManifests = Seq(storageManifestWithSlash)) {
-      case (_, _, baseUrl) =>
-        val url =
-          s"$baseUrl/bags/${storageManifestWithSlash.id.space}/alfa/bravo/versions"
-
-        val expectedJson = expectedVersionList(
-          expectedVersionJson(storageManifestWithSlash)
-        )
-
-        whenGetRequestReady(url) { response =>
-          response.status shouldBe StatusCodes.OK
-
-          withStringEntity(response.entity) {
-            assertJsonStringsAreEqual(_, expectedJson)
-          }
+              withStringEntity(response.entity) {
+                assertJsonStringsAreEqual(_, expectedJson)
+              }
+            }
         }
     }
   }

@@ -5,10 +5,7 @@ import java.time.Instant
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
+import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
 import uk.ac.wellcome.platform.archive.common.generators.{
   ExternalIdentifierGenerators,
   StorageSpaceGenerators
@@ -17,7 +14,6 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   CreateIngestType,
   UpdateIngestType
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.storage.bag_versioner.fixtures.VersionPickerFixtures
 
 class VersionPickerTest
@@ -199,32 +195,6 @@ class VersionPickerTest
 //      lockDao.history.map { _.id } should contain theSameElementsAs List(
 //        s"ingest:$ingestId",
 //        s"external:$storageSpace:$externalIdentifier"
-//      )
-    }
-  }
-
-  it("escape the lock names") {
-    val lockDao = createLockDao
-
-    withVersionPicker(lockDao) { picker =>
-      val ingestId = createIngestID
-      val externalIdentifier = ExternalIdentifier("x:y")
-      val storageSpace = StorageSpace("a:b")
-
-      picker.chooseVersion(
-        externalIdentifier = externalIdentifier,
-        ingestId = ingestId,
-        ingestType = CreateIngestType,
-        ingestDate = Instant.now(),
-        storageSpace = storageSpace
-      )
-
-      lockDao.getCurrentLocks shouldBe empty
-    // TODO: Restore history on the MemoryLockDao
-    // TODO: Why?
-//      lockDao.history.map { _.id } should contain theSameElementsAs List(
-//        s"ingest:$ingestId",
-//        s"external:a%3Ab:x%3Ay"
 //      )
     }
   }

@@ -19,14 +19,6 @@ class DynamoVersionRecordTest
     DynamoVersionRecord(versionRecord).toVersionRecord shouldBe versionRecord
   }
 
-  it("handles a VersionRecord with a colon in the externalIdentifier") {
-    val versionRecord = createVersionRecordWith(
-      externalIdentifier = ExternalIdentifier("x:y")
-    )
-
-    DynamoVersionRecord(versionRecord).toVersionRecord shouldBe versionRecord
-  }
-
   it("handles a VersionRecord with a colon in the storageSpace") {
     val versionRecord = createVersionRecordWith(
       storageSpace = StorageSpace("x:y")
@@ -37,10 +29,10 @@ class DynamoVersionRecordTest
 
   it("creates human-readable IDs") {
     val versionRecord = createVersionRecordWith(
-      externalIdentifier = ExternalIdentifier("x:y"),
+      externalIdentifier = ExternalIdentifier("x/c d"),
       storageSpace = StorageSpace("a:b")
     )
 
-    DynamoVersionRecord(versionRecord).id shouldBe BagId("a:b/x:y")
+    DynamoVersionRecord(versionRecord).id shouldBe BagId("a:b/x/c d")
   }
 }
