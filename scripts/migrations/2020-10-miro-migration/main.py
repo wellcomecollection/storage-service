@@ -24,17 +24,14 @@ from chunk_transfer import (
     upload_chunk_package,
     update_chunk_record,
 )
-from uploads import (
-    check_package_upload,
-    copy_transfer_package
-)
+from uploads import check_package_upload, copy_transfer_package
 
 DECISIONS_INDEX = "decisions"
 CHUNKS_INDEX = "chunks"
 
 
 @click.command()
-@click.option('--overwrite', '-o', is_flag=True)
+@click.option("--overwrite", "-o", is_flag=True)
 @click.pass_context
 def create_decisions_index(ctx, overwrite):
     local_elastic_client = get_local_elastic_client()
@@ -49,12 +46,12 @@ def create_decisions_index(ctx, overwrite):
         index_name=DECISIONS_INDEX,
         expected_doc_count=expected_decision_count,
         documents=_documents(),
-        overwrite=overwrite
+        overwrite=overwrite,
     )
 
 
 @click.command()
-@click.option('--overwrite', '-o', is_flag=True)
+@click.option("--overwrite", "-o", is_flag=True)
 @click.pass_context
 def create_chunks_index(ctx, overwrite):
     local_elastic_client = get_local_elastic_client()
@@ -70,27 +67,25 @@ def create_chunks_index(ctx, overwrite):
         index_name=CHUNKS_INDEX,
         expected_doc_count=expected_chunk_count,
         documents=_documents(),
-        overwrite=overwrite
+        overwrite=overwrite,
     )
 
 
 @click.command()
-@click.option('--index-name', required=True)
-@click.option('--overwrite', '-o', is_flag=True)
+@click.option("--index-name", required=True)
+@click.option("--overwrite", "-o", is_flag=True)
 @click.pass_context
 def save_index(ctx, index_name, overwrite):
     local_elastic_client = get_local_elastic_client()
     save_index_to_disk(
-        elastic_client=local_elastic_client,
-        index_name=index_name,
-        overwrite=overwrite
+        elastic_client=local_elastic_client, index_name=index_name, overwrite=overwrite
     )
 
 
 @click.command()
-@click.option('--index-name', required=True)
-@click.option('--target-index-name', required=False)
-@click.option('--overwrite', '-o', is_flag=True)
+@click.option("--index-name", required=True)
+@click.option("--target-index-name", required=False)
+@click.option("--overwrite", "-o", is_flag=True)
 @click.pass_context
 def load_index(ctx, index_name, target_index_name, overwrite):
     if not target_index_name:
@@ -102,7 +97,7 @@ def load_index(ctx, index_name, target_index_name, overwrite):
         elastic_client=local_elastic_client,
         index_name=index_name,
         target_index_name=target_index_name,
-        overwrite=overwrite
+        overwrite=overwrite,
     )
 
 
@@ -139,8 +134,8 @@ def transfer_package_chunks(ctx):
 
 
 @click.command()
-@click.option('--skip-upload', '-s', is_flag=True)
-@click.option('--overwrite', '-o', is_flag=True)
+@click.option("--skip-upload", "-s", is_flag=True)
+@click.option("--overwrite", "-o", is_flag=True)
 @click.pass_context
 def upload_transfer_packages(ctx, skip_upload, overwrite):
     chunks = get_chunks(CHUNKS_INDEX)
@@ -149,30 +144,33 @@ def upload_transfer_packages(ctx, skip_upload, overwrite):
         upload = check_package_upload(chunk, overwrite)
 
         if upload is not None:
-            if (upload['upload_transfer'] is None or overwrite) and not skip_upload:
+            if (upload["upload_transfer"] is None or overwrite) and not skip_upload:
                 new_upload_transfer = copy_transfer_package(chunk)
 
-                s3_bucket = new_upload_transfer['s3_bucket']
-                s3_key = new_upload_transfer['s3_key']
+                s3_bucket = new_upload_transfer["s3_bucket"]
+                s3_key = new_upload_transfer["s3_key"]
 
-                click.echo(f"Not found. Copying transfer package to s3://{s3_bucket}/{s3_key}")
+                click.echo(
+                    f"Not found. Copying transfer package to s3://{s3_bucket}/{s3_key}"
+                )
             else:
-                s3_bucket = upload['upload_transfer']['s3_bucket']
-                s3_key = upload['upload_transfer']['s3_key']
+                s3_bucket = upload["upload_transfer"]["s3_bucket"]
+                s3_key = upload["upload_transfer"]["s3_key"]
 
                 click.echo(f"Found uploaded package at s3://{s3_bucket}/{s3_key}")
 
             from pprint import pprint
 
-            if upload['storage_service']['ingest'] is not None:
-                ingest_id = upload['storage_service']['ingest']['id']
-                ingest_status = upload['storage_service']['ingest']['status']['id']
+            if upload["storage_service"]["ingest"] is not None:
+                ingest_id = upload["storage_service"]["ingest"]["id"]
+                ingest_status = upload["storage_service"]["ingest"]["status"]["id"]
                 click.echo(f"Found ingest {ingest_id}, with status: {ingest_status}")
 
-            if upload['storage_service']['bag'] is not None:
-                pprint(upload['storage_service']['bag'])
+            if upload["storage_service"]["bag"] is not None:
+                pprint(upload["storage_service"]["bag"])
 
                 import sys
+
                 sys.exit(1)
 
             click.echo("--------")
