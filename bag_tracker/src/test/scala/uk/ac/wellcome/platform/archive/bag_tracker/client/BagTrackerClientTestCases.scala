@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.bag_tracker.client
 
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor1}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bag_tracker.BagTrackerApi
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
@@ -45,3 +46,13 @@ trait BagTrackerClientTestCases
     with GetBagTestCases
     with GetLatestBagTestCases
     with ListVersionsTestCases
+    with TableDrivenPropertyChecks {
+  val unusualIdentifiers: TableFor1[String] = Table(
+    "externalIdentifier",
+    "miro images",
+    "miro+images",
+    "miro%20images",
+    "miro/A images",
+    "alfa/bravo"
+  )
+}

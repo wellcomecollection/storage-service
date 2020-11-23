@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.bag_tracker.client
 import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.funspec.AnyFunSpec
-import org.scalatest.prop.TableDrivenPropertyChecks
+import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor1}
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagId,
@@ -26,6 +26,8 @@ trait GetBagTestCases
     with BagTrackerClientTestBase
     with StorageManifestGenerators
     with TableDrivenPropertyChecks {
+  val unusualIdentifiers: TableFor1[String]
+
   describe("getBag") {
     it("finds the correct version of a bag") {
       val space = createStorageSpace
@@ -54,15 +56,8 @@ trait GetBagTestCases
       }
     }
 
-    val spaceEncodedIdentifiers = Table(
-      "externalIdentifier",
-      "miro images",
-      "miro+images",
-      "miro%20images"
-    )
-
-    it("finds a bag with spaces in the identifier") {
-      forAll(spaceEncodedIdentifiers) { identifier =>
+    it("finds a bag with unusual identifiers") {
+      forAll(unusualIdentifiers) { identifier =>
         val manifest = createStorageManifestWith(
           bagInfo = createBagInfoWith(
             externalIdentifier = ExternalIdentifier(identifier)
