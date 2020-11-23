@@ -16,9 +16,9 @@ import uk.ac.wellcome.platform.archive.bag_tracker.services.{
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagId,
-  BagVersion,
-  ExternalIdentifier
+  BagVersion
 }
+import uk.ac.wellcome.platform.archive.common.http.LookupExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageManifest,
   StorageSpace
@@ -38,7 +38,8 @@ class BagTrackerApi(val storageManifestDao: StorageManifestDao)(
     with CreateBag
     with GetBag
     with GetLatestBag
-    with LookupBagVersions {
+    with LookupBagVersions
+    with LookupExternalIdentifier {
   implicit val ec: ExecutionContextExecutor = actorSystem.dispatcher
 
   // Note: there are points where this API could fail if passed invalid data,
@@ -72,7 +73,7 @@ class BagTrackerApi(val storageManifestDao: StorageManifestDao)(
             (space, externalIdentifier) =>
               val bagId = BagId(
                 space = StorageSpace(space),
-                externalIdentifier = ExternalIdentifier(externalIdentifier)
+                externalIdentifier = decodeExternalIdentifier(externalIdentifier)
               )
 
               get {
@@ -90,7 +91,7 @@ class BagTrackerApi(val storageManifestDao: StorageManifestDao)(
             (space, externalIdentifier) =>
               val bagId = BagId(
                 space = StorageSpace(space),
-                externalIdentifier = ExternalIdentifier(externalIdentifier)
+                externalIdentifier = decodeExternalIdentifier(externalIdentifier)
               )
 
               parameter('version.as[Int] ?) {
