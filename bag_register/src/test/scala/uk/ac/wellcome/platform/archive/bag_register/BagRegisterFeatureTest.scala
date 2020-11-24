@@ -70,7 +70,7 @@ class BagRegisterFeatureTest
 
           eventually {
             val storageManifest: StorageManifest =
-              storageManifestDao.getLatest(bagId).right.value
+              storageManifestDao.getLatest(bagId).value
 
             storageManifest.space shouldBe bagId.space
             storageManifest.info shouldBe bagInfo

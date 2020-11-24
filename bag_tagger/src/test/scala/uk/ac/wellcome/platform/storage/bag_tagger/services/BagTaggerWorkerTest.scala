@@ -76,7 +76,6 @@ class BagTaggerWorkerTest
 
         s3Tags
           .get(location)
-          .right
           .value shouldBe Identified(
           id = location,
           identifiedT = contentSha256Tags ++ workerTestTags
@@ -126,7 +125,7 @@ class BagTaggerWorkerTest
         }
 
         locations.foreach { location =>
-          s3Tags.get(location).right.value shouldBe Identified(
+          s3Tags.get(location).value shouldBe Identified(
             id = location,
             identifiedT = contentSha256Tags ++ workerTestTags
           )
@@ -182,11 +181,11 @@ class BagTaggerWorkerTest
             }
         }
 
-        s3Tags.get(location1234).right.value shouldBe Identified(
+        s3Tags.get(location1234).value shouldBe Identified(
           location1234,
           contentSha256Tags ++ Map("b-number" -> "b1234")
         )
-        s3Tags.get(location5678).right.value shouldBe Identified(
+        s3Tags.get(location5678).value shouldBe Identified(
           location5678,
           contentSha256Tags ++ Map(
             "b-number" -> "b5678"

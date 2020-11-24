@@ -30,7 +30,6 @@ trait CreateBagTestCases
 
               dao
                 .get(id = manifest.id, version = manifest.version)
-                .right
                 .value shouldBe manifest
             }
           }

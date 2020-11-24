@@ -14,7 +14,7 @@ class HasherTest
     with TryValues {
   it("correctly hashes a string") {
     val input = "Hello world"
-    val inputStream = stringCodec.toStream(input).right.value
+    val inputStream = stringCodec.toStream(input).value
 
     val result = Hasher.hash(inputStream)
 
@@ -35,7 +35,7 @@ class HasherTest
   // This test is ensuring we cross the STREAM_BUFFER_LENGTH boundary.
   it("hashes a string that is more than 1024 bytes long") {
     val input = "Hello world " * 1024
-    val inputStream = stringCodec.toStream(input).right.value
+    val inputStream = stringCodec.toStream(input).value
 
     val result = Hasher.hash(inputStream)
 
@@ -61,7 +61,7 @@ class HasherTest
     }
 
     val inputStream = new BrokenStream(
-      is = stringCodec.toStream("Hello world").right.value
+      is = stringCodec.toStream("Hello world").value
     )
 
     val result = Hasher.hash(inputStream)

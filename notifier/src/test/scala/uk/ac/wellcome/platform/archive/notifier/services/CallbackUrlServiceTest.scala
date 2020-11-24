@@ -169,7 +169,7 @@ class CallbackUrlServiceTest
       val request = buildRequest(ingest, callbackUri)
 
       assertIsJsonRequest(request, uri = callbackUri) { requestJsonString =>
-        val json = parse(requestJsonString).right.value
+        val json = parse(requestJsonString).value
         root.bag.info.version.string.getOption(json) shouldBe Some("v3")
       }
     }
@@ -186,7 +186,7 @@ class CallbackUrlServiceTest
       val request = buildRequest(ingest, callbackUri)
 
       assertIsJsonRequest(request, uri = callbackUri) { requestJsonString =>
-        val json = parse(requestJsonString).right.value
+        val json = parse(requestJsonString).value
         root.lastModifiedDate.string.getOption(json) shouldBe None
       }
     }

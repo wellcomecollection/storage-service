@@ -50,7 +50,7 @@ class ReplicaCounterTest
       replicas = List.empty
     )
 
-    counter.countReplicas(record).right.value shouldBe KnownReplicas(
+    counter.countReplicas(record).value shouldBe KnownReplicas(
       location = location,
       replicas = List.empty
     )
@@ -67,7 +67,7 @@ class ReplicaCounterTest
       replicas = replicas
     )
 
-    counter.countReplicas(record).right.value shouldBe KnownReplicas(
+    counter.countReplicas(record).value shouldBe KnownReplicas(
       location = location,
       replicas = replicas
     )
@@ -103,7 +103,7 @@ class ReplicaCounterTest
       replicas = replicas
     )
 
-    counter.countReplicas(record).right.value shouldBe KnownReplicas(
+    counter.countReplicas(record).value shouldBe KnownReplicas(
       location = location,
       replicas = replicas
     )

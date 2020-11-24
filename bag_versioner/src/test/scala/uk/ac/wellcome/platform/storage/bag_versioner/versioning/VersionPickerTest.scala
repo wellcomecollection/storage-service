@@ -40,7 +40,7 @@ class VersionPickerTest
         storageSpace = createStorageSpace
       )
 
-      result.right.value shouldBe BagVersion(1)
+      result.value shouldBe BagVersion(1)
     }
   }
 
@@ -109,7 +109,6 @@ class VersionPickerTest
             ingestDate = Instant.now(),
             storageSpace = createStorageSpace
           )
-          .right
           .value shouldBe BagVersion(1)
       }
     }
@@ -128,7 +127,6 @@ class VersionPickerTest
           ingestDate = Instant.ofEpochSecond(1),
           storageSpace = storageSpace
         )
-        .right
         .value shouldBe BagVersion(1)
 
       (2 to 5).map { t =>
@@ -140,7 +138,6 @@ class VersionPickerTest
             ingestDate = Instant.ofEpochSecond(t),
             storageSpace = storageSpace
           )
-          .right
           .value shouldBe BagVersion(t)
       }
     }

@@ -490,7 +490,7 @@ class StorageManifestServiceTest
 
     (
       bagRoot,
-      new S3BagReader().get(bagRoot).right.value
+      new S3BagReader().get(bagRoot).value
     )
   }
 

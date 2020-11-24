@@ -525,7 +525,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
           super.storeBagContents(bagContents)
 
           val bagRoot = bagContents.bagRoot
-          val bag = createBagReader.get(bagRoot).right.value
+          val bag = createBagReader.get(bagRoot).value
 
           // Write one of the fetch.txt entries as a concrete file
           val badFetchPath: BagPath = bag.fetch.get.paths.head

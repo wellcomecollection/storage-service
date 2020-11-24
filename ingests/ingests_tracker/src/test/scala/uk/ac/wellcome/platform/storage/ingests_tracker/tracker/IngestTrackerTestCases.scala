@@ -50,7 +50,7 @@ trait IngestTrackerTestCases[Context]
     it("creates an ingest") {
       withIngestTrackerFixtures() { tracker =>
         val ingest = createIngest
-        tracker.init(ingest).right.value shouldBe Identified(
+        tracker.init(ingest).value shouldBe Identified(
           Version(ingest.id, 0),
           ingest
         )
@@ -91,7 +91,7 @@ trait IngestTrackerTestCases[Context]
       val ingest = createIngest
 
       withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
-        val retrievedResult = tracker.get(ingest.id).right.value
+        val retrievedResult = tracker.get(ingest.id).value
 
         retrievedResult.id shouldBe Version(ingest.id, 0)
         assertIngestsEqual(retrievedResult.identifiedT, ingest)
@@ -133,11 +133,11 @@ trait IngestTrackerTestCases[Context]
         withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
           val result = tracker.update(update)
           assertIngestEventSeqEqual(
-            result.right.value.identifiedT.events,
+            result.value.identifiedT.events,
             Seq(event)
           )
 
-          val storedIngest = tracker.get(ingest.id).right.value.identifiedT
+          val storedIngest = tracker.get(ingest.id).value.identifiedT
           assertIngestEventSeqEqual(
             storedIngest.events,
             Seq(event)
@@ -158,11 +158,11 @@ trait IngestTrackerTestCases[Context]
         withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
           val result = tracker.update(update)
           assertIngestEventSeqEqual(
-            result.right.value.identifiedT.events,
+            result.value.identifiedT.events,
             events
           )
 
-          val storedIngest = tracker.get(ingest.id).right.value.identifiedT
+          val storedIngest = tracker.get(ingest.id).value.identifiedT
           assertIngestEventSeqEqual(
             storedIngest.events,
             events
@@ -183,11 +183,11 @@ trait IngestTrackerTestCases[Context]
         withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
           val result = tracker.update(update)
           assertIngestEventSeqEqual(
-            result.right.value.identifiedT.events,
+            result.value.identifiedT.events,
             existingEvents ++ newEvents
           )
 
-          val storedIngest = tracker.get(ingest.id).right.value.identifiedT
+          val storedIngest = tracker.get(ingest.id).value.identifiedT
           assertIngestEventSeqEqual(
             storedIngest.events,
             existingEvents ++ newEvents
@@ -221,11 +221,11 @@ trait IngestTrackerTestCases[Context]
           withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
             val result = tracker.update(update)
             assertIngestEventSeqEqual(
-              result.right.value.identifiedT.events,
+              result.value.identifiedT.events,
               Seq(event)
             )
 
-            val storedIngest = tracker.get(ingest.id).right.value.identifiedT
+            val storedIngest = tracker.get(ingest.id).value.identifiedT
             assertIngestEventSeqEqual(
               storedIngest.events,
               Seq(event)
@@ -246,11 +246,11 @@ trait IngestTrackerTestCases[Context]
           withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
             val result = tracker.update(update)
             assertIngestEventSeqEqual(
-              result.right.value.identifiedT.events,
+              result.value.identifiedT.events,
               events
             )
 
-            val storedIngest = tracker.get(ingest.id).right.value.identifiedT
+            val storedIngest = tracker.get(ingest.id).value.identifiedT
             assertIngestEventSeqEqual(
               storedIngest.events,
               events
@@ -271,11 +271,11 @@ trait IngestTrackerTestCases[Context]
           withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
             val result = tracker.update(update)
             assertIngestEventSeqEqual(
-              result.right.value.identifiedT.events,
+              result.value.identifiedT.events,
               existingEvents ++ newEvents
             )
 
-            val storedIngest = tracker.get(ingest.id).right.value.identifiedT
+            val storedIngest = tracker.get(ingest.id).value.identifiedT
             assertIngestEventSeqEqual(
               storedIngest.events,
               existingEvents ++ newEvents
@@ -312,7 +312,7 @@ trait IngestTrackerTestCases[Context]
               withIngestTrackerFixtures(initialIngests = Seq(ingest)) {
                 tracker =>
                   val result = tracker.update(update)
-                  result.right.value.identifiedT.status shouldBe updatedStatus
+                  result.value.identifiedT.status shouldBe updatedStatus
               }
           }
         }
@@ -370,11 +370,11 @@ trait IngestTrackerTestCases[Context]
           withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
             val result = tracker.update(update)
             assertIngestEventSeqEqual(
-              result.right.value.identifiedT.events,
+              result.value.identifiedT.events,
               Seq(event)
             )
 
-            val storedIngest = tracker.get(ingest.id).right.value.identifiedT
+            val storedIngest = tracker.get(ingest.id).value.identifiedT
             assertIngestEventSeqEqual(
               storedIngest.events,
               Seq(event)
@@ -395,11 +395,11 @@ trait IngestTrackerTestCases[Context]
           withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
             val result = tracker.update(update)
             assertIngestEventSeqEqual(
-              result.right.value.identifiedT.events,
+              result.value.identifiedT.events,
               events
             )
 
-            val storedIngest = tracker.get(ingest.id).right.value.identifiedT
+            val storedIngest = tracker.get(ingest.id).value.identifiedT
             assertIngestEventSeqEqual(
               storedIngest.events,
               events
@@ -420,11 +420,11 @@ trait IngestTrackerTestCases[Context]
           withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
             val result = tracker.update(update)
             assertIngestEventSeqEqual(
-              result.right.value.identifiedT.events,
+              result.value.identifiedT.events,
               existingEvents ++ newEvents
             )
 
-            val storedIngest = tracker.get(ingest.id).right.value.identifiedT
+            val storedIngest = tracker.get(ingest.id).value.identifiedT
             assertIngestEventSeqEqual(
               storedIngest.events,
               existingEvents ++ newEvents
@@ -466,7 +466,7 @@ trait IngestTrackerTestCases[Context]
               withIngestTrackerFixtures(initialIngests = Seq(ingest)) {
                 tracker =>
                   val result = tracker.update(update)
-                  val ingest = result.right.value.identifiedT
+                  val ingest = result.value.identifiedT
                   ingest.callback.get.status shouldBe updatedStatus
               }
           }

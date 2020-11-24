@@ -77,7 +77,7 @@ class RegisterTest
       )
 
       val manifest =
-        storageManifestDao.getLatest(id = bagId).right.value
+        storageManifestDao.getLatest(id = bagId).value
 
       manifest.location shouldBe PrimaryS3StorageLocation(
         prefix = bagRoot

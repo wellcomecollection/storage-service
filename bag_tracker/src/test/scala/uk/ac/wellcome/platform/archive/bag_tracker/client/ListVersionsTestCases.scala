@@ -43,7 +43,7 @@ trait ListVersionsTestCases
           val future = client.listVersionsOf(manifest.id, maybeBefore = None)
 
           whenReady(future) {
-            _.right.value shouldBe expectedList
+            _.value shouldBe expectedList
           }
         }
       }
@@ -76,7 +76,7 @@ trait ListVersionsTestCases
           val future = client.listVersionsOf(bagId, maybeBefore = None)
 
           whenReady(future) { result =>
-            val bagVersionList = result.right.value
+            val bagVersionList = result.value
 
             bagVersionList.id shouldBe bagId
             bagVersionList.versions should contain theSameElementsAs expectedEntries
@@ -115,7 +115,7 @@ trait ListVersionsTestCases
             client.listVersionsOf(bagId, maybeBefore = Some(BagVersion(3)))
 
           whenReady(future) { result =>
-            val bagVersionList = result.right.value
+            val bagVersionList = result.value
 
             bagVersionList.id shouldBe bagId
             bagVersionList.versions should contain theSameElementsAs expectedEntries

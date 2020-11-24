@@ -30,7 +30,7 @@ sealed trait IngestUpdateTestCases[UpdateType <: IngestUpdate]
         events = List(event)
       )
 
-      val updatedIngest = IngestStates.applyUpdate(ingest, update).right.value
+      val updatedIngest = IngestStates.applyUpdate(ingest, update).value
       updatedIngest.events shouldBe Seq(event)
     }
 
@@ -44,7 +44,7 @@ sealed trait IngestUpdateTestCases[UpdateType <: IngestUpdate]
         events = events
       )
 
-      val updatedIngest = IngestStates.applyUpdate(ingest, update).right.value
+      val updatedIngest = IngestStates.applyUpdate(ingest, update).value
       updatedIngest.events shouldBe events
     }
 
@@ -58,7 +58,7 @@ sealed trait IngestUpdateTestCases[UpdateType <: IngestUpdate]
         events = newEvents
       )
 
-      val updatedIngest = IngestStates.applyUpdate(ingest, update).right.value
+      val updatedIngest = IngestStates.applyUpdate(ingest, update).value
       updatedIngest.events shouldBe existingEvents ++ newEvents
     }
   }
@@ -89,7 +89,7 @@ class IngestEventUpdateTest
         val update = createIngestEventUpdate
 
         val updatedIngest =
-          IngestStates.applyUpdate(ingest, update).right.value
+          IngestStates.applyUpdate(ingest, update).value
         updatedIngest.status shouldBe expectedStatus
     }
   }
@@ -120,7 +120,7 @@ class IngestStatusUpdateTest
         val update =
           createIngestStatusUpdateWith(id = ingest.id, status = status)
 
-        val updatedIngest = IngestStates.applyUpdate(ingest, update).right.value
+        val updatedIngest = IngestStates.applyUpdate(ingest, update).value
         updatedIngest.status shouldBe status
       }
     }
@@ -146,7 +146,7 @@ class IngestStatusUpdateTest
           )
 
           val updatedIngest =
-            IngestStates.applyUpdate(ingest, update).right.value
+            IngestStates.applyUpdate(ingest, update).value
           updatedIngest.status shouldBe updatedStatus
       }
     }
@@ -229,7 +229,7 @@ class IngestCallbackStatusUpdateTest
           )
 
           val updatedIngest =
-            IngestStates.applyUpdate(ingest, update).right.value
+            IngestStates.applyUpdate(ingest, update).value
           updatedIngest.callback.get.status shouldBe updatedStatus
       }
     }
@@ -308,7 +308,7 @@ class IngestVersionUpdateTest
       )
 
       val updatedIngest =
-        IngestStates.applyUpdate(ingest, update).right.value
+        IngestStates.applyUpdate(ingest, update).value
       updatedIngest.version shouldBe Some(BagVersion(1))
     }
 
@@ -322,7 +322,7 @@ class IngestVersionUpdateTest
       )
 
       val updatedIngest =
-        IngestStates.applyUpdate(ingest, update).right.value
+        IngestStates.applyUpdate(ingest, update).value
       updatedIngest.version shouldBe Some(BagVersion(1))
     }
 

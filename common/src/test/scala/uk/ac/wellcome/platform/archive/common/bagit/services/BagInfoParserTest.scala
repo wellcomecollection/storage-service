@@ -273,5 +273,5 @@ class BagInfoParserTest
   }
 
   def toInputStream(s: String): InputStream =
-    stringCodec.toStream(s).right.value
+    stringCodec.toStream(s).value
 }

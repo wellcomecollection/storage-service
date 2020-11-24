@@ -49,7 +49,7 @@ trait IndexerTestCases[Document, IndexedDocument]
         val document = createDocument
 
         whenReady(indexer.index(document)) { result =>
-          result.right.value shouldBe document
+          result.value shouldBe document
 
           val indexedDocument: IndexedDocument =
             getDocument(index, id = id(document))
@@ -69,7 +69,7 @@ trait IndexerTestCases[Document, IndexedDocument]
         }
 
         whenReady(indexer.index(documents)) { result =>
-          result.right.value shouldBe documents
+          result.value shouldBe documents
 
           eventually {
             val storedManifests = searchT[Json](index, query = matchAllQuery())
@@ -129,7 +129,7 @@ trait IndexerTestCases[Document, IndexedDocument]
             }
 
           whenReady(future) { result =>
-            result.right.value shouldBe newerDocument
+            result.value shouldBe newerDocument
 
             val indexedDocument: IndexedDocument =
               getDocument(index, id = id(olderDocument))
@@ -152,7 +152,7 @@ trait IndexerTestCases[Document, IndexedDocument]
             }
 
           whenReady(future) { result =>
-            result.right.value shouldBe olderDocument
+            result.value shouldBe olderDocument
 
             val indexedDocument: IndexedDocument =
               getDocument(index, id = id(olderDocument))

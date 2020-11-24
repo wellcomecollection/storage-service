@@ -200,7 +200,7 @@ trait IngestTrackerClientTestCases
         withIngestsTracker(ingest) { _ =>
           withIngestTrackerClient(trackerUri) { client =>
             whenReady(client.getIngest(ingest.id)) {
-              _.right.value shouldBe ingest
+              _.value shouldBe ingest
             }
           }
         }

@@ -24,7 +24,7 @@ class ChecksumTest
     with StorageRandomGenerators {
 
   private def toInputStream(s: String): InputStream =
-    stringCodec.toStream(s).right.value
+    stringCodec.toStream(s).value
 
   val algorithm: SHA256.type = SHA256
 

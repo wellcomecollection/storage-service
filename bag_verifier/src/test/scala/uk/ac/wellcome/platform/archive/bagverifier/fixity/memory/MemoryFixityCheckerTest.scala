@@ -58,7 +58,7 @@ class MemoryFixityCheckerTest
     implicit context: MemoryContext
   ): Unit = {
     val (streamStore, _) = context
-    val inputStream = stringCodec.toStream(contents).right.value
+    val inputStream = stringCodec.toStream(contents).value
     streamStore.put(location)(inputStream) shouldBe a[Right[_, _]]
   }
 

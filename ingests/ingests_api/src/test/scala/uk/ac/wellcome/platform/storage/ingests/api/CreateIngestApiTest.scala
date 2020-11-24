@@ -496,7 +496,7 @@ class CreateIngestApiTest
           |    }
           |  }
           |}""".stripMargin
-    ).right.value
+    ).value
 
   def createRequestJson: Json =
     createRequestJsonWith()

@@ -178,7 +178,7 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
         val srcLocation = createSrcLocationWith(namespace = srcNamespace)
 
         streamStore.put(srcLocation)(
-          stringCodec.toStream("hello world").right.value
+          stringCodec.toStream("hello world").value
         ) shouldBe a[Right[_, _]]
 
         val result =
@@ -216,7 +216,7 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
       val expectedLocation = prefix.asLocation(name)
 
       val originalContent = new FileInputStream(file)
-      val storedContent = store.get(expectedLocation).right.value.identifiedT
+      val storedContent = store.get(expectedLocation).value.identifiedT
 
       assertStreamsEqual(originalContent, storedContent)
     }

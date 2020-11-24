@@ -68,14 +68,13 @@ class DynamoStorageManifestDaoTest
 
           val storedIdentifiers = scanamo
             .exec(ScanamoTable[Identified](table.name).scan())
-            .map { _.right.value }
+            .map { _.value }
             .map { _.id }
 
           storedIdentifiers shouldBe Seq("abc/123")
 
           dao
             .get(bagId, version = storageManifest.version)
-            .right
             .value shouldBe storageManifest
         }
       }
@@ -109,14 +108,13 @@ class DynamoStorageManifestDaoTest
 
           val storedIdentifiers = scanamo
             .exec(ScanamoTable[Identified](table.name).scan())
-            .map { _.right.value }
+            .map { _.value }
             .map { _.id }
 
           storedIdentifiers shouldBe Seq("born-digital/PP/MIA/1")
 
           dao
             .get(bagId, version = storageManifest.version)
-            .right
             .value shouldBe storageManifest
         }
       }
