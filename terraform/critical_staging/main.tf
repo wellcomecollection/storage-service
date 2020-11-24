@@ -4,22 +4,8 @@ module "critical" {
   namespace = "${local.namespace}-staging"
 
   replica_primary_read_principals = [
-    local.archivematica_task_role_arn,
-    local.digitisation_account_principal,
-    local.goobi_task_role_arn,
-
-    local.shell_server_1_task_role,
-    local.shell_server_2_task_role,
-    local.shell_server_3_task_role,
-    local.shell_server_4_task_role,
-
-    local.workflow_account_principal,
-    local.catalogue_pipeline_task_role_arn,
-    local.catalogue_pipeline_account_principal,
-
-    "arn:aws:iam::653428163053:user/api",
-    "arn:aws:iam::653428163053:user/echo-fs",
-    local.digirati_account_principal
+    for account_id in values(local.account_ids):
+    "arn:aws:iam::${account_id}:root"
   ]
 
   azure_storage_account_name = "wecostoragestage"
