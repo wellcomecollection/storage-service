@@ -91,7 +91,7 @@ trait ElasticsearchFixtures
     implicit decoder: Decoder[T]
   ): T = {
     val response: Response[GetResponse] =
-      elasticClient.execute { get(id).from(index) }.await
+      elasticClient.execute { get(index, id) }.await
 
     val getResponse = response.result
     getResponse.exists shouldBe true

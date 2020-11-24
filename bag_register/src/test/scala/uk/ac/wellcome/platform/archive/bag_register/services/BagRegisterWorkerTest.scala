@@ -74,7 +74,7 @@ class BagRegisterWorkerTest
       )
 
       val storageManifest =
-        storageManifestDao.getLatest(bagId).right.value
+        storageManifestDao.getLatest(bagId).value
 
       storageManifest.space shouldBe bagId.space
       storageManifest.info shouldBe bagInfo
@@ -212,18 +212,15 @@ class BagRegisterWorkerTest
 
       storageManifestDao
         .get(bagId, version = version1)
-        .right
         .value
         .version shouldBe version1
       storageManifestDao
         .get(bagId, version = version2)
-        .right
         .value
         .version shouldBe version2
 
       storageManifestDao
         .getLatest(bagId)
-        .right
         .value
         .version shouldBe version2
     }
@@ -276,7 +273,7 @@ class BagRegisterWorkerTest
       }
 
       val storageManifest =
-        storageManifestDao.getLatest(bagId).right.value
+        storageManifestDao.getLatest(bagId).value
 
       storageManifest.location shouldBe PrimaryS3StorageLocation(
         prefix = bagRoot

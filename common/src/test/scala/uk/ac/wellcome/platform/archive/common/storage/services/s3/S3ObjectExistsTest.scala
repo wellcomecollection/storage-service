@@ -17,7 +17,7 @@ class S3ObjectExistsTest extends AnyFunSpec with Matchers with S3Fixtures {
           val location = createS3ObjectLocationWith(bucket)
           putStream(location)
 
-          location.exists.right.value shouldBe true
+          location.exists.value shouldBe true
         }
       }
     }
@@ -27,14 +27,14 @@ class S3ObjectExistsTest extends AnyFunSpec with Matchers with S3Fixtures {
         withLocalS3Bucket { bucket =>
           val location = createS3ObjectLocationWith(bucket)
 
-          location.exists.right.value shouldBe false
+          location.exists.value shouldBe false
         }
       }
 
       it("with a valid but NOT existing bucket AND no key") {
         val location = createS3ObjectLocationWith(bucket = createBucket)
 
-        location.exists.right.value shouldBe false
+        location.exists.value shouldBe false
       }
     }
 

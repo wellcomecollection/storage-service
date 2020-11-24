@@ -97,7 +97,7 @@ trait ReplicatorTestCases[
     dstStringStore.put(location)(contents) shouldBe a[Right[_, _]]
 
   def getDstObject(location: DstLocation): String =
-    dstStringStore.get(location).right.value.identifiedT
+    dstStringStore.get(location).value.identifiedT
 
   it("replicates all the objects under a prefix") {
     withSrcNamespace { srcNamespace =>

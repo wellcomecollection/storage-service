@@ -29,14 +29,14 @@ class UnarchiverTest extends AnyFunSpec with Matchers with EitherValues {
   it("unpacks a tar.gz file") {
     val inputStream = getClass.getResourceAsStream("/numbers.tar.gz")
 
-    val archiveIterator = Unarchiver.open(inputStream).right.value
+    val archiveIterator = Unarchiver.open(inputStream).value
 
     archiveIterator.foreach {
       case (archiveEntry, entryInputStream) =>
         archiveEntry shouldBe a[TarArchiveEntry]
 
         if (!archiveEntry.isDirectory) {
-          val contents = stringCodec.fromStream(entryInputStream).right.value
+          val contents = stringCodec.fromStream(entryInputStream).value
 
           val contentsNumber = contents.trim
           val filenameNumber = archiveEntry.getName.split("/").last
@@ -59,7 +59,7 @@ class UnarchiverTest extends AnyFunSpec with Matchers with EitherValues {
   it("handles the caller closing the input stream") {
     val inputStream = getClass.getResourceAsStream("/numbers.tar.gz")
 
-    val archiveIterator = Unarchiver.open(inputStream).right.value
+    val archiveIterator = Unarchiver.open(inputStream).value
 
     archiveIterator.foreach {
       case (_, entryInputStream) =>
@@ -85,7 +85,7 @@ class UnarchiverTest extends AnyFunSpec with Matchers with EitherValues {
   }
 
   it("fails if the file is not a compressed stream") {
-    val inputStream = stringCodec.toStream("hello world").right.value
+    val inputStream = stringCodec.toStream("hello world").value
 
     val error = Unarchiver.open(inputStream).left.value
 

@@ -138,7 +138,7 @@ class FixityCheckerTests
 
       val location = createMemoryLocation
 
-      val inputStream = stringCodec.toStream(contentString).right.value
+      val inputStream = stringCodec.toStream(contentString).value
       streamStore.put(location)(inputStream) shouldBe a[Right[_, _]]
 
       val expectedFileFixity = createDataDirectoryFileFixityWith(

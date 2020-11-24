@@ -121,7 +121,7 @@ class LookupIngestApiTest
       case (_, _, _, baseUrl) =>
         whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") { result =>
           withStringEntity(result.entity) { jsonString =>
-            val json = parse(jsonString).right.value
+            val json = parse(jsonString).value
             root.bag.info.version.string.getOption(json) shouldBe Some("v3")
           }
         }

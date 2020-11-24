@@ -30,7 +30,6 @@ class BagMatcherTest
           ),
           fetchEntries = Map.empty
         )
-        .right
         .value shouldBe Seq.empty
     }
 
@@ -49,7 +48,7 @@ class BagMatcherTest
         fetchEntries = Map.empty
       )
 
-      result.right.value shouldBe manifestEntries.map {
+      result.value shouldBe manifestEntries.map {
         case (bagPath, checksumValue) =>
           MatchedLocation(
             bagPath = bagPath,
@@ -76,7 +75,7 @@ class BagMatcherTest
         fetchEntries = Map.empty
       )
 
-      result.right.value shouldBe manifestEntries.map {
+      result.value shouldBe manifestEntries.map {
         case (bagPath, checksumValue) =>
           MatchedLocation(
             bagPath = bagPath,
@@ -129,7 +128,7 @@ class BagMatcherTest
         fetchMetadata = Some(fetchMetadata)
       )
 
-      result.right.value should contain theSameElementsAs expectedLocations
+      result.value should contain theSameElementsAs expectedLocations
     }
   }
 

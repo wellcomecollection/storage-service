@@ -66,7 +66,7 @@ class S3UnpackerTest
   override def listKeysUnder(
     prefix: S3ObjectLocationPrefix
   )(implicit store: S3StreamStore): Seq[String] =
-    S3ObjectLocationListing().list(prefix).right.value.toSeq.map { _.key }
+    S3ObjectLocationListing().list(prefix).value.toSeq.map { _.key }
 
   it("fails if asked to write to a non-existent bucket") {
     val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()

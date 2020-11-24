@@ -92,7 +92,6 @@ trait IngestVersionManagerDaoTestCases[Context]
               externalIdentifier = ExternalIdentifier("acorn"),
               storageSpace = storageSpaceA
             )
-            .right
             .value
 
         assertRecordsEqual(latestRecordA, recordA3)
@@ -103,7 +102,6 @@ trait IngestVersionManagerDaoTestCases[Context]
               externalIdentifier = ExternalIdentifier("barley"),
               storageSpace = storageSpaceB
             )
-            .right
             .value
 
         assertRecordsEqual(latestRecordB, recordB2)
@@ -139,7 +137,6 @@ trait IngestVersionManagerDaoTestCases[Context]
               externalIdentifier = record.externalIdentifier,
               storageSpace = record.storageSpace
             )
-            .right
             .value
 
         assertRecordsEqual(latestRecord, record)
@@ -215,7 +212,6 @@ trait IngestVersionManagerDaoTestCases[Context]
           val latestRecord =
             dao
               .lookupLatestVersionFor(externalIdentifier, storageSpace)
-              .right
               .value
 
           assertRecordsEqual(latestRecord, initialRecords.last)
@@ -242,7 +238,6 @@ trait IngestVersionManagerDaoTestCases[Context]
                 externalIdentifier = externalIdentifier,
                 storageSpace = record1.storageSpace
               )
-              .right
               .value
 
           assertRecordsEqual(record1, storedRecord1)
@@ -253,7 +248,6 @@ trait IngestVersionManagerDaoTestCases[Context]
                 externalIdentifier = externalIdentifier,
                 storageSpace = record2.storageSpace
               )
-              .right
               .value
 
           assertRecordsEqual(record2, storedRecord2)

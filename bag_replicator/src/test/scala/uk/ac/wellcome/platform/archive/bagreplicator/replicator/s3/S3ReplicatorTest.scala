@@ -88,7 +88,7 @@ class S3ReplicatorTest
           key = location.key
         )
 
-        srcTags.get(dstLocation).right.value shouldBe Identified(
+        srcTags.get(dstLocation).value shouldBe Identified(
           dstLocation,
           Map.empty
         )

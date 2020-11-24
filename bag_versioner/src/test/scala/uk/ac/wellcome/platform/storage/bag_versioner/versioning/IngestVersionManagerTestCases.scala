@@ -62,7 +62,6 @@ trait IngestVersionManagerTestCases[DaoImpl <: IngestVersionManagerDao, Context]
               ingestType = CreateIngestType,
               storageSpace = createStorageSpace
             )
-            .right
             .value shouldBe BagVersion(1)
         }
       }
@@ -82,7 +81,6 @@ trait IngestVersionManagerTestCases[DaoImpl <: IngestVersionManagerDao, Context]
               ingestType = CreateIngestType,
               storageSpace = storageSpace
             )
-            .right
             .value shouldBe BagVersion(1)
 
           (2 to 5).map { version =>
@@ -94,7 +92,6 @@ trait IngestVersionManagerTestCases[DaoImpl <: IngestVersionManagerDao, Context]
                 ingestType = UpdateIngestType,
                 storageSpace = storageSpace
               )
-              .right
               .value shouldBe BagVersion(version)
           }
         }
@@ -130,7 +127,6 @@ trait IngestVersionManagerTestCases[DaoImpl <: IngestVersionManagerDao, Context]
                   ingestType = UpdateIngestType,
                   storageSpace = storageSpace
                 )
-                .right
                 .value
 
               (idx, ingestId, version)
@@ -146,7 +142,6 @@ trait IngestVersionManagerTestCases[DaoImpl <: IngestVersionManagerDao, Context]
                   ingestType = CreateIngestType,
                   storageSpace = storageSpace
                 )
-                .right
                 .value shouldBe version
           }
         }
@@ -168,7 +163,6 @@ trait IngestVersionManagerTestCases[DaoImpl <: IngestVersionManagerDao, Context]
               ingestType = CreateIngestType,
               storageSpace = storageSpace
             )
-            .right
             .value shouldBe BagVersion(1)
 
           manager
@@ -179,7 +173,6 @@ trait IngestVersionManagerTestCases[DaoImpl <: IngestVersionManagerDao, Context]
               ingestType = CreateIngestType,
               storageSpace = storageSpace
             )
-            .right
             .value shouldBe BagVersion(1)
         }
       }
@@ -200,7 +193,6 @@ trait IngestVersionManagerTestCases[DaoImpl <: IngestVersionManagerDao, Context]
               ingestType = CreateIngestType,
               storageSpace = createStorageSpace
             )
-            .right
             .value shouldBe BagVersion(1)
 
           manager
@@ -211,7 +203,6 @@ trait IngestVersionManagerTestCases[DaoImpl <: IngestVersionManagerDao, Context]
               ingestType = CreateIngestType,
               storageSpace = createStorageSpace
             )
-            .right
             .value shouldBe BagVersion(1)
         }
       }
@@ -346,7 +337,6 @@ trait IngestVersionManagerTestCases[DaoImpl <: IngestVersionManagerDao, Context]
                   externalIdentifier = externalIdentifier,
                   storageSpace = storageSpace
                 )
-                .right
                 .value
                 .version shouldBe BagVersion(1)
             }

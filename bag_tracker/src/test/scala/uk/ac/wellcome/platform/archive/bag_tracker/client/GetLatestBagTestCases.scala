@@ -49,7 +49,7 @@ trait GetLatestBagTestCases
           val future = client.getLatestBag(bagId = bagId)
 
           whenReady(future) {
-            _.right.value shouldBe manifests.last
+            _.value shouldBe manifests.last
           }
         }
       }
