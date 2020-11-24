@@ -18,6 +18,7 @@ def lookup_ingest(ingest_id):
 
     for api_name, api_host in api_variants.items():
         api_url = f"https://{api_host}.wellcomecollection.org/storage/v1"
+
         client = RequestsOAuthStorageServiceClient.from_path(api_url=api_url)
 
         try:
@@ -35,4 +36,4 @@ def lookup_ingest(ingest_id):
             }
             return api_name, api_url, ingest_data
 
-        raise IngestNotFound
+    raise IngestNotFound
