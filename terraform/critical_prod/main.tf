@@ -4,7 +4,7 @@ module "critical" {
   namespace = local.namespace
 
   replica_primary_read_principals = [
-    for account_id in values(local.account_ids):
+    for account_id in values(local.account_ids) :
     "arn:aws:iam::${account_id}:root"
   ]
 
