@@ -66,7 +66,7 @@ trait GetLatestBagTestCases
         withApi(initialManifests = Seq(manifest)) { _ =>
           withClient(trackerHost) { client =>
             whenReady(client.getLatestBag(bagId = manifest.id)) {
-              _.right.value shouldBe manifest
+              _.value shouldBe manifest
             }
           }
         }

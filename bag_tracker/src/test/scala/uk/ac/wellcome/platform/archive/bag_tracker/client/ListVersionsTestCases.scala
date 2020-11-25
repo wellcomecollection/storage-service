@@ -155,7 +155,7 @@ trait ListVersionsTestCases
             whenReady(
               client.listVersionsOf(bagId = manifest.id, maybeBefore = None)
             ) {
-              _.right.value shouldBe expectedList
+              _.value shouldBe expectedList
             }
           }
         }
