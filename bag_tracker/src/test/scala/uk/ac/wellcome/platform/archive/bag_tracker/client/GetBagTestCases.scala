@@ -69,7 +69,7 @@ trait GetBagTestCases
             whenReady(
               client.getBag(bagId = manifest.id, version = manifest.version)
             ) {
-              _.right.value shouldBe manifest
+              _.value shouldBe manifest
             }
           }
         }
