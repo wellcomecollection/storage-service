@@ -7,27 +7,57 @@ into the storage service.
 import attr
 import click
 
-from decisions import get_decisions, count_decisions
+from decisions import (
+    get_decisions,
+    count_decisions
+)
 from chunks import gather_chunks
 from elastic_helpers import (
     get_elastic_client,
     get_local_elastic_client,
     index_iterator,
+    get_document_by_id,
     get_document_count,
     save_index_to_disk,
     load_index_from_disk,
 )
 from chunk_transfer import (
     get_chunks,
+    get_chunk,
     check_chunk_uploaded,
     create_chunk_package,
     upload_chunk_package,
     update_chunk_record,
 )
+from sourcedata import (
+    gather_sourcedata,
+    count_sourcedata
+)
 from uploads import check_package_upload, copy_transfer_package
 
 DECISIONS_INDEX = "decisions"
 CHUNKS_INDEX = "chunks"
+SOURCEDATA_INDEX = "sourcedata"
+TRANSFERS_INDEX = "transfers"
+
+@click.command()
+@click.option("--overwrite", "-o", is_flag=True)
+@click.pass_context
+def create_sourcedata_index(ctx, overwrite):
+    local_elastic_client = get_local_elastic_client()
+    expected_sourcedata_count = count_sourcedata()
+
+    def _documents():
+        for sourcedata in gather_sourcedata():
+            yield sourcedata.id, attr.asdict(sourcedata)
+
+    index_iterator(
+        elastic_client=local_elastic_client,
+        index_name=SOURCEDATA_INDEX,
+        expected_doc_count=expected_sourcedata_count,
+        documents=_documents(),
+        overwrite=overwrite,
+    )
 
 
 @click.command()
@@ -133,47 +163,88 @@ def transfer_package_chunks(ctx):
         )
 
 
+def _upload_package(chunk, overwrite, skip_upload):
+    upload = check_package_upload(chunk)
+    chunk_id = chunk.chunk_id()
+
+
+    if upload is not None:
+        if (upload["upload_transfer"] is None or overwrite) and not skip_upload:
+            new_upload_transfer = copy_transfer_package(chunk)
+
+            s3_bucket = new_upload_transfer["s3_bucket"]
+            s3_key = new_upload_transfer["s3_key"]
+
+            click.echo(
+                f"Not found. Copying '{chunk_id}' to s3://{s3_bucket}/{s3_key}"
+            )
+        else:
+            s3_bucket = upload["upload_transfer"]["s3_bucket"]
+            s3_key = upload["upload_transfer"]["s3_key"]
+
+            click.echo(f"Found '{chunk_id}' at s3://{s3_bucket}/{s3_key}")
+
+    return upload
+
+
 @click.command()
 @click.option("--skip-upload", "-s", is_flag=True)
+@click.option("--chunk-id", required=False)
+@click.option("--limit", required=False, default=100)
 @click.option("--overwrite", "-o", is_flag=True)
 @click.pass_context
-def upload_transfer_packages(ctx, skip_upload, overwrite):
-    chunks = get_chunks(CHUNKS_INDEX)
+def upload_transfer_packages(ctx, skip_upload, chunk_id, limit, overwrite):
+    local_elastic_client = get_local_elastic_client()
+    local_elastic_client.indices.create(index=TRANSFERS_INDEX, ignore=400)
 
-    for chunk in chunks:
-        upload = check_package_upload(chunk, overwrite)
+    if chunk_id:
+        chunk = get_chunk(CHUNKS_INDEX, chunk_id)
 
+        if chunk is None:
+            click.echo(f"No chunk found matching id: '{chunk_id}'")
+            return
+
+        chunks = [chunk]
+    else:
+        chunks = get_chunks(CHUNKS_INDEX)
+
+    for chunk in chunks[:limit]:
+        chunk_id = chunk.chunk_id()
+        click.echo(f"Looking at '{chunk_id}':")
+
+        upload = get_document_by_id(
+            elastic_client=local_elastic_client,
+            index_name=TRANSFERS_INDEX,
+            id=chunk_id
+        )
+
+        has_ingest = False
+        has_bag = False
         if upload is not None:
-            if (upload["upload_transfer"] is None or overwrite) and not skip_upload:
-                new_upload_transfer = copy_transfer_package(chunk)
+            has_ingest = upload["storage_service"]["ingest"] is not None
+            has_bag = upload["storage_service"]["bag"] is not None
 
-                s3_bucket = new_upload_transfer["s3_bucket"]
-                s3_key = new_upload_transfer["s3_key"]
+        if upload is None or not has_bag:
+            upload = _upload_package(chunk, overwrite, skip_upload)
 
-                click.echo(
-                    f"Not found. Copying transfer package to s3://{s3_bucket}/{s3_key}"
-                )
-            else:
-                s3_bucket = upload["upload_transfer"]["s3_bucket"]
-                s3_key = upload["upload_transfer"]["s3_key"]
+            local_elastic_client.index(
+                index=TRANSFERS_INDEX,
+                body=upload,
+                id=chunk_id
+            )
 
-                click.echo(f"Found uploaded package at s3://{s3_bucket}/{s3_key}")
+        if has_ingest:
+            ingest_id = upload["storage_service"]["ingest"]["id"]
+            ingest_status = upload["storage_service"]["ingest"]["status"]["id"]
+            click.echo(f"Found ingest {ingest_id}, with status: {ingest_status}")
 
-            from pprint import pprint
+        if has_bag:
+            bag_id = upload["storage_service"]["bag"]["id"]
+            bag_internal_id = upload["storage_service"]["bag"]["info"]["internalSenderIdentifier"]
+            version = upload["storage_service"]["bag"]["version"]
+            click.echo(f"Found bag {bag_id}, (v{version}) with internal id: {bag_internal_id}")
 
-            if upload["storage_service"]["ingest"] is not None:
-                ingest_id = upload["storage_service"]["ingest"]["id"]
-                ingest_status = upload["storage_service"]["ingest"]["status"]["id"]
-                click.echo(f"Found ingest {ingest_id}, with status: {ingest_status}")
-
-            if upload["storage_service"]["bag"] is not None:
-                pprint(upload["storage_service"]["bag"])
-
-                import sys
-
-                sys.exit(1)
-
-            click.echo("--------")
+        click.echo("")
 
 
 @click.group()
@@ -183,6 +254,7 @@ def cli(ctx):
 
 
 cli.add_command(create_chunks_index)
+cli.add_command(create_sourcedata_index)
 cli.add_command(create_decisions_index)
 cli.add_command(transfer_package_chunks)
 cli.add_command(upload_transfer_packages)

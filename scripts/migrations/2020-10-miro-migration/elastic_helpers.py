@@ -8,6 +8,7 @@ import sys
 import click
 import elasticsearch
 from elasticsearch import helpers, Elasticsearch
+from elasticsearch.exceptions import NotFoundError
 from tqdm import tqdm
 
 from common import get_secret
@@ -15,6 +16,12 @@ from iter_helpers import chunked_iterable
 
 LOCAL_ELASTIC_HOST = os.getenv("LOCAL_ELASTIC_HOST", "localhost")
 
+
+def get_document_by_id(elastic_client, index_name, id):
+    try:
+        return elastic_client.get(index=index_name, id=id)['_source']
+    except NotFoundError:
+        return None
 
 def get_elastic_client(role_arn, elastic_secret_id):
     secret = get_secret(role_arn, elastic_secret_id)

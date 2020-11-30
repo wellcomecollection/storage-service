@@ -3,6 +3,8 @@ import os
 import click
 import elasticsearch
 
+from elasticsearch.exceptions import NotFoundError
+
 from chunks import Chunk
 from common import get_aws_client
 from elastic_helpers import get_local_elastic_client
@@ -20,6 +22,22 @@ S3_ARCHIVEMATICA_BUCKET = os.getenv(
 )
 S3_MIRO_BUCKET = "wellcomecollection-assets-workingstorage"
 S3_PREFIX = "miro/Wellcome_Images_Archive"
+
+
+def get_chunk(chunks_index, chunk_id):
+    local_elastic_client = get_local_elastic_client()
+
+    try:
+        result = local_elastic_client.get(index=chunks_index, id=chunk_id)
+        chunk = Chunk(**result["_source"])
+        transfer_package = None
+        if result["_source"]["transfer_package"]:
+            transfer_package = TransferPackage(**result["_source"]["transfer_package"])
+
+        chunk.transfer_package = transfer_package
+        return chunk
+    except NotFoundError:
+        return None
 
 
 def get_chunks(chunks_index):
