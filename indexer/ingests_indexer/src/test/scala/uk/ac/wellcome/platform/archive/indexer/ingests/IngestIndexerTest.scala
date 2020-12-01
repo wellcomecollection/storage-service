@@ -115,12 +115,11 @@ class IngestIndexerTest
           }
 
         whenReady(future) { result =>
-          result.right.value shouldBe newerIngest
+          result.value shouldBe newerIngest
 
           val storedIngest =
             getT[Json](index, id = ingestId.toString)
               .as[Map[String, Json]]
-              .right
               .value
 
           storedIngest("events").asArray.get.size shouldBe 2
@@ -139,12 +138,11 @@ class IngestIndexerTest
           }
 
         whenReady(future) { result =>
-          result.right.value shouldBe olderIngest
+          result.value shouldBe olderIngest
 
           val storedIngest =
             getT[Json](index, id = ingestId.toString)
               .as[Map[String, Json]]
-              .right
               .value
 
           storedIngest("events").asArray.get.size shouldBe 2

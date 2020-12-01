@@ -53,7 +53,7 @@ trait StorageManifestDaoTestCases[Context]
           insertResult shouldBe a[Right[_, _]]
 
           val getResultPostInsert = dao.getLatest(storageManifest.id)
-          getResultPostInsert.right.value shouldBe storageManifest
+          getResultPostInsert.value shouldBe storageManifest
 
           // Update
 
@@ -80,7 +80,6 @@ trait StorageManifestDaoTestCases[Context]
               dao.put(manifest) shouldBe a[Right[_, _]]
               dao
                 .get(storageManifest.id, version = BagVersion(version))
-                .right
                 .value shouldBe manifest
           }
         }
@@ -92,7 +91,7 @@ trait StorageManifestDaoTestCases[Context]
 
       withContext { implicit context =>
         withDao { dao =>
-          dao.put(storageManifest).right.value shouldBe storageManifest
+          dao.put(storageManifest).value shouldBe storageManifest
           dao
             .put(storageManifest)
             .left
@@ -108,9 +107,9 @@ trait StorageManifestDaoTestCases[Context]
 
       withContext { implicit context =>
         withDao { dao =>
-          dao.put(storageManifest2).right.value shouldBe storageManifest2
-          dao.put(storageManifest1).right.value shouldBe storageManifest1
-          dao.put(storageManifest3).right.value shouldBe storageManifest3
+          dao.put(storageManifest2).value shouldBe storageManifest2
+          dao.put(storageManifest1).value shouldBe storageManifest1
+          dao.put(storageManifest3).value shouldBe storageManifest3
         }
       }
     }
@@ -133,7 +132,6 @@ trait StorageManifestDaoTestCases[Context]
 
           dao
             .listAllVersions(bagId = storageManifest.id)
-            .right
             .value should contain theSameElementsAs manifests
         }
       }
@@ -157,7 +155,6 @@ trait StorageManifestDaoTestCases[Context]
 
           dao
             .listAllVersions(bagId = storageManifest.id)
-            .right
             .value shouldBe manifests.reverse
         }
       }
@@ -181,18 +178,16 @@ trait StorageManifestDaoTestCases[Context]
 
           val bagId = storageManifest.id
 
-          dao.listAllVersions(bagId).right.value should have size 7
+          dao.listAllVersions(bagId).value should have size 7
 
           // Omitting versions 5 and 6
           dao
             .listVersionsBefore(bagId, before = BagVersion(5))
-            .right
             .value should have size 5
 
           // Omitting versions 3, 4, 5 and 6
           dao
             .listVersionsBefore(bagId, before = BagVersion(3))
-            .right
             .value should have size 3
         }
       }
@@ -201,7 +196,7 @@ trait StorageManifestDaoTestCases[Context]
     it("returns an empty list if there are no manifests") {
       withContext { implicit context =>
         withDao { dao =>
-          dao.listAllVersions(createBagId).right.value shouldBe empty
+          dao.listAllVersions(createBagId).value shouldBe empty
         }
       }
     }
@@ -221,7 +216,6 @@ trait StorageManifestDaoTestCases[Context]
 
           dao
             .getLatestVersion(storageManifest.id)
-            .right
             .value shouldBe BagVersion(5)
         }
       }

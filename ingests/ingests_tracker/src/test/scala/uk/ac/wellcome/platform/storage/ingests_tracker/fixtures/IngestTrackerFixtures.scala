@@ -14,7 +14,7 @@ trait IngestTrackerFixtures extends EitherValues with TimeTestFixture {
     ingest: Ingest
   )(implicit ingestTracker: MemoryIngestTracker): Ingest = {
     val storedIngest =
-      ingestTracker.underlying.getLatest(ingest.id).right.value.identifiedT
+      ingestTracker.underlying.getLatest(ingest.id).value.identifiedT
 
     storedIngest.sourceLocation shouldBe ingest.sourceLocation
     storedIngest.sourceLocation shouldBe ingest.sourceLocation
@@ -31,7 +31,7 @@ trait IngestTrackerFixtures extends EitherValues with TimeTestFixture {
     expectedEventDescriptions: Seq[String]
   )(implicit ingestTracker: MemoryIngestTracker): Unit = {
     val storedIngest =
-      ingestTracker.underlying.getLatest(id).right.value.identifiedT
+      ingestTracker.underlying.getLatest(id).value.identifiedT
 
     storedIngest.events.map { _.description } should contain theSameElementsAs expectedEventDescriptions
     storedIngest.events.foreach { event =>

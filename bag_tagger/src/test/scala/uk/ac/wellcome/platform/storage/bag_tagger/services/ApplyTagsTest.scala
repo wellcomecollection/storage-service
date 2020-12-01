@@ -54,7 +54,7 @@ class ApplyTagsTest
 
         result shouldBe Success(())
 
-        s3Tags.get(s3Location).right.value shouldBe Identified(
+        s3Tags.get(s3Location).value shouldBe Identified(
           s3Location,
           Map(
             "Content-SHA256" -> "4a5a41ebcf5e2c24c",

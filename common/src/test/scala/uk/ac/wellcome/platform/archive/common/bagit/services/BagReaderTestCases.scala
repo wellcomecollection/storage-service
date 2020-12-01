@@ -71,7 +71,7 @@ trait BagReaderTestCases[
       val (bagRoot, bagInfo) = createBag()(namespace, bucket)
 
       val bag = withBagReader {
-        _.get(bagRoot).right.value
+        _.get(bagRoot).value
       }
 
       bag.info shouldBe bagInfo
@@ -176,7 +176,7 @@ trait BagReaderTestCases[
       deleteFile(bagRoot, path = "fetch.txt")
 
       withBagReader {
-        _.get(bagRoot).right.value.fetch shouldBe None
+        _.get(bagRoot).value.fetch shouldBe None
       }
     }
   }

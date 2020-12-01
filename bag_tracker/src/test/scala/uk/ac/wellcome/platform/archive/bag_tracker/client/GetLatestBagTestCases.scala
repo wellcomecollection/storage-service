@@ -49,7 +49,7 @@ trait GetLatestBagTestCases
           val future = client.getLatestBag(bagId = bagId)
 
           whenReady(future) {
-            _.right.value shouldBe manifests.last
+            _.value shouldBe manifests.last
           }
         }
       }
@@ -66,7 +66,7 @@ trait GetLatestBagTestCases
         withApi(initialManifests = Seq(manifest)) { _ =>
           withClient(trackerHost) { client =>
             whenReady(client.getLatestBag(bagId = manifest.id)) {
-              _.right.value shouldBe manifest
+              _.value shouldBe manifest
             }
           }
         }

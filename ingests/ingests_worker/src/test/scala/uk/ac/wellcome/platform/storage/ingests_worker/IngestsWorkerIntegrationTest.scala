@@ -82,7 +82,7 @@ class IngestsWorkerIntegrationTest
 
                   //updates the ingest tracker
                   val storedIngest =
-                    ingestsTracker.get(ingest.id).right.value.identifiedT
+                    ingestsTracker.get(ingest.id).value.identifiedT
                   storedIngest.status shouldBe Succeeded
 
                   // records the events in the ingest tracker

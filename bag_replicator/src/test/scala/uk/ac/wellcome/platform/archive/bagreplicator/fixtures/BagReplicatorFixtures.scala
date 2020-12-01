@@ -132,12 +132,12 @@ trait BagReplicatorFixtures
     srcPrefix: S3ObjectLocationPrefix,
     dstPrefix: S3ObjectLocationPrefix
   ): Assertion = {
-    val sourceItems = listing.list(srcPrefix).right.value
+    val sourceItems = listing.list(srcPrefix).value
     val sourceKeyEtags = sourceItems.map {
       _.getETag
     }
 
-    val destinationItems = listing.list(dstPrefix).right.value
+    val destinationItems = listing.list(dstPrefix).value
     val destinationKeyEtags = destinationItems.map {
       _.getETag
     }

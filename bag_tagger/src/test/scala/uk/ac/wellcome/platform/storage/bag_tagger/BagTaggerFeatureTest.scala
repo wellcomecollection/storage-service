@@ -56,7 +56,7 @@ class BagTaggerFeatureTest
           sendNotificationToSQS(queue, notification)
 
           eventually {
-            s3Tags.get(location).right.value shouldBe Identified(
+            s3Tags.get(location).value shouldBe Identified(
               location,
               Map(
                 "Content-SHA256" -> "4a5a41ebcf5e2c24c",

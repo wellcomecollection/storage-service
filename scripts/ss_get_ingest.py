@@ -18,9 +18,7 @@ and we don't want callback URLs visible.
 import json
 import sys
 
-from wellcome_storage_service import IngestNotFound
-
-from common import get_storage_client
+from wellcome_storage_service import IngestNotFound, RequestsOAuthStorageServiceClient
 
 
 def lookup_ingest(ingest_id):
@@ -28,10 +26,10 @@ def lookup_ingest(ingest_id):
 
     for name, host in api_variants.items():
         api_url = f"https://{host}.wellcomecollection.org/storage/v1"
-        client = get_storage_client(api_url)
+        client = RequestsOAuthStorageServiceClient.from_path(api_url=api_url)
 
         try:
-            return client.get_ingest(ingest_id)
+            return name, client.get_ingest(ingest_id)
         except IngestNotFound:
             pass
 

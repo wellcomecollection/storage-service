@@ -50,7 +50,7 @@ trait GetBagTestCases
           val future = client.getBag(bagId = bagId, version = BagVersion(4))
 
           whenReady(future) {
-            _.right.value shouldBe manifests(4)
+            _.value shouldBe manifests(4)
           }
         }
       }
@@ -69,7 +69,7 @@ trait GetBagTestCases
             whenReady(
               client.getBag(bagId = manifest.id, version = manifest.version)
             ) {
-              _.right.value shouldBe manifest
+              _.value shouldBe manifest
             }
           }
         }

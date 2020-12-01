@@ -1,7 +1,7 @@
 import sbt._
 
 object WellcomeDependencies {
-  lazy val defaultVersion = "24.4.0"
+  lazy val defaultVersion = "24.6.0"
 
   lazy val versions = new {
     val fixtures = defaultVersion
@@ -69,10 +69,10 @@ object ExternalDependencies {
     val apacheLogging = "2.8.2"
     val commonsCompress = "1.5"
     val commonsIO = "2.6"
-    val elastic4s = "7.6.1"
+    val elastic4s = "7.9.2"
     val mockito = "1.9.5"
     val aws = "1.11.504"
-    val scalatest = "3.1.1"
+    val scalatest = "3.2.3"
     val wiremock = "2.18.0"
 
     // This should match the version of circe used in scala-json; see
@@ -170,7 +170,6 @@ object StorageDependencies {
     ExternalDependencies.commonsIODependencies ++
       ExternalDependencies.akkaDependencies ++
       ExternalDependencies.cloudwatchMetricsDependencies ++
-      ExternalDependencies.mockitoDependencies ++
       ExternalDependencies.scalatestDependencies ++
       WellcomeDependencies.jsonLibrary ++
       WellcomeDependencies.messagingLibrary ++
