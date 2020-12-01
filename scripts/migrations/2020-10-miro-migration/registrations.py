@@ -7,7 +7,18 @@ import json
 
 import elasticsearch
 from collections import defaultdict
-from elastic_helpers import get_local_elastic_client
+from elastic_helpers import (
+    get_local_elastic_client,
+    get_elastic_client,
+)
+
+FILES_REMOTE_INDEX = 'storage_files'
+FILES_LOCAL_INDEX = 'files'
+MIRO_FILES_QUERY = {"query": {"bool":
+    {"must": [
+        {"term": {"space": "miro"}}
+    ]}
+}}
 
 
 def get_cleared_miro_ids(sourcedata_index):
@@ -19,24 +30,16 @@ def get_cleared_miro_ids(sourcedata_index):
         ]}
     }}
 
-    cleared_sourcedata = local_elastic_client.count(
-        body=query_body, index=sourcedata_index
-    )["count"]
-
-    print(f"cleared_sourcedata count: {cleared_sourcedata}")
-
     scan = elasticsearch.helpers.scan(
         local_elastic_client, query=query_body, index=sourcedata_index
     )
 
     ids = []
-
     for result in scan:
         ids.append(result["_source"]["id"])
 
-    print("got cleared ids")
-
     return set(ids)
+
 
 def gather_registrations(decisions_index, cleared_miro_ids):
     local_elastic_client = get_local_elastic_client()
@@ -83,10 +86,22 @@ def gather_registrations(decisions_index, cleared_miro_ids):
         json.dump(list(missing_miro_ids), outfile)
 
     ambig_decisions = {}
+    clear_decisions = {}
 
     for imi in interesting_miro_ids:
         if len(acc_miro_ids[imi]) > 1:
             ambig_decisions[imi] = acc_miro_ids[imi]
+        else:
+            clear_decisions[imi] = acc_miro_ids[imi]
+
+    print(f"found clear_decisions: {len(clear_decisions)}")
+
+    for k,v in clear_decisions.items():
+        item = v[0]
+        found_key = item['s3_key']
+        expected_key = found_key.replace('miro/Wellcome_Images_Archive', 'data/objects').replace(" ","_")
+        print(expected_key, item['miro_id'])
+        assert True is False
 
     print(f"found ambig_decisions: {len(ambig_decisions)}")
 
@@ -118,7 +133,6 @@ def gather_registrations(decisions_index, cleared_miro_ids):
             extensions = set([img['s3_key'].split('.')[-1].lower() for img in v])
             print(extensions)
             more_than_two = more_than_two + 1
-
 
     print(f"{more_than_two} ambig_decisions are more_than_two")
 

@@ -102,6 +102,36 @@ def index_iterator(
     ), f"Unexpected index success count: {successes}"
 
 
+def mirror_index_locally(remote_client, remote_index_name, local_index_name, overwrite=False):
+    """
+    Create a local mirror of an index index.
+    """
+    local_elastic_client = get_local_elastic_client()
+
+    local_count = get_document_count(local_elastic_client, index=local_index_name)
+
+    remote_count = get_document_count(
+        remote_client, index=remote_index_name
+    )
+
+    if local_count == remote_count and not overwrite:
+        click.echo(f"{remote_index_name} is synced with {local_index_name}, nothing to do")
+        return
+    else:
+        click.echo(f"{remote_index_name} is NOT synced with {local_index_name}")
+
+    click.echo(
+        f"Downloading {remote_index_name} to {local_index_name}"
+    )
+
+    elasticsearch.helpers.reindex(
+        client=remote_client,
+        source_index=remote_index_name,
+        target_index=local_index_name,
+        target_client=local_elastic_client,
+    )
+
+
 def save_index_to_disk(elastic_client, index_name, overwrite):
     """
     Saves an index to disk

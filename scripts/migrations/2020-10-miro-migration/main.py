@@ -33,12 +33,18 @@ from sourcedata import (
     gather_sourcedata,
     count_sourcedata
 )
+from mirofiles import (
+    count_mirofiles,
+    gather_mirofiles
+)
+
 from uploads import check_package_upload, copy_transfer_package
 
 DECISIONS_INDEX = "decisions"
 CHUNKS_INDEX = "chunks"
 SOURCEDATA_INDEX = "sourcedata"
 TRANSFERS_INDEX = "transfers"
+FILES_INDEX = "files"
 
 @click.command()
 @click.option("--overwrite", "-o", is_flag=True)
@@ -55,6 +61,26 @@ def create_sourcedata_index(ctx, overwrite):
         elastic_client=local_elastic_client,
         index_name=SOURCEDATA_INDEX,
         expected_doc_count=expected_sourcedata_count,
+        documents=_documents(),
+        overwrite=overwrite,
+    )
+
+
+@click.command()
+@click.option("--overwrite", "-o", is_flag=True)
+@click.pass_context
+def create_files_index(ctx, overwrite):
+    local_elastic_client = get_local_elastic_client()
+    expected_mirofiles_count = count_mirofiles()
+
+    def _documents():
+        for mirofiles in gather_mirofiles():
+            yield mirofiles['_id'], mirofiles['_source']
+
+    index_iterator(
+        elastic_client=local_elastic_client,
+        index_name=FILES_INDEX,
+        expected_doc_count=expected_mirofiles_count,
         documents=_documents(),
         overwrite=overwrite,
     )
@@ -197,6 +223,8 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, limit, overwrite):
     local_elastic_client = get_local_elastic_client()
     local_elastic_client.indices.create(index=TRANSFERS_INDEX, ignore=400)
 
+    missing_bags = []
+
     if chunk_id:
         chunk = get_chunk(CHUNKS_INDEX, chunk_id)
 
@@ -243,9 +271,12 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, limit, overwrite):
             bag_internal_id = upload["storage_service"]["bag"]["info"]["internalSenderIdentifier"]
             version = upload["storage_service"]["bag"]["version"]
             click.echo(f"Found bag {bag_id}, (v{version}) with internal id: {bag_internal_id}")
-
+        else:
+            missing_bags.append(chunk_id)
         click.echo("")
 
+    click.echo(f"Found {limit - len(missing_bags)} bags from {limit} packages.")
+    click.echo(f"No bags found for: {missing_bags}")
 
 @click.group()
 @click.pass_context
@@ -254,6 +285,7 @@ def cli(ctx):
 
 
 cli.add_command(create_chunks_index)
+cli.add_command(create_files_index)
 cli.add_command(create_sourcedata_index)
 cli.add_command(create_decisions_index)
 cli.add_command(transfer_package_chunks)

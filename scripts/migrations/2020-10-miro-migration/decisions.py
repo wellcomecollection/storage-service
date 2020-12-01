@@ -20,6 +20,7 @@ from elastic_helpers import (
     get_local_elastic_client,
     get_elastic_client,
     get_document_count,
+    mirror_index_locally,
 )
 from miro_ids import (
     parse_miro_id,
@@ -65,32 +66,16 @@ def mirror_miro_inventory_locally():
     """
     Create a local mirror of the miro_inventory index in the reporting cluster.
     """
-    local_elastic_client = get_local_elastic_client()
+
     reporting_elastic_client = get_elastic_client(
         role_arn=STORAGE_ROLE_ARN, elastic_secret_id=ELASTIC_SECRET_ID
     )
 
-    local_count = get_document_count(local_elastic_client, index=LOCAL_INVENTORY_INDEX)
-
-    remote_count = get_document_count(
-        reporting_elastic_client, index=REMOTE_INVENTORY_INDEX
-    )
-
-    if local_count == remote_count:
-        click.echo("miro_inventory index has been mirrored locally, nothing to do")
-        return
-    else:
-        click.echo("miro_inventory index has not been mirrored locally")
-
-    click.echo(
-        "Downloading the complete miro_inventory index from the reporting cluster"
-    )
-
-    elasticsearch.helpers.reindex(
-        client=reporting_elastic_client,
-        source_index=REMOTE_INVENTORY_INDEX,
-        target_index=LOCAL_INVENTORY_INDEX,
-        target_client=local_elastic_client,
+    mirror_index_locally(
+        remote_client=reporting_elastic_client,
+        remote_index_name=REMOTE_INVENTORY_INDEX,
+        local_index_name=LOCAL_INVENTORY_INDEX,
+        overwrite=False
     )
 
 
