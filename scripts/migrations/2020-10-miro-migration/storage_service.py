@@ -9,7 +9,6 @@ REPORTING_BAGS_INDEX = "storage_bags"
 REPORTING_INGESTS_INDEX = "storage_ingests"
 
 
-
 def get_ingest(space, external_identifier, version):
     elastic_client = get_elastic_client(
         role_arn=STORAGE_ROLE_ARN, elastic_secret_id=ELASTIC_SECRET_ID
@@ -21,10 +20,14 @@ def get_ingest(space, external_identifier, version):
                 "must": [
                     {"term": {"space.id": {"value": space}}},
                     {"term": {"bag.info.version": {"value": version}}},
-                    {"term": {
-                        "bag.info.externalIdentifier": {"value": external_identifier}
-                    }}
-                ],
+                    {
+                        "term": {
+                            "bag.info.externalIdentifier": {
+                                "value": external_identifier
+                            }
+                        }
+                    },
+                ]
             }
         }
     }
@@ -49,10 +52,12 @@ def get_bag(space, external_identifier):
             "bool": {
                 "must": [
                     {"term": {"space": {"value": space}}},
-                    {"term": {
-                        "info.externalIdentifier": {"value": external_identifier}
-                    }}
-                ],
+                    {
+                        "term": {
+                            "info.externalIdentifier": {"value": external_identifier}
+                        }
+                    },
+                ]
             }
         },
         "size": 50,

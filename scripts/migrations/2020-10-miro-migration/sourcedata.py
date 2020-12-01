@@ -22,15 +22,11 @@ def count_sourcedata():
 
 def gather_sourcedata():
     items = gather_table_items(
-        role_arn=PLATFORM_ROLE_ARN,
-        table_name=MIRO_SOURCEDATA_TABLE
+        role_arn=PLATFORM_ROLE_ARN, table_name=MIRO_SOURCEDATA_TABLE
     )
 
     for item in items:
-        yield MiroSourceItem(
-            id=item['id'],
-            cleared=item['isClearedForCatalogueAPI']
-        )
+        yield MiroSourceItem(id=item["id"], cleared=item["isClearedForCatalogueAPI"])
 
 
 if __name__ == "__main__":

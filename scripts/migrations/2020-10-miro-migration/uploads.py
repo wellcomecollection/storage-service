@@ -32,15 +32,10 @@ def check_storage_service(chunk):
     external_identifier = chunk.chunk_id()
 
     ingest = get_ingest(
-        space=STORAGE_SPACE,
-        external_identifier=external_identifier,
-        version="v1"
+        space=STORAGE_SPACE, external_identifier=external_identifier, version="v1"
     )
 
-    bag = get_bag(
-        space=STORAGE_SPACE,
-        external_identifier=external_identifier
-    )
+    bag = get_bag(space=STORAGE_SPACE, external_identifier=external_identifier)
 
     return {"ingest": ingest, "bag": bag}
 
@@ -50,7 +45,7 @@ def copy_transfer_package(chunk):
     s3_location = chunk.transfer_package.s3_location
 
     s3_client.copy(
-        ExtraArgs={'ACL': 'bucket-owner-full-control'},
+        ExtraArgs={"ACL": "bucket-owner-full-control"},
         CopySource={"Bucket": s3_location["s3_bucket"], "Key": s3_location["s3_key"]},
         Bucket=S3_ARCHIVEMATICA_BUCKET,
         Key=s3_location["s3_key"],
