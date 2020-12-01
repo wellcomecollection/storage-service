@@ -75,7 +75,7 @@ def mirror_miro_inventory_locally():
         remote_client=reporting_elastic_client,
         remote_index_name=REMOTE_INVENTORY_INDEX,
         local_index_name=LOCAL_INVENTORY_INDEX,
-        overwrite=False
+        overwrite=False,
     )
 
 

@@ -7,10 +7,7 @@ into the storage service.
 import attr
 import click
 
-from decisions import (
-    get_decisions,
-    count_decisions
-)
+from decisions import get_decisions, count_decisions
 from chunks import gather_chunks
 from elastic_helpers import (
     get_elastic_client,
@@ -29,14 +26,8 @@ from chunk_transfer import (
     upload_chunk_package,
     update_chunk_record,
 )
-from sourcedata import (
-    gather_sourcedata,
-    count_sourcedata
-)
-from mirofiles import (
-    count_mirofiles,
-    gather_mirofiles
-)
+from sourcedata import gather_sourcedata, count_sourcedata
+from mirofiles import count_mirofiles, gather_mirofiles
 
 from uploads import check_package_upload, copy_transfer_package
 
@@ -45,6 +36,7 @@ CHUNKS_INDEX = "chunks"
 SOURCEDATA_INDEX = "sourcedata"
 TRANSFERS_INDEX = "transfers"
 FILES_INDEX = "files"
+
 
 @click.command()
 @click.option("--overwrite", "-o", is_flag=True)
@@ -75,7 +67,7 @@ def create_files_index(ctx, overwrite):
 
     def _documents():
         for mirofiles in gather_mirofiles():
-            yield mirofiles['_id'], mirofiles['_source']
+            yield mirofiles["_id"], mirofiles["_source"]
 
     index_iterator(
         elastic_client=local_elastic_client,
@@ -193,7 +185,6 @@ def _upload_package(chunk, overwrite, skip_upload):
     upload = check_package_upload(chunk)
     chunk_id = chunk.chunk_id()
 
-
     if upload is not None:
         if (upload["upload_transfer"] is None or overwrite) and not skip_upload:
             new_upload_transfer = copy_transfer_package(chunk)
@@ -201,9 +192,7 @@ def _upload_package(chunk, overwrite, skip_upload):
             s3_bucket = new_upload_transfer["s3_bucket"]
             s3_key = new_upload_transfer["s3_key"]
 
-            click.echo(
-                f"Not found. Copying '{chunk_id}' to s3://{s3_bucket}/{s3_key}"
-            )
+            click.echo(f"Not found. Copying '{chunk_id}' to s3://{s3_bucket}/{s3_key}")
         else:
             s3_bucket = upload["upload_transfer"]["s3_bucket"]
             s3_key = upload["upload_transfer"]["s3_key"]
@@ -241,9 +230,7 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, limit, overwrite):
         click.echo(f"Looking at '{chunk_id}':")
 
         upload = get_document_by_id(
-            elastic_client=local_elastic_client,
-            index_name=TRANSFERS_INDEX,
-            id=chunk_id
+            elastic_client=local_elastic_client, index_name=TRANSFERS_INDEX, id=chunk_id
         )
 
         has_ingest = False
@@ -255,11 +242,7 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, limit, overwrite):
         if upload is None or not has_bag:
             upload = _upload_package(chunk, overwrite, skip_upload)
 
-            local_elastic_client.index(
-                index=TRANSFERS_INDEX,
-                body=upload,
-                id=chunk_id
-            )
+            local_elastic_client.index(index=TRANSFERS_INDEX, body=upload, id=chunk_id)
 
         if has_ingest:
             ingest_id = upload["storage_service"]["ingest"]["id"]
@@ -268,15 +251,20 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, limit, overwrite):
 
         if has_bag:
             bag_id = upload["storage_service"]["bag"]["id"]
-            bag_internal_id = upload["storage_service"]["bag"]["info"]["internalSenderIdentifier"]
+            bag_internal_id = upload["storage_service"]["bag"]["info"][
+                "internalSenderIdentifier"
+            ]
             version = upload["storage_service"]["bag"]["version"]
-            click.echo(f"Found bag {bag_id}, (v{version}) with internal id: {bag_internal_id}")
+            click.echo(
+                f"Found bag {bag_id}, (v{version}) with internal id: {bag_internal_id}"
+            )
         else:
             missing_bags.append(chunk_id)
         click.echo("")
 
     click.echo(f"Found {limit - len(missing_bags)} bags from {limit} packages.")
     click.echo(f"No bags found for: {missing_bags}")
+
 
 @click.group()
 @click.pass_context
