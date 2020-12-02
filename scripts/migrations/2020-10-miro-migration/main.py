@@ -210,7 +210,10 @@ def _upload_package(chunk, overwrite, skip_upload):
 @click.pass_context
 def upload_transfer_packages(ctx, skip_upload, chunk_id, limit, overwrite):
     local_elastic_client = get_local_elastic_client()
-    local_elastic_client.indices.create(index=TRANSFERS_INDEX, ignore=400)
+    local_elastic_client.indices.create(
+        index=TRANSFERS_INDEX,
+        ignore=400
+    )
 
     missing_bags = []
 
@@ -230,7 +233,9 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, limit, overwrite):
         click.echo(f"Looking at '{chunk_id}':")
 
         upload = get_document_by_id(
-            elastic_client=local_elastic_client, index_name=TRANSFERS_INDEX, id=chunk_id
+            elastic_client=local_elastic_client,
+            index_name=TRANSFERS_INDEX,
+            id=chunk_id
         )
 
         has_ingest = False
@@ -244,10 +249,21 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, limit, overwrite):
 
             local_elastic_client.index(index=TRANSFERS_INDEX, body=upload, id=chunk_id)
 
+            has_ingest = upload["storage_service"]["ingest"] is not None
+            has_bag = upload["storage_service"]["bag"] is not None
+
         if has_ingest:
             ingest_id = upload["storage_service"]["ingest"]["id"]
             ingest_status = upload["storage_service"]["ingest"]["status"]["id"]
-            click.echo(f"Found ingest {ingest_id}, with status: {ingest_status}")
+            succeeded = ingest_status == "succeeded"
+            if succeeded:
+                ingest_color = 'green'
+            else:
+                ingest_color = 'yellow'
+            click.echo(click.style(
+                f"Found ingest {ingest_id}, with status: {ingest_status}",
+                fg=ingest_color
+            ))
 
         if has_bag:
             bag_id = upload["storage_service"]["bag"]["id"]
@@ -255,11 +271,16 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, limit, overwrite):
                 "internalSenderIdentifier"
             ]
             version = upload["storage_service"]["bag"]["version"]
-            click.echo(
-                f"Found bag {bag_id}, (v{version}) with internal id: {bag_internal_id}"
-            )
+            click.echo(click.style(
+                f"Found bag {bag_id}, (v{version}) with internal id: {bag_internal_id}",
+                fg="bright_green"
+            ))
         else:
             missing_bags.append(chunk_id)
+            click.echo(click.style(
+                f"No bag!",
+                fg="cyan"
+            ))
         click.echo("")
 
     click.echo(f"Found {limit - len(missing_bags)} bags from {limit} packages.")

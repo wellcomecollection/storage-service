@@ -7,11 +7,25 @@ import json
 
 import elasticsearch
 from collections import defaultdict
-from elastic_helpers import get_local_elastic_client, get_elastic_client
+from elastic_helpers import (
+    get_local_elastic_client,
+    get_elastic_client
+)
 
-FILES_REMOTE_INDEX = "storage_files"
-FILES_LOCAL_INDEX = "files"
-MIRO_FILES_QUERY = {"query": {"bool": {"must": [{"term": {"space": "miro"}}]}}}
+
+FILES_INDEX = "files"
+
+def stored_files():
+    local_elastic_client = get_local_elastic_client()
+    match_all_query = {
+        "query": {
+            "match_all": {}
+        }
+    }
+
+    return elasticsearch.helpers.scan(
+        local_elastic_client, query=match_all_query, index=FILES_INDEX
+    )
 
 
 def get_cleared_miro_ids(sourcedata_index):
@@ -30,7 +44,7 @@ def get_cleared_miro_ids(sourcedata_index):
     return set(ids)
 
 
-def gather_registrations(decisions_index, cleared_miro_ids):
+def _get_miro_ids_from_decisions(decisions_index):
     local_elastic_client = get_local_elastic_client()
 
     query_body = {
@@ -42,36 +56,36 @@ def gather_registrations(decisions_index, cleared_miro_ids):
         }
     }
 
-    filtered_decisions_count = local_elastic_client.count(
-        body=query_body, index=decisions_index
-    )["count"]
-
-    print(f"decision count: {filtered_decisions_count}")
-
     filtered_decisions = elasticsearch.helpers.scan(
         local_elastic_client, query=query_body, index=decisions_index
     )
 
     acc_miro_ids = defaultdict(list)
     miro_ids = []
+
     for result in filtered_decisions:
         miro_id = result["_source"]["miro_id"]
         acc_miro_ids[miro_id].append(result["_source"])
         miro_ids.append(result["_source"]["miro_id"])
 
-    miro_ids = set(miro_ids)
+    return set(miro_ids), acc_miro_ids
 
-    print(f"unique miro_ids in decisions: {len(miro_ids)}")
+
+def gather_registrations(decisions_index, cleared_miro_ids):
+    miro_ids, acc_miro_ids = _get_miro_ids_from_decisions(decisions_index)
+
+    print(f"Unique miro ids from decisions: {len(miro_ids)}")
+    print(f"Cleared miro ids from sourcedata: {len(cleared_miro_ids)}")
 
     interesting_miro_ids = miro_ids.intersection(cleared_miro_ids)
 
-    print(f"miro_ids.intersection(cleared_miro_ids): {len(interesting_miro_ids)}")
+    print(f"Cleared miro ids from decisions: {len(interesting_miro_ids)}")
 
+    # These may only be recoverable from derivatives
     missing_miro_ids = cleared_miro_ids - interesting_miro_ids
+    print(f"Missing miro ids not found in decisions: {len(missing_miro_ids)}")
 
-    print(f"missing miro_ids: {len(missing_miro_ids)}")
-
-    with open("missing_miro_ids.json", "w") as outfile:
+    with open("registration_clearup/missing_miro_ids.json", "w") as outfile:
         json.dump(list(missing_miro_ids), outfile)
 
     ambig_decisions = {}
@@ -83,63 +97,92 @@ def gather_registrations(decisions_index, cleared_miro_ids):
         else:
             clear_decisions[imi] = acc_miro_ids[imi]
 
-    print(f"found clear_decisions: {len(clear_decisions)}")
+    print(f"Found clear decisions: {len(clear_decisions)}")
+    print(f"Found ambiguous decisions: {len(ambig_decisions)}")
 
-    for k, v in clear_decisions.items():
-        item = v[0]
-        found_key = item["s3_key"]
+    with open("registration_clearup/ambiguous_decisions.json", "w") as outfile:
+        json.dump(ambig_decisions, outfile)
+
+    disambiguated_decisions = disambiguate_decisions(ambig_decisions)
+
+    print(f"Cleared up decisions: {len(ambig_decisions)}")
+
+    final_decisions = {}
+    for miro_id, decisions in clear_decisions.items():
+        final_decisions[miro_id] = decisions[0]
+    for miro_id, decision in disambiguated_decisions.items():
+        final_decisions[miro_id] = decision
+
+    print(f"Final decisions: {len(final_decisions)}")
+
+    gather_files_for_registration(final_decisions)
+
+
+def gather_files_for_registration(clear_decisions):
+    clear_decisions_lookup = {}
+    for miro_id, decision in clear_decisions.items():
+        found_key = decision["s3_key"]
+
         expected_key = found_key.replace(
             "miro/Wellcome_Images_Archive", "data/objects"
         ).replace(" ", "_")
-        print(expected_key, item["miro_id"])
-        assert True is False
 
-    print(f"found ambig_decisions: {len(ambig_decisions)}")
+        clear_decisions_lookup[expected_key] = decision["miro_id"]
 
-    byte_identical = 0
-    for k, v in ambig_decisions.items():
-        if len(set([poss_img["s3_size"] for poss_img in v])) == 1:
-            byte_identical = byte_identical + 1
+    files_for_registration = {}
+    for stored_file_result in stored_files():
+        stored_file_name = stored_file_result['_source']['name']
+        if stored_file_name in clear_decisions_lookup:
+            files_for_registration[clear_decisions_lookup[stored_file_name]] = stored_file_result['_id']
 
-    print(f"{byte_identical} ambig_decisions are byte identical")
+    print(f"Found files for registration: {len(files_for_registration)}")
 
-    tif_jp2_pair = 0
-    dt_tif_pair = 0
-    jp2_pair = 0
+    with open("registration_clearup/files_for_registration.json", "w") as outfile:
+        json.dump(files_for_registration, outfile)
 
-    more_than_two = 0
 
-    for k, v in ambig_decisions.items():
-        if len(v) == 2:
-            extensions = set([img["s3_key"].split(".")[-1].lower() for img in v])
-            if extensions == {"tif", "dt"}:
-                dt_tif_pair = dt_tif_pair + 1
-            elif extensions == {"jp2"}:
-                jp2_pair = jp2_pair + 1
-            elif extensions == {"tif", "jp2"}:
-                tif_jp2_pair = tif_jp2_pair + 1
+def _pick_largest(decisions):
+    largest_decision = None
+    largest_size = 0
+
+    for decision in decisions:
+        if decision["s3_size"] > largest_size:
+            largest_size = decision["s3_size"]
+            largest_decision = decision
+
+    return largest_decision
+
+
+def disambiguate_decisions(ambig_decisions):
+    clear_decisions = {}
+
+    def _get_ext_from_key(decision):
+        return decision["s3_key"].split(".")[-1].lower()
+
+    for miro_id, decisions in ambig_decisions.items():
+        extensions_decisions = defaultdict(list)
+        num_decisions = len(decisions)
+
+        if num_decisions < 2:
+            raise Exception(f"Found unexpected number of decisions (<2) for {miro_id}")
+        elif num_decisions >= 2 or num_decisions <= 3:
+            for decision in decisions:
+                extensions_decisions[_get_ext_from_key(decision)].append(decision)
+
+            extensions = set(extensions_decisions.keys())
+
+            if "jp2" in extensions:
+                clear_decisions[miro_id] = _pick_largest(extensions_decisions['jp2'])
+            elif "tif" in extensions:
+                clear_decisions[miro_id] = _pick_largest(extensions_decisions['tif'])
             else:
-                raise Exception(f"Found unexpected extensions {extensions}")
-        else:
-            extensions = set([img["s3_key"].split(".")[-1].lower() for img in v])
-            print(extensions)
-            more_than_two = more_than_two + 1
+                raise Exception(f"No usable extensions found for {miro_id}: {extensions}")
 
-    print(f"{more_than_two} ambig_decisions are more_than_two")
+        # Check for unhandled
+        elif len(decisions) > 3:
+            raise Exception(f"Found unexpected number of decisions (>3) for {miro_id}")
 
-    print(f"{dt_tif_pair} ambig_decisions are dt_tif_pairs")
-    print(f"{jp2_pair} ambig_decisions are jp2_pairs")
-    print(f"{tif_jp2_pair} ambig_decisions are tif_jp2_pair")
-
-    with open("ambig_decisions.json", "w") as outfile:
-        json.dump(ambig_decisions, outfile)
-
-    unique_interesting_ids = interesting_miro_ids - set(ambig_decisions.keys())
-
-    print(f"found unique_interesting_ids: {len(unique_interesting_ids)}")
-
-    with open("unique_interesting_ids.json", "w") as outfile:
-        json.dump(list(unique_interesting_ids), outfile)
+    return clear_decisions
 
 
 if __name__ == "__main__":

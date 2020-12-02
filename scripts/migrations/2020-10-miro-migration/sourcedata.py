@@ -27,15 +27,3 @@ def gather_sourcedata():
 
     for item in items:
         yield MiroSourceItem(id=item["id"], cleared=item["isClearedForCatalogueAPI"])
-
-
-if __name__ == "__main__":
-    record_count = 0
-    for thing in gather_sourcedata():
-        record_count = record_count + 1
-
-    print(record_count)
-
-# iterate over miro IDs, look them up in decisions, find that file in storage service
-# would it help to have an index of storage service file and miro ids?
-# confirm that we are using jp2s?
