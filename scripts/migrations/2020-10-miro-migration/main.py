@@ -28,6 +28,7 @@ from chunk_transfer import (
 )
 from sourcedata import gather_sourcedata, count_sourcedata
 from mirofiles import count_mirofiles, gather_mirofiles
+from registrations import gather_registrations
 
 from uploads import check_package_upload, copy_transfer_package
 
@@ -35,6 +36,7 @@ DECISIONS_INDEX = "decisions"
 CHUNKS_INDEX = "chunks"
 SOURCEDATA_INDEX = "sourcedata"
 TRANSFERS_INDEX = "transfers"
+REGISTRATIONS_INDEX = "registrations"
 FILES_INDEX = "files"
 
 
@@ -114,6 +116,32 @@ def create_chunks_index(ctx, overwrite):
         elastic_client=local_elastic_client,
         index_name=CHUNKS_INDEX,
         expected_doc_count=expected_chunk_count,
+        documents=_documents(),
+        overwrite=overwrite,
+    )
+
+@click.command()
+@click.option("--overwrite", "-o", is_flag=True)
+@click.pass_context
+def create_registrations_index(ctx, overwrite):
+    local_elastic_client = get_local_elastic_client()
+    registrations = gather_registrations(
+        sourcedata_index=SOURCEDATA_INDEX,
+        decisions_index=DECISIONS_INDEX
+    )
+    expected_registrations_count = len(registrations)
+
+    def _documents():
+        for file_id, miro_id in registrations.items():
+            yield miro_id, {
+                'file_id': file_id,
+                'miro_id': miro_id
+            }
+
+    index_iterator(
+        elastic_client=local_elastic_client,
+        index_name=REGISTRATIONS_INDEX,
+        expected_doc_count=expected_registrations_count,
         documents=_documents(),
         overwrite=overwrite,
     )
@@ -297,6 +325,7 @@ cli.add_command(create_chunks_index)
 cli.add_command(create_files_index)
 cli.add_command(create_sourcedata_index)
 cli.add_command(create_decisions_index)
+cli.add_command(create_registrations_index)
 cli.add_command(transfer_package_chunks)
 cli.add_command(upload_transfer_packages)
 cli.add_command(save_index)
