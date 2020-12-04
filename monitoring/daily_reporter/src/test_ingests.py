@@ -62,6 +62,10 @@ from ingests import get_dev_status
             },
             "failed (user error)",
         ),
+        (
+            {"status": "failed", "events": [{"description": "Unpacking failed"}],},
+            "failed (unknown reason)",
+        ),
     ],
 )
 def test_get_dev_status(ingest, expected_dev_status):
