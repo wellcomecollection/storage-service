@@ -21,7 +21,7 @@ import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
-import uk.ac.wellcome.storage.store.dynamo.DynamoSingleVersionStore
+import uk.ac.wellcome.storage.store.dynamo.DynamoMultipleVersionStore
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -300,7 +300,7 @@ class ReplicaAggregatorWorkerTest
 
     withLocalDynamoDbTable { table =>
       val versionedStore =
-        new DynamoSingleVersionStore[ReplicaPath, AggregatorInternalRecord](
+        new DynamoMultipleVersionStore[ReplicaPath, AggregatorInternalRecord](
           createDynamoConfigWith(table)
         )
 
