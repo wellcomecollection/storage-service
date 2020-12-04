@@ -34,9 +34,9 @@ def get_dev_status(ingest):
             reason.startswith(
                 (
                     "Verification (pre-replicating to archive storage) failed",
-                    "Unpacking failed",
-                    # If we can't assign a version for an unknown reason, we
-                    # should treat that as a storage service error.
+                    # If we can't unpack a bag or assign a version for an
+                    # unknown reason, we should treat that as a storage service error.
+                    "Unpacking failed -",
                     "Assigning bag version failed -",
                 )
             )
