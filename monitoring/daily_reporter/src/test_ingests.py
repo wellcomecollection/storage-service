@@ -63,7 +63,7 @@ from ingests import get_dev_status
             "failed (user error)",
         ),
         (
-            {"status": "failed", "events": [{"description": "Unpacking failed"}],},
+            {"status": "failed", "events": [{"description": "Unpacking failed"}]},
             "failed (unknown reason)",
         ),
     ],
