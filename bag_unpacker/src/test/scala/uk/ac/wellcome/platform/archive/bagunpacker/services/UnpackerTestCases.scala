@@ -7,7 +7,10 @@ import org.scalatest.{Assertion, TryValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.CompressFixture
+import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
+  CompressFixture,
+  LocalResources
+}
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
@@ -15,10 +18,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
-import uk.ac.wellcome.storage.streaming.{
-  InputStreamWithLength,
-  StreamAssertions
-}
+import uk.ac.wellcome.storage.streaming.StreamAssertions
 import uk.ac.wellcome.storage.{Location, Prefix}
 
 trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
@@ -28,7 +28,8 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
     with Matchers
     with TryValues
     with CompressFixture[BagLocation, Namespace]
-    with StreamAssertions {
+    with StreamAssertions
+    with LocalResources {
   def withUnpacker[R](
     testWith: TestWith[Unpacker[BagLocation, BagLocation, BagPrefix], R]
   )(
@@ -111,8 +112,7 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
     // This is a stripped down copy of a bag which got unpacked into a prefix
     // containing ./ in the S3 key.
     // See ingest bd5cef81-ea38-4542-b0af-871d70f8d6bf
-    val resource = getClass.getResourceAsStream("/dotted_archive.tar.gz")
-    val inputStream = new InputStreamWithLength(resource, length = 4458)
+    val inputStream = getResource("/dotted_archive.tar.gz")
 
     withNamespace { srcNamespace =>
       withNamespace { dstNamespace =>
@@ -199,6 +199,58 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           ingestResult.asInstanceOf[IngestFailed[UnpackSummary[_, _]]]
         ingestFailed.maybeUserFacingMessage.get should startWith(
           s"Error trying to unpack the archive at"
+        )
+      }
+    }
+  }
+
+  /** The file for this test was created with the following bash script:
+    *
+    *     for i in 1 2 3
+    *     do
+    *       dd if=/dev/urandom bs=4096 count=1 > "$i.bin"
+    *     done
+    *
+    *     tar -cvf truncated.tar *.bin
+    *     gzip truncated.tar
+    *     python3 -c 'import os; os.truncate("truncated.tar.gz", 10000)'
+    *
+    * The sizes were chosen somewhat experimentally to get a bag that caused
+    * an EOF error in the Unarchiver midway through the archive.
+    *
+    * It was built to replicate an issue seen from a bag encountered in prod.
+    * This bag was created when Archivematica tried to upload a bag on a system
+    * that was running out of disk space.
+    * See: https://github.com/wellcomecollection/platform/issues/4911
+    *
+    */
+  it("fails if the archive has an EOF error") {
+    withNamespace { srcNamespace =>
+      withStreamStore { implicit streamStore =>
+        val srcLocation = createSrcLocationWith(namespace = srcNamespace)
+
+        val stream = getResource("/truncated.tar.gz")
+
+        streamStore.put(srcLocation)(stream) shouldBe a[Right[_, _]]
+
+        val result =
+          withUnpacker {
+            _.unpack(
+              ingestId = createIngestID,
+              srcLocation = srcLocation,
+              dstPrefix = createDstPrefix
+            )
+          }
+
+        val ingestResult = result.success.value
+        ingestResult shouldBe a[IngestFailed[_]]
+        ingestResult.summary.fileCount shouldBe 0
+        ingestResult.summary.bytesUnpacked shouldBe 0
+
+        val ingestFailed =
+          ingestResult.asInstanceOf[IngestFailed[UnpackSummary[_, _]]]
+        ingestFailed.maybeUserFacingMessage.get should startWith(
+          "Unexpected EOF while unpacking the archive"
         )
       }
     }

@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services
 
-import java.io.InputStream
+import java.io.{EOFException, InputStream}
 import java.time.Instant
 
 import grizzled.slf4j.Logging
@@ -102,6 +102,11 @@ trait Unpacker[
           s"Error trying to unpack the archive at $srcLocation - is it the correct format?"
         )
 
+      case UnpackerEOFError(_) =>
+        Some(
+          s"Unexpected EOF while unpacking the archive at $srcLocation - is it the correct format?"
+        )
+
       case _ => None
     }
 
@@ -145,6 +150,8 @@ trait Unpacker[
           case Success(result) => Right(result)
           case Failure(err: StorageError) =>
             Left(UnpackerStorageError(err))
+          case Failure(err: EOFException) =>
+            Left(UnpackerEOFError(err))
           case Failure(err: Throwable) =>
             Left(UnpackerUnexpectedError(err))
         }
