@@ -18,10 +18,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
 }
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
-import uk.ac.wellcome.storage.streaming.{
-  InputStreamWithLength,
-  StreamAssertions
-}
+import uk.ac.wellcome.storage.streaming.StreamAssertions
 import uk.ac.wellcome.storage.{Location, Prefix}
 
 trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
@@ -115,8 +112,7 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
     // This is a stripped down copy of a bag which got unpacked into a prefix
     // containing ./ in the S3 key.
     // See ingest bd5cef81-ea38-4542-b0af-871d70f8d6bf
-    val resource = getClass.getResourceAsStream("/dotted_archive.tar.gz")
-    val inputStream = new InputStreamWithLength(resource, length = 4458)
+    val inputStream = getResource("/dotted_archive.tar.gz")
 
     withNamespace { srcNamespace =>
       withNamespace { dstNamespace =>
