@@ -19,7 +19,6 @@ case class UnpackerUnarchiverError(unarchiverError: UnarchiverError)
   override val e: Throwable = unarchiverError.e
 }
 
-case class UnpackerEOFError(e: EOFException)
-    extends UnpackerError
+case class UnpackerEOFError(e: EOFException) extends UnpackerError
 
 case class UnpackerUnexpectedError(e: Throwable) extends UnpackerError
