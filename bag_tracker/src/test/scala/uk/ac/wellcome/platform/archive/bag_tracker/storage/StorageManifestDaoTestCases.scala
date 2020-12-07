@@ -10,7 +10,6 @@ import uk.ac.wellcome.platform.archive.common.generators.{
   StorageManifestGenerators
 }
 import uk.ac.wellcome.storage.{
-  NoMaximaValueError,
   NoVersionExistsError,
   VersionAlreadyExistsError,
   WriteError
