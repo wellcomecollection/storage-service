@@ -9,7 +9,7 @@ import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.store.TypedStore
-import uk.ac.wellcome.storage.store.s3.{S3StreamStore, S3TypedStore}
+import uk.ac.wellcome.storage.store.s3.S3TypedStore
 
 class S3BagReaderTest
     extends BagReaderTestCases[
@@ -22,11 +22,8 @@ class S3BagReaderTest
 
   override def withTypedStore[R](
     testWith: TestWith[TypedStore[S3ObjectLocation, String], R]
-  )(implicit context: Unit): R = {
-    implicit val s3StreamStore: S3StreamStore = new S3StreamStore()
-
-    testWith(new S3TypedStore[String]())
-  }
+  )(implicit context: Unit): R =
+    testWith(S3TypedStore[String])
 
   override def withNamespace[R](testWith: TestWith[Bucket, R]): R =
     withLocalS3Bucket { bucket =>
