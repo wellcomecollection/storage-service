@@ -162,8 +162,9 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           )
         }
 
-      assertIsError(result) { case (_, maybeUserFacingMessage) =>
-        maybeUserFacingMessage.get should startWith("There is no archive at")
+      assertIsError(result) {
+        case (_, maybeUserFacingMessage) =>
+          maybeUserFacingMessage.get should startWith("There is no archive at")
       }
     }
   }
@@ -186,8 +187,11 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
             )
           }
 
-        assertIsError(result) { case (_, maybeUserFacingMessage) =>
-          maybeUserFacingMessage.get should startWith("Error trying to unpack the archive at")
+        assertIsError(result) {
+          case (_, maybeUserFacingMessage) =>
+            maybeUserFacingMessage.get should startWith(
+              "Error trying to unpack the archive at"
+            )
         }
       }
     }
@@ -231,9 +235,12 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
             )
           }
 
-        assertIsError(result) { case (err, maybeUserFacingMessage) =>
-          err shouldBe a[EOFException]
-          maybeUserFacingMessage.get should startWith("Unexpected EOF while unpacking the archive")
+        assertIsError(result) {
+          case (err, maybeUserFacingMessage) =>
+            err shouldBe a[EOFException]
+            maybeUserFacingMessage.get should startWith(
+              "Unexpected EOF while unpacking the archive"
+            )
         }
       }
     }

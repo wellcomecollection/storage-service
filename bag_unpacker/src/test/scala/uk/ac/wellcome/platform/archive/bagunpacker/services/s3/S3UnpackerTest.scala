@@ -75,9 +75,12 @@ class S3UnpackerTest
               dstPrefix = dstPrefix
             )
 
-          assertIsError(result) { case (exc, _) =>
-            exc shouldBe a[AmazonS3Exception]
-            exc.getMessage should startWith("The specified bucket does not exist")
+          assertIsError(result) {
+            case (exc, _) =>
+              exc shouldBe a[AmazonS3Exception]
+              exc.getMessage should startWith(
+                "The specified bucket does not exist"
+              )
           }
         }
       }
@@ -114,8 +117,9 @@ class S3UnpackerTest
                 dstPrefix = dstPrefix
               )
 
-            assertIsError(result) { case (_, maybeMessage) =>
-              maybeMessage.get shouldBe s"Error reading $archiveLocation: either it doesn't exist, or the unpacker doesn't have permission to read it"
+            assertIsError(result) {
+              case (_, maybeMessage) =>
+                maybeMessage.get shouldBe s"Error reading $archiveLocation: either it doesn't exist, or the unpacker doesn't have permission to read it"
             }
           }
         }
@@ -134,8 +138,9 @@ class S3UnpackerTest
             dstPrefix = dstPrefix
           )
 
-        assertIsError(result) { case (_, maybeMessage) =>
-          maybeMessage.get shouldBe s"There is no S3 bucket ${srcLocation.bucket}"
+        assertIsError(result) {
+          case (_, maybeMessage) =>
+            maybeMessage.get shouldBe s"There is no S3 bucket ${srcLocation.bucket}"
         }
       }
     }
@@ -154,8 +159,9 @@ class S3UnpackerTest
               dstPrefix = dstPrefix
             )
 
-          assertIsError(result) { case (_, maybeMessage) =>
-            maybeMessage.get shouldBe s"There is no archive at $srcLocation"
+          assertIsError(result) {
+            case (_, maybeMessage) =>
+              maybeMessage.get shouldBe s"There is no archive at $srcLocation"
           }
         }
       }
@@ -173,8 +179,9 @@ class S3UnpackerTest
             dstPrefix = dstPrefix
           )
 
-        assertIsError(result) { case (_, maybeMessage) =>
-          maybeMessage.get shouldBe s"${srcLocation.bucket} is not a valid S3 bucket name"
+        assertIsError(result) {
+          case (_, maybeMessage) =>
+            maybeMessage.get shouldBe s"${srcLocation.bucket} is not a valid S3 bucket name"
         }
       }
     }
