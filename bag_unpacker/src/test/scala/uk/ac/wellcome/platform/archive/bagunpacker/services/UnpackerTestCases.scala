@@ -249,15 +249,15 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
   }
 
   /** The file for this test was created with the following bash script:
-   *
-   *     dd if=/dev/urandom bs=1024 count=1 > 1.bin
-   *     tar -cvf repetitive.tar 1.bin 1.bin
-   *     gzip repetitive.tar
-   *
-   * I discovered this failure mode accidentally while experimenting with
-   * test cases for issue #4911, but it's unrelated to that issue.
-   *
-   */
+    *
+    *     dd if=/dev/urandom bs=1024 count=1 > 1.bin
+    *     tar -cvf repetitive.tar 1.bin 1.bin
+    *     gzip repetitive.tar
+    *
+    * I discovered this failure mode accidentally while experimenting with
+    * test cases for issue #4911, but it's unrelated to that issue.
+    *
+    */
   it("fails if the archive has repeated entries") {
     withNamespace { srcNamespace =>
       withStreamStore { implicit streamStore =>

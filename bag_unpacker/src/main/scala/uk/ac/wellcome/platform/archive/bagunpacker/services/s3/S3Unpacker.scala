@@ -63,8 +63,11 @@ class S3Unpacker(
           if exc.getMessage.startsWith("The specified bucket does not exist") =>
         Some(s"There is no S3 bucket ${srcLocation.bucket}")
 
-      case UnpackerUnexpectedError(exc: SdkClientException) if exc.getCause.isInstanceOf[EOFException] =>
-        Some(s"Unexpected EOF while unpacking the archive at $srcLocation - is it the correct format?")
+      case UnpackerUnexpectedError(exc: SdkClientException)
+          if exc.getCause.isInstanceOf[EOFException] =>
+        Some(
+          s"Unexpected EOF while unpacking the archive at $srcLocation - is it the correct format?"
+        )
 
       case _ =>
         warn(s"Error unpacking bag at $srcLocation: $error")

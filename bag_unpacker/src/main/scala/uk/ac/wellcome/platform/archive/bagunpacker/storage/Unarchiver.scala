@@ -106,4 +106,6 @@ object Unarchiver {
 }
 
 class DuplicateArchiveEntryException(val entry: ArchiveEntry)
-    extends RuntimeException(s"Duplicate entries detected in archive: ${entry.getName}")
+    extends RuntimeException(
+      s"Duplicate entries detected in archive: ${entry.getName}"
+    )

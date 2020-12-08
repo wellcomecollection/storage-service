@@ -100,42 +100,47 @@ class UnarchiverTest extends AnyFunSpec with Matchers with EitherValues {
   }
 
   /** The file for this test was created with the following bash script:
-   *
-   *     dd if=/dev/urandom bs=1024 count=1 > 1.bin
-   *     tar -cvf repetitive.tar 1.bin 1.bin
-   *     gzip repetitive.tar
-   *
-   * I discovered this failure mode accidentally while experimenting with
-   * test cases for issue #4911, but it's unrelated to that issue.
-   *
-   */
+    *
+    *     dd if=/dev/urandom bs=1024 count=1 > 1.bin
+    *     tar -cvf repetitive.tar 1.bin 1.bin
+    *     gzip repetitive.tar
+    *
+    * I discovered this failure mode accidentally while experimenting with
+    * test cases for issue #4911, but it's unrelated to that issue.
+    *
+    */
   it("fails if the archive has repeated entries") {
     val inputStream = getClass.getResourceAsStream("/repetitive.tar.gz")
 
     val archiveIterator = Unarchiver.open(inputStream).value
 
     val err = intercept[DuplicateArchiveEntryException] {
-      archiveIterator.foreach { _ => () }
+      archiveIterator.foreach { _ =>
+        ()
+      }
     }
 
     err.entry.getName shouldBe "1.bin"
   }
 
   /** The file for this test was created with the following bash script:
-   *
-   *     dd if=/dev/urandom bs=1024 count=1 > 1.bin
-   *     dd if=/dev/urandom bs=1024 count=1 > 2.bin
-   *     tar -cvf repetitive_non_consecutive.tar 1.bin 2.bin 1.bin
-   *     gzip repetitive_non_consecutive.tar
-   *
-   */
+    *
+    *     dd if=/dev/urandom bs=1024 count=1 > 1.bin
+    *     dd if=/dev/urandom bs=1024 count=1 > 2.bin
+    *     tar -cvf repetitive_non_consecutive.tar 1.bin 2.bin 1.bin
+    *     gzip repetitive_non_consecutive.tar
+    *
+    */
   it("fails if the archive has non-consecutive repeated entries") {
-    val inputStream = getClass.getResourceAsStream("/repetitive_non_consecutive.tar.gz")
+    val inputStream =
+      getClass.getResourceAsStream("/repetitive_non_consecutive.tar.gz")
 
     val archiveIterator = Unarchiver.open(inputStream).value
 
     val err = intercept[DuplicateArchiveEntryException] {
-      archiveIterator.foreach { _ => () }
+      archiveIterator.foreach { _ =>
+        ()
+      }
     }
 
     err.entry.getName shouldBe "1.bin"

@@ -5,7 +5,11 @@ import java.time.Instant
 import grizzled.slf4j.Logging
 import org.apache.commons.compress.archivers.ArchiveEntry
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.bagunpacker.storage.{DuplicateArchiveEntryException, Unarchiver, UnexpectedUnarchiverError}
+import uk.ac.wellcome.platform.archive.bagunpacker.storage.{
+  DuplicateArchiveEntryException,
+  Unarchiver,
+  UnexpectedUnarchiverError
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
@@ -154,7 +158,8 @@ trait Unpacker[
           case Success(result) => Right(result)
           case Failure(err: EOFException) =>
             Left(UnpackerEOFError(err))
-          case Failure(err: IOException) if err.getMessage == "Error detected parsing the header" =>
+          case Failure(err: IOException)
+              if err.getMessage == "Error detected parsing the header" =>
             Left(UnpackerUnarchiverError(UnexpectedUnarchiverError(err)))
           case Failure(err: Throwable) =>
             Left(UnpackerUnexpectedError(err))

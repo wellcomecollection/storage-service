@@ -222,43 +222,44 @@ class S3UnpackerTest
               dstPrefix = dstPrefix
             )
 
-          assertIsError(result) { case (err, maybeUserFacingMessage) =>
-            maybeUserFacingMessage.get should startWith(
-              "Error trying to unpack the archive"
-            )
+          assertIsError(result) {
+            case (err, maybeUserFacingMessage) =>
+              maybeUserFacingMessage.get should startWith(
+                "Error trying to unpack the archive"
+              )
 
-            err shouldBe a[IOException]
-            err.getMessage shouldBe "Error detected parsing the header"
+              err shouldBe a[IOException]
+              err.getMessage shouldBe "Error detected parsing the header"
           }
         }
       }
     }
 
     /** This is a regression test for issue #4911.
-     *
-     * In that issue, we were seeing an EOF error when unpacking a truncated tar.gz.
-     * We have a test case for handling an EOF exception in UnpackerTestCases -- but
-     * the S3 unpacker has a *second* source of EOF exceptions.
-     *
-     * The S3 unpacker reads a bag in "chunks".  (Using the LargeStreamReader class.)
-     * It reads a fixed-size chunk, does any processing it needs, then reads the next
-     * chunk, and so on.  This avoids holding the entire bag in memory, which could be
-     * arbitrarily large.
-     *
-     * The EOF exception caught in UnpackerTestCases is caught when we *read* the
-     * compressed bag.  We've read the whole thing into memory, and found it wanting.
-     *
-     * You can also get an EOF exception when you *write* a file from the bag.
-     * In particular, if the S3 unpacker reads a good chunk and starts uploading a file,
-     * then the EOF will be thrown by the uploader when it doesn't get enough bytes from
-     * the next, bad chunk.
-     *
-     * To reproduce this, we have to ensure the final file falls in two different chunks.
-     * We can do this by cranking down the size of each chunk.
-     *
-     * See https://github.com/wellcomecollection/platform/issues/4911
-     *
-     */
+      *
+      * In that issue, we were seeing an EOF error when unpacking a truncated tar.gz.
+      * We have a test case for handling an EOF exception in UnpackerTestCases -- but
+      * the S3 unpacker has a *second* source of EOF exceptions.
+      *
+      * The S3 unpacker reads a bag in "chunks".  (Using the LargeStreamReader class.)
+      * It reads a fixed-size chunk, does any processing it needs, then reads the next
+      * chunk, and so on.  This avoids holding the entire bag in memory, which could be
+      * arbitrarily large.
+      *
+      * The EOF exception caught in UnpackerTestCases is caught when we *read* the
+      * compressed bag.  We've read the whole thing into memory, and found it wanting.
+      *
+      * You can also get an EOF exception when you *write* a file from the bag.
+      * In particular, if the S3 unpacker reads a good chunk and starts uploading a file,
+      * then the EOF will be thrown by the uploader when it doesn't get enough bytes from
+      * the next, bad chunk.
+      *
+      * To reproduce this, we have to ensure the final file falls in two different chunks.
+      * We can do this by cranking down the size of each chunk.
+      *
+      * See https://github.com/wellcomecollection/platform/issues/4911
+      *
+      */
     it("if there's an EOF while writing an unpacked file ") {
       withLocalS3Bucket { srcBucket =>
         withLocalS3Bucket { dstBucket =>
@@ -288,13 +289,16 @@ class S3UnpackerTest
               dstPrefix = dstPrefix
             )
 
-          assertIsError(result) { case (err, maybeUserFacingMessage) =>
-            err shouldBe a[SdkClientException]
-            err.asInstanceOf[SdkClientException].getCause shouldBe a[EOFException]
+          assertIsError(result) {
+            case (err, maybeUserFacingMessage) =>
+              err shouldBe a[SdkClientException]
+              err
+                .asInstanceOf[SdkClientException]
+                .getCause shouldBe a[EOFException]
 
-            maybeUserFacingMessage.get should startWith(
-              "Unexpected EOF while unpacking the archive at"
-            )
+              maybeUserFacingMessage.get should startWith(
+                "Unexpected EOF while unpacking the archive at"
+              )
           }
         }
       }
