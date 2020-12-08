@@ -2,17 +2,11 @@ package uk.ac.wellcome.platform.archive.bagunpacker.services.s3
 
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.AmazonS3Exception
-import org.scalatest.Assertion
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.s3.S3CompressFixture
-import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.bagunpacker.services.{
   Unpacker,
   UnpackerTestCases
-}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepResult
 }
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
@@ -22,8 +16,6 @@ import uk.ac.wellcome.storage.s3.{
   S3ObjectLocation,
   S3ObjectLocationPrefix
 }
-
-import scala.util.Try
 
 class S3UnpackerTest
     extends UnpackerTestCases[
@@ -83,17 +75,10 @@ class S3UnpackerTest
               dstPrefix = dstPrefix
             )
 
-          val ingestResult = result.success.value
-          ingestResult shouldBe a[IngestFailed[_]]
-          ingestResult.summary.fileCount shouldBe 0
-          ingestResult.summary.bytesUnpacked shouldBe 0
-
-          val underlyingError =
-            ingestResult.asInstanceOf[IngestFailed[UnpackSummary[_, _]]]
-          underlyingError.e shouldBe a[AmazonS3Exception]
-          underlyingError.e.getMessage should startWith(
-            "The specified bucket does not exist"
-          )
+          assertIsError(result) { case (exc, _) =>
+            exc shouldBe a[AmazonS3Exception]
+            exc.getMessage should startWith("The specified bucket does not exist")
+          }
         }
       }
     }
@@ -129,7 +114,7 @@ class S3UnpackerTest
                 dstPrefix = dstPrefix
               )
 
-            assertIsError(result) { maybeMessage =>
+            assertIsError(result) { case (_, maybeMessage) =>
               maybeMessage.get shouldBe s"Error reading $archiveLocation: either it doesn't exist, or the unpacker doesn't have permission to read it"
             }
           }
@@ -149,7 +134,7 @@ class S3UnpackerTest
             dstPrefix = dstPrefix
           )
 
-        assertIsError(result) { maybeMessage =>
+        assertIsError(result) { case (_, maybeMessage) =>
           maybeMessage.get shouldBe s"There is no S3 bucket ${srcLocation.bucket}"
         }
       }
@@ -169,7 +154,7 @@ class S3UnpackerTest
               dstPrefix = dstPrefix
             )
 
-          assertIsError(result) { maybeMessage =>
+          assertIsError(result) { case (_, maybeMessage) =>
             maybeMessage.get shouldBe s"There is no archive at $srcLocation"
           }
         }
@@ -188,21 +173,10 @@ class S3UnpackerTest
             dstPrefix = dstPrefix
           )
 
-        assertIsError(result) { maybeMessage =>
+        assertIsError(result) { case (_, maybeMessage) =>
           maybeMessage.get shouldBe s"${srcLocation.bucket} is not a valid S3 bucket name"
         }
       }
     }
-  }
-
-  private def assertIsError(result: Try[IngestStepResult[UnpackSummary[_, _]]])(
-    checkMessage: Option[String] => Assertion
-  ): Assertion = {
-    val ingestResult = result.success.value
-    ingestResult shouldBe a[IngestFailed[_]]
-
-    val ingestFailed = ingestResult.asInstanceOf[IngestFailed[_]]
-
-    checkMessage(ingestFailed.maybeUserFacingMessage)
   }
 }

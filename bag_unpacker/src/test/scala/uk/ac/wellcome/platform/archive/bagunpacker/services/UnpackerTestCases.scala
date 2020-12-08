@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services
 
-import java.io.{File, FileInputStream}
+import java.io.{EOFException, File, FileInputStream}
 import java.nio.file.Paths
 
 import org.scalatest.{Assertion, TryValues}
@@ -14,12 +14,15 @@ import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
+  IngestStepResult,
   IngestStepSucceeded
 }
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.streaming.StreamAssertions
 import uk.ac.wellcome.storage.{Location, Prefix}
+
+import scala.util.Try
 
 trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
@@ -159,16 +162,9 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           )
         }
 
-      val ingestResult = result.success.value
-      ingestResult shouldBe a[IngestFailed[_]]
-      ingestResult.summary.fileCount shouldBe 0
-      ingestResult.summary.bytesUnpacked shouldBe 0
-
-      val ingestFailed =
-        ingestResult.asInstanceOf[IngestFailed[UnpackSummary[_, _]]]
-      ingestFailed.maybeUserFacingMessage.get should startWith(
-        "There is no archive at"
-      )
+      assertIsError(result) { case (_, maybeUserFacingMessage) =>
+        maybeUserFacingMessage.get should startWith("There is no archive at")
+      }
     }
   }
 
@@ -190,16 +186,9 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
             )
           }
 
-        val ingestResult = result.success.value
-        ingestResult shouldBe a[IngestFailed[_]]
-        ingestResult.summary.fileCount shouldBe 0
-        ingestResult.summary.bytesUnpacked shouldBe 0
-
-        val ingestFailed =
-          ingestResult.asInstanceOf[IngestFailed[UnpackSummary[_, _]]]
-        ingestFailed.maybeUserFacingMessage.get should startWith(
-          s"Error trying to unpack the archive at"
-        )
+        assertIsError(result) { case (_, maybeUserFacingMessage) =>
+          maybeUserFacingMessage.get should startWith("Error trying to unpack the archive at")
+        }
       }
     }
   }
@@ -242,16 +231,10 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
             )
           }
 
-        val ingestResult = result.success.value
-        ingestResult shouldBe a[IngestFailed[_]]
-        ingestResult.summary.fileCount shouldBe 0
-        ingestResult.summary.bytesUnpacked shouldBe 0
-
-        val ingestFailed =
-          ingestResult.asInstanceOf[IngestFailed[UnpackSummary[_, _]]]
-        ingestFailed.maybeUserFacingMessage.get should startWith(
-          "Unexpected EOF while unpacking the archive"
-        )
+        assertIsError(result) { case (err, maybeUserFacingMessage) =>
+          err shouldBe a[EOFException]
+          maybeUserFacingMessage.get should startWith("Unexpected EOF while unpacking the archive")
+        }
       }
     }
   }
@@ -279,4 +262,18 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
       .foldLeft(0L) { (n, file) =>
         n + file.length()
       }
+
+  def assertIsError(result: Try[IngestStepResult[UnpackSummary[_, _]]])(
+    checkMessage: (Throwable, Option[String]) => Assertion
+  ): Assertion = {
+    val ingestResult = result.success.value
+    ingestResult shouldBe a[IngestFailed[_]]
+
+    val ingestFailed = ingestResult.asInstanceOf[IngestFailed[_]]
+
+    ingestResult.summary.fileCount shouldBe 0
+    ingestResult.summary.bytesUnpacked shouldBe 0
+
+    checkMessage(ingestFailed.e, ingestFailed.maybeUserFacingMessage)
+  }
 }
