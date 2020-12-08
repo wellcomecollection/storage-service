@@ -7,7 +7,8 @@ import org.apache.commons.io.FileUtils
 import uk.ac.wellcome.platform.archive.bagunpacker.services.{
   Unpacker,
   UnpackerError,
-  UnpackerStorageError
+  UnpackerStorageError,
+  UnpackerUnexpectedError
 }
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
