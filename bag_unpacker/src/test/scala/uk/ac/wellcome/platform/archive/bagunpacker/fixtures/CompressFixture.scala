@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.fixtures
 
 import java.io.{File, _}
-
 import grizzled.slf4j.Logging
 import org.apache.commons.compress.archivers.{
   ArchiveEntry,
@@ -13,16 +12,16 @@ import org.apache.commons.compress.compressors.{
   CompressorStreamFactory
 }
 import org.apache.commons.io.IOUtils
+import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
 import uk.ac.wellcome.storage.Location
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
 trait CompressFixture[BagLocation <: Location, Namespace]
     extends StorageRandomGenerators
-    with S3Fixtures
+    with Matchers
     with Logging {
 
   val defaultFileCount = 10

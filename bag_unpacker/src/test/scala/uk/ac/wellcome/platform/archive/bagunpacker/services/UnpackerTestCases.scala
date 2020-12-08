@@ -2,8 +2,7 @@ package uk.ac.wellcome.platform.archive.bagunpacker.services
 
 import java.io.{EOFException, File, FileInputStream}
 import java.nio.file.Paths
-
-import org.scalatest.{Assertion, TryValues}
+import org.scalatest.{Assertion, EitherValues, TryValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
@@ -29,6 +28,7 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
 ], StoreImpl <: StreamStore[BagLocation], Namespace]
     extends AnyFunSpec
     with Matchers
+    with EitherValues
     with TryValues
     with CompressFixture[BagLocation, Namespace]
     with StreamAssertions
