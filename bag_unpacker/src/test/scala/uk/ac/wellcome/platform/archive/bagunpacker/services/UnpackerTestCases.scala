@@ -226,21 +226,23 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
 
         streamStore.put(srcLocation)(stream) shouldBe a[Right[_, _]]
 
-        val result =
-          withUnpacker {
-            _.unpack(
-              ingestId = createIngestID,
-              srcLocation = srcLocation,
-              dstPrefix = createDstPrefix
-            )
-          }
+        withNamespace { dstNamespace =>
+          val result =
+            withUnpacker {
+              _.unpack(
+                ingestId = createIngestID,
+                srcLocation = srcLocation,
+                dstPrefix = createDstPrefixWith(dstNamespace)
+              )
+            }
 
-        assertIsError(result) {
-          case (err, maybeUserFacingMessage) =>
-            err shouldBe a[EOFException]
-            maybeUserFacingMessage.get should startWith(
-              "Unexpected EOF while unpacking the archive"
-            )
+          assertIsError(result) {
+            case (err, maybeUserFacingMessage) =>
+              err shouldBe a[EOFException]
+              maybeUserFacingMessage.get should startWith(
+                "Unexpected EOF while unpacking the archive"
+              )
+          }
         }
       }
     }
