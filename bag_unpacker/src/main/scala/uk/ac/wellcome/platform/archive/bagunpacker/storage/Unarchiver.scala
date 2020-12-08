@@ -55,16 +55,16 @@ object Unarchiver {
   ): Iterator[(ArchiveEntry, InputStream)] =
     new Iterator[(ArchiveEntry, InputStream)] {
       private var latest: ArchiveEntry = _
-      private var prev: Option[ArchiveEntry] = _
+      private var seen: Set[ArchiveEntry] = Set.empty
 
       override def hasNext: Boolean = {
-        prev = Some(latest)
         latest = archiveInputStream.getNextEntry
 
-        if (prev.contains(latest)) {
+        if (seen.contains(latest)) {
           throw new DuplicateArchiveEntryException(latest)
         }
 
+        seen = seen | Set(latest)
         latest != null
       }
 
