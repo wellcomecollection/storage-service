@@ -55,9 +55,20 @@ object Unarchiver {
   ): Iterator[(ArchiveEntry, InputStream)] =
     new Iterator[(ArchiveEntry, InputStream)] {
       private var latest: ArchiveEntry = _
+      private var seen: Set[ArchiveEntry] = Set.empty
 
       override def hasNext: Boolean = {
         latest = archiveInputStream.getNextEntry
+
+        // The unpacker can potentially lose data if an archive contains duplicate files.
+        // It's legal for a tar archive to contain two different files under the same name.
+        // There's nothing sensible to do in this case (which should we pick?), so throw an
+        // exception rather than unpacking any further.
+        if (seen.contains(latest)) {
+          throw new DuplicateArchiveEntryException(latest)
+        }
+
+        seen = seen | Set(latest)
         latest != null
       }
 
@@ -93,3 +104,8 @@ object Unarchiver {
       case Failure(err)                   => Left(UnexpectedUnarchiverError(err))
     }
 }
+
+class DuplicateArchiveEntryException(val entry: ArchiveEntry)
+    extends RuntimeException(
+      s"Duplicate entries detected in archive: ${entry.getName}"
+    )

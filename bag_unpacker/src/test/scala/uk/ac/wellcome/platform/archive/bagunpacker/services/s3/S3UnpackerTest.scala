@@ -1,5 +1,8 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services.s3
 
+import com.amazonaws.SdkClientException
+
+import java.io.{EOFException, IOException}
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import uk.ac.wellcome.fixtures.TestWith
@@ -182,6 +185,121 @@ class S3UnpackerTest
         assertIsError(result) {
           case (_, maybeMessage) =>
             maybeMessage.get shouldBe s"${srcLocation.bucket} is not a valid S3 bucket name"
+        }
+      }
+    }
+
+    it("if there's an error parsing the header") {
+      withLocalS3Bucket { srcBucket =>
+        withLocalS3Bucket { dstBucket =>
+          implicit val streamStore: S3StreamStore = new S3StreamStore()
+
+          // This file was created with the following bash script:
+          //
+          //    for i in 1 2 3 4 5 6 7 8 9 10
+          //    do
+          //      dd if=/dev/urandom bs=8192 count=1 > "$i.bin"
+          //    done
+          //
+          //    tar -cvf truncated_header.tar *.bin
+          //    gzip truncated_header.tar
+          //    python3 -c 'import os; os.truncate("truncated_header.tar.gz", 80000)'
+          //
+          // I found this particular error path by accident while trying to write
+          // a regression test for https://github.com/wellcomecollection/platform/issues/4911
+          //
+          val stream = getResource("/truncated_header.tar.gz")
+
+          val srcLocation = createS3ObjectLocationWith(srcBucket)
+          streamStore.put(srcLocation)(stream) shouldBe a[Right[_, _]]
+
+          val dstPrefix = createDstPrefixWith(dstBucket)
+
+          val result =
+            unpacker.unpack(
+              ingestId = createIngestID,
+              srcLocation = srcLocation,
+              dstPrefix = dstPrefix
+            )
+
+          assertIsError(result) {
+            case (err, maybeUserFacingMessage) =>
+              maybeUserFacingMessage.get should startWith(
+                "Error trying to unpack the archive"
+              )
+
+              err shouldBe a[IOException]
+              err.getMessage shouldBe "Error detected parsing the header"
+          }
+        }
+      }
+    }
+
+    /** This is a regression test for issue #4911.
+      *
+      * In that issue, we were seeing an EOF error when unpacking a truncated tar.gz.
+      * We have a test case for handling an EOF exception in UnpackerTestCases -- but
+      * the S3 unpacker has a *second* source of EOF exceptions.
+      *
+      * The S3 unpacker reads a bag in "chunks".  (Using the LargeStreamReader class.)
+      * It reads a fixed-size chunk, does any processing it needs, then reads the next
+      * chunk, and so on.  This avoids holding the entire bag in memory, which could be
+      * arbitrarily large.
+      *
+      * The EOF exception caught in UnpackerTestCases is caught when we *read* the
+      * compressed bag.  We've read the whole thing into memory, and found it wanting.
+      *
+      * You can also get an EOF exception when you *write* a file from the bag.
+      * In particular, if the S3 unpacker reads a good chunk and starts uploading a file,
+      * then the EOF will be thrown by the uploader when it doesn't get enough bytes from
+      * the next, bad chunk.
+      *
+      * To reproduce this, we have to ensure the final file falls in two different chunks.
+      * We can do this by cranking down the size of each chunk.
+      *
+      * See https://github.com/wellcomecollection/platform/issues/4911
+      *
+      */
+    it("if there's an EOF while writing an unpacked file ") {
+      withLocalS3Bucket { srcBucket =>
+        withLocalS3Bucket { dstBucket =>
+          implicit val streamStore: S3StreamStore = new S3StreamStore()
+
+          // This file was created with the following bash script:
+          //
+          //    for i in 1 2 3
+          //    do
+          //      dd if=/dev/urandom bs=131072 count=1 > "$i.bin"
+          //    done
+          //    tar -cvf truncated_s3.tar *.bin
+          //    gzip truncated_s3.tar
+          //    python3 -c 'import os; os.truncate("truncated_s3.tar.gz", 25000)'
+          //
+          val stream = getResource("/truncated_s3.tar.gz")
+
+          val srcLocation = createS3ObjectLocationWith(srcBucket)
+          streamStore.put(srcLocation)(stream) shouldBe a[Right[_, _]]
+
+          val dstPrefix = createDstPrefixWith(dstBucket)
+
+          val result =
+            unpacker.unpack(
+              ingestId = createIngestID,
+              srcLocation = srcLocation,
+              dstPrefix = dstPrefix
+            )
+
+          assertIsError(result) {
+            case (err, maybeUserFacingMessage) =>
+              err shouldBe a[SdkClientException]
+              err
+                .asInstanceOf[SdkClientException]
+                .getCause shouldBe a[EOFException]
+
+              maybeUserFacingMessage.get should startWith(
+                "Unexpected EOF while unpacking the archive at"
+              )
+          }
         }
       }
     }
