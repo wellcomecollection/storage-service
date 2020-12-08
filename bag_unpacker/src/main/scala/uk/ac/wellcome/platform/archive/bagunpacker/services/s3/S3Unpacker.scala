@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services.s3
 
+import com.amazonaws.SdkClientException
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.apache.commons.io.FileUtils
@@ -14,6 +15,8 @@ import uk.ac.wellcome.storage.services.s3.S3LargeStreamReader
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.store.{Readable, Writable}
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
+
+import java.io.EOFException
 
 class S3Unpacker(
   bufferSize: Long = 128 * FileUtils.ONE_MB
@@ -58,6 +61,9 @@ class S3Unpacker(
       case UnpackerStorageError(DoesNotExistError(exc: AmazonS3Exception))
           if exc.getMessage.startsWith("The specified bucket does not exist") =>
         Some(s"There is no S3 bucket ${srcLocation.bucket}")
+
+      case UnpackerUnexpectedError(exc: SdkClientException) if exc.getCause.isInstanceOf[EOFException] =>
+        Some(s"Unexpected EOF while unpacking the archive at $srcLocation - is it the correct format?")
 
       case _ =>
         warn(s"Error unpacking bag at $srcLocation: $error")
