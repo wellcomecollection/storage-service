@@ -255,7 +255,7 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
    *     gzip repetitive.tar
    *
    * I discovered this failure mode accidentally while experimenting with
-   * test cases for issue #4911, but it's unrelated.
+   * test cases for issue #4911, but it's unrelated to that issue.
    *
    */
   it("fails if the archive has repeated entries") {
