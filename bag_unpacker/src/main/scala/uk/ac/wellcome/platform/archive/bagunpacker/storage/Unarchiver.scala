@@ -60,6 +60,10 @@ object Unarchiver {
       override def hasNext: Boolean = {
         latest = archiveInputStream.getNextEntry
 
+        // The unpacker can potentially lose data if an archive contains duplicate files.
+        // It's legal for a tar archive to contain two different files under the same name.
+        // There's nothing sensible to do in this case (which should we pick?), so throw an
+        // exception rather than unpacking any further.
         if (seen.contains(latest)) {
           throw new DuplicateArchiveEntryException(latest)
         }
