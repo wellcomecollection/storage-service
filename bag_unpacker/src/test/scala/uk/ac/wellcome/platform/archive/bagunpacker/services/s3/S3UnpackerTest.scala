@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services.s3
 
+import java.io.IOException
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import uk.ac.wellcome.fixtures.TestWith
@@ -182,6 +183,51 @@ class S3UnpackerTest
         assertIsError(result) {
           case (_, maybeMessage) =>
             maybeMessage.get shouldBe s"${srcLocation.bucket} is not a valid S3 bucket name"
+        }
+      }
+    }
+
+    it("if there's an error parsing the header") {
+      withLocalS3Bucket { srcBucket =>
+        withLocalS3Bucket { dstBucket =>
+          implicit val streamStore: S3StreamStore = new S3StreamStore()
+
+          // This file was created with the following bash script:
+          //
+          //    for i in 1 2 3 4 5 6 7 8 9 10
+          //    do
+          //      dd if=/dev/urandom bs=8192 count=1 > "$i.bin"
+          //    done
+          //
+          //    tar -cvf truncated_header.tar *.bin
+          //    gzip truncated_header.tar
+          //    python3 -c 'import os; os.truncate("truncated_header.tar.gz", 80000)'
+          //
+          // I found this particular error path by accident while trying to write
+          // a regression test for https://github.com/wellcomecollection/platform/issues/4911
+          //
+          val stream = getResource("/truncated_header.tar.gz")
+
+          val srcLocation = createS3ObjectLocationWith(srcBucket)
+          streamStore.put(srcLocation)(stream) shouldBe a[Right[_, _]]
+
+          val dstPrefix = createDstPrefixWith(dstBucket)
+
+          val result =
+            unpacker.unpack(
+              ingestId = createIngestID,
+              srcLocation = srcLocation,
+              dstPrefix = dstPrefix
+            )
+
+          assertIsError(result) { case (err, maybeUserFacingMessage) =>
+            maybeUserFacingMessage.get should startWith(
+              "Error trying to unpack the archive"
+            )
+
+            err shouldBe a[IOException]
+            err.getMessage shouldBe "Error detected parsing the header"
+          }
         }
       }
     }
