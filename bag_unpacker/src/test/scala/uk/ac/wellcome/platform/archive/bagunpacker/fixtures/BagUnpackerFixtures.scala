@@ -55,7 +55,6 @@ trait BagUnpackerFixtures
   def withBagUnpackerApp[R](stepName: String)(
     testWith: TestWith[
       (
-        BagUnpackerWorker[String, String],
         Bucket,
         Queue,
         MemoryMessageSender,
@@ -74,17 +73,16 @@ trait BagUnpackerFixtures
           outgoing,
           dstBucket,
           stepName = stepName
-        )({ bagUnpackerProcess =>
+        ) { _ =>
           testWith(
             (
-              bagUnpackerProcess,
               dstBucket,
               queue,
               ingests,
               outgoing
             )
           )
-        })
+        }
       }
     }
 

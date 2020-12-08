@@ -148,8 +148,6 @@ trait Unpacker[
           )
         } match {
           case Success(result) => Right(result)
-          case Failure(err: StorageError) =>
-            Left(UnpackerStorageError(err))
           case Failure(err: EOFException) =>
             Left(UnpackerEOFError(err))
           case Failure(err: Throwable) =>

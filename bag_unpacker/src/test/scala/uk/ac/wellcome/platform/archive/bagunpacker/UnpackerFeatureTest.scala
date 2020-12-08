@@ -30,7 +30,7 @@ class UnpackerFeatureTest
   it("receives and processes a notification") {
     val (archiveFile, _, _) = createTgzArchiveWithRandomFiles()
     withBagUnpackerApp(stepName = "unpacker") {
-      case (_, dstBucket, queue, ingests, outgoing) =>
+      case (dstBucket, queue, ingests, outgoing) =>
         withStreamStore { implicit streamStore =>
           withLocalS3Bucket { srcBucket =>
             withArchive(srcBucket, archiveFile) { archiveLocation =>
@@ -80,7 +80,7 @@ class UnpackerFeatureTest
 
   it("sends a failed Ingest update if it cannot read the bag") {
     withBagUnpackerApp(stepName = "unpacker") {
-      case (_, _, queue, ingests, outgoing) =>
+      case (_, queue, ingests, outgoing) =>
         val sourceLocation = createS3ObjectLocationWith(
           bucket = createBucket
         )
