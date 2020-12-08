@@ -279,9 +279,7 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
 
           assertIsError(result) {
             case (_, maybeUserFacingMessage) =>
-              maybeUserFacingMessage.get should startWith(
-                "Error trying to unpack the archive"
-              )
+              maybeUserFacingMessage.get shouldBe s"The archive at $srcLocation is malformed or has a duplicate entry (1.bin)"
           }
         }
       }

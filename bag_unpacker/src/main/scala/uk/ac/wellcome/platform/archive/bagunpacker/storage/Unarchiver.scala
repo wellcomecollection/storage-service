@@ -62,7 +62,7 @@ object Unarchiver {
         latest = archiveInputStream.getNextEntry
 
         if (prev.contains(latest)) {
-          throw new ArchiveException(s"Duplicate entries detected in archive: ${latest.getName}")
+          throw new DuplicateArchiveEntryException(latest)
         }
 
         latest != null
@@ -100,3 +100,6 @@ object Unarchiver {
       case Failure(err)                   => Left(UnexpectedUnarchiverError(err))
     }
 }
+
+class DuplicateArchiveEntryException(val entry: ArchiveEntry)
+    extends RuntimeException(s"Duplicate entries detected in archive: ${entry.getName}")

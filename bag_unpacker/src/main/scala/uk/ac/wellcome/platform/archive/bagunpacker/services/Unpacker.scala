@@ -3,9 +3,9 @@ package uk.ac.wellcome.platform.archive.bagunpacker.services
 import java.io.{EOFException, IOException, InputStream}
 import java.time.Instant
 import grizzled.slf4j.Logging
-import org.apache.commons.compress.archivers.{ArchiveEntry, ArchiveException}
+import org.apache.commons.compress.archivers.ArchiveEntry
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.bagunpacker.storage.{Unarchiver, UnexpectedUnarchiverError}
+import uk.ac.wellcome.platform.archive.bagunpacker.storage.{DuplicateArchiveEntryException, Unarchiver, UnexpectedUnarchiverError}
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestFailed,
@@ -106,6 +106,11 @@ trait Unpacker[
           s"Unexpected EOF while unpacking the archive at $srcLocation - is it the correct format?"
         )
 
+      case UnpackerUnexpectedError(err: DuplicateArchiveEntryException) =>
+        Some(
+          s"The archive at $srcLocation is malformed or has a duplicate entry (${err.entry.getName})"
+        )
+
       case _ => None
     }
 
@@ -150,8 +155,6 @@ trait Unpacker[
           case Failure(err: EOFException) =>
             Left(UnpackerEOFError(err))
           case Failure(err: IOException) if err.getMessage == "Error detected parsing the header" =>
-            Left(UnpackerUnarchiverError(UnexpectedUnarchiverError(err)))
-          case Failure(err: ArchiveException) =>
             Left(UnpackerUnarchiverError(UnexpectedUnarchiverError(err)))
           case Failure(err: Throwable) =>
             Left(UnpackerUnexpectedError(err))
