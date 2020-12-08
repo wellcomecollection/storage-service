@@ -248,6 +248,46 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
     }
   }
 
+  /** The file for this test was created with the following bash script:
+   *
+   *     dd if=/dev/urandom bs=1024 count=1 > 1.bin
+   *     tar -cvf repetitive.tar 1.bin 1.bin
+   *     gzip repetitive.tar
+   *
+   * I discovered this failure mode accidentally while experimenting with
+   * test cases for issue #4911, but it's unrelated.
+   *
+   */
+  it("fails if the archive has repeated entries") {
+    withNamespace { srcNamespace =>
+      withStreamStore { implicit streamStore =>
+        val srcLocation = createSrcLocationWith(namespace = srcNamespace)
+
+        val stream = getResource("/repetitive.tar.gz")
+
+        streamStore.put(srcLocation)(stream) shouldBe a[Right[_, _]]
+
+        withNamespace { dstNamespace =>
+          val result =
+            withUnpacker {
+              _.unpack(
+                ingestId = createIngestID,
+                srcLocation = srcLocation,
+                dstPrefix = createDstPrefixWith(dstNamespace)
+              )
+            }
+
+          assertIsError(result) {
+            case (_, maybeUserFacingMessage) =>
+              maybeUserFacingMessage.get should startWith(
+                "Error trying to unpack the archive"
+              )
+          }
+        }
+      }
+    }
+  }
+
   def assertEqual(prefix: BagPrefix, expectedFiles: Seq[File])(
     implicit store: StreamStore[BagLocation]
   ): Seq[Assertion] = {
