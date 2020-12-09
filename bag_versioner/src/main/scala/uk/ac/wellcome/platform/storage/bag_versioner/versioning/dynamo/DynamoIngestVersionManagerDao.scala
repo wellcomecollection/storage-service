@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.storage.bag_versioner.versioning.dynamo
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
-import org.scanamo.auto._
 import org.scanamo.syntax._
 import org.scanamo.{DynamoFormat, Scanamo, Table => ScanamoTable}
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
@@ -15,9 +14,8 @@ import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
   IngestVersionManagerDao,
   VersionRecord
 }
-import uk.ac.wellcome.storage.MaximaError
+import uk.ac.wellcome.storage.{MaximaError, MaximaReadError, NoMaximaValueError}
 import uk.ac.wellcome.storage.dynamo._
-import uk.ac.wellcome.storage.maxima.dynamo.DynamoHashRangeMaxima
 
 import scala.util.{Failure, Success, Try}
 
@@ -26,25 +24,12 @@ class DynamoIngestVersionManagerDao(
   dynamoConfig: DynamoConfig
 )(
   implicit
-  formatInt: DynamoFormat[Int],
   formatVersionRecord: DynamoFormat[DynamoVersionRecord]
 ) extends IngestVersionManagerDao {
 
   private val scanamoTable =
     ScanamoTable[DynamoVersionRecord](dynamoConfig.tableName)
   private val index = scanamoTable.index(dynamoConfig.indexName)
-
-  val maxima = new DynamoHashRangeMaxima[BagId, Int, DynamoVersionRecord] {
-    override protected implicit val formatHashKey: DynamoFormat[BagId] =
-      BagId.evidence
-    override protected implicit val formatRangeKey: DynamoFormat[Int] =
-      formatInt
-    override protected implicit val format: DynamoFormat[DynamoVersionRecord] =
-      formatVersionRecord
-    override protected val client: AmazonDynamoDB = dynamoClient
-    override protected val table: ScanamoTable[DynamoVersionRecord] =
-      scanamoTable
-  }
 
   // TODO: Rewrite this to use Either
   override def lookupExistingVersion(
@@ -76,12 +61,26 @@ class DynamoIngestVersionManagerDao(
       externalIdentifier = externalIdentifier
     )
 
-    // TODO Because the maxima only returns the version and not the full entry,
-    // we go back and make a second GET.  This is daft and we need to sort out
-    // the maxima, hence doing this in an icky way.
-    maxima.max(bagId).map { maxVersion =>
-      val ops = scanamoTable.get('id -> bagId and 'version -> maxVersion)
-      Scanamo(dynamoClient).exec(ops).get.right.get.toVersionRecord
+    val ops = scanamoTable.descending
+      .limit(1)
+      .query('id -> bagId.toString)
+
+    Try(Scanamo(dynamoClient).exec(ops)) match {
+      case Success(List(Right(row: DynamoVersionRecord))) =>
+        Right(row.toVersionRecord)
+      case Success(List(Left(err))) =>
+        val error = new Error(s"DynamoReadError: ${err.toString}")
+        Left(MaximaReadError(error))
+      case Success(Nil) => Left(NoMaximaValueError())
+      case Failure(err) => Left(MaximaReadError(err))
+
+      // This case should be impossible to hit in practice -- limit(1)
+      // means we should only get a single result from DynamoDB.
+      case result =>
+        val error = new Error(
+          s"Unknown error from Scanamo! $result"
+        )
+        Left(MaximaReadError(error))
     }
   }
 
