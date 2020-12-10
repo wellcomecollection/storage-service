@@ -1,5 +1,6 @@
 boto3
 click
+httpx
 elasticsearch
 tqdm
 attrs

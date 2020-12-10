@@ -26,6 +26,18 @@ from chunk_transfer import (
     upload_chunk_package,
     update_chunk_record,
 )
+from dlcs import (
+    get_registrations,
+    get_dlcs_image_id,
+    get_image_error,
+    update_registrations,
+    register_image_batch,
+    check_batch_successful,
+    check_image_successful,
+    NO_BATCH_QUERY,
+    WITH_BATCH_QUERY
+)
+from iter_helpers import chunked_iterable
 from sourcedata import gather_sourcedata, count_sourcedata
 from mirofiles import count_mirofiles, gather_mirofiles
 from registrations import gather_registrations
@@ -38,6 +50,9 @@ SOURCEDATA_INDEX = "sourcedata"
 TRANSFERS_INDEX = "transfers"
 REGISTRATIONS_INDEX = "registrations"
 FILES_INDEX = "files"
+REGISTRATIONS_INDEX='registrations'
+
+REGISTRATIONS_CHUNK_SIZE = 10
 
 
 @click.command()
@@ -132,7 +147,7 @@ def create_registrations_index(ctx, overwrite):
     expected_registrations_count = len(registrations)
 
     def _documents():
-        for file_id, miro_id in registrations.items():
+        for miro_id, file_id  in registrations.items():
             yield miro_id, {
                 'file_id': file_id,
                 'miro_id': miro_id
@@ -256,6 +271,9 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, limit, overwrite):
     else:
         chunks = get_chunks(CHUNKS_INDEX)
 
+    # chunk_ids = ['library/L Images/L0055000_4', 'library/L Images/L0055000_2', 'library/L Images/L0055000_3', 'library/L Images/L0055000_11', 'library/L Images/L0055000_12', 'library/L Images/L0055000_8', 'library/L Images/L0055000_10', 'library/L Images/L0055000_7']
+    # chunks = [get_chunk(CHUNKS_INDEX, chunk_id) for chunk_id in chunk_ids]
+
     for chunk in chunks[:limit]:
         chunk_id = chunk.chunk_id()
         click.echo(f"Looking at '{chunk_id}':")
@@ -315,6 +333,83 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, limit, overwrite):
     click.echo(f"No bags found for: {missing_bags}")
 
 
+@click.command()
+@click.option("--limit", required=False, default=5)
+@click.pass_context
+def dlcs_send_registrations(ctx, limit=5):
+    chunked_registrations = chunked_iterable(
+        iterable = get_registrations(
+            registrations_index=REGISTRATIONS_INDEX,
+            query=NO_BATCH_QUERY
+        ),
+        size = REGISTRATIONS_CHUNK_SIZE
+    )
+
+    batch_counter = 0
+    for registrations_chunk in chunked_registrations:
+        batch = register_image_batch(
+            registrations=registrations_chunk
+        )
+        update_registrations(
+            registrations_index=REGISTRATIONS_INDEX,
+            registrations=registrations_chunk,
+            update_doc={
+                'dlcs': {
+                    'batch_id': batch['@id']
+                }
+            }
+        )
+        click.echo(f"Requesting batch {batch_counter}: {batch['@id']}")
+        batch_counter = batch_counter + 1
+        if batch_counter >= limit:
+            break
+
+@click.command()
+@click.option("--limit", required=False, default=5)
+@click.pass_context
+def dlcs_update_registrations(ctx, limit):
+    registrations = get_registrations(
+        registrations_index=REGISTRATIONS_INDEX,
+        query=WITH_BATCH_QUERY
+    )
+
+    #TODO: Chunk registrations so updates can become batched
+    #TODO: Add some more verbose output
+    for reg in registrations:
+        miro_id = reg['miro_id']
+
+        image_id = get_dlcs_image_id(miro_id)
+        batch_id = reg.get('dlcs', {}).get('batch_id')
+
+        batch_successful = False
+        image_successful = False
+        image_error = None
+
+        if batch_id is not None:
+            batch_successful = check_batch_successful(batch_id)
+
+        if batch_successful:
+            image_successful = True
+        else:
+            image_successful = check_image_successful(image_id)
+
+        if not image_successful:
+            image_error = get_image_error(image_id)
+
+        update_registrations(
+            registrations_index=REGISTRATIONS_INDEX,
+            registrations=[reg],
+            update_doc={
+                'dlcs': {
+                    'batch_id': batch_id,
+                    'image_id': image_id,
+                    'batch_successful': batch_successful,
+                    'image_successful': image_successful,
+                    'image_error': image_error
+                }
+            }
+        )
+
 @click.group()
 @click.pass_context
 def cli(ctx):
@@ -328,6 +423,8 @@ cli.add_command(create_decisions_index)
 cli.add_command(create_registrations_index)
 cli.add_command(transfer_package_chunks)
 cli.add_command(upload_transfer_packages)
+cli.add_command(dlcs_send_registrations)
+cli.add_command(dlcs_update_registrations)
 cli.add_command(save_index)
 cli.add_command(load_index)
 

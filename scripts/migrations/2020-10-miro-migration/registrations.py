@@ -5,6 +5,7 @@ Build registrations index
 
 import json
 
+import attr
 import elasticsearch
 from collections import defaultdict
 from elastic_helpers import (
@@ -14,6 +15,12 @@ from elastic_helpers import (
 
 
 FILES_INDEX = "files"
+
+
+@attr.s
+class Registration:
+    file_id = attr.ib()
+    miro_id = attr.ib()
 
 def _stored_files():
     local_elastic_client = get_local_elastic_client()
