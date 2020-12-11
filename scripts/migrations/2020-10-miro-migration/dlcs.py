@@ -41,6 +41,47 @@ WITH_BATCH_QUERY = {
     }
 }
 
+NOT_SUCCEEDED_QUERY = {
+    "query": {
+        "bool": {
+            "must_not": {
+                "term": {
+                    "dlcs.image_successful": True
+                }
+            },
+            "must": {
+                "exists": {
+                    "field": "dlcs.batch_id"
+                }
+            }
+        }
+    }
+}
+
+ONLY_FAILED_QUERY = {
+    "query": {
+        "bool": {
+            "must": {
+                "term": {
+                    "dlcs.image_successful": False
+                }
+            }
+        }
+    }
+}
+
+ONLY_SUCCEEDED_QUERY = {
+    "query": {
+        "bool": {
+            "must": {
+                "term": {
+                    "dlcs.image_successful": True
+                }
+            }
+        }
+    }
+}
+
 @attr.s
 class DlcsSettings:
     key = attr.ib()
@@ -129,12 +170,20 @@ def get_dlcs_object(url):
 
 def update_registrations(registrations_index, registration_updates):
     local_elastic_client = get_local_elastic_client()
-    for update in registration_updates:
-        local_elastic_client.update(
-            index=registrations_index,
-            id=update.miro_id,
-            body={"doc": update.update_doc}
-        )
+    actions = [
+        {
+            '_id': update.miro_id,
+            "_index": registrations_index,
+            "_source": {'doc': update.update_doc},
+            '_op_type': 'update'
+        }
+        for update in registration_updates
+    ]
+
+    elasticsearch.helpers.bulk(
+        client=local_elastic_client,
+        actions=actions
+    )
 
 
 def check_batch_successful(batch_id):

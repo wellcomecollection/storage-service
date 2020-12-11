@@ -58,12 +58,18 @@ def get_local_elastic_client(host=LOCAL_ELASTIC_HOST, port=9200):
     sys.exit(1)
 
 
-def get_document_count(elastic_client, *, index):
+def get_document_count(elastic_client, *, index, query=None):
     """
     How many documents are there in an Elasticsearch index?
     """
     try:
-        return elastic_client.count(index=index)["count"]
+        if query is None:
+            return elastic_client.count(index=index)["count"]
+        else:
+            return elastic_client.count(
+                index=index,
+                body=query
+            )["count"]
     except elasticsearch.exceptions.NotFoundError:
         return 0
 

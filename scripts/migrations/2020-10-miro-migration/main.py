@@ -36,6 +36,9 @@ from dlcs import (
     check_image_successful,
     NO_BATCH_QUERY,
     WITH_BATCH_QUERY,
+    NOT_SUCCEEDED_QUERY,
+    ONLY_FAILED_QUERY,
+    ONLY_SUCCEEDED_QUERY,
     RegistrationUpdate
 )
 from iter_helpers import chunked_iterable
@@ -52,8 +55,6 @@ TRANSFERS_INDEX = "transfers"
 REGISTRATIONS_INDEX = "registrations"
 FILES_INDEX = "files"
 REGISTRATIONS_INDEX='registrations'
-
-REGISTRATIONS_CHUNK_SIZE = 10
 
 
 @click.command()
@@ -361,15 +362,19 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, limit, overwrite):
 
 
 @click.command()
+@click.option("--retry-failed", is_flag=True)
+@click.option("--chunk-size", required=False, default=10)
 @click.option("--limit", required=False, default=5)
 @click.pass_context
-def dlcs_send_registrations(ctx, limit=5):
+def dlcs_send_registrations(ctx, retry_failed, chunk_size, limit):
+    registrations_query = ONLY_FAILED_QUERY if retry_failed else NO_BATCH_QUERY
+
     chunked_registrations = chunked_iterable(
         iterable = get_registrations(
             registrations_index=REGISTRATIONS_INDEX,
-            query=NO_BATCH_QUERY
+            query=registrations_query
         ),
-        size = REGISTRATIONS_CHUNK_SIZE
+        size = chunk_size
     )
 
     batch_counter = 0
@@ -398,19 +403,24 @@ def dlcs_send_registrations(ctx, limit=5):
             break
 
 @click.command()
+@click.option("--chunk-size", required=False, default=10)
 @click.option("--limit", required=False, default=5)
+@click.option("--overwrite", "-o", is_flag=True)
 @click.pass_context
-def dlcs_update_registrations(ctx, limit):
+def dlcs_update_registrations(ctx, chunk_size, limit, overwrite):
+    # If overwrite check everything with a batch, otherwise
+    # only check things with a batch that haven't succeeded yet
+
+    registrations_query = WITH_BATCH_QUERY if overwrite else NOT_SUCCEEDED_QUERY
+
     chunked_registrations = chunked_iterable(
         iterable = get_registrations(
             registrations_index=REGISTRATIONS_INDEX,
-            query=WITH_BATCH_QUERY
+            query=registrations_query
         ),
-        size = REGISTRATIONS_CHUNK_SIZE
+        size = chunk_size
     )
 
-    #TODO: Chunk registrations so updates can become batched
-    #TODO: Add some more verbose output
     success = {}
     waiting = {}
     failure = {}
@@ -428,11 +438,13 @@ def dlcs_update_registrations(ctx, limit):
             image_error = None if image_successful else get_image_error(image_id)
 
             update = {
-                'batch_id': batch_id,
-                'image_id': image_id,
-                'batch_successful': batch_successful,
-                'image_successful': image_successful,
-                'image_error': image_error
+                'dlcs': {
+                    'batch_id': batch_id,
+                    'image_id': image_id,
+                    'batch_successful': batch_successful,
+                    'image_successful': image_successful,
+                    'image_error': image_error
+                }
             }
 
             if image_successful:
@@ -466,7 +478,35 @@ def dlcs_update_registrations(ctx, limit):
         if batch_counter >= limit:
             break
 
+@click.command()
+@click.pass_context
+def dlcs_summarise_registrations(ctx):
+    local_elastic_client = get_local_elastic_client()
 
+    total = get_document_count(
+        elastic_client=local_elastic_client,
+        index=REGISTRATIONS_INDEX
+    )
+    succeeded = get_document_count(
+        elastic_client=local_elastic_client,
+        index=REGISTRATIONS_INDEX,
+        query=ONLY_SUCCEEDED_QUERY
+    )
+    with_batch_id = get_document_count(
+        elastic_client=local_elastic_client,
+        index=REGISTRATIONS_INDEX,
+        query=WITH_BATCH_QUERY
+    )
+    not_succeeded = get_document_count(
+        elastic_client=local_elastic_client,
+        index=REGISTRATIONS_INDEX,
+        query=NOT_SUCCEEDED_QUERY
+    )
+
+    click.echo(f"Found {total} registrations.")
+    click.echo(f"{succeeded} successfully registered")
+    click.echo(f"{with_batch_id} with a batch identifier")
+    click.echo(f"{not_succeeded} not yet registered")
 
 @click.group()
 @click.pass_context
@@ -483,6 +523,7 @@ cli.add_command(transfer_package_chunks)
 cli.add_command(upload_transfer_packages)
 cli.add_command(dlcs_send_registrations)
 cli.add_command(dlcs_update_registrations)
+cli.add_command(dlcs_summarise_registrations)
 cli.add_command(save_index)
 cli.add_command(load_index)
 
