@@ -35,7 +35,8 @@ from dlcs import (
     check_batch_successful,
     check_image_successful,
     NO_BATCH_QUERY,
-    WITH_BATCH_QUERY
+    WITH_BATCH_QUERY,
+    RegistrationUpdate
 )
 from iter_helpers import chunked_iterable
 from sourcedata import gather_sourcedata, count_sourcedata
@@ -271,7 +272,33 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, limit, overwrite):
     else:
         chunks = get_chunks(CHUNKS_INDEX)
 
-    # chunk_ids = ['library/L Images/L0055000_4', 'library/L Images/L0055000_2', 'library/L Images/L0055000_3', 'library/L Images/L0055000_11', 'library/L Images/L0055000_12', 'library/L Images/L0055000_8', 'library/L Images/L0055000_10', 'library/L Images/L0055000_7']
+    # chunk_ids = [
+    #     'library/L Images/L0049000',
+    #     'cold_store/L Images/L0048000',
+    #     'tandem_vault/L Images/L0050000',
+    #     'library/L Images/L0050000',
+    #     'tandem_vault/L Images/L0048000',
+    #     'cold_store/L Images/L0051000',
+    #     'none/AS Images',
+    #     'tandem_vault/L Images/L0054000',
+    #     'tandem_vault/A Images',
+    #     'library/L Images/L0051000_1',
+    #     'library/L Images/L0052000_1',
+    #     'library/L Images/L0053000_2',
+    #     'library/L Images/L0052000_2',
+    #     'library/L Images/L0053000_1',
+    #     'library/L Images/L0053000_3',
+    #     'library/L Images/L0051000_2',
+    #     'library/L Images/L0052000_3',
+    #     'library/L Images/L0054000_2',
+    #     'library/L Images/L0055000_1',
+    #     'library/L Images/L0055000_3',
+    #     'library/L Images/L0055000_11',
+    #     'library/L Images/L0055000_12',
+    #     'library/L Images/L0055000_8',
+    #     'library/L Images/L0055000_9',
+    #     'library/L Images/L0055000_6',
+    # ]
     # chunks = [get_chunk(CHUNKS_INDEX, chunk_id) for chunk_id in chunk_ids]
 
     for chunk in chunks[:limit]:
@@ -350,15 +377,21 @@ def dlcs_send_registrations(ctx, limit=5):
         batch = register_image_batch(
             registrations=registrations_chunk
         )
-        update_registrations(
-            registrations_index=REGISTRATIONS_INDEX,
-            registrations=registrations_chunk,
+
+        registration_updates = [RegistrationUpdate(
+            miro_id=reg['miro_id'],
             update_doc={
                 'dlcs': {
                     'batch_id': batch['@id']
                 }
             }
+        ) for reg in registrations_chunk]
+
+        update_registrations(
+            registrations_index=REGISTRATIONS_INDEX,
+            registration_updates=registration_updates
         )
+
         click.echo(f"Requesting batch {batch_counter}: {batch['@id']}")
         batch_counter = batch_counter + 1
         if batch_counter >= limit:
@@ -368,47 +401,72 @@ def dlcs_send_registrations(ctx, limit=5):
 @click.option("--limit", required=False, default=5)
 @click.pass_context
 def dlcs_update_registrations(ctx, limit):
-    registrations = get_registrations(
-        registrations_index=REGISTRATIONS_INDEX,
-        query=WITH_BATCH_QUERY
+    chunked_registrations = chunked_iterable(
+        iterable = get_registrations(
+            registrations_index=REGISTRATIONS_INDEX,
+            query=WITH_BATCH_QUERY
+        ),
+        size = REGISTRATIONS_CHUNK_SIZE
     )
 
     #TODO: Chunk registrations so updates can become batched
     #TODO: Add some more verbose output
-    for reg in registrations:
-        miro_id = reg['miro_id']
+    success = {}
+    waiting = {}
+    failure = {}
 
-        image_id = get_dlcs_image_id(miro_id)
-        batch_id = reg.get('dlcs', {}).get('batch_id')
+    batch_counter = 0
+    for registrations_chunk in chunked_registrations:
+        for reg in registrations_chunk:
+            miro_id = reg['miro_id']
 
-        batch_successful = False
-        image_successful = False
-        image_error = None
+            image_id = get_dlcs_image_id(miro_id)
+            batch_id = reg.get('dlcs', {}).get('batch_id')
 
-        if batch_id is not None:
-            batch_successful = check_batch_successful(batch_id)
+            batch_successful = check_batch_successful(batch_id) if batch_id is not None else False
+            image_successful = True if batch_successful else check_image_successful(image_id)
+            image_error = None if image_successful else get_image_error(image_id)
 
-        if batch_successful:
-            image_successful = True
-        else:
-            image_successful = check_image_successful(image_id)
+            update = {
+                'batch_id': batch_id,
+                'image_id': image_id,
+                'batch_successful': batch_successful,
+                'image_successful': image_successful,
+                'image_error': image_error
+            }
 
-        if not image_successful:
-            image_error = get_image_error(image_id)
+            if image_successful:
+                success[miro_id] = update
+            elif image_error is None:
+                waiting[miro_id] = update
+            else:
+                failure[miro_id] = update
+
+        click.echo(f"Refreshing batch {batch_counter}/{limit}")
+
+        all_updates = {**success, **waiting, **failure}
+
+        registration_updates = [RegistrationUpdate(
+            miro_id=miro_id,
+            update_doc=update_doc
+        ) for miro_id, update_doc in all_updates.items()]
 
         update_registrations(
             registrations_index=REGISTRATIONS_INDEX,
-            registrations=[reg],
-            update_doc={
-                'dlcs': {
-                    'batch_id': batch_id,
-                    'image_id': image_id,
-                    'batch_successful': batch_successful,
-                    'image_successful': image_successful,
-                    'image_error': image_error
-                }
-            }
+            registration_updates=registration_updates,
         )
+
+        click.echo(f"Updates: {len(all_updates)}")
+        click.echo(f"Success: {len(success)} images")
+        click.echo(f"Waiting: {len(waiting)} images")
+        click.echo(f"Failure: {len(failure)} images")
+
+        click.echo()
+        batch_counter = batch_counter + 1
+        if batch_counter >= limit:
+            break
+
+
 
 @click.group()
 @click.pass_context

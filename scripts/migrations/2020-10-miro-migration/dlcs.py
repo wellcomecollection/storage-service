@@ -51,6 +51,12 @@ class DlcsSettings:
     origin = attr.ib(default="storage-origin")
 
 
+@attr.s
+class RegistrationUpdate():
+    miro_id = attr.ib()
+    update_doc = attr.ib()
+
+
 def load_dlcs_settings():
     raw_settings = json.load(open(CREDENTIALS_PATH))
     return DlcsSettings(**raw_settings)
@@ -121,13 +127,13 @@ def get_dlcs_object(url):
 
     return resp.json()
 
-def update_registrations(registrations_index, registrations, update_doc):
+def update_registrations(registrations_index, registration_updates):
     local_elastic_client = get_local_elastic_client()
-    for reg in registrations:
+    for update in registration_updates:
         local_elastic_client.update(
             index=registrations_index,
-            id=reg['miro_id'],
-            body={"doc": update_doc}
+            id=update.miro_id,
+            body={"doc": update.update_doc}
         )
 
 
