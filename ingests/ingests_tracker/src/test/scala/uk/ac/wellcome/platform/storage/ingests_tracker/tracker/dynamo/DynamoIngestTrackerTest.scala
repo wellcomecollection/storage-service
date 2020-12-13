@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.storage.ingests_tracker.tracker.dynamo
 
 import java.time.temporal.ChronoUnit
-
 import com.amazonaws.services.dynamodbv2.model._
 import org.scalatest.Assertion
 import org.scanamo.auto._
@@ -18,7 +17,7 @@ import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.{
   IngestTrackerTestCases
 }
 import uk.ac.wellcome.storage.{
-  ReadError,
+  MaximaReadError,
   StoreReadError,
   StoreWriteError,
   Version
@@ -72,8 +71,8 @@ class DynamoIngestTrackerTest
       new DynamoIngestTracker(config = config) {
         override val underlying = new VersionedStore[IngestID, Int, Ingest](
           new DynamoHashStore[IngestID, Int, Ingest](config) {
-            override def max(hashKey: IngestID): Either[ReadError, Int] =
-              Left(StoreReadError(new Throwable("BOOM!")))
+            override def max(hashKey: IngestID): MaxEither =
+              Left(MaximaReadError(new Throwable("BOOM!")))
 
             override def get(id: Version[IngestID, Int]): ReadEither =
               Left(StoreReadError(new Throwable("BOOM!")))
@@ -104,8 +103,8 @@ class DynamoIngestTrackerTest
       new DynamoIngestTracker(config = config) {
         override val underlying = new VersionedStore[IngestID, Int, Ingest](
           new DynamoHashStore[IngestID, Int, Ingest](config) {
-            override def max(hashKey: IngestID): Either[ReadError, Int] =
-              Left(StoreReadError(new Throwable("BOOM!")))
+            override def max(hashKey: IngestID): MaxEither =
+              Left(MaximaReadError(new Throwable("BOOM!")))
           }
         )
       }
