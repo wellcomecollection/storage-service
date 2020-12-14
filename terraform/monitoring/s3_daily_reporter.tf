@@ -43,7 +43,7 @@ data "aws_iam_policy_document" "daily_reporter_storage_access" {
     ]
 
     resources = [
-      "${aws_s3_bucket.daily_reporter.arn}",
+      aws_s3_bucket.daily_reporter.arn,
       "${aws_s3_bucket.daily_reporter.arn}/*",
     ]
 
