@@ -273,35 +273,6 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, limit, overwrite):
     else:
         chunks = get_chunks(CHUNKS_INDEX)
 
-    # chunk_ids = [
-    #     'library/L Images/L0049000',
-    #     'cold_store/L Images/L0048000',
-    #     'tandem_vault/L Images/L0050000',
-    #     'library/L Images/L0050000',
-    #     'tandem_vault/L Images/L0048000',
-    #     'cold_store/L Images/L0051000',
-    #     'none/AS Images',
-    #     'tandem_vault/L Images/L0054000',
-    #     'tandem_vault/A Images',
-    #     'library/L Images/L0051000_1',
-    #     'library/L Images/L0052000_1',
-    #     'library/L Images/L0053000_2',
-    #     'library/L Images/L0052000_2',
-    #     'library/L Images/L0053000_1',
-    #     'library/L Images/L0053000_3',
-    #     'library/L Images/L0051000_2',
-    #     'library/L Images/L0052000_3',
-    #     'library/L Images/L0054000_2',
-    #     'library/L Images/L0055000_1',
-    #     'library/L Images/L0055000_3',
-    #     'library/L Images/L0055000_11',
-    #     'library/L Images/L0055000_12',
-    #     'library/L Images/L0055000_8',
-    #     'library/L Images/L0055000_9',
-    #     'library/L Images/L0055000_6',
-    # ]
-    # chunks = [get_chunk(CHUNKS_INDEX, chunk_id) for chunk_id in chunk_ids]
-
     for chunk in chunks[:limit]:
         chunk_id = chunk.chunk_id()
         click.echo(f"Looking at '{chunk_id}':")

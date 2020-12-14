@@ -12,7 +12,6 @@ import elasticsearch
 
 from decisions import Decision
 from elastic_helpers import get_local_elastic_client
-from iter_helpers import chunked_iterable
 
 
 @attr.s
