@@ -49,7 +49,6 @@ from registrations import gather_registrations
 from uploads import check_package_upload, copy_transfer_package
 
 DECISIONS_INDEX = "decisions"
-CHUNKS_INDEX = "chunks"
 SOURCEDATA_INDEX = "sourcedata"
 TRANSFERS_INDEX = "transfers"
 REGISTRATIONS_INDEX = "registrations"
@@ -118,11 +117,16 @@ def create_decisions_index(ctx, overwrite):
 
 
 @click.command()
+@click.option("--index-name", default="chunks")
 @click.option("--overwrite", "-o", is_flag=True)
 @click.pass_context
-def create_chunks_index(ctx, overwrite):
+def create_chunks_index(ctx, index_name, overwrite):
     local_elastic_client = get_local_elastic_client()
-    chunks = gather_chunks(DECISIONS_INDEX)
+    chunks = gather_chunks(
+        decisions_index=DECISIONS_INDEX,
+        query_id=index_name
+    )
+
     expected_chunk_count = len(chunks)
 
     def _documents():
@@ -131,7 +135,7 @@ def create_chunks_index(ctx, overwrite):
 
     index_iterator(
         elastic_client=local_elastic_client,
-        index_name=CHUNKS_INDEX,
+        index_name=index_name,
         expected_doc_count=expected_chunk_count,
         documents=_documents(),
         overwrite=overwrite,
@@ -195,15 +199,17 @@ def load_index(ctx, index_name, target_index_name, overwrite):
 
 
 @click.command()
+@click.option("--overwrite", "-o", is_flag=True)
+@click.option("--index-name", default="chunks")
 @click.pass_context
-def transfer_package_chunks(ctx):
-    chunks = get_chunks(CHUNKS_INDEX)
+def transfer_package_chunks(ctx, overwrite, index_name):
+    chunks = get_chunks(index_name)
 
     for chunk in chunks:
-        if chunk.is_uploaded():
+        if chunk.is_uploaded() and not overwrite:
             try:
                 check_chunk_uploaded(chunk)
-                click.echo("Transfer package has S3 Location, skipping.")
+                click.echo(f"{chunk.chunk_id()}: Transfer package has S3 Location, skipping.")
                 continue
             except AssertionError as e:
                 click.echo(f"Uploaded chunk check failed: {e}")
@@ -212,7 +218,7 @@ def transfer_package_chunks(ctx):
         created_transfer_package = create_chunk_package(chunk)
 
         update_chunk_record(
-            CHUNKS_INDEX,
+            index_name,
             chunk.chunk_id(),
             {"transfer_package": attr.asdict(created_transfer_package)},
         )
@@ -220,7 +226,7 @@ def transfer_package_chunks(ctx):
         updated_transfer_package = upload_chunk_package(created_transfer_package)
 
         update_chunk_record(
-            CHUNKS_INDEX,
+            index_name,
             chunk.chunk_id(),
             {"transfer_package": attr.asdict(updated_transfer_package)},
         )
@@ -250,10 +256,11 @@ def _upload_package(chunk, overwrite, skip_upload):
 @click.command()
 @click.option("--skip-upload", "-s", is_flag=True)
 @click.option("--chunk-id", required=False)
+@click.option("--index-name", default="chunks")
 @click.option("--limit", required=False, default=100)
 @click.option("--overwrite", "-o", is_flag=True)
 @click.pass_context
-def upload_transfer_packages(ctx, skip_upload, chunk_id, limit, overwrite):
+def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, overwrite):
     local_elastic_client = get_local_elastic_client()
     local_elastic_client.indices.create(
         index=TRANSFERS_INDEX,
@@ -263,7 +270,7 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, limit, overwrite):
     missing_bags = []
 
     if chunk_id:
-        chunk = get_chunk(CHUNKS_INDEX, chunk_id)
+        chunk = get_chunk(index_name, chunk_id)
 
         if chunk is None:
             click.echo(f"No chunk found matching id: '{chunk_id}'")
@@ -271,7 +278,7 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, limit, overwrite):
 
         chunks = [chunk]
     else:
-        chunks = get_chunks(CHUNKS_INDEX)
+        chunks = get_chunks(index_name)
 
     for chunk in chunks[:limit]:
         chunk_id = chunk.chunk_id()

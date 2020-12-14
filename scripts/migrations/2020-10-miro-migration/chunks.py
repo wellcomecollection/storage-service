@@ -27,7 +27,10 @@ class Chunk:
         self.s3_keys = self.s3_keys + other.s3_keys
 
     def chunk_id(self):
-        return f"{self.destination}/{self.group_name}"
+        if self.destination is None:
+            return self.group_name
+        else:
+            return f"{self.destination}/{self.group_name}"
 
     def is_uploaded(self):
         if self.transfer_package:
@@ -37,10 +40,49 @@ class Chunk:
         return False
 
 
-def gather_chunks(decisions_index):
+DECISIONS_QUERIES = {
+    "chunks": {
+        "query": {
+            "bool": {
+                "must_not": [
+                    {"term": {"skip": True}}
+                ],
+                "must": [
+                    {"exists": {"field": "destinations"}}
+                ]
+            }
+        }
+    },
+    "chunks_no_miro_id": {
+        "query": {
+            "bool": {
+                "must_not": [
+                    {"exists": {"field": "destinations"}},
+                    {"term" : {"skip": True}}
+                ],
+                "must" : [
+                    {"exists": {"field": "miro_id"}}
+                ]
+            }
+        }
+    },
+    "chunks_movies_and_corporate": {
+        "query": {
+            "bool": {
+                "must_not": [
+                    {"exists": {"field": "destinations"}},
+                    {"term" : {"skip": True}},
+                    {"exists": {"field": "miro_id"}}
+                ]
+            }
+        }
+    }
+}
+
+def gather_chunks(decisions_index, query_id):
     local_elastic_client = get_local_elastic_client()
 
-    query_body = {"query": {"bool": {"must_not": [{"term": {"skip": True}}]}}}
+    query_body = DECISIONS_QUERIES[query_id]
 
     total_chunkable_decisions = local_elastic_client.count(
         body=query_body, index=decisions_index
@@ -57,7 +99,10 @@ def gather_chunks(decisions_index):
 
     for result in chunkable_decisions:
         decision = Decision(**result["_source"])
-        for destination in decision.destinations:
+
+        destinations = decision.destinations if decision.destinations else [None]
+
+        for destination in destinations:
             groups[(decision.group_name, destination)].append(decision)
 
     click.echo(f"Found {len(groups)} chunks.")
