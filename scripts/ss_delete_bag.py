@@ -513,7 +513,7 @@ def _delete_reporting_cluster_entries(
     click.echo("")
     click.echo("Deleting entries in the reporting cluster...")
 
-    index_pattern = {"staging": "storage_stage_{doc}", "prod": "storage_{doc}*"}[
+    index_pattern = {"staging": "storage_stage_{doc}", "prod": "storage_{doc}"}[
         environment
     ]
 
