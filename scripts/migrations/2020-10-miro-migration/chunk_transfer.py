@@ -84,8 +84,8 @@ def check_chunk_uploaded(chunk):
     ), f"Content length mismatch: {content_length} != {s3_object_size}"
 
 
-def create_chunk_package(chunk, clean_id=False):
-    chunk_id = chunk.chunk_id(clean_id=clean_id)
+def create_chunk_package(chunk):
+    chunk_id = chunk.chunk_id()
 
     click.echo(f"Creating transfer package for {chunk_id}")
     if chunk.transfer_package:

@@ -27,14 +27,14 @@ class Chunk:
         assert other.chunk_id() == self.chunk_id()
         self.s3_keys = self.s3_keys + other.s3_keys
 
-    def chunk_id(self, clean_id=False):
+    def chunk_id(self):
         ident = self.group_name if self.destination is None else f"{self.destination}/{self.group_name}"
 
-        if clean_id:
-            ident = ident.replace(' ', '-')           # spaces to hyphens
-            ident = re.sub(u'[–—/:;,.]', '-', ident)  # replace separating punctuation
-            ident = re.sub(r'[^a-z0-9A-Z -]', '', ident) # delete any other characters
-            ident = re.sub(r'-+', '-', ident)         # condense repeated hyphens
+        ident = re.sub(u'[–—:;,.-]', '_', ident)       # replace separating punctuation
+        ident = re.sub(r'[^a-z0-9A-Z//_ ]', '', ident) # delete any other characters
+        ident = ident.replace(' _', '_')               # delete whitespace around underscores
+        ident = ident.replace('_ ', '_')
+        ident = re.sub(r'-+', '-', ident)              # condense repeated hyphens
 
         assert ident != "", (
             f"chunk_id is empty for chunk: {self}!"
@@ -49,14 +49,6 @@ class Chunk:
                     return True
 
             return False
-
-
-def needs_clean_id(index_name):
-    clean_id_indexes = [
-        "chunks_movies_and_corporate"
-    ]
-
-    return True if index_name in clean_id_indexes else False
 
 
 DECISIONS_QUERIES = {
