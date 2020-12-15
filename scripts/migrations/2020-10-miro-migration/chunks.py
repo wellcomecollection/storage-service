@@ -5,6 +5,7 @@ for creating transfer packages
 """
 
 import collections
+import re
 
 import attr
 import click
@@ -26,18 +27,36 @@ class Chunk:
         assert other.chunk_id() == self.chunk_id()
         self.s3_keys = self.s3_keys + other.s3_keys
 
-    def chunk_id(self):
-        if self.destination is None:
-            return self.group_name
-        else:
-            return f"{self.destination}/{self.group_name}"
+    def chunk_id(self, clean_id=False):
+        ident = self.group_name if self.destination is None else f"{self.destination}/{self.group_name}"
+
+        if clean_id:
+            ident = ident.replace(' ', '-')           # spaces to hyphens
+            ident = re.sub(u'[–—/:;,.]', '-', ident)  # replace separating punctuation
+            ident = re.sub(r'[^a-z0-9A-Z -]', '', ident) # delete any other characters
+            ident = re.sub(r'-+', '-', ident)         # condense repeated hyphens
+
+        assert ident != "", (
+            f"chunk_id is empty for chunk: {self}!"
+        )
+
+        return ident
+
 
     def is_uploaded(self):
-        if self.transfer_package:
-            if self.transfer_package.s3_location:
-                return True
+            if self.transfer_package:
+                if self.transfer_package.s3_location:
+                    return True
 
-        return False
+            return False
+
+
+def needs_clean_id(index_name):
+    clean_id_indexes = [
+        "chunks_movies_and_corporate"
+    ]
+
+    return True if index_name in clean_id_indexes else False
 
 
 DECISIONS_QUERIES = {

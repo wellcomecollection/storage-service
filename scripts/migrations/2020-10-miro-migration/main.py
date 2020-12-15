@@ -8,7 +8,10 @@ import attr
 import click
 
 from decisions import get_decisions, count_decisions
-from chunks import gather_chunks
+from chunks import (
+    gather_chunks,
+    needs_clean_id
+)
 from elastic_helpers import (
     get_elastic_client,
     get_local_elastic_client,
@@ -115,12 +118,13 @@ def create_decisions_index(ctx, overwrite):
         overwrite=overwrite,
     )
 
-
 @click.command()
 @click.option("--index-name", default="chunks")
 @click.option("--overwrite", "-o", is_flag=True)
 @click.pass_context
 def create_chunks_index(ctx, index_name, overwrite):
+    clean_id = needs_clean_id(index_name)
+
     local_elastic_client = get_local_elastic_client()
     chunks = gather_chunks(
         decisions_index=DECISIONS_INDEX,
@@ -131,7 +135,7 @@ def create_chunks_index(ctx, index_name, overwrite):
 
     def _documents():
         for chunk in iter(chunks):
-            yield chunk.chunk_id(), attr.asdict(chunk)
+            yield chunk.chunk_id(clean_id=clean_id), attr.asdict(chunk)
 
     index_iterator(
         elastic_client=local_elastic_client,
@@ -203,23 +207,29 @@ def load_index(ctx, index_name, target_index_name, overwrite):
 @click.option("--index-name", default="chunks")
 @click.pass_context
 def transfer_package_chunks(ctx, overwrite, index_name):
+    clean_id = needs_clean_id(index_name)
     chunks = get_chunks(index_name)
 
     for chunk in chunks:
+        chunk_id = chunk.chunk_id(clean_id=clean_id)
+
         if chunk.is_uploaded() and not overwrite:
             try:
                 check_chunk_uploaded(chunk)
-                click.echo(f"{chunk.chunk_id()}: Transfer package has S3 Location, skipping.")
+                click.echo(f"{chunk_id}: Transfer package has S3 Location, skipping.")
                 continue
             except AssertionError as e:
                 click.echo(f"Uploaded chunk check failed: {e}")
-                click.echo(f"Retrying chunk: {chunk.chunk_id()}")
+                click.echo(f"Retrying chunk: {chunk_id}")
 
-        created_transfer_package = create_chunk_package(chunk)
+        created_transfer_package = create_chunk_package(
+            chunk=chunk,
+            clean_id=clean_id
+        )
 
         update_chunk_record(
             index_name,
-            chunk.chunk_id(),
+            chunk_id,
             {"transfer_package": attr.asdict(created_transfer_package)},
         )
 
@@ -227,14 +237,14 @@ def transfer_package_chunks(ctx, overwrite, index_name):
 
         update_chunk_record(
             index_name,
-            chunk.chunk_id(),
+            chunk_id,
             {"transfer_package": attr.asdict(updated_transfer_package)},
         )
 
 
-def _upload_package(chunk, overwrite, skip_upload):
+def _upload_package(chunk, overwrite, skip_upload, clean_id):
     upload = check_package_upload(chunk)
-    chunk_id = chunk.chunk_id()
+    chunk_id = chunk.chunk_id(clean_id=clean_id)
 
     if upload is not None:
         if (upload["upload_transfer"] is None or overwrite) and not skip_upload:
@@ -268,6 +278,7 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, over
     )
 
     missing_bags = []
+    clean_id = needs_clean_id(index_name)
 
     if chunk_id:
         chunk = get_chunk(index_name, chunk_id)
@@ -281,7 +292,7 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, over
         chunks = get_chunks(index_name)
 
     for chunk in chunks[:limit]:
-        chunk_id = chunk.chunk_id()
+        chunk_id = chunk.chunk_id(clean_id=clean_id)
         click.echo(f"Looking at '{chunk_id}':")
 
         upload = get_document_by_id(
@@ -297,7 +308,7 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, over
             has_bag = upload["storage_service"]["bag"] is not None
 
         if upload is None or not has_bag:
-            upload = _upload_package(chunk, overwrite, skip_upload)
+            upload = _upload_package(chunk, overwrite, skip_upload, clean_id)
 
             local_elastic_client.index(index=TRANSFERS_INDEX, body=upload, id=chunk_id)
 

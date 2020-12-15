@@ -84,8 +84,10 @@ def check_chunk_uploaded(chunk):
     ), f"Content length mismatch: {content_length} != {s3_object_size}"
 
 
-def create_chunk_package(chunk):
-    click.echo(f"Creating transfer package for {chunk.chunk_id()}")
+def create_chunk_package(chunk, clean_id=False):
+    chunk_id = chunk.chunk_id(clean_id=clean_id)
+
+    click.echo(f"Creating transfer package for {chunk_id}")
     if chunk.transfer_package:
         file_location = chunk.transfer_package.local_location
         expected_content_length = chunk.transfer_package.content_length
@@ -96,7 +98,7 @@ def create_chunk_package(chunk):
                 f"{os.path.getsize(file_location)} != {expected_content_length}"
             )
             click.echo(
-                f"Local transfer package for {chunk.chunk_id()} found: "
+                f"Local transfer package for {chunk_id} found: "
                 f"{file_location} - skipping download."
             )
             return chunk.transfer_package
@@ -105,7 +107,7 @@ def create_chunk_package(chunk):
 
     transfer_package = create_transfer_package(
         s3_client=storage_s3_client,
-        group_name=chunk.chunk_id(),
+        group_name=chunk_id,
         s3_bucket=S3_MIRO_BUCKET,
         s3_key_list=chunk.s3_keys,
         prefix=S3_PREFIX,
