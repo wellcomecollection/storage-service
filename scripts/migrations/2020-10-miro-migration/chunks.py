@@ -180,12 +180,37 @@ def gather_chunks(decisions_index, query_id):
     return [item for sublist in chunks_list for item in sublist]
 
 
-if __name__ == "__main__":
-    tally = collections.Counter()
-
-    for chunk in gather_chunks("decisions"):
-        tally[chunk.chunk_id()] = len(chunk.s3_keys)
-
-    from pprint import pprint
-
-    pprint(tally.items())
+# if __name__ == "__main__":
+#     tally = collections.Counter()
+#     total_files = 0
+#     total_size = 0
+#
+#     for chunk in gather_chunks("decisions", "chunks_movies_and_corporate"):
+#         tally[chunk.chunk_id()] = len(chunk.s3_keys)
+#         total_files = total_files + len(chunk.s3_keys)
+#         total_size = total_size + chunk.total_size
+#
+#     # from pprint import pprint
+#     print(total_files, total_size)
+#     # # pprint(tally.items())
+#
+#     PLATFORM_ROLE_ARN = "arn:aws:iam::760097843905:role/platform-read_only"
+#     from common import get_aws_client
+#     from s3 import list_s3_objects_from
+#
+#     s3_client = get_aws_client("s3", role_arn=PLATFORM_ROLE_ARN)
+#
+#     editorial_photography = list_s3_objects_from(
+#         s3_client=s3_client,
+#         bucket="wellcomecollection-assets-workingstorage",
+#         prefix="miro/Wellcome_Images_Archive/Corporate_Photography"
+#     )
+#
+#     existing_corporate_ids = []
+#     total_files = 0
+#     total_bytes = 0
+#     for result in editorial_photography:
+#         total_files = total_files + 1
+#         total_bytes = total_bytes + result['Size']
+#
+#     print(total_files, total_bytes)

@@ -7,9 +7,9 @@ WORKFLOW_ROLE_ARN = "arn:aws:iam::299497370133:role/workflow-developer"
 STORAGE_SPACE = "miro"
 
 
-def check_package_transferred(chunk):
+def check_package_transferred(transfer_package):
     s3_client = get_aws_client("s3", role_arn=WORKFLOW_ROLE_ARN)
-    s3_location = chunk.transfer_package.s3_location
+    s3_location = transfer_package.s3_location
 
     object_size = get_s3_object_size(
         s3_client=s3_client,
@@ -18,7 +18,7 @@ def check_package_transferred(chunk):
     )
 
     if object_size is not None:
-        assert object_size == chunk.transfer_package.content_length
+        assert object_size == transfer_package.content_length
         return {
             "s3_bucket": S3_ARCHIVEMATICA_BUCKET,
             "s3_key": s3_location["s3_key"],
@@ -40,9 +40,9 @@ def check_storage_service(chunk):
     return {"ingest": ingest, "bag": bag}
 
 
-def copy_transfer_package(chunk):
+def copy_transfer_package(transfer_package):
     s3_client = get_aws_client("s3", role_arn=WORKFLOW_ROLE_ARN)
-    s3_location = chunk.transfer_package.s3_location
+    s3_location = transfer_package.s3_location
 
     s3_client.copy(
         ExtraArgs={"ACL": "bucket-owner-full-control"},
@@ -51,12 +51,12 @@ def copy_transfer_package(chunk):
         Key=s3_location["s3_key"],
     )
 
-    return check_package_transferred(chunk)
+    return check_package_transferred(transfer_package)
 
 
 def check_package_upload(chunk):
     if chunk.is_uploaded():
-        upload_transfer = check_package_transferred(chunk)
+        upload_transfer = check_package_transferred(chunk.transfer_package)
         storage_service = check_storage_service(chunk)
 
         return {"upload_transfer": upload_transfer, "storage_service": storage_service}

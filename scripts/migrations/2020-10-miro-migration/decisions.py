@@ -40,6 +40,36 @@ ELASTIC_SECRET_ID = "miro_storage_migration/credentials"
 S3_PREFIX = "miro/Wellcome_Images_Archive"
 
 
+def load_existing_corporate():
+    cache_location = "_cache/existing_corporate_ids.json"
+
+    if os.path.isfile(cache_location):
+        with open(cache_location) as infile:
+            return json.loads(infile.read())
+
+    s3_client = get_aws_client("s3", role_arn=PLATFORM_ROLE_ARN)
+
+    editorial_photography = list_s3_objects_from(
+        s3_client=s3_client,
+        bucket="wellcomecollection-editorial-photography",
+    )
+
+    existing_corporate_ids = []
+
+    for result in editorial_photography:
+        key = result['Key']
+        if key.endswith(".tif"):
+            object_id = _get_object_id(key)
+            existing_corporate_ids.append(object_id)
+
+    with open(cache_location, "w") as outfile:
+        json.dump(existing_corporate_ids, outfile)
+
+    return existing_corporate_ids
+
+
+EXISTING_CORPORATE_IDS = load_existing_corporate()
+
 @attr.s
 class Decision:
     s3_key = attr.ib()
@@ -231,11 +261,11 @@ def decide_based_on_miro_metadata(s3_key, s3_size, miro_id):
             ],
         )
 
-
 def make_decision(s3_obj):
     """
     Decide how a Miro asset should be handled.
     """
+
     try:
         miro_id = parse_miro_id(s3_obj["Key"])
     except NotMiroAssetError:
@@ -253,12 +283,18 @@ def make_decision(s3_obj):
             notes=["This is a movie"],
         )
     except IsCorporatePhotographyError:
+        object_id = _get_object_id(s3_obj["Key"])
+
+        skip=False
+        if object_id in EXISTING_CORPORATE_IDS:
+            skip=True
+
         return Decision(
             s3_key=s3_obj["Key"],
             s3_size=s3_obj["Size"],
             miro_id=None,
             group_name=choose_group_name(S3_PREFIX, s3_obj["Key"]),
-            skip=False,
+            skip=skip,
             destinations=[],
             notes=["Corporate photography"],
         )
@@ -311,10 +347,20 @@ def count_decisions():
     return decision_count
 
 
-def get_decisions():
-    mirror_miro_inventory_locally()
+def _get_object_id(s3_key):
+    key_parts = s3_key.split(".")
+    object_id = None
 
+    if len(key_parts) > 1:
+        object_id = s3_key.split(".")[-2]
+        object_id = object_id.split("/")[-1]
+
+    return object_id
+
+
+def get_decisions():
     s3_client = get_aws_client("s3", role_arn=PLATFORM_ROLE_ARN)
+    mirror_miro_inventory_locally()
 
     for s3_obj in tqdm.tqdm(
         list_s3_objects_from(

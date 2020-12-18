@@ -34,6 +34,7 @@ def _download_s3_object(s3_client, s3_bucket, s3_key, target_folder, prefix):
         os.makedirs(required_dir, exist_ok=True)
         s3_client.download_file(Bucket=s3_bucket, Key=s3_key, Filename=file_location)
 
+
     # Check if we already have this file
     if os.path.isfile(file_location):
         # If the length doesn't match overwrite

@@ -243,7 +243,7 @@ def _upload_package(chunk, overwrite, skip_upload):
 
     if upload is not None:
         if (upload["upload_transfer"] is None or overwrite) and not skip_upload:
-            new_upload_transfer = copy_transfer_package(chunk)
+            new_upload_transfer = copy_transfer_package(chunk.transfer_package)
 
             s3_bucket = new_upload_transfer["s3_bucket"]
             s3_key = new_upload_transfer["s3_key"]

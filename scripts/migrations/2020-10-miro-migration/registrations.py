@@ -22,7 +22,7 @@ class Registration:
     file_id = attr.ib()
     miro_id = attr.ib()
 
-def _stored_files():
+def stored_files():
     local_elastic_client = get_local_elastic_client()
     match_all_query = {
         "query": {
@@ -137,7 +137,7 @@ def _gather_files_for_registration(clear_decisions):
         clear_decisions_lookup[expected_key] = decision["miro_id"]
 
     files_for_registration = {}
-    for stored_file_result in _stored_files():
+    for stored_file_result in stored_files():
         stored_file_name = stored_file_result['_source']['name']
         if stored_file_name in clear_decisions_lookup:
             files_for_registration[clear_decisions_lookup[stored_file_name]] = stored_file_result['_id']
