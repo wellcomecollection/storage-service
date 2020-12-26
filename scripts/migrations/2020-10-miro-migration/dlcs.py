@@ -157,7 +157,7 @@ def get_registrations(registrations_index, query):
     for result in results:
         yield result["_source"]
 
-@functools.lru_cache
+@functools.lru_cache()
 def get_dlcs_object(url):
     settings = load_dlcs_settings()
 

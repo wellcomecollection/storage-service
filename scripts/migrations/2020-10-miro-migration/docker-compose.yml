@@ -1,32 +1,32 @@
 version: "3.3"
 services:
-  migration:
-    image: migration
-    build:
-      context: .
-    environment:
-      - LOCAL_ELASTIC_HOST=elasticsearch
-      - AWS_DEFAULT_REGION=eu-west-1
-    volumes:
-      - .:/migration
-      - ~/.aws:/root/.aws:ro
-    command: [ "create-decisions-index" ]
-    tty: true
-    depends_on:
-      - elasticsearch
-  kibana:
-    container_name: kibana
-    image: docker.elastic.co/kibana/kibana:7.9.3
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-    ports:
-      - 5601:5601
-    expose:
-      - 5601
-    depends_on:
-      - elasticsearch
-    logging:
-      driver: none
+        #  migration:
+        #    image: migration
+        #    build:
+        #      context: .
+        #    environment:
+        #      - LOCAL_ELASTIC_HOST=elasticsearch
+        #      - AWS_DEFAULT_REGION=eu-west-1
+        #    volumes:
+        #      - .:/migration
+        #      - ~/.aws:/root/.aws:ro
+        #    command: [ "create-decisions-index" ]
+        #    tty: true
+        #    depends_on:
+        #      - elasticsearch
+        #  kibana:
+        #    container_name: kibana
+        #    image: docker.elastic.co/kibana/kibana:7.9.3
+        #    environment:
+        #      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+        #    ports:
+        #      - 5601:5601
+        #    expose:
+        #      - 5601
+        #    depends_on:
+        #      - elasticsearch
+        #    logging:
+        #      driver: none
   elasticsearch:
     image: elasticsearch:7.9.3
     container_name: elasticsearch

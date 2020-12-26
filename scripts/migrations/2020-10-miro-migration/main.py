@@ -242,13 +242,17 @@ def _upload_package(chunk, overwrite, skip_upload):
     chunk_id = chunk.chunk_id()
 
     if upload is not None:
-        if (upload["upload_transfer"] is None or overwrite) and not skip_upload:
-            new_upload_transfer = copy_transfer_package(chunk.transfer_package)
+        if (upload["upload_transfer"] is None or overwrite):
+            if not skip_upload:
+                new_upload_transfer = copy_transfer_package(chunk.transfer_package)
 
-            s3_bucket = new_upload_transfer["s3_bucket"]
-            s3_key = new_upload_transfer["s3_key"]
+                s3_bucket = new_upload_transfer["s3_bucket"]
+                s3_key = new_upload_transfer["s3_key"]
 
-            click.echo(f"Not found. Copying '{chunk_id}' to s3://{s3_bucket}/{s3_key}")
+                click.echo(f"Not found. Copying '{chunk_id}' to s3://{s3_bucket}/{s3_key}")
+                return check_package_upload(chunk)
+            else:
+                print("Skipping upload!")
         else:
             s3_bucket = upload["upload_transfer"]["s3_bucket"]
             s3_key = upload["upload_transfer"]["s3_key"]
@@ -273,6 +277,7 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, over
     )
 
     missing_bags = []
+    has_bags = []
 
     if chunk_id:
         chunk = get_chunk(index_name, chunk_id)
@@ -297,11 +302,22 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, over
 
         has_ingest = False
         has_bag = False
+        has_upload = False
+
         if upload is not None:
+            has_upload = upload['upload_transfer'] is not None
+
+        if has_upload:
             has_ingest = upload["storage_service"]["ingest"] is not None
             has_bag = upload["storage_service"]["bag"] is not None
 
-        if upload is None or not has_bag:
+        # Hack edit: only ever do one upload and then stop
+        if not has_upload:
+            upload = _upload_package(chunk, overwrite, skip_upload)
+            local_elastic_client.index(index=TRANSFERS_INDEX, body=upload, id=chunk_id)
+            break
+
+        if not has_upload or not has_bag:
             upload = _upload_package(chunk, overwrite, skip_upload)
 
             local_elastic_client.index(index=TRANSFERS_INDEX, body=upload, id=chunk_id)
@@ -328,6 +344,7 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, over
                 "internalSenderIdentifier"
             ]
             version = upload["storage_service"]["bag"]["version"]
+            has_bags.append(bag_id)
             click.echo(click.style(
                 f"Found bag {bag_id}, (v{version}) with internal id: {bag_internal_id}",
                 fg="bright_green"
@@ -340,7 +357,8 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, over
             ))
         click.echo("")
 
-    click.echo(f"Found {limit - len(missing_bags)} bags from {limit} packages.")
+    click.echo(f"Found {len(has_bags)} bags from {len(chunks)} packages.")
+    click.echo(f"Missing {len(missing_bags)} bags.")
     click.echo(f"No bags found for: {missing_bags}")
 
 

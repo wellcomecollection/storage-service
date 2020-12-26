@@ -42,7 +42,7 @@ def get_aws_client(resource, *, role_arn):
     )
 
 
-@functools.lru_cache
+@functools.lru_cache()
 def get_secret(role_arn, secret_id):
     secretsmanager_client = get_aws_client(resource="secretsmanager", role_arn=role_arn)
 
