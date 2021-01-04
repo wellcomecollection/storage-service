@@ -3,6 +3,7 @@ import datetime
 import httpx
 
 from aws import get_secret
+from ingests import get_dev_status
 
 
 def get_es_client():
@@ -58,6 +59,7 @@ def get_interesting_ingests(es_client, *, index_name, days_to_fetch):
 
     *   it was updated recently
     *   it's still processing
+    *   failures that can't be explained
 
     It tries to highlight ingests that might need attention, e.g. failures or
     stalled ingests.
@@ -128,5 +130,42 @@ def get_interesting_ingests(es_client, *, index_name, days_to_fetch):
         except KeyError:
             # Nothing in hits, no results to find
             pass
+
+    # Look up the last 10,000 failures.  We'll discard all failures that
+    # are explainable; the idea is to highlight any failures that have
+    # an inexplicable failure reason, to keep them coming up until we fix
+    # them or explicitly discard them.
+    resp = es_client.request(
+        method="GET",
+        url=f"/{index_name}/_search",
+        json={
+            "query": {
+                "bool": {
+                    "filter": [{"terms": {"status.id": ["failed"]}}],
+                }
+            },
+            "_source": [
+                "id",
+                "lastModifiedDate",
+                "space.id",
+                "status.id",
+                "bag.info.externalIdentifier",
+                "bag.info.version",
+                "createdDate",
+                "events.createdDate",
+                "events.description",
+            ],
+            # We can retrieve up to 10000 documents in one request.
+            "size": 10000,
+            "sort": [{"id": "desc"}],
+        },
+    )
+    for hit in resp.json().get("hits", {}).get("hits", []):
+        failed_ingest = _parse_ingest_from_hit(hit)
+
+        if get_dev_status(failed_ingest) == "failed (user error)":
+            continue
+        else:
+            ingests[hit["_id"]] = failed_ingest
 
     return {"ingests": ingests.values(), "found_everything": found_everything}
