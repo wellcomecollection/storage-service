@@ -45,7 +45,7 @@ class VerifyBagDeclarationTest extends AnyFunSpec with Matchers with EitherValue
     }
 
     val err = verifier.verifyBagDeclaration(createMemoryLocationPrefix).left.value
-    err.userMessage.get shouldBe "No Bag Declaration (bagit.txt) in bag"
+    err.userMessage.get shouldBe "Error loading Bag Declaration (bagit.txt): no such file!"
   }
 
   it("fails if it can't read the bagit.txt") {
@@ -63,7 +63,7 @@ class VerifyBagDeclarationTest extends AnyFunSpec with Matchers with EitherValue
     }
 
     val err = verifier.verifyBagDeclaration(createMemoryLocationPrefix).left.value
-    err.userMessage.get shouldBe "Unable to read Bag Declaration (bagit.txt) from bag"
+    err.userMessage.get shouldBe "Error loading Bag Declaration (bagit.txt)"
     err.e shouldBe expectedErr
   }
 
@@ -86,7 +86,7 @@ class VerifyBagDeclarationTest extends AnyFunSpec with Matchers with EitherValue
   it("fails if the bagit.txt is nonsense") {
     assertFails(
       randomAlphanumeric(length = 2000),
-      expectedMessage = "The Bag Declaration (bagit.txt) is too large"
+      expectedMessage = "Error loading Bag Declaration (bagit.txt): too large"
     )
   }
 
@@ -117,7 +117,7 @@ class VerifyBagDeclarationTest extends AnyFunSpec with Matchers with EitherValue
     testWith(verifier)
   }
 
-  def assertFails[R](contents: String, expectedMessage: String = "The Bag Declaration (bagit.txt) is not correctly formatted"): Assertion = {
+  def assertFails[R](contents: String, expectedMessage: String = "Error loading Bag Declaration (bagit.txt): not correctly formatted"): Assertion = {
     implicit val root: MemoryLocationPrefix = createMemoryLocationPrefix
 
     withVerifier(contents) { verifier =>

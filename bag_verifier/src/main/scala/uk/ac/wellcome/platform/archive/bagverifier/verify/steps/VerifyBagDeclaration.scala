@@ -38,14 +38,14 @@ trait VerifyBagDeclaration[BagLocation <: Location, BagPrefix <: Prefix[
       case Right(Identified(_, inputStream)) if inputStream.length > 1000 =>
         inputStream.close()
         Left(
-          BagVerifierError("The Bag Declaration (bagit.txt) is too large")
+          BagVerifierError("Error loading Bag Declaration (bagit.txt): too large")
         )
 
       case Right(Identified(_, inputStream)) =>
         stringCodec.fromStream(inputStream) match {
           case Left(_) =>
             Left(
-              BagVerifierError("The Bag Declaration (bagit.txt) could not be decoded as UTF-8")
+              BagVerifierError("Error loading Bag Declaration (bagit.txt): could not be decoded as UTF-8")
             )
 
           case Right(declaration()) =>
@@ -53,18 +53,18 @@ trait VerifyBagDeclaration[BagLocation <: Location, BagPrefix <: Prefix[
 
           case Right(_) =>
             Left(
-              BagVerifierError("The Bag Declaration (bagit.txt) is not correctly formatted")
+              BagVerifierError("Error loading Bag Declaration (bagit.txt): not correctly formatted")
             )
         }
 
       case Left(err: NotFoundError) =>
         Left(
-          BagVerifierError(err.e, userMessage = Some("No Bag Declaration (bagit.txt) in bag"))
+          BagVerifierError(err.e, userMessage = Some("Error loading Bag Declaration (bagit.txt): no such file!"))
         )
 
       case Left(err) =>
         Left(
-          BagVerifierError(err.e, userMessage = Some("Unable to read Bag Declaration (bagit.txt) from bag"))
+          BagVerifierError(err.e, userMessage = Some("Error loading Bag Declaration (bagit.txt)"))
         )
     }
   }
