@@ -49,10 +49,7 @@ def get_dev_status(ingest):
         # Handle the case where something went wrong, and we marked the bag as manually
         # failed.
         if failure_reasons and failure_reasons[-1].startswith(
-            (
-                "Ingest manually marked as failed",
-                "Manually marked as failed",
-            )
+            ("Ingest manually marked as failed", "Manually marked as failed")
         ):
             return "failed (known error)"
 

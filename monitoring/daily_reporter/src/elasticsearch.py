@@ -139,11 +139,7 @@ def get_interesting_ingests(es_client, *, index_name, days_to_fetch):
         method="GET",
         url=f"/{index_name}/_search",
         json={
-            "query": {
-                "bool": {
-                    "filter": [{"terms": {"status.id": ["failed"]}}],
-                }
-            },
+            "query": {"bool": {"filter": [{"terms": {"status.id": ["failed"]}}]}},
             "_source": [
                 "id",
                 "lastModifiedDate",
@@ -166,7 +162,10 @@ def get_interesting_ingests(es_client, *, index_name, days_to_fetch):
         if is_known_failure(hit["_id"]):
             continue
 
-        if get_dev_status(failed_ingest) in {"failed (user error)", "failed (known error)"}:
+        if get_dev_status(failed_ingest) in {
+            "failed (user error)",
+            "failed (known error)",
+        }:
             continue
         else:
             ingests[hit["_id"]] = failed_ingest
