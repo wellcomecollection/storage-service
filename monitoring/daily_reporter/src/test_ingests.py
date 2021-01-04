@@ -66,6 +66,21 @@ from ingests import get_dev_status
             {"status": "failed", "events": [{"description": "Unpacking failed"}]},
             "failed (unknown reason)",
         ),
+        (
+            {"status": "failed", "events": []},
+            "failed (unknown reason)",
+        ),
+        # e.g. https://wellcome-ingest-inspector.glitch.me/ingests/fd6c1d57-5f1a-4268-894a-67add059b6ed
+        (
+            {
+                "status": "failed",
+                "events": [
+                    {"description": "Unpacking failed"},
+                    {"description": "Unpacking failed"},
+                    {"description": "Unpacking failed - the bag doesn't exist"}],
+            },
+            "failed (user error)",
+        ),
     ],
 )
 def test_get_dev_status(ingest, expected_dev_status):

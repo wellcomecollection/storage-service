@@ -43,6 +43,21 @@ def get_dev_status(ingest):
             for reason in failure_reasons
         ):
             return "failed (user error)"
+
+        # Handle the case where the unpacking was failing, and we had to patch the
+        # unpacker to add a user-facing failure reason.
+        #
+        # e.g. "Unpacking failed", "Unpacking failed", "Unpacking failed - Unexpected EOF"
+        #
+        # If we got a user-facing message *eventually*, then we can treat this as
+        # a user error that we handled.
+        elif (
+            all(reason.startswith("Unpacking failed") for reason in failure_reasons)
+            and failure_reasons
+            and failure_reasons[-1].startswith("Unpacking failed -")
+        ):
+            return "failed (user error)"
+
         else:
             return "failed (unknown reason)"
 
