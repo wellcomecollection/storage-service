@@ -3,10 +3,11 @@ package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
+import uk.ac.wellcome.storage.{Identified, ReadError, StoreReadError}
 import uk.ac.wellcome.storage.generators.MemoryLocationGenerators
 import uk.ac.wellcome.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
 import uk.ac.wellcome.storage.store.Readable
-import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
+import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore}
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
@@ -68,5 +69,24 @@ class VerifyBagDeclarationTest extends AnyFunSpec with Matchers with EitherValue
 
     val err = verifier.verifyBagDeclaration(createMemoryLocationPrefix).left.value
     err.userMessage.get shouldBe "No Bag Declaration in bag (no bagit.txt)"
+  }
+
+  it("fails if it can't read the bagit.txt") {
+    val expectedErr = new Throwable("BOOM!")
+
+    val brokenStore = new MemoryStreamStore[MemoryLocation](
+      new MemoryStore[MemoryLocation, Array[Byte]](initialEntries = Map.empty) {
+        override def get(id: MemoryLocation): Either[ReadError, Identified[MemoryLocation, Array[Byte]]] =
+          Left(StoreReadError(expectedErr))
+      }
+    )
+
+    val verifier = new VerifyBagDeclaration[MemoryLocation, MemoryLocationPrefix] {
+      override protected val srcReader: Readable[MemoryLocation, InputStreamWithLength] = brokenStore
+    }
+
+    val err = verifier.verifyBagDeclaration(createMemoryLocationPrefix).left.value
+    err.userMessage.get shouldBe "Unable to read Bag Declaration from bag (bagit.txt)"
+    err.e shouldBe expectedErr
   }
 }

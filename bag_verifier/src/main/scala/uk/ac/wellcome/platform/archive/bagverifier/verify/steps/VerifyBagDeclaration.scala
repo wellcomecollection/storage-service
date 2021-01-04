@@ -30,6 +30,12 @@ trait VerifyBagDeclaration[BagLocation <: Location, BagPrefix <: Prefix[
         Left(
           BagVerifierError(err.e, userMessage = Some("No Bag Declaration in bag (no bagit.txt)"))
         )
+
+      case Left(err) =>
+        Left(
+          BagVerifierError(err.e, userMessage = Some("Unable to read Bag Declaration from bag (bagit.txt)"))
+        )
+
       case _ => Right(())
     }
   }
