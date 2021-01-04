@@ -68,7 +68,7 @@ class VerifyBagDeclarationTest extends AnyFunSpec with Matchers with EitherValue
     }
 
     val err = verifier.verifyBagDeclaration(createMemoryLocationPrefix).left.value
-    err.userMessage.get shouldBe "No Bag Declaration in bag (no bagit.txt)"
+    err.userMessage.get shouldBe "No Bag Declaration (bagit.txt) in bag"
   }
 
   it("fails if it can't read the bagit.txt") {
@@ -86,7 +86,7 @@ class VerifyBagDeclarationTest extends AnyFunSpec with Matchers with EitherValue
     }
 
     val err = verifier.verifyBagDeclaration(createMemoryLocationPrefix).left.value
-    err.userMessage.get shouldBe "Unable to read Bag Declaration from bag (bagit.txt)"
+    err.userMessage.get shouldBe "Unable to read Bag Declaration (bagit.txt) from bag"
     err.e shouldBe expectedErr
   }
 
@@ -103,8 +103,8 @@ class VerifyBagDeclarationTest extends AnyFunSpec with Matchers with EitherValue
       override protected val srcReader: Readable[MemoryLocation, InputStreamWithLength] = store
     }
 
-    val err = verifier.verifyBagDeclaration(createMemoryLocationPrefix).left.value
-    err.userMessage.get shouldBe "The Bag Declaration is missing BagIt-Version (bagit.txt)"
+    val err = verifier.verifyBagDeclaration(root).left.value
+    err.userMessage.get shouldBe "The Bag Declaration (bagit.txt) is not correctly formatted"
   }
 
   it("fails if the bagit.txt has no Tag-File-Character-Encoding line") {
@@ -120,8 +120,8 @@ class VerifyBagDeclarationTest extends AnyFunSpec with Matchers with EitherValue
       override protected val srcReader: Readable[MemoryLocation, InputStreamWithLength] = store
     }
 
-    val err = verifier.verifyBagDeclaration(createMemoryLocationPrefix).left.value
-    err.userMessage.get shouldBe "The Bag Declaration is missing Tag-File-Character-Encoding (bagit.txt)"
+    val err = verifier.verifyBagDeclaration(root).left.value
+    err.userMessage.get shouldBe "The Bag Declaration (bagit.txt) is not correctly formatted"
   }
 
   it("fails if the bagit.txt is empty") {
@@ -137,8 +137,25 @@ class VerifyBagDeclarationTest extends AnyFunSpec with Matchers with EitherValue
       override protected val srcReader: Readable[MemoryLocation, InputStreamWithLength] = store
     }
 
-    val err = verifier.verifyBagDeclaration(createMemoryLocationPrefix).left.value
-    err.userMessage.get shouldBe "The Bag Declaration is missing BagIt-Version and Tag-File-Character-Encoding (bagit.txt)"
+    val err = verifier.verifyBagDeclaration(root).left.value
+    err.userMessage.get shouldBe "The Bag Declaration (bagit.txt) is not correctly formatted"
+  }
+
+  it("fails if the bagit.txt is nonsense") {
+    val store = MemoryStreamStore[MemoryLocation]()
+
+    val root = createMemoryLocationPrefix
+
+    store.put(root.asLocation("bagit.txt"))(
+      stringCodec.toStream(randomAlphanumeric(length = 2000)).value
+    )
+
+    val verifier = new VerifyBagDeclaration[MemoryLocation, MemoryLocationPrefix] {
+      override protected val srcReader: Readable[MemoryLocation, InputStreamWithLength] = store
+    }
+
+    val err = verifier.verifyBagDeclaration(root).left.value
+    err.userMessage.get shouldBe "The Bag Declaration (bagit.txt) is too large"
   }
 
   it("fails if the bagit.txt has an unwanted key") {
@@ -154,8 +171,8 @@ class VerifyBagDeclarationTest extends AnyFunSpec with Matchers with EitherValue
       override protected val srcReader: Readable[MemoryLocation, InputStreamWithLength] = store
     }
 
-    val err = verifier.verifyBagDeclaration(createMemoryLocationPrefix).left.value
-    err.userMessage.get shouldBe "The Bag Declaration has an unwanted key: Extra-Key (bagit.txt)"
+    val err = verifier.verifyBagDeclaration(root).left.value
+    err.userMessage.get shouldBe "The Bag Declaration (bagit.txt) is not correctly formatted"
   }
 
   it("fails if the bagit.txt has unwanted keys") {
@@ -171,7 +188,7 @@ class VerifyBagDeclarationTest extends AnyFunSpec with Matchers with EitherValue
       override protected val srcReader: Readable[MemoryLocation, InputStreamWithLength] = store
     }
 
-    val err = verifier.verifyBagDeclaration(createMemoryLocationPrefix).left.value
-    err.userMessage.get shouldBe "The Bag Declaration has unwanted keys: Extra-Key1, Extra-Key2 (bagit.txt)"
+    val err = verifier.verifyBagDeclaration(root).left.value
+    err.userMessage.get shouldBe "The Bag Declaration (bagit.txt) is not correctly formatted"
   }
 }
