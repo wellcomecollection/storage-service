@@ -80,7 +80,7 @@ class VerifyBagDeclarationTest extends AnyFunSpec with Matchers with EitherValue
   }
 
   it("fails if the bagit.txt is empty") {
-    assertFails("BagIt-Version: 0.97\n")
+    assertFails("")
   }
 
   it("fails if the bagit.txt is nonsense") {
