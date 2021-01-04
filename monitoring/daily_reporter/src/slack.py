@@ -50,10 +50,7 @@ def prepare_slack_payload(ingests_by_status, found_everything, days_to_fetch, s3
     # And use this to customise the heading
     emoji = ":white_check_mark:" if interesting_failures == 0 else ":interrobang:"
 
-    heading = (
-        f"{emoji} What happened in the storage service "
-        f"in the last {days_to_fetch} day{'s' if days_to_fetch > 1 else ''}?"
-    )
+    heading = f"{emoji} What happened in the storage service recently?"
 
     result = {
         "blocks": [
