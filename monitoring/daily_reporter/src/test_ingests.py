@@ -85,6 +85,17 @@ from ingests import get_dev_status
             },
             "failed (user error)",
         ),
+        # e.g. https://wellcome-ingest-inspector.glitch.me/ingests/e4580770-f7b6-42fc-9eac-29b6b6a0559d
+        (
+            {"status": "failed", "events": [{"description": "Ingest manually marked as failed by <a.chan@wellcome.ac.uk>"}]},
+            "failed (known error)",
+        ),
+        # e.g. https://wellcome-ingest-inspector.glitch.me/ingests/b6d0e4bb-5771-4358-9039-bd78a6ca3b63
+        (
+            {"status": "failed", "events": [{"description": "Unpacking failed - Access denied"}, {"description": "Callback failed for:"}]},
+            "failed (user error)",
+        ),
+
     ],
 )
 def test_get_dev_status(ingest, expected_dev_status):

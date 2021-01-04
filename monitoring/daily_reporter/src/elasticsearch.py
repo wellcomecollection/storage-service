@@ -3,7 +3,7 @@ import datetime
 import httpx
 
 from aws import get_secret
-from ingests import get_dev_status
+from ingests import get_dev_status, is_known_failure
 
 
 def get_es_client():
@@ -163,9 +163,17 @@ def get_interesting_ingests(es_client, *, index_name, days_to_fetch):
     for hit in resp.json().get("hits", {}).get("hits", []):
         failed_ingest = _parse_ingest_from_hit(hit)
 
-        if get_dev_status(failed_ingest) == "failed (user error)":
+        if is_known_failure(hit["_id"]):
+            continue
+
+        if get_dev_status(failed_ingest) in {"failed (user error)", "failed (known error)"}:
             continue
         else:
             ingests[hit["_id"]] = failed_ingest
+
+        # If there are more than 10000 results, that suggests there are more
+        # that we didn't get.  Flag this to the caller.
+        if resp.json()["hits"]["total"]["value"] >= 10000:
+            found_everything = False
 
     return {"ingests": ingests.values(), "found_everything": found_everything}

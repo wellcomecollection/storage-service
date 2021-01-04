@@ -19,7 +19,7 @@ def get_dev_status(ingest):
     elif ingest["status"] == "failed":
         # We sort failures into two groups:
         #
-        #   -   a user error is one that means there was something wrong with the
+        #   -   a known/user error is one that means there was something wrong with the
         #       bag, e.g. it couldn't be unpacked correctly, it failed verification
         #   -   an unknown error is one that we can't categorise, and might indicate
         #       a storage service error, e.g. a replication failure
@@ -54,6 +54,9 @@ def get_dev_status(ingest):
                 "Manually marked as failed",
             )
         ):
+            return "failed (known error)"
+
+        if is_known_failure(ingest["id"]):
             return "failed (known error)"
 
         # Handle the case where the unpacking was failing, and we had to patch the
