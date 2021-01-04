@@ -74,7 +74,7 @@ resource "aws_iam_role_policy" "allow_reporter_to_upload_to_s3" {
 
 resource "aws_cloudwatch_event_rule" "every_day_at_6am" {
   name                = "trigger_daily_reporter"
-  schedule_expression = "cron(0 6 * * ? *)"
+  schedule_expression = "cron(0 6 * * MON-FRI *)"
   tags                = local.default_tags
 }
 

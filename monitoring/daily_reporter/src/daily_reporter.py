@@ -17,7 +17,7 @@ from slack import prepare_slack_payload
 def main(*args):
     es_client = get_es_client()
 
-    days_to_fetch = 2
+    days_to_fetch = 3
 
     prod_ingests = get_interesting_ingests(
         es_client, index_name="storage_ingests", days_to_fetch=days_to_fetch
