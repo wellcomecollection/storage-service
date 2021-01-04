@@ -41,7 +41,7 @@ class VerifyBagDeclarationTest extends AnyFunSpec with Matchers with EitherValue
     val store = MemoryStreamStore[MemoryLocation]()
 
     val verifier = new VerifyBagDeclaration[MemoryLocation, MemoryLocationPrefix] {
-      override protected val srcReader: Readable[MemoryLocation, InputStreamWithLength] = store
+      override protected val streamReader: Readable[MemoryLocation, InputStreamWithLength] = store
     }
 
     val err = verifier.verifyBagDeclaration(createMemoryLocationPrefix).left.value
@@ -59,7 +59,7 @@ class VerifyBagDeclarationTest extends AnyFunSpec with Matchers with EitherValue
     )
 
     val verifier = new VerifyBagDeclaration[MemoryLocation, MemoryLocationPrefix] {
-      override protected val srcReader: Readable[MemoryLocation, InputStreamWithLength] = brokenStore
+      override protected val streamReader: Readable[MemoryLocation, InputStreamWithLength] = brokenStore
     }
 
     val err = verifier.verifyBagDeclaration(createMemoryLocationPrefix).left.value
@@ -111,7 +111,7 @@ class VerifyBagDeclarationTest extends AnyFunSpec with Matchers with EitherValue
     store.put(root.asLocation("bagit.txt"))(stringCodec.toStream(contents).value)
 
     val verifier = new VerifyBagDeclaration[MemoryLocation, MemoryLocationPrefix] {
-      override protected val srcReader: Readable[MemoryLocation, InputStreamWithLength] = store
+      override protected val streamReader: Readable[MemoryLocation, InputStreamWithLength] = store
     }
 
     testWith(verifier)

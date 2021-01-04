@@ -122,14 +122,7 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
       externalIdentifier = externalIdentifier
     )
 
-    val bagItFile =
-      ManifestFile(
-        name = s"bagit.txt",
-        contents = """
-                     |BagIt-Version: 0.97
-                     |Tag-File-Character-Encoding: UTF-8
-                   """.stripMargin.trim
-      )
+    val bagItFile = Seq(createBagDeclaration).flatten
 
     val bagInfoFile =
       createBagInfo(bagInfo)
@@ -151,7 +144,7 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
     val tagManifestFiles: List[ManifestFile] =
       payloadManifest.toList ++
         bagInfoFile.toList ++
-        fetchFile.toList ++ List(bagItFile)
+        fetchFile.toList ++ bagItFile
 
     val tagManifest = createTagManifest(tagManifestFiles)
       .map { contents =>
@@ -234,6 +227,17 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
         entries.map { entry =>
           (entry.name, createDigest(entry.contents))
         }
+      )
+    )
+
+  protected def createBagDeclaration: Option[ManifestFile] =
+    Some(
+      ManifestFile(
+        name = s"bagit.txt",
+        contents = """
+                     |BagIt-Version: 0.97
+                     |Tag-File-Character-Encoding: UTF-8
+                   """.stripMargin.trim
       )
     )
 

@@ -11,7 +11,7 @@ import scala.util.matching.Regex
 trait VerifyBagDeclaration[BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
 ]] {
-  protected val srcReader: Readable[BagLocation, InputStreamWithLength]
+  protected val streamReader: Readable[BagLocation, InputStreamWithLength]
 
   private val declaration = new Regex("BagIt-Version: \\d\\.\\d+\nTag-File-Character-Encoding: UTF-8\n?")
 
@@ -30,7 +30,7 @@ trait VerifyBagDeclaration[BagLocation <: Location, BagPrefix <: Prefix[
   def verifyBagDeclaration(root: BagPrefix): Either[BagVerifierError, Unit] = {
     val location = root.asLocation("bagit.txt")
 
-    srcReader.get(location) match {
+    streamReader.get(location) match {
 
       // If the bagit.txt file is too big, something is definitely wrong.
       // We'll be loading the whole file into memory because it should be small;

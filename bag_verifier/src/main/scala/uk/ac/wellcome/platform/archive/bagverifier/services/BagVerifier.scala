@@ -48,6 +48,7 @@ trait ReplicatedBagVerifier[
 trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
 ]] extends Logging
+    with VerifyBagDeclaration[BagLocation, BagPrefix]
     with VerifyChecksumAndSize[BagLocation, BagPrefix]
     with VerifyExternalIdentifier
     with VerifyFetch[BagLocation, BagPrefix]
@@ -117,6 +118,7 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
     implicit et: EnsureTrailingSlash[BagPrefix]
   ): Either[BagVerifierError, FixityListResult[BagLocation]] =
     for {
+      _ <- verifyBagDeclaration(root)
 
       _ <- verifyExternalIdentifier(
         bag = bag,

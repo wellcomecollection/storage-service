@@ -18,6 +18,7 @@ import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.listing.azure.AzureBlobLocationListing
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
 import uk.ac.wellcome.storage.store.StreamStore
+import uk.ac.wellcome.storage.store.azure.AzureStreamStore
 import uk.ac.wellcome.storage.store.s3.S3StreamStore
 
 class AzureReplicatedBagVerifier(
@@ -30,7 +31,8 @@ class AzureReplicatedBagVerifier(
     AzureBlobLocationPrefix,
     Bag
   ],
-  val srcReader: StreamStore[S3ObjectLocation]
+  val srcReader: StreamStore[S3ObjectLocation],
+  val streamReader: StreamStore[AzureBlobLocation]
 ) extends ReplicatedBagVerifier[AzureBlobLocation, AzureBlobLocationPrefix] {
 
   override def getRelativePath(
@@ -60,7 +62,8 @@ object AzureReplicatedBagVerifier {
       listing,
       resolvable,
       fixityListChecker,
-      srcReader
+      srcReader,
+      streamReader = new AzureStreamStore()
     )
   }
 }
