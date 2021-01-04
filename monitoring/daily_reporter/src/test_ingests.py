@@ -67,6 +67,10 @@ from ingests import get_dev_status
             "failed (unknown reason)",
         ),
         (
+            {"status": "failed", "events": [{"description": "Detecting bag root failed"}]},
+            "failed (user error)",
+        ),
+        (
             {"status": "failed", "events": []},
             "failed (unknown reason)",
         ),
