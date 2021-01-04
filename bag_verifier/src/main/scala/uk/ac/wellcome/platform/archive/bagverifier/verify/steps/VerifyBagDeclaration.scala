@@ -13,7 +13,9 @@ trait VerifyBagDeclaration[BagLocation <: Location, BagPrefix <: Prefix[
 ]] {
   protected val streamReader: Readable[BagLocation, InputStreamWithLength]
 
-  private val declaration = new Regex("BagIt-Version: \\d\\.\\d+\nTag-File-Character-Encoding: UTF-8\n?")
+  private val declaration = new Regex(
+    "BagIt-Version: \\d\\.\\d+\nTag-File-Character-Encoding: UTF-8\n?"
+  )
 
   // Quoting from the BagIt spec (https://tools.ietf.org/html/rfc8493#section-2.1.1):
   //
@@ -38,14 +40,18 @@ trait VerifyBagDeclaration[BagLocation <: Location, BagPrefix <: Prefix[
       case Right(Identified(_, inputStream)) if inputStream.length > 1000 =>
         inputStream.close()
         Left(
-          BagVerifierError("Error loading Bag Declaration (bagit.txt): too large")
+          BagVerifierError(
+            "Error loading Bag Declaration (bagit.txt): too large"
+          )
         )
 
       case Right(Identified(_, inputStream)) =>
         stringCodec.fromStream(inputStream) match {
           case Left(_) =>
             Left(
-              BagVerifierError("Error loading Bag Declaration (bagit.txt): could not be decoded as UTF-8")
+              BagVerifierError(
+                "Error loading Bag Declaration (bagit.txt): could not be decoded as UTF-8"
+              )
             )
 
           case Right(declaration()) =>
@@ -53,18 +59,27 @@ trait VerifyBagDeclaration[BagLocation <: Location, BagPrefix <: Prefix[
 
           case Right(_) =>
             Left(
-              BagVerifierError("Error loading Bag Declaration (bagit.txt): not correctly formatted")
+              BagVerifierError(
+                "Error loading Bag Declaration (bagit.txt): not correctly formatted"
+              )
             )
         }
 
       case Left(err: NotFoundError) =>
         Left(
-          BagVerifierError(err.e, userMessage = Some("Error loading Bag Declaration (bagit.txt): no such file!"))
+          BagVerifierError(
+            err.e,
+            userMessage =
+              Some("Error loading Bag Declaration (bagit.txt): no such file!")
+          )
         )
 
       case Left(err) =>
         Left(
-          BagVerifierError(err.e, userMessage = Some("Error loading Bag Declaration (bagit.txt)"))
+          BagVerifierError(
+            err.e,
+            userMessage = Some("Error loading Bag Declaration (bagit.txt)")
+          )
         )
     }
   }

@@ -6,13 +6,20 @@ import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.storage.{Identified, ReadError, StoreReadError}
 import uk.ac.wellcome.storage.generators.MemoryLocationGenerators
-import uk.ac.wellcome.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
+import uk.ac.wellcome.storage.providers.memory.{
+  MemoryLocation,
+  MemoryLocationPrefix
+}
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore}
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 
-class VerifyBagDeclarationTest extends AnyFunSpec with Matchers with EitherValues with MemoryLocationGenerators {
+class VerifyBagDeclarationTest
+    extends AnyFunSpec
+    with Matchers
+    with EitherValues
+    with MemoryLocationGenerators {
   it("verifies a valid bagit.txt (v0.97)") {
     implicit val root: MemoryLocationPrefix = createMemoryLocationPrefix
 
@@ -40,11 +47,14 @@ class VerifyBagDeclarationTest extends AnyFunSpec with Matchers with EitherValue
   it("fails if it can't find a bagit.txt") {
     val store = MemoryStreamStore[MemoryLocation]()
 
-    val verifier = new VerifyBagDeclaration[MemoryLocation, MemoryLocationPrefix] {
-      override protected val streamReader: Readable[MemoryLocation, InputStreamWithLength] = store
-    }
+    val verifier =
+      new VerifyBagDeclaration[MemoryLocation, MemoryLocationPrefix] {
+        override protected val streamReader
+          : Readable[MemoryLocation, InputStreamWithLength] = store
+      }
 
-    val err = verifier.verifyBagDeclaration(createMemoryLocationPrefix).left.value
+    val err =
+      verifier.verifyBagDeclaration(createMemoryLocationPrefix).left.value
     err.userMessage.get shouldBe "Error loading Bag Declaration (bagit.txt): no such file!"
   }
 
@@ -53,16 +63,21 @@ class VerifyBagDeclarationTest extends AnyFunSpec with Matchers with EitherValue
 
     val brokenStore = new MemoryStreamStore[MemoryLocation](
       new MemoryStore[MemoryLocation, Array[Byte]](initialEntries = Map.empty) {
-        override def get(id: MemoryLocation): Either[ReadError, Identified[MemoryLocation, Array[Byte]]] =
+        override def get(
+          id: MemoryLocation
+        ): Either[ReadError, Identified[MemoryLocation, Array[Byte]]] =
           Left(StoreReadError(expectedErr))
       }
     )
 
-    val verifier = new VerifyBagDeclaration[MemoryLocation, MemoryLocationPrefix] {
-      override protected val streamReader: Readable[MemoryLocation, InputStreamWithLength] = brokenStore
-    }
+    val verifier =
+      new VerifyBagDeclaration[MemoryLocation, MemoryLocationPrefix] {
+        override protected val streamReader
+          : Readable[MemoryLocation, InputStreamWithLength] = brokenStore
+      }
 
-    val err = verifier.verifyBagDeclaration(createMemoryLocationPrefix).left.value
+    val err =
+      verifier.verifyBagDeclaration(createMemoryLocationPrefix).left.value
     err.userMessage.get shouldBe "Error loading Bag Declaration (bagit.txt)"
     err.e shouldBe expectedErr
   }
@@ -91,33 +106,49 @@ class VerifyBagDeclarationTest extends AnyFunSpec with Matchers with EitherValue
   }
 
   it("fails if the bagit.txt has an unwanted key") {
-    assertFails("BagIt-Version: 1.0\nTag-File-Character-Encoding: UTF-8\nExtra-Key: ShouldNotBeHere")
+    assertFails(
+      "BagIt-Version: 1.0\nTag-File-Character-Encoding: UTF-8\nExtra-Key: ShouldNotBeHere"
+    )
   }
 
   it("fails if the bagit.txt has unwanted keys") {
-    assertFails("BagIt-Version: 1.0\nTag-File-Character-Encoding: UTF-8\nExtra-Key1: ShouldNotBeHere\nExtra-Key2: ShouldNotBeHere")
+    assertFails(
+      "BagIt-Version: 1.0\nTag-File-Character-Encoding: UTF-8\nExtra-Key1: ShouldNotBeHere\nExtra-Key2: ShouldNotBeHere"
+    )
   }
 
   it("fails if the bagit.txt has duplicate keys") {
-    assertFails("BagIt-Version: 1.0\nTag-File-Character-Encoding: UTF-8\nBagIt-Version: 1.0")
+    assertFails(
+      "BagIt-Version: 1.0\nTag-File-Character-Encoding: UTF-8\nBagIt-Version: 1.0"
+    )
   }
 
-  def withVerifier[R](
-    contents: String)(
-    testWith: TestWith[VerifyBagDeclaration[MemoryLocation, MemoryLocationPrefix], R])(
-    implicit root: MemoryLocationPrefix): R = {
+  def withVerifier[R](contents: String)(
+    testWith: TestWith[
+      VerifyBagDeclaration[MemoryLocation, MemoryLocationPrefix],
+      R
+    ]
+  )(implicit root: MemoryLocationPrefix): R = {
     val store = MemoryStreamStore[MemoryLocation]()
 
-    store.put(root.asLocation("bagit.txt"))(stringCodec.toStream(contents).value)
+    store.put(root.asLocation("bagit.txt"))(
+      stringCodec.toStream(contents).value
+    )
 
-    val verifier = new VerifyBagDeclaration[MemoryLocation, MemoryLocationPrefix] {
-      override protected val streamReader: Readable[MemoryLocation, InputStreamWithLength] = store
-    }
+    val verifier =
+      new VerifyBagDeclaration[MemoryLocation, MemoryLocationPrefix] {
+        override protected val streamReader
+          : Readable[MemoryLocation, InputStreamWithLength] = store
+      }
 
     testWith(verifier)
   }
 
-  def assertFails[R](contents: String, expectedMessage: String = "Error loading Bag Declaration (bagit.txt): not correctly formatted"): Assertion = {
+  def assertFails[R](
+    contents: String,
+    expectedMessage: String =
+      "Error loading Bag Declaration (bagit.txt): not correctly formatted"
+  ): Assertion = {
     implicit val root: MemoryLocationPrefix = createMemoryLocationPrefix
 
     withVerifier(contents) { verifier =>
