@@ -57,3 +57,16 @@ class VerifyBagDeclarationTest extends AnyFunSpec with Matchers with EitherValue
     }
 
     verifier.verifyBagDeclaration(root) shouldBe Right(())
+  }
+
+  it("fails if it can't find a bagit.txt") {
+    val store = MemoryStreamStore[MemoryLocation]()
+
+    val verifier = new VerifyBagDeclaration[MemoryLocation, MemoryLocationPrefix] {
+      override protected val srcReader: Readable[MemoryLocation, InputStreamWithLength] = store
+    }
+
+    val err = verifier.verifyBagDeclaration(createMemoryLocationPrefix).left.value
+    err.userMessage.get shouldBe "No Bag Declaration in bag (no bagit.txt)"
+  }
+}

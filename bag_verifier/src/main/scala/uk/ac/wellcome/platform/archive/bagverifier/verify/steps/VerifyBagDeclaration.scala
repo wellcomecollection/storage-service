@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
 import uk.ac.wellcome.storage.store.Readable
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
-import uk.ac.wellcome.storage.{Location, Prefix}
+import uk.ac.wellcome.storage.{Location, NotFoundError, Prefix}
 
 trait VerifyBagDeclaration[BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation
@@ -24,13 +24,13 @@ trait VerifyBagDeclaration[BagLocation <: Location, BagPrefix <: Prefix[
   //
   def verifyBagDeclaration(root: BagPrefix): Either[BagVerifierError, Unit] = {
     val location = root.asLocation("bagit.txt")
-    println(location)
 
-//    Right(())
-////    srcReader.get(location) match {
-////      case Right(stream)
-////      case Left(err) =>
-////        Left(BagVerifierError(s"Unable to read bagit.txt: $err"))
-////    }
-//  }
+    srcReader.get(location) match {
+      case Left(err: NotFoundError) =>
+        Left(
+          BagVerifierError(err.e, userMessage = Some("No Bag Declaration in bag (no bagit.txt)"))
+        )
+      case _ => Right(())
+    }
+  }
 }
