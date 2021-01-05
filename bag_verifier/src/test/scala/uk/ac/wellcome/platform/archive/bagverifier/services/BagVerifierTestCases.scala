@@ -309,7 +309,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
         version: BagVersion,
         payloadFileCount: Int,
         isFetch: Boolean
-     ): Seq[PayloadEntry] = {
+      ): Seq[PayloadEntry] = {
         val bagRoot = createBagRootPath(space, externalIdentifier, version)
 
         // We don't want to put these files in the fetch.txt, or we'll get a
@@ -331,19 +331,29 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
             }
           }
 
-        super.createPayloadFiles(space, externalIdentifier, version, payloadFileCount, isFetch) ++ badFiles
+        super.createPayloadFiles(
+          space,
+          externalIdentifier,
+          version,
+          payloadFileCount,
+          isFetch
+        ) ++ badFiles
       }
     }
 
     assertBagIncomplete(badBuilder) {
       case (ingestFailed, _) =>
-        ingestFailed.maybeUserFacingMessage.get should startWith("Not all payload files are in the data/ directory")
+        ingestFailed.maybeUserFacingMessage.get should startWith(
+          "Not all payload files are in the data/ directory"
+        )
     }
   }
 
   it("fails a bag if there are tag files outside the root directory") {
     val badBuilder = new BagBuilderImpl {
-      override protected def createTagManifest(entries: Seq[ManifestFile]): Option[String] =
+      override protected def createTagManifest(
+        entries: Seq[ManifestFile]
+      ): Option[String] =
         super.createTagManifest(
           entries ++ Seq(
             ManifestFile("data/bagit.txt", contents = "123"),
@@ -354,7 +364,9 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
 
     assertBagIncomplete(badBuilder) {
       case (ingestFailed, _) =>
-        ingestFailed.maybeUserFacingMessage.get should startWith("Not all tag files are in the root directory:")
+        ingestFailed.maybeUserFacingMessage.get should startWith(
+          "Not all tag files are in the root directory:"
+        )
     }
   }
 

@@ -10,10 +10,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 }
 import uk.ac.wellcome.platform.archive.common.verify.{ChecksumValue, MD5}
 
-class VerifyFilenamesTest
-    extends AnyFunSpec
-    with Matchers
-    with EitherValues {
+class VerifyFilenamesTest extends AnyFunSpec with Matchers with EitherValues {
   val verifier: VerifyFilenames =
     new VerifyFilenames {}
 
@@ -49,7 +46,7 @@ class VerifyFilenamesTest
         entries = Map(
           BagPath("data/README.txt") -> ChecksumValue("123"),
           BagPath("data/animals/cat.jpg") -> ChecksumValue("123"),
-          BagPath("data/animals/dog.png") -> ChecksumValue("123"),
+          BagPath("data/animals/dog.png") -> ChecksumValue("123")
         )
       )
 
@@ -72,7 +69,7 @@ class VerifyFilenamesTest
           BagPath("data/README.txt") -> ChecksumValue("123"),
           BagPath("data/animals/cat.jpg") -> ChecksumValue("123"),
           BagPath("dog.png") -> ChecksumValue("123"),
-          BagPath("tags/metadata.csv") -> ChecksumValue("123"),
+          BagPath("tags/metadata.csv") -> ChecksumValue("123")
         )
       )
 
@@ -103,7 +100,7 @@ class VerifyFilenamesTest
         entries = Map(
           BagPath("bagit.txt") -> ChecksumValue("123"),
           BagPath("data/bag-info.txt") -> ChecksumValue("123"),
-          BagPath("tags/metadata.csv") -> ChecksumValue("123"),
+          BagPath("tags/metadata.csv") -> ChecksumValue("123")
         )
       )
 

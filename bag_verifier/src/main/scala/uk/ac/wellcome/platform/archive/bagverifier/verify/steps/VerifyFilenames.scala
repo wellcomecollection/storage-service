@@ -41,7 +41,9 @@ trait VerifyFilenames {
   // in the "data/" directory.
   //
   // See https://tools.ietf.org/html/rfc8493#section-2.1.2
-  def verifyPayloadFilenames(manifest: PayloadManifest): Either[BagVerifierError, Unit] = {
+  def verifyPayloadFilenames(
+    manifest: PayloadManifest
+  ): Either[BagVerifierError, Unit] = {
     val paths = manifest.entries.map { case (path, _) => path.value }
     val badPaths = paths.filterNot { _.startsWith("data/") }
 
@@ -65,7 +67,9 @@ trait VerifyFilenames {
   // The tag manifest lists all files *except* the "manifest-{algorithm}.txt" tag manifest
   // itself.  We have a separate check (VerifyNoUnreferencedFiles) that would warn us if
   // there's a tag manifest somewhere other than the root of the bag.
-  def verifyTagFileFilenames(manifest: TagManifest): Either[BagVerifierError, Unit] = {
+  def verifyTagFileFilenames(
+    manifest: TagManifest
+  ): Either[BagVerifierError, Unit] = {
     val paths = manifest.entries.map { case (path, _) => path.value }
     val badPaths = paths.filter { _.contains("/") }
 
