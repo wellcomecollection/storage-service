@@ -43,6 +43,8 @@ import uk.ac.wellcome.storage.store.TypedStore
 import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
 import uk.ac.wellcome.storage.{Location, Prefix}
 
+import scala.util.Random
+
 trait BagVerifierTestCases[Verifier <: BagVerifier[
   BagContext,
   BagLocation,
@@ -221,7 +223,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
       ): Option[String] =
         super.createPayloadManifest(
           entries.tail :+ PayloadEntry(
-            bagPath = createBagPath,
+            bagPath = BagPath(s"data/$randomPath"),
             path = randomAlphanumeric(),
             contents = randomAlphanumeric()
           )
@@ -296,6 +298,46 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     assertBagIncomplete(badBuilder) {
       case (ingestFailed, _) =>
         ingestFailed.maybeUserFacingMessage.get shouldBe "Error loading Bag Declaration (bagit.txt): no such file!"
+    }
+  }
+
+  it("fails a bag if there are payload files outside the data/ directory") {
+    val badBuilder = new BagBuilderImpl {
+      override protected def createPayloadFiles(
+        space: StorageSpace,
+        externalIdentifier: ExternalIdentifier,
+        version: BagVersion,
+        payloadFileCount: Int,
+        isFetch: Boolean
+     ): Seq[PayloadEntry] = {
+        val bagRoot = createBagRootPath(space, externalIdentifier, version)
+
+        // We don't want to put these files in the fetch.txt, or we'll get a
+        // different error:
+        //
+        //    Error loading fetch.txt: fetch.txt should not contain tag files
+        //
+        val badFiles =
+          if (isFetch) {
+            Seq()
+          } else {
+            (1 to 3).map { _ =>
+              val bagPath = BagPath(randomPath)
+              PayloadEntry(
+                bagPath = bagPath,
+                path = s"$bagRoot/$bagPath",
+                contents = Random.nextString(length = randomInt(1, 256))
+              )
+            }
+          }
+
+        super.createPayloadFiles(space, externalIdentifier, version, payloadFileCount, isFetch) ++ badFiles
+      }
+    }
+
+    assertBagIncomplete(badBuilder) {
+      case (ingestFailed, _) =>
+        ingestFailed.maybeUserFacingMessage.get should startWith("Not all payload files are in the data/ directory")
     }
   }
 

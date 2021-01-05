@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
+import uk.ac.wellcome.platform.archive.common.bagit.models.PayloadManifest
 
 trait VerifyLegalFilenames {
   def verifyLegalFilenames(
@@ -30,6 +31,25 @@ trait VerifyLegalFilenames {
     logMessage match {
       case ""      => Right(())
       case message => Left(BagVerifierError(message))
+    }
+  }
+
+  // The BagIt spec says that payload files should exclusively be stored
+  // in the "data/" directory.
+  //
+  // See https://tools.ietf.org/html/rfc8493#section-2.1.2
+  def verifyPayloadFilenames(manifest: PayloadManifest): Either[BagVerifierError, Unit] = {
+    val paths = manifest.entries.map { case (path, _) => path.value }
+    val badPaths = paths.filterNot { _.startsWith("data/") }
+
+    if (badPaths.isEmpty) {
+      Right(())
+    } else {
+      Left(
+        BagVerifierError(
+          s"Not all payload files are in the data/ directory: ${badPaths.mkString(", ")}"
+        )
+      )
     }
   }
 }

@@ -126,6 +126,7 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
       )
 
       _ <- verifyPayloadOxumFileCount(bag)
+      _ <- verifyPayloadFilenames(bag.manifest)
 
       _ <- verifyFetchPrefixes(
         fetch = bag.fetch,
