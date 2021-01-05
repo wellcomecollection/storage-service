@@ -341,6 +341,23 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     }
   }
 
+  it("fails a bag if there are tag files outside the root directory") {
+    val badBuilder = new BagBuilderImpl {
+      override protected def createTagManifest(entries: Seq[ManifestFile]): Option[String] =
+        super.createTagManifest(
+          entries ++ Seq(
+            ManifestFile("data/bagit.txt", contents = "123"),
+            ManifestFile("tags/metadata.csv", contents = "123")
+          )
+        )
+    }
+
+    assertBagIncomplete(badBuilder) {
+      case (ingestFailed, _) =>
+        ingestFailed.maybeUserFacingMessage.get should startWith("Not all tag files are in the root directory:")
+    }
+  }
+
   it("fails if the external identifier in the bag-info.txt is incorrect") {
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier.underlying

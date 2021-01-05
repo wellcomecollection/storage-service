@@ -5,7 +5,8 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagPath,
-  PayloadManifest
+  PayloadManifest,
+  TagManifest
 }
 import uk.ac.wellcome.platform.archive.common.verify.{ChecksumValue, MD5}
 
@@ -79,6 +80,37 @@ class VerifyFilenamesTest
       err.e.getMessage shouldBe "Not all payload files are in the data/ directory: dog.png, tags/metadata.csv"
       err.userMessage shouldBe Some(
         "Not all payload files are in the data/ directory: dog.png, tags/metadata.csv"
+      )
+    }
+  }
+
+  describe("verifyTagFileFilenames") {
+    it("allows tag files in the root") {
+      val manifest = TagManifest(
+        checksumAlgorithm = MD5,
+        entries = Map(
+          BagPath("bagit.txt") -> ChecksumValue("123"),
+          BagPath("bag-info.txt") -> ChecksumValue("123")
+        )
+      )
+
+      verifier.verifyTagFileFilenames(manifest) shouldBe Right(())
+    }
+
+    it("fails a manifest with tag files in subdirectories") {
+      val manifest = TagManifest(
+        checksumAlgorithm = MD5,
+        entries = Map(
+          BagPath("bagit.txt") -> ChecksumValue("123"),
+          BagPath("data/bag-info.txt") -> ChecksumValue("123"),
+          BagPath("tags/metadata.csv") -> ChecksumValue("123"),
+        )
+      )
+
+      val err = verifier.verifyTagFileFilenames(manifest).left.value
+      err.e.getMessage shouldBe "Not all tag files are in the root directory: data/bag-info.txt, tags/metadata.csv"
+      err.userMessage shouldBe Some(
+        "Not all tag files are in the root directory: data/bag-info.txt, tags/metadata.csv"
       )
     }
   }
