@@ -3,8 +3,8 @@ package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
 import uk.ac.wellcome.platform.archive.common.bagit.models.PayloadManifest
 
-trait VerifyLegalFilenames {
-  def verifyLegalFilenames(
+trait VerifyFilenames {
+  def verifyAllowedFilenames(
     filenames: Seq[String]
   ): Either[BagVerifierError, Unit] = {
     // Azure blob storage does not support blob names that end with a `.`

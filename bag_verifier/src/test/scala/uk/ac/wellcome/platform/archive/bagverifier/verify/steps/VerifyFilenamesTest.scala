@@ -9,29 +9,29 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
 }
 import uk.ac.wellcome.platform.archive.common.verify.{ChecksumValue, MD5}
 
-class VerifyLegalFilenamesTest
+class VerifyFilenamesTest
     extends AnyFunSpec
     with Matchers
     with EitherValues {
-  val verifier: VerifyLegalFilenames =
-    new VerifyLegalFilenames {}
+  val verifier: VerifyFilenames =
+    new VerifyFilenames {}
 
-  describe("verifyLegalFilenames") {
+  describe("verifyAllowedFilenames") {
     it("allows legal filenames") {
-      verifier.verifyLegalFilenames(Seq("cat.jpg", "dog.png", "fish.gif")) shouldBe Right(
+      verifier.verifyAllowedFilenames(Seq("cat.jpg", "dog.png", "fish.gif")) shouldBe Right(
         ()
       )
     }
 
     it("flags a file with a trailing dot") {
-      val err = verifier.verifyLegalFilenames(Seq("bad.jpg.")).left.value
+      val err = verifier.verifyAllowedFilenames(Seq("bad.jpg.")).left.value
       err.e.getMessage shouldBe "Filenames cannot end with a .: bad.jpg."
       err.userMessage shouldBe Some("Filenames cannot end with a .: bad.jpg.")
     }
 
     it("flags multiple files with a trailing dot") {
       val err = verifier
-        .verifyLegalFilenames(Seq("bad.jpg.", "alsobad.png.", "good.tif"))
+        .verifyAllowedFilenames(Seq("bad.jpg.", "alsobad.png.", "good.tif"))
         .left
         .value
       err.e.getMessage shouldBe "Filenames cannot end with a .: bad.jpg., alsobad.png."
