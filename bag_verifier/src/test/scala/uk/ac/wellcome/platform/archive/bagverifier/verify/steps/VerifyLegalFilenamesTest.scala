@@ -11,26 +11,28 @@ class VerifyLegalFilenamesTest
   val verifier: VerifyLegalFilenames =
     new VerifyLegalFilenames {}
 
-  it("allows legal filenames") {
-    verifier.verifyLegalFilenames(Seq("cat.jpg", "dog.png", "fish.gif")) shouldBe Right(
-      ()
-    )
-  }
+  describe("verifyLegalFilenames") {
+    it("allows legal filenames") {
+      verifier.verifyLegalFilenames(Seq("cat.jpg", "dog.png", "fish.gif")) shouldBe Right(
+        ()
+      )
+    }
 
-  it("flags a file with a trailing dot") {
-    val err = verifier.verifyLegalFilenames(Seq("bad.jpg.")).left.value
-    err.e.getMessage shouldBe "Filenames cannot end with a .: bad.jpg."
-    err.userMessage shouldBe Some("Filenames cannot end with a .: bad.jpg.")
-  }
+    it("flags a file with a trailing dot") {
+      val err = verifier.verifyLegalFilenames(Seq("bad.jpg.")).left.value
+      err.e.getMessage shouldBe "Filenames cannot end with a .: bad.jpg."
+      err.userMessage shouldBe Some("Filenames cannot end with a .: bad.jpg.")
+    }
 
-  it("flags multiple files with a trailing dot") {
-    val err = verifier
-      .verifyLegalFilenames(Seq("bad.jpg.", "alsobad.png.", "good.tif"))
-      .left
-      .value
-    err.e.getMessage shouldBe "Filenames cannot end with a .: bad.jpg., alsobad.png."
-    err.userMessage shouldBe Some(
-      "Filenames cannot end with a .: bad.jpg., alsobad.png."
-    )
+    it("flags multiple files with a trailing dot") {
+      val err = verifier
+        .verifyLegalFilenames(Seq("bad.jpg.", "alsobad.png.", "good.tif"))
+        .left
+        .value
+      err.e.getMessage shouldBe "Filenames cannot end with a .: bad.jpg., alsobad.png."
+      err.userMessage shouldBe Some(
+        "Filenames cannot end with a .: bad.jpg., alsobad.png."
+      )
+    }
   }
 }
