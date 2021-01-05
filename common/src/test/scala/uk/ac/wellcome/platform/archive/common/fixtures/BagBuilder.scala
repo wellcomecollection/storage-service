@@ -98,14 +98,16 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
       space = space,
       externalIdentifier = externalIdentifier,
       version = version,
-      payloadFileCount = payloadFileCount - fetchEntryCount
+      payloadFileCount = payloadFileCount - fetchEntryCount,
+      isFetch = false
     )
 
     val fetchEntries = createPayloadFiles(
       space = space,
       externalIdentifier = externalIdentifier,
       version = version.copy(underlying = version.underlying - 1),
-      payloadFileCount = fetchEntryCount
+      payloadFileCount = fetchEntryCount,
+      isFetch = true
     )
 
     val payloadManifest =
@@ -285,11 +287,12 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
     // This mimics the structure of bags stored by the replicator
     s"$space/$externalIdentifier/$version"
 
-  private def createPayloadFiles(
+  protected def createPayloadFiles(
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     version: BagVersion,
-    payloadFileCount: Int
+    payloadFileCount: Int,
+    isFetch: Boolean
   ): Seq[PayloadEntry] = {
     val bagRoot = createBagRootPath(space, externalIdentifier, version)
 
