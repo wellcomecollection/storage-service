@@ -47,7 +47,8 @@ class S3StandaloneBagVerifier(
     S3ObjectLocation,
     S3ObjectLocationPrefix,
     Bag
-  ]
+  ],
+  val streamReader: S3StreamStore
 ) extends BagVerifier[
       StandaloneBagVerifyContext,
       S3ObjectLocation,
@@ -73,7 +74,8 @@ class S3ReplicatedBagVerifier(
     S3ObjectLocationPrefix,
     Bag
   ],
-  val srcReader: StreamStore[S3ObjectLocation]
+  val srcReader: StreamStore[S3ObjectLocation],
+  val streamReader: S3StreamStore
 ) extends ReplicatedBagVerifier[
       S3ObjectLocation,
       S3ObjectLocationPrefix
@@ -97,7 +99,8 @@ object S3BagVerifier {
       bagReader,
       listing,
       resolvable,
-      fixityListChecker
+      fixityListChecker,
+      streamReader = new S3StreamStore()
     )
   }
   def replicated(
@@ -116,7 +119,8 @@ object S3BagVerifier {
       listing,
       resolvable,
       fixityListChecker,
-      srcReader = streamStore
+      srcReader = streamStore,
+      streamReader = streamStore
     )
   }
 }

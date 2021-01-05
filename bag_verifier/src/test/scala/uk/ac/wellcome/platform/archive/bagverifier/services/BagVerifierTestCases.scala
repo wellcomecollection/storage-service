@@ -288,6 +288,17 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     }
   }
 
+  it("fails a bag if the bag declaration does not exist") {
+    val badBuilder = new BagBuilderImpl {
+      override def createBagDeclaration: Option[ManifestFile] = None
+    }
+
+    assertBagIncomplete(badBuilder) {
+      case (ingestFailed, _) =>
+        ingestFailed.maybeUserFacingMessage.get shouldBe "Error loading Bag Declaration (bagit.txt): no such file!"
+    }
+  }
+
   it("fails if the external identifier in the bag-info.txt is incorrect") {
     val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier.underlying
