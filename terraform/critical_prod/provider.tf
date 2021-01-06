@@ -9,11 +9,9 @@ provider "aws" {
     role_arn = "arn:aws:iam::975596993436:role/storage-admin"
   }
 
-  region  = var.aws_region
-  version = "2.34.0"
+  region = var.aws_region
 }
 
 provider "azurerm" {
-  version = "=2.0.0"
   features {}
 }

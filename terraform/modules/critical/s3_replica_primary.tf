@@ -72,7 +72,7 @@ data "aws_iam_policy_document" "replica_primary_read" {
     ]
 
     resources = [
-      "${aws_s3_bucket.replica_primary.arn}",
+      aws_s3_bucket.replica_primary.arn,
       "${aws_s3_bucket.replica_primary.arn}/*",
     ]
 
@@ -92,7 +92,7 @@ data "aws_iam_policy_document" "replica_primary_read" {
     ]
 
     resources = [
-      "${aws_s3_bucket.replica_primary.arn}",
+      aws_s3_bucket.replica_primary.arn,
       "${aws_s3_bucket.replica_primary.arn}/*",
     ]
 
