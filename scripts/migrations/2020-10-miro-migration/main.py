@@ -15,6 +15,7 @@ from elastic_helpers import (
     get_elastic_client,
     get_local_elastic_client,
     index_iterator,
+    index_updater,
     get_document_by_id,
     get_document_count,
     save_index_to_disk,
@@ -160,14 +161,21 @@ def create_registrations_index(ctx, overwrite):
                 'miro_id': miro_id
             }
 
-    index_iterator(
-        elastic_client=local_elastic_client,
-        index_name=REGISTRATIONS_INDEX,
-        expected_doc_count=expected_registrations_count,
-        documents=_documents(),
-        overwrite=overwrite,
-    )
-
+    if overwrite:
+        index_iterator(
+            elastic_client=local_elastic_client,
+            index_name=REGISTRATIONS_INDEX,
+            expected_doc_count=expected_registrations_count,
+            documents=_documents(),
+            overwrite=True
+        )
+    else:
+        index_updater(
+            elastic_client=local_elastic_client,
+            index_name=REGISTRATIONS_INDEX,
+            expected_doc_count=expected_registrations_count,
+            documents=_documents()
+        )
 
 @click.command()
 @click.option("--index-name", required=True)

@@ -75,7 +75,7 @@ def get_document_count(elastic_client, *, index, query=None):
 
 
 def index_iterator(
-    elastic_client, index_name, documents, expected_doc_count=None, overwrite=False
+        elastic_client, index_name, documents, expected_doc_count=None, overwrite=False
 ):
     """
     Indexes documents from an iterator into elasticsearch
@@ -101,12 +101,50 @@ def index_iterator(
 
     successes, errors = helpers.bulk(elastic_client, actions=bulk_actions)
 
-    if errors:
-        click.echo(f"Errors indexing documents! {errors}")
+    assert (
+            successes == expected_doc_count
+    ), f"Unexpected index success count: {successes}"
+
+    click.echo(f"Successfully added {expected_doc_count} docs into {index_name}")
+
+
+def index_updater(
+    elastic_client, index_name, documents, expected_doc_count
+):
+    """
+    Updates documents from an iterator into elasticsearch (will not overwrite existing docs)
+    """
+
+    elastic_client.indices.create(index=index_name, ignore=400)
+    actual_doc_count = get_document_count(elastic_client, index=index_name)
+    expected_docs_added = expected_doc_count - actual_doc_count
+    click.echo(f"Adding {expected_docs_added} docs into {index_name}")
+
+
+    bulk_actions = (
+        {"_op_type": "create", "_index": index_name, "_id": id, "_source": source}
+        for batch in chunked_iterable(documents, size=500)
+        for (id, source) in batch
+    )
+
+    successes, errors = helpers.bulk(elastic_client, actions=bulk_actions, raise_on_error=False)
+
+    e_type = 'version_conflict_engine_exception'
+    errors = [e for e in errors if not e["create"]['error']['type'] == e_type]
+
+    assert (len(errors) == 0), f"Errors indexing documents! {errors}"
+
+    actual_doc_count = get_document_count(elastic_client, index=index_name)
 
     assert (
-        successes == expected_doc_count
+            successes == expected_docs_added
     ), f"Unexpected index success count: {successes}"
+
+    assert (
+        actual_doc_count == expected_doc_count
+    ), f"Unexpected number of documents in index: {actual_doc_count} != {expected_doc_count}"
+
+    click.echo(f"Successfully added {expected_docs_added} docs into {index_name}")
 
 
 def mirror_index_locally(
