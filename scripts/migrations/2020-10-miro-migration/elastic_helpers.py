@@ -134,15 +134,9 @@ def index_updater(
 
     assert (len(errors) == 0), f"Errors indexing documents! {errors}"
 
-    actual_doc_count = get_document_count(elastic_client, index=index_name)
-
     assert (
             successes == expected_docs_added
     ), f"Unexpected index success count: {successes}"
-
-    assert (
-        actual_doc_count == expected_doc_count
-    ), f"Unexpected number of documents in index: {actual_doc_count} != {expected_doc_count}"
 
     click.echo(f"Successfully added {expected_docs_added} docs into {index_name}")
 

@@ -1,0 +1,4 @@
+*/15 * * * * /usr/bin/bash /data/storage-service/scripts/migrations/2020-10-miro-migration/send_registrations.sh >/dev/null 2>&1
+*/30 * * * * /usr/bin/bash /data/storage-service/scripts/migrations/2020-10-miro-migration/backup_registrations.sh >/dev/null 2>&1
+*/45 * * * * /usr/bin/bash /data/storage-service/scripts/migrations/2020-10-miro-migration/backup_chunks.sh >/dev/null 2>&1
+*/59 * * * * /usr/bin/bash /data/storage-service/scripts/migrations/2020-10-miro-migration/upload_package.sh >/dev/null 2>&1
