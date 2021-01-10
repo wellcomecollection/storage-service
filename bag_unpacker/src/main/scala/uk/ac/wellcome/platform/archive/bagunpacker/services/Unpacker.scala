@@ -156,17 +156,18 @@ trait Unpacker[
           )
         } match {
           case Success(result) => Right(result)
-          case Failure(err: EOFException) =>
-            Left(UnpackerEOFError(err))
-          case Failure(err: IOException)
-              if err.getMessage == "Error detected parsing the header" =>
-            Left(UnpackerUnarchiverError(UnexpectedUnarchiverError(err)))
-          case Failure(err: IOException)
-              if err.getMessage.startsWith("unexpected EOF") =>
-            Left(UnpackerEOFError(err))
-          case Failure(err: Throwable) =>
-            Left(UnpackerUnexpectedError(err))
+          case Failure(err) => Left(handleError(err))
         }
+    }
+
+  protected def handleError(t: Throwable): UnpackerError =
+    t match {
+      case err: EOFException => UnpackerEOFError(err)
+      case err: IOException if err.getMessage == "Error detected parsing the header" =>
+        UnpackerUnarchiverError(UnexpectedUnarchiverError(err))
+      case err: IOException if err.getMessage.startsWith("unexpected EOF") =>
+        UnpackerEOFError(err)
+      case err => UnpackerUnexpectedError(err)
     }
 
   private def putObject(
