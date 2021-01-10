@@ -6,16 +6,9 @@ import org.scalatest.{Assertion, EitherValues, TryValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
-  CompressFixture,
-  LocalResources
-}
+import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{CompressFixture, LocalResources}
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.common.storage.models.{
-  IngestFailed,
-  IngestStepResult,
-  IngestStepSucceeded
-}
+import uk.ac.wellcome.platform.archive.common.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded}
 import uk.ac.wellcome.storage.store.StreamStore
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.streaming.StreamAssertions
@@ -239,6 +232,51 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           assertIsError(result) {
             case (err, maybeUserFacingMessage) =>
               err shouldBe a[EOFException]
+              maybeUserFacingMessage.get should startWith(
+                "Unexpected EOF while unpacking the archive"
+              )
+          }
+        }
+      }
+    }
+  }
+
+  /** The file for this test is based on a real test file, which was sent
+    * in ingest bfe7e4f3-77af-4d2f-8d4c-9d9b31ed7e4d
+    *
+    * The goal here is that the file should have the correct gzip compression,
+    * but the inner tarball should be incomplete.
+    *
+    * The test file was created by reducing the original file by hand -- that is,
+    * deleting or replacing bytes in a hex editor while confirming that we continue
+    * to get the same error.  We can't use the original file in the test/repo because
+    * (1) it's ~11GB in size and (2) it contains copyrighted images.
+    *
+    * We're not sure, but we think this occurred when Archivematica restarted
+    * midway through uploading a bag.
+    *
+    */
+  it("fails if the uncompressed tarball has an EOF error") {
+    withNamespace { srcNamespace =>
+      withStreamStore { implicit streamStore =>
+        val srcLocation = createSrcLocationWith(namespace = srcNamespace)
+
+        val stream = getResource("/truncated_tar.tar.gz")
+
+        streamStore.put(srcLocation)(stream) shouldBe a[Right[_, _]]
+
+        withNamespace { dstNamespace =>
+          val result =
+            withUnpacker {
+              _.unpack(
+                ingestId = createIngestID,
+                srcLocation = srcLocation,
+                dstPrefix = createDstPrefixWith(dstNamespace)
+              )
+            }
+
+          assertIsError(result) {
+            case (err, maybeUserFacingMessage) =>
               maybeUserFacingMessage.get should startWith(
                 "Unexpected EOF while unpacking the archive"
               )

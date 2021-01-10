@@ -69,6 +69,12 @@ class S3Unpacker(
           s"Unexpected EOF while unpacking the archive at $srcLocation - is it the correct format?"
         )
 
+      case UnpackerUnexpectedError(exc: SdkClientException)
+          if exc.getMessage.startsWith("Unable to execute HTTP request: unexpected EOF")  =>
+        Some(
+          s"Unexpected EOF while unpacking the archive at $srcLocation - is it the correct format?"
+        )
+
       case _ =>
         warn(s"Error unpacking bag at $srcLocation: $error")
         super.buildMessageFor(srcLocation, error)

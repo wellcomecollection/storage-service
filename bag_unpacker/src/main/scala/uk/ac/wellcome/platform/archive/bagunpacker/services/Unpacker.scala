@@ -161,6 +161,9 @@ trait Unpacker[
           case Failure(err: IOException)
               if err.getMessage == "Error detected parsing the header" =>
             Left(UnpackerUnarchiverError(UnexpectedUnarchiverError(err)))
+          case Failure(err: IOException)
+              if err.getMessage.startsWith("unexpected EOF") =>
+            Left(UnpackerEOFError(err))
           case Failure(err: Throwable) =>
             Left(UnpackerUnexpectedError(err))
         }
