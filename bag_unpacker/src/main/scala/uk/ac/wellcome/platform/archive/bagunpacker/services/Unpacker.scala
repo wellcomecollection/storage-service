@@ -156,14 +156,15 @@ trait Unpacker[
           )
         } match {
           case Success(result) => Right(result)
-          case Failure(err) => Left(handleError(err))
+          case Failure(err)    => Left(handleError(err))
         }
     }
 
   protected def handleError(t: Throwable): UnpackerError =
     t match {
       case err: EOFException => UnpackerEOFError(err)
-      case err: IOException if err.getMessage == "Error detected parsing the header" =>
+      case err: IOException
+          if err.getMessage == "Error detected parsing the header" =>
         UnpackerUnarchiverError(UnexpectedUnarchiverError(err))
       case err: IOException if err.getMessage.startsWith("unexpected EOF") =>
         UnpackerEOFError(err)

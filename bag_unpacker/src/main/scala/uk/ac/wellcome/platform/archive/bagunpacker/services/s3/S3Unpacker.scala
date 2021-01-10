@@ -76,8 +76,8 @@ class S3Unpacker(
       //
       // If we couldn't read bytes from S3 (e.g. a non-existent bucket), then the
       // .getCause method will return null.
-      case exc: SdkClientException
-        if Option(exc.getCause).isDefined => handleError(exc.getCause)
+      case exc: SdkClientException if Option(exc.getCause).isDefined =>
+        handleError(exc.getCause)
 
       case err => super.handleError(err)
     }
