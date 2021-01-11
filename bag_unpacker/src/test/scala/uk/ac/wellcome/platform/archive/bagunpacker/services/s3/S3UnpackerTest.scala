@@ -1,8 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services.s3
 
-import com.amazonaws.SdkClientException
-
-import java.io.{EOFException, IOException}
+import java.io.IOException
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import uk.ac.wellcome.fixtures.TestWith
@@ -291,11 +289,6 @@ class S3UnpackerTest
 
           assertIsError(result) {
             case (err, maybeUserFacingMessage) =>
-              err shouldBe a[SdkClientException]
-              err
-                .asInstanceOf[SdkClientException]
-                .getCause shouldBe a[EOFException]
-
               maybeUserFacingMessage.get should startWith(
                 "Unexpected EOF while unpacking the archive at"
               )
