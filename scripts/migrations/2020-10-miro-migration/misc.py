@@ -109,15 +109,15 @@ def register_missing_miro_ids():
         f"got {len(registrations)}"
     )
 
-    # register_batches = chunked_iterable(registrations, 50)
-    #
-    # for batch in register_batches:
-    #     batch_result = register_image_batch(batch)
-    #     print(batch_result)
+    register_batches = chunked_iterable(registrations, 25)
+    
+    for batch in register_batches:
+       batch_result = register_image_batch(batch)
+       print(batch_result)
 
 if __name__ == "__main__":
     #build_missing_images_transfer_package()
     #build_miro_metadata_transfer_package()
-    #register_missing_miro_ids()
+    register_missing_miro_ids()
 
 

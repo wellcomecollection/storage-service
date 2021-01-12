@@ -326,10 +326,10 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, over
             has_bag = upload["storage_service"]["bag"] is not None
 
         # Hack edit: only ever do one upload and then stop
-        if not has_upload:
-            upload = _upload_package(chunk, overwrite, skip_upload)
-            local_elastic_client.index(index=TRANSFERS_INDEX, body=upload, id=chunk_id)
-            break
+        #if not has_upload:
+        #    upload = _upload_package(chunk, overwrite, skip_upload)
+        #    local_elastic_client.index(index=TRANSFERS_INDEX, body=upload, id=chunk_id)
+        #    break
 
         # Hack edit2: For resetting index and files that are not bagged
         #if not has_bag:
@@ -408,8 +408,8 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, over
 
 @click.command()
 @click.option("--retry-failed", is_flag=True)
-@click.option("--chunk-size", required=False, default=10)
-@click.option("--limit", required=False, default=5)
+@click.option("--chunk-size", required=False, default=60)
+@click.option("--limit", required=False, default=10)
 @click.pass_context
 def dlcs_send_registrations(ctx, retry_failed, chunk_size, limit):
     registrations_query = ONLY_FAILED_QUERY if retry_failed else NO_BATCH_QUERY
@@ -448,8 +448,8 @@ def dlcs_send_registrations(ctx, retry_failed, chunk_size, limit):
             break
 
 @click.command()
-@click.option("--chunk-size", required=False, default=10)
-@click.option("--limit", required=False, default=5)
+@click.option("--chunk-size", required=False, default=100)
+@click.option("--limit", required=False, default=1000)
 @click.option("--overwrite", "-o", is_flag=True)
 @click.pass_context
 def dlcs_update_registrations(ctx, chunk_size, limit, overwrite):

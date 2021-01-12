@@ -5,7 +5,7 @@ cd /data/storage-service/scripts/migrations/2020-10-miro-migration
 python3 main.py create-files-index
 python3 main.py create-registrations-index
 
-python3 main.py dlcs-update-registrations
+python3 main.py dlcs-update-registrations -o
 
 python3 main.py save-index --index-name files -o
 python3 main.py save-index --index-name registrations -o 
