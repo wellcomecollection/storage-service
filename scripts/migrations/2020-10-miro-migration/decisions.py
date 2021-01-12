@@ -50,14 +50,13 @@ def load_existing_corporate():
     s3_client = get_aws_client("s3", role_arn=PLATFORM_ROLE_ARN)
 
     editorial_photography = list_s3_objects_from(
-        s3_client=s3_client,
-        bucket="wellcomecollection-editorial-photography",
+        s3_client=s3_client, bucket="wellcomecollection-editorial-photography"
     )
 
     existing_corporate_ids = []
 
     for result in editorial_photography:
-        key = result['Key']
+        key = result["Key"]
         if key.endswith(".tif"):
             object_id = _get_object_id(key)
             existing_corporate_ids.append(object_id)
@@ -69,6 +68,7 @@ def load_existing_corporate():
 
 
 EXISTING_CORPORATE_IDS = load_existing_corporate()
+
 
 @attr.s
 class Decision:
@@ -261,6 +261,7 @@ def decide_based_on_miro_metadata(s3_key, s3_size, miro_id):
             ],
         )
 
+
 def make_decision(s3_obj):
     """
     Decide how a Miro asset should be handled.
@@ -285,9 +286,9 @@ def make_decision(s3_obj):
     except IsCorporatePhotographyError:
         object_id = _get_object_id(s3_obj["Key"])
 
-        skip=False
+        skip = False
         if object_id in EXISTING_CORPORATE_IDS:
-            skip=True
+            skip = True
 
         return Decision(
             s3_key=s3_obj["Key"],
