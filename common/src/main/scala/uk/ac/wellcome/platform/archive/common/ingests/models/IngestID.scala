@@ -22,8 +22,7 @@ object IngestID {
 
   implicit def format: DynamoFormat[IngestID] =
     DynamoFormat.coercedXmap[IngestID, String, IllegalArgumentException](
-      id => IngestID(UUID.fromString(id))
-    )(
+      id => IngestID(UUID.fromString(id)),
       _.toString
     )
 }

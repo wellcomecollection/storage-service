@@ -31,8 +31,7 @@ case object BagId {
 
   implicit def evidence: DynamoFormat[BagId] =
     DynamoFormat.coercedXmap[BagId, String, IllegalArgumentException](
-      BagId(_)
-    )(
+      BagId(_),
       _.toString
     )
 }

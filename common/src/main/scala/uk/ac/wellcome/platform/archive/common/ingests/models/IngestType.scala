@@ -44,8 +44,7 @@ object IngestType {
   // TODO: This needs testing
   implicit def format: DynamoFormat[IngestType] =
     DynamoFormat.coercedXmap[IngestType, String, IllegalArgumentException](
-      id => IngestType.create(id)
-    )(
+      IngestType.create,
       _.id
     )
 }

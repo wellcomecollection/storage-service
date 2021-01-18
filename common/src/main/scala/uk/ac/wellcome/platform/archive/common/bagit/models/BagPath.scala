@@ -35,8 +35,7 @@ object BagPath {
 
   implicit def evidence: DynamoFormat[BagPath] =
     DynamoFormat.iso[BagPath, String](
-      BagPath(_)
-    )(
+      BagPath(_),
       _.toString
     )
 }

@@ -48,8 +48,7 @@ object ChecksumValue extends Logging {
 
   implicit def format: DynamoFormat[ChecksumValue] =
     DynamoFormat.iso[ChecksumValue, String](
-      ChecksumValue(_)
-    )(
+      ChecksumValue(_),
       _.toString
     )
 }
