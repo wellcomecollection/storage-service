@@ -7,7 +7,11 @@ import org.scanamo.{Table => ScanamoTable}
 import software.amazon.awssdk.services.dynamodb.model.ResourceNotFoundException
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{IngestVersionManagerDao, IngestVersionManagerDaoTestCases, VersionRecord}
+import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
+  IngestVersionManagerDao,
+  IngestVersionManagerDaoTestCases,
+  VersionRecord
+}
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
 
 import scala.language.higherKinds
