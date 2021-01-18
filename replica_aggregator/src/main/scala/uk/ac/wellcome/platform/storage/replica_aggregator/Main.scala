@@ -1,8 +1,9 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator
 
 import akka.actor.ActorSystem
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.typesafe.config.Config
+import org.scanamo.generic.auto._
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
@@ -30,10 +31,10 @@ import uk.ac.wellcome.storage.typesafe.DynamoBuilder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
-import org.scanamo.auto._
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 
 import scala.concurrent.ExecutionContextExecutor
+import scala.language.higherKinds
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
@@ -52,7 +53,7 @@ object Main extends WellcomeTypesafeApp {
     val dynamoConfig: DynamoConfig =
       DynamoBuilder.buildDynamoConfig(config, namespace = "replicas")
 
-    implicit val dynamoClient: AmazonDynamoDB =
+    implicit val dynamoClient: DynamoDbClient =
       DynamoBuilder.buildDynamoClient(config)
 
     val dynamoVersionedStore =
