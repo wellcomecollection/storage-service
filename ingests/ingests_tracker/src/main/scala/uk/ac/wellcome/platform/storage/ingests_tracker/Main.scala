@@ -1,8 +1,8 @@
 package uk.ac.wellcome.platform.storage.ingests_tracker
 
 import akka.actor.ActorSystem
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.typesafe.config.Config
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import uk.ac.wellcome.messaging.sns.{SNSConfig, SNSMessageSender}
 import uk.ac.wellcome.messaging.typesafe.SNSBuilder
 import uk.ac.wellcome.platform.storage.ingests_tracker.services.{
@@ -20,7 +20,7 @@ object Main extends WellcomeTypesafeApp {
     implicit val actorSystem: ActorSystem =
       AkkaBuilder.buildActorSystem()
 
-    implicit val dynamoClient: AmazonDynamoDB =
+    implicit val dynamoClient: DynamoDbClient =
       DynamoBuilder.buildDynamoClient(config)
 
     val callbackNotificationService: CallbackNotificationService[SNSConfig] =

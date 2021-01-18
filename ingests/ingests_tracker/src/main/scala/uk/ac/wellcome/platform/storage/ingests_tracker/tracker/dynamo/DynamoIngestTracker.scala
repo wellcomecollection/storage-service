@@ -1,9 +1,8 @@
 package uk.ac.wellcome.platform.storage.ingests_tracker.tracker.dynamo
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import grizzled.slf4j.Logging
-import org.scanamo.auto._
-import org.scanamo.time.JavaTimeFormats._
+import org.scanamo.generic.auto._
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
   IngestID,
@@ -18,8 +17,10 @@ import uk.ac.wellcome.storage.dynamo._
 import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.store.dynamo.DynamoSingleVersionStore
 
+import scala.language.higherKinds
+
 class DynamoIngestTracker(config: DynamoConfig)(
-  implicit client: AmazonDynamoDB
+  implicit client: DynamoDbClient
 ) extends IngestTracker
     with Logging {
 
