@@ -71,7 +71,6 @@ object ExternalDependencies {
     val commonsIO = "2.6"
     val elastic4s = "7.9.2"
     val mockito = "1.9.5"
-    val aws = "1.11.504"
     val scalatest = "3.2.3"
     val wiremock = "2.18.0"
 
@@ -143,10 +142,6 @@ object ExternalDependencies {
       exclude ("com.github.matsluni", "aws-spi-akka-http_2.12")
   )
 
-  val cloudwatchMetricsDependencies = Seq[ModuleID](
-    "com.amazonaws" % "aws-java-sdk-cloudwatchmetrics" % versions.aws
-  )
-
   val elasticsearchDependencies: Seq[ModuleID] = Seq(
     "org.apache.logging.log4j" % "log4j-core" % versions.apacheLogging,
     "org.apache.logging.log4j" % "log4j-api" % versions.apacheLogging,
@@ -169,7 +164,6 @@ object StorageDependencies {
   val commonDependencies =
     ExternalDependencies.commonsIODependencies ++
       ExternalDependencies.akkaDependencies ++
-      ExternalDependencies.cloudwatchMetricsDependencies ++
       ExternalDependencies.scalatestDependencies ++
       WellcomeDependencies.jsonLibrary ++
       WellcomeDependencies.messagingLibrary ++
