@@ -1,8 +1,8 @@
 package uk.ac.wellcome.platform.archive.bag_tracker.storage.dynamo
 
-import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
-import org.scanamo.auto._
+import org.scanamo.generic.auto._
 import org.scanamo.{Table => ScanamoTable}
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagId,
@@ -16,6 +16,8 @@ import uk.ac.wellcome.platform.archive.bag_tracker.storage.{
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
 import uk.ac.wellcome.storage.fixtures.{DynamoFixtures, S3Fixtures}
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+
+import scala.language.higherKinds
 
 class DynamoStorageManifestDaoTest
     extends StorageManifestDaoTestCases[(Table, Bucket)]
