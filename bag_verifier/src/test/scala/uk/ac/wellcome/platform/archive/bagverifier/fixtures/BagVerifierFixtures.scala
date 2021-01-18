@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixtures
 
-import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS

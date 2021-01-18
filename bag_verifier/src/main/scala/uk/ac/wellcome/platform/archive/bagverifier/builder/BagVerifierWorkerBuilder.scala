@@ -1,10 +1,10 @@
 package uk.ac.wellcome.platform.archive.bagverifier.builder
 
 import akka.actor.ActorSystem
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.{BlobServiceClient, BlobServiceClientBuilder}
 import com.typesafe.config.Config
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.sns.SNSConfig
@@ -65,7 +65,7 @@ object BagVerifierWorkerBuilder {
             .endpoint(config.requireString("azure.endpoint"))
             .buildClient()
 
-        implicit val dynamoClient: AmazonDynamoDB =
+        implicit val dynamoClient: DynamoDbClient =
           DynamoBuilder.buildDynamoClient(config)
 
         val dynamoConfig = DynamoBuilder
@@ -174,7 +174,7 @@ object BagVerifierWorkerBuilder {
   )(
     implicit s3Client: AmazonS3,
     blobClient: BlobServiceClient,
-    dynamoClient: AmazonDynamoDB,
+    dynamoClient: DynamoDbClient,
     metrics: Metrics[Future],
     as: ActorSystem,
     sc: SqsAsyncClient

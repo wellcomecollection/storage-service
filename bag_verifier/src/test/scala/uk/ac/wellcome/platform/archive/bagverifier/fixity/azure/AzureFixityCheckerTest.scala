@@ -1,8 +1,8 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity.azure
 
-import java.net.URI
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 
-import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
+import java.net.URI
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FixityChecker,

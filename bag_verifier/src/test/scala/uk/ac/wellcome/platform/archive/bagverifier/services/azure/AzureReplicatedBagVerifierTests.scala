@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services.azure
 
-import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagverifier.services.{
   ReplicatedBagVerifier,
