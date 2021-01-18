@@ -66,7 +66,6 @@ object Main extends WellcomeTypesafeApp {
     new ReplicaAggregatorWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
       replicaAggregator = new ReplicaAggregator(dynamoVersionedStore),
-      // TODO: Make this configurable
       replicaCounter = new ReplicaCounter(
         expectedReplicaCount =
           config.requireString("aggregator.expected_replica_count").toInt
