@@ -1,14 +1,17 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity.azure
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.azure.storage.blob.BlobServiceClient
-import org.scanamo.auto._
+import org.scanamo.generic.auto._
 import org.scanamo.syntax._
 import org.scanamo.{Scanamo, Table}
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
+import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.azure.AzureBlobLocation
 import uk.ac.wellcome.storage.dynamo.DynamoConfig
 import uk.ac.wellcome.storage.tags.Tags
-import uk.ac.wellcome.storage._
+
+import scala.language.higherKinds
+import scala.util.{Failure, Success, Try}
 
 // Although Azure Blob Storage supports S3-style tags, they're only in preview
 // and not available in our region yet.
@@ -19,7 +22,7 @@ import uk.ac.wellcome.storage._
 class AzureDynamoTags(dynamoConfig: DynamoConfig)(
   implicit
   blobServiceClient: BlobServiceClient,
-  dynamoClient: AmazonDynamoDB
+  dynamoClient: DynamoDbClient
 ) extends Tags[AzureBlobLocation] {
   case class DynamoTagsEntry(id: String, tags: Map[String, String])
 
@@ -40,13 +43,15 @@ class AzureDynamoTags(dynamoConfig: DynamoConfig)(
   ): Either[WriteError, Map[String, String]] =
     if (exists(location)) {
       val ops = if (tags.isEmpty) {
-        table.delete('id -> location.toString())
+        table.delete("id" === location.toString())
       } else {
         table.put(DynamoTagsEntry(id = location.toString(), tags = tags))
       }
 
-      scanamo.exec(ops) match {
-        case Some(Left(err)) =>
+      Try {
+        scanamo.exec(ops)
+      } match {
+        case Failure(err) =>
           Left(
             StoreWriteError(
               new Throwable(
@@ -54,7 +59,8 @@ class AzureDynamoTags(dynamoConfig: DynamoConfig)(
               )
             )
           )
-        case _ => Right(tags)
+
+        case Success(_) => Right(tags)
       }
     } else {
       Left(
@@ -66,7 +72,7 @@ class AzureDynamoTags(dynamoConfig: DynamoConfig)(
 
   override def get(location: AzureBlobLocation): ReadEither =
     if (exists(location)) {
-      scanamo.exec(table.get('id -> location.toString)) match {
+      scanamo.exec(table.get("id" === location.toString)) match {
         case Some(Right(entry)) => Right(Identified(location, entry.tags))
         case None               => Right(Identified(location, Map.empty))
         case result =>

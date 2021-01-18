@@ -25,8 +25,7 @@ case object ReplicaPath {
 
   implicit def evidence: DynamoFormat[ReplicaPath] =
     DynamoFormat.iso[ReplicaPath, String](
-      ReplicaPath(_)
-    )(
+      ReplicaPath(_),
       _.underlying
     )
 }

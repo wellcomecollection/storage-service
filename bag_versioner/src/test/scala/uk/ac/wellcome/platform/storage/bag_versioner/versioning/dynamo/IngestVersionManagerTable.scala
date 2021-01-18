@@ -1,6 +1,15 @@
 package uk.ac.wellcome.platform.storage.bag_versioner.versioning.dynamo
 
-import com.amazonaws.services.dynamodbv2.model._
+import software.amazon.awssdk.services.dynamodb.model.{
+  AttributeDefinition,
+  CreateTableRequest,
+  GlobalSecondaryIndex,
+  KeySchemaElement,
+  KeyType,
+  Projection,
+  ProjectionType,
+  ProvisionedThroughput
+}
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
@@ -9,51 +18,63 @@ trait IngestVersionManagerTable extends DynamoFixtures {
   override def createTable(table: Table): Table =
     createTableFromRequest(
       table,
-      new CreateTableRequest()
-        .withTableName(table.name)
-        .withKeySchema(
-          new KeySchemaElement()
-            .withAttributeName("id")
-            .withKeyType(KeyType.HASH)
+      CreateTableRequest
+        .builder()
+        .tableName(table.name)
+        .keySchema(
+          KeySchemaElement
+            .builder()
+            .attributeName("id")
+            .keyType(KeyType.HASH)
+            .build(),
+          KeySchemaElement
+            .builder()
+            .attributeName("version")
+            .keyType(KeyType.RANGE)
+            .build()
         )
-        .withKeySchema(
-          new KeySchemaElement()
-            .withAttributeName("version")
-            .withKeyType(KeyType.RANGE)
+        .attributeDefinitions(
+          AttributeDefinition
+            .builder()
+            .attributeName("id")
+            .attributeType("S")
+            .build(),
+          AttributeDefinition
+            .builder()
+            .attributeName("ingestId")
+            .attributeType("S")
+            .build(),
+          AttributeDefinition
+            .builder()
+            .attributeName("version")
+            .attributeType("N")
+            .build()
         )
-        .withAttributeDefinitions(
-          new AttributeDefinition()
-            .withAttributeName("id")
-            .withAttributeType("S"),
-          new AttributeDefinition()
-            .withAttributeName("ingestId")
-            .withAttributeType("S"),
-          new AttributeDefinition()
-            .withAttributeName("version")
-            .withAttributeType("N")
-        )
-        .withGlobalSecondaryIndexes(
-          new GlobalSecondaryIndex()
-            .withIndexName(table.index)
-            .withProjection(
-              new Projection()
-                .withProjectionType(ProjectionType.ALL)
+        .globalSecondaryIndexes(
+          GlobalSecondaryIndex
+            .builder()
+            .indexName(table.index)
+            .projection(
+              Projection
+                .builder()
+                .projectionType(ProjectionType.ALL)
+                .build()
             )
-            .withKeySchema(
-              new KeySchemaElement()
-                .withAttributeName("ingestId")
-                .withKeyType(KeyType.HASH)
+            .keySchema(
+              KeySchemaElement
+                .builder()
+                .attributeName("ingestId")
+                .keyType(KeyType.HASH)
+                .build()
             )
-            .withProvisionedThroughput(
-              new ProvisionedThroughput()
-                .withReadCapacityUnits(1L)
-                .withWriteCapacityUnits(1L)
+            .provisionedThroughput(
+              ProvisionedThroughput
+                .builder()
+                .readCapacityUnits(1L)
+                .writeCapacityUnits(1L)
+                .build()
             )
-        )
-        .withProvisionedThroughput(
-          new ProvisionedThroughput()
-            .withReadCapacityUnits(1L)
-            .withWriteCapacityUnits(1L)
+            .build()
         )
     )
 

@@ -62,8 +62,7 @@ object StorageSpace {
 
   implicit def evidence: DynamoFormat[StorageSpace] =
     DynamoFormat.coercedXmap[StorageSpace, String, IllegalArgumentException](
-      StorageSpace(_)
-    )(
+      StorageSpace(_),
       _.underlying
     )
 }

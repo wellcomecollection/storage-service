@@ -1,10 +1,10 @@
 package uk.ac.wellcome.platform.archive.bag_tracker.storage.dynamo
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.s3.AmazonS3
-import org.scanamo.auto._
+import org.scanamo.generic.auto._
 import org.scanamo.{Scanamo, Table => ScanamoTable}
 import org.scanamo.syntax._
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion._
@@ -28,6 +28,7 @@ import uk.ac.wellcome.storage.store.s3.S3TypedStore
 import uk.ac.wellcome.storage.streaming.Codec._
 import uk.ac.wellcome.storage.{ReadError, StoreReadError}
 
+import scala.language.higherKinds
 import scala.util.{Failure, Success, Try}
 
 class DynamoStorageManifestDao(
@@ -35,7 +36,7 @@ class DynamoStorageManifestDao(
   s3Config: S3Config
 )(
   implicit
-  dynamoClient: AmazonDynamoDB,
+  dynamoClient: DynamoDbClient,
   s3Client: AmazonS3
 ) extends StorageManifestDao {
 
@@ -118,11 +119,11 @@ class DynamoStorageManifestDao(
 
     val baseOps = before match {
       case Some(beforeVersion) =>
-        table.descending.from('id -> bagId and 'version -> beforeVersion)
+        table.descending.from("id" === bagId and "version" === beforeVersion)
       case None => table.descending
     }
 
-    val ops = baseOps.query('id -> bagId)
+    val ops = baseOps.query("id" === bagId)
 
     for {
       scanamoResult <- Try {

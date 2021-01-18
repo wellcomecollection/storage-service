@@ -1,10 +1,9 @@
 package uk.ac.wellcome.platform.storage.ingests_tracker.tracker.dynamo
 
 import java.time.temporal.ChronoUnit
-import com.amazonaws.services.dynamodbv2.model._
 import org.scalatest.Assertion
-import org.scanamo.auto._
-import org.scanamo.time.JavaTimeFormats._
+import org.scanamo.generic.auto._
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
@@ -27,6 +26,8 @@ import uk.ac.wellcome.storage.fixtures.DynamoFixtures
 import uk.ac.wellcome.storage.fixtures.DynamoFixtures.{Table => DynamoTable}
 import uk.ac.wellcome.storage.store.VersionedStore
 import uk.ac.wellcome.storage.store.dynamo.DynamoHashStore
+
+import scala.language.higherKinds
 
 class DynamoIngestTrackerTest
     extends IngestTrackerTestCases[DynamoTable]

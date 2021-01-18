@@ -108,8 +108,7 @@ object ExternalIdentifier {
   implicit def evidence: DynamoFormat[ExternalIdentifier] =
     DynamoFormat
       .coercedXmap[ExternalIdentifier, String, IllegalArgumentException](
-        ExternalIdentifier(_)
-      )(
+        ExternalIdentifier(_),
         _.underlying
       )
 }

@@ -1,8 +1,8 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services.azure
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.BlobServiceClient
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityListChecker
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.azure.AzureFixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.s3.S3FixityChecker
@@ -46,7 +46,7 @@ object AzureReplicatedBagVerifier {
   def apply(primaryBucket: String, dynamoConfig: DynamoConfig)(
     implicit s3Client: AmazonS3,
     blobClient: BlobServiceClient,
-    dynamoClient: AmazonDynamoDB
+    dynamoClient: DynamoDbClient
   ): AzureReplicatedBagVerifier = {
     val bagReader = AzureBagReader()
     val listing = AzureBlobLocationListing()

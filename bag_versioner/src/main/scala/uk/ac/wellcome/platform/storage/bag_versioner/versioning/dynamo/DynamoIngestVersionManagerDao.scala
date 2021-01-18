@@ -1,8 +1,8 @@
 package uk.ac.wellcome.platform.storage.bag_versioner.versioning.dynamo
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import org.scanamo.syntax._
 import org.scanamo.{DynamoFormat, Scanamo, Table => ScanamoTable}
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagId,
   ExternalIdentifier
@@ -20,7 +20,7 @@ import uk.ac.wellcome.storage.dynamo._
 import scala.util.{Failure, Success, Try}
 
 class DynamoIngestVersionManagerDao(
-  dynamoClient: AmazonDynamoDB,
+  dynamoClient: DynamoDbClient,
   dynamoConfig: DynamoConfig
 )(
   implicit
@@ -35,7 +35,7 @@ class DynamoIngestVersionManagerDao(
   override def lookupExistingVersion(
     ingestId: IngestID
   ): Try[Option[VersionRecord]] = {
-    val ops = index.query('ingestId -> ingestId)
+    val ops = index.query("ingestId" === ingestId)
 
     Try { Scanamo(dynamoClient).exec(ops) } match {
       case Success(List(Right(record))) =>
@@ -63,7 +63,7 @@ class DynamoIngestVersionManagerDao(
 
     val ops = scanamoTable.descending
       .limit(1)
-      .query('id -> bagId.toString)
+      .query("id" === bagId.toString)
 
     Try(Scanamo(dynamoClient).exec(ops)) match {
       case Success(List(Right(row: DynamoVersionRecord))) =>
@@ -84,13 +84,11 @@ class DynamoIngestVersionManagerDao(
     }
   }
 
-  override def storeNewVersion(record: VersionRecord): Try[Unit] = Try {
+  override def storeNewVersion(record: VersionRecord): Try[Unit] = {
     val ops = scanamoTable.put(DynamoVersionRecord(record))
 
-    Scanamo(dynamoClient).exec(ops) match {
-      case Some(Left(err)) =>
-        throw new RuntimeException(s"Scanamo error: $err")
-      case _ => ()
+    Try {
+      Scanamo(dynamoClient).exec(ops)
     }
   }
 }

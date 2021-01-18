@@ -1,11 +1,11 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator.services
 
-import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.TryValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import org.scanamo.auto._
+import org.scanamo.generic.auto._
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.{
@@ -26,6 +26,7 @@ import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.language.higherKinds
 
 class ReplicaAggregatorWorkerTest
     extends AnyFunSpec

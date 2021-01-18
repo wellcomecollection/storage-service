@@ -39,8 +39,7 @@ object BagVersion {
 
   implicit def evidence: DynamoFormat[BagVersion] =
     DynamoFormat.iso[BagVersion, Int](
-      BagVersion(_)
-    )(
+      BagVersion(_),
       _.underlying
     )
 

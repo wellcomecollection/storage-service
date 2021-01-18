@@ -1,9 +1,8 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity.azure
 
 import java.net.URI
-
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.azure.storage.blob.BlobServiceClient
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   ExpectedFileFixity,
   FixityChecker
@@ -41,7 +40,7 @@ class AzureFixityChecker(
 object AzureFixityChecker {
   def apply(
     dynamoConfig: DynamoConfig
-  )(implicit blobClient: BlobServiceClient, dynamoClient: AmazonDynamoDB) = {
+  )(implicit blobClient: BlobServiceClient, dynamoClient: DynamoDbClient) = {
 
     // Working out the correct value for this took a bit of experimentation; initially
     // I tried 200MB at a time, but that hit timeout errors, e.g.

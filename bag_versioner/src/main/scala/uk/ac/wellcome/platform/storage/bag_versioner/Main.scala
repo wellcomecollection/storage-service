@@ -4,8 +4,7 @@ import akka.actor.ActorSystem
 import cats.Id
 import com.typesafe.config.Config
 import uk.ac.wellcome.json.JsonUtil._
-import org.scanamo.auto._
-import org.scanamo.time.JavaTimeFormats._
+import org.scanamo.generic.auto._
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
@@ -38,6 +37,7 @@ import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.ExecutionContextExecutor
+import scala.language.higherKinds
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
