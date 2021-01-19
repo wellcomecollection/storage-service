@@ -26,21 +26,8 @@ WITH_BATCH_QUERY = {"query": {"exists": {"field": "dlcs.batch_id"}}}
 NOT_SUCCEEDED_QUERY = {
     "query": {
         "bool": {
-<<<<<<< HEAD
-            "must_not": {
-                "term": {
-                    "dlcs.image_successful": True
-                }
-            }#,
-            #"must": {
-            #    "exists": {
-            #        "field": "dlcs.batch_id"
-            #    }
-            #}
-=======
             "must_not": {"term": {"dlcs.image_successful": True}},
             "must": {"exists": {"field": "dlcs.batch_id"}},
->>>>>>> 683378065c5d2ec3929bbf969dadb8a507145223
         }
     }
 }
