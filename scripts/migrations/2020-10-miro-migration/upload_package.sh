@@ -5,5 +5,5 @@ EBS_ALARM_STATE=$(aws cloudwatch describe-alarms --alarm-names ArchivematicaEbsL
 cd /data/storage-service/scripts/migrations/2020-10-miro-migration
 
 if [ "$EBS_ALARM_STATE" = "OK" ]; then
-	python3 ./main.py upload-transfer-packages --limit 900 
+	python3 ./main.py upload-transfer-packages --limit 900 --index-name chunks_movies_and_corporate 
 fi

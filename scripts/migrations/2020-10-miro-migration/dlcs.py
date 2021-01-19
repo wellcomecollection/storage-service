@@ -48,12 +48,12 @@ NOT_SUCCEEDED_QUERY = {
                 "term": {
                     "dlcs.image_successful": True
                 }
-            },
-            "must": {
-                "exists": {
-                    "field": "dlcs.batch_id"
-                }
-            }
+            }#,
+            #"must": {
+            #    "exists": {
+            #        "field": "dlcs.batch_id"
+            #    }
+            #}
         }
     }
 }
@@ -109,10 +109,16 @@ def _build_collection_member(space, file_id, miro_id):
 
     updated_file_id = file_id.replace(s3_base,https_base)
 
+    if file_id.endswith(".tif"):
+        mediaType = "image/tiff"
+    else:
+        mediaType = "image/jp2"
+
     return {
         "space": space,
         "origin": updated_file_id,
-        "id": miro_id
+        "id": miro_id,
+        "mediaType": mediaType
     }
 
 
