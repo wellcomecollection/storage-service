@@ -77,7 +77,7 @@ def _build_collection_member(space, file_id, miro_id):
         "space": space,
         "origin": updated_file_id,
         "id": miro_id,
-        "mediaType": mediaType
+        "mediaType": mediaType,
     }
 
 
