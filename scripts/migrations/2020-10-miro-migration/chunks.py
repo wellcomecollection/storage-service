@@ -28,39 +28,36 @@ class Chunk:
         self.s3_keys = self.s3_keys + other.s3_keys
 
     def chunk_id(self):
-        ident = self.group_name if self.destination is None else f"{self.destination}/{self.group_name}"
-
-        ident = re.sub(u'[–—:;,.-]', '_', ident)       # replace separating punctuation
-        ident = re.sub(r'[^a-z0-9A-Z//_ ]', '', ident) # delete any other characters
-        ident = ident.replace(' _', '_')               # delete whitespace around underscores
-        ident = ident.replace('_ ', '_')
-        ident = re.sub(r'-+', '-', ident)              # condense repeated hyphens
-
-        assert ident != "", (
-            f"chunk_id is empty for chunk: {self}!"
+        ident = (
+            self.group_name
+            if self.destination is None
+            else f"{self.destination}/{self.group_name}"
         )
+
+        ident = re.sub("[–—:;,.-]", "_", ident)  # replace separating punctuation
+        ident = re.sub(r"[^a-z0-9A-Z//_ ]", "", ident)  # delete any other characters
+        ident = ident.replace(" _", "_")  # delete whitespace around underscores
+        ident = ident.replace("_ ", "_")
+        ident = re.sub(r"-+", "-", ident)  # condense repeated hyphens
+
+        assert ident != "", f"chunk_id is empty for chunk: {self}!"
 
         return ident
 
-
     def is_uploaded(self):
-            if self.transfer_package:
-                if self.transfer_package.s3_location:
-                    return True
+        if self.transfer_package:
+            if self.transfer_package.s3_location:
+                return True
 
-            return False
+        return False
 
 
 DECISIONS_QUERIES = {
     "chunks": {
         "query": {
             "bool": {
-                "must_not": [
-                    {"term": {"skip": True}}
-                ],
-                "must": [
-                    {"exists": {"field": "destinations"}}
-                ]
+                "must_not": [{"term": {"skip": True}}],
+                "must": [{"exists": {"field": "destinations"}}],
             }
         }
     },
@@ -69,11 +66,9 @@ DECISIONS_QUERIES = {
             "bool": {
                 "must_not": [
                     {"exists": {"field": "destinations"}},
-                    {"term" : {"skip": True}}
+                    {"term": {"skip": True}},
                 ],
-                "must" : [
-                    {"exists": {"field": "miro_id"}}
-                ]
+                "must": [{"exists": {"field": "miro_id"}}],
             }
         }
     },
@@ -82,13 +77,14 @@ DECISIONS_QUERIES = {
             "bool": {
                 "must_not": [
                     {"exists": {"field": "destinations"}},
-                    {"term" : {"skip": True}},
-                    {"exists": {"field": "miro_id"}}
+                    {"term": {"skip": True}},
+                    {"exists": {"field": "miro_id"}},
                 ]
             }
         }
-    }
+    },
 }
+
 
 def gather_chunks(decisions_index, query_id):
     local_elastic_client = get_local_elastic_client()

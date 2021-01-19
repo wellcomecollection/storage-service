@@ -8,10 +8,7 @@ import json
 import attr
 import elasticsearch
 from collections import defaultdict
-from elastic_helpers import (
-    get_local_elastic_client,
-    get_elastic_client
-)
+from elastic_helpers import get_local_elastic_client, get_elastic_client
 
 
 FILES_INDEX = "files"
@@ -22,13 +19,10 @@ class Registration:
     file_id = attr.ib()
     miro_id = attr.ib()
 
+
 def stored_files():
     local_elastic_client = get_local_elastic_client()
-    match_all_query = {
-        "query": {
-            "match_all": {}
-        }
-    }
+    match_all_query = {"query": {"match_all": {}}}
 
     return elasticsearch.helpers.scan(
         local_elastic_client, query=match_all_query, index=FILES_INDEX
@@ -138,9 +132,11 @@ def _gather_files_for_registration(clear_decisions):
 
     files_for_registration = {}
     for stored_file_result in stored_files():
-        stored_file_name = stored_file_result['_source']['name']
+        stored_file_name = stored_file_result["_source"]["name"]
         if stored_file_name in clear_decisions_lookup:
-            files_for_registration[clear_decisions_lookup[stored_file_name]] = stored_file_result['_id']
+            files_for_registration[
+                clear_decisions_lookup[stored_file_name]
+            ] = stored_file_result["_id"]
 
     print(f"Found files for registration: {len(files_for_registration)}")
 
@@ -181,11 +177,13 @@ def _disambiguate_decisions(ambig_decisions):
             extensions = set(extensions_decisions.keys())
 
             if "jp2" in extensions:
-                clear_decisions[miro_id] = _pick_largest(extensions_decisions['jp2'])
+                clear_decisions[miro_id] = _pick_largest(extensions_decisions["jp2"])
             elif "tif" in extensions:
-                clear_decisions[miro_id] = _pick_largest(extensions_decisions['tif'])
+                clear_decisions[miro_id] = _pick_largest(extensions_decisions["tif"])
             else:
-                raise Exception(f"No usable extensions found for {miro_id}: {extensions}")
+                raise Exception(
+                    f"No usable extensions found for {miro_id}: {extensions}"
+                )
 
         # Check for unhandled
         elif len(decisions) > 3:
@@ -195,10 +193,7 @@ def _disambiguate_decisions(ambig_decisions):
 
 
 def gather_registrations(sourcedata_index, decisions_index):
-    cleared_miro_ids = _get_cleared_miro_ids(
-        sourcedata_index=sourcedata_index
-    )
+    cleared_miro_ids = _get_cleared_miro_ids(sourcedata_index=sourcedata_index)
     return _gather_registrations(
-        decisions_index=decisions_index,
-        cleared_miro_ids=cleared_miro_ids
+        decisions_index=decisions_index, cleared_miro_ids=cleared_miro_ids
     )

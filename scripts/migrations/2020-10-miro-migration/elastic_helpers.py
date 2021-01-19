@@ -66,16 +66,13 @@ def get_document_count(elastic_client, *, index, query=None):
         if query is None:
             return elastic_client.count(index=index)["count"]
         else:
-            return elastic_client.count(
-                index=index,
-                body=query
-            )["count"]
+            return elastic_client.count(index=index, body=query)["count"]
     except elasticsearch.exceptions.NotFoundError:
         return 0
 
 
 def index_iterator(
-        elastic_client, index_name, documents, expected_doc_count=None, overwrite=False
+    elastic_client, index_name, documents, expected_doc_count=None, overwrite=False
 ):
     """
     Indexes documents from an iterator into elasticsearch
@@ -102,15 +99,13 @@ def index_iterator(
     successes, errors = helpers.bulk(elastic_client, actions=bulk_actions)
 
     assert (
-            successes == expected_doc_count
+        successes == expected_doc_count
     ), f"Unexpected index success count: {successes}"
 
     click.echo(f"Successfully added {expected_doc_count} docs into {index_name}")
 
 
-def index_updater(
-    elastic_client, index_name, documents, expected_doc_count
-):
+def index_updater(elastic_client, index_name, documents, expected_doc_count):
     """
     Updates documents from an iterator into elasticsearch (will not overwrite existing docs)
     """
@@ -120,22 +115,23 @@ def index_updater(
     expected_docs_added = expected_doc_count - actual_doc_count
     click.echo(f"Adding {expected_docs_added} docs into {index_name}")
 
-
     bulk_actions = (
         {"_op_type": "create", "_index": index_name, "_id": id, "_source": source}
         for batch in chunked_iterable(documents, size=500)
         for (id, source) in batch
     )
 
-    successes, errors = helpers.bulk(elastic_client, actions=bulk_actions, raise_on_error=False)
+    successes, errors = helpers.bulk(
+        elastic_client, actions=bulk_actions, raise_on_error=False
+    )
 
-    e_type = 'version_conflict_engine_exception'
-    errors = [e for e in errors if not e["create"]['error']['type'] == e_type]
+    e_type = "version_conflict_engine_exception"
+    errors = [e for e in errors if not e["create"]["error"]["type"] == e_type]
 
-    assert (len(errors) == 0), f"Errors indexing documents! {errors}"
+    assert len(errors) == 0, f"Errors indexing documents! {errors}"
 
     assert (
-            successes == expected_docs_added
+        successes == expected_docs_added
     ), f"Unexpected index success count: {successes}"
 
     click.echo(f"Successfully added {expected_docs_added} docs into {index_name}")

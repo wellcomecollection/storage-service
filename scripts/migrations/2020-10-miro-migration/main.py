@@ -8,9 +8,7 @@ import attr
 import click
 
 from decisions import get_decisions, count_decisions
-from chunks import (
-    gather_chunks
-)
+from chunks import gather_chunks
 from elastic_helpers import (
     get_elastic_client,
     get_local_elastic_client,
@@ -42,7 +40,7 @@ from dlcs import (
     NOT_SUCCEEDED_QUERY,
     ONLY_FAILED_QUERY,
     ONLY_SUCCEEDED_QUERY,
-    RegistrationUpdate
+    RegistrationUpdate,
 )
 from iter_helpers import chunked_iterable
 from sourcedata import gather_sourcedata, count_sourcedata
@@ -56,7 +54,7 @@ SOURCEDATA_INDEX = "sourcedata"
 TRANSFERS_INDEX = "transfers"
 REGISTRATIONS_INDEX = "registrations"
 FILES_INDEX = "files"
-REGISTRATIONS_INDEX='registrations'
+REGISTRATIONS_INDEX = "registrations"
 
 
 @click.command()
@@ -118,16 +116,14 @@ def create_decisions_index(ctx, overwrite):
         overwrite=overwrite,
     )
 
+
 @click.command()
 @click.option("--index-name", default="chunks")
 @click.option("--overwrite", "-o", is_flag=True)
 @click.pass_context
 def create_chunks_index(ctx, index_name, overwrite):
     local_elastic_client = get_local_elastic_client()
-    chunks = gather_chunks(
-        decisions_index=DECISIONS_INDEX,
-        query_id=index_name
-    )
+    chunks = gather_chunks(decisions_index=DECISIONS_INDEX, query_id=index_name)
 
     expected_chunk_count = len(chunks)
 
@@ -143,23 +139,20 @@ def create_chunks_index(ctx, index_name, overwrite):
         overwrite=overwrite,
     )
 
+
 @click.command()
 @click.option("--overwrite", "-o", is_flag=True)
 @click.pass_context
 def create_registrations_index(ctx, overwrite):
     local_elastic_client = get_local_elastic_client()
     registrations = gather_registrations(
-        sourcedata_index=SOURCEDATA_INDEX,
-        decisions_index=DECISIONS_INDEX
+        sourcedata_index=SOURCEDATA_INDEX, decisions_index=DECISIONS_INDEX
     )
     expected_registrations_count = len(registrations)
 
     def _documents():
-        for miro_id, file_id  in registrations.items():
-            yield miro_id, {
-                'file_id': file_id,
-                'miro_id': miro_id
-            }
+        for miro_id, file_id in registrations.items():
+            yield miro_id, {"file_id": file_id, "miro_id": miro_id}
 
     if overwrite:
         index_iterator(
@@ -167,15 +160,16 @@ def create_registrations_index(ctx, overwrite):
             index_name=REGISTRATIONS_INDEX,
             expected_doc_count=expected_registrations_count,
             documents=_documents(),
-            overwrite=True
+            overwrite=True,
         )
     else:
         index_updater(
             elastic_client=local_elastic_client,
             index_name=REGISTRATIONS_INDEX,
             expected_doc_count=expected_registrations_count,
-            documents=_documents()
+            documents=_documents(),
         )
+
 
 @click.command()
 @click.option("--index-name", required=True)
@@ -226,9 +220,7 @@ def transfer_package_chunks(ctx, overwrite, index_name):
                 click.echo(f"Uploaded chunk check failed: {e}")
                 click.echo(f"Retrying chunk: {chunk_id}")
 
-        created_transfer_package = create_chunk_package(
-            chunk=chunk
-        )
+        created_transfer_package = create_chunk_package(chunk=chunk)
 
         update_chunk_record(
             index_name,
@@ -250,14 +242,16 @@ def _upload_package(chunk, overwrite, skip_upload):
     chunk_id = chunk.chunk_id()
 
     if upload is not None:
-        if (upload["upload_transfer"] is None or overwrite):
+        if upload["upload_transfer"] is None or overwrite:
             if not skip_upload:
                 new_upload_transfer = copy_transfer_package(chunk.transfer_package)
 
                 s3_bucket = new_upload_transfer["s3_bucket"]
                 s3_key = new_upload_transfer["s3_key"]
 
-                click.echo(f"Not found. Copying '{chunk_id}' to s3://{s3_bucket}/{s3_key}")
+                click.echo(
+                    f"Not found. Copying '{chunk_id}' to s3://{s3_bucket}/{s3_key}"
+                )
                 return check_package_upload(chunk)
             else:
                 print("Skipping upload!")
@@ -270,10 +264,10 @@ def _upload_package(chunk, overwrite, skip_upload):
     return upload
 
 
-#WORKFLOW_ROLE_ARN = "arn:aws:iam::299497370133:role/workflow-developer"
-#from common import get_aws_client
+# WORKFLOW_ROLE_ARN = "arn:aws:iam::299497370133:role/workflow-developer"
+# from common import get_aws_client
 
-#s3_client = get_aws_client('s3', role_arn=WORKFLOW_ROLE_ARN)
+# s3_client = get_aws_client('s3', role_arn=WORKFLOW_ROLE_ARN)
 
 
 @click.command()
@@ -285,10 +279,7 @@ def _upload_package(chunk, overwrite, skip_upload):
 @click.pass_context
 def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, overwrite):
     local_elastic_client = get_local_elastic_client()
-    local_elastic_client.indices.create(
-        index=TRANSFERS_INDEX,
-        ignore=400
-    )
+    local_elastic_client.indices.create(index=TRANSFERS_INDEX, ignore=400)
 
     missing_bags = []
     has_bags = []
@@ -309,9 +300,7 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, over
         click.echo(f"Looking at '{chunk_id}':")
 
         upload = get_document_by_id(
-            elastic_client=local_elastic_client,
-            index_name=TRANSFERS_INDEX,
-            id=chunk_id
+            elastic_client=local_elastic_client, index_name=TRANSFERS_INDEX, id=chunk_id
         )
 
         has_ingest = False
@@ -319,7 +308,7 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, over
         has_upload = False
 
         if upload is not None:
-            has_upload = upload['upload_transfer'] is not None
+            has_upload = upload["upload_transfer"] is not None
 
         if has_upload:
             has_ingest = upload["storage_service"]["ingest"] is not None
@@ -330,13 +319,12 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, over
             upload = _upload_package(chunk, overwrite, skip_upload)
             local_elastic_client.index(index=TRANSFERS_INDEX, body=upload, id=chunk_id)
             break
-
         # Hack edit2: For resetting index and files that are not bagged
-        #if not has_bag:
+        # if not has_bag:
         #    empty_upload = {
-        #        'upload_transfer': None, 
+        #        'upload_transfer': None,
         #        'storage_service': {
-        #            'ingest': None, 
+        #            'ingest': None,
         #            'bag': None
         #        }
         #      }
@@ -359,7 +347,7 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, over
 
         #    #assert True is False
 
-        #continue
+        # continue
 
         if not has_upload or not has_bag:
             upload = _upload_package(chunk, overwrite, skip_upload)
@@ -374,13 +362,15 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, over
             ingest_status = upload["storage_service"]["ingest"]["status"]["id"]
             succeeded = ingest_status == "succeeded"
             if succeeded:
-                ingest_color = 'green'
+                ingest_color = "green"
             else:
-                ingest_color = 'yellow'
-            click.echo(click.style(
-                f"Found ingest {ingest_id}, with status: {ingest_status}",
-                fg=ingest_color
-            ))
+                ingest_color = "yellow"
+            click.echo(
+                click.style(
+                    f"Found ingest {ingest_id}, with status: {ingest_status}",
+                    fg=ingest_color,
+                )
+            )
 
         if has_bag:
             bag_id = upload["storage_service"]["bag"]["id"]
@@ -389,16 +379,15 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, over
             ]
             version = upload["storage_service"]["bag"]["version"]
             has_bags.append(bag_id)
-            click.echo(click.style(
-                f"Found bag {bag_id}, (v{version}) with internal id: {bag_internal_id}",
-                fg="bright_green"
-            ))
+            click.echo(
+                click.style(
+                    f"Found bag {bag_id}, (v{version}) with internal id: {bag_internal_id}",
+                    fg="bright_green",
+                )
+            )
         else:
             missing_bags.append(chunk_id)
-            click.echo(click.style(
-                f"No bag!",
-                fg="cyan"
-            ))
+            click.echo(click.style(f"No bag!", fg="cyan"))
         click.echo("")
 
     click.echo(f"Found {len(has_bags)} bags from {len(chunks)} packages.")
@@ -415,37 +404,33 @@ def dlcs_send_registrations(ctx, retry_failed, chunk_size, limit):
     registrations_query = ONLY_FAILED_QUERY if retry_failed else NO_BATCH_QUERY
 
     chunked_registrations = chunked_iterable(
-        iterable = get_registrations(
-            registrations_index=REGISTRATIONS_INDEX,
-            query=registrations_query
+        iterable=get_registrations(
+            registrations_index=REGISTRATIONS_INDEX, query=registrations_query
         ),
-        size = chunk_size
+        size=chunk_size,
     )
 
     batch_counter = 0
     for registrations_chunk in chunked_registrations:
-        batch = register_image_batch(
-            registrations=registrations_chunk
-        )
+        batch = register_image_batch(registrations=registrations_chunk)
 
-        registration_updates = [RegistrationUpdate(
-            miro_id=reg['miro_id'],
-            update_doc={
-                'dlcs': {
-                    'batch_id': batch['@id']
-                }
-            }
-        ) for reg in registrations_chunk]
+        registration_updates = [
+            RegistrationUpdate(
+                miro_id=reg["miro_id"], update_doc={"dlcs": {"batch_id": batch["@id"]}}
+            )
+            for reg in registrations_chunk
+        ]
 
         update_registrations(
             registrations_index=REGISTRATIONS_INDEX,
-            registration_updates=registration_updates
+            registration_updates=registration_updates,
         )
 
         click.echo(f"Requesting batch {batch_counter}: {batch['@id']}")
         batch_counter = batch_counter + 1
         if batch_counter >= limit:
             break
+
 
 @click.command()
 @click.option("--chunk-size", required=False, default=10000)
@@ -459,11 +444,10 @@ def dlcs_update_registrations(ctx, chunk_size, limit, overwrite):
     registrations_query = WITH_BATCH_QUERY if overwrite else NOT_SUCCEEDED_QUERY
 
     chunked_registrations = chunked_iterable(
-        iterable = get_registrations(
-            registrations_index=REGISTRATIONS_INDEX,
-            query=registrations_query
+        iterable=get_registrations(
+            registrations_index=REGISTRATIONS_INDEX, query=registrations_query
         ),
-        size = chunk_size
+        size=chunk_size,
     )
 
     success = {}
@@ -473,22 +457,26 @@ def dlcs_update_registrations(ctx, chunk_size, limit, overwrite):
     batch_counter = 0
     for registrations_chunk in chunked_registrations:
         for reg in registrations_chunk:
-            miro_id = reg['miro_id']
+            miro_id = reg["miro_id"]
 
             image_id = get_dlcs_image_id(miro_id)
-            batch_id = reg.get('dlcs', {}).get('batch_id')
+            batch_id = reg.get("dlcs", {}).get("batch_id")
 
-            batch_successful = check_batch_successful(batch_id) if batch_id is not None else False
-            image_successful = True if batch_successful else check_image_successful(image_id)
+            batch_successful = (
+                check_batch_successful(batch_id) if batch_id is not None else False
+            )
+            image_successful = (
+                True if batch_successful else check_image_successful(image_id)
+            )
             image_error = None if image_successful else get_image_error(image_id)
 
             update = {
-                'dlcs': {
-                    'batch_id': batch_id,
-                    'image_id': image_id,
-                    'batch_successful': batch_successful,
-                    'image_successful': image_successful,
-                    'image_error': image_error
+                "dlcs": {
+                    "batch_id": batch_id,
+                    "image_id": image_id,
+                    "batch_successful": batch_successful,
+                    "image_successful": image_successful,
+                    "image_error": image_error,
                 }
             }
 
@@ -503,10 +491,10 @@ def dlcs_update_registrations(ctx, chunk_size, limit, overwrite):
 
         all_updates = {**success, **waiting, **failure}
 
-        registration_updates = [RegistrationUpdate(
-            miro_id=miro_id,
-            update_doc=update_doc
-        ) for miro_id, update_doc in all_updates.items()]
+        registration_updates = [
+            RegistrationUpdate(miro_id=miro_id, update_doc=update_doc)
+            for miro_id, update_doc in all_updates.items()
+        ]
 
         update_registrations(
             registrations_index=REGISTRATIONS_INDEX,
@@ -523,35 +511,36 @@ def dlcs_update_registrations(ctx, chunk_size, limit, overwrite):
         if batch_counter >= limit:
             break
 
+
 @click.command()
 @click.pass_context
 def dlcs_summarise_registrations(ctx):
     local_elastic_client = get_local_elastic_client()
 
     total = get_document_count(
-        elastic_client=local_elastic_client,
-        index=REGISTRATIONS_INDEX
+        elastic_client=local_elastic_client, index=REGISTRATIONS_INDEX
     )
     succeeded = get_document_count(
         elastic_client=local_elastic_client,
         index=REGISTRATIONS_INDEX,
-        query=ONLY_SUCCEEDED_QUERY
+        query=ONLY_SUCCEEDED_QUERY,
     )
     with_batch_id = get_document_count(
         elastic_client=local_elastic_client,
         index=REGISTRATIONS_INDEX,
-        query=WITH_BATCH_QUERY
+        query=WITH_BATCH_QUERY,
     )
     not_succeeded = get_document_count(
         elastic_client=local_elastic_client,
         index=REGISTRATIONS_INDEX,
-        query=NOT_SUCCEEDED_QUERY
+        query=NOT_SUCCEEDED_QUERY,
     )
 
     click.echo(f"Found {total} registrations.")
     click.echo(f"{succeeded} successfully registered")
     click.echo(f"{with_batch_id} with a batch identifier")
     click.echo(f"{not_succeeded} not yet registered")
+
 
 @click.group()
 @click.pass_context

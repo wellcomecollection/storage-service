@@ -26,7 +26,7 @@ def choose_group_name(prefix, s3_key):
 
     if split_key[0] == corporate_photography_key:
         if len(split_key) > 2:
-            return split_key[0] + "/" + split_key[1]  + "/" + split_key[2]
+            return split_key[0] + "/" + split_key[1] + "/" + split_key[2]
         else:
             return split_key[0] + "/" + split_key[1]
 
