@@ -1,7 +1,7 @@
 import sbt._
 
 object WellcomeDependencies {
-  lazy val defaultVersion = "26.0.0"
+  lazy val defaultVersion = "26.0.2"
 
   lazy val versions = new {
     val fixtures = defaultVersion
