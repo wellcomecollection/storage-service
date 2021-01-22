@@ -42,6 +42,7 @@ def parse_miro_id(s3_key):
     """
     Returns the Miro ID from an S3 key.
     """
+
     filename = os.path.basename(s3_key)
 
     # These are some keys with very odd filenames.  We should probably preserve
@@ -80,7 +81,7 @@ def parse_miro_id(s3_key):
         raise IsCorporatePhotographyError(s3_key)
 
     # e.g. A0000001-CS-LS.jp2
-    elif ext in {".jp2", ".JP2", ".tif", ".dt", ".dt 2"}:
+    elif ext in {".jp2", ".JP2", ".tif", ".dt", ".dt 2", ".jpg", ".orig"}:
         return name.split("-")[0]
 
     raise UnknownMiroIDError(s3_key)

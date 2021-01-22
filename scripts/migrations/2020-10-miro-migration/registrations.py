@@ -116,6 +116,9 @@ def _gather_registrations(decisions_index, cleared_miro_ids):
 
     print(f"Final decisions: {len(final_decisions)}")
 
+    with open("registration_clearup/final_decisions.json", "w") as outfile:
+        json.dump(final_decisions, outfile)
+
     return _gather_files_for_registration(final_decisions)
 
 
@@ -194,6 +197,7 @@ def _disambiguate_decisions(ambig_decisions):
 
 def gather_registrations(sourcedata_index, decisions_index):
     cleared_miro_ids = _get_cleared_miro_ids(sourcedata_index=sourcedata_index)
+
     return _gather_registrations(
         decisions_index=decisions_index, cleared_miro_ids=cleared_miro_ids
     )

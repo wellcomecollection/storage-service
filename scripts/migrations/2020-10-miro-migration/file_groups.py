@@ -24,6 +24,9 @@ def choose_group_name(prefix, s3_key):
 
     corporate_photography_key = "Corporate_Photography"
 
+    if prefix.startswith("miro/jpg_derivatives"):
+        return "jpg" +  "/" + split_key[0]
+
     if split_key[0] == corporate_photography_key:
         if len(split_key) > 2:
             return split_key[0] + "/" + split_key[1] + "/" + split_key[2]
@@ -42,15 +45,15 @@ def choose_group_name(prefix, s3_key):
     return "no_group"
 
 
-if __name__ == "__main__":
-    from s3 import list_s3_objects_from
-
-    prefix = "miro/Wellcome_Images_Archive"
-
-    for s3_obj in list_s3_objects_from(
-        bucket="wellcomecollection-assets-workingstorage", prefix=prefix
-    ):
-        s3_key = s3_obj["Key"]
-
-        group_name = choose_group_name(prefix, s3_key)
-        print(group_name)
+# if __name__ == "__main__":
+#     from s3 import list_s3_objects_from
+#
+#     prefix = "miro/Wellcome_Images_Archive"
+#
+#     for s3_obj in list_s3_objects_from(
+#         bucket="wellcomecollection-assets-workingstorage", prefix=prefix
+#     ):
+#         s3_key = s3_obj["Key"]
+#
+#         group_name = choose_group_name(prefix, s3_key)
+#         print(group_name)

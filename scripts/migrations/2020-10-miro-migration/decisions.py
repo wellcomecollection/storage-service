@@ -37,7 +37,6 @@ LOCAL_INVENTORY_INDEX = "reporting_miro_inventory"
 STORAGE_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
 PLATFORM_ROLE_ARN = "arn:aws:iam::760097843905:role/platform-read_only"
 ELASTIC_SECRET_ID = "miro_storage_migration/credentials"
-S3_PREFIX = "miro/Wellcome_Images_Archive"
 
 
 def load_existing_corporate():
@@ -121,7 +120,7 @@ def find_inventory_hits_for_query(query_string):
         return results["hits"]["hits"][0]["_source"]
 
 
-def decide_based_on_reporting_inventory(s3_key, s3_size, miro_id):
+def decide_based_on_reporting_inventory(s3_key, s3_size, miro_id, s3_prefix):
     for name in (
         os.path.basename(s3_key).split(".")[0].split("-")[0],
         os.path.basename(s3_key).split(".")[0],
@@ -145,7 +144,7 @@ def decide_based_on_reporting_inventory(s3_key, s3_size, miro_id):
                 s3_key=s3_key,
                 s3_size=s3_size,
                 miro_id=miro_id,
-                group_name=choose_group_name(S3_PREFIX, s3_key),
+                group_name=choose_group_name(s3_prefix, s3_key),
                 skip=False,
                 destinations=destinations,
                 notes=notes,
@@ -166,7 +165,7 @@ def get_wellcome_images_by_size():
     return wc_images_by_size
 
 
-def decide_based_on_wellcome_images_bucket(s3_obj, miro_id):
+def decide_based_on_wellcome_images_bucket(s3_obj, miro_id, s3_prefix):
     wc_images_by_size = get_wellcome_images_by_size()
 
     matching_images = wc_images_by_size[s3_obj["Size"]][s3_obj["ETag"]]
@@ -195,7 +194,7 @@ def decide_based_on_wellcome_images_bucket(s3_obj, miro_id):
             s3_key=s3_obj["Key"],
             s3_size=s3_obj["Size"],
             miro_id=miro_id,
-            group_name=choose_group_name(S3_PREFIX, s3_obj["Key"]),
+            group_name=choose_group_name(s3_prefix, s3_obj["Key"]),
             skip=False,
             destinations=destinations,
             notes=notes,
@@ -240,7 +239,7 @@ def get_trimmed_metadata_for_prefix(prefix):
     return result.decode("ascii", errors="ignore")
 
 
-def decide_based_on_miro_metadata(s3_key, s3_size, miro_id):
+def decide_based_on_miro_metadata(s3_key, s3_size, miro_id, s3_prefix):
     if miro_id.startswith(("AS", "FP")):
         prefix = miro_id[:2]
     else:
@@ -253,7 +252,7 @@ def decide_based_on_miro_metadata(s3_key, s3_size, miro_id):
             s3_key=s3_key,
             s3_size=s3_size,
             miro_id=miro_id,
-            group_name=choose_group_name(S3_PREFIX, s3_key),
+            group_name=choose_group_name(s3_prefix, s3_key),
             skip=False,
             destinations=["none"],
             notes=[
@@ -262,7 +261,7 @@ def decide_based_on_miro_metadata(s3_key, s3_size, miro_id):
         )
 
 
-def make_decision(s3_obj):
+def make_decision(s3_obj, s3_prefix):
     """
     Decide how a Miro asset should be handled.
     """
@@ -278,7 +277,7 @@ def make_decision(s3_obj):
             s3_key=s3_obj["Key"],
             s3_size=s3_obj["Size"],
             miro_id=None,
-            group_name=choose_group_name(S3_PREFIX, s3_obj["Key"]),
+            group_name=choose_group_name(s3_prefix, s3_obj["Key"]),
             skip=False,
             destinations=[],
             notes=["This is a movie"],
@@ -294,7 +293,7 @@ def make_decision(s3_obj):
             s3_key=s3_obj["Key"],
             s3_size=s3_obj["Size"],
             miro_id=None,
-            group_name=choose_group_name(S3_PREFIX, s3_obj["Key"]),
+            group_name=choose_group_name(s3_prefix, s3_obj["Key"]),
             skip=skip,
             destinations=[],
             notes=["Corporate photography"],
@@ -304,21 +303,32 @@ def make_decision(s3_obj):
     # use that as the basis for decision making.
     # Note: This assumes the miro_reporting inventory has been mirrored locally.
     decision = decide_based_on_reporting_inventory(
-        s3_key=s3_obj["Key"], s3_size=s3_obj["Size"], miro_id=miro_id
+        s3_key=s3_obj["Key"],
+        s3_size=s3_obj["Size"],
+        miro_id=miro_id,
+        s3_prefix=s3_prefix
     )
     if decision is not None:
         return decision
 
     # Can we find a matching entry in the wellcomecollection-images bucket?  If so,
     # we can use that as the basis for decision making.
-    decision = decide_based_on_wellcome_images_bucket(s3_obj=s3_obj, miro_id=miro_id)
+    decision = decide_based_on_wellcome_images_bucket(
+        s3_obj=s3_obj,
+        miro_id=miro_id,
+        s3_prefix=s3_prefix
+    )
     if decision is not None:
         return decision
 
     # Is this image completely missing from the Miro metadata?
     decision = decide_based_on_miro_metadata(
-        s3_key=s3_obj["Key"], s3_size=s3_obj["Size"], miro_id=miro_id
+        s3_key=s3_obj["Key"],
+        s3_size=s3_obj["Size"],
+        miro_id=miro_id,
+        s3_prefix=s3_prefix
     )
+
     if decision is not None:
         return decision
 
@@ -326,26 +336,11 @@ def make_decision(s3_obj):
         s3_key=s3_obj["Key"],
         s3_size=s3_obj["Size"],
         miro_id=miro_id,
-        group_name=choose_group_name(S3_PREFIX, s3_obj["Key"]),
-        skip=False,
+        group_name=choose_group_name(s3_prefix, s3_obj["Key"]),
+        skip=skip,
         destinations=[],
         notes=["??? I don't know how to handle this object"],
     )
-
-
-def count_decisions():
-    decision_count = 0
-
-    s3_client = get_aws_client("s3", role_arn=PLATFORM_ROLE_ARN)
-
-    for _ in list_s3_objects_from(
-        s3_client=s3_client,
-        bucket="wellcomecollection-assets-workingstorage",
-        prefix=S3_PREFIX,
-    ):
-        decision_count = decision_count + 1
-
-    return decision_count
 
 
 def _get_object_id(s3_key):
@@ -359,25 +354,46 @@ def _get_object_id(s3_key):
     return object_id
 
 
-def get_decisions():
+
+def count_decisions(s3_prefix):
+    decision_count = 0
+
+    s3_client = get_aws_client("s3", role_arn=PLATFORM_ROLE_ARN)
+
+    for _ in list_s3_objects_from(
+            s3_client=s3_client,
+            bucket="wellcomecollection-assets-workingstorage",
+            prefix=s3_prefix,
+    ):
+        decision_count = decision_count + 1
+
+    return decision_count
+
+
+def get_decisions(s3_prefix):
     s3_client = get_aws_client("s3", role_arn=PLATFORM_ROLE_ARN)
     mirror_miro_inventory_locally()
+
+    decision_count = count_decisions(s3_prefix)
 
     for s3_obj in tqdm.tqdm(
         list_s3_objects_from(
             s3_client=s3_client,
             bucket="wellcomecollection-assets-workingstorage",
-            prefix=S3_PREFIX,
+            prefix=s3_prefix,
         ),
-        total=368_392,
+        total=decision_count,
     ):
         try:
-            yield make_decision(s3_obj)
+            yield make_decision(
+                s3_obj=s3_obj,
+                s3_prefix=s3_prefix
+            )
         except Exception:
             print(s3_obj["Key"])
             raise
 
 
-if __name__ == "__main__":
-    for d in get_decisions():
-        print(json.dumps(attr.asdict(d)))
+# if __name__ == "__main__":
+#     for d in get_decisions():
+#         print(json.dumps(attr.asdict(d)))

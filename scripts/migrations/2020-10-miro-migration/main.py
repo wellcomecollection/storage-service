@@ -7,7 +7,10 @@ into the storage service.
 import attr
 import click
 
-from decisions import get_decisions, count_decisions
+from decisions import (
+    get_decisions,
+    count_decisions
+)
 from chunks import gather_chunks
 from elastic_helpers import (
     get_elastic_client,
@@ -49,13 +52,77 @@ from registrations import gather_registrations
 
 from uploads import check_package_upload, copy_transfer_package
 
-DECISIONS_INDEX = "decisions"
 SOURCEDATA_INDEX = "sourcedata"
 TRANSFERS_INDEX = "transfers"
 REGISTRATIONS_INDEX = "registrations"
 FILES_INDEX = "files"
-REGISTRATIONS_INDEX = "registrations"
 
+S3_LOCATIONS= {
+    "archive": {
+        "s3_prefix": "miro/Wellcome_Images_Archive",
+        "decisions_index": "decisions"
+    },
+    "derivative": {
+        "s3_prefix": "miro/jpg_derivatives",
+        "decisions_index": "decisions_derivatives"
+    }
+}
+
+CHUNKSETS = {
+    "chunks": {
+        "s3_location": S3_LOCATIONS["archive"],
+        "max_chunk_size": 15_000_000_000,
+        "query_body": {
+            "query": {
+                "bool": {
+                    "must_not": [{"term": {"skip": True}}],
+                    "must": [{"exists": {"field": "destinations"}}],
+                }
+            }
+        }
+    },
+    "chunks_no_miro_id": {
+        "s3_location": S3_LOCATIONS["archive"],
+        "max_chunk_size": 15_000_000_000,
+        "query_body": {
+            "query": {
+                "bool": {
+                    "must_not": [
+                        {"exists": {"field": "destinations"}},
+                        {"term": {"skip": True}},
+                    ],
+                    "must": [{"exists": {"field": "miro_id"}}],
+                }
+            }
+        }
+    },
+    "chunks_movies_and_corporate": {
+        "s3_location": S3_LOCATIONS["archive"],
+        "max_chunk_size": 15_000_000_000,
+        "query_body": {
+            "query": {
+                "bool": {
+                    "must_not": [
+                        {"exists": {"field": "destinations"}},
+                        {"term": {"skip": True}},
+                        {"exists": {"field": "miro_id"}},
+                    ]
+                }
+            }
+        }
+    },
+    "chunks_derivatives": {
+        "s3_location": S3_LOCATIONS["derivative"],
+        "max_chunk_size": 500_000_000,
+        "query_body": {
+            "query": {
+                "bool": {
+                    "must_not": [{"term": {"skip": True}}]
+                }
+            }
+        }
+    }
+}
 
 @click.command()
 @click.option("--overwrite", "-o", is_flag=True)
@@ -98,19 +165,25 @@ def create_files_index(ctx, overwrite):
 
 
 @click.command()
+@click.option("--location", required=True)
 @click.option("--overwrite", "-o", is_flag=True)
 @click.pass_context
-def create_decisions_index(ctx, overwrite):
+def create_decisions_index(ctx, location, overwrite):
+    click.echo("Attempting to create decisions index.")
     local_elastic_client = get_local_elastic_client()
-    expected_decision_count = count_decisions()
+
+    s3_prefix = S3_LOCATIONS[location]['s3_prefix']
+    es_index = S3_LOCATIONS[location]['decisions_index']
+
+    expected_decision_count = count_decisions(s3_prefix=s3_prefix)
 
     def _documents():
-        for decision in get_decisions():
+        for decision in get_decisions(s3_prefix=s3_prefix):
             yield decision.s3_key, attr.asdict(decision)
 
     index_iterator(
         elastic_client=local_elastic_client,
-        index_name=DECISIONS_INDEX,
+        index_name=es_index,
         expected_doc_count=expected_decision_count,
         documents=_documents(),
         overwrite=overwrite,
@@ -118,12 +191,21 @@ def create_decisions_index(ctx, overwrite):
 
 
 @click.command()
-@click.option("--index-name", default="chunks")
+@click.option("--chunkset", default="chunks")
 @click.option("--overwrite", "-o", is_flag=True)
 @click.pass_context
-def create_chunks_index(ctx, index_name, overwrite):
+def create_chunks_index(ctx, chunkset, overwrite):
     local_elastic_client = get_local_elastic_client()
-    chunks = gather_chunks(decisions_index=DECISIONS_INDEX, query_id=index_name)
+
+    query_body = CHUNKSETS[chunkset]["query_body"]
+    max_chunk_size = CHUNKSETS[chunkset]["max_chunk_size"]
+    decisions_index = CHUNKSETS[chunkset]["s3_location"]["decisions_index"]
+
+    chunks = gather_chunks(
+        query_body=query_body,
+        decisions_index=decisions_index,
+        max_chunk_size=max_chunk_size
+    )
 
     expected_chunk_count = len(chunks)
 
@@ -133,7 +215,7 @@ def create_chunks_index(ctx, index_name, overwrite):
 
     index_iterator(
         elastic_client=local_elastic_client,
-        index_name=index_name,
+        index_name=chunkset,
         expected_doc_count=expected_chunk_count,
         documents=_documents(),
         overwrite=overwrite,
@@ -141,12 +223,14 @@ def create_chunks_index(ctx, index_name, overwrite):
 
 
 @click.command()
+@click.option("--location", required=True)
 @click.option("--overwrite", "-o", is_flag=True)
 @click.pass_context
-def create_registrations_index(ctx, overwrite):
+def create_registrations_index(ctx, location, overwrite):
     local_elastic_client = get_local_elastic_client()
     registrations = gather_registrations(
-        sourcedata_index=SOURCEDATA_INDEX, decisions_index=DECISIONS_INDEX
+        sourcedata_index=SOURCEDATA_INDEX,
+        decisions_index=S3_LOCATIONS[location]["decisions_index"]
     )
     expected_registrations_count = len(registrations)
 
@@ -202,11 +286,11 @@ def load_index(ctx, index_name, target_index_name, overwrite):
 
 
 @click.command()
+@click.option("--chunkset", default="chunks")
 @click.option("--overwrite", "-o", is_flag=True)
-@click.option("--index-name", default="chunks")
 @click.pass_context
-def transfer_package_chunks(ctx, overwrite, index_name):
-    chunks = get_chunks(index_name)
+def transfer_package_chunks(ctx, chunkset, overwrite):
+    chunks = get_chunks(chunkset)
 
     for chunk in chunks:
         chunk_id = chunk.chunk_id()
@@ -220,20 +304,27 @@ def transfer_package_chunks(ctx, overwrite, index_name):
                 click.echo(f"Uploaded chunk check failed: {e}")
                 click.echo(f"Retrying chunk: {chunk_id}")
 
-        created_transfer_package = create_chunk_package(chunk=chunk)
+        created_transfer_package = create_chunk_package(
+            chunk=chunk,
+            s3_prefix=CHUNKSETS[chunkset]["s3_location"]["s3_prefix"]
+        )
 
         update_chunk_record(
-            index_name,
-            chunk_id,
-            {"transfer_package": attr.asdict(created_transfer_package)},
+            index_name=chunkset,
+            chunk_id=chunk_id,
+            update={
+                "transfer_package": attr.asdict(created_transfer_package)
+            },
         )
 
         updated_transfer_package = upload_chunk_package(created_transfer_package)
 
         update_chunk_record(
-            index_name,
-            chunk_id,
-            {"transfer_package": attr.asdict(updated_transfer_package)},
+            index_name=chunkset,
+            chunk_id=chunk_id,
+            update={
+                "transfer_package": attr.asdict(updated_transfer_package)
+            },
         )
 
 
@@ -397,8 +488,8 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, over
 
 @click.command()
 @click.option("--retry-failed", is_flag=True)
-@click.option("--chunk-size", required=False, default=30)
-@click.option("--limit", required=False, default=10)
+@click.option("--chunk-size", required=False, default=50)
+@click.option("--limit", required=False, default=50)
 @click.pass_context
 def dlcs_send_registrations(ctx, retry_failed, chunk_size, limit):
     registrations_query = ONLY_FAILED_QUERY if retry_failed else NO_BATCH_QUERY

@@ -52,44 +52,8 @@ class Chunk:
         return False
 
 
-DECISIONS_QUERIES = {
-    "chunks": {
-        "query": {
-            "bool": {
-                "must_not": [{"term": {"skip": True}}],
-                "must": [{"exists": {"field": "destinations"}}],
-            }
-        }
-    },
-    "chunks_no_miro_id": {
-        "query": {
-            "bool": {
-                "must_not": [
-                    {"exists": {"field": "destinations"}},
-                    {"term": {"skip": True}},
-                ],
-                "must": [{"exists": {"field": "miro_id"}}],
-            }
-        }
-    },
-    "chunks_movies_and_corporate": {
-        "query": {
-            "bool": {
-                "must_not": [
-                    {"exists": {"field": "destinations"}},
-                    {"term": {"skip": True}},
-                    {"exists": {"field": "miro_id"}},
-                ]
-            }
-        }
-    },
-}
-
-
-def gather_chunks(decisions_index, query_id):
+def gather_chunks(query_body, decisions_index, max_chunk_size):
     local_elastic_client = get_local_elastic_client()
-
-    query_body = DECISIONS_QUERIES[query_id]
 
     total_chunkable_decisions = local_elastic_client.count(
         body=query_body, index=decisions_index
@@ -126,7 +90,7 @@ def gather_chunks(decisions_index, query_id):
             total_size = total_size + decision.s3_size
             sum_total_size = sum_total_size + decision.s3_size
 
-            if total_size > 15_000_000_000:
+            if total_size > max_chunk_size:
                 chunked_s3_keys.append({"s3_keys": s3_keys, "total_size": total_size})
                 s3_keys = []
                 total_size = 0
