@@ -65,7 +65,8 @@ def parse_miro_id(s3_key):
 
     # We're going to ignore metadata files, so we don't need to parse a Miro ID
     # from them.  e.g. .apdisk, .DS_Store, Thumbs.db
-    if name.startswith(".") or filename == "Thumbs.db":
+    filenames_to_ignore = ["image_sizes.txt", "Thumbs.db"]
+    if name.startswith(".") or filename in filenames_to_ignore:
         raise NotMiroAssetError(s3_key)
 
     # We haven't decided how we've going to categorise the Movies yet, so don't
