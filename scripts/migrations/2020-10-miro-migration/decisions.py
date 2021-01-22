@@ -337,7 +337,7 @@ def make_decision(s3_obj, s3_prefix):
         s3_size=s3_obj["Size"],
         miro_id=miro_id,
         group_name=choose_group_name(s3_prefix, s3_obj["Key"]),
-        skip=skip,
+        skip=False,
         destinations=[],
         notes=["??? I don't know how to handle this object"],
     )
