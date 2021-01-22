@@ -25,7 +25,7 @@ def choose_group_name(prefix, s3_key):
     corporate_photography_key = "Corporate_Photography"
 
     if prefix.startswith("miro/jpg_derivatives"):
-        return "jpg" +  "/" + split_key[0]
+        return "jpg" + "/" + split_key[0]
 
     if split_key[0] == corporate_photography_key:
         if len(split_key) > 2:

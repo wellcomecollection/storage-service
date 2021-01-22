@@ -306,7 +306,7 @@ def make_decision(s3_obj, s3_prefix):
         s3_key=s3_obj["Key"],
         s3_size=s3_obj["Size"],
         miro_id=miro_id,
-        s3_prefix=s3_prefix
+        s3_prefix=s3_prefix,
     )
     if decision is not None:
         return decision
@@ -314,9 +314,7 @@ def make_decision(s3_obj, s3_prefix):
     # Can we find a matching entry in the wellcomecollection-images bucket?  If so,
     # we can use that as the basis for decision making.
     decision = decide_based_on_wellcome_images_bucket(
-        s3_obj=s3_obj,
-        miro_id=miro_id,
-        s3_prefix=s3_prefix
+        s3_obj=s3_obj, miro_id=miro_id, s3_prefix=s3_prefix
     )
     if decision is not None:
         return decision
@@ -326,7 +324,7 @@ def make_decision(s3_obj, s3_prefix):
         s3_key=s3_obj["Key"],
         s3_size=s3_obj["Size"],
         miro_id=miro_id,
-        s3_prefix=s3_prefix
+        s3_prefix=s3_prefix,
     )
 
     if decision is not None:
@@ -354,16 +352,15 @@ def _get_object_id(s3_key):
     return object_id
 
 
-
 def count_decisions(s3_prefix):
     decision_count = 0
 
     s3_client = get_aws_client("s3", role_arn=PLATFORM_ROLE_ARN)
 
     for _ in list_s3_objects_from(
-            s3_client=s3_client,
-            bucket="wellcomecollection-assets-workingstorage",
-            prefix=s3_prefix,
+        s3_client=s3_client,
+        bucket="wellcomecollection-assets-workingstorage",
+        prefix=s3_prefix,
     ):
         decision_count = decision_count + 1
 
@@ -385,10 +382,7 @@ def get_decisions(s3_prefix):
         total=decision_count,
     ):
         try:
-            yield make_decision(
-                s3_obj=s3_obj,
-                s3_prefix=s3_prefix
-            )
+            yield make_decision(s3_obj=s3_obj, s3_prefix=s3_prefix)
         except Exception:
             print(s3_obj["Key"])
             raise

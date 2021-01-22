@@ -7,10 +7,7 @@ into the storage service.
 import attr
 import click
 
-from decisions import (
-    get_decisions,
-    count_decisions
-)
+from decisions import get_decisions, count_decisions
 from chunks import gather_chunks
 from elastic_helpers import (
     get_elastic_client,
@@ -57,15 +54,15 @@ TRANSFERS_INDEX = "transfers"
 REGISTRATIONS_INDEX = "registrations"
 FILES_INDEX = "files"
 
-S3_LOCATIONS= {
+S3_LOCATIONS = {
     "archive": {
         "s3_prefix": "miro/Wellcome_Images_Archive",
-        "decisions_index": "decisions"
+        "decisions_index": "decisions",
     },
     "derivative": {
         "s3_prefix": "miro/jpg_derivatives",
-        "decisions_index": "decisions_derivatives"
-    }
+        "decisions_index": "decisions_derivatives",
+    },
 }
 
 CHUNKSETS = {
@@ -79,7 +76,7 @@ CHUNKSETS = {
                     "must": [{"exists": {"field": "destinations"}}],
                 }
             }
-        }
+        },
     },
     "chunks_no_miro_id": {
         "s3_location": S3_LOCATIONS["archive"],
@@ -94,7 +91,7 @@ CHUNKSETS = {
                     "must": [{"exists": {"field": "miro_id"}}],
                 }
             }
-        }
+        },
     },
     "chunks_movies_and_corporate": {
         "s3_location": S3_LOCATIONS["archive"],
@@ -109,20 +106,15 @@ CHUNKSETS = {
                     ]
                 }
             }
-        }
+        },
     },
     "chunks_derivatives": {
         "s3_location": S3_LOCATIONS["derivative"],
         "max_chunk_size": 500_000_000,
-        "query_body": {
-            "query": {
-                "bool": {
-                    "must_not": [{"term": {"skip": True}}]
-                }
-            }
-        }
-    }
+        "query_body": {"query": {"bool": {"must_not": [{"term": {"skip": True}}]}}},
+    },
 }
+
 
 @click.command()
 @click.option("--overwrite", "-o", is_flag=True)
@@ -172,8 +164,8 @@ def create_decisions_index(ctx, location, overwrite):
     click.echo("Attempting to create decisions index.")
     local_elastic_client = get_local_elastic_client()
 
-    s3_prefix = S3_LOCATIONS[location]['s3_prefix']
-    es_index = S3_LOCATIONS[location]['decisions_index']
+    s3_prefix = S3_LOCATIONS[location]["s3_prefix"]
+    es_index = S3_LOCATIONS[location]["decisions_index"]
 
     expected_decision_count = count_decisions(s3_prefix=s3_prefix)
 
@@ -204,7 +196,7 @@ def create_chunks_index(ctx, chunkset, overwrite):
     chunks = gather_chunks(
         query_body=query_body,
         decisions_index=decisions_index,
-        max_chunk_size=max_chunk_size
+        max_chunk_size=max_chunk_size,
     )
 
     expected_chunk_count = len(chunks)
@@ -230,7 +222,7 @@ def create_registrations_index(ctx, location, overwrite):
     local_elastic_client = get_local_elastic_client()
     registrations = gather_registrations(
         sourcedata_index=SOURCEDATA_INDEX,
-        decisions_index=S3_LOCATIONS[location]["decisions_index"]
+        decisions_index=S3_LOCATIONS[location]["decisions_index"],
     )
     expected_registrations_count = len(registrations)
 
@@ -305,16 +297,13 @@ def transfer_package_chunks(ctx, chunkset, overwrite):
                 click.echo(f"Retrying chunk: {chunk_id}")
 
         created_transfer_package = create_chunk_package(
-            chunk=chunk,
-            s3_prefix=CHUNKSETS[chunkset]["s3_location"]["s3_prefix"]
+            chunk=chunk, s3_prefix=CHUNKSETS[chunkset]["s3_location"]["s3_prefix"]
         )
 
         update_chunk_record(
             index_name=chunkset,
             chunk_id=chunk_id,
-            update={
-                "transfer_package": attr.asdict(created_transfer_package)
-            },
+            update={"transfer_package": attr.asdict(created_transfer_package)},
         )
 
         updated_transfer_package = upload_chunk_package(created_transfer_package)
@@ -322,9 +311,7 @@ def transfer_package_chunks(ctx, chunkset, overwrite):
         update_chunk_record(
             index_name=chunkset,
             chunk_id=chunk_id,
-            update={
-                "transfer_package": attr.asdict(updated_transfer_package)
-            },
+            update={"transfer_package": attr.asdict(updated_transfer_package)},
         )
 
 

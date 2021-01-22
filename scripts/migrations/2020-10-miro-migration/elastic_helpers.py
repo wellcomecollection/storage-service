@@ -32,6 +32,7 @@ def get_elastic_client(role_arn, elastic_secret_id):
         secret["endpoint"], http_auth=(secret["username"], secret["password"])
     )
 
+
 @functools.lru_cache()
 def get_local_elastic_client(host=LOCAL_ELASTIC_HOST, port=9200):
     click.echo("Trying to get local elastic client.")
