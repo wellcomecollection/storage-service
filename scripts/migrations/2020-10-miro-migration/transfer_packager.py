@@ -110,7 +110,7 @@ def _create_metadata(target_folder, group_name):
 
 
 def upload_transfer_package(
-    s3_client, s3_bucket, s3_path, transfer_package, cleanup=False
+    s3_client, s3_bucket, s3_path, transfer_package, cleanup=True
 ):
     file_location = transfer_package.local_location
 

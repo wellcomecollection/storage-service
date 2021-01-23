@@ -279,10 +279,20 @@ def load_index(ctx, index_name, target_index_name, overwrite):
 
 @click.command()
 @click.option("--chunkset", default="chunks")
+@click.option("--chunk-id", required=False)
 @click.option("--overwrite", "-o", is_flag=True)
 @click.pass_context
-def transfer_package_chunks(ctx, chunkset, overwrite):
-    chunks = get_chunks(chunkset)
+def transfer_package_chunks(ctx, chunkset, chunk_id, overwrite):
+    if chunk_id:
+        chunk = get_chunk(chunkset, chunk_id)
+
+        if chunk is None:
+            click.echo(f"No chunk found matching id: '{chunk_id}'")
+            return
+
+        chunks = [chunk]
+    else:
+        chunks = get_chunks(chunkset)
 
     for chunk in chunks:
         chunk_id = chunk.chunk_id()
