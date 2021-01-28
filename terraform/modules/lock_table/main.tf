@@ -29,6 +29,7 @@ resource "aws_dynamodb_table" "lock_table" {
 data "aws_iam_policy_document" "lock_table_readwrite" {
   statement {
     actions = [
+      "dynamodb:BatchWriteItem",
       "dynamodb:UpdateItem",
       "dynamodb:PutItem",
       "dynamodb:GetItem",
