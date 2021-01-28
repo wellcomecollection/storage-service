@@ -69,7 +69,7 @@ module "external_api_container_secrets_permissions" {
 }
 
 module "worker_container" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.3.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.3.1"
   name   = "worker"
 
   image = var.worker_container_image
@@ -81,13 +81,13 @@ module "worker_container" {
 }
 
 module "worker_container_secrets_permissions" {
-  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v3.3.0"
+  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v3.3.1"
   secrets   = var.worker_secrets
   role_name = module.base.task_execution_role_name
 }
 
 module "internal_api_container" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.3.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.3.1"
   name   = "tracker"
 
   image = var.internal_api_container_image
@@ -99,7 +99,7 @@ module "internal_api_container" {
 }
 
 module "internal_api_container_secrets_permissions" {
-  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v3.3.0"
+  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v3.3.1"
   secrets   = var.internal_api_secrets
   role_name = module.base.task_execution_role_name
 }
