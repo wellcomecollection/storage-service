@@ -3,8 +3,7 @@ provider "aws" {
     role_arn = "arn:aws:iam::975596993436:role/storage-developer"
   }
 
-  region  = var.aws_region
-  version = "2.60.0"
+  region = var.aws_region
 
   # Ignore deployment tags on services
   ignore_tags {
