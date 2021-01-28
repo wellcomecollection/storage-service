@@ -51,17 +51,18 @@ from uploads import check_package_upload, copy_transfer_package
 
 SOURCEDATA_INDEX = "sourcedata"
 TRANSFERS_INDEX = "transfers"
-REGISTRATIONS_INDEX = "registrations"
 FILES_INDEX = "files"
 
 S3_LOCATIONS = {
     "archive": {
         "s3_prefix": "miro/Wellcome_Images_Archive",
         "decisions_index": "decisions",
+        "registrations_index": "registrations"
     },
     "derivative": {
         "s3_prefix": "miro/jpg_derivatives",
         "decisions_index": "decisions_derivatives",
+        "registrations_index": "registrations_derivatives"
     },
 }
 
@@ -225,6 +226,7 @@ def create_registrations_index(ctx, location, overwrite):
         decisions_index=S3_LOCATIONS[location]["decisions_index"],
     )
     expected_registrations_count = len(registrations)
+    registrations_index = S3_LOCATIONS[location]["registrations_index"]
 
     def _documents():
         for miro_id, file_id in registrations.items():
@@ -233,7 +235,7 @@ def create_registrations_index(ctx, location, overwrite):
     if overwrite:
         index_iterator(
             elastic_client=local_elastic_client,
-            index_name=REGISTRATIONS_INDEX,
+            index_name=registrations_index,
             expected_doc_count=expected_registrations_count,
             documents=_documents(),
             overwrite=True,
@@ -241,7 +243,7 @@ def create_registrations_index(ctx, location, overwrite):
     else:
         index_updater(
             elastic_client=local_elastic_client,
-            index_name=REGISTRATIONS_INDEX,
+            index_name=registrations_index,
             expected_doc_count=expected_registrations_count,
             documents=_documents(),
         )
@@ -484,16 +486,18 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, over
 
 
 @click.command()
+@click.option("--location", required=True)
 @click.option("--retry-failed", is_flag=True)
 @click.option("--chunk-size", required=False, default=50)
 @click.option("--limit", required=False, default=50)
 @click.pass_context
-def dlcs_send_registrations(ctx, retry_failed, chunk_size, limit):
+def dlcs_send_registrations(ctx, location, retry_failed, chunk_size, limit):
+    registrations_index = S3_LOCATIONS[location]["registrations_index"]
     registrations_query = ONLY_FAILED_QUERY if retry_failed else NO_BATCH_QUERY
 
     chunked_registrations = chunked_iterable(
         iterable=get_registrations(
-            registrations_index=REGISTRATIONS_INDEX, query=registrations_query
+            registrations_index=registrations_index, query=registrations_query
         ),
         size=chunk_size,
     )
@@ -510,7 +514,7 @@ def dlcs_send_registrations(ctx, retry_failed, chunk_size, limit):
         ]
 
         update_registrations(
-            registrations_index=REGISTRATIONS_INDEX,
+            registrations_index=registrations_index,
             registration_updates=registration_updates,
         )
 
@@ -521,19 +525,21 @@ def dlcs_send_registrations(ctx, retry_failed, chunk_size, limit):
 
 
 @click.command()
+@click.option("--location", required=True)
 @click.option("--chunk-size", required=False, default=10000)
 @click.option("--limit", required=False, default=10000)
 @click.option("--overwrite", "-o", is_flag=True)
 @click.pass_context
-def dlcs_update_registrations(ctx, chunk_size, limit, overwrite):
+def dlcs_update_registrations(ctx, location, chunk_size, limit, overwrite):
     # If overwrite check everything with a batch, otherwise
     # only check things with a batch that haven't succeeded yet
 
+    registrations_index = S3_LOCATIONS[location]["registrations_index"]
     registrations_query = WITH_BATCH_QUERY if overwrite else NOT_SUCCEEDED_QUERY
 
     chunked_registrations = chunked_iterable(
         iterable=get_registrations(
-            registrations_index=REGISTRATIONS_INDEX, query=registrations_query
+            registrations_index=registrations_index, query=registrations_query
         ),
         size=chunk_size,
     )
@@ -585,7 +591,7 @@ def dlcs_update_registrations(ctx, chunk_size, limit, overwrite):
         ]
 
         update_registrations(
-            registrations_index=REGISTRATIONS_INDEX,
+            registrations_index=registrations_index,
             registration_updates=registration_updates,
         )
 
@@ -601,26 +607,28 @@ def dlcs_update_registrations(ctx, chunk_size, limit, overwrite):
 
 
 @click.command()
+@click.option("--location", required=True)
 @click.pass_context
-def dlcs_summarise_registrations(ctx):
+def dlcs_summarise_registrations(ctx, location):
     local_elastic_client = get_local_elastic_client()
+    registrations_index = S3_LOCATIONS[location]["registrations_index"]
 
     total = get_document_count(
-        elastic_client=local_elastic_client, index=REGISTRATIONS_INDEX
+        elastic_client=local_elastic_client, index=registrations_index
     )
     succeeded = get_document_count(
         elastic_client=local_elastic_client,
-        index=REGISTRATIONS_INDEX,
+        index=registrations_index,
         query=ONLY_SUCCEEDED_QUERY,
     )
     with_batch_id = get_document_count(
         elastic_client=local_elastic_client,
-        index=REGISTRATIONS_INDEX,
+        index=registrations_index,
         query=WITH_BATCH_QUERY,
     )
     not_succeeded = get_document_count(
         elastic_client=local_elastic_client,
-        index=REGISTRATIONS_INDEX,
+        index=registrations_index,
         query=NOT_SUCCEEDED_QUERY,
     )
 
