@@ -155,7 +155,7 @@ def check_batch_successful(batch_id):
     return successful
 
 
-def check_image_successful(image_id, date_cutoff='2021-02-01 00:00:00+00:00'):
+def check_image_successful(image_id, date_cutoff="2021-02-01 00:00:00+00:00"):
     image = get_dlcs_object(image_id)
 
     # The response if the image does not exist is {"success": False}
