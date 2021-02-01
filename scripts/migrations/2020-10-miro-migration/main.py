@@ -57,12 +57,12 @@ S3_LOCATIONS = {
     "archive": {
         "s3_prefix": "miro/Wellcome_Images_Archive",
         "decisions_index": "decisions",
-        "registrations_index": "registrations"
+        "registrations_index": "registrations",
     },
     "derivative": {
         "s3_prefix": "miro/jpg_derivatives",
         "decisions_index": "decisions_derivatives",
-        "registrations_index": "registrations_derivatives"
+        "registrations_index": "registrations_derivatives",
     },
 }
 
