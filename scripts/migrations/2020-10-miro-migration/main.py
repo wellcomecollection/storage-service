@@ -224,6 +224,7 @@ def create_registrations_index(ctx, location, overwrite):
     registrations = gather_registrations(
         sourcedata_index=SOURCEDATA_INDEX,
         decisions_index=S3_LOCATIONS[location]["decisions_index"],
+        s3_prefix=S3_LOCATIONS[location]["s3_prefix"]
     )
     expected_registrations_count = len(registrations)
     registrations_index = S3_LOCATIONS[location]["registrations_index"]

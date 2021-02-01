@@ -72,7 +72,7 @@ def _get_miro_ids_from_decisions(decisions_index):
     return set(miro_ids), acc_miro_ids
 
 
-def _gather_registrations(decisions_index, cleared_miro_ids):
+def _gather_registrations(decisions_index, cleared_miro_ids, s3_prefix):
     miro_ids, acc_miro_ids = _get_miro_ids_from_decisions(decisions_index)
 
     print(f"Unique miro ids from decisions: {len(miro_ids)}")
@@ -86,7 +86,7 @@ def _gather_registrations(decisions_index, cleared_miro_ids):
     missing_miro_ids = cleared_miro_ids - interesting_miro_ids
     print(f"Missing miro ids not found in decisions: {len(missing_miro_ids)}")
 
-    with open("registration_clearup/missing_miro_ids.json", "w") as outfile:
+    with open(f"registration_clearup/{decisions_index}_missing_miro_ids.json", "w") as outfile:
         json.dump(list(missing_miro_ids), outfile)
 
     ambig_decisions = {}
@@ -101,7 +101,7 @@ def _gather_registrations(decisions_index, cleared_miro_ids):
     print(f"Found clear decisions: {len(clear_decisions)}")
     print(f"Found ambiguous decisions: {len(ambig_decisions)}")
 
-    with open("registration_clearup/ambiguous_decisions.json", "w") as outfile:
+    with open(f"registration_clearup/{decisions_index}_ambiguous_decisions.json", "w") as outfile:
         json.dump(ambig_decisions, outfile)
 
     disambiguated_decisions = _disambiguate_decisions(ambig_decisions)
@@ -116,19 +116,19 @@ def _gather_registrations(decisions_index, cleared_miro_ids):
 
     print(f"Final decisions: {len(final_decisions)}")
 
-    with open("registration_clearup/final_decisions.json", "w") as outfile:
+    with open(f"registration_clearup/{decisions_index}_final_decisions.json", "w") as outfile:
         json.dump(final_decisions, outfile)
 
-    return _gather_files_for_registration(final_decisions)
+    return _gather_files_for_registration(final_decisions, s3_prefix, decisions_index)
 
 
-def _gather_files_for_registration(clear_decisions):
+def _gather_files_for_registration(clear_decisions, s3_prefix, decisions_index):
     clear_decisions_lookup = {}
     for miro_id, decision in clear_decisions.items():
         found_key = decision["s3_key"]
 
         expected_key = found_key.replace(
-            "miro/Wellcome_Images_Archive", "data/objects"
+            s3_prefix, "data/objects"
         ).replace(" ", "_")
 
         clear_decisions_lookup[expected_key] = decision["miro_id"]
@@ -143,7 +143,7 @@ def _gather_files_for_registration(clear_decisions):
 
     print(f"Found files for registration: {len(files_for_registration)}")
 
-    with open("registration_clearup/files_for_registration.json", "w") as outfile:
+    with open(f"registration_clearup/{decisions_index}_files_for_registration.json", "w") as outfile:
         json.dump(files_for_registration, outfile)
 
     return files_for_registration
@@ -195,9 +195,11 @@ def _disambiguate_decisions(ambig_decisions):
     return clear_decisions
 
 
-def gather_registrations(sourcedata_index, decisions_index):
+def gather_registrations(sourcedata_index, decisions_index, s3_prefix):
     cleared_miro_ids = _get_cleared_miro_ids(sourcedata_index=sourcedata_index)
 
     return _gather_registrations(
-        decisions_index=decisions_index, cleared_miro_ids=cleared_miro_ids
+        decisions_index=decisions_index,
+        cleared_miro_ids=cleared_miro_ids,
+        s3_prefix=s3_prefix
     )
