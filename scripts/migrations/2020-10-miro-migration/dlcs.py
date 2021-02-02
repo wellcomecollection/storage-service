@@ -164,7 +164,7 @@ def check_image_successful(image_id, date_cutoff='2021-02-01 00:00:00+00:00'):
     if image_exists:
 
         finished = False
-        if "finished" in image and image["finished"] != "":
+        if "finished" in image and image["finished"]:
             image_finished = dateutil.parser.isoparse(image["finished"])
             finished_after = dateutil.parser.isoparse(date_cutoff)
             finished = image_finished > finished_after
