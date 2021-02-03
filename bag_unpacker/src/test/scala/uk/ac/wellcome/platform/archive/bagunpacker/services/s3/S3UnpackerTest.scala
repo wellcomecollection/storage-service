@@ -288,7 +288,7 @@ class S3UnpackerTest
             )
 
           assertIsError(result) {
-            case (err, maybeUserFacingMessage) =>
+            case (_, maybeUserFacingMessage) =>
               maybeUserFacingMessage.get should startWith(
                 "Unexpected EOF while unpacking the archive at"
               )
