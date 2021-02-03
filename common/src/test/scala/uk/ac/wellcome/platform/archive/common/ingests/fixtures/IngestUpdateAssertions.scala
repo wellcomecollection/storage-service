@@ -16,7 +16,7 @@ trait IngestUpdateAssertions extends Inside with Logging with Matchers {
     ingests: MemoryMessageSender,
     status: Ingest.Status
   )(assert: Seq[IngestEvent] => R): Assertion =
-    assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
+    assertTopicReceivesIngestUpdates(ingests) { ingestUpdates =>
       ingestUpdates.size should be > 0
 
       val (success, failures) = ingestUpdates
@@ -39,20 +39,18 @@ trait IngestUpdateAssertions extends Inside with Logging with Matchers {
     }
 
   def assertTopicReceivesIngestUpdates(
-    ingestId: IngestID,
-    ingests: MemoryMessageSender
+    messageSender: MemoryMessageSender
   )(assert: Seq[IngestUpdate] => Assertion): Assertion = {
-    val updates = ingests.getMessages[IngestUpdate]
+    val updates = messageSender.getMessages[IngestUpdate]
     debug(s"Received ingest updates: $updates")
     assert(updates)
   }
 
   def assertTopicReceivesIngestEvents(
-    ingestId: IngestID,
     ingests: MemoryMessageSender,
     expectedDescriptions: Seq[String]
   ): Assertion =
-    assertTopicReceivesIngestUpdates(ingestId, ingests) {
+    assertTopicReceivesIngestUpdates(ingests) {
       ingestUpdates: Seq[IngestUpdate] =>
         val eventDescriptions: Seq[String] =
           ingestUpdates
@@ -67,7 +65,7 @@ trait IngestUpdateAssertions extends Inside with Logging with Matchers {
     ingestId: IngestID,
     ingests: MemoryMessageSender
   )(assert: Seq[IngestEvent] => Assertion): Assertion =
-    assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
+    assertTopicReceivesIngestUpdates(ingests) { ingestUpdates =>
       ingestUpdates.size should be > 0
 
       val (success, _) = ingestUpdates

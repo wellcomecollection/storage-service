@@ -72,7 +72,6 @@ class BagVerifierFeatureTest
 
             eventually {
               assertTopicReceivesIngestEvents(
-                payload.ingestId,
                 ingests,
                 expectedDescriptions = Seq(
                   "Verification started",
@@ -128,7 +127,7 @@ class BagVerifierFeatureTest
             sendNotificationToSQS[VerifiablePayload](queue, payload)
 
             eventually {
-              assertTopicReceivesIngestUpdates(payload.ingestId, ingests) {
+              assertTopicReceivesIngestUpdates(ingests) {
                 ingestUpdates =>
                   debug(s"Got $ingestUpdates")
 

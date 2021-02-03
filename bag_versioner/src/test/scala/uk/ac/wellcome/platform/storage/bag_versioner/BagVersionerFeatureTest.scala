@@ -65,7 +65,7 @@ class BagVersionerFeatureTest
             expectedPayload
           )
 
-          assertTopicReceivesIngestUpdates(payload.ingestId, ingests) {
+          assertTopicReceivesIngestUpdates(ingests) {
             ingestUpdates =>
               ingestUpdates should have size 2
 
@@ -126,7 +126,7 @@ class BagVersionerFeatureTest
           outgoing
             .getMessages[VersionedBagRootPayload] should have size 1
 
-          assertTopicReceivesIngestUpdates(payload1.ingestId, ingests) {
+          assertTopicReceivesIngestUpdates(ingests) {
             ingestUpdates =>
               ingestUpdates should have size 2
 
@@ -154,7 +154,7 @@ class BagVersionerFeatureTest
           outgoing
             .getMessages[VersionedBagRootPayload] should have size 2
 
-          assertTopicReceivesIngestUpdates(payload1.ingestId, ingests) {
+          assertTopicReceivesIngestUpdates(ingests) {
             ingestUpdates =>
               ingestUpdates should have size 4
 

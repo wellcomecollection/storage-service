@@ -88,11 +88,8 @@ trait BagRegisterFixtures
       }
     }
 
-  def assertBagRegisterSucceeded(
-    ingestId: IngestID,
-    ingests: MemoryMessageSender
-  ): Assertion =
-    assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
+  def assertBagRegisterSucceeded(ingestsMessageSender: MemoryMessageSender): Assertion =
+    assertTopicReceivesIngestUpdates(ingestsMessageSender) { ingestUpdates =>
       ingestUpdates.size shouldBe 2
 
       val ingestStart = ingestUpdates.head
@@ -104,11 +101,8 @@ trait BagRegisterFixtures
       ingestCompleted.events.head.description shouldBe "Register succeeded (completed)"
     }
 
-  def assertBagRegisterFailed(
-    ingestId: IngestID,
-    ingests: MemoryMessageSender
-  ): Assertion =
-    assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
+  def assertBagRegisterFailed(ingestsMessageSender: MemoryMessageSender): Assertion =
+    assertTopicReceivesIngestUpdates(ingestsMessageSender) { ingestUpdates =>
       ingestUpdates.size shouldBe 2
 
       val ingestStart = ingestUpdates.head

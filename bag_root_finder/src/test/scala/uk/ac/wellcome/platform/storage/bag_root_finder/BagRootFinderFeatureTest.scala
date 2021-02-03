@@ -58,7 +58,6 @@ class BagRootFinderFeatureTest
             )
 
             assertTopicReceivesIngestEvents(
-              payload.ingestId,
               ingests,
               expectedDescriptions = Seq(
                 "Finding bag root started",
@@ -124,7 +123,6 @@ class BagRootFinderFeatureTest
               .getMessages[BagRootLocationPayload] shouldBe Seq(expectedPayload)
 
             assertTopicReceivesIngestEvents(
-              payload.ingestId,
               ingests,
               expectedDescriptions = Seq(
                 "Finding bag root started",
@@ -163,7 +161,7 @@ class BagRootFinderFeatureTest
 
             outgoing.messages shouldBe empty
 
-            assertTopicReceivesIngestUpdates(payload.ingestId, ingests) {
+            assertTopicReceivesIngestUpdates(ingests) {
               ingestUpdates =>
                 ingestUpdates.size shouldBe 2
 
@@ -197,7 +195,7 @@ class BagRootFinderFeatureTest
 
             outgoing.messages shouldBe empty
 
-            assertTopicReceivesIngestUpdates(payload.ingestId, ingests) {
+            assertTopicReceivesIngestUpdates(ingests) {
               ingestUpdates =>
                 ingestUpdates.size shouldBe 2
 
