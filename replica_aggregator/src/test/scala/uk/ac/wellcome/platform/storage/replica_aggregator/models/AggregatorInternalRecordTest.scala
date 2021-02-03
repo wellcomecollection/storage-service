@@ -97,7 +97,7 @@ class AggregatorInternalRecordTest
 
         val updatedRecord = record.addLocation(location).success.value
 
-        updatedRecord.replicas should contain theSameElementsAs (replicas)
+        updatedRecord.replicas should contain theSameElementsAs replicas
       }
     }
 
@@ -140,7 +140,7 @@ class AggregatorInternalRecordTest
 
         val updatedRecord = record.addLocation(location).success.value
 
-        updatedRecord.replicas should contain theSameElementsAs (record.replicas)
+        updatedRecord.replicas should contain theSameElementsAs record.replicas
       }
 
       it("preserves a primary location") {

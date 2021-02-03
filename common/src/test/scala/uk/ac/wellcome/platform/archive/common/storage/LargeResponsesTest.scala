@@ -90,10 +90,10 @@ class LargeResponsesTest extends AnyFunSpec with S3Fixtures with Akka {
                 actualByteArray shouldBe expectedByteArray
 
                 val keys = listKeysInBucket(bucket)
-                keys should have length (1)
+                keys should have length 1
 
                 val keyParts = keys.head.split("/")
-                keyParts should have length (2)
+                keyParts should have length 2
 
                 keyParts.head shouldBe prefix
                 UUID.fromString(keyParts(1)) shouldBe a[UUID]
@@ -140,10 +140,10 @@ class LargeResponsesTest extends AnyFunSpec with S3Fixtures with Akka {
 
                 val keys = listKeysInBucket(bucket)
 
-                keys should have length (1)
+                keys should have length 1
 
                 val keyParts = keys.head.split("/")
-                keyParts should have length (2)
+                keyParts should have length 2
 
                 keyParts.head shouldBe prefix
                 keyParts.tail.head shouldBe header.value().replace("\"", "")
