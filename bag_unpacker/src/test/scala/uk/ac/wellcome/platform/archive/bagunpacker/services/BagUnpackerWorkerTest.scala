@@ -66,18 +66,17 @@ class BagUnpackerWorkerTest
               expectedPayload
             )
 
-            assertTopicReceivesIngestUpdates(ingests) {
-              ingestUpdates =>
-                val eventDescriptions: Seq[String] =
-                  ingestUpdates
-                    .flatMap { _.events }
-                    .map { _.description }
-                    .distinct
+            assertTopicReceivesIngestUpdates(ingests) { ingestUpdates =>
+              val eventDescriptions: Seq[String] =
+                ingestUpdates
+                  .flatMap { _.events }
+                  .map { _.description }
+                  .distinct
 
-                eventDescriptions should have size 2
+              eventDescriptions should have size 2
 
-                eventDescriptions(0) shouldBe "Unpacker started"
-                eventDescriptions(1) should fullyMatch regex """Unpacker succeeded - Unpacked \d+ KB from \d+ files"""
+              eventDescriptions(0) shouldBe "Unpacker started"
+              eventDescriptions(1) should fullyMatch regex """Unpacker succeeded - Unpacked \d+ KB from \d+ files"""
             }
           }
         }
@@ -109,18 +108,17 @@ class BagUnpackerWorkerTest
 
       failure.maybeUserFacingMessage.get shouldBe message
 
-      assertTopicReceivesIngestUpdates(ingests) {
-        ingestUpdates =>
-          val eventDescriptions: Seq[String] =
-            ingestUpdates
-              .flatMap { _.events }
-              .map { _.description }
-              .distinct
+      assertTopicReceivesIngestUpdates(ingests) { ingestUpdates =>
+        val eventDescriptions: Seq[String] =
+          ingestUpdates
+            .flatMap { _.events }
+            .map { _.description }
+            .distinct
 
-          eventDescriptions shouldBe Seq(
-            "Unpacker started",
-            s"Unpacker failed - $message"
-          )
+        eventDescriptions shouldBe Seq(
+          "Unpacker started",
+          s"Unpacker failed - $message"
+        )
       }
     }
   }
@@ -156,18 +154,17 @@ class BagUnpackerWorkerTest
 
       failure.maybeUserFacingMessage.get shouldBe message
 
-      assertTopicReceivesIngestUpdates(ingests) {
-        ingestUpdates =>
-          val eventDescriptions: Seq[String] =
-            ingestUpdates
-              .flatMap { _.events }
-              .map { _.description }
-              .distinct
+      assertTopicReceivesIngestUpdates(ingests) { ingestUpdates =>
+        val eventDescriptions: Seq[String] =
+          ingestUpdates
+            .flatMap { _.events }
+            .map { _.description }
+            .distinct
 
-          eventDescriptions shouldBe Seq(
-            "Unpacker started",
-            s"Unpacker failed - $message"
-          )
+        eventDescriptions shouldBe Seq(
+          "Unpacker started",
+          s"Unpacker failed - $message"
+        )
       }
     }
   }

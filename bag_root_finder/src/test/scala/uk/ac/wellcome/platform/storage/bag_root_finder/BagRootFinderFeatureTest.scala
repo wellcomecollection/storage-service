@@ -161,17 +161,16 @@ class BagRootFinderFeatureTest
 
             outgoing.messages shouldBe empty
 
-            assertTopicReceivesIngestUpdates(ingests) {
-              ingestUpdates =>
-                ingestUpdates.size shouldBe 2
+            assertTopicReceivesIngestUpdates(ingests) { ingestUpdates =>
+              ingestUpdates.size shouldBe 2
 
-                val ingestStart = ingestUpdates.head
-                ingestStart.events.head.description shouldBe "Finding bag root started"
+              val ingestStart = ingestUpdates.head
+              ingestStart.events.head.description shouldBe "Finding bag root started"
 
-                val ingestFailed =
-                  ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
-                ingestFailed.status shouldBe Ingest.Failed
-                ingestFailed.events.head.description shouldBe s"Finding bag root failed"
+              val ingestFailed =
+                ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+              ingestFailed.status shouldBe Ingest.Failed
+              ingestFailed.events.head.description shouldBe s"Finding bag root failed"
             }
           }
         }
@@ -195,17 +194,16 @@ class BagRootFinderFeatureTest
 
             outgoing.messages shouldBe empty
 
-            assertTopicReceivesIngestUpdates(ingests) {
-              ingestUpdates =>
-                ingestUpdates.size shouldBe 2
+            assertTopicReceivesIngestUpdates(ingests) { ingestUpdates =>
+              ingestUpdates.size shouldBe 2
 
-                val ingestStart = ingestUpdates.head
-                ingestStart.events.head.description shouldBe "Finding bag root started"
+              val ingestStart = ingestUpdates.head
+              ingestStart.events.head.description shouldBe "Finding bag root started"
 
-                val ingestFailed =
-                  ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
-                ingestFailed.status shouldBe Ingest.Failed
-                ingestFailed.events.head.description shouldBe s"Finding bag root failed"
+              val ingestFailed =
+                ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+              ingestFailed.status shouldBe Ingest.Failed
+              ingestFailed.events.head.description shouldBe s"Finding bag root failed"
             }
           }
       }

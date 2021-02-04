@@ -90,18 +90,17 @@ class UnpackerFeatureTest
         eventually {
           outgoing.messages shouldBe empty
 
-          assertTopicReceivesIngestUpdates(ingests) {
-            ingestUpdates =>
-              ingestUpdates.size shouldBe 2
+          assertTopicReceivesIngestUpdates(ingests) { ingestUpdates =>
+            ingestUpdates.size shouldBe 2
 
-              val ingestStart = ingestUpdates.head
-              ingestStart.events.head.description shouldBe "Unpacker started"
+            val ingestStart = ingestUpdates.head
+            ingestStart.events.head.description shouldBe "Unpacker started"
 
-              val ingestFailed =
-                ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
-              ingestFailed.status shouldBe Ingest.Failed
-              ingestFailed.events.head.description shouldBe
-                s"Unpacker failed - There is no S3 bucket ${sourceLocation.bucket}"
+            val ingestFailed =
+              ingestUpdates.tail.head.asInstanceOf[IngestStatusUpdate]
+            ingestFailed.status shouldBe Ingest.Failed
+            ingestFailed.events.head.description shouldBe
+              s"Unpacker failed - There is no S3 bucket ${sourceLocation.bucket}"
           }
         }
     }

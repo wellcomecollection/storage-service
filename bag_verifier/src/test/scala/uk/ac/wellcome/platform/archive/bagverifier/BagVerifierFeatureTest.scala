@@ -127,22 +127,21 @@ class BagVerifierFeatureTest
             sendNotificationToSQS[VerifiablePayload](queue, payload)
 
             eventually {
-              assertTopicReceivesIngestUpdates(ingests) {
-                ingestUpdates =>
-                  debug(s"Got $ingestUpdates")
+              assertTopicReceivesIngestUpdates(ingests) { ingestUpdates =>
+                debug(s"Got $ingestUpdates")
 
-                  ingestUpdates.size shouldBe 2
+                ingestUpdates.size shouldBe 2
 
-                  val ingestStart = ingestUpdates.head
-                  ingestStart.events.head.description shouldBe "Verification started"
+                val ingestStart = ingestUpdates.head
+                ingestStart.events.head.description shouldBe "Verification started"
 
-                  val ingestFailed =
-                    ingestUpdates.tail.head
-                      .asInstanceOf[IngestStatusUpdate]
-                  ingestFailed.status shouldBe Ingest.Failed
-                  ingestFailed.events.head.description should startWith(
-                    "Verification failed - Payload-Oxum has the wrong number of payload files"
-                  )
+                val ingestFailed =
+                  ingestUpdates.tail.head
+                    .asInstanceOf[IngestStatusUpdate]
+                ingestFailed.status shouldBe Ingest.Failed
+                ingestFailed.events.head.description should startWith(
+                  "Verification failed - Payload-Oxum has the wrong number of payload files"
+                )
               }
 
               outgoing.messages shouldBe empty
