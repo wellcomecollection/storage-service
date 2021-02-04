@@ -25,7 +25,6 @@ import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
-  IngestID,
   IngestStatusUpdate
 }
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures

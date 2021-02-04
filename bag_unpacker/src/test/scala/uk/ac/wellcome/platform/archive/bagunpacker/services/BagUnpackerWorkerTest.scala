@@ -156,7 +156,7 @@ class BagUnpackerWorkerTest
 
       failure.maybeUserFacingMessage.get shouldBe message
 
-      assertTopicReceivesIngestUpdates(payload.ingestId, ingests) {
+      assertTopicReceivesIngestUpdates(ingests) {
         ingestUpdates =>
           val eventDescriptions: Seq[String] =
             ingestUpdates
