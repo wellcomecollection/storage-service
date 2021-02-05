@@ -83,7 +83,6 @@ class BagReplicatorWorkerTest
         )
 
         assertTopicReceivesIngestEvents(
-          payload.ingestId,
           ingests,
           expectedDescriptions = Seq(
             "Replicating started",

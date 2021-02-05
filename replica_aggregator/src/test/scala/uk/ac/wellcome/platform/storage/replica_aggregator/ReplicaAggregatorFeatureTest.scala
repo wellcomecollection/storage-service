@@ -61,7 +61,6 @@ class ReplicaAggregatorFeatureTest
 
         eventually {
           assertTopicReceivesIngestEvents(
-            ingestId = payload.ingestId,
             ingests = ingests,
             expectedDescriptions = Seq(
               "Aggregating replicas succeeded - all replicas complete"

@@ -87,10 +87,7 @@ class BagRegisterFeatureTest
 
             storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
-            assertBagRegisterSucceeded(
-              ingestId = payload.ingestId,
-              ingests = ingests
-            )
+            assertBagRegisterSucceeded(ingests)
 
             assertQueueEmpty(queue)
           }
@@ -113,10 +110,7 @@ class BagRegisterFeatureTest
           sendNotificationToSQS(queue, payload)
 
           eventually {
-            assertBagRegisterFailed(
-              ingestId = payload.ingestId,
-              ingests = ingests
-            )
+            assertBagRegisterFailed(ingests)
 
             assertQueueEmpty(queue)
             assertQueueEmpty(dlq)

@@ -91,10 +91,7 @@ class BagRegisterWorkerTest
 
       storageManifest.createdDate.isAfter(createdAfterDate) shouldBe true
 
-      assertBagRegisterSucceeded(
-        ingestId = payload.ingestId,
-        ingests = ingests
-      )
+      assertBagRegisterSucceeded(ingests)
     }
   }
 
@@ -320,10 +317,7 @@ class BagRegisterWorkerTest
       _ shouldBe a[IngestFailed[_]]
     }
 
-    assertBagRegisterFailed(
-      ingestId = payload.ingestId,
-      ingests = ingests
-    )
+    assertBagRegisterFailed(ingests)
 
     registrationNotifications.messages shouldBe empty
   }

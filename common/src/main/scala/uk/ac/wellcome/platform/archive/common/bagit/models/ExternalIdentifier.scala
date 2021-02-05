@@ -6,7 +6,7 @@ import io.circe.{Decoder, Encoder, HCursor, Json}
 class ExternalIdentifier(val underlying: String) {
   override def toString: String = underlying
 
-  require(!underlying.isEmpty, "External identifier cannot be empty")
+  require(underlying.nonEmpty, "External identifier cannot be empty")
 
   // When you want to see all versions of a bag in the bags API, you call
   //

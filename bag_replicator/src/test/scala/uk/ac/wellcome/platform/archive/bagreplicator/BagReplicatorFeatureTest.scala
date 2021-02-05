@@ -79,7 +79,6 @@ class BagReplicatorFeatureTest
               )
 
               assertTopicReceivesIngestEvents(
-                payload.ingestId,
                 ingests,
                 expectedDescriptions = Seq(
                   "Replicating started",

@@ -89,7 +89,6 @@ class ReplicaAggregatorWorkerTest
 
     it("updates the ingests monitor") {
       assertTopicReceivesIngestEvents(
-        ingestId = payload.ingestId,
         ingests = ingests,
         expectedDescriptions = Seq(
           "Aggregating replicas succeeded - all replicas complete"
@@ -145,7 +144,6 @@ class ReplicaAggregatorWorkerTest
 
     it("updates the ingests monitor") {
       assertTopicReceivesIngestEvents(
-        ingestId = payload.ingestId,
         ingests = ingests,
         expectedDescriptions = Seq(
           "Aggregating replicas succeeded - 1 of 3 replicas complete"
@@ -260,7 +258,6 @@ class ReplicaAggregatorWorkerTest
 
     it("sends a retrying message to the ingests monitor") {
       assertTopicReceivesIngestEvents(
-        ingestId = payload.ingestId,
         ingests = ingests,
         expectedDescriptions = Seq(
           "Aggregating replicas retrying"

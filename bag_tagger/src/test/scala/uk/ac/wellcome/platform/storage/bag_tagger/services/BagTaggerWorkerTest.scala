@@ -246,37 +246,35 @@ class BagTaggerWorkerTest
     }
 
     it("if it can't apply the tags") {
-      withLocalS3Bucket { replicaBucket =>
-        val manifest = createStorageManifest
+      val manifest = createStorageManifest
 
-        val dao = createStorageManifestDao()
-        dao.put(manifest) shouldBe a[Right[_, _]]
+      val dao = createStorageManifestDao()
+      dao.put(manifest) shouldBe a[Right[_, _]]
 
-        val notification = BagRegistrationNotification(manifest)
+      val notification = BagRegistrationNotification(manifest)
 
-        val applyError = new Throwable("BOOM!")
+      val applyError = new Throwable("BOOM!")
 
-        val brokenApplyTags =
-          new ApplyTags(s3Tags = s3Tags) {
-            override def applyTags(
-              storageLocations: Seq[StorageLocation],
-              tagsToApply: Map[StorageManifestFile, Map[String, String]]
-            ): Try[Unit] =
-              Failure(applyError)
-          }
+      val brokenApplyTags =
+        new ApplyTags(s3Tags = s3Tags) {
+          override def applyTags(
+            storageLocations: Seq[StorageLocation],
+            tagsToApply: Map[StorageManifestFile, Map[String, String]]
+          ): Try[Unit] =
+            Failure(applyError)
+        }
 
-        withWorkerService(
-          storageManifestDao = dao,
-          tagRules = tagEverythingRule,
-          applyTags = brokenApplyTags
-        ) { worker =>
-          whenReady(worker.process(notification)) { result =>
-            result shouldBe a[NonDeterministicFailure[_]]
+      withWorkerService(
+        storageManifestDao = dao,
+        tagRules = tagEverythingRule,
+        applyTags = brokenApplyTags
+      ) { worker =>
+        whenReady(worker.process(notification)) { result =>
+          result shouldBe a[NonDeterministicFailure[_]]
 
-            result
-              .asInstanceOf[NonDeterministicFailure[_]]
-              .failure shouldBe applyError
-          }
+          result
+            .asInstanceOf[NonDeterministicFailure[_]]
+            .failure shouldBe applyError
         }
       }
     }

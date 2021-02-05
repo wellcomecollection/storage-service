@@ -71,7 +71,6 @@ class BagVerifierWorkerTest
       }
 
       assertTopicReceivesIngestEvents(
-        payload.ingestId,
         ingests,
         expectedDescriptions = Seq(
           "Verification started",

@@ -42,7 +42,6 @@ trait IngestsApiFixture
   override val metricsName = "IngestsApiFixture"
 
   private def withApp[R](
-    ingestTrackerTest: MemoryIngestTracker,
     unpackerSender: MemoryMessageSender,
     metrics: Metrics[Future]
   )(testWith: TestWith[WellcomeHttpApp, R]): R =
@@ -95,7 +94,7 @@ trait IngestsApiFixture
 
         val metrics = new MemoryMetrics()
 
-        withApp(ingestTracker, messageSender, metrics) { _ =>
+        withApp(messageSender, metrics) { _ =>
           testWith(
             (
               ingestTracker,
@@ -124,7 +123,7 @@ trait IngestsApiFixture
 
         val metrics = new MemoryMetrics()
 
-        withApp(ingestTracker, messageSender, metrics) { _ =>
+        withApp(messageSender, metrics) { _ =>
           testWith(
             (
               ingestTracker,

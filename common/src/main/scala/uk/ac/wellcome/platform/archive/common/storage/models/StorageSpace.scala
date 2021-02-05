@@ -6,7 +6,7 @@ import io.circe.{Decoder, Encoder, HCursor, Json}
 class StorageSpace(val underlying: String) {
   override def toString: String = underlying
 
-  require(!underlying.isEmpty, "Storage space cannot be empty")
+  require(underlying.nonEmpty, "Storage space cannot be empty")
 
   // Normally we use case classes for immutable data, which provide these
   // methods for us.

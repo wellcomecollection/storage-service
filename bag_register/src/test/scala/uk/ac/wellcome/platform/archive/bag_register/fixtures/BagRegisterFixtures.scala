@@ -25,7 +25,6 @@ import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Ingest,
-  IngestID,
   IngestStatusUpdate
 }
 import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
@@ -89,10 +88,9 @@ trait BagRegisterFixtures
     }
 
   def assertBagRegisterSucceeded(
-    ingestId: IngestID,
-    ingests: MemoryMessageSender
+    ingestsMessageSender: MemoryMessageSender
   ): Assertion =
-    assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
+    assertTopicReceivesIngestUpdates(ingestsMessageSender) { ingestUpdates =>
       ingestUpdates.size shouldBe 2
 
       val ingestStart = ingestUpdates.head
@@ -105,10 +103,9 @@ trait BagRegisterFixtures
     }
 
   def assertBagRegisterFailed(
-    ingestId: IngestID,
-    ingests: MemoryMessageSender
+    ingestsMessageSender: MemoryMessageSender
   ): Assertion =
-    assertTopicReceivesIngestUpdates(ingestId, ingests) { ingestUpdates =>
+    assertTopicReceivesIngestUpdates(ingestsMessageSender) { ingestUpdates =>
       ingestUpdates.size shouldBe 2
 
       val ingestStart = ingestUpdates.head
