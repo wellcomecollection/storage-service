@@ -355,10 +355,10 @@ def _upload_package(chunk, overwrite, skip_upload):
     return upload
 
 
-# WORKFLOW_ROLE_ARN = "arn:aws:iam::299497370133:role/workflow-developer"
-# from common import get_aws_client
+#WORKFLOW_ROLE_ARN = "arn:aws:iam::299497370133:role/workflow-developer"
+#from common import get_aws_client
 
-# s3_client = get_aws_client('s3', role_arn=WORKFLOW_ROLE_ARN)
+#s3_client = get_aws_client('s3', role_arn=WORKFLOW_ROLE_ARN)
 
 
 @click.command()
@@ -411,34 +411,34 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, over
             local_elastic_client.index(index=TRANSFERS_INDEX, body=upload, id=chunk_id)
             break
         # Hack edit2: For resetting index and files that are not bagged
-        # if not has_bag:
-        #    empty_upload = {
-        #        'upload_transfer': None,
-        #        'storage_service': {
-        #            'ingest': None,
-        #            'bag': None
-        #        }
-        #      }
+        #if not has_bag:
+        #   empty_upload = {
+        #       'upload_transfer': None,
+        #       'storage_service': {
+        #           'ingest': None,
+        #           'bag': None
+        #       }
+        #     }
 
-        #    upload = _upload_package(chunk, overwrite, skip_upload)
+        #   upload = _upload_package(chunk, overwrite, skip_upload)
 
-        #    s3_bucket = upload['upload_transfer']['s3_bucket']
-        #    s3_key = upload['upload_transfer']['s3_key']
+        #   s3_bucket = upload['upload_transfer']['s3_bucket']
+        #   s3_key = upload['upload_transfer']['s3_key']
 
-        #    print(s3_bucket, s3_key)
+        #   print(s3_bucket, s3_key)
 
-        #    response = s3_client.delete_object(
-        #            Bucket=s3_bucket,
-        #            Key=s3_key
-        #    )
+        #   response = s3_client.delete_object(
+        #           Bucket=s3_bucket,
+        #           Key=s3_key
+        #   )
 
-        #    print(response)
+        #   print(response)
 
-        #    local_elastic_client.index(index=TRANSFERS_INDEX, body=empty_upload, id=chunk_id)
+        #   local_elastic_client.index(index=TRANSFERS_INDEX, body=empty_upload, id=chunk_id)
 
-        #    #assert True is False
+        #   #assert True is False
 
-        # continue
+        #continue
 
         if not has_upload or not has_bag:
             upload = _upload_package(chunk, overwrite, skip_upload)
