@@ -355,10 +355,10 @@ def _upload_package(chunk, overwrite, skip_upload):
     return upload
 
 
-#WORKFLOW_ROLE_ARN = "arn:aws:iam::299497370133:role/workflow-developer"
-#from common import get_aws_client
+# WORKFLOW_ROLE_ARN = "arn:aws:iam::299497370133:role/workflow-developer"
+# from common import get_aws_client
 
-#s3_client = get_aws_client('s3', role_arn=WORKFLOW_ROLE_ARN)
+# s3_client = get_aws_client('s3', role_arn=WORKFLOW_ROLE_ARN)
 
 
 @click.command()
@@ -411,7 +411,7 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, over
             local_elastic_client.index(index=TRANSFERS_INDEX, body=upload, id=chunk_id)
             break
         # Hack edit2: For resetting index and files that are not bagged
-        #if not has_bag:
+        # if not has_bag:
         #   empty_upload = {
         #       'upload_transfer': None,
         #       'storage_service': {
@@ -438,7 +438,7 @@ def upload_transfer_packages(ctx, skip_upload, chunk_id, index_name, limit, over
 
         #   #assert True is False
 
-        #continue
+        # continue
 
         if not has_upload or not has_bag:
             upload = _upload_package(chunk, overwrite, skip_upload)
