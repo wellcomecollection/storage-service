@@ -131,8 +131,7 @@ trait BagsApi
                 NotFound -> UserErrorResponse(
                   context = contextURL,
                   statusCode = StatusCodes.NotFound,
-                  description =
-                    s"Storage manifest $space/$remaining not found"
+                  description = s"Storage manifest $space/$remaining not found"
                 )
               )
           }
