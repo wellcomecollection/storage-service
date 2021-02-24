@@ -296,6 +296,24 @@ class LookupBagVersionsApiTest
     }
   }
 
+  it("returns a 404 if you look up an 'invalid' external identifier") {
+    val bagId = s"space/a.b"
+
+    withConfiguredApp() {
+      case (_, metrics, baseUrl) =>
+        whenGetRequestReady(s"$baseUrl/bags/$bagId/versions") { response =>
+          assertIsUserErrorResponse(
+            response,
+            description = s"No storage manifest versions found for $bagId",
+            statusCode = StatusCodes.NotFound,
+            label = "Not Found"
+          )
+
+          assertMetricSent(metrics, result = HttpMetricResults.UserError)
+        }
+    }
+  }
+
   it("returns a 500 if looking up the lists of versions fails") {
     withBrokenApp {
       case (metrics, baseUrl) =>
