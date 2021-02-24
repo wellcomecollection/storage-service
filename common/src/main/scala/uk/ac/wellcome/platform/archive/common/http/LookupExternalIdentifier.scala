@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.archive.common.http
 
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
-
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 
 trait LookupExternalIdentifier {

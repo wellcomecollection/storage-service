@@ -373,6 +373,24 @@ class LookupBagApiTest
           }
       }
     }
+
+    it("if you look up an 'invalid' external identifier") {
+      val bagId = s"space/a.b"
+
+      withConfiguredApp() {
+        case (_, metrics, baseUrl) =>
+          whenGetRequestReady(s"$baseUrl/bags/$bagId") { response =>
+            assertIsUserErrorResponse(
+              response,
+              description = s"Storage manifest $bagId not found",
+              statusCode = StatusCodes.NotFound,
+              label = "Not Found"
+            )
+
+            assertMetricSent(metrics, result = HttpMetricResults.UserError)
+          }
+      }
+    }
   }
 
   it("returns a 500 error if looking up the bag fails") {
