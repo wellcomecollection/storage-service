@@ -12,6 +12,7 @@ def get_session():
     Creates a boto3 Session with the storage-developer role.
     """
     role_arn = "arn:aws:iam::975596993436:role/storage-developer"
+    sts_client = boto3.client("sts")
     assumed_role_object = sts_client.assume_role(
         RoleArn=role_arn, RoleSessionName="AssumeRoleSession1"
     )

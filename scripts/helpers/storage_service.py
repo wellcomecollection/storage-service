@@ -1,6 +1,6 @@
 import datetime
 
-from wellcome_storage_service import IngestNotFound, RequestsOAuthStorageServiceClient
+from wellcome_storage_service import IngestNotFound, prod_client, staging_client
 
 
 def lookup_ingest(ingest_id):
@@ -9,14 +9,14 @@ def lookup_ingest(ingest_id):
 
     If it finds an ingest, it returns a tuple:
 
-        (API name, API URL, ingest_data)
+        (API name, API client, ingest_data)
 
     If it doesn't find an ingest, it returns IngestNotFound.
 
     """
-    api_variants = {"staging": "api-stage", "prod": "api"}
+    api_variants = {"staging": staging_client(), "prod": prod_client()}
 
-    for api_name, api_host in api_variants.items():
+    for api_name, client in api_variants.items():
         api_url = f"https://{api_host}.wellcomecollection.org/storage/v1"
 
         client = RequestsOAuthStorageServiceClient.from_path(api_url=api_url)
@@ -34,6 +34,6 @@ def lookup_ingest(ingest_id):
                     ingest["createdDate"], "%Y-%m-%dT%H:%M:%S.%fZ"
                 ),
             }
-            return api_name, api_url, ingest_data
+            return api_name, client, ingest_data
 
     raise IngestNotFound

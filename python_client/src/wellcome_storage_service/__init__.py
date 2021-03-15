@@ -211,7 +211,7 @@ class RequestsOAuthStorageServiceClient(RequestsStorageServiceClient):
 
 def prod_client():
     secrets = get_secrets()
-    api_url = "https://api.wellcomecollection.org/catalogue/v1/storage"
+    api_url = "https://api.wellcomecollection.org/storage/v1"
     return RequestsOAuthStorageServiceClient(
         api_url=api_url,
         token_url="https://auth.wellcomecollection.org/oauth2/token",
@@ -221,7 +221,7 @@ def prod_client():
 
 def staging_client():
     secrets = get_secrets()
-    api_url = "https://api-stage.wellcomecollection.org/catalogue/v1/storage"
+    api_url = "https://api-stage.wellcomecollection.org/storage/v1"
     return RequestsOAuthStorageServiceClient(
         api_url=api_url,
         token_url="https://auth.wellcomecollection.org/oauth2/token",

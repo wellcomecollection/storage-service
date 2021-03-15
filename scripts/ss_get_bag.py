@@ -13,9 +13,9 @@ import json
 import logging
 import sys
 
-from wellcome_storage_service import BagNotFound
+from wellcome_storage_service import BagNotFound, staging_client, prod_client
 
-from common import get_logger, get_storage_client
+from common import get_logger
 
 
 logger = get_logger(__name__)
@@ -24,21 +24,18 @@ logger = get_logger(__name__)
 def lookup_bag(space, external_identifier, version):
     logger.debug("Looking up bag %s/%s", space, external_identifier)
 
-    api_variants = {"stage": "api-stage", "prod": "api"}
+    api_variants = {"stage": staging_client(), "prod": prod_client()}
 
-    for name, host in api_variants.items():
+    for name, client in api_variants.items():
         logging.debug("Checking %s API", name)
 
-        api_url = f"https://{host}.wellcomecollection.org/storage/v1"
-        client = get_storage_client(api_url)
-
         try:
-            ingest = client.get_bag(space, external_identifier, version)
+            bag = client.get_bag(space, external_identifier, version)
         except BagNotFound:
             logging.debug("Not found in %s API", name)
         else:
             logging.debug("Found bag in %s API:", name)
-            return ingest
+            return bag
 
     logging.error("Could not find %s/%s in either API!", space, external_identifier)
     sys.exit(1)
