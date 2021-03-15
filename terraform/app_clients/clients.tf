@@ -32,3 +32,12 @@ module "end_to_end_client" {
   allow_ingests_access = true
 }
 
+module "dev_client" {
+  source = "../modules/app_client"
+
+  name         = "Storage service developers"
+  user_pool_id = local.wc_user_pool_id
+
+  allow_bags_access    = true
+  allow_ingests_access = true
+}

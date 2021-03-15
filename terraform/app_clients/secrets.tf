@@ -27,3 +27,16 @@ module "end_to_end_tester_secrets" {
     "end_to_end_bag_tester/client_secret" = module.end_to_end_client.secret
   }
 }
+
+module "dev_secrets" {
+  source = "../modules/secrets"
+
+  providers = {
+    aws = aws.storage
+  }
+
+  key_value_map = {
+    "dev_testing/client_id"     = module.dev_client.id
+    "dev_testing/client_secret" = module.dev_client.secret
+  }
+}
