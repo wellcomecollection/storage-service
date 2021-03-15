@@ -10,6 +10,7 @@ from requests_oauthlib import OAuth2Session
 
 from .downloader import download_bag, download_compressed_bag
 from .exceptions import BagNotFound, IngestNotFound, ServerError, UserError
+from .secrets import get_secrets
 
 
 __all__ = [
@@ -206,3 +207,23 @@ class RequestsOAuthStorageServiceClient(RequestsStorageServiceClient):
     @needs_token
     def _http_post(self, url, json):
         return super(RequestsOAuthStorageServiceClient, self)._http_post(url, json)
+
+
+def prod_client():
+    secrets = get_secrets()
+    api_url = "https://api.wellcomecollection.org/catalogue/v1/storage"
+    return RequestsOAuthStorageServiceClient(
+        api_url=api_url,
+        token_url="https://auth.wellcomecollection.org/oauth2/token",
+        **secrets
+    )
+
+
+def staging_client():
+    secrets = get_secrets()
+    api_url = "https://api-stage.wellcomecollection.org/catalogue/v1/storage"
+    return RequestsOAuthStorageServiceClient(
+        api_url=api_url,
+        token_url="https://auth.wellcomecollection.org/oauth2/token",
+        **secrets
+    )
