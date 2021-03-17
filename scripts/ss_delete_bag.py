@@ -18,7 +18,7 @@ import boto3
 import click
 from elasticsearch.exceptions import NotFoundError as ElasticNotFoundError
 import humanize
-from wellcome_storage_service import IngestNotFound, RequestsOAuthStorageServiceClient
+from wellcome_storage_service import IngestNotFound
 
 from helpers import azure, dynamo, s3
 from helpers.iam import (
@@ -52,7 +52,7 @@ def main(ingest_id, skip_azure_login):
     was used.
     """
     try:
-        api_name, api_url, ingest_data = lookup_ingest(ingest_id)
+        api_name, storage_client, ingest_data = lookup_ingest(ingest_id)
     except IngestNotFound:
         abort(f"Could not find {ingest_id} in either API!")
 
@@ -82,8 +82,6 @@ def main(ingest_id, skip_azure_login):
     # ahead and start deleting stuff.  The deletion should be as close to atomic
     # as possible -- we shouldn't get halfway through deleting the bag and then
     # discover something is wrong; we should catch problems upfront.
-    storage_client = RequestsOAuthStorageServiceClient.from_path(api_url=api_url)
-
     _confirm_is_latest_version_of_bag(
         storage_client,
         space=space,

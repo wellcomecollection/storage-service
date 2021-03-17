@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v2.3.0 / v2.3.1 / v2.3.2 - 2021-03-15
+
+This adds two helpers `prod_client()` and `staging_client()` for getting prebuilt clients that pull credentials from Secrets Manager.
+
 ## v2.2.1 - 2020-10-19
 
 Fix some metadata on the PyPI page.

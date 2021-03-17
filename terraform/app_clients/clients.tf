@@ -2,16 +2,6 @@ locals {
   wc_user_pool_id = "eu-west-1_h3qKmdYyD"
 }
 
-module "alex_home_imac_client" {
-  source = "../modules/app_client"
-
-  name         = "Alex home iMac"
-  user_pool_id = local.wc_user_pool_id
-
-  allow_bags_access    = false
-  allow_ingests_access = true
-}
-
 module "alex_glitch_dashboard" {
   source = "../modules/app_client"
 
@@ -42,3 +32,12 @@ module "end_to_end_client" {
   allow_ingests_access = true
 }
 
+module "dev_client" {
+  source = "../modules/app_client"
+
+  name         = "Storage service developers"
+  user_pool_id = local.wc_user_pool_id
+
+  allow_bags_access    = true
+  allow_ingests_access = true
+}
