@@ -26,7 +26,11 @@ def get_secrets():
     session = get_session()
     secrets_client = session.client("secretsmanager")
 
-    client_id = secrets_client.get_secret_value(SecretId="dev_testing/client_id")["SecretString"]
-    client_secret = secrets_client.get_secret_value(SecretId="dev_testing/client_secret")["SecretString"]
+    client_id = secrets_client.get_secret_value(SecretId="dev_testing/client_id")[
+        "SecretString"
+    ]
+    client_secret = secrets_client.get_secret_value(
+        SecretId="dev_testing/client_secret"
+    )["SecretString"]
 
     return {"client_id": client_id, "client_secret": client_secret}
