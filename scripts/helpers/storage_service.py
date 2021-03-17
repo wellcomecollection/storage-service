@@ -17,10 +17,6 @@ def lookup_ingest(ingest_id):
     api_variants = {"staging": staging_client(), "prod": prod_client()}
 
     for api_name, client in api_variants.items():
-        api_url = f"https://{api_host}.wellcomecollection.org/storage/v1"
-
-        client = RequestsOAuthStorageServiceClient.from_path(api_url=api_url)
-
         try:
             ingest = client.get_ingest(ingest_id)
         except IngestNotFound:

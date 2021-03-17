@@ -2,8 +2,6 @@
 Fetches credentials for the dev client from Secrets Manager.
 """
 
-import functools
-
 import boto3
 
 
