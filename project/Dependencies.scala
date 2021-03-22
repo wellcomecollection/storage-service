@@ -77,10 +77,8 @@ object WellcomeDependencies {
 object ExternalDependencies {
   lazy val versions = new {
 
-    val apacheLogging = "2.8.2"
     val commonsCompress = "1.5"
     val commonsIO = "2.6"
-    val elastic4s = "7.9.2"
     val mockito = "1.9.5"
     val scalatest = "3.2.3"
     val wiremock = "2.18.0"
@@ -151,15 +149,6 @@ object ExternalDependencies {
       exclude ("com.github.matsluni", "aws-spi-akka-http_2.12"),
     "com.lightbend.akka" %% "akka-stream-alpakka-sns" % versions.akkaStreamAlpakka
       exclude ("com.github.matsluni", "aws-spi-akka-http_2.12")
-  )
-
-  val elasticsearchDependencies: Seq[ModuleID] = Seq(
-    "org.apache.logging.log4j" % "log4j-core" % versions.apacheLogging,
-    "org.apache.logging.log4j" % "log4j-api" % versions.apacheLogging,
-    "com.sksamuel.elastic4s" %% "elastic4s-core" % versions.elastic4s,
-    "com.sksamuel.elastic4s" %% "elastic4s-client-esjava" % versions.elastic4s,
-    "com.sksamuel.elastic4s" %% "elastic4s-http-streams" % versions.elastic4s,
-    "com.sksamuel.elastic4s" %% "elastic4s-testkit" % versions.elastic4s % "test"
   )
 
   val mockitoDependencies: Seq[ModuleID] = Seq(
