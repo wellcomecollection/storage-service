@@ -1,16 +1,12 @@
 package uk.ac.wellcome.platform.archive.indexer.fixtures
 
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.analysis.Analysis
 import com.sksamuel.elastic4s.requests.get.GetResponse
-import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
-import com.sksamuel.elastic4s.requests.mappings.dynamictemplate.DynamicMapping
 import com.sksamuel.elastic4s.requests.searches.SearchResponse
 import com.sksamuel.elastic4s.requests.searches.queries.Query
 import com.sksamuel.elastic4s.{Index, Response}
 import io.circe.Decoder
 import org.scalatest.Suite
-import uk.ac.wellcome.elasticsearch.IndexConfig
 import uk.ac.wellcome.json.JsonUtil.fromJson
 import uk.ac.wellcome.elasticsearch.test.fixtures
 
@@ -21,13 +17,6 @@ trait ElasticsearchFixtures extends fixtures.ElasticsearchFixtures { this: Suite
 
   protected val esHost = "localhost"
   protected val esPort = 9200
-
-  def createIndexConfigWith(m: MappingDefinition): IndexConfig =
-    new IndexConfig {
-      override def mapping: MappingDefinition = m.dynamic(DynamicMapping.Strict)
-
-      override def analysis: Analysis = Analysis(analyzers = List())
-    }
 
   protected def getT[T](index: Index, id: String)(
     implicit decoder: Decoder[T]
