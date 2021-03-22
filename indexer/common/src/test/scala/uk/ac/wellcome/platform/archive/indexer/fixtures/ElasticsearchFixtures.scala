@@ -13,7 +13,8 @@ import uk.ac.wellcome.elasticsearch.test.fixtures
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
-trait ElasticsearchFixtures extends fixtures.ElasticsearchFixtures { this: Suite =>
+trait ElasticsearchFixtures extends fixtures.ElasticsearchFixtures {
+  this: Suite =>
 
   protected val esHost = "localhost"
   protected val esPort = 9200
