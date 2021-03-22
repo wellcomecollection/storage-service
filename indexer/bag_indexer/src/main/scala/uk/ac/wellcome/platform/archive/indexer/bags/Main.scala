@@ -4,6 +4,8 @@ import akka.actor.ActorSystem
 import com.sksamuel.elastic4s.Index
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
+import uk.ac.wellcome.elasticsearch.ElasticsearchIndexCreator
+import uk.ac.wellcome.elasticsearch.typesafe.ElasticBuilder
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
@@ -12,8 +14,6 @@ import uk.ac.wellcome.messaging.typesafe.{
 import uk.ac.wellcome.monitoring.cloudwatch.CloudWatchMetrics
 import uk.ac.wellcome.monitoring.typesafe.CloudWatchBuilder
 import uk.ac.wellcome.platform.archive.bag_tracker.client.AkkaBagTrackerClient
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.ElasticsearchIndexCreator
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.config.ElasticClientBuilder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
@@ -37,21 +37,15 @@ object Main extends WellcomeTypesafeApp {
     info(s"Writing bags to index $index")
 
     info(s"Creating the Elasticsearch index mapping")
-    val elasticClient = ElasticClientBuilder.buildElasticClient(config)
+    val elasticClient = ElasticBuilder.buildElasticClient(config)
 
     val indexCreator = new ElasticsearchIndexCreator(
-      elasticClient = elasticClient
+      elasticClient = elasticClient,
+      index = index,
+      config = BagsIndexConfig
     )
 
-    indexCreator.create(
-      index = index,
-      mappingDefinition = BagsIndexConfig.mapping,
-      settings = Map(
-        // The largest number of files on a bag is ~ 970,000 (see b19974760, aka
-        // Chemist and Druggist). The default limit for nested docs is 10,000.
-        "mapping.nested_objects.limit" -> 1000000
-      )
-    )
+    indexCreator.create
 
     val bagIndexer = new BagIndexer(
       client = elasticClient,

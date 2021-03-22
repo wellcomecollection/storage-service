@@ -16,7 +16,7 @@ class FileIndexerWorkerTest
       createContext
     }
 
-    withLocalElasticsearchIndex(mapping) { index =>
+    withLocalElasticsearchIndex(indexConfig) { index =>
       withIndexerWorker(index) { indexerWorker =>
         whenReady(indexerWorker.process(files)) {
           _ shouldBe a[Successful[_]]

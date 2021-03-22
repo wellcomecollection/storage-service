@@ -1,18 +1,20 @@
 package uk.ac.wellcome.platform.archive.indexer.elasticsearch
 
 import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.analysis.Analysis
 import com.sksamuel.elastic4s.requests.mappings.dynamictemplate.DynamicMapping
 import com.sksamuel.elastic4s.requests.mappings.{
   FieldDefinition,
   KeywordField,
   MappingDefinition
 }
+import uk.ac.wellcome.elasticsearch.IndexConfig
 
 /** Helpers for creating Elasticsearch index definitions based on
   * the display models.
   *
   */
-trait IndexConfig {
+trait StorageServiceIndexConfig extends IndexConfig {
   protected val displayProviderMappingFields: Seq[KeywordField] =
     Seq(
       keywordField("id"),
@@ -44,4 +46,6 @@ trait IndexConfig {
 
   def mapping: MappingDefinition =
     properties(fields).dynamic(DynamicMapping.Strict)
+
+  val analysis: Analysis = Analysis(analyzers = List())
 }

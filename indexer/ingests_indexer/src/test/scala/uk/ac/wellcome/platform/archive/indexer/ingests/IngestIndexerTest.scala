@@ -1,8 +1,6 @@
 package uk.ac.wellcome.platform.archive.indexer.ingests
 
 import java.time.Instant
-
-import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
 import com.sksamuel.elastic4s.{ElasticClient, Index}
 import io.circe.Json
 import org.scalatest.Assertion
@@ -13,15 +11,15 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestEvent
 }
 import uk.ac.wellcome.platform.archive.indexer.IndexerTestCases
+import uk.ac.wellcome.platform.archive.indexer.ingests.fixtures.IngestsIndexerFixtures
 import uk.ac.wellcome.platform.archive.indexer.ingests.models.IndexedIngest
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class IngestIndexerTest
     extends IndexerTestCases[Ingest, IndexedIngest]
-    with IngestGenerators {
-
-  override val mapping: MappingDefinition = IngestsIndexConfig.mapping
+    with IngestGenerators
+    with IngestsIndexerFixtures {
 
   override def createIndexer(
     client: ElasticClient,
@@ -105,7 +103,7 @@ class IngestIndexerTest
     assert(newerIngest.lastModifiedDate.isDefined)
 
     it("a newer ingest replaces an older ingest") {
-      withLocalElasticsearchIndex(IngestsIndexConfig.mapping) { index =>
+      withLocalElasticsearchIndex(IngestsIndexConfig) { index =>
         val ingestsIndexer = new IngestIndexer(elasticClient, index = index)
 
         val future = ingestsIndexer
@@ -128,7 +126,7 @@ class IngestIndexerTest
     }
 
     it("an older ingest does not replace a newer ingest") {
-      withLocalElasticsearchIndex(IngestsIndexConfig.mapping) { index =>
+      withLocalElasticsearchIndex(IngestsIndexConfig) { index =>
         val ingestsIndexer = new IngestIndexer(elasticClient, index = index)
 
         val future = ingestsIndexer

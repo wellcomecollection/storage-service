@@ -1,10 +1,10 @@
 package uk.ac.wellcome.platform.archive.indexer
 
-import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
 import io.circe.{Decoder, Encoder}
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
+import uk.ac.wellcome.elasticsearch.IndexConfig
 import uk.ac.wellcome.platform.archive.indexer.fixtures.IndexerFixtures
 
 abstract class IndexerFeatureTestCases[SourceT, T, IndexedT](
@@ -16,14 +16,14 @@ abstract class IndexerFeatureTestCases[SourceT, T, IndexedT](
     with EitherValues
     with IndexerFixtures[SourceT, T, IndexedT] {
 
-  val mapping: MappingDefinition
+  val indexConfig: IndexConfig
 
   def convertToIndexedT(sourceT: SourceT): IndexedT
 
   def createT: (SourceT, String)
 
   it("processes a single message") {
-    withLocalElasticsearchIndex(mapping) { index =>
+    withLocalElasticsearchIndex(indexConfig) { index =>
       withLocalSqsQueue() { queue =>
         withIndexerWorker(index, queue) { worker =>
           val (t, id) = createT

@@ -1,17 +1,17 @@
 package uk.ac.wellcome.platform.archive.indexer
 
 import com.sksamuel.elastic4s.ElasticDsl.{matchAllQuery, properties, textField}
+import com.sksamuel.elastic4s.analysis.Analysis
 import com.sksamuel.elastic4s.http.JavaClientExceptionWrapper
 import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
+import com.sksamuel.elastic4s.requests.mappings.dynamictemplate.DynamicMapping
 import com.sksamuel.elastic4s.{ElasticClient, Index}
 import io.circe.Json
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{Assertion, EitherValues}
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
-  ElasticClientFactory,
-  Indexer
-}
+import uk.ac.wellcome.elasticsearch.{ElasticClientBuilder, IndexConfig}
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.Indexer
 import uk.ac.wellcome.platform.archive.indexer.fixtures.ElasticsearchFixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -21,7 +21,8 @@ trait IndexerTestCases[Document, IndexedDocument]
     with Matchers
     with EitherValues
     with ElasticsearchFixtures {
-  val mapping: MappingDefinition
+
+  val indexConfig: IndexConfig
 
   def createIndexer(
     client: ElasticClient,
@@ -43,7 +44,7 @@ trait IndexerTestCases[Document, IndexedDocument]
 
   describe("it behaves as an Indexer") {
     it("indexes a single document") {
-      withLocalElasticsearchIndex(mapping) { index =>
+      withLocalElasticsearchIndex(indexConfig) { index =>
         val indexer = createIndexer(elasticClient, index = index)
 
         val document = createDocument
@@ -60,7 +61,7 @@ trait IndexerTestCases[Document, IndexedDocument]
     }
 
     it("indexes multiple documents") {
-      withLocalElasticsearchIndex(mapping) { index =>
+      withLocalElasticsearchIndex(indexConfig) { index =>
         val indexer = createIndexer(elasticClient, index = index)
 
         val documentCount = 10
@@ -83,11 +84,15 @@ trait IndexerTestCases[Document, IndexedDocument]
     it("returns a Left if the document can't be indexed correctly") {
       val document = createDocument
 
-      val badMapping = properties(
-        Seq(textField("name"))
-      )
+      val badConfig = new IndexConfig {
+        override def mapping: MappingDefinition =
+          properties(Seq(textField("name")))
+            .dynamic(DynamicMapping.Strict)
 
-      withLocalElasticsearchIndex(badMapping) { index =>
+        override def analysis: Analysis = Analysis(analyzers = List())
+      }
+
+      withLocalElasticsearchIndex(badConfig) { index =>
         val indexer = createIndexer(elasticClient, index = index)
 
         whenReady(indexer.index(document)) {
@@ -97,7 +102,7 @@ trait IndexerTestCases[Document, IndexedDocument]
     }
 
     it("fails if Elasticsearch doesn't respond") {
-      val badClient = ElasticClientFactory.create(
+      val badClient = ElasticClientBuilder.create(
         hostname = esHost,
         port = esPort + 1,
         protocol = "http",
@@ -119,7 +124,7 @@ trait IndexerTestCases[Document, IndexedDocument]
       it("a newer document replaces an older document") {
         val (olderDocument, newerDocument) = createDocumentPair
 
-        withLocalElasticsearchIndex(mapping) { index =>
+        withLocalElasticsearchIndex(indexConfig) { index =>
           val indexer = createIndexer(elasticClient, index = index)
 
           val future = indexer
@@ -142,7 +147,7 @@ trait IndexerTestCases[Document, IndexedDocument]
       it("an older document replaces an newer document") {
         val (olderDocument, newerDocument) = createDocumentPair
 
-        withLocalElasticsearchIndex(mapping) { index =>
+        withLocalElasticsearchIndex(indexConfig) { index =>
           val indexer = createIndexer(elasticClient, index = index)
 
           val future = indexer

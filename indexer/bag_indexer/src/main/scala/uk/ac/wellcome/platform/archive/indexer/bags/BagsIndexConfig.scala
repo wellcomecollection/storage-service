@@ -3,9 +3,9 @@ package uk.ac.wellcome.platform.archive.indexer.bags
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.requests.mappings.FieldDefinition
 
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.IndexConfig
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.StorageServiceIndexConfig
 
-object BagsIndexConfig extends IndexConfig {
+object BagsIndexConfig extends StorageServiceIndexConfig {
 
   private val infoFields: Seq[FieldDefinition] = Seq(
     keywordField("externalIdentifier"),
