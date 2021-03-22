@@ -6,6 +6,7 @@ object WellcomeDependencies {
   lazy val versions = new {
     val fixtures = defaultVersion
     val json = defaultVersion
+    val elasticsearch = defaultVersion
     val messaging = defaultVersion
     val monitoring = defaultVersion
     val storage = defaultVersion
@@ -20,6 +21,11 @@ object WellcomeDependencies {
   val fixturesLibrary: Seq[ModuleID] = library(
     name = "fixtures",
     version = versions.fixtures
+  )
+
+  val elasticsearchLibrary: Seq[ModuleID] = library(
+    name = "elasticsearch",
+    version = versions.elasticsearch
   )
 
   val messagingLibrary: Seq[ModuleID] = library(
@@ -45,6 +51,11 @@ object WellcomeDependencies {
   val monitoringTypesafeLibrary: Seq[ModuleID] = library(
     name = "monitoring_typesafe",
     version = versions.monitoring
+  )
+
+  val elasticsearchTypesafeLibrary: Seq[ModuleID] = library(
+    name = "elasticsearch_typesafe",
+    version = versions.elasticsearch
   )
 
   val messagingTypesafeLibrary: Seq[ModuleID] = library(
