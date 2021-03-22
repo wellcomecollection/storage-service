@@ -10,11 +10,8 @@ import io.circe.Json
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{Assertion, EitherValues}
-import uk.ac.wellcome.elasticsearch.IndexConfig
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
-  ElasticClientFactory,
-  Indexer
-}
+import uk.ac.wellcome.elasticsearch.{ElasticClientBuilder, IndexConfig}
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.Indexer
 import uk.ac.wellcome.platform.archive.indexer.fixtures.ElasticsearchFixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -105,7 +102,7 @@ trait IndexerTestCases[Document, IndexedDocument]
     }
 
     it("fails if Elasticsearch doesn't respond") {
-      val badClient = ElasticClientFactory.create(
+      val badClient = ElasticClientBuilder.create(
         hostname = esHost,
         port = esPort + 1,
         protocol = "http",
