@@ -6,8 +6,6 @@ steps:
     label: "common"
   - command: .buildkite/scripts/run_job.py display
     label: "display"
-  - command: .buildkite/scripts/run_job.py indexer_common
-    label: "indexer_common"
   - wait
   - command: .buildkite/scripts/run_job.py bags_api
     label: "bags API"

@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import com.sksamuel.elastic4s.Index
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
+import uk.ac.wellcome.elasticsearch.ElasticsearchIndexCreator
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
@@ -11,7 +12,6 @@ import uk.ac.wellcome.messaging.typesafe.{
 }
 import uk.ac.wellcome.monitoring.cloudwatch.CloudWatchMetrics
 import uk.ac.wellcome.monitoring.typesafe.CloudWatchBuilder
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.ElasticsearchIndexCreator
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.config.ElasticClientBuilder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
@@ -39,13 +39,12 @@ object Main extends WellcomeTypesafeApp {
     val elasticClient = ElasticClientBuilder.buildElasticClient(config)
 
     val indexCreator = new ElasticsearchIndexCreator(
-      elasticClient = elasticClient
+      elasticClient = elasticClient,
+      index = index,
+      config = IngestsIndexConfig
     )
 
-    indexCreator.create(
-      index = index,
-      mappingDefinition = IngestsIndexConfig.mapping
-    )
+    indexCreator.create
 
     val ingestIndexer = new IngestIndexer(
       client = elasticClient,
