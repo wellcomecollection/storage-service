@@ -1,11 +1,10 @@
 package uk.ac.wellcome.platform.archive.indexer.files.fixtures
 
 import java.time.Instant
-
 import com.sksamuel.elastic4s.Index
-import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
 import io.circe.Decoder
 import org.scalatest.Suite
+import uk.ac.wellcome.elasticsearch.IndexConfig
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
@@ -30,7 +29,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 trait FileIndexerFixtures
     extends IndexerFixtures[Seq[FileContext], FileContext, IndexedFile]
     with StorageManifestGenerators { this: Suite =>
-  val mapping: MappingDefinition = FilesIndexConfig.mapping
+
+  val indexConfig: IndexConfig = FilesIndexConfig
 
   def createContext: FileContext =
     FileContext(

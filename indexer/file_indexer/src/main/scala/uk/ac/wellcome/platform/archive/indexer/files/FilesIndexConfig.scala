@@ -7,9 +7,9 @@ import com.sksamuel.elastic4s.ElasticDsl.{
   objectField
 }
 import com.sksamuel.elastic4s.requests.mappings.FieldDefinition
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.IndexConfig
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.StorageServiceIndexConfig
 
-object FilesIndexConfig extends IndexConfig {
+object FilesIndexConfig extends StorageServiceIndexConfig {
   private val locationFields: Seq[FieldDefinition] = Seq(
     keywordField("bucket"),
     keywordField("key")

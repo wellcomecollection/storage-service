@@ -110,7 +110,7 @@ class BagIndexerWorkerTest
     "fails with a NonDeterministicFailure when a StoreReadError is encountered"
   ) {
     val (t, _) = createT
-    withLocalElasticsearchIndex(mapping) { index =>
+    withLocalElasticsearchIndex(indexConfig) { index =>
       withLocalSqsQueue() { queue =>
         withStoreReadErrorIndexerWorker(index, queue) { worker =>
           whenReady(worker.process(t)) {
@@ -123,7 +123,7 @@ class BagIndexerWorkerTest
 
   it("fails with a NonDeterministicFailure if a bag doesn't exist") {
     val (t, _) = createT
-    withLocalElasticsearchIndex(mapping) { index =>
+    withLocalElasticsearchIndex(indexConfig) { index =>
       withLocalSqsQueue() { queue =>
         withDoesNotExistErrorIndexerWorker(index, queue) { worker =>
           whenReady(worker.process(t)) {

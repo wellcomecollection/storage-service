@@ -1,9 +1,9 @@
 package uk.ac.wellcome.platform.archive.indexer.ingests.fixtures
 
 import com.sksamuel.elastic4s.Index
-import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
 import io.circe.Decoder
 import org.scalatest.Suite
+import uk.ac.wellcome.elasticsearch.IndexConfig
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS
@@ -27,7 +27,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 trait IngestsIndexerFixtures
     extends IndexerFixtures[Ingest, Ingest, IndexedIngest]
     with IngestGenerators { this: Suite =>
-  val mapping: MappingDefinition = IngestsIndexConfig.mapping
+
+  val indexConfig: IndexConfig = IngestsIndexConfig
 
   def createT: (Ingest, String) = {
     val ingest = createIngest

@@ -1,90 +1,32 @@
 package uk.ac.wellcome.platform.archive.indexer.fixtures
 
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.requests.cluster.ClusterHealthResponse
+import com.sksamuel.elastic4s.analysis.Analysis
 import com.sksamuel.elastic4s.requests.get.GetResponse
-import com.sksamuel.elastic4s.requests.indexes.admin.IndexExistsResponse
 import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
+import com.sksamuel.elastic4s.requests.mappings.dynamictemplate.DynamicMapping
 import com.sksamuel.elastic4s.requests.searches.SearchResponse
 import com.sksamuel.elastic4s.requests.searches.queries.Query
-import com.sksamuel.elastic4s.{ElasticClient, Index, Response}
-
+import com.sksamuel.elastic4s.{Index, Response}
 import io.circe.Decoder
-import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
-import org.scalatest.{Assertion, Suite}
-import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.fixtures._
+import org.scalatest.Suite
+import uk.ac.wellcome.elasticsearch.IndexConfig
 import uk.ac.wellcome.json.JsonUtil.fromJson
-import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
-  ElasticClientFactory,
-  ElasticsearchIndexCreator
-}
+import uk.ac.wellcome.elasticsearch.test.fixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
-trait ElasticsearchFixtures
-    extends Eventually
-    with ScalaFutures
-    with Matchers
-    with JsonAssertions
-    with IntegrationPatience
-    with RandomGenerators { this: Suite =>
+trait ElasticsearchFixtures extends fixtures.ElasticsearchFixtures { this: Suite =>
 
   protected val esHost = "localhost"
   protected val esPort = 9200
 
-  val elasticClient: ElasticClient = ElasticClientFactory.create(
-    hostname = esHost,
-    port = esPort,
-    protocol = "http",
-    username = "elastic",
-    password = "changeme"
-  )
+  def createIndexConfigWith(m: MappingDefinition): IndexConfig =
+    new IndexConfig {
+      override def mapping: MappingDefinition = m.dynamic(DynamicMapping.Strict)
 
-  // Elasticsearch takes a while to start up so check that it actually started
-  // before running tests.
-  eventually {
-    val response: Response[ClusterHealthResponse] = elasticClient
-      .execute(clusterHealth())
-      .await
-
-    response.result.numberOfNodes shouldBe 1
-  }
-
-  private val elasticsearchIndexCreator = new ElasticsearchIndexCreator(
-    elasticClient = elasticClient
-  )
-
-  def withLocalElasticsearchIndex[R](
-    mappingDefinition: MappingDefinition,
-    index: Index = createIndex
-  ): Fixture[Index, R] = fixture[Index, R](
-    create = {
-      elasticsearchIndexCreator
-        .create(index = index, mappingDefinition = mappingDefinition)
-        .await
-
-      // Elasticsearch is eventually consistent, so the future
-      // completing doesn't actually mean that the index exists yet
-      eventuallyIndexExists(index)
-
-      index
-    },
-    destroy = { index =>
-      elasticClient.execute(deleteIndex(index.name))
-    }
-  )
-
-  def eventuallyIndexExists(index: Index): Assertion =
-    eventually {
-      val response: Response[IndexExistsResponse] =
-        elasticClient
-          .execute(indexExists(index.name))
-          .await
-
-      response.result.isExists shouldBe true
+      override def analysis: Analysis = Analysis(analyzers = List())
     }
 
   protected def getT[T](index: Index, id: String)(
@@ -116,11 +58,4 @@ trait ElasticsearchFixtures
         fromJson[T](hit.sourceAsString).get
       }
   }
-
-  def createIndex: Index = createIndexWith()
-
-  private def createIndexWith(prefix: String = "index"): Index =
-    Index(
-      name = s"$prefix-${randomAlphanumeric().toLowerCase}"
-    )
 }

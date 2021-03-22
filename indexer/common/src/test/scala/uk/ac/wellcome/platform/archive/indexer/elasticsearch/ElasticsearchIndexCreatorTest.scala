@@ -20,7 +20,9 @@ class ElasticsearchIndexCreatorTest
       Seq(textField("name"))
     )
 
-    withLocalElasticsearchIndex(nameMapping) { index =>
+    val nameConfig = createIndexConfigWith(nameMapping)
+
+    withLocalElasticsearchIndex(nameConfig) { index =>
       val indexFuture =
         elasticClient
           .execute {
@@ -47,7 +49,9 @@ class ElasticsearchIndexCreatorTest
       Seq(textField("name"))
     )
 
-    withLocalElasticsearchIndex(nameMapping) { index =>
+    val nameConfig = createIndexConfigWith(nameMapping)
+
+    withLocalElasticsearchIndex(nameConfig) { index =>
       val indexFuture =
         elasticClient
           .execute {
@@ -70,8 +74,11 @@ class ElasticsearchIndexCreatorTest
       Seq(textField("name"), textField("country"))
     )
 
-    withLocalElasticsearchIndex(placeMapping) { index =>
-      withLocalElasticsearchIndex(placeWithCountryMapping, index = index) {
+    val placeConfig = createIndexConfigWith(placeMapping)
+    val placeWithCountryConfig = createIndexConfigWith(placeWithCountryMapping)
+
+    withLocalElasticsearchIndex(placeConfig) { index =>
+      withLocalElasticsearchIndex(placeWithCountryConfig, index = index) {
         modifiedIndex =>
           val indexFuture =
             elasticClient

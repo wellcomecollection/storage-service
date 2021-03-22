@@ -1,8 +1,8 @@
 package uk.ac.wellcome.platform.archive.indexer.bag
 
-import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
 import com.sksamuel.elastic4s.{ElasticClient, Index}
 import org.scalatest.Assertion
+import uk.ac.wellcome.elasticsearch.IndexConfig
 import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.indexer.IndexerTestCases
@@ -21,7 +21,7 @@ class BagIndexerTest
     extends IndexerTestCases[StorageManifest, IndexedStorageManifest]
     with StorageManifestGenerators {
 
-  override val mapping: MappingDefinition = BagsIndexConfig.mapping
+  val indexConfig: IndexConfig = BagsIndexConfig
 
   override def createIndexer(
     client: ElasticClient,

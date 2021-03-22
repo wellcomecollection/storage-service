@@ -1,9 +1,9 @@
 package uk.ac.wellcome.platform.archive.indexer.bag.fixtures
 
 import com.sksamuel.elastic4s.Index
-import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
 import io.circe.Decoder
 import org.scalatest.Suite
+import uk.ac.wellcome.elasticsearch.IndexConfig
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS
@@ -58,7 +58,7 @@ trait BagIndexerFixtures
   ): Indexer[StorageManifest, IndexedStorageManifest] =
     new BagIndexer(client = elasticClient, index = index)
 
-  val mapping: MappingDefinition = BagsIndexConfig.mapping
+  val indexConfig: IndexConfig = BagsIndexConfig
 
   val space: StorageSpace = createStorageSpace
   val externalIdentifier: ExternalIdentifier = createExternalIdentifier
