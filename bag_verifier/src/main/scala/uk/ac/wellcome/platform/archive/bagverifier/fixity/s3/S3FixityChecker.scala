@@ -4,14 +4,14 @@ import java.net.URI
 
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
+import org.apache.commons.io.FileUtils
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Locatable
 import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.S3Locatable
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.services.SizeFinder
-import uk.ac.wellcome.storage.services.s3.S3SizeFinder
+import uk.ac.wellcome.storage.services.s3.{S3LargeStreamReader, S3SizeFinder}
 import uk.ac.wellcome.storage.store
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
 import uk.ac.wellcome.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.tags.Tags
 import uk.ac.wellcome.storage.tags.s3.S3Tags
@@ -26,7 +26,7 @@ class S3FixityChecker(
 
 object S3FixityChecker {
   def apply()(implicit s3Client: AmazonS3) = {
-    val streamReader = new S3StreamStore()
+    val streamReader = new S3LargeStreamReader(bufferSize = 128 * FileUtils.ONE_MB)
     val sizeFinder = new S3SizeFinder()
     val tags = new S3Tags()
     val locator = S3Locatable.s3UriLocatable
