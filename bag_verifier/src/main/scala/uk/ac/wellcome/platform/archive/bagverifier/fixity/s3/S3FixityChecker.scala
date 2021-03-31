@@ -26,7 +26,9 @@ class S3FixityChecker(
 
 object S3FixityChecker {
   def apply()(implicit s3Client: AmazonS3) = {
-    val streamReader = new S3LargeStreamReader(bufferSize = 128 * FileUtils.ONE_MB)
+    val streamReader = new S3LargeStreamReader(
+      bufferSize = 128 * FileUtils.ONE_MB
+    )
     val sizeFinder = new S3SizeFinder()
     val tags = new S3Tags()
     val locator = S3Locatable.s3UriLocatable

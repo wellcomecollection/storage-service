@@ -62,7 +62,9 @@ object AzureFixityChecker {
     // not by much.
     //
     // This bufferSize has successfully verified a blob which was 166 GiB in size.
-    val streamReader = AzureLargeStreamReader(bufferSize = 16 * FileUtils.ONE_MB)
+    val streamReader = AzureLargeStreamReader(
+      bufferSize = 16 * FileUtils.ONE_MB
+    )
 
     val sizeFinder = new AzureSizeFinder()
 
