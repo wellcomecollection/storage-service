@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity.azure
 
 import java.net.URI
 import com.azure.storage.blob.BlobServiceClient
+import org.apache.commons.io.FileUtils
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   ExpectedFileFixity,
@@ -61,7 +62,7 @@ object AzureFixityChecker {
     // not by much.
     //
     // This bufferSize has successfully verified a blob which was 166 GiB in size.
-    val streamReader = AzureLargeStreamReader(bufferSize = 16 * 1024 * 1024) // 16 MB
+    val streamReader = AzureLargeStreamReader(bufferSize = 16 * FileUtils.ONE_MB)
 
     val sizeFinder = new AzureSizeFinder()
 
