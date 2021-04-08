@@ -2,7 +2,8 @@ package uk.ac.wellcome.platform.storage.bag_tagger.services
 
 import uk.ac.wellcome.platform.archive.common.storage.models.{
   StorageManifest,
-  StorageManifestFile
+  StorageManifestFile,
+  StorageSpace
 }
 
 /** Given a storage manifest, decide what tags (if any) should be applied to the
@@ -13,25 +14,34 @@ object TagRules {
   def chooseTags(
     manifest: StorageManifest
   ): Map[StorageManifestFile, Map[String, String]] =
-    contentTypeForMxfMasters(manifest)
+    createContentTypeTags(manifest)
 
-  // We keep high-resolution MXF masters in the digitised space.
-  //
-  // We keep them around in case we need to reencode the access copies in
-  // future, but we don't need immediate access to them.  We apply a tag
-  // so they can be lifecycled to a cold storage tier.
-  private def contentTypeForMxfMasters(
+  private def createContentTypeTags(
     manifest: StorageManifest
-  ): Map[StorageManifestFile, Map[String, String]] =
-    manifest.space.underlying match {
-      case "digitised" =>
-        manifest.manifest.files
-          .filter { _.path.toLowerCase.endsWith(".mxf") }
-          .map { manifestFile =>
-            manifestFile -> Map("Content-Type" -> "application/mxf")
-          }
-          .toMap
+  ): Map[StorageManifestFile, Map[String, String]] = {
+    val contentTypes =
+      manifest.manifest.files.collect {
 
-      case _ => Map.empty
+        // In our digitised A/V workflow, we keep both a high-resolution MXF
+        // and a lower-resolution MP4.
+        //
+        // We apply a Content-Type tag so the MXF can be lifecycled to a
+        // cold storage tier, because we don't need immediate access to it.
+        // Services like DLCS will use the MP4 to serve videos on the web.
+        case f if manifest.space == StorageSpace("digitised") && f.hasExtension(".mxf") =>
+          f -> "application/mxf"
+      }
+
+    contentTypes
+      .map { case (f, contentType) => f -> Map("Content-Type" -> contentType) }
+      .toMap
+  }
+
+  implicit class FileOps(f: StorageManifestFile) {
+    def hasExtension(ext: String): Boolean = {
+      assert(ext.startsWith("."))
+      assert(ext.toLowerCase == ext)
+      f.path.toLowerCase.endsWith(ext )
     }
+  }
 }
