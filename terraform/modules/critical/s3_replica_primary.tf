@@ -20,6 +20,8 @@ resource "aws_s3_bucket" "replica_primary" {
     id      = "move_mxf_objects_to_glacier"
     enabled = true
 
+    prefix = "digitised/"
+
     tags = {
       "Content-Type" = "application/mxf"
     }
