@@ -58,6 +58,24 @@ resource "aws_s3_bucket" "replica_primary" {
     }
   }
 
+  # See comment in TagRules.scala -- this is about moving high-resolution
+  # TIFFs in our manuscripts workflow to Glacier.
+  lifecycle_rule {
+    id      = "move_digitised_tif_to_glacier"
+    enabled = true
+
+    prefix = "digitised/"
+
+    tags = {
+      "Content-Type" = "image/tiff"
+    }
+
+    transition {
+      days          = 90
+      storage_class = "GLACIER"
+    }
+  }
+
   tags = var.tags
 }
 
