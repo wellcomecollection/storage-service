@@ -75,7 +75,8 @@ class TagRulesTest
       }
 
       it("for TIFFs that use two 'f's in the extension") {
-        val tiffFile = createStorageManifestFileWith(name = "b1842700_0001.tiff")
+        val tiffFile =
+          createStorageManifestFileWith(name = "b1842700_0001.tiff")
 
         val manifest = createStorageManifestWith(
           space = StorageSpace("digitised"),

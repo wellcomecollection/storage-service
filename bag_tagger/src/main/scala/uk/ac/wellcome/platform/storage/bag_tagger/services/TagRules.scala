@@ -37,7 +37,10 @@ object TagRules {
         // We apply a Content-Type tag so the MXF can be lifecycled to a
         // cold storage tier, because we don't need immediate access to it.
         // Services like DLCS will use the MP4 to serve videos on the web.
-        case f if manifest.space == StorageSpace("digitised") && f.hasExtension(".mxf") =>
+        case f
+            if manifest.space == StorageSpace("digitised") && f.hasExtension(
+              ".mxf"
+            ) =>
           f -> "application/mxf"
 
         // In our digitised manuscripts workflow, we keep both the original TIFF
@@ -45,13 +48,17 @@ object TagRules {
         //
         // We apply a Content-Type tag so the TIFF can be lifecycled to a
         // cold storage tier, because DLCS will use the JP2 to serve images on the web.
-        case f if manifest.space == StorageSpace("digitised") && f.hasExtension(".tif", ".tiff") =>
+        case f
+            if manifest.space == StorageSpace("digitised") && f.hasExtension(
+              ".tif",
+              ".tiff"
+            ) =>
           f -> "image/tiff"
       }
 
-    contentTypes
-      .map { case (f, contentType) => f -> Map("Content-Type" -> contentType) }
-      .toMap
+    contentTypes.map {
+      case (f, contentType) => f -> Map("Content-Type" -> contentType)
+    }.toMap
   }
 
   implicit class FileOps(f: StorageManifestFile) {
