@@ -2,6 +2,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity.azure
 
 import java.net.URI
 import com.azure.storage.blob.BlobServiceClient
+import org.apache.commons.io.FileUtils
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   ExpectedFileFixity,
@@ -48,6 +49,10 @@ object AzureFixityChecker {
     //      java.util.concurrent.TimeoutException: Did not observe any item or terminal
     //      signal within 60000ms in 'map' (and no fallback has been configured))
     //
+    // Note: in hindsight, this may have been less to do with Azure, and more to do with
+    // the constrained bandwidth on the NAT instance we were using to talk to Azure when
+    // we did the initial migration.  The managed NAT Gateway has more capacity.
+    //
     // I had the idea to shrink the size of the buffer by looking at AzCopy, a utility
     // for downloading large blobs from Azure… as files.  The actual download code seems
     // to be in the Azure Blob Storage library for Go.  It downloads blobs 4MB at a time.
@@ -57,7 +62,9 @@ object AzureFixityChecker {
     // not by much.
     //
     // This bufferSize has successfully verified a blob which was 166 GiB in size.
-    val streamReader = AzureLargeStreamReader(bufferSize = 16 * 1024 * 1024) // 16 MB
+    val streamReader = AzureLargeStreamReader(
+      bufferSize = 16 * FileUtils.ONE_MB
+    )
 
     val sizeFinder = new AzureSizeFinder()
 

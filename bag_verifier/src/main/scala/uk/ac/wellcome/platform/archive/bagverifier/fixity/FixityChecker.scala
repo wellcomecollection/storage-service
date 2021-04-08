@@ -169,6 +169,17 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
         )
 
       case None =>
+        // Note: it is possible for something to go wrong *after* we open
+        // the input stream, e.g. if the stream gets interrupted.
+        //
+        // This may be a retryable error -- e.g. a timeout -- and we could
+        // do some retrying, rather than failing the entire ingest.
+        //
+        // In practice, those errors are extremely rare, and using the chunked
+        // stream readers (see https://github.com/wellcomecollection/storage-service/pull/825)
+        // should make them even rarer.  This is an obvious place to add more
+        // retrying logic if it looks like we need it, but I'm not going to
+        // futz with code that works almost perfectly already. ~ AWLC, 31 March 2021
         openInputStream(expectedFileFixity, location) match {
           case Left(err) => Left(err)
           case Right(inputStream) =>
