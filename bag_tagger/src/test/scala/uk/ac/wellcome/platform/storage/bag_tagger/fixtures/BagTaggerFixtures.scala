@@ -2,9 +2,7 @@ package uk.ac.wellcome.platform.storage.bag_tagger.fixtures
 
 import io.circe.Decoder
 import org.scalatest.Suite
-import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.messaging.fixtures.SQS
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
 import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
@@ -24,14 +22,11 @@ import uk.ac.wellcome.platform.storage.bag_tagger.services.{
   BagTaggerWorker,
   TagRules
 }
-import uk.ac.wellcome.storage.fixtures.{AzureFixtures, S3Fixtures}
+import uk.ac.wellcome.storage.fixtures.S3Fixtures
 
 trait BagTaggerFixtures
     extends OperationFixtures
-    with Akka
-    with SQS
     with S3Fixtures
-    with AzureFixtures
     with BagTrackerFixtures
     with StorageManifestDaoFixture
     with AlpakkaSQSWorkerFixtures { this: Suite =>

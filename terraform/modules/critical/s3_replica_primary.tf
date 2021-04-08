@@ -20,6 +20,8 @@ resource "aws_s3_bucket" "replica_primary" {
     id      = "move_mxf_objects_to_glacier"
     enabled = true
 
+    prefix = "digitised/"
+
     tags = {
       "Content-Type" = "application/mxf"
     }
@@ -53,6 +55,24 @@ resource "aws_s3_bucket" "replica_primary" {
 
     noncurrent_version_expiration {
       days = 90
+    }
+  }
+
+  # See comment in TagRules.scala -- this is about moving high-resolution
+  # TIFFs in our manuscripts workflow to Glacier.
+  lifecycle_rule {
+    id      = "move_digitised_tif_to_glacier"
+    enabled = true
+
+    prefix = "digitised/"
+
+    tags = {
+      "Content-Type" = "image/tiff"
+    }
+
+    transition {
+      days          = 90
+      storage_class = "GLACIER"
     }
   }
 

@@ -1,6 +1,5 @@
 package uk.ac.wellcome.platform.storage.bag_tagger
 
-import org.scalatest.concurrent.Eventually
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
@@ -17,7 +16,6 @@ import uk.ac.wellcome.storage.tags.s3.S3Tags
 class BagTaggerFeatureTest
     extends AnyFunSpec
     with BagTaggerFixtures
-    with Eventually
     with Matchers
     with StorageManifestGenerators {
 
