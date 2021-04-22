@@ -55,6 +55,20 @@ resource "aws_s3_bucket" "infra" {
       days = 90
     }
   }
+  
+  lifecycle_rule {
+    id = "expire_noncurrent_versions"
+
+    noncurrent_version_expiration {
+      days = 30
+    }
+
+    expiration {
+      expired_object_delete_marker = true
+    }
+
+    enabled = true
+  }
 
   tags = local.default_tags
 }
