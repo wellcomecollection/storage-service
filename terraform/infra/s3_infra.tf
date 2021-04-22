@@ -55,7 +55,7 @@ resource "aws_s3_bucket" "infra" {
       days = 90
     }
   }
-  
+
   lifecycle_rule {
     id = "expire_noncurrent_versions"
 
