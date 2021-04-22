@@ -10,6 +10,28 @@ resource "aws_s3_bucket" "infra" {
     enabled = true
   }
 
+  # Objects in tmp/ should be deleted
+  lifecycle_rule {
+    id      = "expire_tmp"
+    enabled = true
+
+    prefix = "tmp/"
+
+    transition {
+      days          = 30
+      storage_class = "STANDARD_IA"
+    }
+
+    transition {
+      days          = 60
+      storage_class = "GLACIER"
+    }
+
+    expiration {
+      days = 90
+    }
+  }
+
   # We use S3 Inventory to write an inventory for our storage buckets to the
   # infra bucket.  We don't need to keep inventories forever, so delete them
   # after 90 days.
@@ -32,6 +54,20 @@ resource "aws_s3_bucket" "infra" {
     expiration {
       days = 90
     }
+  }
+
+  lifecycle_rule {
+    id = "expire_noncurrent_versions"
+
+    noncurrent_version_expiration {
+      days = 30
+    }
+
+    expiration {
+      expired_object_delete_marker = true
+    }
+
+    enabled = true
   }
 
   tags = local.default_tags
