@@ -7,7 +7,11 @@ import akka.http.scaladsl.server.Route
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bag_tracker.client.{BagTrackerClient, BagTrackerNotFoundError, BagTrackerUnknownListError}
+import uk.ac.wellcome.platform.archive.bag_tracker.client.{
+  BagTrackerClient,
+  BagTrackerNotFoundError,
+  BagTrackerUnknownListError
+}
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.storage.bags.api.models.DisplayBagVersionList
 import weco.http.models.{ContextResponse, DisplayError}

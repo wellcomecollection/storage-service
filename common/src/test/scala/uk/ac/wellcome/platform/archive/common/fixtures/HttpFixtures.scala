@@ -19,7 +19,11 @@ import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
-trait HttpFixtures extends Akka with ScalaFutures with Matchers with JsonAssertions {
+trait HttpFixtures
+    extends Akka
+    with ScalaFutures
+    with Matchers
+    with JsonAssertions {
   import uk.ac.wellcome.json.JsonUtil._
 
   private def whenRequestReady[R](

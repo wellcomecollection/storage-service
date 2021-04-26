@@ -65,7 +65,8 @@ trait BagsApi
                       context = contextURL.toString,
                       DisplayError(
                         statusCode = StatusCodes.NotFound,
-                        description = s"No storage manifest versions found for $space/$remaining"
+                        description =
+                          s"No storage manifest versions found for $space/$remaining"
                       )
                     )
                   )
@@ -133,7 +134,8 @@ trait BagsApi
                   context = contextURL.toString,
                   DisplayError(
                     statusCode = StatusCodes.NotFound,
-                    description = s"Storage manifest $space/$remaining not found"
+                    description =
+                      s"Storage manifest $space/$remaining not found"
                   )
                 )
               )
