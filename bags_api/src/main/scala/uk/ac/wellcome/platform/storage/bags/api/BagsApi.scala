@@ -12,7 +12,6 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{
   ExternalIdentifier
 }
 import uk.ac.wellcome.platform.archive.common.http.LookupExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.http.models.UserErrorResponse
 import uk.ac.wellcome.platform.archive.common.storage.LargeResponses
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.storage.bags.api.responses.{
@@ -20,6 +19,7 @@ import uk.ac.wellcome.platform.storage.bags.api.responses.{
   LookupBagVersions
 }
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
+import weco.http.models.{ContextResponse, DisplayError}
 
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
@@ -61,11 +61,13 @@ trait BagsApi
 
                 case Failure(_) =>
                   complete(
-                    NotFound -> UserErrorResponse(
-                      context = contextURL,
-                      statusCode = StatusCodes.NotFound,
-                      description =
-                        s"No storage manifest versions found for $space/$remaining"
+                    NotFound -> ContextResponse(
+                      context = contextURL.toString,
+                      DisplayError(
+                        statusCode = StatusCodes.NotFound,
+                        description =
+                          s"No storage manifest versions found for $space/$remaining"
+                      )
                     )
                   )
               }
@@ -128,10 +130,13 @@ trait BagsApi
 
             case Failure(_) =>
               complete(
-                NotFound -> UserErrorResponse(
-                  context = contextURL,
-                  statusCode = StatusCodes.NotFound,
-                  description = s"Storage manifest $space/$remaining not found"
+                NotFound -> ContextResponse(
+                  context = contextURL.toString,
+                  DisplayError(
+                    statusCode = StatusCodes.NotFound,
+                    description =
+                      s"Storage manifest $space/$remaining not found"
+                  )
                 )
               )
           }

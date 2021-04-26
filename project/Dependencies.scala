@@ -1,10 +1,11 @@
 import sbt._
 
 object WellcomeDependencies {
-  lazy val defaultVersion = "26.4.3"
+  lazy val defaultVersion = "26.5.0"
 
   lazy val versions = new {
     val fixtures = defaultVersion
+    val http = defaultVersion
     val json = defaultVersion
     val elasticsearch = defaultVersion
     val messaging = defaultVersion
@@ -41,6 +42,11 @@ object WellcomeDependencies {
   val storageLibrary: Seq[ModuleID] = library(
     name = "storage",
     version = versions.storage
+  )
+
+  val httpLibrary: Seq[ModuleID] = library(
+    name = "http",
+    version = versions.json
   )
 
   val typesafeLibrary: Seq[ModuleID] = library(
@@ -112,7 +118,6 @@ object ExternalDependencies {
     //      one that uses the same version of akka-http and a compatible Circe:
     //      https://github.com/hseeberger/akka-http-json/blob/master/build.sbt
     //
-    val akkaHttp = "10.1.10"
     val akkaHttpCirce = "1.29.1"
   }
 
@@ -133,7 +138,6 @@ object ExternalDependencies {
   )
 
   val akkaDependencies: Seq[sbt.ModuleID] = Seq[ModuleID](
-    "com.typesafe.akka" %% "akka-http" % versions.akkaHttp,
     "de.heikoseeberger" %% "akka-http-circe" % versions.akkaHttpCirce
   )
 
@@ -158,5 +162,6 @@ object StorageDependencies {
       WellcomeDependencies.typesafeLibrary ++
       WellcomeDependencies.monitoringTypesafeLibrary ++
       WellcomeDependencies.messagingTypesafeLibrary ++
-      WellcomeDependencies.storageTypesafeLibrary
+      WellcomeDependencies.storageTypesafeLibrary ++
+      WellcomeDependencies.httpLibrary
 }

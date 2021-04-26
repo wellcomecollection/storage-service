@@ -1,11 +1,9 @@
 package uk.ac.wellcome.platform.archive.common.fixtures
 
 import java.net.URL
-
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpMethods.{GET, POST}
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.scaladsl.Sink
 import io.circe.Decoder
 import org.scalatest.Assertion
@@ -13,19 +11,19 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
-import uk.ac.wellcome.platform.archive.common.http.models.{
-  InternalServerErrorResponse,
-  UserErrorResponse
-}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
-trait HttpFixtures extends Akka with ScalaFutures with Matchers {
-  import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
+trait HttpFixtures
+    extends Akka
+    with ScalaFutures
+    with Matchers
+    with JsonAssertions {
   import uk.ac.wellcome.json.JsonUtil._
 
   private def whenRequestReady[R](
@@ -112,21 +110,25 @@ trait HttpFixtures extends Akka with ScalaFutures with Matchers {
   def assertIsUserErrorResponse(
     response: HttpResponse,
     description: String,
-    statusCode: StatusCode = StatusCodes.BadRequest,
-    label: String = "Bad Request"
+    statusCode: StatusCode = StatusCodes.BadRequest
   ): Assertion =
     withMaterializer { implicit materializer =>
       response.status shouldBe statusCode
       response.entity.contentType shouldBe ContentTypes.`application/json`
 
-      val ingestFuture = Unmarshal(response.entity).to[UserErrorResponse]
-
-      whenReady(ingestFuture) { actualError =>
-        actualError shouldBe UserErrorResponse(
-          context = contextURLTest.toString,
-          httpStatus = statusCode.intValue,
-          description = description,
-          label = label
+      withStringEntity(response.entity) { jsonResponse =>
+        assertJsonStringsAreEqual(
+          jsonResponse,
+          s"""
+             |{
+             |  "@context": "$contextURLTest",
+             |  "errorType": "http",
+             |  "httpStatus": ${statusCode.intValue()},
+             |  "label": "${statusCode.reason()}",
+             |  "description": ${toJson(description).get},
+             |  "type": "Error"
+             |}
+             |""".stripMargin
         )
       }
     }
@@ -136,14 +138,18 @@ trait HttpFixtures extends Akka with ScalaFutures with Matchers {
       response.status shouldBe StatusCodes.InternalServerError
       response.entity.contentType shouldBe ContentTypes.`application/json`
 
-      val ingestFuture = Unmarshal(response.entity)
-        .to[InternalServerErrorResponse]
-
-      whenReady(ingestFuture) { actualError =>
-        actualError shouldBe InternalServerErrorResponse(
-          context = contextURLTest.toString,
-          httpStatus = StatusCodes.InternalServerError.intValue,
-          label = StatusCodes.InternalServerError.reason
+      withStringEntity(response.entity) { jsonResponse =>
+        assertJsonStringsAreEqual(
+          jsonResponse,
+          s"""
+             |{
+             |  "@context": "$contextURLTest",
+             |  "errorType": "http",
+             |  "httpStatus": 500,
+             |  "label": "Internal Server Error",
+             |  "type": "Error"
+             |}
+             |""".stripMargin
         )
       }
     }

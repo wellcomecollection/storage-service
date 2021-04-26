@@ -47,8 +47,7 @@ class LookupBagVersionsApiTest
           assertIsUserErrorResponse(
             response,
             description = s"No storage manifest versions found for $bagId",
-            statusCode = StatusCodes.NotFound,
-            label = "Not Found"
+            statusCode = StatusCodes.NotFound
           )
 
           assertMetricSent(metrics, result = HttpMetricResults.UserError)
@@ -266,8 +265,7 @@ class LookupBagVersionsApiTest
             response,
             description =
               s"No storage manifest versions found for ${storageManifest.id} before v4",
-            statusCode = StatusCodes.NotFound,
-            label = "Not Found"
+            statusCode = StatusCodes.NotFound
           )
 
           assertMetricSent(metrics, result = HttpMetricResults.UserError)
@@ -305,8 +303,7 @@ class LookupBagVersionsApiTest
           assertIsUserErrorResponse(
             response,
             description = s"No storage manifest versions found for $bagId",
-            statusCode = StatusCodes.NotFound,
-            label = "Not Found"
+            statusCode = StatusCodes.NotFound
           )
 
           assertMetricSent(metrics, result = HttpMetricResults.UserError)

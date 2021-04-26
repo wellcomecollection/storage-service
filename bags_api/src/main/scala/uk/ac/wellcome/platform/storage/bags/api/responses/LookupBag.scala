@@ -15,11 +15,8 @@ import uk.ac.wellcome.platform.archive.bag_tracker.client.{
 }
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
-import uk.ac.wellcome.platform.archive.common.http.models.{
-  InternalServerErrorResponse,
-  UserErrorResponse
-}
 import uk.ac.wellcome.platform.archive.display.bags.DisplayStorageManifest
+import weco.http.models.{ContextResponse, DisplayError}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
@@ -55,11 +52,13 @@ trait LookupBag extends Logging with ResponseBase {
           case Failure(_) =>
             Future {
               complete(
-                NotFound -> UserErrorResponse(
-                  context = contextURL,
-                  statusCode = StatusCodes.NotFound,
-                  description =
-                    s"Storage manifest $bagId $versionString not found"
+                NotFound -> ContextResponse(
+                  context = contextURL.toString,
+                  DisplayError(
+                    statusCode = StatusCodes.NotFound,
+                    description =
+                      s"Storage manifest $bagId $versionString not found"
+                  )
                 )
               )
             }
@@ -91,19 +90,21 @@ trait LookupBag extends Logging with ResponseBase {
 
       case Left(_: BagTrackerNotFoundError) =>
         complete(
-          NotFound -> UserErrorResponse(
-            context = contextURL,
-            statusCode = StatusCodes.NotFound,
-            description = notFoundMessage
+          NotFound -> ContextResponse(
+            context = contextURL.toString,
+            DisplayError(
+              statusCode = StatusCodes.NotFound,
+              description = notFoundMessage
+            )
           )
         )
 
       case Left(BagTrackerUnknownGetError(err)) =>
         error(s"Unexpected error getting bag $bagId version $maybeVersion", err)
         complete(
-          InternalServerError -> InternalServerErrorResponse(
-            context = contextURL,
-            statusCode = StatusCodes.InternalServerError
+          InternalServerError -> ContextResponse(
+            context = contextURL.toString,
+            DisplayError(statusCode = StatusCodes.InternalServerError)
           )
         )
     }
