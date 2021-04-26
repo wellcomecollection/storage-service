@@ -112,7 +112,6 @@ object ExternalDependencies {
     //      one that uses the same version of akka-http and a compatible Circe:
     //      https://github.com/hseeberger/akka-http-json/blob/master/build.sbt
     //
-    val akkaStreamAlpakka = "1.1.2"
     val akkaHttp = "10.1.10"
     val akkaHttpCirce = "1.29.1"
   }
@@ -135,20 +134,7 @@ object ExternalDependencies {
 
   val akkaDependencies: Seq[sbt.ModuleID] = Seq[ModuleID](
     "com.typesafe.akka" %% "akka-http" % versions.akkaHttp,
-    "de.heikoseeberger" %% "akka-http-circe" % versions.akkaHttpCirce,
-    // We need to exclude these two HTTP clients, or we get errors from the tests:
-    //
-    //    An exception or error caused a run to abort: Multiple HTTP implementations
-    //    were found on the classpath. To avoid non-deterministic loading implementations,
-    //    please explicitly provide an HTTP client via the client builders, set the
-    //    software.amazon.awssdk.http.async.service.impl system property with the FQCN of
-    //    the HTTP service to use as the default, or remove all but one HTTP implementation
-    //    from the classpath
-    //
-    "com.lightbend.akka" %% "akka-stream-alpakka-s3" % versions.akkaStreamAlpakka
-      exclude ("com.github.matsluni", "aws-spi-akka-http_2.12"),
-    "com.lightbend.akka" %% "akka-stream-alpakka-sns" % versions.akkaStreamAlpakka
-      exclude ("com.github.matsluni", "aws-spi-akka-http_2.12")
+    "de.heikoseeberger" %% "akka-http-circe" % versions.akkaHttpCirce
   )
 
   val mockitoDependencies: Seq[ModuleID] = Seq(
