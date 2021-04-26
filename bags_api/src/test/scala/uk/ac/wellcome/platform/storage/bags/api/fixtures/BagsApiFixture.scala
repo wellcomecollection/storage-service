@@ -18,10 +18,7 @@ import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.platform.archive.common.fixtures.HttpFixtures
 import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
-import uk.ac.wellcome.platform.archive.common.http.{
-  HttpMetrics,
-  WellcomeHttpApp
-}
+import uk.ac.wellcome.platform.archive.common.http.WellcomeHttpApp
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi
 import uk.ac.wellcome.storage._
@@ -29,6 +26,7 @@ import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.services.s3.S3Uploader
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
+import weco.http.HttpMetrics
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global

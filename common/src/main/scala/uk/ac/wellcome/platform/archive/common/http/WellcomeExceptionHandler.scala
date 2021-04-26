@@ -6,6 +6,7 @@ import java.net.URL
 import akka.http.scaladsl.model.StatusCodes.InternalServerError
 import akka.http.scaladsl.server.ExceptionHandler
 import grizzled.slf4j.Logging
+import weco.http.HttpMetrics
 import weco.http.models.{ContextResponse, DisplayError}
 
 trait WellcomeExceptionHandler extends Logging {
@@ -26,7 +27,7 @@ trait WellcomeExceptionHandler extends Logging {
           context = contextURL,
           DisplayError(statusCode = StatusCodes.InternalServerError)
         )
-        httpMetrics.sendMetricForStatus(InternalServerError)
+        httpMetrics.sendMetric(InternalServerError)
         complete(InternalServerError -> error)
     }
 }

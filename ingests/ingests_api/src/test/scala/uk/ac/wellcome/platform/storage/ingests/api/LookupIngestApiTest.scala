@@ -10,9 +10,9 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
-import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.common.ingests.models.S3SourceLocation
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
+import weco.http.HttpMetricResults
 
 /** Tests for GET /ingests/:id
   *

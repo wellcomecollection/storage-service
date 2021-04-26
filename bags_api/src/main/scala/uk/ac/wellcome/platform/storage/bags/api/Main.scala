@@ -13,16 +13,14 @@ import uk.ac.wellcome.platform.archive.bag_tracker.client.{
 }
 import uk.ac.wellcome.platform.archive.common.config.builders._
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
-import uk.ac.wellcome.platform.archive.common.http.{
-  HttpMetrics,
-  WellcomeHttpApp
-}
+import uk.ac.wellcome.platform.archive.common.http.WellcomeHttpApp
 import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.services.s3.S3Uploader
 import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
+import weco.http.HttpMetrics
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._

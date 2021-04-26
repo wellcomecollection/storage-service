@@ -11,6 +11,7 @@ import akka.http.scaladsl.server.directives.DebuggingDirectives
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.typesafe.Runnable
+import weco.http.HttpMetrics
 
 import scala.concurrent.{ExecutionContext, Future}
 

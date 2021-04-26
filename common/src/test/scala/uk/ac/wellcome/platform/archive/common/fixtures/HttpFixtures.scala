@@ -14,7 +14,7 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
-import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
+import weco.http.HttpMetricResults
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
