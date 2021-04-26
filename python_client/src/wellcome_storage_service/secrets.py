@@ -2,6 +2,7 @@
 Fetches credentials for the dev client from Secrets Manager.
 """
 
+
 def get_session():
     """
     Creates a boto3 Session with the storage-developer role.
