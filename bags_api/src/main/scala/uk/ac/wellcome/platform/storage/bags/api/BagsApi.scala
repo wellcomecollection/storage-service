@@ -62,7 +62,7 @@ trait BagsApi
                 case Failure(_) =>
                   complete(
                     NotFound -> ContextResponse(
-                      context = contextURL.toString,
+                      context = contextURL,
                       DisplayError(
                         statusCode = StatusCodes.NotFound,
                         description =
@@ -131,7 +131,7 @@ trait BagsApi
             case Failure(_) =>
               complete(
                 NotFound -> ContextResponse(
-                  context = contextURL.toString,
+                  context = contextURL,
                   DisplayError(
                     statusCode = StatusCodes.NotFound,
                     description =

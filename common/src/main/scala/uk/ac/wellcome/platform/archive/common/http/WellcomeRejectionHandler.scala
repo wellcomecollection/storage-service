@@ -86,7 +86,7 @@ trait WellcomeRejectionHandler {
 
     complete(
       BadRequest -> ContextResponse(
-        context = contextURL.toString,
+        context = contextURL,
         DisplayError(
           statusCode = StatusCodes.BadRequest,
           description = message.toList.mkString("\n")
@@ -105,13 +105,13 @@ trait WellcomeRejectionHandler {
         val description = data.utf8String
         if (statusCode.intValue() >= 500) {
           val response = ContextResponse(
-            context = contextURL.toString,
+            context = contextURL,
             DisplayError(statusCode = StatusCodes.InternalServerError)
           )
           Marshal(response).to[MessageEntity]
         } else {
           val response = ContextResponse(
-            context = contextURL.toString,
+            context = contextURL,
             DisplayError(
               statusCode = statusCode,
               description = description

@@ -32,7 +32,7 @@ trait LookupIngest extends ResponseBase with Logging {
         case Left(_: IngestTrackerNotFoundError) =>
           complete(
             StatusCodes.NotFound -> ContextResponse(
-              context = contextURL.toString,
+              context = contextURL,
               DisplayError(
                 statusCode = StatusCodes.NotFound,
                 description = s"Ingest $id not found"
@@ -43,7 +43,7 @@ trait LookupIngest extends ResponseBase with Logging {
           error(s"Unexpected error from ingest tracker for $id: $err")
           complete(
             StatusCodes.InternalServerError -> ContextResponse(
-              context = contextURL.toString,
+              context = contextURL,
               DisplayError(statusCode = StatusCodes.InternalServerError)
             )
           )
@@ -53,7 +53,7 @@ trait LookupIngest extends ResponseBase with Logging {
           error(s"Unexpected error while calling ingest tracker $id: $err")
           complete(
             StatusCodes.InternalServerError -> ContextResponse(
-              context = contextURL.toString,
+              context = contextURL,
               DisplayError(statusCode = StatusCodes.InternalServerError)
             )
           )

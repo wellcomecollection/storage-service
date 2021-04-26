@@ -23,7 +23,7 @@ trait WellcomeExceptionHandler extends Logging {
       case err: Exception =>
         logger.error(s"Unexpected exception $err")
         val error = ContextResponse(
-          context = contextURL.toString,
+          context = contextURL,
           DisplayError(statusCode = StatusCodes.InternalServerError)
         )
         httpMetrics.sendMetricForStatus(InternalServerError)
