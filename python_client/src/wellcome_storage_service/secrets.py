@@ -2,13 +2,13 @@
 Fetches credentials for the dev client from Secrets Manager.
 """
 
-import boto3
-
 
 def get_session():
     """
     Creates a boto3 Session with the storage-developer role.
     """
+    import boto3
+
     role_arn = "arn:aws:iam::975596993436:role/storage-developer"
     sts_client = boto3.client("sts")
     assumed_role_object = sts_client.assume_role(

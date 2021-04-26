@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v2.3.3 - 2021-04-26
+
+You no longer need to install boto3 if you're not using the `prod_client()` and `staging_client()` helpers.
+
 ## v2.3.0 / v2.3.1 / v2.3.2 - 2021-03-15
 
 This adds two helpers `prod_client()` and `staging_client()` for getting prebuilt clients that pull credentials from Secrets Manager.
