@@ -121,7 +121,7 @@ trait HttpFixtures extends Akka with ScalaFutures with Matchers with JsonAsserti
              |  "errorType": "http",
              |  "httpStatus": ${statusCode.intValue()},
              |  "label": "${statusCode.reason()}",
-             |  "description": "$description",
+             |  "description": ${toJson(description).get},
              |  "type": "Error"
              |}
              |""".stripMargin

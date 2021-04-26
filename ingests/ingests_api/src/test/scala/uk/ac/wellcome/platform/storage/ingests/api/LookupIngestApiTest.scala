@@ -153,8 +153,7 @@ class LookupIngestApiTest
           assertIsUserErrorResponse(
             response,
             description = s"Ingest $id not found",
-            statusCode = StatusCodes.NotFound,
-            label = "Not Found"
+            statusCode = StatusCodes.NotFound
           )
 
           assertMetricSent(metrics, result = HttpMetricResults.UserError)

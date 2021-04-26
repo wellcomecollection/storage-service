@@ -427,8 +427,7 @@ class CreateIngestApiTest
         contentType = ContentTypes.`text/plain(UTF-8)`,
         expectedStatusCode = StatusCodes.UnsupportedMediaType,
         expectedMessage =
-          "The request's Content-Type [Some(Some(text/plain; charset=UTF-8))] is not supported. Expected:\napplication/json",
-        expectedLabel = "Unsupported Media Type"
+          "The request's Content-Type [Some(Some(text/plain; charset=UTF-8))] is not supported. Expected:\napplication/json"
       )
     }
 
@@ -526,8 +525,7 @@ class CreateIngestApiTest
     requestBody: String = createRequestJson.noSpaces,
     contentType: ContentType.NonBinary = ContentTypes.`application/json`,
     expectedStatusCode: StatusCode = StatusCodes.BadRequest,
-    expectedMessage: String,
-    expectedLabel: String = "Bad Request"
+    expectedMessage: String
   ) = {
     withConfiguredApp() {
       case (_, messageSender, metrics, baseUrl) =>
@@ -542,8 +540,7 @@ class CreateIngestApiTest
           assertIsUserErrorResponse(
             response = response,
             description = expectedMessage,
-            statusCode = expectedStatusCode,
-            label = expectedLabel
+            statusCode = expectedStatusCode
           )
 
           messageSender.messages shouldBe empty

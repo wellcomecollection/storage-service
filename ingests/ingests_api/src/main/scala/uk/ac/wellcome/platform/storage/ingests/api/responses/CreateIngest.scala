@@ -10,10 +10,6 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.MessageSender
 import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
-import uk.ac.wellcome.platform.archive.common.http.models.{
-  InternalServerErrorResponse,
-  UserErrorResponse
-}
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   AmazonS3StorageProvider,
   StorageProvider
@@ -23,6 +19,7 @@ import uk.ac.wellcome.platform.archive.display.ingests.{
   ResponseDisplayIngest
 }
 import uk.ac.wellcome.platform.storage.ingests_tracker.client.IngestTrackerClient
+import weco.http.models.{ContextResponse, DisplayError}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -72,10 +69,12 @@ trait CreateIngest[UnpackerDestination] extends ResponseBase with Logging {
   private def createBadRequestResponse(description: String): Future[Route] =
     Future {
       complete(
-        StatusCodes.BadRequest -> UserErrorResponse(
-          contextURL,
-          statusCode = StatusCodes.BadRequest,
-          description = description
+        StatusCodes.BadRequest -> ContextResponse(
+          context = contextURL.toString,
+          DisplayError(
+            statusCode = StatusCodes.BadRequest,
+            description = description
+          )
         )
       )
     }
@@ -117,9 +116,9 @@ trait CreateIngest[UnpackerDestination] extends ResponseBase with Logging {
         // them both as 500 errors.
         case Left(_) =>
           complete(
-            StatusCodes.InternalServerError -> InternalServerErrorResponse(
-              contextURL,
-              statusCode = StatusCodes.InternalServerError
+            StatusCodes.InternalServerError -> ContextResponse(
+              context = contextURL.toString,
+              DisplayError(statusCode = StatusCodes.InternalServerError)
             )
           )
       }
@@ -127,9 +126,9 @@ trait CreateIngest[UnpackerDestination] extends ResponseBase with Logging {
         case err =>
           error(s"Unexpected error while creating ingest $ingest: $err")
           complete(
-            StatusCodes.InternalServerError -> InternalServerErrorResponse(
-              contextURL,
-              statusCode = StatusCodes.InternalServerError
+            StatusCodes.InternalServerError -> ContextResponse(
+              context = contextURL.toString,
+              DisplayError(statusCode = StatusCodes.InternalServerError)
             )
           )
       }
