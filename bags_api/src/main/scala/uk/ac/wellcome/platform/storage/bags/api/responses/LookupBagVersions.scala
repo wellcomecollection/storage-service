@@ -7,17 +7,10 @@ import akka.http.scaladsl.server.Route
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.bag_tracker.client.{
-  BagTrackerClient,
-  BagTrackerNotFoundError,
-  BagTrackerUnknownListError
-}
+import uk.ac.wellcome.platform.archive.bag_tracker.client.{BagTrackerClient, BagTrackerNotFoundError, BagTrackerUnknownListError}
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
-import uk.ac.wellcome.platform.archive.common.http.models.{
-  InternalServerErrorResponse,
-  UserErrorResponse
-}
 import uk.ac.wellcome.platform.storage.bags.api.models.DisplayBagVersionList
+import weco.http.models.{ContextResponse, DisplayError}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
@@ -52,10 +45,12 @@ trait LookupBagVersions extends Logging with ResponseBase {
           case Failure(_) =>
             Future {
               complete(
-                BadRequest -> UserErrorResponse(
-                  context = contextURL,
-                  statusCode = StatusCodes.BadRequest,
-                  description = s"Cannot parse version string: $versionString"
+                BadRequest -> ContextResponse(
+                  context = contextURL.toString,
+                  DisplayError(
+                    statusCode = StatusCodes.BadRequest,
+                    description = s"Cannot parse version string: $versionString"
+                  )
                 )
               )
             }
@@ -80,10 +75,12 @@ trait LookupBagVersions extends Logging with ResponseBase {
 
         case Left(_: BagTrackerNotFoundError) =>
           complete(
-            NotFound -> UserErrorResponse(
-              context = contextURL,
-              statusCode = StatusCodes.NotFound,
-              description = notFoundMessage
+            NotFound -> ContextResponse(
+              context = contextURL.toString,
+              DisplayError(
+                statusCode = StatusCodes.NotFound,
+                description = notFoundMessage
+              )
             )
           )
 
@@ -93,9 +90,9 @@ trait LookupBagVersions extends Logging with ResponseBase {
             err
           )
           complete(
-            InternalServerError -> InternalServerErrorResponse(
-              context = contextURL,
-              statusCode = StatusCodes.InternalServerError
+            InternalServerError -> ContextResponse(
+              context = contextURL.toString,
+              DisplayError(statusCode = StatusCodes.InternalServerError)
             )
           )
       }

@@ -62,8 +62,7 @@ class LookupBagApiTest
             assertIsUserErrorResponse(
               response,
               description = s"Storage manifest $bagId not found",
-              statusCode = StatusCodes.NotFound,
-              label = "Not Found"
+              statusCode = StatusCodes.NotFound
             )
 
             assertMetricSent(metrics, result = HttpMetricResults.UserError)
@@ -323,8 +322,7 @@ class LookupBagApiTest
               response,
               description =
                 s"Storage manifest $badId ${storageManifest.version} not found",
-              statusCode = StatusCodes.NotFound,
-              label = "Not Found"
+              statusCode = StatusCodes.NotFound
             )
 
             assertMetricSent(metrics, result = HttpMetricResults.UserError)
@@ -344,8 +342,7 @@ class LookupBagApiTest
               response,
               description =
                 s"Storage manifest ${storageManifest.id} ${storageManifest.version.increment} not found",
-              statusCode = StatusCodes.NotFound,
-              label = "Not Found"
+              statusCode = StatusCodes.NotFound
             )
 
             assertMetricSent(metrics, result = HttpMetricResults.UserError)
@@ -365,8 +362,7 @@ class LookupBagApiTest
               assertIsUserErrorResponse(
                 response,
                 description = s"Storage manifest $bagId $badVersion not found",
-                statusCode = StatusCodes.NotFound,
-                label = "Not Found"
+                statusCode = StatusCodes.NotFound
               )
 
               assertMetricSent(metrics, result = HttpMetricResults.UserError)
@@ -383,8 +379,7 @@ class LookupBagApiTest
             assertIsUserErrorResponse(
               response,
               description = s"Storage manifest $bagId not found",
-              statusCode = StatusCodes.NotFound,
-              label = "Not Found"
+              statusCode = StatusCodes.NotFound
             )
 
             assertMetricSent(metrics, result = HttpMetricResults.UserError)
