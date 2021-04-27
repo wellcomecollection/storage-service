@@ -46,7 +46,7 @@ object WellcomeDependencies {
 
   val httpLibrary: Seq[ModuleID] = library(
     name = "http",
-    version = versions.json
+    version = versions.http
   )
 
   val typesafeLibrary: Seq[ModuleID] = library(
