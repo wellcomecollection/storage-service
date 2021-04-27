@@ -23,7 +23,7 @@ import uk.ac.wellcome.platform.archive.display._
 import uk.ac.wellcome.platform.archive.display.ingests._
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
-import weco.http.HttpMetricResults
+import weco.http.monitoring.HttpMetricResults
 
 /** Tests for POST /ingests
   *
@@ -439,7 +439,7 @@ class CreateIngestApiTest
         contentType = ContentTypes.`text/plain(UTF-8)`,
         expectedStatusCode = StatusCodes.UnsupportedMediaType,
         expectedMessage =
-          "The request's Content-Type [Some(Some(text/plain; charset=UTF-8))] is not supported. Expected:\napplication/json"
+          "The request's Content-Type [text/plain; charset=UTF-8] is not supported. Expected:\napplication/json"
       )
     }
 

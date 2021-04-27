@@ -21,7 +21,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.display.fixtures.DisplayJsonHelpers
 import uk.ac.wellcome.platform.storage.bags.api.fixtures.BagsApiFixture
 import uk.ac.wellcome.storage.fixtures.S3Fixtures
-import weco.http.HttpMetricResults
+import weco.http.monitoring.HttpMetricResults
 
 /** Tests for GET /bags/:space/:id/versions
   *

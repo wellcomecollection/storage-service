@@ -1,13 +1,7 @@
 package uk.ac.wellcome.platform.storage.bags.api.responses
 
-import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model.headers.ETag
-import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
-import grizzled.slf4j.Logging
-import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bag_tracker.client.{
   BagTrackerClient,
   BagTrackerNotFoundError,
@@ -16,15 +10,18 @@ import uk.ac.wellcome.platform.archive.bag_tracker.client.{
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.platform.archive.display.bags.DisplayStorageManifest
-import weco.http.models.{ContextResponse, DisplayError}
+import weco.http.FutureDirectives
 
+import java.net.URL
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-trait LookupBag extends Logging with ResponseBase {
+trait LookupBag extends FutureDirectives {
   val httpServerConfig: HTTPServerConfig
 
   val bagTrackerClient: BagTrackerClient
+
+  val contextURL: URL
 
   implicit val ec: ExecutionContext
 
@@ -50,18 +47,9 @@ trait LookupBag extends Logging with ResponseBase {
             )
 
           case Failure(_) =>
-            Future {
-              complete(
-                NotFound -> ContextResponse(
-                  context = contextURL,
-                  DisplayError(
-                    statusCode = StatusCodes.NotFound,
-                    description =
-                      s"Storage manifest $bagId $versionString not found"
-                  )
-                )
-              )
-            }
+            Future.successful(
+              notFound(s"Storage manifest $bagId $versionString not found")
+            )
         }
     }
 
@@ -88,25 +76,11 @@ trait LookupBag extends Logging with ResponseBase {
           )
         }
 
-      case Left(_: BagTrackerNotFoundError) =>
-        complete(
-          NotFound -> ContextResponse(
-            context = contextURL,
-            DisplayError(
-              statusCode = StatusCodes.NotFound,
-              description = notFoundMessage
-            )
-          )
-        )
+      case Left(_: BagTrackerNotFoundError) => notFound(notFoundMessage)
 
       case Left(BagTrackerUnknownGetError(err)) =>
         error(s"Unexpected error getting bag $bagId version $maybeVersion", err)
-        complete(
-          InternalServerError -> ContextResponse(
-            context = contextURL,
-            DisplayError(statusCode = StatusCodes.InternalServerError)
-          )
-        )
+        internalError(err)
     }
   }
 }

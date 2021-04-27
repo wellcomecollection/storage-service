@@ -22,7 +22,7 @@ import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.{
   IngestsTrackerApiFixture
 }
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.memory.MemoryIngestTracker
-import weco.http.HttpMetrics
+import weco.http.monitoring.HttpMetrics
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
