@@ -119,7 +119,11 @@ class CreateIngestApiTest
               expectedPayload
             )
 
-            assertMetricSent(metricsName, metrics, result = HttpMetricResults.Success)
+            assertMetricSent(
+              metricsName,
+              metrics,
+              result = HttpMetricResults.Success
+            )
           }
         }
     }
@@ -144,7 +148,11 @@ class CreateIngestApiTest
             messageSender.getMessages[SourceLocationPayload].head
           payload.context.ingestType shouldBe CreateIngestType
 
-          assertMetricSent(metricsName, metrics, result = HttpMetricResults.Success)
+          assertMetricSent(
+            metricsName,
+            metrics,
+            result = HttpMetricResults.Success
+          )
         }
     }
   }
@@ -168,7 +176,11 @@ class CreateIngestApiTest
           val payload = messageSender.getMessages[SourceLocationPayload].head
           payload.context.ingestType shouldBe UpdateIngestType
 
-          assertMetricSent(metricsName, metrics, result = HttpMetricResults.Success)
+          assertMetricSent(
+            metricsName,
+            metrics,
+            result = HttpMetricResults.Success
+          )
         }
     }
   }
@@ -452,7 +464,11 @@ class CreateIngestApiTest
           response =>
             assertIsInternalServerErrorResponse(response)
 
-            assertMetricSent(metricsName, metrics, result = HttpMetricResults.ServerError)
+            assertMetricSent(
+              metricsName,
+              metrics,
+              result = HttpMetricResults.ServerError
+            )
         }
     }
   }
@@ -545,7 +561,11 @@ class CreateIngestApiTest
 
           messageSender.messages shouldBe empty
 
-          assertMetricSent(metricsName, metrics, result = HttpMetricResults.UserError)
+          assertMetricSent(
+            metricsName,
+            metrics,
+            result = HttpMetricResults.UserError
+          )
         }
     }
   }

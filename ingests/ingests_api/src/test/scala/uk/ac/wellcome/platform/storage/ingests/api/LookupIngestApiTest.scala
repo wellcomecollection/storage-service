@@ -107,7 +107,11 @@ class LookupIngestApiTest
             )
           }
 
-          assertMetricSent(metricsName, metrics, result = HttpMetricResults.Success)
+          assertMetricSent(
+            metricsName,
+            metrics,
+            result = HttpMetricResults.Success
+          )
         }
     }
   }
@@ -140,7 +144,11 @@ class LookupIngestApiTest
             infoJson.findAllByKey("callback") shouldBe empty
           }
 
-          assertMetricSent(metricsName, metrics, result = HttpMetricResults.Success)
+          assertMetricSent(
+            metricsName,
+            metrics,
+            result = HttpMetricResults.Success
+          )
         }
     }
   }
@@ -156,7 +164,11 @@ class LookupIngestApiTest
             statusCode = StatusCodes.NotFound
           )
 
-          assertMetricSent(metricsName, metrics, result = HttpMetricResults.UserError)
+          assertMetricSent(
+            metricsName,
+            metrics,
+            result = HttpMetricResults.UserError
+          )
         }
     }
   }
@@ -167,7 +179,11 @@ class LookupIngestApiTest
         whenGetRequestReady(s"$baseUrl/ingests/$createIngestID") { response =>
           assertIsInternalServerErrorResponse(response)
 
-          assertMetricSent(metricsName, metrics, result = HttpMetricResults.ServerError)
+          assertMetricSent(
+            metricsName,
+            metrics,
+            result = HttpMetricResults.ServerError
+          )
         }
     }
   }
