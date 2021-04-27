@@ -1,6 +1,6 @@
 locals {
   default_tags = {
-    TerraformConfigurationURL = "https://github.com/wellcomecollection/storage-service/tree/master/terraform/critical_prod"
+    TerraformConfigurationURL = "https://github.com/wellcomecollection/storage-service/tree/main/terraform/critical_prod"
   }
 }
 

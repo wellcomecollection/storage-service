@@ -1,5 +1,5 @@
 locals {
-  description = "Storage service credentials; managed in https://github.com/wellcomecollection/storage-service/tree/master/terraform/app_clients"
+  description = "Storage service credentials; managed in https://github.com/wellcomecollection/storage-service/tree/main/terraform/app_clients"
 }
 
 module "catalogue_secrets" {

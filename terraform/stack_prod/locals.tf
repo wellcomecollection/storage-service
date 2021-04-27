@@ -22,7 +22,7 @@ locals {
   catalogue_pipeline_account_principal = "arn:aws:iam::760097843905:root"
 
   default_tags = {
-    TerraformConfigurationURL = "https://github.com/wellcomecollection/storage-service/tree/master/terraform/stack_prod"
+    TerraformConfigurationURL = "https://github.com/wellcomecollection/storage-service/tree/main/terraform/stack_prod"
   }
 }
 
