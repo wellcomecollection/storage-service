@@ -3,10 +3,7 @@ package uk.ac.wellcome.platform.storage.bags.api
 import akka.http.scaladsl.model.StatusCodes.NotFound
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
-import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
-import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.bagit.models.{
   BagId,
   ExternalIdentifier
@@ -30,6 +27,8 @@ trait BagsApi
     with LookupBagVersions
     with LookupExternalIdentifier {
 
+  def context: String = contextURL.toString
+
   private val routes: Route = pathPrefix("bags") {
     concat(
       // We look for /versions at the end of the path: this means we should
@@ -51,7 +50,7 @@ trait BagsApi
                   )
 
                   parameter('before.as[String] ?) { maybeBefore =>
-                    withFuture {
+                    getWithFuture {
                       lookupVersions(
                         bagId = bagId,
                         maybeBeforeString = maybeBefore
@@ -60,16 +59,7 @@ trait BagsApi
                   }
 
                 case Failure(_) =>
-                  complete(
-                    NotFound -> ContextResponse(
-                      context = contextURL,
-                      DisplayError(
-                        statusCode = StatusCodes.NotFound,
-                        description =
-                          s"No storage manifest versions found for $space/$remaining"
-                      )
-                    )
-                  )
+                  notFound(s"No storage manifest versions found for $space/$remaining")
               }
             }
         }
@@ -119,7 +109,7 @@ trait BagsApi
                   )
                 case _ =>
                   parameter('version.as[String] ?) { maybeVersionString =>
-                    withFuture {
+                    getWithFuture {
                       lookupBag(
                         bagId = bagId,
                         maybeVersionString = maybeVersionString
