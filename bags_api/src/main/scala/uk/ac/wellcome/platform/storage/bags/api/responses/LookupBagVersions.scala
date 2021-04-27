@@ -9,6 +9,7 @@ import uk.ac.wellcome.platform.archive.bag_tracker.client.{
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.storage.bags.api.models.DisplayBagVersionList
 import weco.http.FutureDirectives
+import weco.http.models.ContextResponse
 
 import java.net.URL
 import scala.concurrent.{ExecutionContext, Future}
@@ -60,9 +61,9 @@ trait LookupBagVersions extends FutureDirectives {
       .map {
         case Right(bagVersionList) =>
           complete(
-            DisplayBagVersionList(
-              contextURL = contextURL,
-              bagVersionList = bagVersionList
+            ContextResponse(
+              context = contextURL,
+              DisplayBagVersionList(bagVersionList)
             )
           )
 
