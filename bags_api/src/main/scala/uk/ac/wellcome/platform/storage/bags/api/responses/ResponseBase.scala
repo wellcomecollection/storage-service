@@ -25,7 +25,7 @@ trait ResponseBase {
       case Failure(_) =>
         complete(
           StatusCodes.InternalServerError -> ContextResponse(
-            context = contextURL.toString,
+            context = contextURL,
             DisplayError(statusCode = StatusCodes.InternalServerError)
           )
         )

@@ -70,7 +70,7 @@ trait CreateIngest[UnpackerDestination] extends ResponseBase with Logging {
     Future {
       complete(
         StatusCodes.BadRequest -> ContextResponse(
-          context = contextURL.toString,
+          context = contextURL,
           DisplayError(
             statusCode = StatusCodes.BadRequest,
             description = description
@@ -117,7 +117,7 @@ trait CreateIngest[UnpackerDestination] extends ResponseBase with Logging {
         case Left(_) =>
           complete(
             StatusCodes.InternalServerError -> ContextResponse(
-              context = contextURL.toString,
+              context = contextURL,
               DisplayError(statusCode = StatusCodes.InternalServerError)
             )
           )
@@ -127,7 +127,7 @@ trait CreateIngest[UnpackerDestination] extends ResponseBase with Logging {
           error(s"Unexpected error while creating ingest $ingest: $err")
           complete(
             StatusCodes.InternalServerError -> ContextResponse(
-              context = contextURL.toString,
+              context = contextURL,
               DisplayError(statusCode = StatusCodes.InternalServerError)
             )
           )

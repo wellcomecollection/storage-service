@@ -53,7 +53,7 @@ trait LookupBag extends Logging with ResponseBase {
             Future {
               complete(
                 NotFound -> ContextResponse(
-                  context = contextURL.toString,
+                  context = contextURL,
                   DisplayError(
                     statusCode = StatusCodes.NotFound,
                     description =
@@ -91,7 +91,7 @@ trait LookupBag extends Logging with ResponseBase {
       case Left(_: BagTrackerNotFoundError) =>
         complete(
           NotFound -> ContextResponse(
-            context = contextURL.toString,
+            context = contextURL,
             DisplayError(
               statusCode = StatusCodes.NotFound,
               description = notFoundMessage
@@ -103,7 +103,7 @@ trait LookupBag extends Logging with ResponseBase {
         error(s"Unexpected error getting bag $bagId version $maybeVersion", err)
         complete(
           InternalServerError -> ContextResponse(
-            context = contextURL.toString,
+            context = contextURL,
             DisplayError(statusCode = StatusCodes.InternalServerError)
           )
         )

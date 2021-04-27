@@ -10,9 +10,9 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
-import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.common.ingests.models.S3SourceLocation
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
+import weco.http.HttpMetricResults
 
 /** Tests for GET /ingests/:id
   *
@@ -107,7 +107,11 @@ class LookupIngestApiTest
             )
           }
 
-          assertMetricSent(metrics, result = HttpMetricResults.Success)
+          assertMetricSent(
+            metricsName,
+            metrics,
+            result = HttpMetricResults.Success
+          )
         }
     }
   }
@@ -140,7 +144,11 @@ class LookupIngestApiTest
             infoJson.findAllByKey("callback") shouldBe empty
           }
 
-          assertMetricSent(metrics, result = HttpMetricResults.Success)
+          assertMetricSent(
+            metricsName,
+            metrics,
+            result = HttpMetricResults.Success
+          )
         }
     }
   }
@@ -156,7 +164,11 @@ class LookupIngestApiTest
             statusCode = StatusCodes.NotFound
           )
 
-          assertMetricSent(metrics, result = HttpMetricResults.UserError)
+          assertMetricSent(
+            metricsName,
+            metrics,
+            result = HttpMetricResults.UserError
+          )
         }
     }
   }
@@ -167,7 +179,11 @@ class LookupIngestApiTest
         whenGetRequestReady(s"$baseUrl/ingests/$createIngestID") { response =>
           assertIsInternalServerErrorResponse(response)
 
-          assertMetricSent(metrics, result = HttpMetricResults.ServerError)
+          assertMetricSent(
+            metricsName,
+            metrics,
+            result = HttpMetricResults.ServerError
+          )
         }
     }
   }

@@ -17,13 +17,13 @@ import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
 import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
-import uk.ac.wellcome.platform.archive.common.http.HttpMetricResults
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.display._
 import uk.ac.wellcome.platform.archive.display.ingests._
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
+import weco.http.HttpMetricResults
 
 /** Tests for POST /ingests
   *
@@ -119,7 +119,11 @@ class CreateIngestApiTest
               expectedPayload
             )
 
-            assertMetricSent(metrics, result = HttpMetricResults.Success)
+            assertMetricSent(
+              metricsName,
+              metrics,
+              result = HttpMetricResults.Success
+            )
           }
         }
     }
@@ -144,7 +148,11 @@ class CreateIngestApiTest
             messageSender.getMessages[SourceLocationPayload].head
           payload.context.ingestType shouldBe CreateIngestType
 
-          assertMetricSent(metrics, result = HttpMetricResults.Success)
+          assertMetricSent(
+            metricsName,
+            metrics,
+            result = HttpMetricResults.Success
+          )
         }
     }
   }
@@ -168,7 +176,11 @@ class CreateIngestApiTest
           val payload = messageSender.getMessages[SourceLocationPayload].head
           payload.context.ingestType shouldBe UpdateIngestType
 
-          assertMetricSent(metrics, result = HttpMetricResults.Success)
+          assertMetricSent(
+            metricsName,
+            metrics,
+            result = HttpMetricResults.Success
+          )
         }
     }
   }
@@ -452,7 +464,11 @@ class CreateIngestApiTest
           response =>
             assertIsInternalServerErrorResponse(response)
 
-            assertMetricSent(metrics, result = HttpMetricResults.ServerError)
+            assertMetricSent(
+              metricsName,
+              metrics,
+              result = HttpMetricResults.ServerError
+            )
         }
     }
   }
@@ -545,7 +561,11 @@ class CreateIngestApiTest
 
           messageSender.messages shouldBe empty
 
-          assertMetricSent(metrics, result = HttpMetricResults.UserError)
+          assertMetricSent(
+            metricsName,
+            metrics,
+            result = HttpMetricResults.UserError
+          )
         }
     }
   }

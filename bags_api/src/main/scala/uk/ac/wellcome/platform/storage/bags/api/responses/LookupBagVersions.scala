@@ -50,7 +50,7 @@ trait LookupBagVersions extends Logging with ResponseBase {
             Future {
               complete(
                 BadRequest -> ContextResponse(
-                  context = contextURL.toString,
+                  context = contextURL,
                   DisplayError(
                     statusCode = StatusCodes.BadRequest,
                     description = s"Cannot parse version string: $versionString"
@@ -80,7 +80,7 @@ trait LookupBagVersions extends Logging with ResponseBase {
         case Left(_: BagTrackerNotFoundError) =>
           complete(
             NotFound -> ContextResponse(
-              context = contextURL.toString,
+              context = contextURL,
               DisplayError(
                 statusCode = StatusCodes.NotFound,
                 description = notFoundMessage
@@ -95,7 +95,7 @@ trait LookupBagVersions extends Logging with ResponseBase {
           )
           complete(
             InternalServerError -> ContextResponse(
-              context = contextURL.toString,
+              context = contextURL,
               DisplayError(statusCode = StatusCodes.InternalServerError)
             )
           )

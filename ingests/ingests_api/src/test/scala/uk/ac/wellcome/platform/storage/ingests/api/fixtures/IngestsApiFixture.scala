@@ -10,10 +10,7 @@ import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.platform.archive.common.fixtures.HttpFixtures
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.http.{
-  HttpMetrics,
-  WellcomeHttpApp
-}
+import uk.ac.wellcome.platform.archive.common.http.WellcomeHttpApp
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.storage.ingests.api.IngestsApi
 import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
@@ -25,6 +22,7 @@ import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.{
   IngestsTrackerApiFixture
 }
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.memory.MemoryIngestTracker
+import weco.http.HttpMetrics
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
