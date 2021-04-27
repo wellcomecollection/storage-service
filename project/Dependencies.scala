@@ -1,7 +1,7 @@
 import sbt._
 
 object WellcomeDependencies {
-  lazy val defaultVersion = "26.6.0"
+  lazy val defaultVersion = "26.7.1"
 
   lazy val versions = new {
     val fixtures = defaultVersion
@@ -92,33 +92,6 @@ object ExternalDependencies {
     // This should match the version of circe used in scala-json; see
     // https://github.com/wellcomecollection/scala-json/blob/master/project/Dependencies.scala
     val circeOptics = "0.13.0"
-
-    // Getting the akka-http dependencies right can be fiddly and takes some work.
-    // In particular you need to use the same version of akka-http everywhere, or you
-    // get errors (from LArgeResponsesTest) like:
-    //
-    //      Detected possible incompatible versions on the classpath. Please note that
-    //      a given Akka HTTP version MUST be the same across all modules of Akka HTTP
-    //      that you are using, e.g. if you use [10.1.10] all other modules that are
-    //      released together MUST be of the same version.
-    //
-    //      Make sure you're using a compatible set of libraries.
-    //
-    // To work this out:
-    //
-    //   1. Look at the version of alpakka-streams used by scala-libs:
-    //      https://github.com/wellcomecollection/scala-libs/blob/master/project/Dependencies.scala
-    //      (At time of writing, v1.1.2)
-    //
-    //   2. Look at the corresponding akka-http dependency in alpakka:
-    //      https://github.com/akka/alpakka/blob/master/project/Dependencies.scala
-    //      (At time of writing, alpakka v1.1.2 pulls in akka-http 10.1.10)
-    //
-    //   3. Look at versions of akka-http-json.  Browse the Git tags until you find
-    //      one that uses the same version of akka-http and a compatible Circe:
-    //      https://github.com/hseeberger/akka-http-json/blob/master/build.sbt
-    //
-    val akkaHttpCirce = "1.29.1"
   }
 
   val commonsCompressDependencies = Seq(
@@ -137,10 +110,6 @@ object ExternalDependencies {
     "org.scalatest" %% "scalatest" % versions.scalatest % "test"
   )
 
-  val akkaDependencies: Seq[sbt.ModuleID] = Seq[ModuleID](
-    "de.heikoseeberger" %% "akka-http-circe" % versions.akkaHttpCirce
-  )
-
   val mockitoDependencies: Seq[ModuleID] = Seq(
     "org.mockito" % "mockito-core" % versions.mockito % "test"
   )
@@ -153,7 +122,6 @@ object ExternalDependencies {
 object StorageDependencies {
   val commonDependencies =
     ExternalDependencies.commonsIODependencies ++
-      ExternalDependencies.akkaDependencies ++
       ExternalDependencies.scalatestDependencies ++
       WellcomeDependencies.jsonLibrary ++
       WellcomeDependencies.messagingLibrary ++
