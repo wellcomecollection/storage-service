@@ -59,7 +59,9 @@ trait BagsApi
                   }
 
                 case Failure(_) =>
-                  notFound(s"No storage manifest versions found for $space/$remaining")
+                  notFound(
+                    s"No storage manifest versions found for $space/$remaining"
+                  )
               }
             }
         }
