@@ -50,7 +50,7 @@ class LookupBagVersionsApiTest
             statusCode = StatusCodes.NotFound
           )
 
-          assertMetricSent(metrics, result = HttpMetricResults.UserError)
+          assertMetricSent(metricsName, metrics, result = HttpMetricResults.UserError)
         }
     }
   }
@@ -79,12 +79,9 @@ class LookupBagVersionsApiTest
           withStringEntity(response.entity) { actualJson =>
             assertJsonStringsAreEqual(actualJson, expectedJson)
           }
-
-          assertMetricSent(
-            metrics,
-            result = HttpMetricResults.Success
-          )
         }
+
+        assertMetricSent(metricsName, metrics, result = HttpMetricResults.Success)
     }
   }
 
@@ -142,12 +139,9 @@ class LookupBagVersionsApiTest
           withStringEntity(response.entity) { actualJson =>
             assertJsonStringsAreEqual(actualJson, expectedJson)
           }
-
-          assertMetricSent(
-            metrics,
-            result = HttpMetricResults.Success
-          )
         }
+
+        assertMetricSent(metricsName, metrics, result = HttpMetricResults.Success)
     }
   }
 
@@ -182,12 +176,9 @@ class LookupBagVersionsApiTest
           withStringEntity(response.entity) { actualJson =>
             assertJsonStringsAreEqual(actualJson, expectedJson)
           }
-
-          assertMetricSent(
-            metrics,
-            result = HttpMetricResults.Success
-          )
         }
+
+        assertMetricSent(metricsName, metrics, result = HttpMetricResults.Success)
     }
   }
 
@@ -268,7 +259,7 @@ class LookupBagVersionsApiTest
             statusCode = StatusCodes.NotFound
           )
 
-          assertMetricSent(metrics, result = HttpMetricResults.UserError)
+          assertMetricSent(metricsName, metrics, result = HttpMetricResults.UserError)
         }
     }
   }
@@ -289,7 +280,7 @@ class LookupBagVersionsApiTest
             statusCode = StatusCodes.BadRequest
           )
 
-          assertMetricSent(metrics, result = HttpMetricResults.UserError)
+          assertMetricSent(metricsName, metrics, result = HttpMetricResults.UserError)
         }
     }
   }
@@ -306,7 +297,7 @@ class LookupBagVersionsApiTest
             statusCode = StatusCodes.NotFound
           )
 
-          assertMetricSent(metrics, result = HttpMetricResults.UserError)
+          assertMetricSent(metricsName, metrics, result = HttpMetricResults.UserError)
         }
     }
   }
@@ -318,7 +309,7 @@ class LookupBagVersionsApiTest
           response =>
             assertIsInternalServerErrorResponse(response)
 
-            assertMetricSent(metrics, result = HttpMetricResults.ServerError)
+            assertMetricSent(metricsName, metrics, result = HttpMetricResults.ServerError)
         }
     }
   }

@@ -65,7 +65,7 @@ class LookupBagApiTest
               statusCode = StatusCodes.NotFound
             )
 
-            assertMetricSent(metrics, result = HttpMetricResults.UserError)
+            assertMetricSent(metricsName, metrics, result = HttpMetricResults.UserError)
           }
       }
     }
@@ -76,7 +76,7 @@ class LookupBagApiTest
           whenGetRequestReady(s"$baseUrl/bags/$createBagId") { response =>
             assertIsInternalServerErrorResponse(response)
 
-            assertMetricSent(metrics, result = HttpMetricResults.ServerError)
+            assertMetricSent(metricsName, metrics, result = HttpMetricResults.ServerError)
           }
       }
     }
@@ -104,6 +104,7 @@ class LookupBagApiTest
             etagValue shouldBe storageManifest.idWithVersion
 
             assertMetricSent(
+              metricsName,
               metrics,
               result = HttpMetricResults.Success
             )
@@ -129,7 +130,7 @@ class LookupBagApiTest
             whenGetRequestReady(url) { response =>
               response.status shouldBe StatusCodes.TemporaryRedirect
 
-              assertMetricSent(metrics, result = HttpMetricResults.Success)
+              assertMetricSent(metricsName, metrics, result = HttpMetricResults.Success)
 
               val redirectedUrl = response.header[Location].get.uri.toString()
 
@@ -166,7 +167,7 @@ class LookupBagApiTest
               whenGetRequestReady(url) { response =>
                 response.status shouldBe StatusCodes.TemporaryRedirect
 
-                assertMetricSent(metrics, result = HttpMetricResults.Success)
+                assertMetricSent(metricsName, metrics, result = HttpMetricResults.Success)
 
                 val redirectedUrl = response.header[Location].get.uri.toString()
 
@@ -214,6 +215,7 @@ class LookupBagApiTest
               etagValue shouldBe s"$storageSpace/$externalIdentifier/${storageManifest.version}"
 
               assertMetricSent(
+                metricsName,
                 metrics,
                 result = HttpMetricResults.Success
               )
@@ -325,7 +327,7 @@ class LookupBagApiTest
               statusCode = StatusCodes.NotFound
             )
 
-            assertMetricSent(metrics, result = HttpMetricResults.UserError)
+            assertMetricSent(metricsName, metrics, result = HttpMetricResults.UserError)
           }
       }
     }
@@ -345,7 +347,7 @@ class LookupBagApiTest
               statusCode = StatusCodes.NotFound
             )
 
-            assertMetricSent(metrics, result = HttpMetricResults.UserError)
+            assertMetricSent(metricsName, metrics, result = HttpMetricResults.UserError)
           }
       }
     }
@@ -365,7 +367,7 @@ class LookupBagApiTest
                 statusCode = StatusCodes.NotFound
               )
 
-              assertMetricSent(metrics, result = HttpMetricResults.UserError)
+              assertMetricSent(metricsName, metrics, result = HttpMetricResults.UserError)
           }
       }
     }
@@ -382,7 +384,7 @@ class LookupBagApiTest
               statusCode = StatusCodes.NotFound
             )
 
-            assertMetricSent(metrics, result = HttpMetricResults.UserError)
+            assertMetricSent(metricsName, metrics, result = HttpMetricResults.UserError)
           }
       }
     }
@@ -394,7 +396,7 @@ class LookupBagApiTest
         whenGetRequestReady(s"$baseUrl/bags/$createBagId") { response =>
           assertIsInternalServerErrorResponse(response)
 
-          assertMetricSent(metrics, result = HttpMetricResults.ServerError)
+          assertMetricSent(metricsName, metrics, result = HttpMetricResults.ServerError)
         }
     }
   }
@@ -406,7 +408,7 @@ class LookupBagApiTest
           response =>
             assertIsInternalServerErrorResponse(response)
 
-            assertMetricSent(metrics, result = HttpMetricResults.ServerError)
+            assertMetricSent(metricsName, metrics, result = HttpMetricResults.ServerError)
         }
     }
   }

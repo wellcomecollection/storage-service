@@ -7,14 +7,12 @@ import akka.http.scaladsl.model._
 import akka.stream.scaladsl.Sink
 import io.circe.Decoder
 import org.scalatest.Assertion
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
-import uk.ac.wellcome.monitoring.memory.MemoryMetrics
-import weco.http.HttpMetricResults
+import weco.http.fixtures.{HttpFixtures => SharedHttpFixtures}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
@@ -22,7 +20,7 @@ import scala.concurrent.duration._
 trait HttpFixtures
     extends Akka
     with ScalaFutures
-    with Matchers
+    with SharedHttpFixtures
     with JsonAssertions {
   import uk.ac.wellcome.json.JsonUtil._
 
@@ -96,14 +94,6 @@ trait HttpFixtures
   val httpServerConfigTest: HTTPServerConfig = createHTTPServerConfig
 
   val metricsName: String = "unset"
-
-  def assertMetricSent(
-    metrics: MemoryMetrics,
-    result: HttpMetricResults.Value
-  ): Assertion =
-    metrics.incrementedCounts should contain(
-      s"${metricsName}_HttpResponse_$result"
-    )
 
   val contextURLTest: URL = new URL("http://example.com")
 
