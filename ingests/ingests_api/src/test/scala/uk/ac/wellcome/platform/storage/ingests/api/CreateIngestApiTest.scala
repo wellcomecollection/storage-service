@@ -439,7 +439,7 @@ class CreateIngestApiTest
         contentType = ContentTypes.`text/plain(UTF-8)`,
         expectedStatusCode = StatusCodes.UnsupportedMediaType,
         expectedMessage =
-          "The request's Content-Type [Some(Some(text/plain; charset=UTF-8))] is not supported. Expected:\napplication/json"
+          "The request's Content-Type [text/plain; charset=UTF-8] is not supported. Expected:\napplication/json"
       )
     }
 
