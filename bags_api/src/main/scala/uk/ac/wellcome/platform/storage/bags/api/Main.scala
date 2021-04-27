@@ -20,7 +20,7 @@ import uk.ac.wellcome.storage.typesafe.S3Builder
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
-import weco.http.HttpMetrics
+import weco.http.monitoring.HttpMetrics
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._

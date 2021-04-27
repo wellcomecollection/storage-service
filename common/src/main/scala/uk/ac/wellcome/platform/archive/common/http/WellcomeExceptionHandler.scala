@@ -6,8 +6,8 @@ import java.net.URL
 import akka.http.scaladsl.model.StatusCodes.InternalServerError
 import akka.http.scaladsl.server.ExceptionHandler
 import grizzled.slf4j.Logging
-import weco.http.HttpMetrics
 import weco.http.models.{ContextResponse, DisplayError}
+import weco.http.monitoring.HttpMetrics
 
 trait WellcomeExceptionHandler extends Logging {
   import akka.http.scaladsl.server.Directives._

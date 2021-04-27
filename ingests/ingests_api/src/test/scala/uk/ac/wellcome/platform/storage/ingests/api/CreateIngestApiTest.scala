@@ -23,7 +23,7 @@ import uk.ac.wellcome.platform.archive.display._
 import uk.ac.wellcome.platform.archive.display.ingests._
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
-import weco.http.HttpMetricResults
+import weco.http.monitoring.HttpMetricResults
 
 /** Tests for POST /ingests
   *

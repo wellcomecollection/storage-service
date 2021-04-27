@@ -26,7 +26,7 @@ import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.services.s3.S3Uploader
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
-import weco.http.HttpMetrics
+import weco.http.monitoring.HttpMetrics
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
