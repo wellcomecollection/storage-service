@@ -19,17 +19,14 @@ import weco.http.monitoring.HttpMetricResults
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
-trait HttpFixtures
-    extends Akka
-    with ScalaFutures
-    with JsonAssertions {
+trait HttpFixtures extends Akka with ScalaFutures with JsonAssertions {
   import uk.ac.wellcome.json.JsonUtil._
 
   def assertMetricSent(
-                        name: String = "unset",
-                        metrics: MemoryMetrics,
-                        result: HttpMetricResults.Value
-                      ): Assertion =
+    name: String = "unset",
+    metrics: MemoryMetrics,
+    result: HttpMetricResults.Value
+  ): Assertion =
     metrics.incrementedCounts should contain(
       s"${name}_HttpResponse_$result"
     )
