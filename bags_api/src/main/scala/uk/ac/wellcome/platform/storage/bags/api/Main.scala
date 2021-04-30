@@ -8,7 +8,10 @@ import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import uk.ac.wellcome.http.typesafe.HTTPServerBuilder
 import uk.ac.wellcome.monitoring.typesafe.CloudWatchBuilder
-import uk.ac.wellcome.platform.archive.bag_tracker.client.{AkkaBagTrackerClient, BagTrackerClient}
+import uk.ac.wellcome.platform.archive.bag_tracker.client.{
+  AkkaBagTrackerClient,
+  BagTrackerClient
+}
 import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.services.s3.S3Uploader
 import uk.ac.wellcome.storage.typesafe.S3Builder

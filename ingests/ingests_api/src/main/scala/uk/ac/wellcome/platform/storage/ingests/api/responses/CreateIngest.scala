@@ -9,8 +9,14 @@ import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.MessageSender
 import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
-import uk.ac.wellcome.platform.archive.common.ingests.models.{AmazonS3StorageProvider, StorageProvider}
-import uk.ac.wellcome.platform.archive.display.ingests.{RequestDisplayIngest, ResponseDisplayIngest}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  AmazonS3StorageProvider,
+  StorageProvider
+}
+import uk.ac.wellcome.platform.archive.display.ingests.{
+  RequestDisplayIngest,
+  ResponseDisplayIngest
+}
 import uk.ac.wellcome.platform.storage.ingests_tracker.client.IngestTrackerClient
 import weco.http.models.{ContextResponse, DisplayError, HTTPServerConfig}
 
