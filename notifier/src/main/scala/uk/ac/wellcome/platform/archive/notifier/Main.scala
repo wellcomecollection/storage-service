@@ -3,18 +3,11 @@ package uk.ac.wellcome.platform.archive.notifier
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import uk.ac.wellcome.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  SNSBuilder,
-  SQSBuilder
-}
+import uk.ac.wellcome.http.typesafe.HTTPServerBuilder
+import uk.ac.wellcome.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, SNSBuilder, SQSBuilder}
 import uk.ac.wellcome.monitoring.cloudwatch.CloudWatchMetrics
 import uk.ac.wellcome.monitoring.typesafe.CloudWatchBuilder
-import uk.ac.wellcome.platform.archive.common.config.builders.HTTPServerBuilder
-import uk.ac.wellcome.platform.archive.notifier.services.{
-  CallbackUrlService,
-  NotifierWorker
-}
+import uk.ac.wellcome.platform.archive.notifier.services.{CallbackUrlService, NotifierWorker}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._

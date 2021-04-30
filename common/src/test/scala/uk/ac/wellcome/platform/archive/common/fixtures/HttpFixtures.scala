@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.fixtures
 
 import java.net.URL
+
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpMethods.{GET, POST}
 import akka.http.scaladsl.model._
@@ -11,8 +12,7 @@ import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
-import weco.http.fixtures.{HttpFixtures => SharedHttpFixtures}
+import weco.http.models.HTTPServerConfig
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
@@ -20,7 +20,7 @@ import scala.concurrent.duration._
 trait HttpFixtures
     extends Akka
     with ScalaFutures
-    with SharedHttpFixtures
+    with HttpFixtures
     with JsonAssertions {
   import uk.ac.wellcome.json.JsonUtil._
 

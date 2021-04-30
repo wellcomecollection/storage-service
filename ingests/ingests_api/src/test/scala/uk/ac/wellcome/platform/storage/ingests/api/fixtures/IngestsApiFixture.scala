@@ -7,21 +7,15 @@ import uk.ac.wellcome.messaging.MessageSender
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.monitoring.Metrics
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
-import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.platform.archive.common.fixtures.HttpFixtures
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.http.WellcomeHttpApp
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.storage.ingests.api.IngestsApi
-import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
-  AkkaIngestTrackerClient,
-  IngestTrackerClient
-}
-import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.{
-  IngestTrackerFixtures,
-  IngestsTrackerApiFixture
-}
+import uk.ac.wellcome.platform.storage.ingests_tracker.client.{AkkaIngestTrackerClient, IngestTrackerClient}
+import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.{IngestTrackerFixtures, IngestsTrackerApiFixture}
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.memory.MemoryIngestTracker
+import weco.http.WellcomeHttpApp
+import weco.http.models.HTTPServerConfig
 import weco.http.monitoring.HttpMetrics
 
 import scala.concurrent.ExecutionContext.Implicits.global
