@@ -12,8 +12,9 @@ import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.utils.JsonAssertions
-import weco.http.fixtures.{HttpFixtures => SharedHttpFixtures}
+import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import weco.http.models.HTTPServerConfig
+import weco.http.monitoring.HttpMetricResults
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
@@ -21,9 +22,17 @@ import scala.concurrent.duration._
 trait HttpFixtures
     extends Akka
     with ScalaFutures
-    with SharedHttpFixtures
     with JsonAssertions {
   import uk.ac.wellcome.json.JsonUtil._
+
+  def assertMetricSent(
+                        name: String = "unset",
+                        metrics: MemoryMetrics,
+                        result: HttpMetricResults.Value
+                      ): Assertion =
+    metrics.incrementedCounts should contain(
+      s"${name}_HttpResponse_$result"
+    )
 
   private def whenRequestReady[R](
     r: HttpRequest
