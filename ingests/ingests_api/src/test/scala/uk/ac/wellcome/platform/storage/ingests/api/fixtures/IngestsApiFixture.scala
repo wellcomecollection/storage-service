@@ -59,7 +59,7 @@ trait IngestsApiFixture
 
         override val httpServerConfig: HTTPServerConfig =
           httpServerConfigTest
-        override val contextURL: URL = contextURLTest
+        override val context = contextURLTest.toString
       }
 
       val app = new WellcomeHttpApp(

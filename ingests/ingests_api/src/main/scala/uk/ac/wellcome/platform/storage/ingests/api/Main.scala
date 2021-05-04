@@ -1,7 +1,5 @@
 package uk.ac.wellcome.platform.storage.ingests.api
 
-import java.net.URL
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.Uri
 import com.typesafe.config.Config
@@ -50,7 +48,8 @@ object Main extends WellcomeTypesafeApp {
         )
 
       override val httpServerConfig: HTTPServerConfig = httpServerConfigMain
-      override val contextURL: URL = contextURLMain
+
+      override def context: String = contextURLMain.toString
     }
 
     val appName = "IngestsApi"

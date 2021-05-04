@@ -108,8 +108,7 @@ trait HttpFixtures extends Akka with ScalaFutures with JsonAssertions {
     response: HttpResponse,
     description: String,
     statusCode: StatusCode = StatusCodes.BadRequest
-  ): Assertion =
-    withMaterializer { implicit materializer =>
+  ): Assertion = {
       response.status shouldBe statusCode
       response.entity.contentType shouldBe ContentTypes.`application/json`
 
@@ -131,7 +130,7 @@ trait HttpFixtures extends Akka with ScalaFutures with JsonAssertions {
     }
 
   def assertIsInternalServerErrorResponse(response: HttpResponse): Assertion =
-    withMaterializer { implicit materializer =>
+     {
       response.status shouldBe StatusCodes.InternalServerError
       response.entity.contentType shouldBe ContentTypes.`application/json`
 

@@ -28,8 +28,7 @@ trait MessagingServiceFixtures
       ),
       R
     ]
-  ): R =
-    withActorSystem { implicit actorSystem =>
+  ): R = {
       val callbackNotificationService =
         new CallbackNotificationService(callbackSender)
 
