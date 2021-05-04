@@ -4,8 +4,10 @@ import java.util.UUID
 
 import akka.http.scaladsl.server._
 import uk.ac.wellcome.platform.archive.display.ingests.RequestDisplayIngest
-import uk.ac.wellcome.platform.storage.ingests.api.responses.{CreateIngest, LookupIngest}
-
+import uk.ac.wellcome.platform.storage.ingests.api.responses.{
+  CreateIngest,
+  LookupIngest
+}
 
 trait IngestsApi[UnpackerDestination]
     extends CreateIngest[UnpackerDestination]
