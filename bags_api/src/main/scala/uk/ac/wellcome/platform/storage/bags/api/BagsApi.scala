@@ -50,7 +50,7 @@ trait BagsApi
                   )
 
                   parameter('before.as[String] ?) { maybeBefore =>
-                    getWithFuture {
+                    withFuture {
                       lookupVersions(
                         bagId = bagId,
                         maybeBeforeString = maybeBefore
@@ -111,7 +111,7 @@ trait BagsApi
                   )
                 case _ =>
                   parameter('version.as[String] ?) { maybeVersionString =>
-                    getWithFuture {
+                    withFuture {
                       lookupBag(
                         bagId = bagId,
                         maybeVersionString = maybeVersionString

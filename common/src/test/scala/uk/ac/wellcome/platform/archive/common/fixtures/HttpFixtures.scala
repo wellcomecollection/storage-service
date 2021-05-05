@@ -1,6 +1,7 @@
 package uk.ac.wellcome.platform.archive.common.fixtures
 
 import java.net.URL
+
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpMethods.{GET, POST}
 import akka.http.scaladsl.model._
@@ -11,18 +12,24 @@ import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
-import weco.http.fixtures.{HttpFixtures => SharedHttpFixtures}
+import uk.ac.wellcome.monitoring.memory.MemoryMetrics
+import weco.http.models.HTTPServerConfig
+import weco.http.monitoring.HttpMetricResults
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
-trait HttpFixtures
-    extends Akka
-    with ScalaFutures
-    with SharedHttpFixtures
-    with JsonAssertions {
+trait HttpFixtures extends Akka with ScalaFutures with JsonAssertions {
   import uk.ac.wellcome.json.JsonUtil._
+
+  def assertMetricSent(
+    name: String = "unset",
+    metrics: MemoryMetrics,
+    result: HttpMetricResults.Value
+  ): Assertion =
+    metrics.incrementedCounts should contain(
+      s"${name}_HttpResponse_$result"
+    )
 
   private def whenRequestReady[R](
     r: HttpRequest
@@ -101,15 +108,14 @@ trait HttpFixtures
     response: HttpResponse,
     description: String,
     statusCode: StatusCode = StatusCodes.BadRequest
-  ): Assertion =
-    withMaterializer { implicit materializer =>
-      response.status shouldBe statusCode
-      response.entity.contentType shouldBe ContentTypes.`application/json`
+  ): Assertion = {
+    response.status shouldBe statusCode
+    response.entity.contentType shouldBe ContentTypes.`application/json`
 
-      withStringEntity(response.entity) { jsonResponse =>
-        assertJsonStringsAreEqual(
-          jsonResponse,
-          s"""
+    withStringEntity(response.entity) { jsonResponse =>
+      assertJsonStringsAreEqual(
+        jsonResponse,
+        s"""
              |{
              |  "@context": "$contextURLTest",
              |  "errorType": "http",
@@ -119,19 +125,18 @@ trait HttpFixtures
              |  "type": "Error"
              |}
              |""".stripMargin
-        )
-      }
+      )
     }
+  }
 
-  def assertIsInternalServerErrorResponse(response: HttpResponse): Assertion =
-    withMaterializer { implicit materializer =>
-      response.status shouldBe StatusCodes.InternalServerError
-      response.entity.contentType shouldBe ContentTypes.`application/json`
+  def assertIsInternalServerErrorResponse(response: HttpResponse): Assertion = {
+    response.status shouldBe StatusCodes.InternalServerError
+    response.entity.contentType shouldBe ContentTypes.`application/json`
 
-      withStringEntity(response.entity) { jsonResponse =>
-        assertJsonStringsAreEqual(
-          jsonResponse,
-          s"""
+    withStringEntity(response.entity) { jsonResponse =>
+      assertJsonStringsAreEqual(
+        jsonResponse,
+        s"""
              |{
              |  "@context": "$contextURLTest",
              |  "errorType": "http",
@@ -140,7 +145,7 @@ trait HttpFixtures
              |  "type": "Error"
              |}
              |""".stripMargin
-        )
-      }
+      )
     }
+  }
 }

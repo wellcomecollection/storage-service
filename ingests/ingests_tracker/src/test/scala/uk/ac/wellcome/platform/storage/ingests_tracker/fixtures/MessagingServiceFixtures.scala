@@ -28,18 +28,17 @@ trait MessagingServiceFixtures
       ),
       R
     ]
-  ): R =
-    withActorSystem { implicit actorSystem =>
-      val callbackNotificationService =
-        new CallbackNotificationService(callbackSender)
+  ): R = {
+    val callbackNotificationService =
+      new CallbackNotificationService(callbackSender)
 
-      val messagingService = new MessagingService(
-        callbackNotificationService = callbackNotificationService,
-        updatedIngestsMessageSender = ingestsSender
-      )
+    val messagingService = new MessagingService(
+      callbackNotificationService = callbackNotificationService,
+      updatedIngestsMessageSender = ingestsSender
+    )
 
-      val out = (callbackSender, ingestsSender, messagingService)
+    val out = (callbackSender, ingestsSender, messagingService)
 
-      testWith(out)
-    }
+    testWith(out)
+  }
 }

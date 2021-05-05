@@ -8,11 +8,12 @@ import uk.ac.wellcome.platform.archive.bag_tracker.client.{
   BagTrackerUnknownGetError
 }
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
-import uk.ac.wellcome.platform.archive.common.config.models.HTTPServerConfig
 import uk.ac.wellcome.platform.archive.display.bags.DisplayStorageManifest
 import weco.http.FutureDirectives
-
 import java.net.URL
+
+import weco.http.models.HTTPServerConfig
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 

@@ -1,24 +1,18 @@
 package uk.ac.wellcome.platform.storage.ingests.api
 
 import java.util.UUID
-import akka.http.scaladsl.model.StatusCodes
+
 import akka.http.scaladsl.server._
-import akka.http.scaladsl.server.Directives._
-import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
-import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.display.ingests.RequestDisplayIngest
 import uk.ac.wellcome.platform.storage.ingests.api.responses.{
   CreateIngest,
   LookupIngest
 }
-import weco.http.models.{ContextResponse, DisplayError}
-
-import scala.concurrent.Future
-import scala.util.{Failure, Success}
 
 trait IngestsApi[UnpackerDestination]
     extends CreateIngest[UnpackerDestination]
     with LookupIngest {
+
   val ingests: Route = pathPrefix("ingests") {
     post {
       entity(as[RequestDisplayIngest]) { ingest =>
@@ -30,16 +24,4 @@ trait IngestsApi[UnpackerDestination]
       }
     }
   }
-
-  private def withFuture(future: Future[Route]): Route =
-    onComplete(future) {
-      case Success(resp) => resp
-      case Failure(_) =>
-        complete(
-          StatusCodes.InternalServerError -> ContextResponse(
-            context = contextURL,
-            DisplayError(statusCode = StatusCodes.InternalServerError)
-          )
-        )
-    }
 }
