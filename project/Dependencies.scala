@@ -129,6 +129,7 @@ object StorageDependencies {
     ExternalDependencies.commonsIODependencies ++
       ExternalDependencies.scalatestDependencies ++
       WellcomeDependencies.jsonLibrary ++
+      WellcomeDependencies.httpLibrary ++
       WellcomeDependencies.messagingLibrary ++
       WellcomeDependencies.monitoringLibrary ++
       WellcomeDependencies.storageLibrary ++

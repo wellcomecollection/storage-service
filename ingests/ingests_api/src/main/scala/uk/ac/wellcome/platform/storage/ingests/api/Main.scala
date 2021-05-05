@@ -4,14 +4,11 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.Uri
 import com.typesafe.config.Config
 import uk.ac.wellcome.http.typesafe.HTTPServerBuilder
-import uk.ac.wellcome.messaging.MessageSender
 import uk.ac.wellcome.messaging.sns.SNSConfig
 import uk.ac.wellcome.messaging.typesafe.SNSBuilder
 import uk.ac.wellcome.monitoring.typesafe.CloudWatchBuilder
-import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
-  AkkaIngestTrackerClient,
-  IngestTrackerClient
-}
+import uk.ac.wellcome.platform.storage.ingests.api.services.IngestCreator
+import uk.ac.wellcome.platform.storage.ingests_tracker.client.{AkkaIngestTrackerClient, IngestTrackerClient}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
@@ -35,21 +32,26 @@ object Main extends WellcomeTypesafeApp {
       config.requireString("ingests.tracker.host")
     )
 
+    val ingestCreatorInstance = new IngestCreator(
+      ingestTrackerClient = new AkkaIngestTrackerClient(ingestTrackerHost),
+      unpackerMessageSender = SNSBuilder.buildSNSMessageSender(
+        config,
+        namespace = "unpacker",
+        subject = "Sent from the ingests API"
+      )
+    )
+
     val router = new IngestsApi[SNSConfig] {
-      override implicit val ec: ExecutionContext = executionContext
       override val ingestTrackerClient: IngestTrackerClient =
         new AkkaIngestTrackerClient(ingestTrackerHost)
 
-      override val unpackerMessageSender: MessageSender[SNSConfig] =
-        SNSBuilder.buildSNSMessageSender(
-          config,
-          namespace = "unpacker",
-          subject = "Sent from the ingests API"
-        )
+      override val ingestCreator = ingestCreatorInstance
 
       override val httpServerConfig: HTTPServerConfig = httpServerConfigMain
 
       override def context: String = contextURLMain.toString
+
+      override implicit val ec: ExecutionContext = executionContext
     }
 
     val appName = "IngestsApi"
