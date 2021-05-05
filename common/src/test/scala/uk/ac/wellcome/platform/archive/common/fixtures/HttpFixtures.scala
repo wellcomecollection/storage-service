@@ -109,13 +109,13 @@ trait HttpFixtures extends Akka with ScalaFutures with JsonAssertions {
     description: String,
     statusCode: StatusCode = StatusCodes.BadRequest
   ): Assertion = {
-      response.status shouldBe statusCode
-      response.entity.contentType shouldBe ContentTypes.`application/json`
+    response.status shouldBe statusCode
+    response.entity.contentType shouldBe ContentTypes.`application/json`
 
-      withStringEntity(response.entity) { jsonResponse =>
-        assertJsonStringsAreEqual(
-          jsonResponse,
-          s"""
+    withStringEntity(response.entity) { jsonResponse =>
+      assertJsonStringsAreEqual(
+        jsonResponse,
+        s"""
              |{
              |  "@context": "$contextURLTest",
              |  "errorType": "http",
@@ -125,19 +125,18 @@ trait HttpFixtures extends Akka with ScalaFutures with JsonAssertions {
              |  "type": "Error"
              |}
              |""".stripMargin
-        )
-      }
+      )
     }
+  }
 
-  def assertIsInternalServerErrorResponse(response: HttpResponse): Assertion =
-     {
-      response.status shouldBe StatusCodes.InternalServerError
-      response.entity.contentType shouldBe ContentTypes.`application/json`
+  def assertIsInternalServerErrorResponse(response: HttpResponse): Assertion = {
+    response.status shouldBe StatusCodes.InternalServerError
+    response.entity.contentType shouldBe ContentTypes.`application/json`
 
-      withStringEntity(response.entity) { jsonResponse =>
-        assertJsonStringsAreEqual(
-          jsonResponse,
-          s"""
+    withStringEntity(response.entity) { jsonResponse =>
+      assertJsonStringsAreEqual(
+        jsonResponse,
+        s"""
              |{
              |  "@context": "$contextURLTest",
              |  "errorType": "http",
@@ -146,7 +145,7 @@ trait HttpFixtures extends Akka with ScalaFutures with JsonAssertions {
              |  "type": "Error"
              |}
              |""".stripMargin
-        )
-      }
+      )
     }
+  }
 }
