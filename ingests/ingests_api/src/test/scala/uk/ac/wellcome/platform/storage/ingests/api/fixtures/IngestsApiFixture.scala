@@ -11,8 +11,14 @@ import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.storage.ingests.api.IngestsApi
 import uk.ac.wellcome.platform.storage.ingests.api.services.IngestCreator
-import uk.ac.wellcome.platform.storage.ingests_tracker.client.{AkkaIngestTrackerClient, IngestTrackerClient}
-import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.{IngestTrackerFixtures, IngestsTrackerApiFixture}
+import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
+  AkkaIngestTrackerClient,
+  IngestTrackerClient
+}
+import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.{
+  IngestTrackerFixtures,
+  IngestsTrackerApiFixture
+}
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.memory.MemoryIngestTracker
 import weco.http.WellcomeHttpApp
 import weco.http.models.HTTPServerConfig
@@ -43,7 +49,8 @@ trait IngestsApiFixture
         metrics = metrics
       )
 
-      val ingestTrackerClient: IngestTrackerClient = new AkkaIngestTrackerClient(trackerUri)
+      val ingestTrackerClient: IngestTrackerClient =
+        new AkkaIngestTrackerClient(trackerUri)
       val ingestCreatorInstance = new IngestCreator(
         ingestTrackerClient = ingestTrackerClient,
         unpackerMessageSender = unpackerSender
@@ -56,7 +63,8 @@ trait IngestsApiFixture
         override val httpServerConfig: HTTPServerConfig =
           httpServerConfigTest
         override val context = contextURLTest.toString
-        override val ingestCreator: IngestCreator[String] = ingestCreatorInstance
+        override val ingestCreator: IngestCreator[String] =
+          ingestCreatorInstance
       }
 
       val app = new WellcomeHttpApp(
