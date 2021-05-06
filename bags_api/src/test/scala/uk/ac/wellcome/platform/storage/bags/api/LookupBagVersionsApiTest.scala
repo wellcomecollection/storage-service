@@ -44,8 +44,8 @@ class LookupBagVersionsApiTest
       case (_, metrics, baseUrl) =>
         val bagId = createBagId
         whenGetRequestReady(s"$baseUrl/bags/$bagId/versions") { response =>
-          assertIsUserErrorResponse(
-            response,
+          assertIsDisplayError(
+            response = response,
             description = s"No storage manifest versions found for $bagId",
             statusCode = StatusCodes.NotFound
           )
@@ -268,8 +268,8 @@ class LookupBagVersionsApiTest
         whenGetRequestReady(
           s"$baseUrl/bags/${storageManifest.id}/versions?before=v4"
         ) { response =>
-          assertIsUserErrorResponse(
-            response,
+          assertIsDisplayError(
+            response = response,
             description =
               s"No storage manifest versions found for ${storageManifest.id} before v4",
             statusCode = StatusCodes.NotFound
@@ -294,8 +294,8 @@ class LookupBagVersionsApiTest
         whenGetRequestReady(
           s"$baseUrl/bags/$createBagId/versions?before=$badBefore"
         ) { response =>
-          assertIsUserErrorResponse(
-            response,
+          assertIsDisplayError(
+            response = response,
             description = s"Cannot parse version string: $badBefore",
             statusCode = StatusCodes.BadRequest
           )
@@ -315,8 +315,8 @@ class LookupBagVersionsApiTest
     withConfiguredApp() {
       case (_, metrics, baseUrl) =>
         whenGetRequestReady(s"$baseUrl/bags/$bagId/versions") { response =>
-          assertIsUserErrorResponse(
-            response,
+          assertIsDisplayError(
+            response = response,
             description = s"No storage manifest versions found for $bagId",
             statusCode = StatusCodes.NotFound
           )
@@ -335,7 +335,10 @@ class LookupBagVersionsApiTest
       case (metrics, baseUrl) =>
         whenGetRequestReady(s"$baseUrl/bags/$createBagId/versions") {
           response =>
-            assertIsInternalServerErrorResponse(response)
+            assertIsDisplayError(
+              response = response,
+              statusCode = StatusCodes.InternalServerError
+            )
 
             assertMetricSent(
               metricsName,

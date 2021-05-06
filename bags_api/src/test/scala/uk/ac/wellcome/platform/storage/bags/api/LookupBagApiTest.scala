@@ -59,7 +59,7 @@ class LookupBagApiTest
       withConfiguredApp() {
         case (_, metrics, baseUrl) =>
           whenGetRequestReady(s"$baseUrl/bags/$bagId") { response =>
-            assertIsUserErrorResponse(
+            assertIsDisplayError(
               response,
               description = s"Storage manifest $bagId not found",
               statusCode = StatusCodes.NotFound
@@ -78,7 +78,10 @@ class LookupBagApiTest
       withBrokenApp {
         case (metrics, baseUrl) =>
           whenGetRequestReady(s"$baseUrl/bags/$createBagId") { response =>
-            assertIsInternalServerErrorResponse(response)
+            assertIsDisplayError(
+              response = response,
+              statusCode = StatusCodes.InternalServerError
+            )
 
             assertMetricSent(
               metricsName,
@@ -336,8 +339,8 @@ class LookupBagApiTest
           whenGetRequestReady(
             s"$baseUrl/bags/$badId?version=${storageManifest.version}"
           ) { response =>
-            assertIsUserErrorResponse(
-              response,
+            assertIsDisplayError(
+              response = response,
               description =
                 s"Storage manifest $badId ${storageManifest.version} not found",
               statusCode = StatusCodes.NotFound
@@ -360,8 +363,8 @@ class LookupBagApiTest
           whenGetRequestReady(
             s"$baseUrl/bags/${storageManifest.id}?version=${storageManifest.version.increment}"
           ) { response =>
-            assertIsUserErrorResponse(
-              response,
+            assertIsDisplayError(
+              response = response,
               description =
                 s"Storage manifest ${storageManifest.id} ${storageManifest.version.increment} not found",
               statusCode = StatusCodes.NotFound
@@ -385,8 +388,8 @@ class LookupBagApiTest
         case (_, metrics, baseUrl) =>
           whenGetRequestReady(s"$baseUrl/bags/$bagId?version=$badVersion") {
             response =>
-              assertIsUserErrorResponse(
-                response,
+              assertIsDisplayError(
+                response = response,
                 description = s"Storage manifest $bagId $badVersion not found",
                 statusCode = StatusCodes.NotFound
               )
@@ -406,8 +409,8 @@ class LookupBagApiTest
       withConfiguredApp() {
         case (_, metrics, baseUrl) =>
           whenGetRequestReady(s"$baseUrl/bags/$bagId") { response =>
-            assertIsUserErrorResponse(
-              response,
+            assertIsDisplayError(
+              response = response,
               description = s"Storage manifest $bagId not found",
               statusCode = StatusCodes.NotFound
             )
@@ -426,7 +429,10 @@ class LookupBagApiTest
     withBrokenApp {
       case (metrics, baseUrl) =>
         whenGetRequestReady(s"$baseUrl/bags/$createBagId") { response =>
-          assertIsInternalServerErrorResponse(response)
+          assertIsDisplayError(
+            response = response,
+            statusCode = StatusCodes.InternalServerError
+          )
 
           assertMetricSent(
             metricsName,
@@ -442,8 +448,10 @@ class LookupBagApiTest
       case (metrics, baseUrl) =>
         whenGetRequestReady(s"$baseUrl/bags/$createBagId?version=v1") {
           response =>
-            assertIsInternalServerErrorResponse(response)
-
+            assertIsDisplayError(
+              response = response,
+              statusCode = StatusCodes.InternalServerError
+            )
             assertMetricSent(
               metricsName,
               metrics,

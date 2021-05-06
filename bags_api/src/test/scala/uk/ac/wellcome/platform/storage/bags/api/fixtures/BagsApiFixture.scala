@@ -8,14 +8,10 @@ import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.bag_tracker.client.BagTrackerClient
-import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{
-  BagTrackerFixtures,
-  StorageManifestDaoFixture
-}
+import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{BagTrackerFixtures, StorageManifestDaoFixture}
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
-import uk.ac.wellcome.platform.archive.common.fixtures.HttpFixtures
 import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi
@@ -25,6 +21,7 @@ import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.services.s3.S3Uploader
 import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
 import weco.http.WellcomeHttpApp
+import weco.http.fixtures.HttpFixtures
 import weco.http.models.HTTPServerConfig
 import weco.http.monitoring.HttpMetrics
 
@@ -40,19 +37,20 @@ trait BagsApiFixture
     with HttpFixtures
     with BagTrackerFixtures {
 
-  override val metricsName = "BagsApiFixture"
+  val metricsName = "BagsApiFixture"
 
-  override val contextURLTest = new URL(
+  val contextURLTest = new URL(
     "http://api.wellcomecollection.org/storage/v1/context.json"
   )
 
-  private def withApp[R](
+  private def withBaseApi[R](
     metrics: MemoryMetrics,
     maxResponseByteLength: Long,
     locationPrefix: S3ObjectLocationPrefix,
     storageManifestDao: StorageManifestDao,
     uploader: S3Uploader
-  )(testWith: TestWith[WellcomeHttpApp, R]): R =
+  )(testWith: TestWith[WellcomeHttpApp, R]): R = {
+
     withActorSystem { implicit actorSystem =>
       withMaterializer { implicit mat =>
         withBagTrackerClient(storageManifestDao) { trackerClient =>
@@ -77,20 +75,13 @@ trait BagsApiFixture
             override val maximumResponseByteLength: Long = maxResponseByteLength
           }
 
-          val app = new WellcomeHttpApp(
-            routes = router.bags,
-            httpMetrics = httpMetrics,
-            httpServerConfig = httpServerConfigTest,
-            contextUrl = contextURLTest,
-            appName = metricsName
-          )
-
-          app.run()
-
-          testWith(app)
+          withApp(router.bags, Some(httpMetrics), Some(actorSystem)) { app =>
+            testWith(app)
+          }
         }
       }
     }
+  }
 
   def withConfiguredApp[R](
     initialManifests: Seq[StorageManifest] = Seq.empty,
@@ -108,7 +99,7 @@ trait BagsApiFixture
 
     val metrics = new MemoryMetrics()
 
-    withApp(
+    withBaseApi(
       metrics = metrics,
       maxResponseByteLength = maxResponseByteLength,
       locationPrefix = locationPrefix,
@@ -150,7 +141,7 @@ trait BagsApiFixture
     val prefix = createS3ObjectLocationPrefix
     val uploader = new S3Uploader()
 
-    withApp(metrics, maxResponseByteLength, prefix, brokenDao, uploader) { _ =>
+    withBaseApi(metrics, maxResponseByteLength, prefix, brokenDao, uploader) { _ =>
       testWith((metrics, httpServerConfigTest.externalBaseURL))
     }
   }
