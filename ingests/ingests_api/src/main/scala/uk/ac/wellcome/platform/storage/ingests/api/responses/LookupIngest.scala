@@ -27,10 +27,12 @@ trait LookupIngest extends FutureDirectives with Logging {
       .getIngest(IngestID(id))
       .map {
         case Right(ingest) =>
-          complete(ResponseDisplayIngest(
-            ingest = ingest,
-            contextUrl = contextUrl
-          ))
+          complete(
+            ResponseDisplayIngest(
+              ingest = ingest,
+              contextUrl = contextUrl
+            )
+          )
         case Left(_: IngestTrackerNotFoundError) =>
           complete(
             StatusCodes.NotFound -> ContextResponse(
