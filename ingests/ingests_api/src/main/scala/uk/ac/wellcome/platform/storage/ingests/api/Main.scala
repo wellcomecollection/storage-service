@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.storage.ingests.api
 
+import java.net.URL
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.Uri
 import com.typesafe.config.Config
@@ -8,10 +10,7 @@ import uk.ac.wellcome.messaging.sns.SNSConfig
 import uk.ac.wellcome.messaging.typesafe.SNSBuilder
 import uk.ac.wellcome.monitoring.typesafe.CloudWatchBuilder
 import uk.ac.wellcome.platform.storage.ingests.api.services.IngestCreator
-import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
-  AkkaIngestTrackerClient,
-  IngestTrackerClient
-}
+import uk.ac.wellcome.platform.storage.ingests_tracker.client.{AkkaIngestTrackerClient, IngestTrackerClient}
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
@@ -52,7 +51,7 @@ object Main extends WellcomeTypesafeApp {
 
       override val httpServerConfig: HTTPServerConfig = httpServerConfigMain
 
-      override def context: String = contextURLMain.toString
+      override def contextUrl: URL = contextURLMain
 
       override implicit val ec: ExecutionContext = executionContext
     }
@@ -68,8 +67,8 @@ object Main extends WellcomeTypesafeApp {
       routes = router.ingests,
       httpMetrics = httpMetrics,
       httpServerConfig = httpServerConfigMain,
-      contextURL = contextURLMain,
-      appName = appName
+      appName = appName,
+      contextUrl = contextURLMain
     )
   }
 }

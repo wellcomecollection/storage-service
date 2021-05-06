@@ -11,14 +11,11 @@ import uk.ac.wellcome.platform.storage.bags.api.models.DisplayBagVersionList
 import weco.http.FutureDirectives
 import weco.http.models.ContextResponse
 
-import java.net.URL
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 trait LookupBagVersions extends FutureDirectives {
   val bagTrackerClient: BagTrackerClient
-
-  val contextURL: URL
 
   implicit val ec: ExecutionContext
 
@@ -62,7 +59,7 @@ trait LookupBagVersions extends FutureDirectives {
         case Right(bagVersionList) =>
           complete(
             ContextResponse(
-              context = contextURL,
+              contextUrl = contextUrl,
               DisplayBagVersionList(bagVersionList)
             )
           )

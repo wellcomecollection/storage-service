@@ -65,7 +65,7 @@ trait BagsApiFixture
             override val httpServerConfig: HTTPServerConfig =
               httpServerConfigTest
             override implicit val ec: ExecutionContext = global
-            override val contextURL: URL = contextURLTest
+            override val contextUrl: URL = contextURLTest
 
             override val bagTrackerClient: BagTrackerClient = trackerClient
 
@@ -81,7 +81,7 @@ trait BagsApiFixture
             routes = router.bags,
             httpMetrics = httpMetrics,
             httpServerConfig = httpServerConfigTest,
-            contextURL = contextURLTest,
+            contextUrl = contextURLTest,
             appName = metricsName
           )
 

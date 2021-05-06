@@ -1,6 +1,5 @@
 package uk.ac.wellcome.platform.storage.ingests.api.responses
 
-import java.net.URL
 import java.util.UUID
 
 import akka.http.scaladsl.model.StatusCodes
@@ -28,11 +27,14 @@ trait LookupIngest extends FutureDirectives with Logging {
       .getIngest(IngestID(id))
       .map {
         case Right(ingest) =>
-          complete(ResponseDisplayIngest(ingest, new URL(context)))
+          complete(ResponseDisplayIngest(
+            ingest = ingest,
+            contextUrl = contextUrl
+          ))
         case Left(_: IngestTrackerNotFoundError) =>
           complete(
             StatusCodes.NotFound -> ContextResponse(
-              context = context,
+              contextUrl = contextUrl,
               DisplayError(
                 statusCode = StatusCodes.NotFound,
                 description = s"Ingest $id not found"
@@ -43,7 +45,7 @@ trait LookupIngest extends FutureDirectives with Logging {
           error(s"Unexpected error from ingest tracker for $id: $err")
           complete(
             StatusCodes.InternalServerError -> ContextResponse(
-              context = context,
+              contextUrl = contextUrl,
               DisplayError(statusCode = StatusCodes.InternalServerError)
             )
           )
@@ -53,7 +55,7 @@ trait LookupIngest extends FutureDirectives with Logging {
           error(s"Unexpected error while calling ingest tracker $id: $err")
           complete(
             StatusCodes.InternalServerError -> ContextResponse(
-              context = context,
+              contextUrl = contextUrl,
               DisplayError(statusCode = StatusCodes.InternalServerError)
             )
           )

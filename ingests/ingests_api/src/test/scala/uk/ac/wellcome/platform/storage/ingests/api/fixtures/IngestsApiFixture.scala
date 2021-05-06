@@ -62,7 +62,7 @@ trait IngestsApiFixture
 
         override val httpServerConfig: HTTPServerConfig =
           httpServerConfigTest
-        override val context = contextURLTest.toString
+        override val contextUrl = contextURLTest
         override val ingestCreator: IngestCreator[String] =
           ingestCreatorInstance
       }
@@ -71,8 +71,8 @@ trait IngestsApiFixture
         routes = ingestsApi.ingests,
         httpMetrics = httpMetrics,
         httpServerConfig = httpServerConfigTest,
-        contextURL = contextURLTest,
-        appName = metricsName
+        appName = metricsName,
+        contextUrl = contextURLTest
       )
 
       app.run()
