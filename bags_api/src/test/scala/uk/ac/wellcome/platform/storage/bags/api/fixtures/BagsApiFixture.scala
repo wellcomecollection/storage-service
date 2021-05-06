@@ -2,6 +2,9 @@ package uk.ac.wellcome.platform.storage.bags.api.fixtures
 
 import java.net.URL
 
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.HttpMethods.GET
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
 import org.scalatest.concurrent.ScalaFutures
@@ -43,7 +46,7 @@ trait BagsApiFixture
     "http://api.wellcomecollection.org/storage/v1/context.json"
   )
 
-  private def withBaseApi[R](
+  private def withBagsApi[R](
     metrics: MemoryMetrics,
     maxResponseByteLength: Long,
     locationPrefix: S3ObjectLocationPrefix,
@@ -88,7 +91,7 @@ trait BagsApiFixture
     locationPrefix: S3ObjectLocationPrefix = createS3ObjectLocationPrefix,
     maxResponseByteLength: Long = 1048576
   )(
-    testWith: TestWith[(StorageManifestDao, MemoryMetrics, String), R]
+    testWith: TestWith[(StorageManifestDao, MemoryMetrics), R]
   )(implicit s3Client: AmazonS3): R = {
     val dao = createStorageManifestDao()
     val uploader = new S3Uploader()
@@ -99,19 +102,19 @@ trait BagsApiFixture
 
     val metrics = new MemoryMetrics()
 
-    withBaseApi(
+    withBagsApi(
       metrics = metrics,
       maxResponseByteLength = maxResponseByteLength,
       locationPrefix = locationPrefix,
       storageManifestDao = dao,
       uploader = uploader
     ) { _ =>
-      testWith((dao, metrics, httpServerConfigTest.externalBaseURL))
+      testWith((dao, metrics))
     }
   }
 
   def withBrokenApp[R](
-    testWith: TestWith[(MemoryMetrics, String), R]
+    testWith: TestWith[MemoryMetrics, R]
   ): R = {
     val versionedStore = MemoryVersionedStore[BagId, StorageManifest](
       initialEntries = Map.empty
@@ -141,8 +144,30 @@ trait BagsApiFixture
     val prefix = createS3ObjectLocationPrefix
     val uploader = new S3Uploader()
 
-    withBaseApi(metrics, maxResponseByteLength, prefix, brokenDao, uploader) { _ =>
-      testWith((metrics, httpServerConfigTest.externalBaseURL))
+    withBagsApi(metrics, maxResponseByteLength, prefix, brokenDao, uploader) { _ =>
+      testWith(metrics)
+    }
+  }
+
+  private def whenRequestReady[R](
+                                   r: HttpRequest
+                                 )(testWith: TestWith[HttpResponse, R]): R =
+    withActorSystem { implicit actorSystem =>
+      val request = Http().singleRequest(r)
+      whenReady(request) { response: HttpResponse =>
+        testWith(response)
+      }
+    }
+
+  def whenAbsoluteGetRequestReady[R](path: String)(
+    testWith: TestWith[HttpResponse, R]): R = {
+    val request = HttpRequest(
+      method = GET,
+      uri = s"$path"
+    )
+
+    whenRequestReady(request) { response =>
+      testWith(response)
     }
   }
 }

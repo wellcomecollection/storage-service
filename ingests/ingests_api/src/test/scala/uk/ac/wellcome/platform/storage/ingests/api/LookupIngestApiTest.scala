@@ -38,7 +38,7 @@ class LookupIngestApiTest
 
     withConfiguredApp(initialIngests = Seq(ingest)) {
       case (_, _, metrics, baseUrl) =>
-        whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") { result =>
+        whenGetRequestReady(s"/ingests/${ingest.id}") { result =>
           result.status shouldBe StatusCodes.OK
 
           val sourceLocation =
@@ -123,7 +123,7 @@ class LookupIngestApiTest
 
     withConfiguredApp(initialIngests = Seq(ingest)) {
       case (_, _, _, baseUrl) =>
-        whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") { result =>
+        whenGetRequestReady(s"/ingests/${ingest.id}") { result =>
           withStringEntity(result.entity) { jsonString =>
             val json = parse(jsonString).value
             root.bag.info.version.string.getOption(json) shouldBe Some("v3")
@@ -137,7 +137,7 @@ class LookupIngestApiTest
 
     withConfiguredApp(initialIngests = Seq(ingest)) {
       case (_, _, metrics, baseUrl) =>
-        whenGetRequestReady(s"$baseUrl/ingests/${ingest.id}") { result =>
+        whenGetRequestReady(s"/ingests/${ingest.id}") { result =>
           result.status shouldBe StatusCodes.OK
           withStringEntity(result.entity) { jsonString =>
             val infoJson = parse(jsonString).right.get
@@ -157,8 +157,8 @@ class LookupIngestApiTest
     withConfiguredApp() {
       case (_, _, metrics, baseUrl) =>
         val id = randomUUID
-        whenGetRequestReady(s"$baseUrl/ingests/$id") { response =>
-          assertIsUserErrorResponse(
+        whenGetRequestReady(s"/ingests/$id") { response =>
+          assertIsDisplayError(
             response,
             description = s"Ingest $id not found",
             statusCode = StatusCodes.NotFound
@@ -176,8 +176,11 @@ class LookupIngestApiTest
   it("returns a 500 Server Error if looking up the ingest fails") {
     withBrokenApp {
       case (_, _, metrics, baseUrl) =>
-        whenGetRequestReady(s"$baseUrl/ingests/$createIngestID") { response =>
-          assertIsInternalServerErrorResponse(response)
+        whenGetRequestReady(s"/ingests/$createIngestID") { response =>
+          assertIsDisplayError(
+            response,
+            statusCode = StatusCodes.InternalServerError
+          )
 
           assertMetricSent(
             metricsName,

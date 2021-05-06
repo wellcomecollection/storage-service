@@ -42,7 +42,7 @@ class CreateIngestApiTest
   it("creates an ingest") {
     withConfiguredApp() {
       case (ingestTracker, messageSender, metrics, baseUrl) =>
-        val url = s"$baseUrl/ingests"
+        val url = s"/ingests"
 
         val bucketName = "bucket"
         val s3key = "bag.tar.gz"
@@ -132,7 +132,7 @@ class CreateIngestApiTest
   it("allows requesting an ingestType 'create'") {
     withConfiguredApp() {
       case (_, messageSender, metrics, baseUrl) =>
-        val url = s"$baseUrl/ingests"
+        val url = s"/ingests"
 
         val entity = createRequestWith(
           ingestType = "create"
@@ -160,7 +160,7 @@ class CreateIngestApiTest
   it("allows requesting an ingestType 'update'") {
     withConfiguredApp() {
       case (_, messageSender, metrics, baseUrl) =>
-        val url = s"$baseUrl/ingests"
+        val url = s"/ingests"
 
         val entity = createRequestWith(
           ingestType = "update"
@@ -188,7 +188,7 @@ class CreateIngestApiTest
   it("creates an ingest with a slash in the external identifier") {
     withConfiguredApp() {
       case (_, _, _, baseUrl) =>
-        val url = s"$baseUrl/ingests"
+        val url = s"/ingests"
 
         val externalIdentifier = ExternalIdentifier("PP/MIA/1")
 
@@ -460,9 +460,12 @@ class CreateIngestApiTest
   it("returns a 500 Server Error if updating the ingest starter fails") {
     withBrokenApp {
       case (_, _, metrics, baseUrl) =>
-        whenPostRequestReady(s"$baseUrl/ingests/$randomUUID", createRequest) {
+        whenPostRequestReady(s"/ingests/$randomUUID", createRequest) {
           response =>
-            assertIsInternalServerErrorResponse(response)
+            assertIsDisplayError(
+              response,
+              statusCode = StatusCodes.InternalServerError
+            )
 
             assertMetricSent(
               metricsName,
@@ -544,8 +547,8 @@ class CreateIngestApiTest
     expectedMessage: String
   ) = {
     withConfiguredApp() {
-      case (_, messageSender, metrics, baseUrl) =>
-        val url = s"$baseUrl/ingests"
+      case (_, messageSender, metrics, _) =>
+        val url = s"/ingests"
 
         val entity = HttpEntity(
           contentType = contentType,
@@ -553,7 +556,7 @@ class CreateIngestApiTest
         )
 
         whenPostRequestReady(url, entity) { response: HttpResponse =>
-          assertIsUserErrorResponse(
+          assertIsDisplayError(
             response = response,
             description = expectedMessage,
             statusCode = expectedStatusCode
