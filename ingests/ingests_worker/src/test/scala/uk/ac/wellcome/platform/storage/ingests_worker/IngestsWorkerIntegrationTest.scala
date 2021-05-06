@@ -12,7 +12,11 @@ import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Succeeded
-import uk.ac.wellcome.platform.archive.common.ingests.models.{CallbackNotification, Ingest, IngestUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  CallbackNotification,
+  Ingest,
+  IngestUpdate
+}
 import uk.ac.wellcome.platform.storage.ingests_tracker.client.AkkaIngestTrackerClient
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 import uk.ac.wellcome.platform.storage.ingests_worker.fixtures.IngestsWorkerFixtures

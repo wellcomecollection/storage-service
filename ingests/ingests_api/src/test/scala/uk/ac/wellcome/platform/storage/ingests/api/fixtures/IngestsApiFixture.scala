@@ -13,8 +13,14 @@ import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.storage.ingests.api.IngestsApi
 import uk.ac.wellcome.platform.storage.ingests.api.services.IngestCreator
-import uk.ac.wellcome.platform.storage.ingests_tracker.client.{AkkaIngestTrackerClient, IngestTrackerClient}
-import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.{IngestTrackerFixtures, IngestsTrackerApiFixture}
+import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
+  AkkaIngestTrackerClient,
+  IngestTrackerClient
+}
+import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.{
+  IngestTrackerFixtures,
+  IngestsTrackerApiFixture
+}
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.memory.MemoryIngestTracker
 import weco.http.WellcomeHttpApp
 import weco.http.fixtures.HttpFixtures
@@ -24,7 +30,6 @@ import weco.http.monitoring.HttpMetrics
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
-
 
 trait IngestsApiFixture
     extends IngestGenerators

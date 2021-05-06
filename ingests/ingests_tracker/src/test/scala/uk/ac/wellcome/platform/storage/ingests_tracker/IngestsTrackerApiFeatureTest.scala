@@ -16,7 +16,10 @@ import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
 import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{Failed, Succeeded}
+import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
+  Failed,
+  Succeeded
+}
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.IngestDoesNotExistError
