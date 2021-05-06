@@ -8,7 +8,10 @@ import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.bag_tracker.client.BagTrackerClient
-import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{BagTrackerFixtures, StorageManifestDaoFixture}
+import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{
+  BagTrackerFixtures,
+  StorageManifestDaoFixture
+}
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
@@ -141,8 +144,9 @@ trait BagsApiFixture
     val prefix = createS3ObjectLocationPrefix
     val uploader = new S3Uploader()
 
-    withBaseApi(metrics, maxResponseByteLength, prefix, brokenDao, uploader) { _ =>
-      testWith((metrics, httpServerConfigTest.externalBaseURL))
+    withBaseApi(metrics, maxResponseByteLength, prefix, brokenDao, uploader) {
+      _ =>
+        testWith((metrics, httpServerConfigTest.externalBaseURL))
     }
   }
 }
