@@ -75,20 +75,19 @@ class LookupBagApiTest
     }
 
     it("returns a 500 if looking up the latest version fails") {
-      withBrokenApp {
-        metrics =>
-          whenGetRequestReady(s"/bags/$createBagId") { response =>
-            assertIsDisplayError(
-              response = response,
-              statusCode = StatusCodes.InternalServerError
-            )
+      withBrokenApp { metrics =>
+        whenGetRequestReady(s"/bags/$createBagId") { response =>
+          assertIsDisplayError(
+            response = response,
+            statusCode = StatusCodes.InternalServerError
+          )
 
-            assertMetricSent(
-              metricsName,
-              metrics,
-              result = HttpMetricResults.ServerError
-            )
-          }
+          assertMetricSent(
+            metricsName,
+            metrics,
+            result = HttpMetricResults.ServerError
+          )
+        }
       }
     }
   }
@@ -190,10 +189,11 @@ class LookupBagApiTest
 
                 val redirectedUrl = response.header[Location].get.uri.toString()
 
-                whenAbsoluteGetRequestReady(redirectedUrl) { redirectedResponse =>
-                  withStringEntity(redirectedResponse.entity) {
-                    assertJsonMatches(_, storageManifest)
-                  }
+                whenAbsoluteGetRequestReady(redirectedUrl) {
+                  redirectedResponse =>
+                    withStringEntity(redirectedResponse.entity) {
+                      assertJsonMatches(_, storageManifest)
+                    }
                 }
               }
             }
@@ -386,19 +386,18 @@ class LookupBagApiTest
 
       withConfiguredApp() {
         case (_, metrics) =>
-          whenGetRequestReady(s"/bags/$bagId?version=$badVersion") {
-            response =>
-              assertIsDisplayError(
-                response = response,
-                description = s"Storage manifest $bagId $badVersion not found",
-                statusCode = StatusCodes.NotFound
-              )
+          whenGetRequestReady(s"/bags/$bagId?version=$badVersion") { response =>
+            assertIsDisplayError(
+              response = response,
+              description = s"Storage manifest $bagId $badVersion not found",
+              statusCode = StatusCodes.NotFound
+            )
 
-              assertMetricSent(
-                metricsName,
-                metrics,
-                result = HttpMetricResults.UserError
-              )
+            assertMetricSent(
+              metricsName,
+              metrics,
+              result = HttpMetricResults.UserError
+            )
           }
       }
     }
@@ -446,17 +445,16 @@ class LookupBagApiTest
   it("returns a 500 error if looking up a specific version of a bag fails") {
     withBrokenApp {
       case metrics =>
-        whenGetRequestReady(s"/bags/$createBagId?version=v1") {
-          response =>
-            assertIsDisplayError(
-              response = response,
-              statusCode = StatusCodes.InternalServerError
-            )
-            assertMetricSent(
-              metricsName,
-              metrics,
-              result = HttpMetricResults.ServerError
-            )
+        whenGetRequestReady(s"/bags/$createBagId?version=v1") { response =>
+          assertIsDisplayError(
+            response = response,
+            statusCode = StatusCodes.InternalServerError
+          )
+          assertMetricSent(
+            metricsName,
+            metrics,
+            result = HttpMetricResults.ServerError
+          )
         }
     }
   }

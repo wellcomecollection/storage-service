@@ -4,12 +4,24 @@ import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestID,
+  IngestUpdate
+}
 import uk.ac.wellcome.platform.storage.ingests_tracker.IngestsTrackerApi
-import uk.ac.wellcome.platform.storage.ingests_tracker.services.{CallbackNotificationService, MessagingService}
+import uk.ac.wellcome.platform.storage.ingests_tracker.services.{
+  CallbackNotificationService,
+  MessagingService
+}
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.IngestStoreUnexpectedError
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.memory.MemoryIngestTracker
-import uk.ac.wellcome.storage.{StoreReadError, StoreWriteError, UpdateWriteError, Version}
+import uk.ac.wellcome.storage.{
+  StoreReadError,
+  StoreWriteError,
+  UpdateWriteError,
+  Version
+}
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 

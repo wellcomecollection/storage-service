@@ -148,14 +148,15 @@ trait BagsApiFixture
     val prefix = createS3ObjectLocationPrefix
     val uploader = new S3Uploader()
 
-    withBagsApi(metrics, maxResponseByteLength, prefix, brokenDao, uploader) { _ =>
-      testWith(metrics)
+    withBagsApi(metrics, maxResponseByteLength, prefix, brokenDao, uploader) {
+      _ =>
+        testWith(metrics)
     }
   }
 
   private def whenRequestReady[R](
-                                   r: HttpRequest
-                                 )(testWith: TestWith[HttpResponse, R]): R =
+    r: HttpRequest
+  )(testWith: TestWith[HttpResponse, R]): R =
     withActorSystem { implicit actorSystem =>
       val request = Http().singleRequest(r)
       whenReady(request) { response: HttpResponse =>
@@ -163,8 +164,9 @@ trait BagsApiFixture
       }
     }
 
-  def whenAbsoluteGetRequestReady[R](path: String)(
-    testWith: TestWith[HttpResponse, R]): R = {
+  def whenAbsoluteGetRequestReady[R](
+    path: String
+  )(testWith: TestWith[HttpResponse, R]): R = {
     val request = HttpRequest(
       method = GET,
       uri = s"$path"

@@ -333,18 +333,17 @@ class LookupBagVersionsApiTest
   it("returns a 500 if looking up the lists of versions fails") {
     withBrokenApp {
       case metrics =>
-        whenGetRequestReady(s"/bags/$createBagId/versions") {
-          response =>
-            assertIsDisplayError(
-              response = response,
-              statusCode = StatusCodes.InternalServerError
-            )
+        whenGetRequestReady(s"/bags/$createBagId/versions") { response =>
+          assertIsDisplayError(
+            response = response,
+            statusCode = StatusCodes.InternalServerError
+          )
 
-            assertMetricSent(
-              metricsName,
-              metrics,
-              result = HttpMetricResults.ServerError
-            )
+          assertMetricSent(
+            metricsName,
+            metrics,
+            result = HttpMetricResults.ServerError
+          )
         }
     }
   }
