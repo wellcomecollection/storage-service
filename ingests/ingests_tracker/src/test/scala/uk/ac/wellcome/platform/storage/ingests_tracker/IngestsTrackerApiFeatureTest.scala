@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.storage.ingests_tracker
 
+import java.net.URL
 import java.time.Instant
 
 import akka.http.scaladsl.Http
@@ -31,6 +32,8 @@ class IngestsTrackerApiFeatureTest
     with IntegrationPatience
     with EitherValues
     with StorageRandomGenerators {
+
+  override def contextUrl = new URL("http://www.example.com")
 
   describe("GET /healthcheck") {
     val path = s"http://localhost:8080/healthcheck"

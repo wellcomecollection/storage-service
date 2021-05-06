@@ -36,6 +36,8 @@ trait IngestsApiFixture
     "http://api.wellcomecollection.org/storage/v1/context.json"
   )
 
+  override def contextUrl = contextURLTest
+
   val metricsName = "IngestsApiFixture"
 
   private def withIngestsApi[R](

@@ -11,7 +11,10 @@ import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.bag_tracker.client.BagTrackerClient
-import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{BagTrackerFixtures, StorageManifestDaoFixture}
+import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{
+  BagTrackerFixtures,
+  StorageManifestDaoFixture
+}
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
@@ -42,9 +45,10 @@ trait BagsApiFixture
 
   val metricsName = "BagsApiFixture"
 
-  val contextURLTest = new URL(
+  val contextUrlTest = new URL(
     "http://api.wellcomecollection.org/storage/v1/context.json"
   )
+  override def contextUrl = contextUrlTest
 
   private def withBagsApi[R](
     metrics: MemoryMetrics,
@@ -66,7 +70,7 @@ trait BagsApiFixture
             override val httpServerConfig: HTTPServerConfig =
               httpServerConfigTest
             override implicit val ec: ExecutionContext = global
-            override val contextUrl: URL = contextURLTest
+            override val contextUrl: URL = contextUrlTest
 
             override val bagTrackerClient: BagTrackerClient = trackerClient
 
