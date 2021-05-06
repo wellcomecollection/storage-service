@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.storage.ingests_worker
 
+import java.net.URL
+
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
@@ -18,6 +20,8 @@ class IngestsWorkerFeatureTest
     with IngestsWorkerFixtures
     with IngestGenerators
     with IntegrationPatience {
+
+  override def contextUrl = new URL("http://www.example.com")
 
   val visibilityTimeoutInSeconds = 1
 
