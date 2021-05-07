@@ -97,7 +97,7 @@ class IngestsTrackerApiFeatureTest
     describe("with an existing Ingest") {
       withIngestsTrackerApi(Seq(ingest)) {
         case (callbackSender, ingestsSender, ingestTracker) =>
-          whenPostRequestReady(path, ingestEntity) { response =>
+          whenAbsolutePostRequestReady(path, ingestEntity) { response =>
             it("responds Conflict") {
               response.status shouldBe StatusCodes.Conflict
             }
@@ -123,7 +123,7 @@ class IngestsTrackerApiFeatureTest
     describe("with bad JSON") {
       withIngestsTrackerApi(Seq(ingest)) {
         case (callbackSender, ingestsSender, ingestTracker) =>
-          whenPostRequestReady(path, badEntity) { response =>
+          whenAbsolutePostRequestReady(path, badEntity) { response =>
             it("responds BadRequest") {
               response.status shouldBe StatusCodes.BadRequest
             }
@@ -149,7 +149,7 @@ class IngestsTrackerApiFeatureTest
     describe("when broken") {
       withBrokenIngestsTrackerApi {
         case (callbackSender, ingestsSender, _) =>
-          whenPostRequestReady(path, ingestEntity) { response =>
+          whenAbsolutePostRequestReady(path, ingestEntity) { response =>
             it("responds InternalServerError") {
               response.status shouldBe StatusCodes.InternalServerError
             }
@@ -450,7 +450,7 @@ class IngestsTrackerApiFeatureTest
 
     it("responds NotFound when there is no ingest") {
       withIngestsTrackerApi(Seq(ingest)) { _ =>
-        whenGetRequestReady(badPath) { response =>
+        whenAbsoluteGetRequestReady(badPath) { response =>
           response.status shouldBe StatusCodes.NotFound
         }
       }
@@ -458,7 +458,7 @@ class IngestsTrackerApiFeatureTest
 
     it("responds OK with an Ingest when available") {
       withIngestsTrackerApi(Seq(ingest)) { _ =>
-        whenGetRequestReady(path) { response =>
+        whenAbsoluteGetRequestReady(path) { response =>
           response.status shouldBe StatusCodes.OK
 
           // We are interested in whether we can serialise/de-serialise
@@ -473,7 +473,7 @@ class IngestsTrackerApiFeatureTest
 
     it("responds InternalServerError when broken") {
       withBrokenIngestsTrackerApi { _ =>
-        whenGetRequestReady(path) { response =>
+        whenAbsoluteGetRequestReady(path) { response =>
           response.status shouldBe StatusCodes.InternalServerError
         }
       }
