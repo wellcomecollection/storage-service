@@ -1,5 +1,9 @@
 package uk.ac.wellcome.platform.storage.ingests_tracker.fixtures
 
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.HttpMethods.{GET, POST}
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse, RequestEntity}
+import org.scalatest.concurrent.ScalaFutures.whenReady
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
@@ -111,6 +115,46 @@ trait IngestsTrackerApiFixture
       val out = (callbackSender, ingestsSender, ingestTracker)
 
       testWith(out)
+    }
+  }
+
+  private def whenRequestReady[R](
+    r: HttpRequest
+  )(testWith: TestWith[HttpResponse, R]): R =
+    withActorSystem { implicit actorSystem =>
+      val request = Http().singleRequest(r)
+      whenReady(request) { response: HttpResponse =>
+        testWith(response)
+      }
+    }
+
+  def whenAbsoluteGetRequestReady[R](
+    path: String
+  )(testWith: TestWith[HttpResponse, R]): R = {
+    val request = HttpRequest(
+      method = GET,
+      uri = s"$path"
+    )
+
+    whenRequestReady(request) { response =>
+      testWith(response)
+    }
+  }
+
+  def whenAbsolutePostRequestReady[R](
+    path: String,
+    entity: RequestEntity
+  )(
+    testWith: TestWith[HttpResponse, R]
+  ): R = {
+    val request = HttpRequest(
+      method = POST,
+      uri = s"$path",
+      entity = entity
+    )
+
+    whenRequestReady(request) { response =>
+      testWith(response)
     }
   }
 }

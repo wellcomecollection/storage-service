@@ -1,5 +1,7 @@
 package uk.ac.wellcome.platform.storage.ingests_worker.services
 
+import java.net.URL
+
 import akka.http.scaladsl.model.Uri
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
@@ -11,7 +13,6 @@ import uk.ac.wellcome.messaging.worker.models.{
   Result,
   Successful
 }
-import uk.ac.wellcome.platform.archive.common.fixtures.HttpFixtures
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
   AkkaIngestTrackerClient,
@@ -19,6 +20,7 @@ import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
 }
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 import uk.ac.wellcome.platform.storage.ingests_worker.fixtures.IngestsWorkerFixtures
+import weco.http.fixtures.HttpFixtures
 
 class IngestsWorkerServiceTest
     extends AnyFunSpec
@@ -31,6 +33,8 @@ class IngestsWorkerServiceTest
     with IntegrationPatience {
 
   val visibilityTimeout = 5
+
+  override def contextUrl = new URL("http://www.example.com")
 
   describe("When the client succeeds") {
     it("returns Successful") {

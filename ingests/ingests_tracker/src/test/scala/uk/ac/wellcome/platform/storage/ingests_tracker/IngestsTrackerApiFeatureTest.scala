@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.storage.ingests_tracker
 
+import java.net.URL
 import java.time.Instant
 
 import akka.http.scaladsl.Http
@@ -14,7 +15,6 @@ import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.common.fixtures.HttpFixtures
 import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
   Failed,
@@ -23,6 +23,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.IngestDoesNotExistError
+import weco.http.fixtures.HttpFixtures
 
 class IngestsTrackerApiFeatureTest
     extends AnyFunSpec
@@ -35,12 +36,14 @@ class IngestsTrackerApiFeatureTest
     with EitherValues
     with StorageRandomGenerators {
 
+  override def contextUrl = new URL("http://www.example.com")
+
   describe("GET /healthcheck") {
     val path = s"http://localhost:8080/healthcheck"
 
     it("responds OK") {
       withIngestsTrackerApi() { _ =>
-        whenGetRequestReady(path) { result =>
+        whenAbsoluteGetRequestReady(path) { result =>
           result.status shouldBe StatusCodes.OK
         }
       }
@@ -68,7 +71,7 @@ class IngestsTrackerApiFeatureTest
     describe("with a valid Ingest") {
       withIngestsTrackerApi() {
         case (callbackSender, ingestsSender, ingestTracker) =>
-          whenPostRequestReady(path, ingestEntity) { response =>
+          whenAbsolutePostRequestReady(path, ingestEntity) { response =>
             it("responds Created") {
               response.status shouldBe StatusCodes.Created
             }
@@ -94,7 +97,7 @@ class IngestsTrackerApiFeatureTest
     describe("with an existing Ingest") {
       withIngestsTrackerApi(Seq(ingest)) {
         case (callbackSender, ingestsSender, ingestTracker) =>
-          whenPostRequestReady(path, ingestEntity) { response =>
+          whenAbsolutePostRequestReady(path, ingestEntity) { response =>
             it("responds Conflict") {
               response.status shouldBe StatusCodes.Conflict
             }
@@ -120,7 +123,7 @@ class IngestsTrackerApiFeatureTest
     describe("with bad JSON") {
       withIngestsTrackerApi(Seq(ingest)) {
         case (callbackSender, ingestsSender, ingestTracker) =>
-          whenPostRequestReady(path, badEntity) { response =>
+          whenAbsolutePostRequestReady(path, badEntity) { response =>
             it("responds BadRequest") {
               response.status shouldBe StatusCodes.BadRequest
             }
@@ -146,7 +149,7 @@ class IngestsTrackerApiFeatureTest
     describe("when broken") {
       withBrokenIngestsTrackerApi {
         case (callbackSender, ingestsSender, _) =>
-          whenPostRequestReady(path, ingestEntity) { response =>
+          whenAbsolutePostRequestReady(path, ingestEntity) { response =>
             it("responds InternalServerError") {
               response.status shouldBe StatusCodes.InternalServerError
             }
@@ -447,7 +450,7 @@ class IngestsTrackerApiFeatureTest
 
     it("responds NotFound when there is no ingest") {
       withIngestsTrackerApi(Seq(ingest)) { _ =>
-        whenGetRequestReady(badPath) { response =>
+        whenAbsoluteGetRequestReady(badPath) { response =>
           response.status shouldBe StatusCodes.NotFound
         }
       }
@@ -455,7 +458,7 @@ class IngestsTrackerApiFeatureTest
 
     it("responds OK with an Ingest when available") {
       withIngestsTrackerApi(Seq(ingest)) { _ =>
-        whenGetRequestReady(path) { response =>
+        whenAbsoluteGetRequestReady(path) { response =>
           response.status shouldBe StatusCodes.OK
 
           // We are interested in whether we can serialise/de-serialise
@@ -470,7 +473,7 @@ class IngestsTrackerApiFeatureTest
 
     it("responds InternalServerError when broken") {
       withBrokenIngestsTrackerApi { _ =>
-        whenGetRequestReady(path) { response =>
+        whenAbsoluteGetRequestReady(path) { response =>
           response.status shouldBe StatusCodes.InternalServerError
         }
       }

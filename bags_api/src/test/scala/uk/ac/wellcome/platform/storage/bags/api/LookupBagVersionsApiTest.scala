@@ -41,11 +41,11 @@ class LookupBagVersionsApiTest
 
   it("returns a 404 NotFound if there are no manifests for this bag ID") {
     withConfiguredApp() {
-      case (_, metrics, baseUrl) =>
+      case (_, metrics) =>
         val bagId = createBagId
-        whenGetRequestReady(s"$baseUrl/bags/$bagId/versions") { response =>
-          assertIsUserErrorResponse(
-            response,
+        whenGetRequestReady(s"/bags/$bagId/versions") { response =>
+          assertIsDisplayError(
+            response = response,
             description = s"No storage manifest versions found for $bagId",
             statusCode = StatusCodes.NotFound
           )
@@ -65,7 +65,7 @@ class LookupBagVersionsApiTest
     val initialManifests = Seq(storageManifest)
 
     withConfiguredApp(initialManifests) {
-      case (_, metrics, baseUrl) =>
+      case (_, metrics) =>
         val expectedJson =
           s"""
              |{
@@ -75,7 +75,7 @@ class LookupBagVersionsApiTest
              |}
             """.stripMargin
 
-        val url = s"$baseUrl/bags/${storageManifest.id}/versions"
+        val url = s"/bags/${storageManifest.id}/versions"
 
         whenGetRequestReady(url) { response =>
           response.status shouldBe StatusCodes.OK
@@ -108,7 +108,7 @@ class LookupBagVersionsApiTest
     }
 
     withConfiguredApp(initialManifests) {
-      case (_, metrics, baseUrl) =>
+      case (_, metrics) =>
         val expectedJson =
           s"""
              |{
@@ -139,7 +139,7 @@ class LookupBagVersionsApiTest
              |}
             """.stripMargin
 
-        val url = s"$baseUrl/bags/${storageManifest.id}/versions"
+        val url = s"/bags/${storageManifest.id}/versions"
 
         whenGetRequestReady(url) { response =>
           response.status shouldBe StatusCodes.OK
@@ -172,7 +172,7 @@ class LookupBagVersionsApiTest
     }
 
     withConfiguredApp(initialManifests) {
-      case (_, metrics, baseUrl) =>
+      case (_, metrics) =>
         val expectedJson =
           expectedVersionList(
             expectedVersionJson(multipleManifests(3), expectedVersion = "v3"),
@@ -180,7 +180,7 @@ class LookupBagVersionsApiTest
             expectedVersionJson(multipleManifests(1), expectedVersion = "v1")
           )
 
-        val url = s"$baseUrl/bags/${storageManifest.id}/versions?before=v4"
+        val url = s"/bags/${storageManifest.id}/versions?before=v4"
 
         whenGetRequestReady(url) { response =>
           response.status shouldBe StatusCodes.OK
@@ -231,12 +231,12 @@ class LookupBagVersionsApiTest
     forAll(testCases) {
       case (manifest, path) =>
         withConfiguredApp(initialManifests = Seq(manifest)) {
-          case (_, _, baseUrl) =>
+          case (_, _) =>
             val expectedJson = expectedVersionList(
               expectedVersionJson(manifest)
             )
 
-            whenGetRequestReady(s"$baseUrl/bags/$path") { response =>
+            whenGetRequestReady(s"/bags/$path") { response =>
               response.status shouldBe StatusCodes.OK
 
               withStringEntity(response.entity) {
@@ -264,12 +264,12 @@ class LookupBagVersionsApiTest
     }
 
     withConfiguredApp(initialManifests) {
-      case (_, metrics, baseUrl) =>
+      case (_, metrics) =>
         whenGetRequestReady(
-          s"$baseUrl/bags/${storageManifest.id}/versions?before=v4"
+          s"/bags/${storageManifest.id}/versions?before=v4"
         ) { response =>
-          assertIsUserErrorResponse(
-            response,
+          assertIsDisplayError(
+            response = response,
             description =
               s"No storage manifest versions found for ${storageManifest.id} before v4",
             statusCode = StatusCodes.NotFound
@@ -290,12 +290,12 @@ class LookupBagVersionsApiTest
     val badBefore = randomAlphanumeric()
 
     withConfiguredApp() {
-      case (_, metrics, baseUrl) =>
+      case (_, metrics) =>
         whenGetRequestReady(
-          s"$baseUrl/bags/$createBagId/versions?before=$badBefore"
+          s"/bags/$createBagId/versions?before=$badBefore"
         ) { response =>
-          assertIsUserErrorResponse(
-            response,
+          assertIsDisplayError(
+            response = response,
             description = s"Cannot parse version string: $badBefore",
             statusCode = StatusCodes.BadRequest
           )
@@ -313,10 +313,10 @@ class LookupBagVersionsApiTest
     val bagId = s"space/a.b"
 
     withConfiguredApp() {
-      case (_, metrics, baseUrl) =>
-        whenGetRequestReady(s"$baseUrl/bags/$bagId/versions") { response =>
-          assertIsUserErrorResponse(
-            response,
+      case (_, metrics) =>
+        whenGetRequestReady(s"/bags/$bagId/versions") { response =>
+          assertIsDisplayError(
+            response = response,
             description = s"No storage manifest versions found for $bagId",
             statusCode = StatusCodes.NotFound
           )
@@ -332,16 +332,18 @@ class LookupBagVersionsApiTest
 
   it("returns a 500 if looking up the lists of versions fails") {
     withBrokenApp {
-      case (metrics, baseUrl) =>
-        whenGetRequestReady(s"$baseUrl/bags/$createBagId/versions") {
-          response =>
-            assertIsInternalServerErrorResponse(response)
+      case metrics =>
+        whenGetRequestReady(s"/bags/$createBagId/versions") { response =>
+          assertIsDisplayError(
+            response = response,
+            statusCode = StatusCodes.InternalServerError
+          )
 
-            assertMetricSent(
-              metricsName,
-              metrics,
-              result = HttpMetricResults.ServerError
-            )
+          assertMetricSent(
+            metricsName,
+            metrics,
+            result = HttpMetricResults.ServerError
+          )
         }
     }
   }

@@ -27,8 +27,6 @@ trait BagsApi
     with LookupBagVersions
     with LookupExternalIdentifier {
 
-  def context: String = contextURL.toString
-
   private val routes: Route = pathPrefix("bags") {
     concat(
       // We look for /versions at the end of the path: this means we should
@@ -123,7 +121,7 @@ trait BagsApi
             case Failure(_) =>
               complete(
                 NotFound -> ContextResponse(
-                  context = contextURL,
+                  contextUrl = contextUrl,
                   DisplayError(
                     statusCode = StatusCodes.NotFound,
                     description =

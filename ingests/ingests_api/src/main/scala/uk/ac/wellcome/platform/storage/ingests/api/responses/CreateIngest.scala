@@ -1,7 +1,5 @@
 package uk.ac.wellcome.platform.storage.ingests.api.responses
 
-import java.net.URL
-
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server.Route
@@ -66,7 +64,7 @@ trait CreateIngest[UnpackerDestination] extends FutureDirectives with Logging {
     Future {
       complete(
         StatusCodes.BadRequest -> ContextResponse(
-          context = new URL(context),
+          contextUrl = contextUrl,
           DisplayError(
             statusCode = StatusCodes.BadRequest,
             description = description
@@ -92,8 +90,8 @@ trait CreateIngest[UnpackerDestination] extends FutureDirectives with Logging {
           respondWithHeaders(headers) {
             complete(
               StatusCodes.Created -> ResponseDisplayIngest(
-                ingest,
-                new URL(context)
+                ingest = ingest,
+                contextUrl = contextUrl
               )
             )
           }
@@ -104,7 +102,7 @@ trait CreateIngest[UnpackerDestination] extends FutureDirectives with Logging {
         case Left(_) =>
           complete(
             StatusCodes.InternalServerError -> ContextResponse(
-              context = new URL(context),
+              contextUrl = contextUrl,
               DisplayError(statusCode = StatusCodes.InternalServerError)
             )
           )
@@ -114,7 +112,7 @@ trait CreateIngest[UnpackerDestination] extends FutureDirectives with Logging {
           error(s"Unexpected error while creating ingest $ingest: $err")
           complete(
             StatusCodes.InternalServerError -> ContextResponse(
-              context = new URL(context),
+              contextUrl = contextUrl,
               DisplayError(statusCode = StatusCodes.InternalServerError)
             )
           )

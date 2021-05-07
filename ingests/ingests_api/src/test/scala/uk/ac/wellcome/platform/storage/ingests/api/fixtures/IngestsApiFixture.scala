@@ -2,11 +2,13 @@ package uk.ac.wellcome.platform.storage.ingests.api.fixtures
 
 import java.net.URL
 
+import akka.http.scaladsl.model.HttpEntity
+import io.circe.Decoder
 import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.json.JsonUtil.fromJson
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.monitoring.Metrics
 import uk.ac.wellcome.monitoring.memory.MemoryMetrics
-import uk.ac.wellcome.platform.archive.common.fixtures.HttpFixtures
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.storage.ingests.api.IngestsApi
@@ -21,9 +23,11 @@ import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.{
 }
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.memory.MemoryIngestTracker
 import weco.http.WellcomeHttpApp
+import weco.http.fixtures.HttpFixtures
 import weco.http.models.HTTPServerConfig
 import weco.http.monitoring.HttpMetrics
 
+import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -33,13 +37,15 @@ trait IngestsApiFixture
     with IngestTrackerFixtures
     with IngestsTrackerApiFixture {
 
-  override val contextURLTest = new URL(
+  val contextURLTest = new URL(
     "http://api.wellcomecollection.org/storage/v1/context.json"
   )
 
-  override val metricsName = "IngestsApiFixture"
+  override def contextUrl = contextURLTest
 
-  private def withApp[R](
+  val metricsName = "IngestsApiFixture"
+
+  private def withIngestsApi[R](
     unpackerSender: MemoryMessageSender,
     metrics: Metrics[Future]
   )(testWith: TestWith[WellcomeHttpApp, R]): R =
@@ -55,6 +61,7 @@ trait IngestsApiFixture
         ingestTrackerClient = ingestTrackerClient,
         unpackerMessageSender = unpackerSender
       )
+
       val ingestsApi = new IngestsApi[String] {
         override implicit val ec: ExecutionContext = global
         override val ingestTrackerClient: IngestTrackerClient =
@@ -62,22 +69,14 @@ trait IngestsApiFixture
 
         override val httpServerConfig: HTTPServerConfig =
           httpServerConfigTest
-        override val context = contextURLTest.toString
+        override val contextUrl = contextURLTest
         override val ingestCreator: IngestCreator[String] =
           ingestCreatorInstance
       }
 
-      val app = new WellcomeHttpApp(
-        routes = ingestsApi.ingests,
-        httpMetrics = httpMetrics,
-        httpServerConfig = httpServerConfigTest,
-        contextURL = contextURLTest,
-        appName = metricsName
-      )
-
-      app.run()
-
-      testWith(app)
+      withApp(ingestsApi.ingests, Some(httpMetrics), Some(actorSystem)) { app =>
+        testWith(app)
+      }
     }
 
   def withBrokenApp[R](
@@ -97,7 +96,7 @@ trait IngestsApiFixture
 
         val metrics = new MemoryMetrics()
 
-        withApp(messageSender, metrics) { _ =>
+        withIngestsApi(messageSender, metrics) { _ =>
           testWith(
             (
               ingestTracker,
@@ -126,7 +125,7 @@ trait IngestsApiFixture
 
         val metrics = new MemoryMetrics()
 
-        withApp(messageSender, metrics) { _ =>
+        withIngestsApi(messageSender, metrics) { _ =>
           testWith(
             (
               ingestTracker,
@@ -136,5 +135,19 @@ trait IngestsApiFixture
             )
           )
         }
+    }
+
+  def getT[T](entity: HttpEntity)(implicit decoder: Decoder[T]): T =
+    withMaterializer { implicit materializer =>
+      val timeout = 300.millis
+
+      val stringBody = entity
+        .toStrict(timeout)
+        .map(_.data)
+        .map(_.utf8String)
+        .value
+        .get
+        .get
+      fromJson[T](stringBody).get
     }
 }

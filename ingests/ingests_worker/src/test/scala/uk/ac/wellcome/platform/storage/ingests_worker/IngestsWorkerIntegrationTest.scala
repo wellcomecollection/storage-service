@@ -1,5 +1,6 @@
 package uk.ac.wellcome.platform.storage.ingests_worker
 
+import java.net.URL
 import java.time.Instant
 
 import akka.actor.ActorSystem
@@ -9,7 +10,6 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
-import uk.ac.wellcome.platform.archive.common.fixtures.HttpFixtures
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Succeeded
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
@@ -20,6 +20,7 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
 import uk.ac.wellcome.platform.storage.ingests_tracker.client.AkkaIngestTrackerClient
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 import uk.ac.wellcome.platform.storage.ingests_worker.fixtures.IngestsWorkerFixtures
+import weco.http.fixtures.HttpFixtures
 
 class IngestsWorkerIntegrationTest
     extends AnyFunSpec
@@ -35,6 +36,8 @@ class IngestsWorkerIntegrationTest
 
   val host = "http://localhost:8080"
   val healthcheckPath = s"$host/healthcheck"
+
+  override def contextUrl = new URL("http://www.example.com")
 
   val ingestTrackerClient = new AkkaIngestTrackerClient(Uri(host))
 
@@ -65,7 +68,7 @@ class IngestsWorkerIntegrationTest
         withLocalSqsQueuePair(visibilityTimeout = 5) {
           case QueuePair(queue, _) =>
             withIngestWorker(queue, ingestTrackerClient) { _ =>
-              whenGetRequestReady(healthcheckPath) { healthcheck =>
+              whenAbsoluteGetRequestReady(healthcheckPath) { healthcheck =>
                 // We know the TrackerApi is running
                 healthcheck.status shouldBe StatusCodes.OK
 

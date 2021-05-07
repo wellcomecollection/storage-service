@@ -10,7 +10,6 @@ import uk.ac.wellcome.platform.archive.bag_tracker.client.{
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.display.bags.DisplayStorageManifest
 import weco.http.FutureDirectives
-import java.net.URL
 
 import weco.http.models.HTTPServerConfig
 
@@ -19,10 +18,7 @@ import scala.util.{Failure, Success}
 
 trait LookupBag extends FutureDirectives {
   val httpServerConfig: HTTPServerConfig
-
   val bagTrackerClient: BagTrackerClient
-
-  val contextURL: URL
 
   implicit val ec: ExecutionContext
 
@@ -72,7 +68,7 @@ trait LookupBag extends FutureDirectives {
           complete(
             DisplayStorageManifest(
               storageManifest = storageManifest,
-              contextUrl = contextURL
+              contextUrl = contextUrl
             )
           )
         }

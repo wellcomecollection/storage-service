@@ -42,8 +42,8 @@ class LookupBagApiTest
       val storageManifest = createStorageManifest
 
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
-        case (_, _, baseUrl) =>
-          val url = s"$baseUrl/bags/${storageManifest.id}"
+        case (_, _) =>
+          val url = s"/bags/${storageManifest.id}"
 
           whenGetRequestReady(url) { response =>
             withStringEntity(response.entity) {
@@ -57,9 +57,9 @@ class LookupBagApiTest
       val bagId = createBagId
 
       withConfiguredApp() {
-        case (_, metrics, baseUrl) =>
-          whenGetRequestReady(s"$baseUrl/bags/$bagId") { response =>
-            assertIsUserErrorResponse(
+        case (_, metrics) =>
+          whenGetRequestReady(s"/bags/$bagId") { response =>
+            assertIsDisplayError(
               response,
               description = s"Storage manifest $bagId not found",
               statusCode = StatusCodes.NotFound
@@ -75,17 +75,19 @@ class LookupBagApiTest
     }
 
     it("returns a 500 if looking up the latest version fails") {
-      withBrokenApp {
-        case (metrics, baseUrl) =>
-          whenGetRequestReady(s"$baseUrl/bags/$createBagId") { response =>
-            assertIsInternalServerErrorResponse(response)
+      withBrokenApp { metrics =>
+        whenGetRequestReady(s"/bags/$createBagId") { response =>
+          assertIsDisplayError(
+            response = response,
+            statusCode = StatusCodes.InternalServerError
+          )
 
-            assertMetricSent(
-              metricsName,
-              metrics,
-              result = HttpMetricResults.ServerError
-            )
-          }
+          assertMetricSent(
+            metricsName,
+            metrics,
+            result = HttpMetricResults.ServerError
+          )
+        }
       }
     }
   }
@@ -95,9 +97,9 @@ class LookupBagApiTest
       val storageManifest = createStorageManifest
 
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
-        case (_, metrics, baseUrl) =>
+        case (_, metrics) =>
           val url =
-            s"$baseUrl/bags/${storageManifest.id}?version=${storageManifest.version}"
+            s"/bags/${storageManifest.id}?version=${storageManifest.version}"
 
           whenGetRequestReady(url) { response =>
             response.status shouldBe StatusCodes.OK
@@ -131,9 +133,9 @@ class LookupBagApiTest
           locationPrefix = createS3ObjectLocationPrefixWith(bucket),
           maxResponseByteLength = 1000
         ) {
-          case (_, metrics, baseUrl) =>
+          case (_, metrics) =>
             val url =
-              s"$baseUrl/bags/${storageManifest.id}?version=${storageManifest.version}"
+              s"/bags/${storageManifest.id}?version=${storageManifest.version}"
 
             whenGetRequestReady(url) { response =>
               response.status shouldBe StatusCodes.TemporaryRedirect
@@ -146,7 +148,7 @@ class LookupBagApiTest
 
               val redirectedUrl = response.header[Location].get.uri.toString()
 
-              whenGetRequestReady(redirectedUrl) { redirectedResponse =>
+              whenAbsoluteGetRequestReady(redirectedUrl) { redirectedResponse =>
                 withStringEntity(redirectedResponse.entity) {
                   assertJsonMatches(_, storageManifest)
                 }
@@ -171,9 +173,9 @@ class LookupBagApiTest
           locationPrefix = createS3ObjectLocationPrefixWith(bucket),
           maxResponseByteLength = 1000
         ) {
-          case (_, metrics, baseUrl) =>
+          case (_, metrics) =>
             val url =
-              s"$baseUrl/bags/${storageManifest.id}?version=${storageManifest.version}"
+              s"/bags/${storageManifest.id}?version=${storageManifest.version}"
 
             (1 to 3).foreach { _ =>
               whenGetRequestReady(url) { response =>
@@ -187,10 +189,11 @@ class LookupBagApiTest
 
                 val redirectedUrl = response.header[Location].get.uri.toString()
 
-                whenGetRequestReady(redirectedUrl) { redirectedResponse =>
-                  withStringEntity(redirectedResponse.entity) {
-                    assertJsonMatches(_, storageManifest)
-                  }
+                whenAbsoluteGetRequestReady(redirectedUrl) {
+                  redirectedResponse =>
+                    withStringEntity(redirectedResponse.entity) {
+                      assertJsonMatches(_, storageManifest)
+                    }
                 }
               }
             }
@@ -213,10 +216,10 @@ class LookupBagApiTest
       }
 
       withConfiguredApp(initialManifests = manifests) {
-        case (_, metrics, baseUrl) =>
+        case (_, metrics) =>
           manifests.foreach { storageManifest =>
             val url =
-              s"$baseUrl/bags/$storageSpace/$externalIdentifier?version=${storageManifest.version}"
+              s"/bags/$storageSpace/$externalIdentifier?version=${storageManifest.version}"
 
             whenGetRequestReady(url) { response =>
               response.status shouldBe StatusCodes.OK
@@ -290,8 +293,8 @@ class LookupBagApiTest
     forAll(lookupPaths) {
       case (manifest, path) =>
         withConfiguredApp(initialManifests = Seq(manifest)) {
-          case (_, _, baseUrl) =>
-            whenGetRequestReady(s"$baseUrl/bags/$path") { response =>
+          case (_, _) =>
+            whenGetRequestReady(s"/bags/$path") { response =>
               response.status shouldBe StatusCodes.OK
 
               withStringEntity(response.entity) {
@@ -308,9 +311,9 @@ class LookupBagApiTest
     )
 
     withConfiguredApp(initialManifests = Seq(storageManifest)) {
-      case (_, _, baseUrl) =>
+      case (_, _) =>
         whenGetRequestReady(
-          s"$baseUrl/bags/${storageManifest.id}?version=${storageManifest.version}"
+          s"/bags/${storageManifest.id}?version=${storageManifest.version}"
         ) { response =>
           response.status shouldBe StatusCodes.OK
 
@@ -332,12 +335,12 @@ class LookupBagApiTest
         s"${storageManifest.space}123/${storageManifest.id.externalIdentifier}"
 
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
-        case (_, metrics, baseUrl) =>
+        case (_, metrics) =>
           whenGetRequestReady(
-            s"$baseUrl/bags/$badId?version=${storageManifest.version}"
+            s"/bags/$badId?version=${storageManifest.version}"
           ) { response =>
-            assertIsUserErrorResponse(
-              response,
+            assertIsDisplayError(
+              response = response,
               description =
                 s"Storage manifest $badId ${storageManifest.version} not found",
               statusCode = StatusCodes.NotFound
@@ -356,12 +359,12 @@ class LookupBagApiTest
       val storageManifest = createStorageManifest
 
       withConfiguredApp(initialManifests = Seq(storageManifest)) {
-        case (_, metrics, baseUrl) =>
+        case (_, metrics) =>
           whenGetRequestReady(
-            s"$baseUrl/bags/${storageManifest.id}?version=${storageManifest.version.increment}"
+            s"/bags/${storageManifest.id}?version=${storageManifest.version.increment}"
           ) { response =>
-            assertIsUserErrorResponse(
-              response,
+            assertIsDisplayError(
+              response = response,
               description =
                 s"Storage manifest ${storageManifest.id} ${storageManifest.version.increment} not found",
               statusCode = StatusCodes.NotFound
@@ -382,20 +385,19 @@ class LookupBagApiTest
       val bagId = createBagId
 
       withConfiguredApp() {
-        case (_, metrics, baseUrl) =>
-          whenGetRequestReady(s"$baseUrl/bags/$bagId?version=$badVersion") {
-            response =>
-              assertIsUserErrorResponse(
-                response,
-                description = s"Storage manifest $bagId $badVersion not found",
-                statusCode = StatusCodes.NotFound
-              )
+        case (_, metrics) =>
+          whenGetRequestReady(s"/bags/$bagId?version=$badVersion") { response =>
+            assertIsDisplayError(
+              response = response,
+              description = s"Storage manifest $bagId $badVersion not found",
+              statusCode = StatusCodes.NotFound
+            )
 
-              assertMetricSent(
-                metricsName,
-                metrics,
-                result = HttpMetricResults.UserError
-              )
+            assertMetricSent(
+              metricsName,
+              metrics,
+              result = HttpMetricResults.UserError
+            )
           }
       }
     }
@@ -404,10 +406,10 @@ class LookupBagApiTest
       val bagId = s"space/a.b"
 
       withConfiguredApp() {
-        case (_, metrics, baseUrl) =>
-          whenGetRequestReady(s"$baseUrl/bags/$bagId") { response =>
-            assertIsUserErrorResponse(
-              response,
+        case (_, metrics) =>
+          whenGetRequestReady(s"/bags/$bagId") { response =>
+            assertIsDisplayError(
+              response = response,
               description = s"Storage manifest $bagId not found",
               statusCode = StatusCodes.NotFound
             )
@@ -424,9 +426,12 @@ class LookupBagApiTest
 
   it("returns a 500 error if looking up the bag fails") {
     withBrokenApp {
-      case (metrics, baseUrl) =>
-        whenGetRequestReady(s"$baseUrl/bags/$createBagId") { response =>
-          assertIsInternalServerErrorResponse(response)
+      case metrics =>
+        whenGetRequestReady(s"/bags/$createBagId") { response =>
+          assertIsDisplayError(
+            response = response,
+            statusCode = StatusCodes.InternalServerError
+          )
 
           assertMetricSent(
             metricsName,
@@ -439,16 +444,17 @@ class LookupBagApiTest
 
   it("returns a 500 error if looking up a specific version of a bag fails") {
     withBrokenApp {
-      case (metrics, baseUrl) =>
-        whenGetRequestReady(s"$baseUrl/bags/$createBagId?version=v1") {
-          response =>
-            assertIsInternalServerErrorResponse(response)
-
-            assertMetricSent(
-              metricsName,
-              metrics,
-              result = HttpMetricResults.ServerError
-            )
+      case metrics =>
+        whenGetRequestReady(s"/bags/$createBagId?version=v1") { response =>
+          assertIsDisplayError(
+            response = response,
+            statusCode = StatusCodes.InternalServerError
+          )
+          assertMetricSent(
+            metricsName,
+            metrics,
+            result = HttpMetricResults.ServerError
+          )
         }
     }
   }

@@ -64,7 +64,6 @@ object Main extends WellcomeTypesafeApp {
       override val httpServerConfig: HTTPServerConfig =
         HTTPServerBuilder.buildHTTPServerConfig(config)
       override implicit val ec: ExecutionContext = ecMain
-      override val contextURL: URL = contextURLMain
 
       override val bagTrackerClient: BagTrackerClient =
         new AkkaBagTrackerClient(
@@ -77,6 +76,8 @@ object Main extends WellcomeTypesafeApp {
       override val maximumResponseByteLength: Long = defaultMaxByteLength
       override val cacheDuration: Duration = defaultCacheDuration
       override implicit val materializer: Materializer = matMain
+
+      override def contextUrl: URL = contextURLMain
     }
 
     val appName = "BagsApi"
@@ -88,8 +89,8 @@ object Main extends WellcomeTypesafeApp {
         metrics = CloudWatchBuilder.buildCloudWatchMetrics(config)
       ),
       httpServerConfig = HTTPServerBuilder.buildHTTPServerConfig(config),
-      contextURL = contextURLMain,
-      appName = appName
+      appName = appName,
+      contextUrl = contextURLMain
     )
   }
 }
