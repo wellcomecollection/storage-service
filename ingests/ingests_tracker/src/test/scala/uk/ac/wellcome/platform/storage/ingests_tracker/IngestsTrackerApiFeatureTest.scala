@@ -43,7 +43,7 @@ class IngestsTrackerApiFeatureTest
 
     it("responds OK") {
       withIngestsTrackerApi() { _ =>
-        whenGetRequestReady(path) { result =>
+        whenAbsoluteGetRequestReady(path) { result =>
           result.status shouldBe StatusCodes.OK
         }
       }
