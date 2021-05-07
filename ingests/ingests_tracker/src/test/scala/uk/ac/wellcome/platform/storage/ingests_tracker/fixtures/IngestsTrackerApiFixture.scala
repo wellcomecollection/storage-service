@@ -8,19 +8,30 @@ import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID, IngestUpdate}
+import uk.ac.wellcome.platform.archive.common.ingests.models.{
+  Ingest,
+  IngestID,
+  IngestUpdate
+}
 import uk.ac.wellcome.platform.storage.ingests_tracker.IngestsTrackerApi
-import uk.ac.wellcome.platform.storage.ingests_tracker.services.{CallbackNotificationService, MessagingService}
+import uk.ac.wellcome.platform.storage.ingests_tracker.services.{
+  CallbackNotificationService,
+  MessagingService
+}
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.IngestStoreUnexpectedError
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.memory.MemoryIngestTracker
-import uk.ac.wellcome.storage.{StoreReadError, StoreWriteError, UpdateWriteError, Version}
+import uk.ac.wellcome.storage.{
+  StoreReadError,
+  StoreWriteError,
+  UpdateWriteError,
+  Version
+}
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
 import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
 trait IngestsTrackerApiFixture
     extends IngestTrackerFixtures
     with IngestGenerators
-
     with Akka {
 
   val trackerUri = "http://localhost:8080"
@@ -108,8 +119,8 @@ trait IngestsTrackerApiFixture
   }
 
   private def whenRequestReady[R](
-                                   r: HttpRequest
-                                 )(testWith: TestWith[HttpResponse, R]): R =
+    r: HttpRequest
+  )(testWith: TestWith[HttpResponse, R]): R =
     withActorSystem { implicit actorSystem =>
       val request = Http().singleRequest(r)
       whenReady(request) { response: HttpResponse =>
@@ -118,8 +129,8 @@ trait IngestsTrackerApiFixture
     }
 
   def whenAbsoluteGetRequestReady[R](
-                                      path: String
-                                    )(testWith: TestWith[HttpResponse, R]): R = {
+    path: String
+  )(testWith: TestWith[HttpResponse, R]): R = {
     val request = HttpRequest(
       method = GET,
       uri = s"$path"
@@ -131,11 +142,11 @@ trait IngestsTrackerApiFixture
   }
 
   def whenAbsolutePostRequestReady[R](
-                               path: String,
-                               entity: RequestEntity
-                             )(
-                               testWith: TestWith[HttpResponse, R]
-                             ): R = {
+    path: String,
+    entity: RequestEntity
+  )(
+    testWith: TestWith[HttpResponse, R]
+  ): R = {
     val request = HttpRequest(
       method = POST,
       uri = s"$path",
