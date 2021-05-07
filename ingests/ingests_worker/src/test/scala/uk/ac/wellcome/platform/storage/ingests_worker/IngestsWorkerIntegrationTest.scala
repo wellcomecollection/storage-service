@@ -68,7 +68,7 @@ class IngestsWorkerIntegrationTest
         withLocalSqsQueuePair(visibilityTimeout = 5) {
           case QueuePair(queue, _) =>
             withIngestWorker(queue, ingestTrackerClient) { _ =>
-              whenGetRequestReady(healthcheckPath) { healthcheck =>
+              whenAbsoluteGetRequestReady(healthcheckPath) { healthcheck =>
                 // We know the TrackerApi is running
                 healthcheck.status shouldBe StatusCodes.OK
 

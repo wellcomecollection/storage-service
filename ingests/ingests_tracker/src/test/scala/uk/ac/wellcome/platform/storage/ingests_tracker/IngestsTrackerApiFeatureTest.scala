@@ -71,7 +71,7 @@ class IngestsTrackerApiFeatureTest
     describe("with a valid Ingest") {
       withIngestsTrackerApi() {
         case (callbackSender, ingestsSender, ingestTracker) =>
-          whenPostRequestReady(path, ingestEntity) { response =>
+          whenAbsolutePostRequestReady(path, ingestEntity) { response =>
             it("responds Created") {
               response.status shouldBe StatusCodes.Created
             }
