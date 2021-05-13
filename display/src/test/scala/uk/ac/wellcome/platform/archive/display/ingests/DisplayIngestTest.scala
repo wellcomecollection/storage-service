@@ -50,7 +50,7 @@ class DisplayIngestTest
 
       val displayIngest = ResponseDisplayIngest(ingest, contextUrl)
 
-      displayIngest.id shouldBe id.underlying
+      displayIngest.id shouldBe id.uuid
       displayIngest.sourceLocation shouldBe DisplayLocation(
         DisplayProvider(id = "amazon-s3"),
         bucket = "bukkit",
