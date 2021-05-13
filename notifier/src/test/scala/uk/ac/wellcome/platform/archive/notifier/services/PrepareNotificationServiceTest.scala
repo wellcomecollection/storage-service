@@ -7,11 +7,11 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.{
   Callback,
   IngestID
 }
+import weco.fixtures.TimeAssertions
 
 import scala.util.{Failure, Success, Try}
 
@@ -19,7 +19,7 @@ class PrepareNotificationServiceTest
     extends AnyFunSpec
     with Matchers
     with Akka
-    with TimeTestFixture
+    with TimeAssertions
     with StorageRandomGenerators {
 
   val id: IngestID = createIngestID
