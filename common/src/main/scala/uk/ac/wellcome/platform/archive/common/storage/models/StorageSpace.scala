@@ -1,29 +1,10 @@
 package uk.ac.wellcome.platform.archive.common.storage.models
 
-import org.scanamo.DynamoFormat
-import io.circe.{Decoder, Encoder, HCursor, Json}
+import uk.ac.wellcome.storage.TypedStringScanamoOps
+import weco.json.TypedString
 
-class StorageSpace(val underlying: String) {
-  override def toString: String = underlying
-
+class StorageSpace(val underlying: String) extends TypedString[StorageSpace] {
   require(underlying.nonEmpty, "Storage space cannot be empty")
-
-  // Normally we use case classes for immutable data, which provide these
-  // methods for us.
-  //
-  // We deliberately don't use case classes here so we skip automatic
-  // case class derivation for JSON encoding/DynamoDB in Scanamo,
-  // and force callers to intentionally import the implicits below.
-  def canEqual(a: Any): Boolean = a.isInstanceOf[StorageSpace]
-
-  override def equals(that: Any): Boolean =
-    that match {
-      case that: StorageSpace =>
-        that.canEqual(this) && this.underlying == that.underlying
-      case _ => false
-    }
-
-  override def hashCode: Int = underlying.hashCode
 
   // At various points in the pipeline, we combine the storage space and
   // the external identifier into a bag ID, for example:
@@ -50,19 +31,7 @@ class StorageSpace(val underlying: String) {
   )
 }
 
-object StorageSpace {
+object StorageSpace extends TypedStringScanamoOps[StorageSpace] {
   def apply(underlying: String): StorageSpace =
     new StorageSpace(underlying)
-
-  implicit val encoder: Encoder[StorageSpace] = (value: StorageSpace) =>
-    Json.fromString(value.toString)
-
-  implicit val decoder: Decoder[StorageSpace] = (cursor: HCursor) =>
-    cursor.value.as[String].map(StorageSpace(_))
-
-  implicit def evidence: DynamoFormat[StorageSpace] =
-    DynamoFormat.coercedXmap[StorageSpace, String, IllegalArgumentException](
-      StorageSpace(_),
-      _.underlying
-    )
 }
