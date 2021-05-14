@@ -1,14 +1,15 @@
 package uk.ac.wellcome.platform.archive.common.bagit.models
 
-import io.circe.{Decoder, Encoder, HCursor, Json}
-import org.scanamo.DynamoFormat
+import weco.json.{TypedString, TypedStringOps}
 
-case class BagPath(value: String) {
-  override def toString: String = value
+class BagPath(val value: String) extends TypedString[BagPath] {
+  val underlying: String = value
 }
 
-object BagPath {
-  def create(raw: String) =
+object BagPath extends TypedStringOps[BagPath] {
+  override def apply(underlying: String): BagPath = new BagPath(underlying)
+
+  def create(raw: String): BagPath =
     BagPath(raw.trim)
 
   def apply(
@@ -26,16 +27,4 @@ object BagPath {
 
   private def rTrimPath(path: String): String =
     path.replaceAll("/$", "")
-
-  implicit val encoder: Encoder[BagPath] = (value: BagPath) =>
-    Json.fromString(value.toString)
-
-  implicit val decoder: Decoder[BagPath] = (cursor: HCursor) =>
-    cursor.value.as[String].map(BagPath(_))
-
-  implicit def evidence: DynamoFormat[BagPath] =
-    DynamoFormat.iso[BagPath, String](
-      BagPath(_),
-      _.toString
-    )
 }

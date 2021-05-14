@@ -100,7 +100,7 @@ trait StorageRandomGenerators extends RandomGenerators {
     }
 
   def createIngestID: IngestID =
-    IngestID(randomUUID)
+    IngestID.random
 
   def randomSourceOrganisation =
     SourceOrganisation(randomAlphanumeric())

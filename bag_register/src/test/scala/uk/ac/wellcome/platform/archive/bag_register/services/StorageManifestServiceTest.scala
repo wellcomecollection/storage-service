@@ -12,7 +12,6 @@ import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
 import uk.ac.wellcome.platform.archive.common.fixtures.PayloadEntry
 import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
 import uk.ac.wellcome.platform.archive.common.generators._
-import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.common.storage.models._
 import uk.ac.wellcome.storage._
@@ -20,6 +19,7 @@ import uk.ac.wellcome.storage.fixtures.S3Fixtures
 import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.services.s3.S3SizeFinder
+import weco.fixtures.TimeAssertions
 
 import scala.util.Random
 
@@ -30,7 +30,7 @@ class StorageManifestServiceTest
     with FetchMetadataGenerators
     with ReplicaLocationGenerators
     with StorageSpaceGenerators
-    with TimeTestFixture
+    with TimeAssertions
     with TryValues
     with S3Fixtures {
 

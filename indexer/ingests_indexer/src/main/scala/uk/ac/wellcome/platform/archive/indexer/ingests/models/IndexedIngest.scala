@@ -42,7 +42,7 @@ case object IndexedIngest {
     }
 
     IndexedIngest(
-      id = ingest.id.underlying,
+      id = ingest.id.uuid,
       sourceLocation = DisplayLocation(ingest.sourceLocation),
       callback = ingest.callback.map { DisplayCallback(_) },
       space = DisplayStorageSpace(ingest.space.toString),

@@ -2,24 +2,23 @@ package uk.ac.wellcome.platform.archive.display.ingests
 
 import java.net.{URI, URL}
 import java.time.Instant
-
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.common.generators.{
   BagIdGenerators,
   IngestGenerators
 }
-import uk.ac.wellcome.platform.archive.common.ingests.fixtures.TimeTestFixture
 import uk.ac.wellcome.platform.archive.common.ingests.models._
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.display._
 import uk.ac.wellcome.storage.s3.S3ObjectLocation
+import weco.fixtures.TimeAssertions
 
 class DisplayIngestTest
     extends AnyFunSpec
     with Matchers
     with BagIdGenerators
-    with TimeTestFixture
+    with TimeAssertions
     with IngestGenerators {
 
   private val id = createIngestID
@@ -51,7 +50,7 @@ class DisplayIngestTest
 
       val displayIngest = ResponseDisplayIngest(ingest, contextUrl)
 
-      displayIngest.id shouldBe id.underlying
+      displayIngest.id shouldBe id.uuid
       displayIngest.sourceLocation shouldBe DisplayLocation(
         DisplayProvider(id = "amazon-s3"),
         bucket = "bukkit",

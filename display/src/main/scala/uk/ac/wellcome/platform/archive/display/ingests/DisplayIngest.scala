@@ -57,7 +57,7 @@ object ResponseDisplayIngest {
   def apply(ingest: Ingest, contextUrl: URL): ResponseDisplayIngest =
     ResponseDisplayIngest(
       context = contextUrl.toString,
-      id = ingest.id.underlying,
+      id = ingest.id.uuid,
       sourceLocation = DisplayLocation(ingest.sourceLocation),
       callback = ingest.callback.map { DisplayCallback(_) },
       space = DisplayStorageSpace(ingest.space.toString),
