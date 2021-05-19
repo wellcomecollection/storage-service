@@ -11,8 +11,8 @@ locals {
 
   dlq_alarm_arn = data.terraform_remote_state.infra_shared.outputs.dlq_alarm_arn
 
-  cognito_user_pool_arn          = data.terraform_remote_state.infra_critical.outputs.cognito_user_pool_arn
-  cognito_storage_api_identifier = data.terraform_remote_state.infra_critical.outputs.cognito_storage_api_identifier
+  cognito_user_pool_arn          = data.terraform_remote_state.app_clients.outputs.cognito_user_pool_arn
+  cognito_storage_api_identifier = data.terraform_remote_state.app_clients.outputs.cognito_storage_api_identifier
 
   nginx_image = "975596993436.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/nginx:95821b39e1683a0a7098cd67d82bc690415c1d5a"
 

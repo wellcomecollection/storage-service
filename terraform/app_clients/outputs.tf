@@ -3,5 +3,13 @@
 #
 # This is preferable to dumping those directly into Terraform output.
 output "cognito_user_pool_url" {
-  value = "https://eu-west-1.console.aws.amazon.com/cognito/users/?region=eu-west-1#/pool/${local.wc_user_pool_id}/clients?_k=czaich"
+  value = "https://eu-west-1.console.aws.amazon.com/cognito/users/?region=eu-west-1#/pool/${aws_cognito_user_pool.pool.id}/clients?_k=czaich"
+}
+
+output "cognito_user_pool_arn" {
+  value = aws_cognito_user_pool.pool.arn
+}
+
+output "cognito_storage_api_identifier" {
+  value = aws_cognito_resource_server.storage_api.identifier
 }

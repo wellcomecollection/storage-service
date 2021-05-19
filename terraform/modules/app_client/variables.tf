@@ -13,3 +13,15 @@ variable "allow_bags_access" {
 variable "allow_ingests_access" {
   type = bool
 }
+
+variable "explicit_auth_flows" {
+  default = null
+}
+
+variable "refresh_token_validity" {
+  default = 30
+}
+
+variable "generate_secret" {
+  default = true
+}

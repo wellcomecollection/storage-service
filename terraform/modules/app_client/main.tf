@@ -30,13 +30,19 @@ resource "aws_cognito_user_pool_client" "client" {
   #   client_credentials flow can not be selected if client does not have
   #   a client secret.
   #
-  generate_secret = true
+  # This defaults to true - but if you are importing a client you may need
+  # to toggle this off to prevent it being regenerate.
+  generate_secret = var.generate_secret
 
   allowed_oauth_flows_user_pool_client = true
 
   allowed_oauth_scopes = local.oauth_scopes
 
+  explicit_auth_flows = var.explicit_auth_flows
+
   supported_identity_providers = [
     "COGNITO",
   ]
+
+  refresh_token_validity = var.refresh_token_validity
 }
