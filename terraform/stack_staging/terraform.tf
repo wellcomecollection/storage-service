@@ -39,7 +39,7 @@ data "terraform_remote_state" "app_clients" {
   backend = "s3"
 
   config = {
-    role_arn       = "arn:aws:iam::975596993436:role/storage-developer"
+    role_arn       = "arn:aws:iam::975596993436:role/storage-read_only"
     bucket         = "wellcomecollection-storage-infra"
     key            = "terraform/storage-service/app_clients.tfstate"
     dynamodb_table = "terraform-locktable"
@@ -68,4 +68,3 @@ data "terraform_remote_state" "critical_staging" {
     region   = "eu-west-1"
   }
 }
-
