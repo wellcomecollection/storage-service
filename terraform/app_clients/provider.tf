@@ -13,6 +13,16 @@ provider "aws" {
 }
 
 provider "aws" {
+  alias = "us-east-1"
+
+  region = "us-east-1"
+
+  assume_role {
+    role_arn = "arn:aws:iam::760097843905:role/platform-developer"
+  }
+}
+
+provider "aws" {
   alias = "platform"
 
   assume_role {
