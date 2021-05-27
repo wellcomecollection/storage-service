@@ -43,7 +43,3 @@ variable "memory_size" {
   default = 128
   type    = number
 }
-
-variable "tags" {
-  type = map(string)
-}

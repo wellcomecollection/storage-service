@@ -69,8 +69,6 @@ resource "aws_s3_bucket" "infra" {
 
     enabled = true
   }
-
-  tags = local.default_tags
 }
 
 data "aws_iam_policy_document" "infra_bucket_policy" {
