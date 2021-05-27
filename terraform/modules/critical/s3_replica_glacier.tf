@@ -41,8 +41,6 @@ resource "aws_s3_bucket" "replica_glacier" {
       days = 90
     }
   }
-
-  tags = var.tags
 }
 
 resource "aws_s3_bucket_inventory" "replica_glacier" {

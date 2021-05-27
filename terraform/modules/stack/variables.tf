@@ -22,10 +22,6 @@ variable "release_label" {
   type = string
 }
 
-variable "tags" {
-  type = map(string)
-}
-
 # Network
 
 variable "private_subnets" {

@@ -14,8 +14,6 @@ module "end_to_end_bag_tester_stage" {
 
     API_URL = "https://api-stage.wellcomecollection.org/storage/v1"
   }
-
-  tags = local.default_tags
 }
 
 module "end_to_end_bag_tester_prod" {
@@ -34,8 +32,6 @@ module "end_to_end_bag_tester_prod" {
 
     API_URL = "https://api.wellcomecollection.org/storage/v1"
   }
-
-  tags = local.default_tags
 }
 
 # Allow the CI agent running in BuildKite to trigger the Lambda after

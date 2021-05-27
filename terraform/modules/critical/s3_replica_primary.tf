@@ -75,8 +75,6 @@ resource "aws_s3_bucket" "replica_primary" {
       storage_class = "GLACIER"
     }
   }
-
-  tags = var.tags
 }
 
 resource "aws_s3_bucket_policy" "replica_primary_read" {

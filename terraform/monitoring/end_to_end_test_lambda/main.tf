@@ -11,8 +11,6 @@ module "lambda" {
   s3_key    = "lambdas/monitoring/end_to_end_bag_test.zip"
 
   timeout = 15
-
-  tags = var.tags
 }
 
 output "function_name" {

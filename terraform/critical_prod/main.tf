@@ -13,8 +13,6 @@ module "critical" {
 
   inventory_bucket = "wellcomecollection-storage-infra"
 
-  tags = local.default_tags
-
   table_name = "vhs-storage-manifests-2020-07-24"
 
   # This gives us another layer of protection for the S3 buckets.

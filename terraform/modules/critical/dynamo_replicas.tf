@@ -8,6 +8,4 @@ resource "aws_dynamodb_table" "replicas_table" {
     name = "id"
     type = "S"
   }
-
-  tags = var.tags
 }

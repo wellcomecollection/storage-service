@@ -9,6 +9,10 @@ provider "aws" {
     role_arn = "arn:aws:iam::760097843905:role/platform-developer"
   }
 
+  default_tags {
+    tags = local.default_tags
+  }
+
   region = "eu-west-1"
 }
 
@@ -20,6 +24,10 @@ provider "aws" {
   assume_role {
     role_arn = "arn:aws:iam::760097843905:role/platform-developer"
   }
+
+  default_tags {
+    tags = local.default_tags
+  }
 }
 
 provider "aws" {
@@ -27,6 +35,10 @@ provider "aws" {
 
   assume_role {
     role_arn = "arn:aws:iam::760097843905:role/platform-developer"
+  }
+
+  default_tags {
+    tags = local.default_tags
   }
 
   region = "eu-west-1"
@@ -37,6 +49,10 @@ provider "aws" {
 
   assume_role {
     role_arn = "arn:aws:iam::975596993436:role/storage-developer"
+  }
+
+  default_tags {
+    tags = local.default_tags
   }
 
   region = "eu-west-1"

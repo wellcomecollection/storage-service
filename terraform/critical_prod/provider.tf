@@ -9,6 +9,10 @@ provider "aws" {
     role_arn = "arn:aws:iam::975596993436:role/storage-admin"
   }
 
+  default_tags {
+    tags = local.default_tags
+  }
+
   region = var.aws_region
 }
 
