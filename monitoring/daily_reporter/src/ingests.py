@@ -3,7 +3,9 @@ import datetime
 
 def is_callback_404(description):
     # e.g. Callback failed for: abcd, got 404 Not Found!
-    return description.startswith("Callback failed for:") and description.endswith("got 404 Not Found!")
+    return description.startswith("Callback failed for:") and description.endswith(
+        "got 404 Not Found!"
+    )
 
 
 def get_dev_status(ingest):
