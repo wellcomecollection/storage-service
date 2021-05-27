@@ -1,6 +1,13 @@
 import datetime
 
 
+def is_callback_404(description):
+    # e.g. Callback failed for: abcd, got 404 Not Found!
+    return description.startswith("Callback failed for:") and description.endswith(
+        "got 404 Not Found!"
+    )
+
+
 def get_dev_status(ingest):
     """
     Get an ingest status that reflects whether we need to pay attention to it.
@@ -27,7 +34,7 @@ def get_dev_status(ingest):
         failure_reasons = [
             ev["description"]
             for ev in ingest["events"]
-            if "failed" in ev["description"]
+            if "failed" in ev["description"] and not is_callback_404(ev["description"])
         ]
 
         if failure_reasons and all(
