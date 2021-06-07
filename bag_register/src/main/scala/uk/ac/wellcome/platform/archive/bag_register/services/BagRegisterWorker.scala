@@ -20,6 +20,7 @@ import uk.ac.wellcome.platform.archive.common.storage.models.{
   IngestStepWorker
 }
 
+import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
@@ -42,7 +43,7 @@ class BagRegisterWorker[IngestDestination, NotificationDestination](
   // retrying immediately, allow a short delay before retrying a registration.
   //
   // Registration isn't a time-critical process, so a delay is acceptable.
-  override val visibilityTimeout: Int = 120
+  override val visibilityTimeout: Duration = 2.minutes
 
   override def process(
     payload: KnownReplicasPayload
