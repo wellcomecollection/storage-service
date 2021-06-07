@@ -91,7 +91,10 @@ trait IngestStepWorker[Work <: PipelinePayload, Summary]
     )(process) {
       override val retryAction: Message => sqs.MessageAction =
         (message: Message) =>
-          MessageAction.changeMessageVisibility(message, visibilityTimeout.toSeconds.toInt)
+          MessageAction.changeMessageVisibility(
+            message,
+            visibilityTimeout.toSeconds.toInt
+          )
     }
 
   def run(): Future[Any] = worker.start
