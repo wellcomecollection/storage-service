@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.common.storage.models
 
 import java.time.Instant
-
 import akka.actor.ActorSystem
 import akka.stream.alpakka.sqs
 import akka.stream.alpakka.sqs.MessageAction
@@ -25,6 +24,7 @@ import uk.ac.wellcome.platform.archive.common.PipelinePayload
 import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
 import uk.ac.wellcome.typesafe.Runnable
 
+import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
@@ -68,7 +68,7 @@ trait IngestStepWorker[Work <: PipelinePayload, Summary]
 
   // TODO: Move visibilityTimeout into SQSConfig
   val config: AlpakkaSQSWorkerConfig
-  val visibilityTimeout = 0
+  val visibilityTimeout: Duration = 0.seconds
 
   implicit val mc: Metrics[Future]
   implicit val as: ActorSystem
@@ -91,7 +91,10 @@ trait IngestStepWorker[Work <: PipelinePayload, Summary]
     )(process) {
       override val retryAction: Message => sqs.MessageAction =
         (message: Message) =>
-          MessageAction.changeMessageVisibility(message, visibilityTimeout)
+          MessageAction.changeMessageVisibility(
+            message,
+            visibilityTimeout.toSeconds.toInt
+          )
     }
 
   def run(): Future[Any] = worker.start

@@ -27,6 +27,7 @@ import uk.ac.wellcome.platform.storage.bag_versioner.models.{
 }
 
 import scala.concurrent.Future
+import scala.concurrent.duration._
 import scala.util.{Success, Try}
 
 class BagVersionerWorker[IngestDestination, OutgoingDestination](
@@ -41,6 +42,15 @@ class BagVersionerWorker[IngestDestination, OutgoingDestination](
   val sc: SqsAsyncClient,
   val wd: Decoder[BagRootLocationPayload]
 ) extends IngestStepWorker[BagRootLocationPayload, BagVersionerSummary] {
+
+  // The bag versioner can fail if two bags with the same ID are being
+  // processed at the same time, and one instance has the lock -- the other
+  // instance will fail because it can't acquire a lock.
+  //
+  // If we're the other instance, we shouldn't retry immediately -- the
+  // first instance will still have the lock.  Instead, spin for 30 seconds
+  // and only then try again.
+  override val visibilityTimeout: Duration = 30.seconds
 
   override def processMessage(
     payload: BagRootLocationPayload

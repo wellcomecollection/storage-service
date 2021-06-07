@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.archive.bagreplicator.services
 
 import java.time.Instant
 import java.util.UUID
-
 import akka.actor.ActorSystem
 import cats.instances.try_._
 import io.circe.Decoder
@@ -28,6 +27,7 @@ import uk.ac.wellcome.storage.locking.{
 }
 
 import scala.concurrent.Future
+import scala.concurrent.duration._
 import scala.util.Try
 
 class BagReplicatorWorker[
@@ -58,7 +58,7 @@ class BagReplicatorWorker[
 ) extends IngestStepWorker[VersionedBagRootPayload, ReplicationSummary[
       DstPrefix
     ]] {
-  override val visibilityTimeout = 180
+  override val visibilityTimeout: Duration = 3.minutes
 
   def processMessage(
     payload: VersionedBagRootPayload
