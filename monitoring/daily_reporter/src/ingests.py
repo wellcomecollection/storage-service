@@ -8,6 +8,32 @@ def is_callback_404(description):
     )
 
 
+def is_user_error(reason):
+    if reason.startswith(
+        (
+            "Verification (pre-replicating to archive storage) failed",
+            "Detecting bag root failed",
+            # If we can't unpack a bag or assign a version for an
+            # unknown reason, we should treat that as a storage service
+            # error - hence requiring the hyphen which indicates a
+            # longer explanation.
+            "Unpacking failed -",
+            "Assigning bag version failed -",
+        )
+    ):
+        return True
+
+    # This may mean that the user supplied us with a bad callback.
+    #
+    # More likely, this is a Goobi bag that got restarted.  Goobi callbacks
+    # are only valid for ~72 hours, so if the bag gets stuck for some
+    # reason you'll get this error.
+    if reason.startswith("Callback failed for") and reason.endswith("got 401 Unauthorized!"):
+        return True
+
+    return False
+
+
 def get_dev_status(ingest):
     """
     Get an ingest status that reflects whether we need to pay attention to it.
@@ -37,19 +63,7 @@ def get_dev_status(ingest):
             if "failed" in ev["description"] and not is_callback_404(ev["description"])
         ]
 
-        if failure_reasons and all(
-            reason.startswith(
-                (
-                    "Verification (pre-replicating to archive storage) failed",
-                    "Detecting bag root failed",
-                    # If we can't unpack a bag or assign a version for an
-                    # unknown reason, we should treat that as a storage service error.
-                    "Unpacking failed -",
-                    "Assigning bag version failed -",
-                )
-            )
-            for reason in failure_reasons
-        ):
+        if failure_reasons and all(is_user_error(reason) for reason in failure_reasons):
             return "failed (user error)"
         else:
             return "failed (unknown reason)"
