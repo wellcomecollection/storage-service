@@ -28,7 +28,9 @@ def is_user_error(reason):
     # More likely, this is a Goobi bag that got restarted.  Goobi callbacks
     # are only valid for ~72 hours, so if the bag gets stuck for some
     # reason you'll get this error.
-    if reason.startswith("Callback failed for") and reason.endswith("got 401 Unauthorized!"):
+    if reason.startswith("Callback failed for") and reason.endswith(
+        "got 401 Unauthorized!"
+    ):
         return True
 
     return False
@@ -91,10 +93,9 @@ def get_dev_status(ingest):
         #
         # To allow for timezone slop, look for a delay of seven hours.  It will
         # be flagged the following day if it's still stalled.
-        last_updated = max(
-            ev["createdDate"]
-            for ev in ingest["events"]
-        ) or ingest["createdDate"]
+        last_updated = (
+            max(ev["createdDate"] for ev in ingest["events"]) or ingest["createdDate"]
+        )
         delay = datetime.datetime.now() - last_updated
 
         if abs(delay.total_seconds()) > 60 * 60 * 7:
