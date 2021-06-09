@@ -70,13 +70,16 @@ def get_dev_status(ingest):
 
     elif ingest["status"] == "accepted":
         # An ingest is in the 'accepted' state until it goes to the bag unpacker.
-        # There may be a short delay while the bag unpacker starts up; a delay of
-        # more than an hour suggests something is wrong.
+        # There may be a short delay while the bag unpacker starts up.
         #
-        # To allow for timezone slop, look for a delay of two hours.
+        # The visibility timeout on the queue is 5 hours -- we might see
+        # no activity if there are two instances of the bag unpacker, and
+        # one picks up the message just before stopping.
+        #
+        # To allow for timezone slop, look for a delay of 6 hours.
         delay = datetime.datetime.now() - ingest["createdDate"]
 
-        if abs(delay.total_seconds()) > 60 * 60 * 2:
+        if abs(delay.total_seconds()) > 60 * 60 * 6:
             return "stalled"
         else:
             return "accepted"
