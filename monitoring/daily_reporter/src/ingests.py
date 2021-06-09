@@ -91,7 +91,11 @@ def get_dev_status(ingest):
         #
         # To allow for timezone slop, look for a delay of seven hours.  It will
         # be flagged the following day if it's still stalled.
-        delay = datetime.datetime.now() - ingest["createdDate"]
+        last_updated = max(
+            ev["createdDate"]
+            for ev in ingest["events"]
+        ) or ingest["createdDate"]
+        delay = datetime.datetime.now() - last_updated
 
         if abs(delay.total_seconds()) > 60 * 60 * 7:
             return "stalled"
