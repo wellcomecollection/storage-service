@@ -4,6 +4,8 @@ import akka.http.scaladsl.model.Uri
 import org.scalatest.concurrent.IntegrationPatience
 import uk.ac.wellcome.fixtures.TestWith
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class AkkaBagTrackerClientTest
     extends BagTrackerClientTestCases
     with IntegrationPatience {

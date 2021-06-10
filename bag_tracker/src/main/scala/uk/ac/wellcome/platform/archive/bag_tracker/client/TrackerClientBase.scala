@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.bag_tracker.client
 
 import akka.stream.StreamTcpException
 
-trait AkkaTrackerClientBase {
+trait TrackerClientBase {
   def isRetryable(err: Throwable): Boolean =
     err match {
       // This error can occur if the tracker API is unavailable.  Tasks should wait
