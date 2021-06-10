@@ -46,9 +46,10 @@ object Main extends WellcomeTypesafeApp {
       )
     )
 
+    val client = new AkkaIngestTrackerClient(ingestTrackerHost)
+
     val router = new IngestsApi[SNSConfig] {
-      override val ingestTrackerClient: IngestTrackerClient =
-        new AkkaIngestTrackerClient(ingestTrackerHost)
+      override val ingestTrackerClient: IngestTrackerClient = client
 
       override val ingestCreator = ingestCreatorInstance
 

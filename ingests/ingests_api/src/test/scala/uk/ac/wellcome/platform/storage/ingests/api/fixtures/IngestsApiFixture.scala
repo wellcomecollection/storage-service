@@ -55,17 +55,17 @@ trait IngestsApiFixture
         metrics = metrics
       )
 
-      val ingestTrackerClient: IngestTrackerClient =
-        new AkkaIngestTrackerClient(trackerUri)
+      val client = new AkkaIngestTrackerClient(trackerUri)
+
       val ingestCreatorInstance = new IngestCreator(
-        ingestTrackerClient = ingestTrackerClient,
+        ingestTrackerClient = client,
         unpackerMessageSender = unpackerSender
       )
 
       val ingestsApi = new IngestsApi[String] {
         override implicit val ec: ExecutionContext = global
         override val ingestTrackerClient: IngestTrackerClient =
-          new AkkaIngestTrackerClient(trackerUri)
+          client
 
         override val httpServerConfig: HTTPServerConfig =
           httpServerConfigTest
