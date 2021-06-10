@@ -12,13 +12,13 @@ import uk.ac.wellcome.platform.archive.bag_tracker.models.BagVersionList
 import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
 import uk.ac.wellcome.storage.RetryableError
-import weco.http.client.{AkkaHttpClient, HttpClient}
+import weco.http.client.{AkkaHttpClient, HttpClient, HttpGet, HttpPost}
 import weco.http.json.CirceMarshalling
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait BagTrackerClient extends Logging {
-  val client: HttpClient
+  val client: HttpClient with HttpGet with HttpPost
 
   implicit val ec: ExecutionContext
   implicit val mat: Materializer
@@ -175,6 +175,6 @@ trait BagTrackerClient extends Logging {
 class AkkaBagTrackerClient(trackerHost: Uri)(
   implicit actorSystem: ActorSystem, val ec: ExecutionContext, val mat: Materializer)
     extends BagTrackerClient {
-  override val client: HttpClient =
-    new AkkaHttpClient(trackerHost)
+  override val client =
+    new AkkaHttpClient(trackerHost) with HttpGet with HttpPost
 }

@@ -14,12 +14,12 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestID,
   IngestUpdate
 }
-import weco.http.client.{AkkaHttpClient, HttpClient}
+import weco.http.client.{AkkaHttpClient, HttpClient, HttpGet, HttpPost}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait IngestTrackerClient extends Logging {
-  val client: HttpClient
+  val client: HttpClient with HttpGet with HttpPost
 
   implicit val ec: ExecutionContext
   implicit val mat: Materializer
@@ -108,5 +108,6 @@ class AkkaIngestTrackerClient(trackerHost: Uri)(
   val mat: Materializer,
   val ec: ExecutionContext)
     extends IngestTrackerClient {
-  override val client: HttpClient = new AkkaHttpClient(trackerHost)
+  override val client =
+    new AkkaHttpClient(trackerHost) with HttpGet with HttpPost
 }
