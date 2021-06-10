@@ -1,13 +1,12 @@
 package uk.ac.wellcome.platform.archive.indexer.bags
 
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.requests.mappings.FieldDefinition
-
+import com.sksamuel.elastic4s.fields.ElasticField
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.StorageServiceIndexConfig
 
 object BagsIndexConfig extends StorageServiceIndexConfig {
 
-  private val infoFields: Seq[FieldDefinition] = Seq(
+  private val infoFields: Seq[ElasticField] = Seq(
     keywordField("externalIdentifier"),
     keywordField("payloadOxum"),
     dateField("baggingDate"),
@@ -17,13 +16,13 @@ object BagsIndexConfig extends StorageServiceIndexConfig {
     keywordField("internalSenderDescription")
   )
 
-  private val locationFields: Seq[FieldDefinition] = Seq(
+  private val locationFields: Seq[ElasticField] = Seq(
     keywordField("provider"),
     keywordField("bucket"),
     keywordField("path")
   )
 
-  override protected val fields: Seq[FieldDefinition] =
+  override protected val fields: Seq[ElasticField] =
     Seq(
       keywordField("id"),
       keywordField("space"),
