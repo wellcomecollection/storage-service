@@ -16,6 +16,8 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Succeeded
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.memory.MemoryIngestTracker
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 trait IngestTrackerClientTestCases
     extends AnyFunSpec
     with Matchers

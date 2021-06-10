@@ -1,11 +1,11 @@
 package uk.ac.wellcome.platform.storage.ingests_tracker.client
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
+import akka.stream.Materializer
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.json.JsonUtil._
@@ -14,55 +14,35 @@ import uk.ac.wellcome.platform.archive.common.ingests.models.{
   IngestID,
   IngestUpdate
 }
+import weco.http.client.{AkkaHttpClient, HttpClient}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait IngestTrackerClient {
+trait IngestTrackerClient extends Logging {
+  val client: HttpClient
+
+  implicit val ec: ExecutionContext
+  implicit val mat: Materializer
+
   def createIngest(
-    ingest: Ingest
-  ): Future[Either[IngestTrackerCreateError, Unit]]
-
-  def updateIngest(
-    ingestUpdate: IngestUpdate
-  ): Future[Either[IngestTrackerUpdateError, Ingest]]
-
-  def getIngest(id: IngestID): Future[Either[IngestTrackerGetError, Ingest]]
-}
-
-class AkkaIngestTrackerClient(trackerHost: Uri)(implicit as: ActorSystem)
-    extends IngestTrackerClient
-    with Logging {
-
-  implicit val ec: ExecutionContext = as.dispatcher
-
-  override def createIngest(
     ingest: Ingest
   ): Future[Either[IngestTrackerCreateError, Unit]] =
     for {
-      ingestEntity <- Marshal(ingest).to[RequestEntity]
-
-      requestUri = trackerHost.withPath(Path("/ingest"))
-
-      request = HttpRequest(
-        uri = requestUri,
-        method = HttpMethods.POST,
-        entity = ingestEntity
+      response <- client.post(
+        path = Path("ingest"),
+        body = Some(ingest)
       )
-
-      _ = info(f"Making request: $request")
-
-      response <- Http().singleRequest(request)
 
       result <- response.status match {
         case StatusCodes.Created =>
-          info(s"CREATED for POST to $requestUri with $ingest")
+          info(s"CREATED for POST to /ingest with $ingest")
           Future(Right(()))
         case StatusCodes.Conflict =>
-          info(s"Conflict for POST to $requestUri with $ingest")
+          info(s"Conflict for POST to /ingest with $ingest")
           Future(Left(IngestTrackerCreateConflictError(ingest)))
         case status =>
           val err = new Exception(s"$status for POST to IngestsTracker")
-          error(f"NOT OK for POST to $requestUri with $ingest", err)
+          error(f"NOT OK for POST to /ingest with $ingest", err)
           Future(Left(IngestTrackerUnknownCreateError(ingest, err)))
       }
     } yield result
@@ -74,7 +54,7 @@ class AkkaIngestTrackerClient(trackerHost: Uri)(implicit as: ActorSystem)
       ingestUpdateEntity <- Marshal(ingestUpdate).to[RequestEntity]
 
       path = Path(f"/ingest/${ingestUpdate.id}")
-      requestUri = trackerHost.withPath(path)
+      requestUri = client.baseUri.withPath(path)
 
       request = HttpRequest(
         uri = requestUri,
@@ -84,7 +64,7 @@ class AkkaIngestTrackerClient(trackerHost: Uri)(implicit as: ActorSystem)
 
       _ = info(f"Making request: $request")
 
-      response <- Http().singleRequest(request)
+      response <- client.singleRequest(request)
 
       ingest <- response.status match {
         case StatusCodes.OK =>
@@ -103,34 +83,30 @@ class AkkaIngestTrackerClient(trackerHost: Uri)(implicit as: ActorSystem)
       }
     } yield ingest
 
-  override def getIngest(
-    id: IngestID
-  ): Future[Either[IngestTrackerGetError, Ingest]] = {
-    val path = Path(s"/ingest/$id")
-    val requestUri = trackerHost.withPath(path)
-
-    val request = HttpRequest(
-      uri = requestUri,
-      method = HttpMethods.GET
-    )
-
-    info(s"Making request $request")
-
+  def getIngest(id: IngestID): Future[Either[IngestTrackerGetError, Ingest]] =
     for {
-      response <- Http().singleRequest(request)
+      response <- client.get(path = Path(s"ingest/$id"))
 
       ingest <- response.status match {
         case StatusCodes.OK =>
-          info(s"OK for GET to $requestUri")
+          info(s"OK for GET to /ingest/$id")
           Unmarshal(response.entity).to[Ingest].map(Right(_))
         case StatusCodes.NotFound =>
-          warn(s"Not Found for GET to $requestUri")
+          warn(s"Not Found for GET to /ingest/$id")
           Future(Left(IngestTrackerNotFoundError(id)))
         case status =>
           val err = new Exception(s"$status from IngestsTracker")
-          error(f"NOT OK for GET to $requestUri", err)
+          error(f"NOT OK for GET to /ingest/$id", err)
           Future(Left(IngestTrackerUnknownGetError(id, err)))
       }
     } yield ingest
-  }
+}
+
+class AkkaIngestTrackerClient(trackerHost: Uri)(
+  implicit
+  as: ActorSystem,
+  val mat: Materializer,
+  val ec: ExecutionContext)
+    extends IngestTrackerClient {
+  override val client: HttpClient = new AkkaHttpClient(trackerHost)
 }
