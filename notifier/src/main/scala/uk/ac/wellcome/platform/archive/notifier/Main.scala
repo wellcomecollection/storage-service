@@ -1,7 +1,6 @@
 package uk.ac.wellcome.platform.archive.notifier
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.Uri
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.http.typesafe.HTTPServerBuilder
@@ -38,7 +37,7 @@ object Main extends WellcomeTypesafeApp {
 
     val callbackUrlService = new CallbackUrlService(
       contextUrl = HTTPServerBuilder.buildContextURL(config),
-      client = new AkkaHttpClient(baseUri = Uri("none"))
+      client = new AkkaHttpClient()
     )
 
     new NotifierWorker(

@@ -109,5 +109,7 @@ class AkkaIngestTrackerClient(trackerHost: Uri)(
   val ec: ExecutionContext)
     extends IngestTrackerClient {
   override val client =
-    new AkkaHttpClient(trackerHost) with HttpGet with HttpPost
+    new AkkaHttpClient() with HttpGet with HttpPost {
+      override val baseUri: Uri = trackerHost
+    }
 }

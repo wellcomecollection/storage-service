@@ -176,5 +176,7 @@ class AkkaBagTrackerClient(trackerHost: Uri)(
   implicit actorSystem: ActorSystem, val ec: ExecutionContext, val mat: Materializer)
     extends BagTrackerClient {
   override val client =
-    new AkkaHttpClient(trackerHost) with HttpGet with HttpPost
+    new AkkaHttpClient() with HttpGet with HttpPost {
+      override val baseUri: Uri = trackerHost
+    }
 }

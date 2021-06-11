@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.archive.notifier.fixtures
 
 import java.net.URL
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.Uri
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
@@ -24,7 +23,7 @@ trait NotifierFixtures extends Akka with AlpakkaSQSWorkerFixtures {
   )(implicit actorSystem: ActorSystem): R = {
     val callbackUrlService = new CallbackUrlService(
       contextUrl = new URL("http://localhost/context.json"),
-      client = new AkkaHttpClient(baseUri = Uri("none"))
+      client = new AkkaHttpClient()
     )
     testWith(callbackUrlService)
   }
