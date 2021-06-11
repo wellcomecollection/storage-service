@@ -42,7 +42,10 @@ class CallbackUrlService(contextUrl: URL, client: HttpClient)(
     )
   }
 
-  def getHttpResponse(ingest: Ingest, callbackUri: URI): Future[Try[HttpResponse]] =
+  def getHttpResponse(
+    ingest: Ingest,
+    callbackUri: URI
+  ): Future[Try[HttpResponse]] =
     client
       .singleRequest(
         buildHttpRequest(ingest, callbackUri)

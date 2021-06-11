@@ -106,8 +106,8 @@ class AkkaIngestTrackerClient(trackerHost: Uri)(
   implicit
   as: ActorSystem,
   val mat: Materializer,
-  val ec: ExecutionContext)
-    extends IngestTrackerClient {
+  val ec: ExecutionContext
+) extends IngestTrackerClient {
   override val client =
     new AkkaHttpClient() with HttpGet with HttpPost {
       override val baseUri: Uri = trackerHost

@@ -81,9 +81,13 @@ trait BagTrackerClient extends Logging {
       params = Map("version" -> version.underlying.toString)
     )
 
-  implicit val um: Unmarshaller[HttpEntity, StorageManifest] = CirceMarshalling.fromDecoder[StorageManifest]
+  implicit val um: Unmarshaller[HttpEntity, StorageManifest] =
+    CirceMarshalling.fromDecoder[StorageManifest]
 
-  private def getManifest(path: Path, params: Map[String, String] = Map.empty): Future[Either[BagTrackerGetError, StorageManifest]] = {
+  private def getManifest(
+    path: Path,
+    params: Map[String, String] = Map.empty
+  ): Future[Either[BagTrackerGetError, StorageManifest]] = {
     val httpResult = for {
       response <- client.get(path, params = params)
 
@@ -144,7 +148,10 @@ trait BagTrackerClient extends Logging {
 
         case status =>
           val err = new Throwable(s"$status from bag tracker API")
-          error(s"Unexpected status from GET to $path with $params: $status", err)
+          error(
+            s"Unexpected status from GET to $path with $params: $status",
+            err
+          )
           Future(Left(BagTrackerUnknownListError(err)))
       }
     } yield result
@@ -173,8 +180,10 @@ trait BagTrackerClient extends Logging {
 }
 
 class AkkaBagTrackerClient(trackerHost: Uri)(
-  implicit actorSystem: ActorSystem, val ec: ExecutionContext, val mat: Materializer)
-    extends BagTrackerClient {
+  implicit actorSystem: ActorSystem,
+  val ec: ExecutionContext,
+  val mat: Materializer
+) extends BagTrackerClient {
   override val client =
     new AkkaHttpClient() with HttpGet with HttpPost {
       override val baseUri: Uri = trackerHost
