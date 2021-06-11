@@ -18,6 +18,7 @@ import uk.ac.wellcome.platform.archive.notifier.services.{
 import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
 import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
 import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
+import weco.http.client.AkkaHttpClient
 
 import scala.concurrent.ExecutionContext
 
@@ -35,7 +36,8 @@ object Main extends WellcomeTypesafeApp {
       SQSBuilder.buildSQSAsyncClient(config)
 
     val callbackUrlService = new CallbackUrlService(
-      contextUrl = HTTPServerBuilder.buildContextURL(config)
+      contextUrl = HTTPServerBuilder.buildContextURL(config),
+      client = new AkkaHttpClient()
     )
 
     new NotifierWorker(

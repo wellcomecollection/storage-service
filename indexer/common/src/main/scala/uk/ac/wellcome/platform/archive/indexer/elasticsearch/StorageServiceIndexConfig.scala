@@ -2,26 +2,23 @@ package uk.ac.wellcome.platform.archive.indexer.elasticsearch
 
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.analysis.Analysis
+import com.sksamuel.elastic4s.fields.{ElasticField, KeywordField}
+import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
 import com.sksamuel.elastic4s.requests.mappings.dynamictemplate.DynamicMapping
-import com.sksamuel.elastic4s.requests.mappings.{
-  FieldDefinition,
-  KeywordField,
-  MappingDefinition
-}
 import uk.ac.wellcome.elasticsearch.IndexConfig
 
 /** Helpers for creating Elasticsearch index definitions based on
   * the display models.
   *
   */
-trait StorageServiceIndexConfig extends IndexConfig {
+trait StorageServiceIndexConfig extends IndexConfig with ElasticFieldOps {
   protected val displayProviderMappingFields: Seq[KeywordField] =
     Seq(
       keywordField("id"),
       keywordField("type")
     )
 
-  protected val displayLocationFields: Seq[FieldDefinition] =
+  protected val displayLocationFields: Seq[ElasticField] =
     Seq(
       objectField("provider").fields(displayProviderMappingFields),
       keywordField("bucket"),
@@ -29,20 +26,20 @@ trait StorageServiceIndexConfig extends IndexConfig {
       keywordField("type")
     )
 
-  protected val displayBagInfoFields: Seq[FieldDefinition] =
+  protected val displayBagInfoFields: Seq[ElasticField] =
     Seq(
       keywordField("externalIdentifier"),
       keywordField("version"),
       keywordField("type")
     )
 
-  protected val displaySpaceFields: Seq[FieldDefinition] =
+  protected val displaySpaceFields: Seq[ElasticField] =
     Seq(
       keywordField("id"),
       keywordField("type")
     )
 
-  protected val fields: Seq[FieldDefinition]
+  protected val fields: Seq[ElasticField]
 
   def mapping: MappingDefinition =
     properties(fields).dynamic(DynamicMapping.Strict)

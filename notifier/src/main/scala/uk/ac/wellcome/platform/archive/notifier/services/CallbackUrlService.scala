@@ -1,9 +1,5 @@
 package uk.ac.wellcome.platform.archive.notifier.services
 
-import java.net.{URI, URL}
-
-import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import grizzled.slf4j.Logging
 import io.circe.Printer
@@ -11,14 +7,16 @@ import io.circe.syntax._
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.display.ingests.ResponseDisplayIngest
+import weco.http.client.HttpClient
 
+import java.net.{URI, URL}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-class CallbackUrlService(contextUrl: URL)(
-  implicit actorSystem: ActorSystem,
-  ec: ExecutionContext
+class CallbackUrlService(contextUrl: URL, client: HttpClient)(
+  implicit ec: ExecutionContext
 ) extends Logging {
+
   def buildHttpRequest(ingest: Ingest, callbackUri: URI): HttpRequest = {
     val json = ResponseDisplayIngest(
       ingest = ingest,
@@ -47,14 +45,11 @@ class CallbackUrlService(contextUrl: URL)(
   def getHttpResponse(
     ingest: Ingest,
     callbackUri: URI
-  ): Future[Try[HttpResponse]] = {
-    val request = buildHttpRequest(ingest, callbackUri)
-
-    Http()
-      .singleRequest(request)
-      .map { resp =>
-        Success(resp)
-      }
+  ): Future[Try[HttpResponse]] =
+    client
+      .singleRequest(
+        buildHttpRequest(ingest, callbackUri)
+      )
+      .map { Success(_) }
       .recover { case err => Failure(err) }
-  }
 }

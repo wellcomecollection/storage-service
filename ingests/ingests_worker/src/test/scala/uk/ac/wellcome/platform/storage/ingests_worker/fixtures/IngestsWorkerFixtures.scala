@@ -1,7 +1,8 @@
 package uk.ac.wellcome.platform.storage.ingests_worker.fixtures
 
-import java.time.Instant
+import akka.stream.Materializer
 
+import java.time.Instant
 import org.scalatest.concurrent.ScalaFutures
 import uk.ac.wellcome.akka.fixtures.Akka
 import uk.ac.wellcome.fixtures.TestWith
@@ -19,7 +20,8 @@ import uk.ac.wellcome.platform.storage.ingests_tracker.client._
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestTrackerFixtures
 import uk.ac.wellcome.platform.storage.ingests_worker.services.IngestsWorkerService
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait IngestsWorkerFixtures
     extends ScalaFutures
@@ -42,6 +44,8 @@ trait IngestsWorkerFixtures
 
   class FakeIngestTrackerClient(
     response: Future[Either[IngestTrackerUpdateError, Ingest]]
+  )(
+    implicit val ec: ExecutionContext
   ) extends IngestTrackerClient {
     override def updateIngest(
       ingestUpdate: IngestUpdate
@@ -57,6 +61,9 @@ trait IngestsWorkerFixtures
       id: IngestID
     ): Future[Either[IngestTrackerGetError, Ingest]] =
       Future.failed(new Throwable("BOOM!"))
+
+    override val client = null
+    override implicit val mat: Materializer = null
   }
 
   def successfulClient(ingest: Ingest) = new FakeIngestTrackerClient(

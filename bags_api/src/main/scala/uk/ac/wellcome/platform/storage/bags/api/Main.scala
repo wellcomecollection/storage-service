@@ -60,15 +60,16 @@ object Main extends WellcomeTypesafeApp {
       keyPrefix = "responses"
     )
 
+    val client = new AkkaBagTrackerClient(
+      trackerHost = config.requireString("bags.tracker.host")
+    )
+
     val router: BagsApi = new BagsApi {
       override val httpServerConfig: HTTPServerConfig =
         HTTPServerBuilder.buildHTTPServerConfig(config)
       override implicit val ec: ExecutionContext = ecMain
 
-      override val bagTrackerClient: BagTrackerClient =
-        new AkkaBagTrackerClient(
-          trackerHost = config.requireString("bags.tracker.host")
-        )
+      override val bagTrackerClient: BagTrackerClient = client
 
       override val s3Uploader: S3Uploader = uploader
       override val s3Prefix: S3ObjectLocationPrefix = locationPrefix

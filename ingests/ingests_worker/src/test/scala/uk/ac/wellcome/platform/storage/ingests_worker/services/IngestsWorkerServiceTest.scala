@@ -22,6 +22,8 @@ import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerAp
 import uk.ac.wellcome.platform.storage.ingests_worker.fixtures.IngestsWorkerFixtures
 import weco.http.fixtures.HttpFixtures
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class IngestsWorkerServiceTest
     extends AnyFunSpec
     with Matchers
