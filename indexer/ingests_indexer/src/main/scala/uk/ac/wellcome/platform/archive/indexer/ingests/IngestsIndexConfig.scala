@@ -14,7 +14,7 @@ object IngestsIndexConfig extends StorageServiceIndexConfig {
   private val displayCallbackFields: Seq[ElasticField] =
     Seq(
       keywordField("url"),
-      objectField("status").fields(displayStatusFields),
+      objectField("status").fields(displayStatusFields: _*),
       keywordField("type")
     )
 
@@ -33,20 +33,20 @@ object IngestsIndexConfig extends StorageServiceIndexConfig {
 
   private val bagFields: Seq[ElasticField] =
     Seq(
-      objectField("info").fields(displayBagInfoFields),
+      objectField("info").fields(displayBagInfoFields: _*),
       keywordField("type")
     )
 
   override protected val fields: Seq[ElasticField] =
     Seq(
       keywordField("id"),
-      objectField("sourceLocation").fields(displayLocationFields),
-      objectField("callback").fields(displayCallbackFields),
-      objectField("ingestType").fields(displayIngestTypeFields),
-      objectField("space").fields(displaySpaceFields),
-      objectField("status").fields(displayStatusFields),
-      objectField("bag").fields(bagFields),
-      objectField("events").fields(displayIngestEventFields),
+      objectField("sourceLocation").fields(displayLocationFields: _*),
+      objectField("callback").fields(displayCallbackFields: _*),
+      objectField("ingestType").fields(displayIngestTypeFields: _*),
+      objectField("space").fields(displaySpaceFields: _*),
+      objectField("status").fields(displayStatusFields: _*),
+      objectField("bag").fields(bagFields: _*),
+      objectField("events").fields(displayIngestEventFields: _*),
       dateField("createdDate"),
       dateField("lastModifiedDate"),
       keywordField("type"),
