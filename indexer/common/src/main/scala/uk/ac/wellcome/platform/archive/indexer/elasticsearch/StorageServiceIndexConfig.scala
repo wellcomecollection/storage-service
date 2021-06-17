@@ -6,6 +6,7 @@ import com.sksamuel.elastic4s.fields.{ElasticField, KeywordField}
 import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
 import com.sksamuel.elastic4s.requests.mappings.dynamictemplate.DynamicMapping
 import uk.ac.wellcome.elasticsearch.IndexConfig
+import weco.elasticsearch.ElasticFieldOps
 
 /** Helpers for creating Elasticsearch index definitions based on
   * the display models.
@@ -20,7 +21,7 @@ trait StorageServiceIndexConfig extends IndexConfig with ElasticFieldOps {
 
   protected val displayLocationFields: Seq[ElasticField] =
     Seq(
-      objectField("provider").fields(displayProviderMappingFields),
+      objectField("provider").fields(displayProviderMappingFields: _*),
       keywordField("bucket"),
       keywordField("path"),
       keywordField("type")
