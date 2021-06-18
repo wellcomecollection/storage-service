@@ -28,9 +28,9 @@ object BagsIndexConfig extends StorageServiceIndexConfig {
       keywordField("space"),
       intField("version"),
       dateField("createdDate"),
-      objectField("info").fields(infoFields),
-      objectField("location").fields(locationFields),
-      objectField("replicaLocations").fields(locationFields),
+      objectField("info").fields(infoFields: _*),
+      objectField("location").fields(locationFields: _*),
+      objectField("replicaLocations").fields(locationFields: _*),
       intField("filesCount"),
       longField("filesTotalSize")
     )

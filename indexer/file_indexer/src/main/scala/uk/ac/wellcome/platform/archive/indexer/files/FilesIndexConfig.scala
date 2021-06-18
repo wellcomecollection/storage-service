@@ -24,11 +24,11 @@ object FilesIndexConfig extends StorageServiceIndexConfig {
     Seq(
       keywordField("space"),
       keywordField("externalIdentifier"),
-      objectField("location").fields(locationFields),
+      objectField("location").fields(locationFields: _*),
       keywordField("name"),
       keywordField("suffix"),
       longField("size"),
-      objectField("checksum").fields(checksumFields),
+      objectField("checksum").fields(checksumFields: _*),
       dateField("createdDate")
     )
 }
