@@ -4,4 +4,3 @@ resource "aws_s3_bucket_object" "context" {
   content = file("${path.module}/context.json")
   etag    = filemd5("${path.module}/context.json")
 }
-

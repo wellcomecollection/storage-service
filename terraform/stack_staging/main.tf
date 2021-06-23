@@ -32,7 +32,6 @@ module "stack_staging" {
   replica_primary_bucket_name = data.terraform_remote_state.critical_staging.outputs.replica_primary_bucket_name
   replica_glacier_bucket_name = data.terraform_remote_state.critical_staging.outputs.replica_glacier_bucket_name
   azure_container_name        = "wellcomecollection-storage-staging-replica-netherlands"
-  static_content_bucket_name  = data.terraform_remote_state.critical_staging.outputs.static_content_bucket_name
 
   vhs_manifests_bucket_name = data.terraform_remote_state.critical_staging.outputs.vhs_manifests_bucket_name
   vhs_manifests_table_name  = data.terraform_remote_state.critical_staging.outputs.vhs_manifests_table_name

@@ -769,5 +769,5 @@ module "api" {
     "${var.cognito_storage_api_identifier}/bags",
   ]
 
-  static_content_bucket_name = var.static_content_bucket_name
+  static_content_bucket_name = aws_s3_bucket.static_content.bucket
 }

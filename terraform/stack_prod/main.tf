@@ -33,8 +33,6 @@ module "stack_prod" {
   replica_glacier_bucket_name = data.terraform_remote_state.critical_prod.outputs.replica_glacier_bucket_name
   azure_container_name        = "wellcomecollection-storage-replica-netherlands"
 
-  static_content_bucket_name = data.terraform_remote_state.critical_prod.outputs.static_content_bucket_name
-
   vhs_manifests_bucket_name = data.terraform_remote_state.critical_prod.outputs.vhs_manifests_bucket_name
   vhs_manifests_table_name  = data.terraform_remote_state.critical_prod.outputs.vhs_manifests_table_name
 

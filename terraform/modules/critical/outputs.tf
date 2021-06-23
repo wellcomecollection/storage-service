@@ -34,10 +34,6 @@ output "ingests_table_arn" {
   value = aws_dynamodb_table.ingests.arn
 }
 
-output "static_content_bucket_name" {
-  value = aws_s3_bucket.static_content.bucket
-}
-
 # Replica buckets
 
 output "replica_primary_bucket_name" {
