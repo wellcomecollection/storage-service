@@ -4,7 +4,7 @@ resource "aws_dynamodb_table" "ingests" {
   write_capacity = 1
   hash_key       = "id"
 
-  billing_mode = var.billing_mode
+  billing_mode = "PAY_PER_REQUEST"
 
   attribute {
     name = "id"
