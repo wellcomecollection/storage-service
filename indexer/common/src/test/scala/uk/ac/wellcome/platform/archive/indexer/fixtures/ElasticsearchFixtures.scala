@@ -9,6 +9,8 @@ import io.circe.Decoder
 import org.scalatest.Suite
 import uk.ac.wellcome.json.JsonUtil.fromJson
 import uk.ac.wellcome.elasticsearch.test.fixtures
+import uk.ac.wellcome.fixtures.TestWith
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.StorageServiceIndexConfig
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
@@ -18,6 +20,13 @@ trait ElasticsearchFixtures extends fixtures.ElasticsearchFixtures {
 
   protected val esHost = "localhost"
   protected val esPort = 9200
+
+  def withLocalElasticsearchIndex[R](
+    config: StorageServiceIndexConfig
+  )(testWith: TestWith[Index, R]): R =
+    withLocalElasticsearchIndex(config.config) { index =>
+      testWith(index)
+    }
 
   protected def getT[T](index: Index, id: String)(
     implicit decoder: Decoder[T]

@@ -2,7 +2,6 @@ package uk.ac.wellcome.platform.archive.indexer
 
 import com.sksamuel.elastic4s.ElasticDsl.{properties, textField}
 import com.sksamuel.elastic4s.analysis.Analysis
-import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
 import com.sksamuel.elastic4s.requests.mappings.dynamictemplate.DynamicMapping
 import io.circe.Decoder
 import org.scalatest.EitherValues
@@ -13,6 +12,7 @@ import uk.ac.wellcome.messaging.worker.models.{
   NonDeterministicFailure,
   Successful
 }
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.StorageServiceIndexConfig
 import uk.ac.wellcome.platform.archive.indexer.fixtures.IndexerFixtures
 
 abstract class IndexerWorkerTestCases[SourceT, T, IndexedT](
@@ -28,19 +28,17 @@ abstract class IndexerWorkerTestCases[SourceT, T, IndexedT](
   // We should have tests to test failure modes in load
   // If this code is shared with the catalogue we should add those.
 
-  val indexConfig: IndexConfig
+  val indexConfig: StorageServiceIndexConfig
 
   def createT: (SourceT, String)
 
   def convertToIndexedT(sourceT: SourceT): IndexedT
 
-  val badConfig: IndexConfig = new IndexConfig {
-    override def mapping: MappingDefinition =
-      properties(Seq(textField("name")))
-        .dynamic(DynamicMapping.Strict)
-
-    override def analysis: Analysis = Analysis(analyzers = List())
-  }
+  val badConfig: IndexConfig = IndexConfig(
+    mapping = properties(Seq(textField("name")))
+      .dynamic(DynamicMapping.Strict),
+    analysis = Analysis(analyzers = List())
+  )
 
   it("processes a single message") {
     val (t, id) = createT

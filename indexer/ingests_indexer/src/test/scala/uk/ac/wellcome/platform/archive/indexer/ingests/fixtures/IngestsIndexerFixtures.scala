@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.indexer.ingests.fixtures
 import com.sksamuel.elastic4s.Index
 import io.circe.Decoder
 import org.scalatest.Suite
-import uk.ac.wellcome.elasticsearch.IndexConfig
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS
@@ -12,7 +11,8 @@ import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
 import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
   Indexer,
-  IndexerWorker
+  IndexerWorker,
+  StorageServiceIndexConfig
 }
 import uk.ac.wellcome.platform.archive.indexer.fixtures.IndexerFixtures
 import uk.ac.wellcome.platform.archive.indexer.ingests.{
@@ -28,7 +28,7 @@ trait IngestsIndexerFixtures
     extends IndexerFixtures[Ingest, Ingest, IndexedIngest]
     with IngestGenerators { this: Suite =>
 
-  val indexConfig: IndexConfig = IngestsIndexConfig
+  val indexConfig: StorageServiceIndexConfig = IngestsIndexConfig
 
   def createT: (Ingest, String) = {
     val ingest = createIngest
