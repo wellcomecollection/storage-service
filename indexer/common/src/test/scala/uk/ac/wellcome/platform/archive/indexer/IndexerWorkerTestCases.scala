@@ -35,9 +35,8 @@ abstract class IndexerWorkerTestCases[SourceT, T, IndexedT](
   def convertToIndexedT(sourceT: SourceT): IndexedT
 
   val badConfig: IndexConfig = IndexConfig(
-    mapping =
-      properties(Seq(textField("name")))
-        .dynamic(DynamicMapping.Strict),
+    mapping = properties(Seq(textField("name")))
+      .dynamic(DynamicMapping.Strict),
     analysis = Analysis(analyzers = List())
   )
 

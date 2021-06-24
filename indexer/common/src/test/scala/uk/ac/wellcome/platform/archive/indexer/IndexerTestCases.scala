@@ -87,9 +87,8 @@ trait IndexerTestCases[Document, IndexedDocument]
       val document = createDocument
 
       val badConfig = IndexConfig(
-        mapping =
-          properties(Seq(textField("name")))
-            .dynamic(DynamicMapping.Strict),
+        mapping = properties(Seq(textField("name")))
+          .dynamic(DynamicMapping.Strict),
         analysis = Analysis(analyzers = List())
       )
 

@@ -21,7 +21,9 @@ trait ElasticsearchFixtures extends fixtures.ElasticsearchFixtures {
   protected val esHost = "localhost"
   protected val esPort = 9200
 
-  def withLocalElasticsearchIndex[R](config: StorageServiceIndexConfig)(testWith: TestWith[Index, R]): R =
+  def withLocalElasticsearchIndex[R](
+    config: StorageServiceIndexConfig
+  )(testWith: TestWith[Index, R]): R =
     withLocalElasticsearchIndex(config.config) { index =>
       testWith(index)
     }
