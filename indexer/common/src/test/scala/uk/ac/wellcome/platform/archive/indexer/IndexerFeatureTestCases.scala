@@ -4,7 +4,7 @@ import io.circe.{Decoder, Encoder}
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.elasticsearch.IndexConfig
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.StorageServiceIndexConfig
 import uk.ac.wellcome.platform.archive.indexer.fixtures.IndexerFixtures
 
 abstract class IndexerFeatureTestCases[SourceT, T, IndexedT](
@@ -16,7 +16,7 @@ abstract class IndexerFeatureTestCases[SourceT, T, IndexedT](
     with EitherValues
     with IndexerFixtures[SourceT, T, IndexedT] {
 
-  val indexConfig: IndexConfig
+  val indexConfig: StorageServiceIndexConfig
 
   def convertToIndexedT(sourceT: SourceT): IndexedT
 

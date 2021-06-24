@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.indexer.bag.fixtures
 import com.sksamuel.elastic4s.Index
 import io.circe.Decoder
 import org.scalatest.Suite
-import uk.ac.wellcome.elasticsearch.IndexConfig
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS
@@ -35,7 +34,8 @@ import uk.ac.wellcome.platform.archive.indexer.bags.{
 }
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
   Indexer,
-  IndexerWorker
+  IndexerWorker,
+  StorageServiceIndexConfig
 }
 import uk.ac.wellcome.platform.archive.indexer.fixtures.IndexerFixtures
 
@@ -58,7 +58,7 @@ trait BagIndexerFixtures
   ): Indexer[StorageManifest, IndexedStorageManifest] =
     new BagIndexer(client = elasticClient, index = index)
 
-  val indexConfig: IndexConfig = BagsIndexConfig
+  val indexConfig: StorageServiceIndexConfig = BagsIndexConfig
 
   val space: StorageSpace = createStorageSpace
   val externalIdentifier: ExternalIdentifier = createExternalIdentifier

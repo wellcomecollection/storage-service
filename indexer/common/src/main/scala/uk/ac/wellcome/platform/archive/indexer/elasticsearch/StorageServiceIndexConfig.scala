@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.indexer.elasticsearch
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.analysis.Analysis
 import com.sksamuel.elastic4s.fields.{ElasticField, KeywordField}
-import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
 import com.sksamuel.elastic4s.requests.mappings.dynamictemplate.DynamicMapping
 import uk.ac.wellcome.elasticsearch.IndexConfig
 import weco.elasticsearch.ElasticFieldOps
@@ -12,7 +11,7 @@ import weco.elasticsearch.ElasticFieldOps
   * the display models.
   *
   */
-trait StorageServiceIndexConfig extends IndexConfig with ElasticFieldOps {
+trait StorageServiceIndexConfig extends ElasticFieldOps {
   protected val displayProviderMappingFields: Seq[KeywordField] =
     Seq(
       keywordField("id"),
@@ -42,8 +41,8 @@ trait StorageServiceIndexConfig extends IndexConfig with ElasticFieldOps {
 
   protected val fields: Seq[ElasticField]
 
-  def mapping: MappingDefinition =
-    properties(fields).dynamic(DynamicMapping.Strict)
-
-  val analysis: Analysis = Analysis(analyzers = List())
+  lazy val config: IndexConfig = IndexConfig(
+    mapping = properties(fields).dynamic(DynamicMapping.Strict),
+    analysis = Analysis(analyzers = List())
+  )
 }

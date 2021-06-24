@@ -3,7 +3,6 @@ package uk.ac.wellcome.platform.archive.indexer
 import com.sksamuel.elastic4s.ElasticDsl.{matchAllQuery, properties, textField}
 import com.sksamuel.elastic4s.analysis.Analysis
 import com.sksamuel.elastic4s.http.JavaClientExceptionWrapper
-import com.sksamuel.elastic4s.requests.mappings.MappingDefinition
 import com.sksamuel.elastic4s.requests.mappings.dynamictemplate.DynamicMapping
 import com.sksamuel.elastic4s.{ElasticClient, Index}
 import io.circe.Json
@@ -11,7 +10,10 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{Assertion, EitherValues}
 import uk.ac.wellcome.elasticsearch.{ElasticClientBuilder, IndexConfig}
-import uk.ac.wellcome.platform.archive.indexer.elasticsearch.Indexer
+import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
+  Indexer,
+  StorageServiceIndexConfig
+}
 import uk.ac.wellcome.platform.archive.indexer.fixtures.ElasticsearchFixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -22,7 +24,7 @@ trait IndexerTestCases[Document, IndexedDocument]
     with EitherValues
     with ElasticsearchFixtures {
 
-  val indexConfig: IndexConfig
+  val indexConfig: StorageServiceIndexConfig
 
   def createIndexer(
     client: ElasticClient,
@@ -84,13 +86,12 @@ trait IndexerTestCases[Document, IndexedDocument]
     it("returns a Left if the document can't be indexed correctly") {
       val document = createDocument
 
-      val badConfig = new IndexConfig {
-        override def mapping: MappingDefinition =
+      val badConfig = IndexConfig(
+        mapping =
           properties(Seq(textField("name")))
-            .dynamic(DynamicMapping.Strict)
-
-        override def analysis: Analysis = Analysis(analyzers = List())
-      }
+            .dynamic(DynamicMapping.Strict),
+        analysis = Analysis(analyzers = List())
+      )
 
       withLocalElasticsearchIndex(badConfig) { index =>
         val indexer = createIndexer(elasticClient, index = index)

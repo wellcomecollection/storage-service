@@ -41,7 +41,7 @@ object Main extends WellcomeTypesafeApp {
     val indexCreator = new ElasticsearchIndexCreator(
       elasticClient = elasticClient,
       index = index,
-      config = IngestsIndexConfig
+      config = IngestsIndexConfig.config
     )
 
     indexCreator.create

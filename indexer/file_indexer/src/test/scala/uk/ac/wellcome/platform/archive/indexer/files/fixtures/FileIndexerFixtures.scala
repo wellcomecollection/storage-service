@@ -4,7 +4,6 @@ import java.time.Instant
 import com.sksamuel.elastic4s.Index
 import io.circe.Decoder
 import org.scalatest.Suite
-import uk.ac.wellcome.elasticsearch.IndexConfig
 import uk.ac.wellcome.fixtures.TestWith
 import uk.ac.wellcome.json.JsonUtil._
 import uk.ac.wellcome.messaging.fixtures.SQS.Queue
@@ -14,7 +13,8 @@ import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryS3StorageLoc
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.models.FileContext
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
   Indexer,
-  IndexerWorker
+  IndexerWorker,
+  StorageServiceIndexConfig
 }
 import uk.ac.wellcome.platform.archive.indexer.files.models.IndexedFile
 import uk.ac.wellcome.platform.archive.indexer.files.{
@@ -30,7 +30,7 @@ trait FileIndexerFixtures
     extends IndexerFixtures[Seq[FileContext], FileContext, IndexedFile]
     with StorageManifestGenerators { this: Suite =>
 
-  val indexConfig: IndexConfig = FilesIndexConfig
+  val indexConfig: StorageServiceIndexConfig = FilesIndexConfig
 
   def createContext: FileContext =
     FileContext(
