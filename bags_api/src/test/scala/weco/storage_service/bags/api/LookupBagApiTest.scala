@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.bags.api
+package weco.storage_service.bags_api
 
 import java.time.format.DateTimeFormatter
 
@@ -15,13 +15,13 @@ import weco.storage_service.bagit.models.{
   BagVersion,
   ExternalIdentifier
 }
-import weco.storage.generators.{
+import weco.storage_service.generators.{
   BagIdGenerators,
   StorageManifestGenerators
 }
 import weco.storage_service.storage.models.StorageManifest
 import weco.storage_service.display.fixtures.DisplayJsonHelpers
-import uk.ac.wellcome.platform.storage.bags.api.fixtures.BagsApiFixture
+import weco.storage_service.bags_api.fixtures.BagsApiFixture
 import weco.http.monitoring.HttpMetricResults
 
 /** Tests for GET /bags/:space/:id.

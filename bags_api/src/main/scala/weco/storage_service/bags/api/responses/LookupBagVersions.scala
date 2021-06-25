@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.bags.api.responses
+package weco.storage_service.bags_api.responses
 
 import akka.http.scaladsl.server.Route
 import weco.storage_service.bag_tracker.client.{
@@ -7,7 +7,7 @@ import weco.storage_service.bag_tracker.client.{
   BagTrackerUnknownListError
 }
 import weco.storage_service.bagit.models.{BagId, BagVersion}
-import uk.ac.wellcome.platform.storage.bags.api.models.DisplayBagVersionList
+import weco.storage_service.bags_api.models.DisplayBagVersionList
 import weco.http.FutureDirectives
 import weco.http.models.ContextResponse
 

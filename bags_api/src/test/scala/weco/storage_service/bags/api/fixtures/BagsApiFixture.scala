@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.bags.api.fixtures
+package weco.storage_service.bags_api.fixtures
 
 import java.net.URL
 
@@ -18,9 +18,9 @@ import weco.storage_service.bag_tracker.fixtures.{
 import weco.storage_service.bag_tracker.storage.StorageManifestDao
 import weco.storage_service.bag_tracker.storage.memory.MemoryStorageManifestDao
 import weco.storage_service.bagit.models.{BagId, BagVersion}
-import weco.storage.generators.StorageRandomGenerators
+import weco.storage_service.generators.StorageRandomGenerators
 import weco.storage_service.storage.models.StorageManifest
-import uk.ac.wellcome.platform.storage.bags.api.BagsApi
+import weco.storage_service.bags_api.BagsApi
 import weco.storage._
 import weco.storage.fixtures.S3Fixtures
 import weco.storage.s3.S3ObjectLocationPrefix

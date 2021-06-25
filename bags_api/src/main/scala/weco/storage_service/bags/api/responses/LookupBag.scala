@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.bags.api.responses
+package weco.storage_service.bags_api.responses
 
 import akka.http.scaladsl.model.headers.ETag
 import akka.http.scaladsl.server.Route

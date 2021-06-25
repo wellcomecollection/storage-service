@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.bags.api
+package weco.storage_service.bags_api
 
 import java.net.URL
 

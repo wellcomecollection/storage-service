@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.bags.api
+package weco.storage_service.bags_api
 
 import akka.http.scaladsl.model.StatusCodes.NotFound
 import akka.http.scaladsl.model.headers.Location
@@ -11,7 +11,7 @@ import weco.storage_service.bagit.models.{
 import weco.storage_service.http.LookupExternalIdentifier
 import weco.storage_service.storage.LargeResponses
 import weco.storage_service.storage.models.StorageSpace
-import uk.ac.wellcome.platform.storage.bags.api.responses.{
+import weco.storage_service.bags_api.responses.{
   LookupBag,
   LookupBagVersions
 }
