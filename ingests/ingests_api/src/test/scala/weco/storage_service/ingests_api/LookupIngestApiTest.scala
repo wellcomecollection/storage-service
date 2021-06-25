@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.ingests.api
+package weco.storage_service.ingests_api
 
 import java.time.Instant
 
@@ -11,7 +11,7 @@ import org.scalatest.matchers.should.Matchers
 import weco.json.utils.JsonAssertions
 import weco.storage_service.bagit.models.BagVersion
 import weco.storage_service.ingests.models.S3SourceLocation
-import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
+import weco.storage_service.ingests_api.fixtures.IngestsApiFixture
 import weco.http.monitoring.HttpMetricResults
 
 /** Tests for GET /ingests/:id

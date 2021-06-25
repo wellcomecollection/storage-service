@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.ingests.api.responses
+package weco.storage_service.ingests_api.responses
 
 import java.util.UUID
 

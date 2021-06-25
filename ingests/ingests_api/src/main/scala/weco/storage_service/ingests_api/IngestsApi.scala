@@ -1,10 +1,10 @@
-package uk.ac.wellcome.platform.storage.ingests.api
+package weco.storage_service.ingests_api
 
 import java.util.UUID
 
 import akka.http.scaladsl.server._
 import weco.storage_service.display.ingests.RequestDisplayIngest
-import uk.ac.wellcome.platform.storage.ingests.api.responses.{
+import weco.storage_service.ingests_api.responses.{
   CreateIngest,
   LookupIngest
 }

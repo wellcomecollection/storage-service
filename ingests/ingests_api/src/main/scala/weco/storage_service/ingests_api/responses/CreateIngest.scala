@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.ingests.api.responses
+package weco.storage_service.ingests_api.responses
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.Location
@@ -12,7 +12,7 @@ import weco.storage_service.display.ingests.{
   RequestDisplayIngest,
   ResponseDisplayIngest
 }
-import uk.ac.wellcome.platform.storage.ingests.api.services.IngestCreator
+import weco.storage_service.ingests_api.services.IngestCreator
 import weco.http.FutureDirectives
 import weco.http.models.{ContextResponse, DisplayError, HTTPServerConfig}
 

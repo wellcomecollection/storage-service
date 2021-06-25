@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.ingests.api.fixtures
+package weco.storage_service.ingests_api.fixtures
 
 import java.net.URL
 
@@ -9,10 +9,10 @@ import weco.json.JsonUtil.fromJson
 import weco.messaging.memory.MemoryMessageSender
 import weco.monitoring.Metrics
 import weco.monitoring.memory.MemoryMetrics
-import weco.storage.generators.IngestGenerators
+import weco.storage_service.generators.IngestGenerators
 import weco.storage_service.ingests.models.Ingest
-import uk.ac.wellcome.platform.storage.ingests.api.IngestsApi
-import uk.ac.wellcome.platform.storage.ingests.api.services.IngestCreator
+import weco.storage_service.ingests_api.IngestsApi
+import weco.storage_service.ingests_api.services.IngestCreator
 import weco.storage_service.ingests_tracker.client.{
   AkkaIngestTrackerClient,
   IngestTrackerClient

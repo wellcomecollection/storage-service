@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.ingests.api
+package weco.storage_service.ingests_api
 
 import java.net.URL
 
@@ -9,7 +9,7 @@ import weco.http.typesafe.HTTPServerBuilder
 import weco.messaging.sns.SNSConfig
 import weco.messaging.typesafe.SNSBuilder
 import weco.monitoring.typesafe.CloudWatchBuilder
-import uk.ac.wellcome.platform.storage.ingests.api.services.IngestCreator
+import weco.storage_service.ingests_api.services.IngestCreator
 import weco.storage_service.ingests_tracker.client.{
   AkkaIngestTrackerClient,
   IngestTrackerClient

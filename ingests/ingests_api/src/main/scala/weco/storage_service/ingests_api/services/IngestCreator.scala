@@ -1,7 +1,7 @@
-package uk.ac.wellcome.platform.storage.ingests.api.services
+package weco.storage_service.ingests_api.services
 
 import weco.messaging.MessageSender
-import weco.storage.SourceLocationPayload
+import weco.storage_service.SourceLocationPayload
 import weco.storage_service.ingests.models.Ingest
 import weco.storage_service.ingests_tracker.client.{
   IngestTrackerClient,

@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.ingests.api
+package weco.storage_service.ingests_api
 
 import java.time.Instant
 import java.util.UUID
@@ -14,14 +14,14 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.json.JsonUtil._
 import weco.json.utils.JsonAssertions
-import weco.storage.SourceLocationPayload
+import weco.storage_service.SourceLocationPayload
 import weco.storage_service.bagit.models.ExternalIdentifier
-import weco.storage.generators.StorageRandomGenerators
+import weco.storage_service.generators.StorageRandomGenerators
 import weco.storage_service.ingests.models._
 import weco.storage_service.storage.models.StorageSpace
 import weco.storage_service.display._
 import weco.storage_service.display.ingests._
-import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
+import weco.storage_service.ingests_api.fixtures.IngestsApiFixture
 import weco.storage.s3.S3ObjectLocation
 import weco.http.monitoring.HttpMetricResults
 
