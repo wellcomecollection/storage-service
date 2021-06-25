@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.bag_root_finder.fixtures
+package weco.storage_service.bag_root_finder.fixtures
 
 import weco.akka.fixtures.Akka
 import weco.fixtures.TestWith
@@ -7,8 +7,8 @@ import weco.messaging.fixtures.SQS.Queue
 import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import weco.messaging.memory.MemoryMessageSender
 import weco.monitoring.memory.MemoryMetrics
-import weco.storage.fixtures.OperationFixtures
-import uk.ac.wellcome.platform.storage.bag_root_finder.services.{
+import weco.storage_service.fixtures.OperationFixtures
+import weco.storage_service.bag_root_finder.services.{
   BagRootFinder,
   BagRootFinderWorker
 }

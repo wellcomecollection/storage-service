@@ -1,22 +1,22 @@
-package uk.ac.wellcome.platform.storage.bag_root_finder
+package weco.storage_service.bag_root_finder
 
 import org.scalatest.funspec.AnyFunSpec
 import weco.json.JsonUtil._
 import weco.messaging.memory.MemoryMessageSender
-import weco.storage.BagRootLocationPayload
+import weco.storage_service.BagRootLocationPayload
 import weco.storage_service.bagit.models.{
   BagVersion,
   ExternalIdentifier
 }
-import weco.storage.fixtures.s3.S3BagBuilder
-import weco.storage.generators.PayloadGenerators
+import weco.storage_service.fixtures.s3.S3BagBuilder
+import weco.storage_service.generators.PayloadGenerators
 import weco.storage_service.ingests.fixtures.IngestUpdateAssertions
 import weco.storage_service.ingests.models.{
   Ingest,
   IngestStatusUpdate
 }
 import weco.storage_service.storage.models.StorageSpace
-import uk.ac.wellcome.platform.storage.bag_root_finder.fixtures.BagRootFinderFixtures
+import weco.storage_service.bag_root_finder.fixtures.BagRootFinderFixtures
 
 class BagRootFinderFeatureTest
     extends AnyFunSpec

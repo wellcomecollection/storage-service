@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.bag_root_finder.services
+package weco.storage_service.bag_root_finder.services
 
 import java.time.Instant
 
@@ -9,7 +9,7 @@ import weco.storage_service.storage.models.{
   IngestStepResult,
   IngestStepSucceeded
 }
-import uk.ac.wellcome.platform.storage.bag_root_finder.models._
+import weco.storage_service.bag_root_finder.models._
 import weco.storage.s3.S3ObjectLocationPrefix
 
 import scala.util.{Failure, Success, Try}

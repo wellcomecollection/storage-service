@@ -1,11 +1,11 @@
-package uk.ac.wellcome.platform.storage.bag_root_finder.services
+package weco.storage_service.bag_root_finder.services
 
 import akka.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import weco.monitoring.Metrics
-import weco.storage._
+import weco.storage_service._
 import weco.storage_service.ingests.services.IngestUpdater
 import weco.storage_service.operation.services._
 import weco.storage_service.storage.models.{
@@ -13,7 +13,7 @@ import weco.storage_service.storage.models.{
   IngestStepSucceeded,
   IngestStepWorker
 }
-import uk.ac.wellcome.platform.storage.bag_root_finder.models.{
+import weco.storage_service.bag_root_finder.models.{
   RootFinderSuccessSummary,
   RootFinderSummary
 }

@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.bag_root_finder
+package weco.storage_service.bag_root_finder
 
 import akka.actor.ActorSystem
 import com.amazonaws.services.s3.AmazonS3
@@ -16,7 +16,7 @@ import weco.storage_service.config.builders.{
   OperationNameBuilder,
   OutgoingPublisherBuilder
 }
-import uk.ac.wellcome.platform.storage.bag_root_finder.services.{
+import weco.storage_service.bag_root_finder.services.{
   BagRootFinder,
   BagRootFinderWorker
 }

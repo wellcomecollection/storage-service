@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.bag_root_finder.services
+package weco.storage_service.bag_root_finder.services
 
 import org.scalatest.Assertion
 import org.scalatest.funspec.AnyFunSpec
