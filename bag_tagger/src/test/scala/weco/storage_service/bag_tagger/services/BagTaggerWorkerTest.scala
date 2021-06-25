@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.bag_tagger.services
+package weco.storage_service.bag_tagger.services
 
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
@@ -9,14 +9,14 @@ import weco.messaging.worker.models.{
   Successful
 }
 import weco.storage_service.bag_tracker.storage.memory.MemoryStorageManifestDao
-import weco.storage.BagRegistrationNotification
+import weco.storage_service.BagRegistrationNotification
 import weco.storage_service.bagit.models.{BagId, BagVersion}
-import weco.storage.generators.StorageManifestGenerators
+import weco.storage_service.generators.StorageManifestGenerators
 import weco.storage_service.storage.models._
-import uk.ac.wellcome.platform.storage.bag_tagger.fixtures.BagTaggerFixtures
+import weco.storage_service.bag_tagger.fixtures.BagTaggerFixtures
 import weco.storage.store.memory.MemoryVersionedStore
 import weco.storage.tags.s3.S3Tags
-import uk.ac.wellcome.storage._
+import weco.storage._
 import weco.storage.s3.S3ObjectLocation
 
 import scala.util.{Failure, Try}

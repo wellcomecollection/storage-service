@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.bag_tagger.services
+package weco.storage_service.bag_tagger.services
 
 import weco.storage_service.storage.models.{
   StorageManifest,

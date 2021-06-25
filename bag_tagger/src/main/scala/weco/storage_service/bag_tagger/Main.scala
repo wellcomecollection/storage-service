@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.bag_tagger
+package weco.storage_service.bag_tagger
 
 import akka.actor.ActorSystem
 import com.amazonaws.services.s3.AmazonS3
@@ -12,7 +12,7 @@ import weco.messaging.typesafe.{
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.bag_tracker.client.AkkaBagTrackerClient
-import uk.ac.wellcome.platform.storage.bag_tagger.services.{
+import weco.storage_service.bag_tagger.services.{
   ApplyTags,
   BagTaggerWorker,
   TagRules

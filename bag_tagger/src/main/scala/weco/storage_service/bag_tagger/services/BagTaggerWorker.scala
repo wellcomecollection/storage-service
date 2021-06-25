@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.bag_tagger.services
+package weco.storage_service.bag_tagger.services
 
 import java.time.Instant
 
@@ -21,7 +21,7 @@ import weco.messaging.worker.models.{
 import weco.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
 import weco.monitoring.Metrics
 import weco.storage_service.bag_tracker.client.BagTrackerClient
-import weco.storage.BagRegistrationNotification
+import weco.storage_service.BagRegistrationNotification
 import weco.storage_service.bagit.models.{BagId, BagVersion}
 import weco.storage_service.storage.models.{
   StorageManifest,

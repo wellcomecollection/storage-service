@@ -1,8 +1,8 @@
-package uk.ac.wellcome.platform.storage.bag_tagger.services
+package weco.storage_service.bag_tagger.services
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import weco.storage.generators.StorageManifestGenerators
+import weco.storage_service.generators.StorageManifestGenerators
 import weco.storage_service.storage.models.StorageSpace
 
 class TagRulesTest

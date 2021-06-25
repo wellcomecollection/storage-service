@@ -1,16 +1,16 @@
-package uk.ac.wellcome.platform.storage.bag_tagger
+package weco.storage_service.bag_tagger
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.json.JsonUtil._
-import weco.storage.BagRegistrationNotification
-import weco.storage.generators.StorageManifestGenerators
+import weco.storage_service.BagRegistrationNotification
+import weco.storage_service.generators.StorageManifestGenerators
 import weco.storage_service.storage.models.{
   PrimaryS3StorageLocation,
   StorageSpace
 }
-import uk.ac.wellcome.platform.storage.bag_tagger.fixtures.BagTaggerFixtures
-import uk.ac.wellcome.storage.Identified
+import weco.storage_service.bag_tagger.fixtures.BagTaggerFixtures
+import weco.storage.Identified
 import weco.storage.tags.s3.S3Tags
 
 class BagTaggerFeatureTest

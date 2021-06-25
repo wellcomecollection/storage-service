@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.bag_tagger.fixtures
+package weco.storage_service.bag_tagger.fixtures
 
 import io.circe.Decoder
 import org.scalatest.Suite
@@ -11,13 +11,13 @@ import weco.storage_service.bag_tracker.fixtures.{
   StorageManifestDaoFixture
 }
 import weco.storage_service.bag_tracker.storage.StorageManifestDao
-import weco.storage.BagRegistrationNotification
-import weco.storage.fixtures.OperationFixtures
+import weco.storage_service.BagRegistrationNotification
+import weco.storage_service.fixtures.OperationFixtures
 import weco.storage_service.storage.models.{
   StorageManifest,
   StorageManifestFile
 }
-import uk.ac.wellcome.platform.storage.bag_tagger.services.{
+import weco.storage_service.bag_tagger.services.{
   ApplyTags,
   BagTaggerWorker,
   TagRules

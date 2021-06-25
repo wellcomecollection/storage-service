@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.bag_tagger.services
+package weco.storage_service.bag_tagger.services
 
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
@@ -8,7 +8,7 @@ import weco.storage_service.storage.models.{
   StorageLocation,
   StorageManifestFile
 }
-import uk.ac.wellcome.storage._
+import weco.storage._
 import weco.storage.tags.Tags
 import weco.storage.tags.s3.S3Tags
 
