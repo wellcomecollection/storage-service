@@ -8,7 +8,7 @@ import weco.messaging.typesafe.SQSBuilder
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
 import uk.ac.wellcome.platform.archive.bagverifier.builder.BagVerifierWorkerBuilder
-import weco.storage.config.builders.{
+import weco.storage_service.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
   OutgoingPublisherBuilder

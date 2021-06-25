@@ -1,15 +1,15 @@
-package uk.ac.wellcome.platform.storage.replica_aggregator.services
+package weco.storage_service.replica_aggregator.services
 
 import org.scalatest.{EitherValues, TryValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.fixtures.TestWith
-import weco.storage.generators.ReplicaLocationGenerators
+import weco.storage_service.generators.ReplicaLocationGenerators
 import weco.storage_service.storage.models._
-import uk.ac.wellcome.platform.storage.replica_aggregator.models._
+import weco.storage_service.replica_aggregator.models._
 import weco.storage.maxima.memory.MemoryMaxima
 import weco.storage.store.memory.{MemoryStore, MemoryVersionedStore}
-import uk.ac.wellcome.storage.{StoreWriteError, UpdateWriteError, Version}
+import weco.storage.{StoreWriteError, UpdateWriteError, Version}
 
 class ReplicaAggregatorTest
     extends AnyFunSpec

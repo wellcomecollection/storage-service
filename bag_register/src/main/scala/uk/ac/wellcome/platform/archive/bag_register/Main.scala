@@ -19,7 +19,7 @@ import uk.ac.wellcome.platform.archive.bag_register.services.{
 }
 import weco.storage_service.bag_tracker.client.AkkaBagTrackerClient
 import weco.storage_service.bagit.services.s3.S3BagReader
-import weco.storage.config.builders.{
+import weco.storage_service.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder
 }

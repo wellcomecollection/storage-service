@@ -1,8 +1,8 @@
-package uk.ac.wellcome.platform.storage.replica_aggregator.models
+package weco.storage_service.replica_aggregator.models
 
 import weco.storage.azure.AzureBlobLocationPrefix
 import weco.storage.s3.S3ObjectLocationPrefix
-import uk.ac.wellcome.storage.{Location, Prefix, TypedStringScanamoOps}
+import weco.storage.{Location, Prefix, TypedStringScanamoOps}
 import weco.json.TypedString
 
 class ReplicaPath(val underlying: String) extends TypedString[ReplicaPath]

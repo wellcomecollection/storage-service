@@ -1,9 +1,9 @@
-package uk.ac.wellcome.platform.storage.replica_aggregator.models
+package weco.storage_service.replica_aggregator.models
 
 import org.scalatest.TryValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import weco.storage.generators.ReplicaLocationGenerators
+import weco.storage_service.generators.ReplicaLocationGenerators
 import weco.storage_service.storage.models.SecondaryReplicaLocation
 
 class AggregatorInternalRecordTest

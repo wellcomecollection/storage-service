@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.replica_aggregator.models
+package weco.storage_service.replica_aggregator.models
 
 import weco.storage_service.storage.models._
 

@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.replica_aggregator
+package weco.storage_service.replica_aggregator
 
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
@@ -11,16 +11,16 @@ import weco.messaging.typesafe.{
 }
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
-import weco.storage.config.builders.{
+import weco.storage_service.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
   OutgoingPublisherBuilder
 }
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
+import weco.storage_service.replica_aggregator.models.{
   AggregatorInternalRecord,
   ReplicaPath
 }
-import uk.ac.wellcome.platform.storage.replica_aggregator.services.{
+import weco.storage_service.replica_aggregator.services.{
   ReplicaAggregator,
   ReplicaAggregatorWorker,
   ReplicaCounter

@@ -1,6 +1,6 @@
-package uk.ac.wellcome.platform.storage.replica_aggregator.services
+package weco.storage_service.replica_aggregator.services
 import weco.storage_service.storage.models.KnownReplicas
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.AggregatorInternalRecord
+import weco.storage_service.replica_aggregator.models.AggregatorInternalRecord
 
 sealed trait ReplicaCounterError
 

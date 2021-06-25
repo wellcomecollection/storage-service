@@ -1,9 +1,9 @@
-package uk.ac.wellcome.platform.storage.replica_aggregator.services
+package weco.storage_service.replica_aggregator.services
 
 import weco.storage_service.storage.models.ReplicaLocation
-import uk.ac.wellcome.platform.storage.replica_aggregator.models._
+import weco.storage_service.replica_aggregator.models._
 import weco.storage.store.VersionedStore
-import uk.ac.wellcome.storage.{UpdateError, UpdateNotApplied}
+import weco.storage.{UpdateError, UpdateNotApplied}
 
 class ReplicaAggregator(
   versionedStore: VersionedStore[ReplicaPath, Int, AggregatorInternalRecord]

@@ -13,7 +13,7 @@ import weco.messaging.typesafe.{
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.bagit.models.BagVersion
-import weco.storage.config.builders.{
+import weco.storage_service.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
   OutgoingPublisherBuilder

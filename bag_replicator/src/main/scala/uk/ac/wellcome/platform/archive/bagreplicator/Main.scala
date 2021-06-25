@@ -19,7 +19,7 @@ import uk.ac.wellcome.platform.archive.bagreplicator.replicator.azure.AzureRepli
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
-import weco.storage.config.builders.{
+import weco.storage_service.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
   OutgoingPublisherBuilder

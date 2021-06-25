@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.replica_aggregator
+package weco.storage_service.replica_aggregator
 
 import org.scalatest.EitherValues
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
@@ -6,8 +6,8 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.json.JsonUtil._
 import weco.messaging.memory.MemoryMessageSender
-import weco.storage.KnownReplicasPayload
-import weco.storage.generators.{
+import weco.storage_service.KnownReplicasPayload
+import weco.storage_service.generators.{
   PayloadGenerators,
   ReplicaLocationGenerators
 }
@@ -16,12 +16,12 @@ import weco.storage_service.storage.models.{
   KnownReplicas,
   PrimaryS3ReplicaLocation
 }
-import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
+import weco.storage_service.replica_aggregator.fixtures.ReplicaAggregatorFixtures
+import weco.storage_service.replica_aggregator.models.{
   AggregatorInternalRecord,
   ReplicaPath
 }
-import uk.ac.wellcome.storage.Version
+import weco.storage.Version
 import weco.storage.store.memory.MemoryVersionedStore
 
 class ReplicaAggregatorFeatureTest

@@ -12,7 +12,7 @@ import weco.monitoring.typesafe.CloudWatchBuilder
 import uk.ac.wellcome.platform.archive.bagunpacker.config.builders.UnpackerWorkerConfigBuilder
 import uk.ac.wellcome.platform.archive.bagunpacker.services.BagUnpackerWorker
 import uk.ac.wellcome.platform.archive.bagunpacker.services.s3.S3Unpacker
-import weco.storage.config.builders.{
+import weco.storage_service.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
   OutgoingPublisherBuilder

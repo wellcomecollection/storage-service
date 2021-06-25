@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.replica_aggregator.services
+package weco.storage_service.replica_aggregator.services
 
 import java.time.Instant
 
@@ -11,13 +11,13 @@ import weco.storage_service.bagit.models.BagVersion
 import weco.storage_service.ingests.services.IngestUpdater
 import weco.storage_service.operation.services.OutgoingPublisher
 import weco.storage_service.storage.models._
-import weco.storage.{
+import weco.storage_service.{
   KnownReplicasPayload,
   PipelineContext,
   ReplicaCompletePayload
 }
-import uk.ac.wellcome.platform.storage.replica_aggregator.models._
-import uk.ac.wellcome.storage.{RetryableError, UpdateError, UpdateWriteError}
+import weco.storage_service.replica_aggregator.models._
+import weco.storage.{RetryableError, UpdateError, UpdateWriteError}
 
 import scala.concurrent.Future
 import scala.util.{Success, Try}

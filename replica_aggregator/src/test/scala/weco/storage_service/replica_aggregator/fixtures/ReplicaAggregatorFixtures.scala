@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.replica_aggregator.fixtures
+package weco.storage_service.replica_aggregator.fixtures
 
 import weco.akka.fixtures.Akka
 import weco.fixtures.TestWith
@@ -7,12 +7,12 @@ import weco.messaging.fixtures.SQS.Queue
 import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import weco.messaging.memory.MemoryMessageSender
 import weco.monitoring.memory.MemoryMetrics
-import weco.storage.fixtures.OperationFixtures
-import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
+import weco.storage_service.fixtures.OperationFixtures
+import weco.storage_service.replica_aggregator.models.{
   AggregatorInternalRecord,
   ReplicaPath
 }
-import uk.ac.wellcome.platform.storage.replica_aggregator.services.{
+import weco.storage_service.replica_aggregator.services.{
   ReplicaAggregator,
   ReplicaAggregatorWorker,
   ReplicaCounter

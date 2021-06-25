@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.replica_aggregator.services
+package weco.storage_service.replica_aggregator.services
 
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.TryValues
@@ -8,17 +8,17 @@ import org.scanamo.generic.auto._
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 import weco.json.JsonUtil._
 import weco.messaging.memory.MemoryMessageSender
-import weco.storage.{
+import weco.storage_service.{
   KnownReplicasPayload,
   VersionedBagRootPayload
 }
-import weco.storage.generators.PayloadGenerators
+import weco.storage_service.generators.PayloadGenerators
 import weco.storage_service.ingests.fixtures.IngestUpdateAssertions
 import weco.storage_service.ingests.models.Ingest
 import weco.storage_service.storage.models._
-import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
-import uk.ac.wellcome.platform.storage.replica_aggregator.models._
-import uk.ac.wellcome.storage._
+import weco.storage_service.replica_aggregator.fixtures.ReplicaAggregatorFixtures
+import weco.storage_service.replica_aggregator.models._
+import weco.storage._
 import weco.storage.fixtures.DynamoFixtures
 import weco.storage.maxima.memory.MemoryMaxima
 import weco.storage.store.dynamo.DynamoMultipleVersionStore
