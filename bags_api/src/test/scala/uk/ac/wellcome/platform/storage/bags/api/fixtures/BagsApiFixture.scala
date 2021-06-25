@@ -21,7 +21,7 @@ import weco.storage_service.bagit.models.{BagId, BagVersion}
 import weco.storage.generators.StorageRandomGenerators
 import weco.storage_service.storage.models.StorageManifest
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi
-import uk.ac.wellcome.storage._
+import weco.storage._
 import weco.storage.fixtures.S3Fixtures
 import weco.storage.s3.S3ObjectLocationPrefix
 import weco.storage.services.s3.S3Uploader

@@ -10,7 +10,7 @@ import weco.messaging.sns.SNSConfig
 import weco.messaging.typesafe.SNSBuilder
 import weco.monitoring.typesafe.CloudWatchBuilder
 import uk.ac.wellcome.platform.storage.ingests.api.services.IngestCreator
-import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
+import weco.storage_service.ingests_tracker.client.{
   AkkaIngestTrackerClient,
   IngestTrackerClient
 }

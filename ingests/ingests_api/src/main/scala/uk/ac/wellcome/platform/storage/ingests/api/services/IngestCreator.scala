@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.storage.ingests.api.services
 import weco.messaging.MessageSender
 import weco.storage.SourceLocationPayload
 import weco.storage_service.ingests.models.Ingest
-import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
+import weco.storage_service.ingests_tracker.client.{
   IngestTrackerClient,
   IngestTrackerCreateError
 }

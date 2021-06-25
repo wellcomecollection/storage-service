@@ -16,8 +16,8 @@ import weco.storage_service.ingests.models.{
   IngestID,
   IngestUpdate
 }
-import uk.ac.wellcome.platform.storage.ingests_tracker.client._
-import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestTrackerFixtures
+import weco.storage_service.ingests_tracker.client._
+import weco.storage_service.ingests_tracker.fixtures.IngestTrackerFixtures
 import uk.ac.wellcome.platform.storage.ingests_worker.services.IngestsWorkerService
 
 import scala.concurrent.{ExecutionContext, Future}

@@ -17,8 +17,8 @@ import weco.storage_service.ingests.models.{
   Ingest,
   IngestUpdate
 }
-import uk.ac.wellcome.platform.storage.ingests_tracker.client.AkkaIngestTrackerClient
-import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
+import weco.storage_service.ingests_tracker.client.AkkaIngestTrackerClient
+import weco.storage_service.ingests_tracker.fixtures.IngestsTrackerApiFixture
 import uk.ac.wellcome.platform.storage.ingests_worker.fixtures.IngestsWorkerFixtures
 import weco.http.fixtures.HttpFixtures
 

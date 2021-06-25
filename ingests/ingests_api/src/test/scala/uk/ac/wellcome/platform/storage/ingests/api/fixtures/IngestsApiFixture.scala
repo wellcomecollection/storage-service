@@ -13,15 +13,15 @@ import weco.storage.generators.IngestGenerators
 import weco.storage_service.ingests.models.Ingest
 import uk.ac.wellcome.platform.storage.ingests.api.IngestsApi
 import uk.ac.wellcome.platform.storage.ingests.api.services.IngestCreator
-import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
+import weco.storage_service.ingests_tracker.client.{
   AkkaIngestTrackerClient,
   IngestTrackerClient
 }
-import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.{
+import weco.storage_service.ingests_tracker.fixtures.{
   IngestTrackerFixtures,
   IngestsTrackerApiFixture
 }
-import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.memory.MemoryIngestTracker
+import weco.storage_service.ingests_tracker.tracker.memory.MemoryIngestTracker
 import weco.http.WellcomeHttpApp
 import weco.http.fixtures.HttpFixtures
 import weco.http.models.HTTPServerConfig

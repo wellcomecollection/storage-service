@@ -14,11 +14,11 @@ import weco.messaging.worker.models.{
   Successful
 }
 import weco.storage_service.ingests.models.Ingest
-import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
+import weco.storage_service.ingests_tracker.client.{
   AkkaIngestTrackerClient,
   IngestTrackerClient
 }
-import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
+import weco.storage_service.ingests_tracker.fixtures.IngestsTrackerApiFixture
 import uk.ac.wellcome.platform.storage.ingests_worker.fixtures.IngestsWorkerFixtures
 import weco.http.fixtures.HttpFixtures
 

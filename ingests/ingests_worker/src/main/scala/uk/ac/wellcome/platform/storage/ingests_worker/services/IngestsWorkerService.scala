@@ -22,7 +22,7 @@ import weco.storage_service.ingests.models.{
   Ingest,
   IngestUpdate
 }
-import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
+import weco.storage_service.ingests_tracker.client.{
   IngestTrackerClient,
   IngestTrackerUnknownUpdateError,
   IngestTrackerUpdateConflictError,

@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.storage.ingests_worker.services.IngestsWorkerServ
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder
 import com.typesafe.config.Config
-import uk.ac.wellcome.platform.storage.ingests_tracker.client.AkkaIngestTrackerClient
+import weco.storage_service.ingests_tracker.client.AkkaIngestTrackerClient
 import weco.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.ExecutionContext
