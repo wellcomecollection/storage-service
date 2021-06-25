@@ -1,3 +1,7 @@
+locals {
+  namespace = "dams-prototype"
+}
+
 terraform {
   backend "s3" {
     role_arn = "arn:aws:iam::975596993436:role/storage-developer"
@@ -14,5 +18,5 @@ provider "aws" {
     role_arn = "arn:aws:iam::241906670800:role/dam_prototype-admin"
   }
 
-  region = var.aws_region
+  region = "eu-west-1"
 }
