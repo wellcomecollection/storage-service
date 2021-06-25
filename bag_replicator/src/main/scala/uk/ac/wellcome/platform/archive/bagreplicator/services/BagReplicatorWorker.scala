@@ -20,7 +20,7 @@ import weco.storage.{
   VersionedBagRootPayload
 }
 import weco.storage.{Location, Prefix}
-import uk.ac.wellcome.storage.locking.{
+import weco.storage.locking.{
   FailedLockingServiceOp,
   LockDao,
   LockingService

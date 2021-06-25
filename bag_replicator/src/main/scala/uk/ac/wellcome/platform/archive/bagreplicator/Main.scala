@@ -31,7 +31,7 @@ import weco.storage_service.ingests.models.{
 }
 import weco.storage_service.storage.models.IngestStepResult
 import weco.storage.azure.AzureBlobLocationPrefix
-import uk.ac.wellcome.storage.locking.dynamo.{
+import weco.storage.locking.dynamo.{
   DynamoLockDao,
   DynamoLockingService
 }

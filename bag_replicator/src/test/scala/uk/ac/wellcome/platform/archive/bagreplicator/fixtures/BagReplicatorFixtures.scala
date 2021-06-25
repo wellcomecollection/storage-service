@@ -24,11 +24,11 @@ import weco.storage_service.storage.models.IngestStepResult
 import weco.storage.fixtures.S3Fixtures
 import weco.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.listing.s3.S3ObjectSummaryListing
-import uk.ac.wellcome.storage.locking.memory.{
+import weco.storage.locking.memory.{
   MemoryLockDao,
   MemoryLockDaoFixtures
 }
-import uk.ac.wellcome.storage.locking.{LockDao, LockingService}
+import weco.storage.locking.{LockDao, LockingService}
 import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.util.Try
