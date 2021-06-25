@@ -13,7 +13,7 @@ import weco.storage_service.bagit.models.Bag
 import weco.storage_service.bagit.services.BagReader
 import weco.storage_service.bagit.services.azure.AzureBagReader
 import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
-import uk.ac.wellcome.storage.dynamo.DynamoConfig
+import weco.storage.dynamo.DynamoConfig
 import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.listing.azure.AzureBlobLocationListing
 import weco.storage.s3.S3ObjectLocation

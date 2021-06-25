@@ -11,7 +11,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Locatable
 import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.AzureLocatable
 import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
-import uk.ac.wellcome.storage.dynamo.DynamoConfig
+import weco.storage.dynamo.DynamoConfig
 import weco.storage.services.SizeFinder
 import weco.storage.services.azure.{
   AzureLargeStreamReader,

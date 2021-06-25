@@ -6,11 +6,11 @@ import weco.fixtures.TestWith
 import weco.messaging.fixtures.SQS.Queue
 import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import weco.monitoring.memory.MemoryMetrics
-import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{
+import weco.storage_service.bag_tracker.fixtures.{
   BagTrackerFixtures,
   StorageManifestDaoFixture
 }
-import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
+import weco.storage_service.bag_tracker.storage.StorageManifestDao
 import weco.storage.BagRegistrationNotification
 import weco.storage.fixtures.OperationFixtures
 import weco.storage_service.storage.models.{

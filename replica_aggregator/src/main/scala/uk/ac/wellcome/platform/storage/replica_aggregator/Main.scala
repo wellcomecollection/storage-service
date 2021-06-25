@@ -25,9 +25,9 @@ import uk.ac.wellcome.platform.storage.replica_aggregator.services.{
   ReplicaAggregatorWorker,
   ReplicaCounter
 }
-import uk.ac.wellcome.storage.dynamo.DynamoConfig
+import weco.storage.dynamo.DynamoConfig
 import weco.storage.store.dynamo.DynamoSingleVersionStore
-import uk.ac.wellcome.storage.typesafe.DynamoBuilder
+import weco.storage.typesafe.DynamoBuilder
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder
 import weco.typesafe.config.builders.EnrichConfig._

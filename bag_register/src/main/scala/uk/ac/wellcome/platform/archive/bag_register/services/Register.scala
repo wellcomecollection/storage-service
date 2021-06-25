@@ -4,7 +4,7 @@ import java.time.Instant
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
-import uk.ac.wellcome.platform.archive.bag_tracker.client.{
+import weco.storage_service.bag_tracker.client.{
   BagTrackerClient,
   BagTrackerCreateError
 }
@@ -15,7 +15,7 @@ import weco.storage_service.bagit.models.{
 import weco.storage_service.bagit.services.s3.S3BagReader
 import weco.storage_service.ingests.models.IngestID
 import weco.storage_service.storage.models._
-import uk.ac.wellcome.storage.RetryableError
+import weco.storage.RetryableError
 import weco.storage.s3.S3ObjectLocationPrefix
 
 import scala.concurrent.{ExecutionContext, Future}

@@ -5,7 +5,7 @@ import java.time.Instant
 import weco.storage_service.bagit.models.{BagId, BagVersion}
 import weco.storage_service.ingests.models.IngestID
 import uk.ac.wellcome.platform.storage.bag_versioner.versioning.VersionRecord
-import uk.ac.wellcome.storage.dynamo.DynamoHashRangeKeyPair
+import weco.storage.dynamo.DynamoHashRangeKeyPair
 
 case class DynamoVersionRecord(
   id: BagId,

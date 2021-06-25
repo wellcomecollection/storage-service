@@ -15,7 +15,7 @@ import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
   VersionRecord
 }
 import uk.ac.wellcome.storage.{MaximaError, MaximaReadError, NoMaximaValueError}
-import uk.ac.wellcome.storage.dynamo._
+import weco.storage.dynamo._
 
 import scala.util.{Failure, Success, Try}
 

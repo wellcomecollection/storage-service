@@ -25,9 +25,9 @@ import weco.storage.{
   ReplicaCompletePayload
 }
 import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
-import uk.ac.wellcome.storage.dynamo.DynamoConfig
+import weco.storage.dynamo.DynamoConfig
 import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
-import uk.ac.wellcome.storage.typesafe.DynamoBuilder
+import weco.storage.typesafe.DynamoBuilder
 import weco.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.Future

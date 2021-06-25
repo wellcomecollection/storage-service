@@ -11,7 +11,7 @@ import uk.ac.wellcome.platform.storage.ingests_tracker.services.{
 }
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.IngestTracker
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.dynamo.DynamoIngestTracker
-import uk.ac.wellcome.storage.typesafe.DynamoBuilder
+import weco.storage.typesafe.DynamoBuilder
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder
 

@@ -17,7 +17,7 @@ import weco.storage.config.builders.{
   OperationNameBuilder,
   OutgoingPublisherBuilder
 }
-import uk.ac.wellcome.storage.typesafe.S3Builder._
+import weco.storage.typesafe.S3Builder._
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder
 import weco.typesafe.config.builders.EnrichConfig._

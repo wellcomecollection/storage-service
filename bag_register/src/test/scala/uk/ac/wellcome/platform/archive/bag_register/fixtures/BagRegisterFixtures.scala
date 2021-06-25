@@ -13,11 +13,11 @@ import uk.ac.wellcome.platform.archive.bag_register.services.{
   Register,
   S3StorageManifestService
 }
-import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{
+import weco.storage_service.bag_tracker.fixtures.{
   BagTrackerFixtures,
   StorageManifestDaoFixture
 }
-import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
+import weco.storage_service.bag_tracker.storage.StorageManifestDao
 import weco.storage_service.bagit.services.s3.S3BagReader
 import weco.storage.fixtures._
 import weco.storage.fixtures.s3.S3BagBuilder

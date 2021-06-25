@@ -8,7 +8,7 @@ import weco.messaging.worker.models.{
   NonDeterministicFailure,
   Successful
 }
-import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
+import weco.storage_service.bag_tracker.storage.memory.MemoryStorageManifestDao
 import weco.storage.BagRegistrationNotification
 import weco.storage_service.bagit.models.{BagId, BagVersion}
 import weco.storage.generators.StorageManifestGenerators

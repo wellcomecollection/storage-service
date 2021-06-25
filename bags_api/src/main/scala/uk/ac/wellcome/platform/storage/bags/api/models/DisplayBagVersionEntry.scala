@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.storage.bags.api.models
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.bag_tracker.models.BagVersionEntry
+import weco.storage_service.bag_tracker.models.BagVersionEntry
 import weco.storage_service.bagit.models.BagId
 import weco.storage_service.storage.models.StorageManifest
 

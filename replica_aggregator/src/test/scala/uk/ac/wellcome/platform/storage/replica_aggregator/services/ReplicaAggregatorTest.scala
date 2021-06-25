@@ -7,7 +7,7 @@ import weco.fixtures.TestWith
 import weco.storage.generators.ReplicaLocationGenerators
 import weco.storage_service.storage.models._
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
-import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
+import weco.storage.maxima.memory.MemoryMaxima
 import weco.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 import uk.ac.wellcome.storage.{StoreWriteError, UpdateWriteError, Version}
 

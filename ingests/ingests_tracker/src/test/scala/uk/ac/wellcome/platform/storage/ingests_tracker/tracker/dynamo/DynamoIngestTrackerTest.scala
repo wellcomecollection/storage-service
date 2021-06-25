@@ -21,7 +21,7 @@ import uk.ac.wellcome.storage.{
   StoreWriteError,
   Version
 }
-import uk.ac.wellcome.storage.dynamo._
+import weco.storage.dynamo._
 import weco.storage.fixtures.DynamoFixtures
 import weco.storage.fixtures.DynamoFixtures.{Table => DynamoTable}
 import weco.storage.store.VersionedStore

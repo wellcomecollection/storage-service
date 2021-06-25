@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.storage.bag_versioner.versioning
 import weco.storage_service.bagit.models.ExternalIdentifier
 import weco.storage_service.ingests.models.IngestID
 import weco.storage_service.storage.models.StorageSpace
-import uk.ac.wellcome.storage.MaximaError
+import weco.storage.maximaError
 
 import scala.util.Try
 

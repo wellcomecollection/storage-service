@@ -13,7 +13,7 @@ import weco.messaging.typesafe.{
 }
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
-import uk.ac.wellcome.platform.archive.bag_tracker.client.AkkaBagTrackerClient
+import weco.storage_service.bag_tracker.client.AkkaBagTrackerClient
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder
 import weco.typesafe.config.builders.EnrichConfig._

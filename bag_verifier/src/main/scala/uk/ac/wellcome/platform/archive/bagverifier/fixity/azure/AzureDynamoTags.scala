@@ -7,7 +7,7 @@ import org.scanamo.{Scanamo, Table}
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import uk.ac.wellcome.storage._
 import weco.storage.azure.AzureBlobLocation
-import uk.ac.wellcome.storage.dynamo.DynamoConfig
+import weco.storage.dynamo.DynamoConfig
 import uk.ac.wellcome.storage.tags.Tags
 
 import scala.language.higherKinds

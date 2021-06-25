@@ -13,7 +13,7 @@ import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.{
   IngestTracker,
   UpdateNonExistentIngestError
 }
-import uk.ac.wellcome.storage.dynamo._
+import weco.storage.dynamo._
 import weco.storage.store.VersionedStore
 import weco.storage.store.dynamo.DynamoSingleVersionStore
 

@@ -19,7 +19,7 @@ import weco.messaging.worker.models.{
 }
 import weco.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
 import weco.monitoring.Metrics
-import uk.ac.wellcome.platform.archive.bag_tracker.client.{
+import weco.storage_service.bag_tracker.client.{
   BagTrackerClient,
   BagTrackerUnknownGetError
 }

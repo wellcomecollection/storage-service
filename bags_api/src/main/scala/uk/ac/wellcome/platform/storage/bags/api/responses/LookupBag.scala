@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.storage.bags.api.responses
 
 import akka.http.scaladsl.model.headers.ETag
 import akka.http.scaladsl.server.Route
-import uk.ac.wellcome.platform.archive.bag_tracker.client.{
+import weco.storage_service.bag_tracker.client.{
   BagTrackerClient,
   BagTrackerNotFoundError,
   BagTrackerUnknownGetError

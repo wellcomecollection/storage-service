@@ -8,13 +8,13 @@ import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import uk.ac.wellcome.http.typesafe.HTTPServerBuilder
 import weco.monitoring.typesafe.CloudWatchBuilder
-import uk.ac.wellcome.platform.archive.bag_tracker.client.{
+import weco.storage_service.bag_tracker.client.{
   AkkaBagTrackerClient,
   BagTrackerClient
 }
 import weco.storage.s3.S3ObjectLocationPrefix
 import weco.storage.services.s3.S3Uploader
-import uk.ac.wellcome.storage.typesafe.S3Builder
+import weco.storage.typesafe.S3Builder
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder
 import weco.typesafe.config.builders.EnrichConfig._

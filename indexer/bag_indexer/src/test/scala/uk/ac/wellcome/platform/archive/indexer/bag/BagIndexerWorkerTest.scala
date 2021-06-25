@@ -7,8 +7,8 @@ import weco.json.JsonUtil._
 import weco.messaging.fixtures.SQS
 import weco.messaging.worker.models.NonDeterministicFailure
 import weco.monitoring.memory.MemoryMetrics
-import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
-import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
+import weco.storage_service.bag_tracker.storage.StorageManifestDao
+import weco.storage_service.bag_tracker.storage.memory.MemoryStorageManifestDao
 import weco.storage.BagRegistrationNotification
 import weco.storage_service.bagit.models.{BagId, BagVersion}
 import weco.storage_service.storage.models.StorageManifest

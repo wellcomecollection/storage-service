@@ -7,11 +7,11 @@ import weco.fixtures.TestWith
 import weco.json.JsonUtil._
 import weco.messaging.fixtures.SQS
 import weco.monitoring.memory.MemoryMetrics
-import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{
+import weco.storage_service.bag_tracker.fixtures.{
   BagTrackerFixtures,
   StorageManifestDaoFixture
 }
-import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
+import weco.storage_service.bag_tracker.storage.StorageManifestDao
 import weco.storage_service.bagit.models.{
   BagVersion,
   ExternalIdentifier

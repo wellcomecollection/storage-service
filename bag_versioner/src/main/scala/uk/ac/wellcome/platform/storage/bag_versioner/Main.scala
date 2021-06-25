@@ -31,7 +31,7 @@ import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
   VersionPicker
 }
 import uk.ac.wellcome.storage.locking.dynamo.DynamoLockingService
-import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, DynamoLockDaoBuilder}
+import weco.storage.typesafe.{DynamoBuilder, DynamoLockDaoBuilder}
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder
 import weco.typesafe.config.builders.EnrichConfig._

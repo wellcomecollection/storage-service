@@ -26,7 +26,7 @@ import uk.ac.wellcome.storage.{
   UpdateWriteError,
   Version
 }
-import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
+import weco.storage.maxima.memory.MemoryMaxima
 import weco.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
 trait IngestsTrackerApiFixture

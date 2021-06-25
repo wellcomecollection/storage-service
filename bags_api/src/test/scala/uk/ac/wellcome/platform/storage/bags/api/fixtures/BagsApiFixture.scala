@@ -10,13 +10,13 @@ import com.amazonaws.services.s3.AmazonS3
 import org.scalatest.concurrent.ScalaFutures
 import weco.fixtures.TestWith
 import weco.monitoring.memory.MemoryMetrics
-import uk.ac.wellcome.platform.archive.bag_tracker.client.BagTrackerClient
-import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{
+import weco.storage_service.bag_tracker.client.BagTrackerClient
+import weco.storage_service.bag_tracker.fixtures.{
   BagTrackerFixtures,
   StorageManifestDaoFixture
 }
-import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
-import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
+import weco.storage_service.bag_tracker.storage.StorageManifestDao
+import weco.storage_service.bag_tracker.storage.memory.MemoryStorageManifestDao
 import weco.storage_service.bagit.models.{BagId, BagVersion}
 import weco.storage.generators.StorageRandomGenerators
 import weco.storage_service.storage.models.StorageManifest

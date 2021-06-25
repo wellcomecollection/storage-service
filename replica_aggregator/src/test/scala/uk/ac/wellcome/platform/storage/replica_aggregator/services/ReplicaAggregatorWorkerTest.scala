@@ -20,7 +20,7 @@ import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggreg
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage._
 import weco.storage.fixtures.DynamoFixtures
-import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
+import weco.storage.maxima.memory.MemoryMaxima
 import weco.storage.store.dynamo.DynamoMultipleVersionStore
 import weco.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 

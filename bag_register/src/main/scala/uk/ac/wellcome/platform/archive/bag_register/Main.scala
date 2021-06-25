@@ -17,13 +17,13 @@ import uk.ac.wellcome.platform.archive.bag_register.services.{
   Register,
   S3StorageManifestService
 }
-import uk.ac.wellcome.platform.archive.bag_tracker.client.AkkaBagTrackerClient
+import weco.storage_service.bag_tracker.client.AkkaBagTrackerClient
 import weco.storage_service.bagit.services.s3.S3BagReader
 import weco.storage.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder
 }
-import uk.ac.wellcome.storage.typesafe.S3Builder
+import weco.storage.typesafe.S3Builder
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder
 import weco.typesafe.config.builders.EnrichConfig._

@@ -20,7 +20,7 @@ import uk.ac.wellcome.platform.storage.bag_root_finder.services.{
   BagRootFinder,
   BagRootFinderWorker
 }
-import uk.ac.wellcome.storage.typesafe.S3Builder
+import weco.storage.typesafe.S3Builder
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder
 import weco.typesafe.config.builders.EnrichConfig._
