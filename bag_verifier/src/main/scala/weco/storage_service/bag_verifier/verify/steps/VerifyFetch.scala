@@ -1,11 +1,7 @@
 package weco.storage_service.bag_verifier.verify.steps
 
 import weco.storage_service.bag_verifier.models.BagVerifierError
-import weco.storage_service.bagit.models.{
-  BagFetch,
-  BagFetchMetadata,
-  BagPath
-}
+import weco.storage_service.bagit.models.{BagFetch, BagFetchMetadata, BagPath}
 import weco.storage._
 import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 

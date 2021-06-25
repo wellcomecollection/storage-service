@@ -1,14 +1,8 @@
 package weco.storage_service.bag_unpacker.services.memory
 
 import weco.fixtures.TestWith
-import weco.storage_service.bag_unpacker.services.{
-  Unpacker,
-  UnpackerTestCases
-}
-import weco.storage.providers.memory.{
-  MemoryLocation,
-  MemoryLocationPrefix
-}
+import weco.storage_service.bag_unpacker.services.{Unpacker, UnpackerTestCases}
+import weco.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
 import weco.storage.store.memory.MemoryStreamStore
 
 class MemoryUnpackerTest

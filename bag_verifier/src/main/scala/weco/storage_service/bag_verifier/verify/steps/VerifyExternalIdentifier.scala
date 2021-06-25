@@ -1,10 +1,7 @@
 package weco.storage_service.bag_verifier.verify.steps
 
 import weco.storage_service.bag_verifier.models.BagVerifierError
-import weco.storage_service.bagit.models.{
-  Bag,
-  ExternalIdentifier
-}
+import weco.storage_service.bagit.models.{Bag, ExternalIdentifier}
 
 trait VerifyExternalIdentifier {
   def verifyExternalIdentifier(

@@ -3,10 +3,7 @@ import java.util.UUID
 
 import io.circe.generic.extras.JsonKey
 import weco.storage_service.ingests.models.Ingest
-import weco.storage_service.display.{
-  DisplayLocation,
-  DisplayStorageSpace
-}
+import weco.storage_service.display.{DisplayLocation, DisplayStorageSpace}
 import weco.storage_service.display.ingests._
 
 // This should mirror the DisplayIngest class as much as possible, but

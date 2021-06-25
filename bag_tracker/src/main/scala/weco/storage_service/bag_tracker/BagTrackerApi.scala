@@ -16,10 +16,7 @@ import weco.storage_service.bag_tracker.services.{
 import weco.storage_service.bag_tracker.storage.StorageManifestDao
 import weco.storage_service.bagit.models.{BagId, BagVersion}
 import weco.storage_service.http.LookupExternalIdentifier
-import weco.storage_service.storage.models.{
-  StorageManifest,
-  StorageSpace
-}
+import weco.storage_service.storage.models.{StorageManifest, StorageSpace}
 import weco.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContextExecutor, Future}

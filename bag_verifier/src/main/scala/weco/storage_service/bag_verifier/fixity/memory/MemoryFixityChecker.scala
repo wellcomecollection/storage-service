@@ -3,14 +3,8 @@ package weco.storage_service.bag_verifier.fixity.memory
 import java.net.URI
 
 import weco.storage_service.bag_verifier.fixity.FixityChecker
-import weco.storage_service.bag_verifier.storage.{
-  Locatable,
-  LocateFailure
-}
-import weco.storage.providers.memory.{
-  MemoryLocation,
-  MemoryLocationPrefix
-}
+import weco.storage_service.bag_verifier.storage.{Locatable, LocateFailure}
+import weco.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
 import weco.storage.services.SizeFinder
 import weco.storage.services.memory.MemorySizeFinder
 import weco.storage.store.memory.MemoryStreamStore

@@ -6,11 +6,7 @@ import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import weco.monitoring.Metrics
 import weco.storage_service.ingests.models.Ingest
-import weco.storage_service.indexer.{
-  Indexer,
-  IndexerWorker,
-  IndexerWorkerError
-}
+import weco.storage_service.indexer.{Indexer, IndexerWorker, IndexerWorkerError}
 import weco.storage_service.indexer.ingests.models.IndexedIngest
 
 import scala.concurrent.Future

@@ -2,10 +2,7 @@ package weco.storage_service.bag_versioner.versioning.dynamo
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import weco.storage_service.bagit.models.{
-  BagId,
-  ExternalIdentifier
-}
+import weco.storage_service.bagit.models.{BagId, ExternalIdentifier}
 import weco.storage_service.storage.models.StorageSpace
 import weco.storage_service.bag_versioner.versioning.VersionRecordGenerators
 

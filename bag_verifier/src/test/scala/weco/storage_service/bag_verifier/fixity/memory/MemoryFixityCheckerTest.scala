@@ -10,10 +10,7 @@ import weco.storage_service.bag_verifier.fixity.{
 }
 import weco.storage._
 import weco.storage.generators.MemoryLocationGenerators
-import weco.storage.providers.memory.{
-  MemoryLocation,
-  MemoryLocationPrefix
-}
+import weco.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
 import weco.storage.store.memory.MemoryStreamStore
 import weco.storage.streaming.Codec._
 import weco.storage.tags.memory.MemoryTags

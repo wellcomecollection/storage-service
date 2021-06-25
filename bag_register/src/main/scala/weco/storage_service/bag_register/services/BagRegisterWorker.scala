@@ -9,10 +9,7 @@ import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import weco.messaging.worker.models.Result
 import weco.monitoring.Metrics
 import weco.storage_service.bag_register.models.RegistrationSummary
-import weco.storage_service.{
-  BagRegistrationNotification,
-  KnownReplicasPayload
-}
+import weco.storage_service.{BagRegistrationNotification, KnownReplicasPayload}
 import weco.storage_service.ingests.services.IngestUpdater
 import weco.storage_service.storage.models.{
   IngestCompleted,

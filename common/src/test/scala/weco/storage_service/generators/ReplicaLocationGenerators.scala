@@ -1,6 +1,9 @@
 package weco.storage_service.generators
 
-import weco.storage.generators.{AzureBlobLocationGenerators, S3ObjectLocationGenerators}
+import weco.storage.generators.{
+  AzureBlobLocationGenerators,
+  S3ObjectLocationGenerators
+}
 import weco.storage_service.storage.models._
 
 trait ReplicaLocationGenerators

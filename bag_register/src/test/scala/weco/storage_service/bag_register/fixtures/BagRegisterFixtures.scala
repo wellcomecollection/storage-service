@@ -23,10 +23,7 @@ import weco.storage_service.fixtures._
 import weco.storage_service.fixtures.s3.S3BagBuilder
 import weco.storage_service.generators.StorageRandomGenerators
 import weco.storage_service.ingests.fixtures.IngestUpdateAssertions
-import weco.storage_service.ingests.models.{
-  Ingest,
-  IngestStatusUpdate
-}
+import weco.storage_service.ingests.models.{Ingest, IngestStatusUpdate}
 import weco.storage.store.fixtures.StringNamespaceFixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global

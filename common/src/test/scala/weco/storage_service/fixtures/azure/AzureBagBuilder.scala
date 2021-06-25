@@ -1,9 +1,6 @@
 package weco.storage_service.fixtures.azure
 
-import weco.storage_service.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
+import weco.storage_service.bagit.models.{BagVersion, ExternalIdentifier}
 import weco.storage_service.fixtures.BagBuilder
 import weco.storage_service.storage.models.StorageSpace
 import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}

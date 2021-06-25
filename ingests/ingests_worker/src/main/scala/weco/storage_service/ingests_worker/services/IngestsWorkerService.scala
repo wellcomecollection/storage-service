@@ -18,10 +18,7 @@ import weco.messaging.worker.models.{
 }
 import weco.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
 import weco.monitoring.Metrics
-import weco.storage_service.ingests.models.{
-  Ingest,
-  IngestUpdate
-}
+import weco.storage_service.ingests.models.{Ingest, IngestUpdate}
 import weco.storage_service.ingests_tracker.client.{
   IngestTrackerClient,
   IngestTrackerUnknownUpdateError,

@@ -10,10 +10,7 @@ import weco.storage_service.generators.{
   ExternalIdentifierGenerators,
   StorageSpaceGenerators
 }
-import weco.storage_service.ingests.models.{
-  CreateIngestType,
-  UpdateIngestType
-}
+import weco.storage_service.ingests.models.{CreateIngestType, UpdateIngestType}
 import weco.storage_service.bag_versioner.fixtures.VersionPickerFixtures
 
 class VersionPickerTest

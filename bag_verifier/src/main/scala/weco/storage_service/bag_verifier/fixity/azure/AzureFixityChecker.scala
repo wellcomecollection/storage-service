@@ -13,10 +13,7 @@ import weco.storage_service.bag_verifier.storage.azure.AzureLocatable
 import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import weco.storage.dynamo.DynamoConfig
 import weco.storage.services.SizeFinder
-import weco.storage.services.azure.{
-  AzureLargeStreamReader,
-  AzureSizeFinder
-}
+import weco.storage.services.azure.{AzureLargeStreamReader, AzureSizeFinder}
 import weco.storage.store.Readable
 import weco.storage.streaming.InputStreamWithLength
 import weco.storage.tags.Tags

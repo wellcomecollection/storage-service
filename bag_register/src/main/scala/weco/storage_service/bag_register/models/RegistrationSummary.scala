@@ -2,10 +2,7 @@ package weco.storage_service.bag_register.models
 
 import java.time.Instant
 
-import weco.storage_service.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
+import weco.storage_service.bagit.models.{BagVersion, ExternalIdentifier}
 import weco.storage_service.ingests.models.IngestID
 import weco.storage_service.operation.models.Summary
 import weco.storage_service.storage.models.{

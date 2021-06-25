@@ -5,11 +5,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor1}
 import weco.storage_service.bag_tracker.storage.memory.MemoryStorageManifestDao
-import weco.storage_service.bagit.models.{
-  BagId,
-  BagVersion,
-  ExternalIdentifier
-}
+import weco.storage_service.bagit.models.{BagId, BagVersion, ExternalIdentifier}
 import weco.storage_service.generators.{
   BagIdGenerators,
   StorageManifestGenerators

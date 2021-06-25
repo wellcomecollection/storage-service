@@ -15,11 +15,7 @@ import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import weco.storage.fixtures.AzureFixtures.Container
 import weco.storage.fixtures.DynamoFixtures.Table
 import weco.storage.fixtures.S3Fixtures.Bucket
-import weco.storage.fixtures.{
-  AzureFixtures,
-  DynamoFixtures,
-  S3Fixtures
-}
+import weco.storage.fixtures.{AzureFixtures, DynamoFixtures, S3Fixtures}
 import weco.storage.store.TypedStore
 import weco.storage.store.azure.AzureTypedStore
 import weco.storage.streaming.Codec._

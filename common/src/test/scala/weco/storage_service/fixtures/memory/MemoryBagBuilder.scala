@@ -1,16 +1,10 @@
 package weco.storage_service.fixtures.memory
 
-import weco.storage_service.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
+import weco.storage_service.bagit.models.{BagVersion, ExternalIdentifier}
 import weco.storage_service.fixtures.BagBuilder
 import weco.storage_service.storage.models.StorageSpace
 import weco.storage_service.storage.services.DestinationBuilder
-import weco.storage.providers.memory.{
-  MemoryLocation,
-  MemoryLocationPrefix
-}
+import weco.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
 import weco.storage.store.TypedStore
 import weco.storage.store.memory.MemoryTypedStore
 

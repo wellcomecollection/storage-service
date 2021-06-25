@@ -1,8 +1,5 @@
 package weco.storage_service.bag_verifier.fixity
-import weco.storage_service.verify.{
-  Checksum,
-  HashingAlgorithm
-}
+import weco.storage_service.verify.{Checksum, HashingAlgorithm}
 
 sealed trait FailedChecksum
 

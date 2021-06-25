@@ -13,7 +13,11 @@ import weco.storage_service.storage.models.PrimaryS3StorageLocation
 import weco.storage_service.indexer.models.FileContext
 import weco.storage_service.indexer.{Indexer, IndexerWorker}
 import weco.storage_service.indexer.files.models.IndexedFile
-import weco.storage_service.indexer.files.{FileIndexer, FileIndexerWorker, FilesIndexConfig}
+import weco.storage_service.indexer.files.{
+  FileIndexer,
+  FileIndexerWorker,
+  FilesIndexConfig
+}
 import weco.storage_service.indexer.fixtures.IndexerFixtures
 import weco.storage_service.indexer.elasticsearch.StorageServiceIndexConfig
 

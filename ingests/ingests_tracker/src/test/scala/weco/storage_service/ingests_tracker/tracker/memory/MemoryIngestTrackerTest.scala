@@ -8,11 +8,7 @@ import weco.storage_service.ingests_tracker.tracker.{
   IngestTrackerTestCases
 }
 import weco.storage.store.memory.MemoryVersionedStore
-import weco.storage.{
-  StoreReadError,
-  StoreWriteError,
-  UpdateWriteError
-}
+import weco.storage.{StoreReadError, StoreWriteError, UpdateWriteError}
 
 class MemoryIngestTrackerTest
     extends IngestTrackerTestCases[MemoryVersionedStore[IngestID, Ingest]]

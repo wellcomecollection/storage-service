@@ -19,18 +19,11 @@ import weco.storage_service.bag_verifier.services.s3.{
   S3StandaloneBagVerifier
 }
 import weco.storage_service.fixtures.OperationFixtures
-import weco.storage_service.{
-  BagRootLocationPayload,
-  ReplicaCompletePayload
-}
+import weco.storage_service.{BagRootLocationPayload, ReplicaCompletePayload}
 import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import weco.storage.fixtures.DynamoFixtures.Table
 import weco.storage.fixtures.S3Fixtures.Bucket
-import weco.storage.fixtures.{
-  AzureFixtures,
-  DynamoFixtures,
-  S3Fixtures
-}
+import weco.storage.fixtures.{AzureFixtures, DynamoFixtures, S3Fixtures}
 import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 trait BagVerifierFixtures

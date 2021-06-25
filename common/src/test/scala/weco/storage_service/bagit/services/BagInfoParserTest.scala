@@ -5,10 +5,7 @@ import java.io.InputStream
 import org.scalatest.{Assertion, EitherValues, TryValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import weco.storage_service.bagit.models.{
-  BagInfo,
-  ExternalDescription
-}
+import weco.storage_service.bagit.models.{BagInfo, ExternalDescription}
 import weco.storage_service.generators.{
   ExternalIdentifierGenerators,
   PayloadOxumGenerators

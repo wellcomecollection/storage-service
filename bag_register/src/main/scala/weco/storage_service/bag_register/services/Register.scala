@@ -8,10 +8,7 @@ import weco.storage_service.bag_tracker.client.{
   BagTrackerClient,
   BagTrackerCreateError
 }
-import weco.storage_service.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
+import weco.storage_service.bagit.models.{BagVersion, ExternalIdentifier}
 import weco.storage_service.bagit.services.s3.S3BagReader
 import weco.storage_service.ingests.models.IngestID
 import weco.storage_service.storage.models._

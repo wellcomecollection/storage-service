@@ -7,10 +7,7 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.akka.fixtures.Akka
 import weco.storage_service.generators.StorageRandomGenerators
-import weco.storage_service.ingests.models.{
-  Callback,
-  IngestID
-}
+import weco.storage_service.ingests.models.{Callback, IngestID}
 import weco.fixtures.TimeAssertions
 
 import scala.util.{Failure, Success, Try}

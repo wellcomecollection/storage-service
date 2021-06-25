@@ -11,10 +11,7 @@ import weco.storage_service.generators.{
   ExternalIdentifierGenerators,
   StorageSpaceGenerators
 }
-import weco.storage_service.ingests.models.{
-  CreateIngestType,
-  UpdateIngestType
-}
+import weco.storage_service.ingests.models.{CreateIngestType, UpdateIngestType}
 import weco.storage.NoMaximaValueError
 
 trait IngestVersionManagerTestCases[DaoImpl <: IngestVersionManagerDao, Context]

@@ -20,10 +20,7 @@ import weco.storage_service.bag_verifier.services.azure.AzureReplicatedBagVerifi
 import weco.storage_service.bag_verifier.services.s3.S3BagVerifier
 import weco.storage_service.ingests.services.IngestUpdater
 import weco.storage_service.operation.services.OutgoingPublisher
-import weco.storage_service.{
-  BagRootLocationPayload,
-  ReplicaCompletePayload
-}
+import weco.storage_service.{BagRootLocationPayload, ReplicaCompletePayload}
 import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import weco.storage.dynamo.DynamoConfig
 import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}

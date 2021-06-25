@@ -3,11 +3,7 @@ package weco.storage_service
 import java.time.Instant
 
 import weco.storage_service.bagit.models.ExternalIdentifier
-import weco.storage_service.ingests.models.{
-  Ingest,
-  IngestID,
-  IngestType
-}
+import weco.storage_service.ingests.models.{Ingest, IngestID, IngestType}
 import weco.storage_service.storage.models.StorageSpace
 
 case class PipelineContext(

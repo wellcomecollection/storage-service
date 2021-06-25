@@ -8,10 +8,7 @@ import weco.storage_service.bag_verifier.fixity.{
   FixityChecker,
   FixityCheckerTagsTestCases
 }
-import weco.storage_service.bag_verifier.storage.s3.{
-  S3Locatable,
-  S3Resolvable
-}
+import weco.storage_service.bag_verifier.storage.s3.{S3Locatable, S3Resolvable}
 import weco.storage_service.bag_verifier.storage.{
   LocationError,
   LocationNotFound

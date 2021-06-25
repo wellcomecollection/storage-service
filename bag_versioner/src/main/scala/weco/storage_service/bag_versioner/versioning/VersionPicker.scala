@@ -4,21 +4,10 @@ import java.time.Instant
 import java.util.UUID
 
 import cats.{Id, Monad, MonadError}
-import weco.storage_service.bagit.models.{
-  BagId,
-  BagVersion,
-  ExternalIdentifier
-}
-import weco.storage_service.ingests.models.{
-  IngestID,
-  IngestType
-}
+import weco.storage_service.bagit.models.{BagId, BagVersion, ExternalIdentifier}
+import weco.storage_service.ingests.models.{IngestID, IngestType}
 import weco.storage_service.storage.models.StorageSpace
-import weco.storage.locking.{
-  FailedLockingServiceOp,
-  LockDao,
-  LockingService
-}
+import weco.storage.locking.{FailedLockingServiceOp, LockDao, LockingService}
 
 class VersionPicker(
   lockingService: LockingService[

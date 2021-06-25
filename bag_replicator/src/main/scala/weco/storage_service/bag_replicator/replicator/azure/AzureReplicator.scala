@@ -6,10 +6,7 @@ import com.azure.storage.blob.BlobServiceClient
 import weco.storage_service.bag_replicator.replicator.Replicator
 import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import weco.storage.listing.azure.AzureBlobLocationListing
-import weco.storage.transfer.azure.{
-  AzurePrefixTransfer,
-  AzureTransfer
-}
+import weco.storage.transfer.azure.{AzurePrefixTransfer, AzureTransfer}
 
 class AzureReplicator(
   transfer: AzureTransfer[_]

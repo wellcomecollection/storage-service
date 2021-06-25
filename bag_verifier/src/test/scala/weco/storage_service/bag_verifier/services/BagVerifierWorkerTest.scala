@@ -19,10 +19,7 @@ import weco.storage_service.storage.models.{
   PrimaryS3ReplicaLocation,
   SecondaryAzureReplicaLocation
 }
-import weco.storage_service.{
-  BagRootLocationPayload,
-  ReplicaCompletePayload
-}
+import weco.storage_service.{BagRootLocationPayload, ReplicaCompletePayload}
 import weco.storage.s3.S3ObjectLocationPrefix
 import weco.storage.store.azure.AzureTypedStore
 import weco.storage.store.s3.S3TypedStore

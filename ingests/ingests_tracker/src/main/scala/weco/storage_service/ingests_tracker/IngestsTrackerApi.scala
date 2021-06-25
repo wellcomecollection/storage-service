@@ -8,11 +8,7 @@ import akka.http.scaladsl.server.Route
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
 import weco.json.JsonUtil._
-import weco.storage_service.ingests.models.{
-  Ingest,
-  IngestID,
-  IngestUpdate
-}
+import weco.storage_service.ingests.models.{Ingest, IngestID, IngestUpdate}
 import weco.storage_service.ingests_tracker.services.MessagingService
 import weco.storage_service.ingests_tracker.tracker.{
   IngestDoesNotExistError,

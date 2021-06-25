@@ -11,14 +11,8 @@ import weco.storage_service.fixtures.PayloadEntry
 import weco.storage_service.fixtures.s3.S3BagBuilder
 import weco.storage_service.generators.PayloadGenerators
 import weco.storage_service.ingests.fixtures.IngestUpdateAssertions
-import weco.storage_service.ingests.models.{
-  Ingest,
-  IngestStatusUpdate
-}
-import weco.storage_service.{
-  BagRootLocationPayload,
-  VerifiablePayload
-}
+import weco.storage_service.ingests.models.{Ingest, IngestStatusUpdate}
+import weco.storage_service.{BagRootLocationPayload, VerifiablePayload}
 
 class BagVerifierFeatureTest
     extends AnyFunSpec

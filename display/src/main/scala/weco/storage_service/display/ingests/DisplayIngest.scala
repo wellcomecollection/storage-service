@@ -8,10 +8,7 @@ import io.circe.generic.extras.JsonKey
 import weco.storage_service.bagit.models.ExternalIdentifier
 import weco.storage_service.ingests.models._
 import weco.storage_service.storage.models.StorageSpace
-import weco.storage_service.display.{
-  DisplayLocation,
-  DisplayStorageSpace
-}
+import weco.storage_service.display.{DisplayLocation, DisplayStorageSpace}
 
 sealed trait DisplayIngest
 

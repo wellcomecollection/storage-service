@@ -5,10 +5,7 @@ import com.typesafe.config.Config
 import org.scanamo.generic.auto._
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import weco.json.JsonUtil._
-import weco.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  SQSBuilder
-}
+import weco.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, SQSBuilder}
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.config.builders.{

@@ -10,10 +10,7 @@ import weco.messaging.memory.MemoryMessageSender
 import weco.storage_service.bag_register.fixtures.BagRegisterFixtures
 import weco.storage_service.BagRegistrationNotification
 import weco.storage_service.bagit.models.BagId
-import weco.storage_service.generators.{
-  BagInfoGenerators,
-  PayloadGenerators
-}
+import weco.storage_service.generators.{BagInfoGenerators, PayloadGenerators}
 import weco.storage_service.storage.models._
 
 class BagRegisterWorkerTest

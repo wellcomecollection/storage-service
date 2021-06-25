@@ -24,10 +24,7 @@ import weco.storage_service.storage.models.IngestStepResult
 import weco.storage.fixtures.S3Fixtures
 import weco.storage.fixtures.S3Fixtures.Bucket
 import weco.storage.listing.s3.S3ObjectSummaryListing
-import weco.storage.locking.memory.{
-  MemoryLockDao,
-  MemoryLockDaoFixtures
-}
+import weco.storage.locking.memory.{MemoryLockDao, MemoryLockDaoFixtures}
 import weco.storage.locking.{LockDao, LockingService}
 import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 

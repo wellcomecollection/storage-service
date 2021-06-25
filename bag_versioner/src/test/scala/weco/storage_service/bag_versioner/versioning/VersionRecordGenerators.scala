@@ -2,10 +2,7 @@ package weco.storage_service.bag_versioner.versioning
 
 import java.time.Instant
 
-import weco.storage_service.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
+import weco.storage_service.bagit.models.{BagVersion, ExternalIdentifier}
 import weco.storage_service.generators.{
   ExternalIdentifierGenerators,
   StorageSpaceGenerators

@@ -13,20 +13,10 @@ import weco.storage_service.bag_verifier.storage.{
   LocateFailure,
   LocationParsingError
 }
-import weco.storage_service.verify.{
-  Checksum,
-  ChecksumValue,
-  MD5
-}
+import weco.storage_service.verify.{Checksum, ChecksumValue, MD5}
 import weco.storage._
-import weco.storage.generators.{
-  MemoryLocationGenerators,
-  StreamGenerators
-}
-import weco.storage.providers.memory.{
-  MemoryLocation,
-  MemoryLocationPrefix
-}
+import weco.storage.generators.{MemoryLocationGenerators, StreamGenerators}
+import weco.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
 import weco.storage.services.SizeFinder
 import weco.storage.store.memory.{MemoryStore, MemoryStreamStore}
 import weco.storage.streaming.Codec.stringCodec

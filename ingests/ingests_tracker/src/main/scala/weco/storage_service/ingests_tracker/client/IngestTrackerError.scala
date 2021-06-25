@@ -1,10 +1,6 @@
 package weco.storage_service.ingests_tracker.client
 
-import weco.storage_service.ingests.models.{
-  Ingest,
-  IngestID,
-  IngestUpdate
-}
+import weco.storage_service.ingests.models.{Ingest, IngestID, IngestUpdate}
 
 sealed trait IngestTrackerError
 

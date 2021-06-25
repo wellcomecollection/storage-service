@@ -15,10 +15,7 @@ import weco.storage_service.bag_verifier.services.{
 }
 import weco.storage_service.bag_verifier.storage.Resolvable
 import weco.storage_service.bag_verifier.storage.s3.S3Resolvable
-import weco.storage_service.bagit.models.{
-  Bag,
-  ExternalIdentifier
-}
+import weco.storage_service.bagit.models.{Bag, ExternalIdentifier}
 import weco.storage_service.bagit.services.BagReader
 import weco.storage_service.bagit.services.s3.S3BagReader
 import weco.storage_service.storage.models.StorageSpace

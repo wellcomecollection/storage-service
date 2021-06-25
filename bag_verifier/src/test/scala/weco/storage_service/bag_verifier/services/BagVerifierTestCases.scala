@@ -16,14 +16,8 @@ import weco.storage_service.bagit.models.{
   ExternalIdentifier,
   PayloadOxum
 }
-import weco.storage_service.bagit.services.{
-  BagReader,
-  BagUnavailable
-}
-import weco.storage_service.fixtures.{
-  BagBuilder,
-  PayloadEntry
-}
+import weco.storage_service.bagit.services.{BagReader, BagUnavailable}
+import weco.storage_service.fixtures.{BagBuilder, PayloadEntry}
 import weco.storage_service.generators.{
   BagInfoGenerators,
   StorageSpaceGenerators

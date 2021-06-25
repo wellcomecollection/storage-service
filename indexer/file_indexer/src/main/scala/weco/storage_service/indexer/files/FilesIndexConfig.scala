@@ -1,6 +1,11 @@
 package weco.storage_service.indexer.files
 
-import com.sksamuel.elastic4s.ElasticDsl.{dateField, keywordField, longField, objectField}
+import com.sksamuel.elastic4s.ElasticDsl.{
+  dateField,
+  keywordField,
+  longField,
+  objectField
+}
 import com.sksamuel.elastic4s.fields.ElasticField
 import weco.storage_service.indexer.elasticsearch.StorageServiceIndexConfig
 

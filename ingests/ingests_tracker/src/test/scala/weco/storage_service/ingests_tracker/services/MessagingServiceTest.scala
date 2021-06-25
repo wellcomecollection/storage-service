@@ -12,10 +12,7 @@ import weco.storage_service.ingests.models.Ingest.{
   Processing,
   Succeeded
 }
-import weco.storage_service.ingests.models.{
-  CallbackNotification,
-  Ingest
-}
+import weco.storage_service.ingests.models.{CallbackNotification, Ingest}
 import weco.storage_service.ingests_tracker.fixtures.{
   IngestTrackerFixtures,
   MessagingServiceFixtures

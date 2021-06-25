@@ -4,17 +4,11 @@ import akka.http.scaladsl.model.StatusCodes.NotFound
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Route
-import weco.storage_service.bagit.models.{
-  BagId,
-  ExternalIdentifier
-}
+import weco.storage_service.bagit.models.{BagId, ExternalIdentifier}
 import weco.storage_service.http.LookupExternalIdentifier
 import weco.storage_service.storage.LargeResponses
 import weco.storage_service.storage.models.StorageSpace
-import weco.storage_service.bags_api.responses.{
-  LookupBag,
-  LookupBagVersions
-}
+import weco.storage_service.bags_api.responses.{LookupBag, LookupBagVersions}
 import weco.storage.s3.S3ObjectLocation
 import weco.http.models.{ContextResponse, DisplayError}
 

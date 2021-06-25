@@ -7,14 +7,25 @@ import weco.fixtures.TestWith
 import weco.json.JsonUtil._
 import weco.messaging.fixtures.SQS
 import weco.monitoring.memory.MemoryMetrics
-import weco.storage_service.bag_tracker.fixtures.{BagTrackerFixtures, StorageManifestDaoFixture}
+import weco.storage_service.bag_tracker.fixtures.{
+  BagTrackerFixtures,
+  StorageManifestDaoFixture
+}
 import weco.storage_service.bag_tracker.storage.StorageManifestDao
 import weco.storage_service.bagit.models.{BagVersion, ExternalIdentifier}
-import weco.storage_service.generators.{IngestGenerators, PayloadGenerators, StorageManifestGenerators}
+import weco.storage_service.generators.{
+  IngestGenerators,
+  PayloadGenerators,
+  StorageManifestGenerators
+}
 import weco.storage_service.storage.models.{StorageManifest, StorageSpace}
 import weco.storage_service.BagRegistrationNotification
 import weco.storage_service.indexer.bags.models.IndexedStorageManifest
-import weco.storage_service.indexer.bags.{BagIndexer, BagIndexerWorker, BagsIndexConfig}
+import weco.storage_service.indexer.bags.{
+  BagIndexer,
+  BagIndexerWorker,
+  BagsIndexConfig
+}
 import weco.storage_service.indexer.{Indexer, IndexerWorker}
 import weco.storage_service.indexer.fixtures.IndexerFixtures
 import weco.storage_service.indexer.elasticsearch.StorageServiceIndexConfig

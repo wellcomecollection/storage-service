@@ -18,10 +18,7 @@ import org.scalatest.matchers.should.Matchers
 import weco.json.utils.JsonAssertions
 import weco.storage_service.bagit.models.BagVersion
 import weco.storage_service.generators.IngestGenerators
-import weco.storage_service.ingests.models.{
-  Ingest,
-  S3SourceLocation
-}
+import weco.storage_service.ingests.models.{Ingest, S3SourceLocation}
 import weco.storage_service.notifier.fixtures.{
   LocalWireMockFixture,
   NotifierFixtures

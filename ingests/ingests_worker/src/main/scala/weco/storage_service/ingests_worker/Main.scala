@@ -3,10 +3,7 @@ package weco.storage_service.ingests_worker
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.Uri
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import weco.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  SQSBuilder
-}
+import weco.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, SQSBuilder}
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.ingests_worker.services.IngestsWorkerService

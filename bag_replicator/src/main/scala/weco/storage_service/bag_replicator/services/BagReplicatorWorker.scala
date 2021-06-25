@@ -15,16 +15,9 @@ import weco.storage_service.ingests.models.IngestID
 import weco.storage_service.ingests.services.IngestUpdater
 import weco.storage_service.operation.services._
 import weco.storage_service.storage.models._
-import weco.storage_service.{
-  ReplicaCompletePayload,
-  VersionedBagRootPayload
-}
+import weco.storage_service.{ReplicaCompletePayload, VersionedBagRootPayload}
 import weco.storage.{Location, Prefix}
-import weco.storage.locking.{
-  FailedLockingServiceOp,
-  LockDao,
-  LockingService
-}
+import weco.storage.locking.{FailedLockingServiceOp, LockDao, LockingService}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._

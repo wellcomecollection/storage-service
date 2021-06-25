@@ -4,17 +4,11 @@ import org.scalatest.funspec.AnyFunSpec
 import weco.json.JsonUtil._
 import weco.messaging.memory.MemoryMessageSender
 import weco.storage_service.BagRootLocationPayload
-import weco.storage_service.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
+import weco.storage_service.bagit.models.{BagVersion, ExternalIdentifier}
 import weco.storage_service.fixtures.s3.S3BagBuilder
 import weco.storage_service.generators.PayloadGenerators
 import weco.storage_service.ingests.fixtures.IngestUpdateAssertions
-import weco.storage_service.ingests.models.{
-  Ingest,
-  IngestStatusUpdate
-}
+import weco.storage_service.ingests.models.{Ingest, IngestStatusUpdate}
 import weco.storage_service.storage.models.StorageSpace
 import weco.storage_service.bag_root_finder.fixtures.BagRootFinderFixtures
 

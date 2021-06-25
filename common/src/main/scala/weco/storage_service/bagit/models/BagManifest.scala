@@ -3,10 +3,7 @@ package weco.storage_service.bagit.models
 import java.io.InputStream
 
 import weco.storage_service.bagit.services.BagManifestParser
-import weco.storage_service.verify.{
-  ChecksumValue,
-  HashingAlgorithm
-}
+import weco.storage_service.verify.{ChecksumValue, HashingAlgorithm}
 
 import scala.util.Try
 

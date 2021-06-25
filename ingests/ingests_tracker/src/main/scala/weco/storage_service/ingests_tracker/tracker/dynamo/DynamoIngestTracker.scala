@@ -3,11 +3,7 @@ package weco.storage_service.ingests_tracker.tracker.dynamo
 import grizzled.slf4j.Logging
 import org.scanamo.generic.auto._
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
-import weco.storage_service.ingests.models.{
-  Ingest,
-  IngestID,
-  IngestUpdate
-}
+import weco.storage_service.ingests.models.{Ingest, IngestID, IngestUpdate}
 import weco.storage_service.ingests.models.IngestID._
 import weco.storage_service.ingests_tracker.tracker.{
   IngestTracker,

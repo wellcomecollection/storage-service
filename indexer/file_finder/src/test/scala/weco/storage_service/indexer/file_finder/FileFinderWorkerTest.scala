@@ -6,10 +6,7 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.json.JsonUtil._
 import weco.messaging.memory.MemoryMessageSender
-import weco.messaging.worker.models.{
-  NonDeterministicFailure,
-  Successful
-}
+import weco.messaging.worker.models.{NonDeterministicFailure, Successful}
 import weco.storage_service.BagRegistrationNotification
 import weco.storage_service.bagit.models.BagVersion
 import weco.storage_service.generators.StorageManifestGenerators

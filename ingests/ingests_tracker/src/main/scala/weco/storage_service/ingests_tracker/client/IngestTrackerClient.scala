@@ -9,11 +9,7 @@ import akka.stream.Materializer
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
 import weco.json.JsonUtil._
-import weco.storage_service.ingests.models.{
-  Ingest,
-  IngestID,
-  IngestUpdate
-}
+import weco.storage_service.ingests.models.{Ingest, IngestID, IngestUpdate}
 import weco.http.client.{AkkaHttpClient, HttpClient, HttpGet, HttpPost}
 
 import scala.concurrent.{ExecutionContext, Future}

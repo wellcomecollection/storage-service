@@ -10,7 +10,10 @@ import weco.storage.store.TypedStore
 import weco.storage.store.s3.S3TypedStore
 import weco.storage.{Location, Prefix}
 import weco.storage_service.bagit.models.BagPath
-import weco.storage_service.generators.{BagInfoGenerators, StorageSpaceGenerators}
+import weco.storage_service.generators.{
+  BagInfoGenerators,
+  StorageSpaceGenerators
+}
 
 import scala.util.Random
 

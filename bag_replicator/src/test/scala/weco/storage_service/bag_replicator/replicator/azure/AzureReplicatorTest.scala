@@ -10,10 +10,7 @@ import weco.storage.listing.Listing
 import weco.storage.listing.azure.AzureBlobLocationListing
 import weco.storage.store.azure.AzureTypedStore
 import weco.storage.streaming.Codec._
-import weco.storage.transfer.azure.{
-  AzurePrefixTransfer,
-  AzurePutBlockTransfer
-}
+import weco.storage.transfer.azure.{AzurePrefixTransfer, AzurePutBlockTransfer}
 
 class AzureReplicatorTest
     extends ReplicatorTestCases[

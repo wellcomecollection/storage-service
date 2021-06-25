@@ -7,10 +7,7 @@ import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
 import weco.messaging.sns.SNSConfig
-import weco.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  SQSBuilder
-}
+import weco.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, SQSBuilder}
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.bag_replicator.config.ReplicatorDestinationConfig
@@ -31,10 +28,7 @@ import weco.storage_service.ingests.models.{
 }
 import weco.storage_service.storage.models.IngestStepResult
 import weco.storage.azure.AzureBlobLocationPrefix
-import weco.storage.locking.dynamo.{
-  DynamoLockDao,
-  DynamoLockingService
-}
+import weco.storage.locking.dynamo.{DynamoLockDao, DynamoLockingService}
 import weco.storage.s3.S3ObjectLocationPrefix
 import weco.storage.transfer.azure.AzurePutBlockFromUrlTransfer
 import weco.storage.typesafe.{DynamoLockDaoBuilder, S3Builder}

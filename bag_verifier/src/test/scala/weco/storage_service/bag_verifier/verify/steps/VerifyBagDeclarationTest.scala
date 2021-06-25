@@ -6,10 +6,7 @@ import org.scalatest.matchers.should.Matchers
 import weco.fixtures.TestWith
 import weco.storage.{Identified, ReadError, StoreReadError}
 import weco.storage.generators.MemoryLocationGenerators
-import weco.storage.providers.memory.{
-  MemoryLocation,
-  MemoryLocationPrefix
-}
+import weco.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
 import weco.storage.store.Readable
 import weco.storage.store.memory.{MemoryStore, MemoryStreamStore}
 import weco.storage.streaming.Codec._

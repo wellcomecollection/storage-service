@@ -7,10 +7,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.fixtures.TestWith
-import weco.storage_service.ingests.models.{
-  Ingest,
-  IngestStatusUpdate
-}
+import weco.storage_service.ingests.models.{Ingest, IngestStatusUpdate}
 import weco.storage_service.ingests.models.Ingest.Failed
 import weco.storage_service.ingests.models.Ingest.Succeeded
 import weco.storage_service.ingests_tracker.fixtures.IngestsTrackerApiFixture

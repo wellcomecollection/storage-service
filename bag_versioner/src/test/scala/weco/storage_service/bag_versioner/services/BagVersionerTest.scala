@@ -10,14 +10,8 @@ import weco.storage_service.generators.{
   ExternalIdentifierGenerators,
   StorageSpaceGenerators
 }
-import weco.storage_service.ingests.models.{
-  CreateIngestType,
-  UpdateIngestType
-}
-import weco.storage_service.storage.models.{
-  IngestFailed,
-  IngestShouldRetry
-}
+import weco.storage_service.ingests.models.{CreateIngestType, UpdateIngestType}
+import weco.storage_service.storage.models.{IngestFailed, IngestShouldRetry}
 import weco.storage_service.bag_versioner.fixtures.BagVersionerFixtures
 import weco.storage_service.bag_versioner.models.{
   BagVersionerFailureSummary,

@@ -6,10 +6,7 @@ import com.typesafe.config.Config
 import weco.json.JsonUtil._
 import org.scanamo.generic.auto._
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import weco.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  SQSBuilder
-}
+import weco.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, SQSBuilder}
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.bagit.models.BagVersion

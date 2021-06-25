@@ -4,15 +4,9 @@ import java.time.Instant
 
 import grizzled.slf4j.Logging
 import weco.storage_service.bag_replicator.replicator.models._
-import weco.storage_service.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
+import weco.storage_service.bagit.models.{BagVersion, ExternalIdentifier}
 import weco.storage_service.ingests.models.IngestID
-import weco.storage_service.storage.models.{
-  EnsureTrailingSlash,
-  StorageSpace
-}
+import weco.storage_service.storage.models.{EnsureTrailingSlash, StorageSpace}
 import weco.storage_service.storage.services.DestinationBuilder
 import weco.storage._
 import weco.storage.listing.Listing

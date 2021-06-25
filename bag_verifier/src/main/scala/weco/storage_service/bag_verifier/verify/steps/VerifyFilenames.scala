@@ -1,10 +1,7 @@
 package weco.storage_service.bag_verifier.verify.steps
 
 import weco.storage_service.bag_verifier.models.BagVerifierError
-import weco.storage_service.bagit.models.{
-  PayloadManifest,
-  TagManifest
-}
+import weco.storage_service.bagit.models.{PayloadManifest, TagManifest}
 
 trait VerifyFilenames {
   def verifyAllowedFilenames(

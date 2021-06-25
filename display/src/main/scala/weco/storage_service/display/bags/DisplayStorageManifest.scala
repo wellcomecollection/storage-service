@@ -4,10 +4,7 @@ import java.net.URL
 
 import io.circe.generic.extras.JsonKey
 import weco.storage_service.storage.models.StorageManifest
-import weco.storage_service.display.{
-  DisplayLocation,
-  DisplayStorageSpace
-}
+import weco.storage_service.display.{DisplayLocation, DisplayStorageSpace}
 
 case class DisplayStorageManifest(
   @JsonKey("@context") context: String,

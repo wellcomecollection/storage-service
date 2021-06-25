@@ -8,10 +8,7 @@ import org.scanamo.generic.auto._
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 import weco.json.JsonUtil._
 import weco.messaging.memory.MemoryMessageSender
-import weco.storage_service.{
-  KnownReplicasPayload,
-  VersionedBagRootPayload
-}
+import weco.storage_service.{KnownReplicasPayload, VersionedBagRootPayload}
 import weco.storage_service.generators.PayloadGenerators
 import weco.storage_service.ingests.fixtures.IngestUpdateAssertions
 import weco.storage_service.ingests.models.Ingest

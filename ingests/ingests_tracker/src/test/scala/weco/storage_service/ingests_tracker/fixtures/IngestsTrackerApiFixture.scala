@@ -8,11 +8,7 @@ import weco.akka.fixtures.Akka
 import weco.fixtures.TestWith
 import weco.messaging.memory.MemoryMessageSender
 import weco.storage_service.generators.IngestGenerators
-import weco.storage_service.ingests.models.{
-  Ingest,
-  IngestID,
-  IngestUpdate
-}
+import weco.storage_service.ingests.models.{Ingest, IngestID, IngestUpdate}
 import weco.storage_service.ingests_tracker.IngestsTrackerApi
 import weco.storage_service.ingests_tracker.services.{
   CallbackNotificationService,
@@ -20,12 +16,7 @@ import weco.storage_service.ingests_tracker.services.{
 }
 import weco.storage_service.ingests_tracker.tracker.IngestStoreUnexpectedError
 import weco.storage_service.ingests_tracker.tracker.memory.MemoryIngestTracker
-import weco.storage.{
-  StoreReadError,
-  StoreWriteError,
-  UpdateWriteError,
-  Version
-}
+import weco.storage.{StoreReadError, StoreWriteError, UpdateWriteError, Version}
 import weco.storage.maxima.memory.MemoryMaxima
 import weco.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 

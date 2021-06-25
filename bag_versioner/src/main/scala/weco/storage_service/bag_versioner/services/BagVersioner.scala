@@ -3,10 +3,7 @@ package weco.storage_service.bag_versioner.services
 import java.time.Instant
 
 import weco.storage_service.bagit.models.ExternalIdentifier
-import weco.storage_service.ingests.models.{
-  IngestID,
-  IngestType
-}
+import weco.storage_service.ingests.models.{IngestID, IngestType}
 import weco.storage_service.storage.models._
 import weco.storage_service.bag_versioner.models._
 import weco.storage_service.bag_versioner.versioning._

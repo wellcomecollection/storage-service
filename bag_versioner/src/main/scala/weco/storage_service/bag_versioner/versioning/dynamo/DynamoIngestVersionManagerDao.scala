@@ -3,10 +3,7 @@ package weco.storage_service.bag_versioner.versioning.dynamo
 import org.scanamo.syntax._
 import org.scanamo.{DynamoFormat, Scanamo, Table => ScanamoTable}
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
-import weco.storage_service.bagit.models.{
-  BagId,
-  ExternalIdentifier
-}
+import weco.storage_service.bagit.models.{BagId, ExternalIdentifier}
 import weco.storage_service.ingests.models.IngestID
 import weco.storage_service.ingests.models.IngestID._
 import weco.storage_service.storage.models.StorageSpace

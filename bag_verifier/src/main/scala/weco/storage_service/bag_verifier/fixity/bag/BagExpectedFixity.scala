@@ -8,10 +8,7 @@ import weco.storage_service.bag_verifier.fixity.{
   ExpectedFixity,
   FetchFileFixity
 }
-import weco.storage_service.bag_verifier.storage.{
-  Locatable,
-  Resolvable
-}
+import weco.storage_service.bag_verifier.storage.{Locatable, Resolvable}
 import weco.storage_service.bag_verifier.storage.bag.BagLocatable
 import weco.storage_service.bagit.models._
 import weco.storage_service.bagit.services.BagMatcher

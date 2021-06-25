@@ -11,11 +11,7 @@ import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import weco.monitoring.memory.MemoryMetrics
 import weco.storage_service.generators.IngestGenerators
 import weco.storage_service.ingests.models.Ingest.Succeeded
-import weco.storage_service.ingests.models.{
-  Ingest,
-  IngestID,
-  IngestUpdate
-}
+import weco.storage_service.ingests.models.{Ingest, IngestID, IngestUpdate}
 import weco.storage_service.ingests_tracker.client._
 import weco.storage_service.ingests_tracker.fixtures.IngestTrackerFixtures
 import weco.storage_service.ingests_worker.services.IngestsWorkerService

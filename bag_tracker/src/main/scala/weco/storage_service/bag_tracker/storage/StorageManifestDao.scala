@@ -3,12 +3,7 @@ package weco.storage_service.bag_tracker.storage
 import weco.storage_service.bagit.models.{BagId, BagVersion}
 import weco.storage_service.storage.models.StorageManifest
 import weco.storage.store.VersionedStore
-import weco.storage.{
-  HigherVersionExistsError,
-  ReadError,
-  Version,
-  WriteError
-}
+import weco.storage.{HigherVersionExistsError, ReadError, Version, WriteError}
 
 trait StorageManifestDao {
   val vhs: VersionedStore[

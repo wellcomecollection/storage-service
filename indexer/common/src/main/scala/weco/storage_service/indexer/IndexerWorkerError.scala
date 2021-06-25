@@ -3,7 +3,7 @@ package weco.storage_service.indexer
 sealed trait IndexerWorkerError extends Exception
 
 case class RetryableIndexingError[T](payload: T, cause: Throwable)
-  extends IndexerWorkerError {
+    extends IndexerWorkerError {
   initCause(cause)
 }
 

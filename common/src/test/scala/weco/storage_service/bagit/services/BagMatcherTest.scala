@@ -3,10 +3,7 @@ package weco.storage_service.bagit.services
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import weco.storage_service.bagit.models.{
-  MatchedLocation,
-  PayloadManifest
-}
+import weco.storage_service.bagit.models.{MatchedLocation, PayloadManifest}
 import weco.storage_service.generators.{
   FetchMetadataGenerators,
   StorageRandomGenerators

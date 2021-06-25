@@ -6,10 +6,7 @@ import akka.http.scaladsl.server.Route
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
 import weco.json.JsonUtil._
-import weco.storage_service.bag_tracker.models.{
-  BagVersionEntry,
-  BagVersionList
-}
+import weco.storage_service.bag_tracker.models.{BagVersionEntry, BagVersionList}
 import weco.storage_service.bag_tracker.storage.StorageManifestDao
 import weco.storage_service.bagit.models.{BagId, BagVersion}
 

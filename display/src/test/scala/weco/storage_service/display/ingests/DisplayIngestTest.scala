@@ -4,10 +4,7 @@ import java.net.{URI, URL}
 import java.time.Instant
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import weco.storage_service.generators.{
-  BagIdGenerators,
-  IngestGenerators
-}
+import weco.storage_service.generators.{BagIdGenerators, IngestGenerators}
 import weco.storage_service.ingests.models._
 import weco.storage_service.storage.models.StorageSpace
 import weco.storage_service.display._

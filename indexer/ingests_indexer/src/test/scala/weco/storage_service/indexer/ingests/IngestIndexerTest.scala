@@ -6,10 +6,7 @@ import io.circe.Json
 import org.scalatest.Assertion
 import weco.json.JsonUtil._
 import weco.storage_service.generators.IngestGenerators
-import weco.storage_service.ingests.models.{
-  Ingest,
-  IngestEvent
-}
+import weco.storage_service.ingests.models.{Ingest, IngestEvent}
 import weco.storage_service.indexer.IndexerTestCases
 import weco.storage_service.indexer.ingests.fixtures.IngestsIndexerFixtures
 import weco.storage_service.indexer.ingests.models.IndexedIngest

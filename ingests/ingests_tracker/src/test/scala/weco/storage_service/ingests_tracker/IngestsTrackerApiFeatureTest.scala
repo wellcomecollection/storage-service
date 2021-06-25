@@ -16,10 +16,7 @@ import weco.fixtures.TestWith
 import weco.json.JsonUtil._
 import weco.json.utils.JsonAssertions
 import weco.storage_service.generators.StorageRandomGenerators
-import weco.storage_service.ingests.models.Ingest.{
-  Failed,
-  Succeeded
-}
+import weco.storage_service.ingests.models.Ingest.{Failed, Succeeded}
 import weco.storage_service.ingests.models._
 import weco.storage_service.ingests_tracker.fixtures.IngestsTrackerApiFixture
 import weco.storage_service.ingests_tracker.tracker.IngestDoesNotExistError

@@ -5,22 +5,13 @@ import org.scalatest.Assertion
 import org.scanamo.generic.auto._
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 import weco.fixtures.TestWith
-import weco.storage_service.ingests.models.{
-  Ingest,
-  IngestEvent,
-  IngestID
-}
+import weco.storage_service.ingests.models.{Ingest, IngestEvent, IngestID}
 import weco.storage_service.ingests.models.IngestID._
 import weco.storage_service.ingests_tracker.tracker.{
   IngestTracker,
   IngestTrackerTestCases
 }
-import weco.storage.{
-  MaximaReadError,
-  StoreReadError,
-  StoreWriteError,
-  Version
-}
+import weco.storage.{MaximaReadError, StoreReadError, StoreWriteError, Version}
 import weco.storage.dynamo._
 import weco.storage.fixtures.DynamoFixtures
 import weco.storage.fixtures.DynamoFixtures.{Table => DynamoTable}

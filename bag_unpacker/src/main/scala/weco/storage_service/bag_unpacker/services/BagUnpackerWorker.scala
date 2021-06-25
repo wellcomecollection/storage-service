@@ -10,14 +10,8 @@ import weco.storage_service.bag_unpacker.config.models.BagUnpackerWorkerConfig
 import weco.storage_service.bag_unpacker.models.UnpackSummary
 import weco.storage_service.ingests.services.IngestUpdater
 import weco.storage_service.operation.services._
-import weco.storage_service.storage.models.{
-  IngestStepResult,
-  IngestStepWorker
-}
-import weco.storage_service.{
-  SourceLocationPayload,
-  UnpackedBagLocationPayload
-}
+import weco.storage_service.storage.models.{IngestStepResult, IngestStepWorker}
+import weco.storage_service.{SourceLocationPayload, UnpackedBagLocationPayload}
 import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.concurrent.Future

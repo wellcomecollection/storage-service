@@ -11,11 +11,7 @@ import weco.storage_service.bagit.models.BagVersion._
 import weco.storage_service.bagit.models.{BagId, BagVersion}
 import weco.storage_service.storage.models.StorageManifest
 import weco.storage.dynamo.{DynamoConfig, DynamoHashRangeEntry}
-import weco.storage.s3.{
-  S3Config,
-  S3ObjectLocation,
-  S3ObjectLocationPrefix
-}
+import weco.storage.s3.{S3Config, S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.store.VersionedStore
 import weco.storage.store.dynamo.{
   ConsistencyMode,

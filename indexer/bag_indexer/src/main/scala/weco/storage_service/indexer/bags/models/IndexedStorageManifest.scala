@@ -3,10 +3,7 @@ package weco.storage_service.indexer.bags.models
 import java.time.{Instant, LocalDate}
 
 import weco.storage_service.bagit.models.BagInfo
-import weco.storage_service.storage.models.{
-  StorageLocation,
-  StorageManifest
-}
+import weco.storage_service.storage.models.{StorageLocation, StorageManifest}
 
 case class IndexedBagInfo(
   externalIdentifier: String,

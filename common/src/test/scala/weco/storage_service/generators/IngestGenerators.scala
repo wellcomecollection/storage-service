@@ -3,10 +3,7 @@ package weco.storage_service.generators
 import java.net.URI
 import java.time.Instant
 
-import weco.storage_service.bagit.models.{
-  BagVersion,
-  ExternalIdentifier
-}
+import weco.storage_service.bagit.models.{BagVersion, ExternalIdentifier}
 import weco.storage_service.ingests.models.Ingest.Status
 import weco.storage_service.ingests.models._
 import weco.storage_service.storage.models.StorageSpace

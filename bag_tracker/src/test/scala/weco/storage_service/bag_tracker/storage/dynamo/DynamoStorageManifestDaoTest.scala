@@ -4,10 +4,7 @@ import org.scanamo.generic.auto._
 import org.scanamo.{Table => ScanamoTable}
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 import weco.fixtures.TestWith
-import weco.storage_service.bagit.models.{
-  BagId,
-  ExternalIdentifier
-}
+import weco.storage_service.bagit.models.{BagId, ExternalIdentifier}
 import weco.storage_service.storage.models.StorageSpace
 import weco.storage_service.bag_tracker.storage.{
   StorageManifestDao,

@@ -4,10 +4,7 @@ import java.util.UUID
 
 import akka.http.scaladsl.server._
 import weco.storage_service.display.ingests.RequestDisplayIngest
-import weco.storage_service.ingests_api.responses.{
-  CreateIngest,
-  LookupIngest
-}
+import weco.storage_service.ingests_api.responses.{CreateIngest, LookupIngest}
 
 trait IngestsApi[UnpackerDestination]
     extends CreateIngest[UnpackerDestination]

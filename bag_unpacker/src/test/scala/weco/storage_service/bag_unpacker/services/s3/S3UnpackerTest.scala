@@ -5,10 +5,7 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.AmazonS3Exception
 import weco.fixtures.TestWith
 import weco.storage_service.bag_unpacker.fixtures.s3.S3CompressFixture
-import weco.storage_service.bag_unpacker.services.{
-  Unpacker,
-  UnpackerTestCases
-}
+import weco.storage_service.bag_unpacker.services.{Unpacker, UnpackerTestCases}
 import weco.storage.fixtures.S3Fixtures.Bucket
 import weco.storage.listing.s3.S3ObjectLocationListing
 import weco.storage.store.s3.S3StreamStore

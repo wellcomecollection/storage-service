@@ -3,11 +3,7 @@ package weco.storage_service.bag_register.services
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{Assertion, TryValues}
-import weco.storage_service.bagit.models.{
-  Bag,
-  BagPath,
-  BagVersion
-}
+import weco.storage_service.bagit.models.{Bag, BagPath, BagVersion}
 import weco.storage_service.bagit.services.s3.S3BagReader
 import weco.storage_service.fixtures.PayloadEntry
 import weco.storage_service.fixtures.s3.S3BagBuilder

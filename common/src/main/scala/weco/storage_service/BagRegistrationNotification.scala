@@ -2,10 +2,7 @@ package weco.storage_service
 
 import io.circe.generic.extras.JsonKey
 import weco.storage_service.bagit.models.ExternalIdentifier
-import weco.storage_service.storage.models.{
-  StorageManifest,
-  StorageSpace
-}
+import weco.storage_service.storage.models.{StorageManifest, StorageSpace}
 
 /** This notification is sent by the storage service to notify another system
   * (which may be entirely separate from the storage service, e.g. the catalogue)

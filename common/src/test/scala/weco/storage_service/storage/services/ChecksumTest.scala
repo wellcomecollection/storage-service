@@ -7,11 +7,7 @@ import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.storage_service.generators.StorageRandomGenerators
-import weco.storage_service.verify.{
-  Checksum,
-  ChecksumValue,
-  SHA256
-}
+import weco.storage_service.verify.{Checksum, ChecksumValue, SHA256}
 import weco.storage.streaming.Codec._
 
 import scala.util.Success

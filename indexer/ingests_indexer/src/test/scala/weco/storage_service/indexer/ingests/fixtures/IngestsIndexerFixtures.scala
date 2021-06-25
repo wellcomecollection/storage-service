@@ -11,7 +11,11 @@ import weco.storage_service.generators.IngestGenerators
 import weco.storage_service.ingests.models.Ingest
 import weco.storage_service.indexer.{Indexer, IndexerWorker}
 import weco.storage_service.indexer.fixtures.IndexerFixtures
-import weco.storage_service.indexer.ingests.{IngestIndexer, IngestsIndexConfig, IngestsIndexerWorker}
+import weco.storage_service.indexer.ingests.{
+  IngestIndexer,
+  IngestsIndexConfig,
+  IngestsIndexerWorker
+}
 import weco.storage_service.indexer.ingests.models.IndexedIngest
 import weco.storage_service.indexer.elasticsearch.StorageServiceIndexConfig
 

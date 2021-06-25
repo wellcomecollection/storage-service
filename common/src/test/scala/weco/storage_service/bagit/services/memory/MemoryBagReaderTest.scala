@@ -1,15 +1,9 @@
 package weco.storage_service.bagit.services.memory
 
 import weco.fixtures.TestWith
-import weco.storage_service.bagit.services.{
-  BagReader,
-  BagReaderTestCases
-}
+import weco.storage_service.bagit.services.{BagReader, BagReaderTestCases}
 import weco.storage_service.fixtures.memory.MemoryBagBuilder
-import weco.storage.providers.memory.{
-  MemoryLocation,
-  MemoryLocationPrefix
-}
+import weco.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
 import weco.storage.store.TypedStore
 import weco.storage.store.memory.{MemoryStreamStore, MemoryTypedStore}
 

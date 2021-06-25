@@ -17,10 +17,7 @@ import weco.storage_service.storage.models.{
   IngestStepSucceeded,
   IngestStepWorker
 }
-import weco.storage_service.{
-  BagRootLocationPayload,
-  VersionedBagRootPayload
-}
+import weco.storage_service.{BagRootLocationPayload, VersionedBagRootPayload}
 import weco.storage_service.bag_versioner.models.{
   BagVersionerSuccessSummary,
   BagVersionerSummary
