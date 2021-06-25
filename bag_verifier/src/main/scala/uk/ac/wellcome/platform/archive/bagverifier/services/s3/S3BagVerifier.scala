@@ -22,8 +22,8 @@ import weco.storage_service.bagit.models.{
 import weco.storage_service.bagit.services.BagReader
 import weco.storage_service.bagit.services.s3.S3BagReader
 import weco.storage_service.storage.models.StorageSpace
-import uk.ac.wellcome.storage.listing.Listing
-import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
+import weco.storage.listing.Listing
+import weco.storage.listing.s3.S3ObjectLocationListing
 import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.store.StreamStore
 import weco.storage.store.s3.S3StreamStore

@@ -7,7 +7,7 @@ import weco.storage.fixtures.{AzureFixtures, DynamoFixtures}
 import weco.storage.fixtures.AzureFixtures.Container
 import weco.storage.fixtures.DynamoFixtures.Table
 import weco.storage.store.azure.AzureTypedStore
-import uk.ac.wellcome.storage.tags.{Tags, TagsTestCases}
+import weco.storage.tags.{Tags, TagsTestCases}
 
 class AzureDynamoTagsTest
     extends TagsTestCases[AzureBlobLocation, Container]

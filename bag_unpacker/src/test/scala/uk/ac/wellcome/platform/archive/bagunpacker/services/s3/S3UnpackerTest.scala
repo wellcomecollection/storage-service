@@ -10,7 +10,7 @@ import uk.ac.wellcome.platform.archive.bagunpacker.services.{
   UnpackerTestCases
 }
 import weco.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
+import weco.storage.listing.s3.S3ObjectLocationListing
 import weco.storage.store.s3.S3StreamStore
 import weco.storage.s3.{
   S3ClientFactory,

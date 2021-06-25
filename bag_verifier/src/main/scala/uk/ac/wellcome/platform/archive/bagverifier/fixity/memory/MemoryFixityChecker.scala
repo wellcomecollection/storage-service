@@ -14,7 +14,7 @@ import weco.storage.providers.memory.{
 import weco.storage.services.SizeFinder
 import weco.storage.services.memory.MemorySizeFinder
 import weco.storage.store.memory.MemoryStreamStore
-import uk.ac.wellcome.storage.tags.memory.MemoryTags
+import weco.storage.tags.memory.MemoryTags
 
 class MemoryFixityChecker(
   val streamReader: MemoryStreamStore[MemoryLocation],

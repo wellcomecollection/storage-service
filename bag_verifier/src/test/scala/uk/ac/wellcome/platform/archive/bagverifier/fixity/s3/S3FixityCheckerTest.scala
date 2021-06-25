@@ -21,7 +21,7 @@ import weco.storage.fixtures.S3Fixtures.Bucket
 import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.services.s3.S3SizeFinder
 import weco.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.tags.s3.S3Tags
+import weco.storage.tags.s3.S3Tags
 
 class S3FixityCheckerTest
     extends FixityCheckerTagsTestCases[

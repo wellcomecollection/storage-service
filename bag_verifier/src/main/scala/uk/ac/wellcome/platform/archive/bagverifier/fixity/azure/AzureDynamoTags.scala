@@ -8,7 +8,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import uk.ac.wellcome.storage._
 import weco.storage.azure.AzureBlobLocation
 import weco.storage.dynamo.DynamoConfig
-import uk.ac.wellcome.storage.tags.Tags
+import weco.storage.tags.Tags
 
 import scala.language.higherKinds
 import scala.util.{Failure, Success, Try}

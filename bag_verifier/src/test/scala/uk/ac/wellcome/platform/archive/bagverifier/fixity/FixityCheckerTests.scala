@@ -31,7 +31,7 @@ import weco.storage.services.SizeFinder
 import weco.storage.store.memory.{MemoryStore, MemoryStreamStore}
 import weco.storage.streaming.Codec.stringCodec
 import weco.storage.streaming.{Codec, InputStreamWithLength}
-import uk.ac.wellcome.storage.tags.memory.MemoryTags
+import weco.storage.tags.memory.MemoryTags
 
 class FixityCheckerTests
     extends AnyFunSpec

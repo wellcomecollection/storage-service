@@ -9,8 +9,8 @@ import weco.storage_service.storage.models.{
   StorageManifestFile
 }
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.tags.Tags
-import uk.ac.wellcome.storage.tags.s3.S3Tags
+import weco.storage.tags.Tags
+import weco.storage.tags.s3.S3Tags
 
 import scala.util.Try
 

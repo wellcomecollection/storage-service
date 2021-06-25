@@ -15,7 +15,7 @@ import weco.storage.generators.StorageManifestGenerators
 import weco.storage_service.storage.models._
 import uk.ac.wellcome.platform.storage.bag_tagger.fixtures.BagTaggerFixtures
 import weco.storage.store.memory.MemoryVersionedStore
-import uk.ac.wellcome.storage.tags.s3.S3Tags
+import weco.storage.tags.s3.S3Tags
 import uk.ac.wellcome.storage._
 import weco.storage.s3.S3ObjectLocation
 

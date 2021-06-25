@@ -19,7 +19,7 @@ import weco.storage.services.azure.{
 }
 import weco.storage.store.Readable
 import weco.storage.streaming.InputStreamWithLength
-import uk.ac.wellcome.storage.tags.Tags
+import weco.storage.tags.Tags
 
 class AzureFixityChecker(
   val streamReader: Readable[AzureBlobLocation, InputStreamWithLength],

@@ -10,7 +10,7 @@ import weco.storage_service.storage.models.{
 }
 import uk.ac.wellcome.storage.Identified
 import weco.storage.fixtures.{AzureFixtures, S3Fixtures}
-import uk.ac.wellcome.storage.tags.s3.S3Tags
+import weco.storage.tags.s3.S3Tags
 
 import scala.util.Success
 

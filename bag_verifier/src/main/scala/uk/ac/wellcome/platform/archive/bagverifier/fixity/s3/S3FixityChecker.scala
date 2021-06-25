@@ -13,8 +13,8 @@ import weco.storage.services.SizeFinder
 import weco.storage.services.s3.{S3LargeStreamReader, S3SizeFinder}
 import weco.storage.store
 import weco.storage.streaming.InputStreamWithLength
-import uk.ac.wellcome.storage.tags.Tags
-import uk.ac.wellcome.storage.tags.s3.S3Tags
+import weco.storage.tags.Tags
+import weco.storage.tags.s3.S3Tags
 
 class S3FixityChecker(
   val streamReader: store.Readable[S3ObjectLocation, InputStreamWithLength],

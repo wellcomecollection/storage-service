@@ -14,7 +14,7 @@ import weco.storage_service.verify._
 import weco.storage.services.SizeFinder
 import weco.storage.store.Readable
 import weco.storage.streaming.InputStreamWithLength
-import uk.ac.wellcome.storage.tags.Tags
+import weco.storage.tags.Tags
 import uk.ac.wellcome.storage.{DoesNotExistError, Location, Prefix, ReadError}
 
 import scala.util.{Failure, Success}

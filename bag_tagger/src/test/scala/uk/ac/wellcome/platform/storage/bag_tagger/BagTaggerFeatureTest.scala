@@ -11,7 +11,7 @@ import weco.storage_service.storage.models.{
 }
 import uk.ac.wellcome.platform.storage.bag_tagger.fixtures.BagTaggerFixtures
 import uk.ac.wellcome.storage.Identified
-import uk.ac.wellcome.storage.tags.s3.S3Tags
+import weco.storage.tags.s3.S3Tags
 
 class BagTaggerFeatureTest
     extends AnyFunSpec

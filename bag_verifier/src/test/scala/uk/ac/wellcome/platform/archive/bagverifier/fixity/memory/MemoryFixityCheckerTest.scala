@@ -16,7 +16,7 @@ import weco.storage.providers.memory.{
 }
 import weco.storage.store.memory.MemoryStreamStore
 import weco.storage.streaming.Codec._
-import uk.ac.wellcome.storage.tags.memory.MemoryTags
+import weco.storage.tags.memory.MemoryTags
 
 class MemoryFixityCheckerTest
     extends FixityCheckerTagsTestCases[
