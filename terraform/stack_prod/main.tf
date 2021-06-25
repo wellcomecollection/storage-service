@@ -78,9 +78,11 @@ module "stack_prod" {
     es_password = "prod/indexer/files/es_password"
   }
 
-  workflow_bucket_name = local.workflow_bucket_name
+  upload_bucket_arns = [
+    local.workflow_bucket_arn,
+    local.archivematica_ingests_bucket_arn,
+  ]
 
-  archivematica_ingests_bucket             = data.terraform_remote_state.archivematica_infra.outputs.ingests_bucket_arn
   bag_register_output_subscribe_principals = [local.catalogue_pipeline_account_principal]
 }
 

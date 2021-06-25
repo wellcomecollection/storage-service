@@ -101,15 +101,13 @@ data "aws_iam_policy_document" "primary_replica_put_tags" {
   }
 }
 
-data "aws_iam_policy_document" "drop_buckets_readonly" {
+data "aws_iam_policy_document" "upload_buckets_readonly" {
   statement {
     actions = [
       "s3:ListBucket",
     ]
 
-    resources = [
-      "arn:aws:s3:::${var.workflow_bucket_name}",
-    ]
+    resources = var.upload_bucket_arns
   }
 
   statement {
@@ -117,9 +115,7 @@ data "aws_iam_policy_document" "drop_buckets_readonly" {
       "s3:GetObject*",
     ]
 
-    resources = [
-      "arn:aws:s3:::${var.workflow_bucket_name}/*",
-    ]
+    resources = var.upload_bucket_arns
   }
 }
 
@@ -144,18 +140,6 @@ data "aws_iam_policy_document" "s3_large_response_cache" {
     resources = [
       aws_s3_bucket.large_response_cache.arn,
       "${aws_s3_bucket.large_response_cache.arn}/*",
-    ]
-  }
-}
-
-data "aws_iam_policy_document" "archivematica_ingests_get" {
-  statement {
-    actions = [
-      "s3:Get*",
-    ]
-
-    resources = [
-      "${var.archivematica_ingests_bucket}/*",
     ]
   }
 }

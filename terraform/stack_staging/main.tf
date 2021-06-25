@@ -78,9 +78,11 @@ module "stack_staging" {
     es_password = "staging/indexer/files/es_password"
   }
 
-  workflow_bucket_name = local.workflow_staging_bucket_name
+  upload_bucket_arns = [
+    local.workflow_bucket_arn,
+    local.archivematica_ingests_bucket_arn,
+  ]
 
-  archivematica_ingests_bucket             = local.archivematica_ingests_bucket
   bag_register_output_subscribe_principals = []
 
   # This means the staging service might be interrupted (unlikely), but the
