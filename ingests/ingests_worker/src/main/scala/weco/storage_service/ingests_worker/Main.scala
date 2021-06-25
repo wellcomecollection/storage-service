@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.ingests_worker
+package weco.storage_service.ingests_worker
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.Uri
@@ -9,7 +9,7 @@ import weco.messaging.typesafe.{
 }
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
-import uk.ac.wellcome.platform.storage.ingests_worker.services.IngestsWorkerService
+import weco.storage_service.ingests_worker.services.IngestsWorkerService
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder
 import com.typesafe.config.Config

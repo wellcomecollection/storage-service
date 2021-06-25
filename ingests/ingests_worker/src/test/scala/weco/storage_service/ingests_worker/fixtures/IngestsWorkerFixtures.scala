@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.ingests_worker.fixtures
+package weco.storage_service.ingests_worker.fixtures
 
 import akka.stream.Materializer
 
@@ -9,7 +9,7 @@ import weco.fixtures.TestWith
 import weco.messaging.fixtures.SQS.Queue
 import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import weco.monitoring.memory.MemoryMetrics
-import weco.storage.generators.IngestGenerators
+import weco.storage_service.generators.IngestGenerators
 import weco.storage_service.ingests.models.Ingest.Succeeded
 import weco.storage_service.ingests.models.{
   Ingest,
@@ -18,7 +18,7 @@ import weco.storage_service.ingests.models.{
 }
 import weco.storage_service.ingests_tracker.client._
 import weco.storage_service.ingests_tracker.fixtures.IngestTrackerFixtures
-import uk.ac.wellcome.platform.storage.ingests_worker.services.IngestsWorkerService
+import weco.storage_service.ingests_worker.services.IngestsWorkerService
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.ExecutionContext.Implicits.global

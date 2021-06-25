@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.ingests_worker.services
+package weco.storage_service.ingests_worker.services
 
 import java.time.Instant
 

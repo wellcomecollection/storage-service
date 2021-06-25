@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.ingests_worker.services
+package weco.storage_service.ingests_worker.services
 
 import java.net.URL
 
@@ -19,7 +19,7 @@ import weco.storage_service.ingests_tracker.client.{
   IngestTrackerClient
 }
 import weco.storage_service.ingests_tracker.fixtures.IngestsTrackerApiFixture
-import uk.ac.wellcome.platform.storage.ingests_worker.fixtures.IngestsWorkerFixtures
+import weco.storage_service.ingests_worker.fixtures.IngestsWorkerFixtures
 import weco.http.fixtures.HttpFixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global

@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.storage.ingests_worker
+package weco.storage_service.ingests_worker
 
 import java.net.URL
 import java.time.Instant
@@ -10,7 +10,7 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.json.JsonUtil._
 import weco.messaging.fixtures.SQS.QueuePair
-import weco.storage.generators.IngestGenerators
+import weco.storage_service.generators.IngestGenerators
 import weco.storage_service.ingests.models.Ingest.Succeeded
 import weco.storage_service.ingests.models.{
   CallbackNotification,
@@ -19,7 +19,7 @@ import weco.storage_service.ingests.models.{
 }
 import weco.storage_service.ingests_tracker.client.AkkaIngestTrackerClient
 import weco.storage_service.ingests_tracker.fixtures.IngestsTrackerApiFixture
-import uk.ac.wellcome.platform.storage.ingests_worker.fixtures.IngestsWorkerFixtures
+import weco.storage_service.ingests_worker.fixtures.IngestsWorkerFixtures
 import weco.http.fixtures.HttpFixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global
