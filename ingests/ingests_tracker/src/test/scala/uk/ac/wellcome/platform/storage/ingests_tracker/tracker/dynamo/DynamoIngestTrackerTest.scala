@@ -4,13 +4,13 @@ import java.time.temporal.ChronoUnit
 import org.scalatest.Assertion
 import org.scanamo.generic.auto._
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.fixtures.TestWith
+import weco.storage_service.ingests.models.{
   Ingest,
   IngestEvent,
   IngestID
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
+import weco.storage_service.ingests.models.IngestID._
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.{
   IngestTracker,
   IngestTrackerTestCases
@@ -22,10 +22,10 @@ import uk.ac.wellcome.storage.{
   Version
 }
 import uk.ac.wellcome.storage.dynamo._
-import uk.ac.wellcome.storage.fixtures.DynamoFixtures
-import uk.ac.wellcome.storage.fixtures.DynamoFixtures.{Table => DynamoTable}
-import uk.ac.wellcome.storage.store.VersionedStore
-import uk.ac.wellcome.storage.store.dynamo.DynamoHashStore
+import weco.storage.fixtures.DynamoFixtures
+import weco.storage.fixtures.DynamoFixtures.{Table => DynamoTable}
+import weco.storage.store.VersionedStore
+import weco.storage.store.dynamo.DynamoHashStore
 
 import scala.language.higherKinds
 

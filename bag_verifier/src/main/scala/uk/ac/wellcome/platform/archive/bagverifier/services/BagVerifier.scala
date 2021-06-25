@@ -7,15 +7,15 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity._
 import uk.ac.wellcome.platform.archive.bagverifier.models._
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable
 import uk.ac.wellcome.platform.archive.bagverifier.verify.steps._
-import uk.ac.wellcome.platform.archive.common.bagit.models._
-import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.storage.models._
+import weco.storage_service.bagit.models._
+import weco.storage_service.bagit.services.BagReader
+import weco.storage_service.ingests.models.IngestID
+import weco.storage_service.storage.models._
 import uk.ac.wellcome.storage.listing.Listing
-import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
+import weco.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.{store, Location, Prefix}
 import EnsureTrailingSlash._
-import uk.ac.wellcome.storage.streaming.InputStreamWithLength
+import weco.storage.streaming.InputStreamWithLength
 
 import scala.util.Try
 

@@ -8,21 +8,21 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import software.amazon.awssdk.services.sqs.model.QueueAttributeName
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import weco.json.JsonUtil._
+import weco.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.models.{
   PrimaryReplica,
   SecondaryReplica
 }
-import uk.ac.wellcome.platform.archive.common.ReplicaCompletePayload
-import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
-import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.storage.models._
+import weco.storage.ReplicaCompletePayload
+import weco.storage.fixtures.s3.S3BagBuilder
+import weco.storage.generators.PayloadGenerators
+import weco.storage_service.ingests.fixtures.IngestUpdateAssertions
+import weco.storage_service.storage.models._
 import uk.ac.wellcome.storage.locking.memory.MemoryLockDao
 import uk.ac.wellcome.storage.locking.{LockDao, LockFailure}
-import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
+import weco.storage.s3.S3ObjectLocationPrefix
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

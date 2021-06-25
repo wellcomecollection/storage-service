@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.indexer.ingests.models
 import java.util.UUID
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import weco.storage_service.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.display.{
   DisplayLocation,
   DisplayStorageSpace

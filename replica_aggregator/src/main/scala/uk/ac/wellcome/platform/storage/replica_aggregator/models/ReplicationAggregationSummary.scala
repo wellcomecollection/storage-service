@@ -2,9 +2,9 @@ package uk.ac.wellcome.platform.storage.replica_aggregator.models
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.operation.models.Summary
-import uk.ac.wellcome.platform.archive.common.storage.models.KnownReplicas
+import weco.storage_service.ingests.models.IngestID
+import weco.storage_service.operation.models.Summary
+import weco.storage_service.storage.models.KnownReplicas
 import uk.ac.wellcome.platform.storage.replica_aggregator.services.ReplicaCounterError
 
 sealed trait ReplicationAggregationSummary extends Summary {

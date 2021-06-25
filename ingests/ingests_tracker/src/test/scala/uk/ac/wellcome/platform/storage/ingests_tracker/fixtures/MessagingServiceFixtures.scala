@@ -1,10 +1,10 @@
 package uk.ac.wellcome.platform.storage.ingests_tracker.fixtures
 
 import org.scalatest.concurrent.ScalaFutures
-import uk.ac.wellcome.akka.fixtures.Akka
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import weco.akka.fixtures.Akka
+import weco.fixtures.TestWith
+import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.storage.ingests_tracker.services.{
   CallbackNotificationService,
   MessagingService

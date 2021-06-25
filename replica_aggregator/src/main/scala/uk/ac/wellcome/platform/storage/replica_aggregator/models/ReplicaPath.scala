@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator.models
 
-import uk.ac.wellcome.storage.azure.AzureBlobLocationPrefix
-import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
+import weco.storage.azure.AzureBlobLocationPrefix
+import weco.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.{Location, Prefix, TypedStringScanamoOps}
 import weco.json.TypedString
 

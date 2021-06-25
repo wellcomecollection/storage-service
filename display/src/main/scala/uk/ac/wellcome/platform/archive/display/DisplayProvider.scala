@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.display
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.common.ingests.models.StorageProvider
+import weco.storage_service.ingests.models.StorageProvider
 
 case class DisplayProvider(
   id: String,

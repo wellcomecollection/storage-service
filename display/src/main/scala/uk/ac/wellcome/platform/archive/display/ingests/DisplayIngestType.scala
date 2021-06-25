@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.display.ingests
 
 import io.circe.{Decoder, Encoder, HCursor, Json}
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.storage_service.ingests.models.{
   CreateIngestType,
   IngestType,
   UpdateIngestType

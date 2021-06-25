@@ -1,21 +1,21 @@
 package uk.ac.wellcome.platform.storage.bag_root_finder
 
 import org.scalatest.funspec.AnyFunSpec
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.BagRootLocationPayload
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
+import weco.json.JsonUtil._
+import weco.messaging.memory.MemoryMessageSender
+import weco.storage.BagRootLocationPayload
+import weco.storage_service.bagit.models.{
   BagVersion,
   ExternalIdentifier
 }
-import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
-import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.storage.fixtures.s3.S3BagBuilder
+import weco.storage.generators.PayloadGenerators
+import weco.storage_service.ingests.fixtures.IngestUpdateAssertions
+import weco.storage_service.ingests.models.{
   Ingest,
   IngestStatusUpdate
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import weco.storage_service.storage.models.StorageSpace
 import uk.ac.wellcome.platform.storage.bag_root_finder.fixtures.BagRootFinderFixtures
 
 class BagRootFinderFeatureTest

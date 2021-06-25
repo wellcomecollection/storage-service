@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server.Route
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
+import weco.storage_service.storage.models.StorageManifest
 
 trait CreateBag extends Logging {
   val storageManifestDao: StorageManifestDao

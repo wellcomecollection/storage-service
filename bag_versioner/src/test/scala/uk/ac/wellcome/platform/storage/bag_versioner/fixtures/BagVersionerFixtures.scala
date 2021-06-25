@@ -2,14 +2,14 @@ package uk.ac.wellcome.platform.storage.bag_versioner.fixtures
 
 import java.util.UUID
 
-import uk.ac.wellcome.akka.fixtures.Akka
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.monitoring.memory.MemoryMetrics
-import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
+import weco.akka.fixtures.Akka
+import weco.fixtures.TestWith
+import weco.json.JsonUtil._
+import weco.messaging.fixtures.SQS.Queue
+import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.messaging.memory.MemoryMessageSender
+import weco.monitoring.memory.MemoryMetrics
+import weco.storage.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.storage.bag_versioner.services.{
   BagVersioner,
   BagVersionerWorker

@@ -2,8 +2,8 @@ package uk.ac.wellcome.platform.storage.bag_tagger.services
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import weco.storage.generators.StorageManifestGenerators
+import weco.storage_service.storage.models.StorageSpace
 
 class TagRulesTest
     extends AnyFunSpec

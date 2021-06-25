@@ -4,14 +4,14 @@ import java.time.Instant
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.storage.generators.StorageManifestGenerators
+import weco.storage_service.storage.models.{
   PrimaryS3StorageLocation,
   StorageManifestFile
 }
-import uk.ac.wellcome.platform.archive.common.verify.{SHA256, SHA512}
+import weco.storage_service.verify.{SHA256, SHA512}
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.models.FileContext
-import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 class IndexedFileTest
     extends AnyFunSpec

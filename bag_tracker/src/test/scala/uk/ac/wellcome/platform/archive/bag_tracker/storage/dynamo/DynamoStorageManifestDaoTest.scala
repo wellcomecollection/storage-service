@@ -3,19 +3,19 @@ package uk.ac.wellcome.platform.archive.bag_tracker.storage.dynamo
 import org.scanamo.generic.auto._
 import org.scanamo.{Table => ScanamoTable}
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
+import weco.fixtures.TestWith
+import weco.storage_service.bagit.models.{
   BagId,
   ExternalIdentifier
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import weco.storage_service.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.{
   StorageManifestDao,
   StorageManifestDaoTestCases
 }
-import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
-import uk.ac.wellcome.storage.fixtures.{DynamoFixtures, S3Fixtures}
-import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import weco.storage.fixtures.DynamoFixtures.Table
+import weco.storage.fixtures.{DynamoFixtures, S3Fixtures}
+import weco.storage.fixtures.S3Fixtures.Bucket
 
 import scala.language.higherKinds
 

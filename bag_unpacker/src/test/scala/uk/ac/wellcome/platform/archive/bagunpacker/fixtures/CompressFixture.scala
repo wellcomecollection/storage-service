@@ -13,11 +13,11 @@ import org.apache.commons.compress.compressors.{
 }
 import org.apache.commons.io.IOUtils
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
+import weco.fixtures.TestWith
+import weco.storage.generators.StorageRandomGenerators
 import uk.ac.wellcome.storage.Location
-import uk.ac.wellcome.storage.store.StreamStore
-import uk.ac.wellcome.storage.streaming.InputStreamWithLength
+import weco.storage.store.StreamStore
+import weco.storage.streaming.InputStreamWithLength
 
 trait CompressFixture[BagLocation <: Location, Namespace]
     extends StorageRandomGenerators

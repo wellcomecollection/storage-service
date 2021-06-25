@@ -2,12 +2,12 @@ package uk.ac.wellcome.platform.archive.notifier.services
 
 import akka.http.scaladsl.model.HttpResponse
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.ingests.models.Callback.{
+import weco.storage_service.ingests.models.Callback.{
   Failed,
   Succeeded
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestCallbackStatusUpdate
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.storage_service.ingests.models.IngestCallbackStatusUpdate
+import weco.storage_service.ingests.models.{
   IngestCallbackStatusUpdate,
   IngestID
 }

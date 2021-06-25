@@ -3,19 +3,19 @@ package uk.ac.wellcome.platform.archive.bagverifier
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import weco.json.JsonUtil._
+import weco.messaging.fixtures.SQS.QueuePair
+import weco.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagverifier.fixtures.BagVerifierFixtures
-import uk.ac.wellcome.platform.archive.common.fixtures.PayloadEntry
-import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
-import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.storage.fixtures.PayloadEntry
+import weco.storage.fixtures.s3.S3BagBuilder
+import weco.storage.generators.PayloadGenerators
+import weco.storage_service.ingests.fixtures.IngestUpdateAssertions
+import weco.storage_service.ingests.models.{
   Ingest,
   IngestStatusUpdate
 }
-import uk.ac.wellcome.platform.archive.common.{
+import weco.storage.{
   BagRootLocationPayload,
   VerifiablePayload
 }

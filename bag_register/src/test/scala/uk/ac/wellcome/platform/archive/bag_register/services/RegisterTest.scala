@@ -8,11 +8,11 @@ import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
 import uk.ac.wellcome.platform.archive.bag_tracker.client.AkkaBagTrackerClient
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
-import uk.ac.wellcome.platform.archive.common.generators.StorageSpaceGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
+import weco.storage_service.bagit.models.BagId
+import weco.storage_service.bagit.services.s3.S3BagReader
+import weco.storage.generators.StorageSpaceGenerators
+import weco.storage_service.storage.models._
+import weco.storage.store.fixtures.StringNamespaceFixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

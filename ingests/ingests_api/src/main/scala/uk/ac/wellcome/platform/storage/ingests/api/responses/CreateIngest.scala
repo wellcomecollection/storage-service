@@ -4,7 +4,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server.Route
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.storage_service.ingests.models.{
   AmazonS3StorageProvider,
   StorageProvider
 }

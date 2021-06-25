@@ -2,10 +2,10 @@ package uk.ac.wellcome.platform.storage.bag_tagger
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
-import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.json.JsonUtil._
+import weco.storage.BagRegistrationNotification
+import weco.storage.generators.StorageManifestGenerators
+import weco.storage_service.storage.models.{
   PrimaryS3StorageLocation,
   StorageSpace
 }

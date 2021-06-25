@@ -1,18 +1,18 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3
 
-import uk.ac.wellcome.fixtures.TestWith
+import weco.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.ReplicatorTestCases
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.{
   ReplicationRequest,
   ReplicationSucceeded
 }
 import uk.ac.wellcome.storage.Identified
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
-import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import weco.storage.fixtures.S3Fixtures
+import weco.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
-import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
-import uk.ac.wellcome.storage.store.s3.S3TypedStore
+import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.store.s3.S3TypedStore
 import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
 
 class S3ReplicatorTest

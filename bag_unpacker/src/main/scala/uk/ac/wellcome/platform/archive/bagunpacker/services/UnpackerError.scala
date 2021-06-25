@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services
 
 import uk.ac.wellcome.platform.archive.bagunpacker.storage.UnarchiverError
-import uk.ac.wellcome.storage.StorageError
+import weco.storage_service.storageError
 
 sealed trait UnpackerError {
   val e: Throwable

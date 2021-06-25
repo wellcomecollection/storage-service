@@ -1,13 +1,13 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator.fixtures
 
-import uk.ac.wellcome.akka.fixtures.Akka
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.monitoring.memory.MemoryMetrics
-import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
+import weco.akka.fixtures.Akka
+import weco.fixtures.TestWith
+import weco.json.JsonUtil._
+import weco.messaging.fixtures.SQS.Queue
+import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.messaging.memory.MemoryMessageSender
+import weco.monitoring.memory.MemoryMetrics
+import weco.storage.fixtures.OperationFixtures
 import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
   AggregatorInternalRecord,
   ReplicaPath
@@ -17,8 +17,8 @@ import uk.ac.wellcome.platform.storage.replica_aggregator.services.{
   ReplicaAggregatorWorker,
   ReplicaCounter
 }
-import uk.ac.wellcome.storage.store.VersionedStore
-import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
+import weco.storage.store.VersionedStore
+import weco.storage.store.memory.MemoryVersionedStore
 
 trait ReplicaAggregatorFixtures
     extends OperationFixtures

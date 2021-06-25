@@ -1,22 +1,22 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.fixtures
 
-import uk.ac.wellcome.akka.fixtures.Akka
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.SQS
-import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.monitoring.memory.MemoryMetrics
+import weco.akka.fixtures.Akka
+import weco.fixtures.TestWith
+import weco.json.JsonUtil._
+import weco.messaging.fixtures.SQS
+import weco.messaging.fixtures.SQS.Queue
+import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.messaging.memory.MemoryMessageSender
+import weco.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.bagunpacker.config.models.BagUnpackerWorkerConfig
 import uk.ac.wellcome.platform.archive.bagunpacker.services.BagUnpackerWorker
 import uk.ac.wellcome.platform.archive.bagunpacker.services.s3.S3Unpacker
-import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
-import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.s3.S3ObjectLocation
-import uk.ac.wellcome.storage.store.StreamStore
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
+import weco.storage.fixtures.OperationFixtures
+import weco.storage.fixtures.S3Fixtures
+import weco.storage.fixtures.S3Fixtures.Bucket
+import weco.storage.s3.S3ObjectLocation
+import weco.storage.store.StreamStore
+import weco.storage.store.s3.S3StreamStore
 
 trait BagUnpackerFixtures
     extends SQS

@@ -6,27 +6,27 @@ import akka.actor.ActorSystem
 import grizzled.slf4j.Logging
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.MessageSender
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+import weco.json.JsonUtil._
+import weco.messaging.MessageSender
+import weco.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorker,
   AlpakkaSQSWorkerConfig
 }
-import uk.ac.wellcome.messaging.worker.models.{
+import weco.messaging.worker.models.{
   NonDeterministicFailure,
   Result,
   Successful
 }
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
-import uk.ac.wellcome.monitoring.Metrics
+import weco.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
+import weco.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.bag_tracker.client.{
   BagTrackerClient,
   BagTrackerUnknownGetError
 }
-import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
+import weco.storage.BagRegistrationNotification
+import weco.storage_service.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.models.FileContext
-import uk.ac.wellcome.typesafe.Runnable
+import weco.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 

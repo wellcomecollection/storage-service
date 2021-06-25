@@ -4,11 +4,11 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpMethods.{GET, POST}
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, RequestEntity}
 import org.scalatest.concurrent.ScalaFutures.whenReady
-import uk.ac.wellcome.akka.fixtures.Akka
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.akka.fixtures.Akka
+import weco.fixtures.TestWith
+import weco.messaging.memory.MemoryMessageSender
+import weco.storage.generators.IngestGenerators
+import weco.storage_service.ingests.models.{
   Ingest,
   IngestID,
   IngestUpdate
@@ -27,7 +27,7 @@ import uk.ac.wellcome.storage.{
   Version
 }
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
-import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
+import weco.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
 trait IngestsTrackerApiFixture
     extends IngestTrackerFixtures

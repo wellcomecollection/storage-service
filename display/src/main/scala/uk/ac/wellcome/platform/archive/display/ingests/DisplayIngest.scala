@@ -5,9 +5,9 @@ import java.time.Instant
 import java.util.UUID
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import weco.storage_service.bagit.models.ExternalIdentifier
+import weco.storage_service.ingests.models._
+import weco.storage_service.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.display.{
   DisplayLocation,
   DisplayStorageSpace

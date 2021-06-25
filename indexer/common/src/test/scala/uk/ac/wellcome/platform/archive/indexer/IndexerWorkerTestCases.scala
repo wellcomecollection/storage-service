@@ -8,7 +8,7 @@ import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.elasticsearch.IndexConfig
-import uk.ac.wellcome.messaging.worker.models.{
+import weco.messaging.worker.models.{
   NonDeterministicFailure,
   Successful
 }

@@ -3,21 +3,21 @@ package uk.ac.wellcome.platform.storage.bag_versioner.services
 import akka.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.monitoring.Metrics
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import weco.monitoring.Metrics
+import weco.storage_service.ingests.models.{
   IngestEvent,
   IngestID,
   IngestVersionUpdate
 }
-import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
-import uk.ac.wellcome.platform.archive.common.operation.services._
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.storage_service.ingests.services.IngestUpdater
+import weco.storage_service.operation.services._
+import weco.storage_service.storage.models.{
   IngestStepResult,
   IngestStepSucceeded,
   IngestStepWorker
 }
-import uk.ac.wellcome.platform.archive.common.{
+import weco.storage.{
   BagRootLocationPayload,
   VersionedBagRootPayload
 }

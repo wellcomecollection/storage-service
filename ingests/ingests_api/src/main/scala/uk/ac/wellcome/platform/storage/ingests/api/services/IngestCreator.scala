@@ -1,8 +1,8 @@
 package uk.ac.wellcome.platform.storage.ingests.api.services
 
-import uk.ac.wellcome.messaging.MessageSender
-import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import weco.messaging.MessageSender
+import weco.storage.SourceLocationPayload
+import weco.storage_service.ingests.models.Ingest
 import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
   IngestTrackerClient,
   IngestTrackerCreateError
@@ -14,7 +14,7 @@ class IngestCreator[UnpackerDestination](
   ingestTrackerClient: IngestTrackerClient,
   unpackerMessageSender: MessageSender[UnpackerDestination]
 )(implicit val executionContext: ExecutionContext) {
-  import uk.ac.wellcome.json.JsonUtil._
+  import weco.json.JsonUtil._
 
   def create(ingest: Ingest): Future[Either[IngestTrackerCreateError, Unit]] =
     for {

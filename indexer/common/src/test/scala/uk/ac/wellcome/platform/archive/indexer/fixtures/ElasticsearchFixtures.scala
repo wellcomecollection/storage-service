@@ -7,9 +7,9 @@ import com.sksamuel.elastic4s.requests.searches.queries.Query
 import com.sksamuel.elastic4s.{Index, Response}
 import io.circe.Decoder
 import org.scalatest.Suite
-import uk.ac.wellcome.json.JsonUtil.fromJson
+import weco.json.JsonUtil.fromJson
 import uk.ac.wellcome.elasticsearch.test.fixtures
-import uk.ac.wellcome.fixtures.TestWith
+import weco.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.StorageServiceIndexConfig
 
 import scala.concurrent.ExecutionContext.Implicits.global

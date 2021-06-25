@@ -1,12 +1,12 @@
 package uk.ac.wellcome.platform.storage.ingests_tracker.fixtures
 
 import org.scalatest.EitherValues
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
+import weco.fixtures.TestWith
+import weco.storage_service.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.memory.MemoryIngestTracker
 import uk.ac.wellcome.storage.Version
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
-import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
+import weco.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 import weco.fixtures.TimeAssertions
 
 trait IngestTrackerFixtures extends EitherValues with TimeAssertions {

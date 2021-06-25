@@ -6,11 +6,11 @@ import com.azure.storage.blob.{BlobServiceClient, BlobServiceClientBuilder}
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sns.SNSConfig
-import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
-import uk.ac.wellcome.monitoring.Metrics
+import weco.json.JsonUtil._
+import weco.messaging.sns.SNSConfig
+import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
+import weco.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.bagverifier.models.{
   ReplicatedBagVerifyContext,
   StandaloneBagVerifyContext
@@ -18,17 +18,17 @@ import uk.ac.wellcome.platform.archive.bagverifier.models.{
 import uk.ac.wellcome.platform.archive.bagverifier.services.BagVerifierWorker
 import uk.ac.wellcome.platform.archive.bagverifier.services.azure.AzureReplicatedBagVerifier
 import uk.ac.wellcome.platform.archive.bagverifier.services.s3.S3BagVerifier
-import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
-import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
-import uk.ac.wellcome.platform.archive.common.{
+import weco.storage_service.ingests.services.IngestUpdater
+import weco.storage_service.operation.services.OutgoingPublisher
+import weco.storage.{
   BagRootLocationPayload,
   ReplicaCompletePayload
 }
-import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.dynamo.DynamoConfig
-import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.typesafe.DynamoBuilder
-import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
+import weco.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.Future
 

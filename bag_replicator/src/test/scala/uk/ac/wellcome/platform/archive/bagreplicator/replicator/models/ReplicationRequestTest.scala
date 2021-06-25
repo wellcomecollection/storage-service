@@ -6,12 +6,12 @@ import uk.ac.wellcome.platform.archive.bagreplicator.models.{
   PrimaryReplica,
   SecondaryReplica
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.storage_service.storage.models.{
   PrimaryS3ReplicaLocation,
   SecondaryAzureReplicaLocation,
   SecondaryS3ReplicaLocation
 }
-import uk.ac.wellcome.storage.generators.{
+import weco.storage.generators.{
   AzureBlobLocationGenerators,
   S3ObjectLocationGenerators
 }

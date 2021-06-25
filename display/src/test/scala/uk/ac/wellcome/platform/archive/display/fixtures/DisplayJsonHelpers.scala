@@ -2,8 +2,8 @@ package uk.ac.wellcome.platform.archive.display.fixtures
 
 import java.time.format.DateTimeFormatter
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.storage_service.bagit.models.BagInfo
+import weco.storage_service.storage.models.{
   FileManifest,
   StorageLocation,
   StorageManifestFile

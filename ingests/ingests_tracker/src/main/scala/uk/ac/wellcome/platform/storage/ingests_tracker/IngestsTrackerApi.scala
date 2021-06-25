@@ -7,8 +7,8 @@ import akka.http.scaladsl.server.Directives.{get, _}
 import akka.http.scaladsl.server.Route
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.json.JsonUtil._
+import weco.storage_service.ingests.models.{
   Ingest,
   IngestID,
   IngestUpdate
@@ -21,7 +21,7 @@ import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.{
   UpdateNonExistentIngestError
 }
 import uk.ac.wellcome.storage.Identified
-import uk.ac.wellcome.typesafe.Runnable
+import weco.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 

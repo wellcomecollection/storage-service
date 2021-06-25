@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.display.bags
 import java.net.URL
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
+import weco.storage_service.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.display.{
   DisplayLocation,
   DisplayStorageSpace

@@ -2,14 +2,14 @@ package uk.ac.wellcome.platform.archive.bag_tracker.client
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor1}
-import uk.ac.wellcome.fixtures.TestWith
+import weco.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bag_tracker.BagTrackerApi
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.BagTrackerFixtures
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
+import weco.storage_service.bagit.models.BagId
+import weco.storage_service.storage.models.StorageManifest
+import weco.storage.store.memory.MemoryVersionedStore
 
 trait BagTrackerClientTestBase extends Matchers with BagTrackerFixtures {
   def withStorageManifestDao[R](

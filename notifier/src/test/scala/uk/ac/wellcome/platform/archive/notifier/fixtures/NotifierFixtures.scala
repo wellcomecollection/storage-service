@@ -2,12 +2,12 @@ package uk.ac.wellcome.platform.archive.notifier.fixtures
 
 import java.net.URL
 import akka.actor.ActorSystem
-import uk.ac.wellcome.akka.fixtures.Akka
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.monitoring.memory.MemoryMetrics
+import weco.akka.fixtures.Akka
+import weco.fixtures.TestWith
+import weco.messaging.fixtures.SQS.Queue
+import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.messaging.memory.MemoryMessageSender
+import weco.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.notifier.services.{
   CallbackUrlService,
   NotifierWorker

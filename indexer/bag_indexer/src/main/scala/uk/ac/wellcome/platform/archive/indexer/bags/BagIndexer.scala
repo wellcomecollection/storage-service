@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.indexer.bags
 
 import com.sksamuel.elastic4s.{ElasticClient, Index}
 import io.circe.Encoder
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
+import weco.storage_service.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.Indexer
 

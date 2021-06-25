@@ -9,17 +9,17 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.s3.S3FixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.services.ReplicatedBagVerifier
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable
 import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.AzureResolvable
-import uk.ac.wellcome.platform.archive.common.bagit.models.Bag
-import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
-import uk.ac.wellcome.platform.archive.common.bagit.services.azure.AzureBagReader
-import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import weco.storage_service.bagit.models.Bag
+import weco.storage_service.bagit.services.BagReader
+import weco.storage_service.bagit.services.azure.AzureBagReader
+import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import uk.ac.wellcome.storage.dynamo.DynamoConfig
 import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.listing.azure.AzureBlobLocationListing
-import uk.ac.wellcome.storage.s3.S3ObjectLocation
-import uk.ac.wellcome.storage.store.StreamStore
-import uk.ac.wellcome.storage.store.azure.AzureStreamStore
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
+import weco.storage.s3.S3ObjectLocation
+import weco.storage.store.StreamStore
+import weco.storage.store.azure.AzureStreamStore
+import weco.storage.store.s3.S3StreamStore
 
 class AzureReplicatedBagVerifier(
   val primaryBucket: String,

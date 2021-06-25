@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3
 import com.amazonaws.services.s3.AmazonS3
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.Replicator
 import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
-import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import uk.ac.wellcome.storage.transfer.s3.S3PrefixTransfer
 
 class S3Replicator(implicit s3Client: AmazonS3)

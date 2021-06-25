@@ -3,13 +3,13 @@ package uk.ac.wellcome.platform.archive.indexer.files
 import akka.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.messaging.worker.models.{
+import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import weco.messaging.worker.models.{
   NonDeterministicFailure,
   Result,
   Successful
 }
-import uk.ac.wellcome.monitoring.Metrics
+import weco.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch._
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.models.FileContext
 import uk.ac.wellcome.platform.archive.indexer.files.models.IndexedFile

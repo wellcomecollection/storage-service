@@ -3,13 +3,13 @@ package uk.ac.wellcome.platform.storage.bag_tagger.services
 import org.scalatest.TryValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.storage.generators.StorageManifestGenerators
+import weco.storage_service.storage.models.{
   PrimaryS3StorageLocation,
   SecondaryAzureStorageLocation
 }
 import uk.ac.wellcome.storage.Identified
-import uk.ac.wellcome.storage.fixtures.{AzureFixtures, S3Fixtures}
+import weco.storage.fixtures.{AzureFixtures, S3Fixtures}
 import uk.ac.wellcome.storage.tags.s3.S3Tags
 
 import scala.util.Success

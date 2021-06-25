@@ -3,8 +3,8 @@ package uk.ac.wellcome.platform.storage.bag_versioner.versioning
 import org.scalatest.{Assertion, EitherValues, TryValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import weco.fixtures.TestWith
+import weco.storage_service.bagit.models.ExternalIdentifier
 import uk.ac.wellcome.storage.NoMaximaValueError
 
 import scala.util.{Failure, Success}

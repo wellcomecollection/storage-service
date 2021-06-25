@@ -1,10 +1,10 @@
 package uk.ac.wellcome.platform.storage.ingests_tracker.services
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.messaging.MessageSender
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import weco.messaging.MessageSender
+import weco.storage_service.ingests.models.Ingest
 
-import uk.ac.wellcome.json.JsonUtil._
+import weco.json.JsonUtil._
 
 import scala.util.{Failure, Success, Try}
 

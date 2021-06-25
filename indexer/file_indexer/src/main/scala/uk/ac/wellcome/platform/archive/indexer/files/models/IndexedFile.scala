@@ -2,10 +2,10 @@ package uk.ac.wellcome.platform.archive.indexer.files.models
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import weco.storage_service.bagit.models.ExternalIdentifier
+import weco.storage_service.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.models.FileContext
-import uk.ac.wellcome.storage.s3.S3ObjectLocation
+import weco.storage.s3.S3ObjectLocation
 
 case class IndexedFile(
   space: StorageSpace,

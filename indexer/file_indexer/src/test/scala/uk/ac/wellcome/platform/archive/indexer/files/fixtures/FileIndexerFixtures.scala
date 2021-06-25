@@ -4,12 +4,12 @@ import java.time.Instant
 import com.sksamuel.elastic4s.Index
 import io.circe.Decoder
 import org.scalatest.Suite
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.monitoring.memory.MemoryMetrics
-import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryS3StorageLocation
+import weco.fixtures.TestWith
+import weco.json.JsonUtil._
+import weco.messaging.fixtures.SQS.Queue
+import weco.monitoring.memory.MemoryMetrics
+import weco.storage.generators.StorageManifestGenerators
+import weco.storage_service.storage.models.PrimaryS3StorageLocation
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.models.FileContext
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
   Indexer,

@@ -6,13 +6,13 @@ import akka.http.scaladsl.model.Uri
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.fixtures.TestWith
+import weco.storage_service.ingests.models.{
   Ingest,
   IngestStatusUpdate
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Failed
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Succeeded
+import weco.storage_service.ingests.models.Ingest.Failed
+import weco.storage_service.ingests.models.Ingest.Succeeded
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.memory.MemoryIngestTracker
 

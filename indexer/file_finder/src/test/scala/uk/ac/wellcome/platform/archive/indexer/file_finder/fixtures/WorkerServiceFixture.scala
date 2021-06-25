@@ -1,11 +1,11 @@
 package uk.ac.wellcome.platform.archive.indexer.file_finder.fixtures
 
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.monitoring.memory.MemoryMetrics
+import weco.fixtures.TestWith
+import weco.json.JsonUtil._
+import weco.messaging.fixtures.SQS.Queue
+import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.messaging.memory.MemoryMessageSender
+import weco.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.bag_tracker.client.BagTrackerClient
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{
   BagTrackerFixtures,

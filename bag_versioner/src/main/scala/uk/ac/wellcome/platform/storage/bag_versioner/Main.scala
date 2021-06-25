@@ -3,17 +3,17 @@ package uk.ac.wellcome.platform.storage.bag_versioner
 import akka.actor.ActorSystem
 import cats.Id
 import com.typesafe.config.Config
-import uk.ac.wellcome.json.JsonUtil._
+import weco.json.JsonUtil._
 import org.scanamo.generic.auto._
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import uk.ac.wellcome.messaging.typesafe.{
+import weco.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
   SQSBuilder
 }
-import uk.ac.wellcome.monitoring.cloudwatch.CloudWatchMetrics
-import uk.ac.wellcome.monitoring.typesafe.CloudWatchBuilder
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
-import uk.ac.wellcome.platform.archive.common.config.builders.{
+import weco.monitoring.cloudwatch.CloudWatchMetrics
+import weco.monitoring.typesafe.CloudWatchBuilder
+import weco.storage_service.bagit.models.BagVersion
+import weco.storage.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
   OutgoingPublisherBuilder
@@ -32,9 +32,9 @@ import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
 }
 import uk.ac.wellcome.storage.locking.dynamo.DynamoLockingService
 import uk.ac.wellcome.storage.typesafe.{DynamoBuilder, DynamoLockDaoBuilder}
-import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
-import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
-import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
+import weco.typesafe.WellcomeTypesafeApp
+import weco.typesafe.config.builders.AkkaBuilder
+import weco.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.language.higherKinds

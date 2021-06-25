@@ -2,18 +2,18 @@ package uk.ac.wellcome.platform.storage.bag_tagger.fixtures
 
 import io.circe.Decoder
 import org.scalatest.Suite
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
-import uk.ac.wellcome.monitoring.memory.MemoryMetrics
+import weco.fixtures.TestWith
+import weco.messaging.fixtures.SQS.Queue
+import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{
   BagTrackerFixtures,
   StorageManifestDaoFixture
 }
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
-import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
-import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.storage.BagRegistrationNotification
+import weco.storage.fixtures.OperationFixtures
+import weco.storage_service.storage.models.{
   StorageManifest,
   StorageManifestFile
 }
@@ -22,7 +22,7 @@ import uk.ac.wellcome.platform.storage.bag_tagger.services.{
   BagTaggerWorker,
   TagRules
 }
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import weco.storage.fixtures.S3Fixtures
 
 trait BagTaggerFixtures
     extends OperationFixtures

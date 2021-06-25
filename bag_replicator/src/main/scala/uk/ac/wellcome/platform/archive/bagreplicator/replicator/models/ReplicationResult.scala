@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.archive.bagreplicator.replicator.models
 
-import uk.ac.wellcome.storage.{Location, Prefix}
+import weco.storage.{Location, Prefix}
 
 sealed trait ReplicationResult[DstPrefix <: Prefix[_ <: Location]] {
   val summary: ReplicationSummary[DstPrefix]

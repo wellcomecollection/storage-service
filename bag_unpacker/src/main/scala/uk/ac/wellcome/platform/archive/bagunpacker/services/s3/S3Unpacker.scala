@@ -10,11 +10,11 @@ import uk.ac.wellcome.platform.archive.bagunpacker.services.{
   UnpackerStorageError
 }
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
-import uk.ac.wellcome.storage.services.s3.S3LargeStreamReader
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.store.{Readable, Writable}
-import uk.ac.wellcome.storage.streaming.InputStreamWithLength
+import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.services.s3.S3LargeStreamReader
+import weco.storage.store.s3.S3StreamStore
+import weco.storage.store.{Readable, Writable}
+import weco.storage.streaming.InputStreamWithLength
 
 class S3Unpacker(
   bufferSize: Long = 128 * FileUtils.ONE_MB

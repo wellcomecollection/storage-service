@@ -13,24 +13,24 @@ import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   LocateFailure,
   LocationParsingError
 }
-import uk.ac.wellcome.platform.archive.common.verify.{
+import weco.storage_service.verify.{
   Checksum,
   ChecksumValue,
   MD5
 }
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.generators.{
+import weco.storage.generators.{
   MemoryLocationGenerators,
   StreamGenerators
 }
-import uk.ac.wellcome.storage.providers.memory.{
+import weco.storage.providers.memory.{
   MemoryLocation,
   MemoryLocationPrefix
 }
-import uk.ac.wellcome.storage.services.SizeFinder
-import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore}
-import uk.ac.wellcome.storage.streaming.Codec.stringCodec
-import uk.ac.wellcome.storage.streaming.{Codec, InputStreamWithLength}
+import weco.storage.services.SizeFinder
+import weco.storage.store.memory.{MemoryStore, MemoryStreamStore}
+import weco.storage.streaming.Codec.stringCodec
+import weco.storage.streaming.{Codec, InputStreamWithLength}
 import uk.ac.wellcome.storage.tags.memory.MemoryTags
 
 class FixityCheckerTests

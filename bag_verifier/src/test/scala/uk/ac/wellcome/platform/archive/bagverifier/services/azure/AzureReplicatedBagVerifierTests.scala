@@ -1,28 +1,28 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services.azure
 
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
-import uk.ac.wellcome.fixtures.TestWith
+import weco.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagverifier.services.{
   ReplicatedBagVerifier,
   ReplicatedBagVerifierTestCases
 }
-import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
-import uk.ac.wellcome.platform.archive.common.bagit.services.azure.AzureBagReader
-import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
-import uk.ac.wellcome.platform.archive.common.fixtures.azure.AzureBagBuilder
-import uk.ac.wellcome.platform.archive.common.storage.models.EnsureTrailingSlash
-import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
-import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
-import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
-import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.fixtures.{
+import weco.storage_service.bagit.services.BagReader
+import weco.storage_service.bagit.services.azure.AzureBagReader
+import weco.storage.fixtures.BagBuilder
+import weco.storage.fixtures.azure.AzureBagBuilder
+import weco.storage_service.storage.models.EnsureTrailingSlash
+import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import weco.storage.fixtures.AzureFixtures.Container
+import weco.storage.fixtures.DynamoFixtures.Table
+import weco.storage.fixtures.S3Fixtures.Bucket
+import weco.storage.fixtures.{
   AzureFixtures,
   DynamoFixtures,
   S3Fixtures
 }
-import uk.ac.wellcome.storage.store.TypedStore
-import uk.ac.wellcome.storage.store.azure.AzureTypedStore
-import uk.ac.wellcome.storage.streaming.Codec._
+import weco.storage.store.TypedStore
+import weco.storage.store.azure.AzureTypedStore
+import weco.storage.streaming.Codec._
 
 class AzureReplicatedBagVerifierTests
     extends ReplicatedBagVerifierTestCases[

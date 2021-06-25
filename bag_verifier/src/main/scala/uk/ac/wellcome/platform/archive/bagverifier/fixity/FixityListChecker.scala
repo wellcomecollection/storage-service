@@ -1,8 +1,8 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
-import uk.ac.wellcome.storage.{Location, Prefix}
+import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.{Location, Prefix}
 
 import scala.util.Random
 

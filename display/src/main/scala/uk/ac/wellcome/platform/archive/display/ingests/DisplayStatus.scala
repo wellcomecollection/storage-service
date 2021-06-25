@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.display.ingests
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Callback, Ingest}
+import weco.storage_service.ingests.models.{Callback, Ingest}
 
 case class DisplayStatus(
   id: String,

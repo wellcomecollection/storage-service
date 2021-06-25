@@ -3,14 +3,14 @@ package uk.ac.wellcome.platform.archive.display
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
-import uk.ac.wellcome.platform.archive.common.ingests.models.S3SourceLocation
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.storage_service.ingests.models.S3SourceLocation
+import weco.storage_service.storage.models.{
   PrimaryS3StorageLocation,
   SecondaryAzureStorageLocation,
   SecondaryS3StorageLocation
 }
-import uk.ac.wellcome.storage.azure.AzureBlobLocationPrefix
-import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.azure.AzureBlobLocationPrefix
+import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 class DisplayLocationTest
     extends AnyFunSpec

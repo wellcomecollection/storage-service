@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator.models
 
-import uk.ac.wellcome.platform.archive.common.storage.models._
+import weco.storage_service.storage.models._
 
 import scala.util.Try
 

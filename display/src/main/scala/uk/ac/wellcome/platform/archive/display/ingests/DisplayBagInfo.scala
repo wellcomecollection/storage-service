@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.display.ingests
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
+import weco.storage_service.bagit.models.ExternalIdentifier
 
 case class RequestDisplayBagInfo(
   externalIdentifier: String,

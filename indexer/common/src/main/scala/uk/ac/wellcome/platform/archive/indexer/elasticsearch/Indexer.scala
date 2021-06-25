@@ -6,7 +6,7 @@ import com.sksamuel.elastic4s.requests.common.VersionType.ExternalGte
 import com.sksamuel.elastic4s.{ElasticClient, Index, Indexable, Response}
 import grizzled.slf4j.Logging
 import io.circe.Encoder
-import uk.ac.wellcome.json.JsonUtil._
+import weco.json.JsonUtil._
 
 import scala.concurrent.{ExecutionContext, Future}
 

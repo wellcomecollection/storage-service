@@ -6,8 +6,8 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FixityListResult
 }
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
-import uk.ac.wellcome.platform.archive.common.bagit.models.UnreferencedFiles
-import uk.ac.wellcome.storage.{Location, Prefix}
+import weco.storage_service.bagit.models.UnreferencedFiles
+import weco.storage.{Location, Prefix}
 
 trait VerifyNoUnreferencedFiles[BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation

@@ -4,18 +4,18 @@ import akka.http.scaladsl.model.StatusCodes.NotFound
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Route
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
+import weco.storage_service.bagit.models.{
   BagId,
   ExternalIdentifier
 }
-import uk.ac.wellcome.platform.archive.common.http.LookupExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.storage.LargeResponses
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import weco.storage_service.http.LookupExternalIdentifier
+import weco.storage_service.storage.LargeResponses
+import weco.storage_service.storage.models.StorageSpace
 import uk.ac.wellcome.platform.storage.bags.api.responses.{
   LookupBag,
   LookupBagVersions
 }
-import uk.ac.wellcome.storage.s3.S3ObjectLocation
+import weco.storage.s3.S3ObjectLocation
 import weco.http.models.{ContextResponse, DisplayError}
 
 import scala.concurrent.duration._

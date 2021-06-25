@@ -4,7 +4,7 @@ import java.time.Instant
 
 import com.sksamuel.elastic4s.{ElasticClient, Index}
 import org.scalatest.Assertion
-import uk.ac.wellcome.json.JsonUtil._
+import weco.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.indexer.IndexerTestCases
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.Indexer
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.models.FileContext

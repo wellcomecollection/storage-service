@@ -3,21 +3,21 @@ package uk.ac.wellcome.platform.storage.bag_tagger.services
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.worker.models.{
+import weco.json.JsonUtil._
+import weco.messaging.worker.models.{
   NonDeterministicFailure,
   Successful
 }
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
-import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
-import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models._
+import weco.storage.BagRegistrationNotification
+import weco.storage_service.bagit.models.{BagId, BagVersion}
+import weco.storage.generators.StorageManifestGenerators
+import weco.storage_service.storage.models._
 import uk.ac.wellcome.platform.storage.bag_tagger.fixtures.BagTaggerFixtures
-import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
+import weco.storage.store.memory.MemoryVersionedStore
 import uk.ac.wellcome.storage.tags.s3.S3Tags
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.s3.S3ObjectLocation
+import weco.storage.s3.S3ObjectLocation
 
 import scala.util.{Failure, Try}
 

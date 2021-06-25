@@ -1,8 +1,8 @@
 package uk.ac.wellcome.platform.archive.bag_tracker.fixtures
 
 import akka.http.scaladsl.model.Uri
-import uk.ac.wellcome.akka.fixtures.Akka
-import uk.ac.wellcome.fixtures.TestWith
+import weco.akka.fixtures.Akka
+import weco.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bag_tracker.BagTrackerApi
 import uk.ac.wellcome.platform.archive.bag_tracker.client.{
   AkkaBagTrackerClient,

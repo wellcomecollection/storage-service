@@ -2,12 +2,12 @@ package uk.ac.wellcome.platform.archive.indexer.bag.models
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
-import uk.ac.wellcome.platform.archive.common.generators.{
+import weco.storage_service.bagit.models.BagVersion
+import weco.storage.generators.{
   IngestGenerators,
   StorageManifestGenerators
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
+import weco.storage_service.storage.services.DestinationBuilder
 import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
 
 class IndexedStorageManifestTest

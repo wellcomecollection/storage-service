@@ -1,8 +1,8 @@
 package uk.ac.wellcome.platform.storage.replica_aggregator.services
 
-import uk.ac.wellcome.platform.archive.common.storage.models.ReplicaLocation
+import weco.storage_service.storage.models.ReplicaLocation
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
-import uk.ac.wellcome.storage.store.VersionedStore
+import weco.storage.store.VersionedStore
 import uk.ac.wellcome.storage.{UpdateError, UpdateNotApplied}
 
 class ReplicaAggregator(

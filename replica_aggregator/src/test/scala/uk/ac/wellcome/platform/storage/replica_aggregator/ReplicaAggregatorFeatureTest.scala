@@ -4,15 +4,15 @@ import org.scalatest.EitherValues
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.KnownReplicasPayload
-import uk.ac.wellcome.platform.archive.common.generators.{
+import weco.json.JsonUtil._
+import weco.messaging.memory.MemoryMessageSender
+import weco.storage.KnownReplicasPayload
+import weco.storage.generators.{
   PayloadGenerators,
   ReplicaLocationGenerators
 }
-import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.storage_service.ingests.fixtures.IngestUpdateAssertions
+import weco.storage_service.storage.models.{
   KnownReplicas,
   PrimaryS3ReplicaLocation
 }
@@ -22,7 +22,7 @@ import uk.ac.wellcome.platform.storage.replica_aggregator.models.{
   ReplicaPath
 }
 import uk.ac.wellcome.storage.Version
-import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
+import weco.storage.store.memory.MemoryVersionedStore
 
 class ReplicaAggregatorFeatureTest
     extends AnyFunSpec

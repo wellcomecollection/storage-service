@@ -4,13 +4,13 @@ import java.net.URL
 
 import akka.http.scaladsl.model.HttpEntity
 import io.circe.Decoder
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.json.JsonUtil.fromJson
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.monitoring.Metrics
-import uk.ac.wellcome.monitoring.memory.MemoryMetrics
-import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import weco.fixtures.TestWith
+import weco.json.JsonUtil.fromJson
+import weco.messaging.memory.MemoryMessageSender
+import weco.monitoring.Metrics
+import weco.monitoring.memory.MemoryMetrics
+import weco.storage.generators.IngestGenerators
+import weco.storage_service.ingests.models.Ingest
 import uk.ac.wellcome.platform.storage.ingests.api.IngestsApi
 import uk.ac.wellcome.platform.storage.ingests.api.services.IngestCreator
 import uk.ac.wellcome.platform.storage.ingests_tracker.client.{

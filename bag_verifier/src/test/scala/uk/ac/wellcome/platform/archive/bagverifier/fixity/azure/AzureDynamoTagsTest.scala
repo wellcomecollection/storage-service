@@ -1,12 +1,12 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity.azure
 
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.storage.azure.AzureBlobLocation
-import uk.ac.wellcome.storage.fixtures.{AzureFixtures, DynamoFixtures}
-import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
-import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
-import uk.ac.wellcome.storage.store.azure.AzureTypedStore
+import weco.fixtures.TestWith
+import weco.storage.azure.AzureBlobLocation
+import weco.storage.fixtures.{AzureFixtures, DynamoFixtures}
+import weco.storage.fixtures.AzureFixtures.Container
+import weco.storage.fixtures.DynamoFixtures.Table
+import weco.storage.store.azure.AzureTypedStore
 import uk.ac.wellcome.storage.tags.{Tags, TagsTestCases}
 
 class AzureDynamoTagsTest

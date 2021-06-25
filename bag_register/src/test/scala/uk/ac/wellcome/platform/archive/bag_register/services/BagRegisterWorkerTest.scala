@@ -5,16 +5,16 @@ import java.time.Instant
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import weco.json.JsonUtil._
+import weco.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
-import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.generators.{
+import weco.storage.BagRegistrationNotification
+import weco.storage_service.bagit.models.BagId
+import weco.storage.generators.{
   BagInfoGenerators,
   PayloadGenerators
 }
-import uk.ac.wellcome.platform.archive.common.storage.models._
+import weco.storage_service.storage.models._
 
 class BagRegisterWorkerTest
     extends AnyFunSpec

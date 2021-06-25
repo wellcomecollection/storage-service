@@ -3,19 +3,19 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity.memory
 import java.net.URI
 
 import org.scalatest.EitherValues
-import uk.ac.wellcome.fixtures.TestWith
+import weco.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FixityChecker,
   FixityCheckerTagsTestCases
 }
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.generators.MemoryLocationGenerators
-import uk.ac.wellcome.storage.providers.memory.{
+import weco.storage.generators.MemoryLocationGenerators
+import weco.storage.providers.memory.{
   MemoryLocation,
   MemoryLocationPrefix
 }
-import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
-import uk.ac.wellcome.storage.streaming.Codec._
+import weco.storage.store.memory.MemoryStreamStore
+import weco.storage.streaming.Codec._
 import uk.ac.wellcome.storage.tags.memory.MemoryTags
 
 class MemoryFixityCheckerTest

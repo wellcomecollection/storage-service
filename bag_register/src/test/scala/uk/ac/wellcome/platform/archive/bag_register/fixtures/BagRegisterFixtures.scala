@@ -1,13 +1,13 @@
 package uk.ac.wellcome.platform.archive.bag_register.fixtures
 
 import org.scalatest.Assertion
-import uk.ac.wellcome.akka.fixtures.Akka
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.SQS.{Queue, QueuePair}
-import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.monitoring.memory.MemoryMetrics
+import weco.akka.fixtures.Akka
+import weco.fixtures.TestWith
+import weco.json.JsonUtil._
+import weco.messaging.fixtures.SQS.{Queue, QueuePair}
+import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.messaging.memory.MemoryMessageSender
+import weco.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.bag_register.services.{
   BagRegisterWorker,
   Register,
@@ -18,16 +18,16 @@ import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{
   StorageManifestDaoFixture
 }
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
-import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
-import uk.ac.wellcome.platform.archive.common.fixtures._
-import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
-import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.storage_service.bagit.services.s3.S3BagReader
+import weco.storage.fixtures._
+import weco.storage.fixtures.s3.S3BagBuilder
+import weco.storage.generators.StorageRandomGenerators
+import weco.storage_service.ingests.fixtures.IngestUpdateAssertions
+import weco.storage_service.ingests.models.{
   Ingest,
   IngestStatusUpdate
 }
-import uk.ac.wellcome.storage.store.fixtures.StringNamespaceFixtures
+import weco.storage.store.fixtures.StringNamespaceFixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

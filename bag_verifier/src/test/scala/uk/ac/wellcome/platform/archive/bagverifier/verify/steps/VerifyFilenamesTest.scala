@@ -3,12 +3,12 @@ package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
+import weco.storage_service.bagit.models.{
   BagPath,
   PayloadManifest,
   TagManifest
 }
-import uk.ac.wellcome.platform.archive.common.verify.{ChecksumValue, MD5}
+import weco.storage_service.verify.{ChecksumValue, MD5}
 
 class VerifyFilenamesTest extends AnyFunSpec with Matchers with EitherValues {
   val verifier: VerifyFilenames =

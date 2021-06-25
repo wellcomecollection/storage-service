@@ -4,7 +4,7 @@ import java.time.format.DateTimeFormatter
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.generators.BagInfoGenerators
+import weco.storage.generators.BagInfoGenerators
 
 class DisplayStorageManifestInfoTest
     extends AnyFunSpec

@@ -2,12 +2,12 @@ package uk.ac.wellcome.platform.storage.bag_versioner.services
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.storage_service.bagit.models.ExternalIdentifier
+import weco.storage_service.ingests.models.{
   IngestID,
   IngestType
 }
-import uk.ac.wellcome.platform.archive.common.storage.models._
+import weco.storage_service.storage.models._
 import uk.ac.wellcome.platform.storage.bag_versioner.models._
 import uk.ac.wellcome.platform.storage.bag_versioner.versioning._
 

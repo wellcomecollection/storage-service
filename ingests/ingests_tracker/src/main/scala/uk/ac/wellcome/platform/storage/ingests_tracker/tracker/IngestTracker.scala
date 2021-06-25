@@ -1,9 +1,9 @@
 package uk.ac.wellcome.platform.storage.ingests_tracker.tracker
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.ingests.models._
+import weco.storage_service.ingests.models._
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.store.VersionedStore
+import weco.storage.store.VersionedStore
 
 trait IngestTracker extends Logging {
   val underlying: VersionedStore[IngestID, Int, Ingest]

@@ -3,9 +3,9 @@ package uk.ac.wellcome.platform.archive.display
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models._
+import weco.json.JsonUtil._
+import weco.json.utils.JsonAssertions
+import weco.storage_service.ingests.models._
 
 class DisplayProviderTest
     extends AnyFunSpec

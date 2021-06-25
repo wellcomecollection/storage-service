@@ -7,17 +7,17 @@ import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import uk.ac.wellcome.http.typesafe.HTTPServerBuilder
-import uk.ac.wellcome.monitoring.typesafe.CloudWatchBuilder
+import weco.monitoring.typesafe.CloudWatchBuilder
 import uk.ac.wellcome.platform.archive.bag_tracker.client.{
   AkkaBagTrackerClient,
   BagTrackerClient
 }
-import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
-import uk.ac.wellcome.storage.services.s3.S3Uploader
+import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.services.s3.S3Uploader
 import uk.ac.wellcome.storage.typesafe.S3Builder
-import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
-import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
-import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
+import weco.typesafe.WellcomeTypesafeApp
+import weco.typesafe.config.builders.AkkaBuilder
+import weco.typesafe.config.builders.EnrichConfig._
 import weco.http.WellcomeHttpApp
 import weco.http.models.HTTPServerConfig
 import weco.http.monitoring.HttpMetrics

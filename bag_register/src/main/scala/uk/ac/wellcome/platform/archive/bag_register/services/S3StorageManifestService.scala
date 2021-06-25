@@ -5,18 +5,18 @@ import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.bagit.models._
-import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.storage.models._
+import weco.storage_service.bagit.models._
+import weco.storage_service.bagit.services.BagMatcher
+import weco.storage_service.ingests.models.IngestID
+import weco.storage_service.storage.models._
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.azure.AzureBlobLocation
-import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
-import uk.ac.wellcome.storage.services.SizeFinder
-import uk.ac.wellcome.storage.services.s3.S3SizeFinder
-import uk.ac.wellcome.storage.store.Readable
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.streaming.InputStreamWithLength
+import weco.storage.azure.AzureBlobLocation
+import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.services.SizeFinder
+import weco.storage.services.s3.S3SizeFinder
+import weco.storage.store.Readable
+import weco.storage.store.s3.S3StreamStore
+import weco.storage.streaming.InputStreamWithLength
 
 import scala.util.{Failure, Success, Try}
 

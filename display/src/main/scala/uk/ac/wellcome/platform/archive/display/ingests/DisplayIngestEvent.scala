@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.display.ingests
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestEvent
+import weco.storage_service.ingests.models.IngestEvent
 
 case class DisplayIngestEvent(
   description: String,

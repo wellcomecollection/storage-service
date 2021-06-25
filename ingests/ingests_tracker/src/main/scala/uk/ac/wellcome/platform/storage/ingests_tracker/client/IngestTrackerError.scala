@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.storage.ingests_tracker.client
 
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.storage_service.ingests.models.{
   Ingest,
   IngestID,
   IngestUpdate

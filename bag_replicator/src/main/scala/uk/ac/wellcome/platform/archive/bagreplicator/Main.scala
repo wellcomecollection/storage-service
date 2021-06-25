@@ -5,43 +5,43 @@ import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.{BlobServiceClient, BlobServiceClientBuilder}
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sns.SNSConfig
-import uk.ac.wellcome.messaging.typesafe.{
+import weco.json.JsonUtil._
+import weco.messaging.sns.SNSConfig
+import weco.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
   SQSBuilder
 }
-import uk.ac.wellcome.monitoring.cloudwatch.CloudWatchMetrics
-import uk.ac.wellcome.monitoring.typesafe.CloudWatchBuilder
+import weco.monitoring.cloudwatch.CloudWatchMetrics
+import weco.monitoring.typesafe.CloudWatchBuilder
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.azure.AzureReplicator
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models.ReplicationSummary
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.s3.S3Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.services.BagReplicatorWorker
-import uk.ac.wellcome.platform.archive.common.config.builders.{
+import weco.storage.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
   OutgoingPublisherBuilder
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.storage_service.ingests.models.{
   AmazonS3StorageProvider,
   AzureBlobStorageProvider,
   StorageProvider
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.IngestStepResult
-import uk.ac.wellcome.storage.azure.AzureBlobLocationPrefix
+import weco.storage_service.storage.models.IngestStepResult
+import weco.storage.azure.AzureBlobLocationPrefix
 import uk.ac.wellcome.storage.locking.dynamo.{
   DynamoLockDao,
   DynamoLockingService
 }
-import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
+import weco.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.transfer.azure.AzurePutBlockFromUrlTransfer
 import uk.ac.wellcome.storage.typesafe.{DynamoLockDaoBuilder, S3Builder}
-import uk.ac.wellcome.storage.{Location, Prefix}
-import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
-import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
-import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
+import weco.storage.{Location, Prefix}
+import weco.typesafe.WellcomeTypesafeApp
+import weco.typesafe.config.builders.AkkaBuilder
+import weco.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.util.Try

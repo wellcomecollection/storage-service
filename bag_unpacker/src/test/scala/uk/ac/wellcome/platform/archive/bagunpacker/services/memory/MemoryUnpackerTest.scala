@@ -1,15 +1,15 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services.memory
 
-import uk.ac.wellcome.fixtures.TestWith
+import weco.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagunpacker.services.{
   Unpacker,
   UnpackerTestCases
 }
-import uk.ac.wellcome.storage.providers.memory.{
+import weco.storage.providers.memory.{
   MemoryLocation,
   MemoryLocationPrefix
 }
-import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
+import weco.storage.store.memory.MemoryStreamStore
 
 class MemoryUnpackerTest
     extends UnpackerTestCases[

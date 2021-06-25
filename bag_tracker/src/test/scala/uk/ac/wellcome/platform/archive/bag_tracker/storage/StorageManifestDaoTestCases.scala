@@ -3,9 +3,9 @@ package uk.ac.wellcome.platform.archive.bag_tracker.storage
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
-import uk.ac.wellcome.platform.archive.common.generators.{
+import weco.fixtures.TestWith
+import weco.storage_service.bagit.models.BagVersion
+import weco.storage.generators.{
   BagIdGenerators,
   StorageManifestGenerators
 }

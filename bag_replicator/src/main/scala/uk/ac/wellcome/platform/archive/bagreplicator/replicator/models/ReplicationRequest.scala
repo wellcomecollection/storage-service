@@ -5,15 +5,15 @@ import uk.ac.wellcome.platform.archive.bagreplicator.models.{
   ReplicaType,
   SecondaryReplica
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.storage_service.storage.models.{
   PrimaryS3ReplicaLocation,
   ReplicaLocation,
   SecondaryAzureReplicaLocation,
   SecondaryS3ReplicaLocation
 }
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.azure.AzureBlobLocationPrefix
-import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
+import weco.storage.azure.AzureBlobLocationPrefix
+import weco.storage.s3.S3ObjectLocationPrefix
 
 case class ReplicationRequest[DstPrefix <: Prefix[_ <: Location]](
   srcPrefix: S3ObjectLocationPrefix,

@@ -6,7 +6,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.storage.streaming.Codec._
+import weco.storage.streaming.Codec._
 
 /** The archive files used in these tests were deliberately created
   * with external tools to get better examples of "real" files,

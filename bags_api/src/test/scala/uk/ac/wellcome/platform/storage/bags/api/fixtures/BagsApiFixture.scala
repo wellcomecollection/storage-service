@@ -8,8 +8,8 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
 import org.scalatest.concurrent.ScalaFutures
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.monitoring.memory.MemoryMetrics
+import weco.fixtures.TestWith
+import weco.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.bag_tracker.client.BagTrackerClient
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{
   BagTrackerFixtures,
@@ -17,15 +17,15 @@ import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{
 }
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
-import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
+import weco.storage_service.bagit.models.{BagId, BagVersion}
+import weco.storage.generators.StorageRandomGenerators
+import weco.storage_service.storage.models.StorageManifest
 import uk.ac.wellcome.platform.storage.bags.api.BagsApi
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
-import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
-import uk.ac.wellcome.storage.services.s3.S3Uploader
-import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
+import weco.storage.fixtures.S3Fixtures
+import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.services.s3.S3Uploader
+import weco.storage.store.memory.MemoryVersionedStore
 import weco.http.WellcomeHttpApp
 import weco.http.fixtures.HttpFixtures
 import weco.http.models.HTTPServerConfig

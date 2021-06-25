@@ -2,9 +2,9 @@ package uk.ac.wellcome.platform.storage.bag_root_finder.models
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.operation.models.Summary
-import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
+import weco.storage_service.ingests.models.IngestID
+import weco.storage_service.operation.models.Summary
+import weco.storage.s3.S3ObjectLocationPrefix
 
 sealed trait RootFinderSummary extends Summary {
   val searchRoot: S3ObjectLocationPrefix

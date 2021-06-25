@@ -4,10 +4,10 @@ import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.funspec.AnyFunSpec
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
-import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
+import weco.storage_service.bagit.models.BagId
+import weco.storage.generators.StorageManifestGenerators
+import weco.storage_service.storage.models.StorageManifest
+import weco.storage.store.memory.MemoryVersionedStore
 import uk.ac.wellcome.storage.{RetryableError, StoreWriteError, WriteError}
 
 trait CreateBagTestCases

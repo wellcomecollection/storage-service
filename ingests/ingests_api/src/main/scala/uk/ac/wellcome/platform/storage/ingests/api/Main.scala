@@ -6,17 +6,17 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.Uri
 import com.typesafe.config.Config
 import uk.ac.wellcome.http.typesafe.HTTPServerBuilder
-import uk.ac.wellcome.messaging.sns.SNSConfig
-import uk.ac.wellcome.messaging.typesafe.SNSBuilder
-import uk.ac.wellcome.monitoring.typesafe.CloudWatchBuilder
+import weco.messaging.sns.SNSConfig
+import weco.messaging.typesafe.SNSBuilder
+import weco.monitoring.typesafe.CloudWatchBuilder
 import uk.ac.wellcome.platform.storage.ingests.api.services.IngestCreator
 import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
   AkkaIngestTrackerClient,
   IngestTrackerClient
 }
-import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
-import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
-import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
+import weco.typesafe.WellcomeTypesafeApp
+import weco.typesafe.config.builders.AkkaBuilder
+import weco.typesafe.config.builders.EnrichConfig._
 import weco.http.WellcomeHttpApp
 import weco.http.models.HTTPServerConfig
 import weco.http.monitoring.HttpMetrics

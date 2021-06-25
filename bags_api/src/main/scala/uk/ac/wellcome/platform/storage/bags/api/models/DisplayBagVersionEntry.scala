@@ -2,8 +2,8 @@ package uk.ac.wellcome.platform.storage.bags.api.models
 
 import io.circe.generic.extras.JsonKey
 import uk.ac.wellcome.platform.archive.bag_tracker.models.BagVersionEntry
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagId
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
+import weco.storage_service.bagit.models.BagId
+import weco.storage_service.storage.models.StorageManifest
 
 case class DisplayBagVersionEntry(
   id: String,

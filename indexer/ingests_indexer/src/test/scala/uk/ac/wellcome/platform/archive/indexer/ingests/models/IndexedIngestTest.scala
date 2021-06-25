@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.indexer.ingests.models
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
+import weco.storage.generators.IngestGenerators
 
 class IndexedIngestTest extends AnyFunSpec with Matchers with IngestGenerators {
   it("doesn't set a failureDescription on successful ingests") {

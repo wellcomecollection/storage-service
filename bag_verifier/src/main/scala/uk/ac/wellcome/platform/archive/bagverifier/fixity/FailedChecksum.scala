@@ -1,5 +1,5 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixity
-import uk.ac.wellcome.platform.archive.common.verify.{
+import weco.storage_service.verify.{
   Checksum,
   HashingAlgorithm
 }

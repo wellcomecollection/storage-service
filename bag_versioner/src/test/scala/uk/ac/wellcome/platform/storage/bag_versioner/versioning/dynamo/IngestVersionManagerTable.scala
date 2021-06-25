@@ -10,9 +10,9 @@ import software.amazon.awssdk.services.dynamodb.model.{
   ProjectionType,
   ProvisionedThroughput
 }
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.storage.fixtures.DynamoFixtures
-import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
+import weco.fixtures.TestWith
+import weco.storage.fixtures.DynamoFixtures
+import weco.storage.fixtures.DynamoFixtures.Table
 
 trait IngestVersionManagerTable extends DynamoFixtures {
   override def createTable(table: Table): Table =

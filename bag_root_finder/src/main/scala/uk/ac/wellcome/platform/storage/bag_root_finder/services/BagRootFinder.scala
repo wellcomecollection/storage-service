@@ -3,14 +3,14 @@ package uk.ac.wellcome.platform.storage.bag_root_finder.services
 import java.time.Instant
 
 import com.amazonaws.services.s3.AmazonS3
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.storage_service.ingests.models.IngestID
+import weco.storage_service.storage.models.{
   IngestFailed,
   IngestStepResult,
   IngestStepSucceeded
 }
 import uk.ac.wellcome.platform.storage.bag_root_finder.models._
-import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
+import weco.storage.s3.S3ObjectLocationPrefix
 
 import scala.util.{Failure, Success, Try}
 

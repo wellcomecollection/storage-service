@@ -6,9 +6,9 @@ import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
-import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models._
+import weco.storage_service.bagit.models.BagVersion
+import weco.storage.generators.IngestGenerators
+import weco.storage_service.ingests.models._
 
 sealed trait IngestUpdateTestCases[UpdateType <: IngestUpdate]
     extends AnyFunSpec

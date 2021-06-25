@@ -3,8 +3,8 @@ package uk.ac.wellcome.platform.archive.bag_tracker
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import uk.ac.wellcome.platform.archive.bag_tracker.config.builders.StorageManifestDaoBuilder
-import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
-import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
+import weco.typesafe.WellcomeTypesafeApp
+import weco.typesafe.config.builders.AkkaBuilder
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>

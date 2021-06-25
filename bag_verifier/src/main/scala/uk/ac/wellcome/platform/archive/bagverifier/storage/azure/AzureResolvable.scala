@@ -4,7 +4,7 @@ import java.net.URI
 
 import com.azure.storage.blob.BlobServiceClient
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable
-import uk.ac.wellcome.storage.azure.AzureBlobLocation
+import weco.storage.azure.AzureBlobLocation
 
 class AzureResolvable(implicit blobServiceClient: BlobServiceClient)
     extends Resolvable[AzureBlobLocation] {

@@ -3,29 +3,29 @@ package uk.ac.wellcome.platform.archive.indexer.bag.fixtures
 import com.sksamuel.elastic4s.Index
 import io.circe.Decoder
 import org.scalatest.Suite
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.SQS
-import uk.ac.wellcome.monitoring.memory.MemoryMetrics
+import weco.fixtures.TestWith
+import weco.json.JsonUtil._
+import weco.messaging.fixtures.SQS
+import weco.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.bag_tracker.fixtures.{
   BagTrackerFixtures,
   StorageManifestDaoFixture
 }
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
+import weco.storage_service.bagit.models.{
   BagVersion,
   ExternalIdentifier
 }
-import uk.ac.wellcome.platform.archive.common.generators.{
+import weco.storage.generators.{
   IngestGenerators,
   PayloadGenerators,
   StorageManifestGenerators
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.storage_service.storage.models.{
   StorageManifest,
   StorageSpace
 }
-import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
+import weco.storage.BagRegistrationNotification
 import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
 import uk.ac.wellcome.platform.archive.indexer.bags.{
   BagIndexer,

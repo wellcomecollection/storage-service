@@ -1,17 +1,17 @@
 package uk.ac.wellcome.platform.storage.bag_versioner.versioning.dynamo
 
 import org.scanamo.generic.auto._
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import weco.fixtures.TestWith
+import weco.storage_service.bagit.models.ExternalIdentifier
+import weco.storage_service.ingests.models.IngestID
+import weco.storage_service.storage.models.StorageSpace
 import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
   IngestVersionManager,
   IngestVersionManagerTestCases,
   VersionRecord
 }
 import uk.ac.wellcome.storage.{MaximaError, MaximaReadError}
-import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
+import weco.storage.fixtures.DynamoFixtures.Table
 
 import scala.language.higherKinds
 import scala.util.{Failure, Try}

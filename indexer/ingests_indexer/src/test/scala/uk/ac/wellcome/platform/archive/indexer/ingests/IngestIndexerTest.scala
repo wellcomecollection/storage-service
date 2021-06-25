@@ -4,9 +4,9 @@ import java.time.Instant
 import com.sksamuel.elastic4s.{ElasticClient, Index}
 import io.circe.Json
 import org.scalatest.Assertion
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.json.JsonUtil._
+import weco.storage.generators.IngestGenerators
+import weco.storage_service.ingests.models.{
   Ingest,
   IngestEvent
 }

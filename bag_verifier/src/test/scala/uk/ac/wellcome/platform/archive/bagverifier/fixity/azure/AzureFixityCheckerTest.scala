@@ -3,7 +3,7 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity.azure
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 
 import java.net.URI
-import uk.ac.wellcome.fixtures.TestWith
+import weco.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FixityChecker,
   FixityCheckerTagsTestCases
@@ -12,13 +12,13 @@ import uk.ac.wellcome.platform.archive.bagverifier.storage.azure.{
   AzureLocatable,
   AzureResolvable
 }
-import uk.ac.wellcome.platform.archive.common.verify._
-import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
-import uk.ac.wellcome.storage.fixtures.AzureFixtures.Container
-import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
-import uk.ac.wellcome.storage.fixtures.{AzureFixtures, DynamoFixtures}
-import uk.ac.wellcome.storage.services.azure.AzureSizeFinder
-import uk.ac.wellcome.storage.store.azure.{AzureStreamStore, AzureTypedStore}
+import weco.storage_service.verify._
+import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import weco.storage.fixtures.AzureFixtures.Container
+import weco.storage.fixtures.DynamoFixtures.Table
+import weco.storage.fixtures.{AzureFixtures, DynamoFixtures}
+import weco.storage.services.azure.AzureSizeFinder
+import weco.storage.store.azure.{AzureStreamStore, AzureTypedStore}
 
 class AzureFixityCheckerTest
     extends FixityCheckerTagsTestCases[

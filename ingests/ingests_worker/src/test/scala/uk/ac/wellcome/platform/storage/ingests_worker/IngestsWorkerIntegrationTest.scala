@@ -8,11 +8,11 @@ import akka.http.scaladsl.model.{StatusCodes, Uri}
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.fixtures.SQS.QueuePair
-import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Succeeded
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.json.JsonUtil._
+import weco.messaging.fixtures.SQS.QueuePair
+import weco.storage.generators.IngestGenerators
+import weco.storage_service.ingests.models.Ingest.Succeeded
+import weco.storage_service.ingests.models.{
   CallbackNotification,
   Ingest,
   IngestUpdate

@@ -5,7 +5,7 @@ import java.util.UUID
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
+import weco.storage_service.ingests.models.IngestID
 import uk.ac.wellcome.platform.archive.display.ingests.ResponseDisplayIngest
 import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
   IngestTrackerClient,

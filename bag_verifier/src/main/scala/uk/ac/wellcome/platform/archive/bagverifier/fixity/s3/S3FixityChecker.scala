@@ -8,11 +8,11 @@ import org.apache.commons.io.FileUtils
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.FixityChecker
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Locatable
 import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.S3Locatable
-import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
-import uk.ac.wellcome.storage.services.SizeFinder
-import uk.ac.wellcome.storage.services.s3.{S3LargeStreamReader, S3SizeFinder}
-import uk.ac.wellcome.storage.store
-import uk.ac.wellcome.storage.streaming.InputStreamWithLength
+import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.services.SizeFinder
+import weco.storage.services.s3.{S3LargeStreamReader, S3SizeFinder}
+import weco.storage.store
+import weco.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.tags.Tags
 import uk.ac.wellcome.storage.tags.s3.S3Tags
 

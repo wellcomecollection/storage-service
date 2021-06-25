@@ -3,8 +3,8 @@ package uk.ac.wellcome.platform.storage.replica_aggregator.services
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.generators.ReplicaLocationGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models.KnownReplicas
+import weco.storage.generators.ReplicaLocationGenerators
+import weco.storage_service.storage.models.KnownReplicas
 import uk.ac.wellcome.platform.storage.replica_aggregator.models.AggregatorInternalRecord
 
 class ReplicaCounterTest

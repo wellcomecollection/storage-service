@@ -5,13 +5,13 @@ import java.time.Instant
 import akka.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.monitoring.Metrics
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
-import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
-import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
-import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.platform.archive.common.{
+import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import weco.monitoring.Metrics
+import weco.storage_service.bagit.models.BagVersion
+import weco.storage_service.ingests.services.IngestUpdater
+import weco.storage_service.operation.services.OutgoingPublisher
+import weco.storage_service.storage.models._
+import weco.storage.{
   KnownReplicasPayload,
   PipelineContext,
   ReplicaCompletePayload

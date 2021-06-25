@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.storage.bag_tagger.services
 
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.storage_service.storage.models.{
   AzureStorageLocation,
   S3StorageLocation,
   StorageLocation,

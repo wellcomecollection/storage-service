@@ -2,8 +2,8 @@ package uk.ac.wellcome.platform.storage.bag_versioner.versioning
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import weco.storage_service.bagit.models.ExternalIdentifier
+import weco.storage_service.storage.models.StorageSpace
 
 sealed trait IngestVersionManagerError
 

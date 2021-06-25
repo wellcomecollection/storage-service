@@ -4,14 +4,14 @@ import java.net.{URI, URL}
 import java.time.Instant
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.generators.{
+import weco.storage.generators.{
   BagIdGenerators,
   IngestGenerators
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import weco.storage_service.ingests.models._
+import weco.storage_service.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.display._
-import uk.ac.wellcome.storage.s3.S3ObjectLocation
+import weco.storage.s3.S3ObjectLocation
 import weco.fixtures.TimeAssertions
 
 class DisplayIngestTest

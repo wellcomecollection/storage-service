@@ -5,9 +5,9 @@ import org.scalatest.prop.TableDrivenPropertyChecks._
 import org.scalatest.Assertion
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.akka.fixtures.Akka
-import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.akka.fixtures.Akka
+import weco.storage.generators.StorageRandomGenerators
+import weco.storage_service.ingests.models.{
   Callback,
   IngestID
 }

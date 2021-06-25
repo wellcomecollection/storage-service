@@ -5,20 +5,20 @@ import java.time.Instant
 import akka.actor.ActorSystem
 import grizzled.slf4j.Logging
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+import weco.json.JsonUtil._
+import weco.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorker,
   AlpakkaSQSWorkerConfig
 }
-import uk.ac.wellcome.messaging.worker.models.{
+import weco.messaging.worker.models.{
   DeterministicFailure,
   NonDeterministicFailure,
   Result,
   Successful
 }
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
-import uk.ac.wellcome.monitoring.Metrics
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
+import weco.monitoring.Metrics
+import weco.storage_service.ingests.models.{
   Ingest,
   IngestUpdate
 }
@@ -28,7 +28,7 @@ import uk.ac.wellcome.platform.storage.ingests_tracker.client.{
   IngestTrackerUpdateConflictError,
   IngestTrackerUpdateNonExistentIngestError
 }
-import uk.ac.wellcome.typesafe.Runnable
+import weco.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 

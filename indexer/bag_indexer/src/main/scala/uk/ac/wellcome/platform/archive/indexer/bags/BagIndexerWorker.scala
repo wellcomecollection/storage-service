@@ -3,16 +3,16 @@ package uk.ac.wellcome.platform.archive.indexer.bags
 import akka.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.monitoring.Metrics
+import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import weco.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.bag_tracker.client.{
   BagTrackerClient,
   BagTrackerNotFoundError,
   BagTrackerUnknownGetError
 }
-import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
+import weco.storage.BagRegistrationNotification
+import weco.storage_service.bagit.models.{BagId, BagVersion}
+import weco.storage_service.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.indexer.bags.models.IndexedStorageManifest
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
   FatalIndexingError,

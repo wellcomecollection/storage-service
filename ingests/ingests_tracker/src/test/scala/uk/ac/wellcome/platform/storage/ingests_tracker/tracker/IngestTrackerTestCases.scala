@@ -6,9 +6,9 @@ import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.{Assertion, EitherValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.fixtures.TestWith
+import weco.storage.generators.IngestGenerators
+import weco.storage_service.ingests.models.{
   Callback,
   Ingest,
   IngestEvent

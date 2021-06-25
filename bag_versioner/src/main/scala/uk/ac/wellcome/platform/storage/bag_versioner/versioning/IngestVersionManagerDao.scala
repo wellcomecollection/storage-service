@@ -1,8 +1,8 @@
 package uk.ac.wellcome.platform.storage.bag_versioner.versioning
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import weco.storage_service.bagit.models.ExternalIdentifier
+import weco.storage_service.ingests.models.IngestID
+import weco.storage_service.storage.models.StorageSpace
 import uk.ac.wellcome.storage.MaximaError
 
 import scala.util.Try

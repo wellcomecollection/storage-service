@@ -3,19 +3,19 @@ package uk.ac.wellcome.platform.storage.ingests_tracker.tracker.dynamo
 import grizzled.slf4j.Logging
 import org.scanamo.generic.auto._
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.storage_service.ingests.models.{
   Ingest,
   IngestID,
   IngestUpdate
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
+import weco.storage_service.ingests.models.IngestID._
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.{
   IngestTracker,
   UpdateNonExistentIngestError
 }
 import uk.ac.wellcome.storage.dynamo._
-import uk.ac.wellcome.storage.store.VersionedStore
-import uk.ac.wellcome.storage.store.dynamo.DynamoSingleVersionStore
+import weco.storage.store.VersionedStore
+import weco.storage.store.dynamo.DynamoSingleVersionStore
 
 import scala.language.higherKinds
 

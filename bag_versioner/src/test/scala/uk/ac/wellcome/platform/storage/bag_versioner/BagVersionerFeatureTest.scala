@@ -4,18 +4,18 @@ import java.time.Instant
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion._
-import uk.ac.wellcome.platform.archive.common.generators.{
+import weco.json.JsonUtil._
+import weco.messaging.memory.MemoryMessageSender
+import weco.storage_service.bagit.models.BagVersion
+import weco.storage_service.bagit.models.BagVersion._
+import weco.storage.generators.{
   ExternalIdentifierGenerators,
   PayloadGenerators,
   StorageSpaceGenerators
 }
-import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.platform.archive.common.VersionedBagRootPayload
+import weco.storage_service.ingests.fixtures.IngestUpdateAssertions
+import weco.storage_service.ingests.models._
+import weco.storage.VersionedBagRootPayload
 import uk.ac.wellcome.platform.storage.bag_versioner.fixtures.BagVersionerFixtures
 
 class BagVersionerFeatureTest

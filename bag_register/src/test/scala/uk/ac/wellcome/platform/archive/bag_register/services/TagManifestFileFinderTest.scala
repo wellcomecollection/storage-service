@@ -3,21 +3,21 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{EitherValues, TryValues}
-import uk.ac.wellcome.fixtures.{RandomGenerators, TestWith}
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifestFile
-import uk.ac.wellcome.platform.archive.common.verify.{
+import weco.fixtures.{RandomGenerators, TestWith}
+import weco.storage_service.storage.models.StorageManifestFile
+import weco.storage_service.verify.{
   ChecksumValue,
   MD5,
   SHA256
 }
-import uk.ac.wellcome.storage.StoreReadError
-import uk.ac.wellcome.storage.providers.memory.{
+import weco.storage.storeReadError
+import weco.storage.providers.memory.{
   MemoryLocation,
   MemoryLocationPrefix
 }
-import uk.ac.wellcome.storage.store.Readable
-import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore}
-import uk.ac.wellcome.storage.streaming.InputStreamWithLength
+import weco.storage.store.Readable
+import weco.storage.store.memory.{MemoryStore, MemoryStreamStore}
+import weco.storage.streaming.InputStreamWithLength
 
 class TagManifestFileFinderTest
     extends AnyFunSpec

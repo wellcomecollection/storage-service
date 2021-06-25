@@ -9,25 +9,25 @@ import grizzled.slf4j.Logging
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.Message
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+import weco.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorker,
   AlpakkaSQSWorkerConfig
 }
-import uk.ac.wellcome.messaging.worker.models.{
+import weco.messaging.worker.models.{
   NonDeterministicFailure,
   Result,
   Successful
 }
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
-import uk.ac.wellcome.monitoring.Metrics
+import weco.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
+import weco.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.bag_tracker.client.BagTrackerClient
-import uk.ac.wellcome.platform.archive.common.BagRegistrationNotification
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.storage.BagRegistrationNotification
+import weco.storage_service.bagit.models.{BagId, BagVersion}
+import weco.storage_service.storage.models.{
   StorageManifest,
   StorageManifestFile
 }
-import uk.ac.wellcome.typesafe.Runnable
+import weco.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 

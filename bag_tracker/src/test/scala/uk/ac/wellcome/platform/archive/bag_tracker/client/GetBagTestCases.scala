@@ -5,18 +5,18 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor1}
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.memory.MemoryStorageManifestDao
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
+import weco.storage_service.bagit.models.{
   BagId,
   BagVersion,
   ExternalIdentifier
 }
-import uk.ac.wellcome.platform.archive.common.generators.{
+import weco.storage.generators.{
   BagIdGenerators,
   StorageManifestGenerators
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
+import weco.storage_service.storage.models.StorageManifest
 import uk.ac.wellcome.storage.{ReadError, RetryableError, StoreReadError}
-import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
+import weco.storage.store.memory.MemoryVersionedStore
 
 trait GetBagTestCases
     extends AnyFunSpec

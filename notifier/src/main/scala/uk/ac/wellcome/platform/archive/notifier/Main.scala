@@ -4,20 +4,20 @@ import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.http.typesafe.HTTPServerBuilder
-import uk.ac.wellcome.messaging.typesafe.{
+import weco.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
   SNSBuilder,
   SQSBuilder
 }
-import uk.ac.wellcome.monitoring.cloudwatch.CloudWatchMetrics
-import uk.ac.wellcome.monitoring.typesafe.CloudWatchBuilder
+import weco.monitoring.cloudwatch.CloudWatchMetrics
+import weco.monitoring.typesafe.CloudWatchBuilder
 import uk.ac.wellcome.platform.archive.notifier.services.{
   CallbackUrlService,
   NotifierWorker
 }
-import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
-import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
-import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
+import weco.typesafe.WellcomeTypesafeApp
+import weco.typesafe.config.builders.AkkaBuilder
+import weco.typesafe.config.builders.EnrichConfig._
 import weco.http.client.AkkaHttpClient
 
 import scala.concurrent.ExecutionContext

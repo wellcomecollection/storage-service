@@ -5,17 +5,17 @@ import java.nio.file.Paths
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.json.JsonUtil._
+import weco.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.BagUnpackerFixtures
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.s3.S3CompressFixture
-import uk.ac.wellcome.platform.archive.common.UnpackedBagLocationPayload
-import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.storage.UnpackedBagLocationPayload
+import weco.storage.generators.PayloadGenerators
+import weco.storage_service.ingests.fixtures.IngestUpdateAssertions
+import weco.storage_service.ingests.models.{
   Ingest,
   IngestStatusUpdate
 }
-import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
+import weco.storage.s3.S3ObjectLocationPrefix
 
 class UnpackerFeatureTest
     extends AnyFunSpec

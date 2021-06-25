@@ -1,13 +1,13 @@
 package uk.ac.wellcome.platform.storage.ingests_tracker.tracker.memory
 
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.ingests.models.{Ingest, IngestID}
+import weco.fixtures.TestWith
+import weco.storage_service.ingests.models.{Ingest, IngestID}
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestTrackerFixtures
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.{
   IngestTracker,
   IngestTrackerTestCases
 }
-import uk.ac.wellcome.storage.store.memory.MemoryVersionedStore
+import weco.storage.store.memory.MemoryVersionedStore
 import uk.ac.wellcome.storage.{
   StoreReadError,
   StoreWriteError,

@@ -6,20 +6,20 @@ import akka.actor.ActorSystem
 import cats.instances.try_._
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.monitoring.Metrics
+import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import weco.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.bagreplicator.config.ReplicatorDestinationConfig
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.Replicator
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models._
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
-import uk.ac.wellcome.platform.archive.common.operation.services._
-import uk.ac.wellcome.platform.archive.common.storage.models._
-import uk.ac.wellcome.platform.archive.common.{
+import weco.storage_service.ingests.models.IngestID
+import weco.storage_service.ingests.services.IngestUpdater
+import weco.storage_service.operation.services._
+import weco.storage_service.storage.models._
+import weco.storage.{
   ReplicaCompletePayload,
   VersionedBagRootPayload
 }
-import uk.ac.wellcome.storage.{Location, Prefix}
+import weco.storage.{Location, Prefix}
 import uk.ac.wellcome.storage.locking.{
   FailedLockingServiceOp,
   LockDao,

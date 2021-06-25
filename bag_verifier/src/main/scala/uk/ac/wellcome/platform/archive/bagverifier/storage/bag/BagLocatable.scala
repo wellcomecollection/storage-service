@@ -5,8 +5,8 @@ import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   LocateFailure,
   LocationNotFound
 }
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagPath
-import uk.ac.wellcome.storage.{Location, Prefix}
+import weco.storage_service.bagit.models.BagPath
+import weco.storage.{Location, Prefix}
 
 object BagLocatable {
   implicit def bagPathLocatable[BagLocation <: Location, BagPrefix <: Prefix[

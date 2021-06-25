@@ -1,13 +1,13 @@
 package uk.ac.wellcome.platform.archive.bagverifier.fixtures
 
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
-import uk.ac.wellcome.akka.fixtures.Akka
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.messaging.fixtures.SQS
-import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.monitoring.memory.MemoryMetrics
+import weco.akka.fixtures.Akka
+import weco.fixtures.TestWith
+import weco.messaging.fixtures.SQS
+import weco.messaging.fixtures.SQS.Queue
+import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.messaging.memory.MemoryMessageSender
+import weco.monitoring.memory.MemoryMetrics
 import uk.ac.wellcome.platform.archive.bagverifier.builder.BagVerifierWorkerBuilder
 import uk.ac.wellcome.platform.archive.bagverifier.models.{
   ReplicatedBagVerifyContext,
@@ -18,20 +18,20 @@ import uk.ac.wellcome.platform.archive.bagverifier.services.s3.{
   S3BagVerifier,
   S3StandaloneBagVerifier
 }
-import uk.ac.wellcome.platform.archive.common.fixtures.OperationFixtures
-import uk.ac.wellcome.platform.archive.common.{
+import weco.storage.fixtures.OperationFixtures
+import weco.storage.{
   BagRootLocationPayload,
   ReplicaCompletePayload
 }
-import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
-import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
-import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.fixtures.{
+import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import weco.storage.fixtures.DynamoFixtures.Table
+import weco.storage.fixtures.S3Fixtures.Bucket
+import weco.storage.fixtures.{
   AzureFixtures,
   DynamoFixtures,
   S3Fixtures
 }
-import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 trait BagVerifierFixtures
     extends AlpakkaSQSWorkerFixtures

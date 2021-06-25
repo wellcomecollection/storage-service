@@ -4,19 +4,19 @@ import java.time.Instant
 
 import grizzled.slf4j.Logging
 import uk.ac.wellcome.platform.archive.bagreplicator.replicator.models._
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
+import weco.storage_service.bagit.models.{
   BagVersion,
   ExternalIdentifier
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.storage_service.ingests.models.IngestID
+import weco.storage_service.storage.models.{
   EnsureTrailingSlash,
   StorageSpace
 }
-import uk.ac.wellcome.platform.archive.common.storage.services.DestinationBuilder
+import weco.storage_service.storage.services.DestinationBuilder
 import uk.ac.wellcome.storage._
 import uk.ac.wellcome.storage.listing.Listing
-import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
+import weco.storage.s3.S3ObjectLocationPrefix
 import uk.ac.wellcome.storage.transfer.{PrefixTransfer, PrefixTransferFailure}
 
 // This is a generic replication from one location to another.

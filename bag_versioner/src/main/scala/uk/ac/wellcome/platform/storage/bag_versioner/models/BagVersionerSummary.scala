@@ -2,9 +2,9 @@ package uk.ac.wellcome.platform.storage.bag_versioner.models
 
 import java.time.Instant
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.operation.models.Summary
+import weco.storage_service.bagit.models.BagVersion
+import weco.storage_service.ingests.models.IngestID
+import weco.storage_service.operation.models.Summary
 
 sealed trait BagVersionerSummary extends Summary {
   val endTime: Instant

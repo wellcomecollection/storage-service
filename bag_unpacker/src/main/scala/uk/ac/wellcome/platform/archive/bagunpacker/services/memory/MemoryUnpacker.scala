@@ -1,14 +1,14 @@
 package uk.ac.wellcome.platform.archive.bagunpacker.services.memory
 
 import uk.ac.wellcome.platform.archive.bagunpacker.services.Unpacker
-import uk.ac.wellcome.storage.providers.memory.{
+import weco.storage.providers.memory.{
   MemoryLocation,
   MemoryLocationPrefix
 }
-import uk.ac.wellcome.storage.store
-import uk.ac.wellcome.storage.store.Writable
-import uk.ac.wellcome.storage.store.memory.MemoryStreamStore
-import uk.ac.wellcome.storage.streaming.InputStreamWithLength
+import weco.storage.store
+import weco.storage.store.Writable
+import weco.storage.store.memory.MemoryStreamStore
+import weco.storage.streaming.InputStreamWithLength
 
 class MemoryUnpacker()(implicit streamStore: MemoryStreamStore[MemoryLocation])
     extends Unpacker[MemoryLocation, MemoryLocation, MemoryLocationPrefix] {

@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.indexer.ingests
 
 import com.sksamuel.elastic4s.{ElasticClient, Index}
 import io.circe._
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import weco.storage_service.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.Indexer
 import uk.ac.wellcome.platform.archive.indexer.ingests.models.IndexedIngest
 

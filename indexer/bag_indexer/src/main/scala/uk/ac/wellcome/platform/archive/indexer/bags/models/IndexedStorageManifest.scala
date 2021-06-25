@@ -2,8 +2,8 @@ package uk.ac.wellcome.platform.archive.indexer.bags.models
 
 import java.time.{Instant, LocalDate}
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagInfo
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.storage_service.bagit.models.BagInfo
+import weco.storage_service.storage.models.{
   StorageLocation,
   StorageManifest
 }

@@ -3,9 +3,9 @@ package uk.ac.wellcome.platform.storage.bag_root_finder.services
 import org.scalatest.Assertion
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
-import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.fixtures.S3Fixtures
+import weco.storage.fixtures.S3Fixtures.Bucket
+import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.util.Success
 

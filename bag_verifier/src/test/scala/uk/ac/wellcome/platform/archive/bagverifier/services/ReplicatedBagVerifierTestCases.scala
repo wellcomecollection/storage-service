@@ -1,14 +1,14 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services
 
-import uk.ac.wellcome.fixtures.TestWith
+import weco.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagverifier.models.{
   ReplicatedBagVerifyContext,
   VerificationIncompleteSummary
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.IngestFailed
-import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
-import uk.ac.wellcome.storage.store.s3.S3TypedStore
-import uk.ac.wellcome.storage.{Location, Prefix}
+import weco.storage_service.storage.models.IngestFailed
+import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.store.s3.S3TypedStore
+import weco.storage.{Location, Prefix}
 
 trait ReplicatedBagVerifierTestCases[
   ReplicaBagLocation <: Location,

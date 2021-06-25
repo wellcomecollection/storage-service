@@ -1,21 +1,21 @@
 package uk.ac.wellcome.platform.archive.bagverifier.services.s3
 
-import uk.ac.wellcome.fixtures.TestWith
+import weco.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagverifier.models.{
   BagVerifyContext,
   ReplicatedBagVerifyContext,
   StandaloneBagVerifyContext
 }
 import uk.ac.wellcome.platform.archive.bagverifier.services._
-import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
-import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
-import uk.ac.wellcome.platform.archive.common.fixtures.BagBuilder
-import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
-import uk.ac.wellcome.platform.archive.common.storage.models.EnsureTrailingSlash
-import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
-import uk.ac.wellcome.storage.store.TypedStore
-import uk.ac.wellcome.storage.store.s3.S3TypedStore
+import weco.storage_service.bagit.services.BagReader
+import weco.storage_service.bagit.services.s3.S3BagReader
+import weco.storage.fixtures.BagBuilder
+import weco.storage.fixtures.s3.S3BagBuilder
+import weco.storage_service.storage.models.EnsureTrailingSlash
+import weco.storage.fixtures.S3Fixtures.Bucket
+import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.store.TypedStore
+import weco.storage.store.s3.S3TypedStore
 
 trait S3BagVerifierTests[Verifier <: BagVerifier[
   BagContext,

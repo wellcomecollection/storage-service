@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.indexer.files
 
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.worker.models.Successful
+import weco.json.JsonUtil._
+import weco.messaging.worker.models.Successful
 import uk.ac.wellcome.platform.archive.indexer.IndexerWorkerTestCases
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.models.FileContext
 import uk.ac.wellcome.platform.archive.indexer.files.fixtures.FileIndexerFixtures

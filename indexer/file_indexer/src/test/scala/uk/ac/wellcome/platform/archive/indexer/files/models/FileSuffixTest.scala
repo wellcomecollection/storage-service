@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.indexer.files.models
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.generators.{
+import weco.storage.generators.{
   IngestGenerators,
   StorageManifestGenerators
 }

@@ -6,16 +6,16 @@ import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import uk.ac.wellcome.elasticsearch.ElasticsearchIndexCreator
 import uk.ac.wellcome.elasticsearch.typesafe.ElasticBuilder
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.typesafe.{
+import weco.json.JsonUtil._
+import weco.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
   SQSBuilder
 }
-import uk.ac.wellcome.monitoring.cloudwatch.CloudWatchMetrics
-import uk.ac.wellcome.monitoring.typesafe.CloudWatchBuilder
-import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
-import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
-import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
+import weco.monitoring.cloudwatch.CloudWatchMetrics
+import weco.monitoring.typesafe.CloudWatchBuilder
+import weco.typesafe.WellcomeTypesafeApp
+import weco.typesafe.config.builders.AkkaBuilder
+import weco.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.ExecutionContextExecutor
 

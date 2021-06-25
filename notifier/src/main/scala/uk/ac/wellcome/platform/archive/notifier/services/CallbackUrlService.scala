@@ -4,8 +4,8 @@ import akka.http.scaladsl.model._
 import grizzled.slf4j.Logging
 import io.circe.Printer
 import io.circe.syntax._
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import weco.json.JsonUtil._
+import weco.storage_service.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.display.ingests.ResponseDisplayIngest
 import weco.http.client.HttpClient
 

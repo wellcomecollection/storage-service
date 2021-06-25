@@ -13,10 +13,10 @@ import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   Resolvable
 }
 import uk.ac.wellcome.platform.archive.bagverifier.storage.bag.BagLocatable
-import uk.ac.wellcome.platform.archive.common.bagit.models._
-import uk.ac.wellcome.platform.archive.common.bagit.services.BagMatcher
-import uk.ac.wellcome.platform.archive.common.verify._
-import uk.ac.wellcome.storage.{Location, Prefix}
+import weco.storage_service.bagit.models._
+import weco.storage_service.bagit.services.BagMatcher
+import weco.storage_service.verify._
+import weco.storage.{Location, Prefix}
 
 class BagExpectedFixity[BagLocation <: Location, BagPrefix <: Prefix[
   BagLocation

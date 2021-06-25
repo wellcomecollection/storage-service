@@ -1,6 +1,6 @@
 package uk.ac.wellcome.platform.storage.bag_versioner.versioning.memory
 
-import uk.ac.wellcome.fixtures.TestWith
+import weco.fixtures.TestWith
 import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
   IngestVersionManagerDao,
   IngestVersionManagerDaoTestCases,

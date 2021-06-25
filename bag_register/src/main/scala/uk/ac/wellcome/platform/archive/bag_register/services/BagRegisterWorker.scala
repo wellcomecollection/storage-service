@@ -3,18 +3,18 @@ package uk.ac.wellcome.platform.archive.bag_register.services
 import akka.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.MessageSender
-import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.messaging.worker.models.Result
-import uk.ac.wellcome.monitoring.Metrics
+import weco.json.JsonUtil._
+import weco.messaging.MessageSender
+import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import weco.messaging.worker.models.Result
+import weco.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
-import uk.ac.wellcome.platform.archive.common.{
+import weco.storage.{
   BagRegistrationNotification,
   KnownReplicasPayload
 }
-import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.storage_service.ingests.services.IngestUpdater
+import weco.storage_service.storage.models.{
   IngestCompleted,
   IngestStepResult,
   IngestStepWorker

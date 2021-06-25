@@ -3,16 +3,16 @@ package uk.ac.wellcome.platform.storage.ingests_tracker.services
 import io.circe.Encoder
 import org.scalatest.TryValues
 import org.scalatest.funspec.AnyFunSpec
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
+import weco.json.JsonUtil._
+import weco.messaging.memory.MemoryMessageSender
+import weco.storage.generators.IngestGenerators
+import weco.storage_service.ingests.models.Ingest.{
   Accepted,
   Failed,
   Processing,
   Succeeded
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.storage_service.ingests.models.{
   CallbackNotification,
   Ingest
 }

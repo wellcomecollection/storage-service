@@ -9,19 +9,19 @@ import grizzled.slf4j.Logging
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.Message
-import uk.ac.wellcome.messaging.sqsworker.alpakka.{
+import weco.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorker,
   AlpakkaSQSWorkerConfig
 }
-import uk.ac.wellcome.messaging.worker.models.{
+import weco.messaging.worker.models.{
   DeterministicFailure,
   NonDeterministicFailure,
   Result,
   Successful
 }
-import uk.ac.wellcome.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
-import uk.ac.wellcome.monitoring.Metrics
-import uk.ac.wellcome.typesafe.Runnable
+import weco.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
+import weco.monitoring.Metrics
+import weco.typesafe.Runnable
 
 import scala.concurrent.{ExecutionContext, Future}
 import cats.data.EitherT

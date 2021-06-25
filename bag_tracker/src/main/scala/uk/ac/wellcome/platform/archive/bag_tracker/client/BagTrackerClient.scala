@@ -7,10 +7,10 @@ import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
 import akka.stream.{Materializer, StreamTcpException}
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.json.JsonUtil._
+import weco.json.JsonUtil._
 import uk.ac.wellcome.platform.archive.bag_tracker.models.BagVersionList
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
+import weco.storage_service.bagit.models.{BagId, BagVersion}
+import weco.storage_service.storage.models.StorageManifest
 import uk.ac.wellcome.storage.RetryableError
 import weco.http.client.{AkkaHttpClient, HttpClient, HttpGet, HttpPost}
 import weco.http.json.CirceMarshalling

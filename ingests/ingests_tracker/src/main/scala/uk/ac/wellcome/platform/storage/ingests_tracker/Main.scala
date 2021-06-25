@@ -3,8 +3,8 @@ package uk.ac.wellcome.platform.storage.ingests_tracker
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
-import uk.ac.wellcome.messaging.sns.{SNSConfig, SNSMessageSender}
-import uk.ac.wellcome.messaging.typesafe.SNSBuilder
+import weco.messaging.sns.{SNSConfig, SNSMessageSender}
+import weco.messaging.typesafe.SNSBuilder
 import uk.ac.wellcome.platform.storage.ingests_tracker.services.{
   CallbackNotificationService,
   MessagingService
@@ -12,8 +12,8 @@ import uk.ac.wellcome.platform.storage.ingests_tracker.services.{
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.IngestTracker
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.dynamo.DynamoIngestTracker
 import uk.ac.wellcome.storage.typesafe.DynamoBuilder
-import uk.ac.wellcome.typesafe.WellcomeTypesafeApp
-import uk.ac.wellcome.typesafe.config.builders.AkkaBuilder
+import weco.typesafe.WellcomeTypesafeApp
+import weco.typesafe.config.builders.AkkaBuilder
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>

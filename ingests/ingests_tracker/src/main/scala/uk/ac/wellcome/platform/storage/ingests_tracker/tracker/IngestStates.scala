@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.storage.ingests_tracker.tracker
 
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
-import uk.ac.wellcome.platform.archive.common.ingests.models._
+import weco.storage_service.bagit.models.BagVersion
+import weco.storage_service.ingests.models._
 
 object IngestStates {
   def applyUpdate(

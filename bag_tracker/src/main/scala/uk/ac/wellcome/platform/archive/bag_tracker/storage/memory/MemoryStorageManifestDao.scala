@@ -1,11 +1,11 @@
 package uk.ac.wellcome.platform.archive.bag_tracker.storage.memory
 
 import uk.ac.wellcome.platform.archive.bag_tracker.storage.StorageManifestDao
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
+import weco.storage_service.bagit.models.{BagId, BagVersion}
+import weco.storage_service.storage.models.StorageManifest
 
 import uk.ac.wellcome.storage.{ReadError, Version}
-import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
+import weco.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
 class MemoryStorageManifestDao(
   val vhs: MemoryVersionedStore[BagId, StorageManifest]

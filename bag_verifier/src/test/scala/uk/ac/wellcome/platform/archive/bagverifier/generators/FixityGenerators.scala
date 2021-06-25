@@ -7,8 +7,8 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   ExpectedFileFixity,
   FetchFileFixity
 }
-import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
-import uk.ac.wellcome.platform.archive.common.verify.{Checksum, MD5, SHA256}
+import weco.storage.generators.StorageRandomGenerators
+import weco.storage_service.verify.{Checksum, MD5, SHA256}
 import uk.ac.wellcome.storage.Location
 
 trait FixityGenerators[BagLocation <: Location]

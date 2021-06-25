@@ -3,11 +3,11 @@ package uk.ac.wellcome.platform.archive.indexer.fixtures
 import com.sksamuel.elastic4s.Index
 import io.circe.Decoder
 import org.scalatest.Suite
-import uk.ac.wellcome.akka.fixtures.Akka
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
-import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
+import weco.akka.fixtures.Akka
+import weco.fixtures.TestWith
+import weco.messaging.fixtures.SQS.Queue
+import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.storage.generators.StorageRandomGenerators
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.IndexerWorker
 
 trait IndexerFixtures[SourceT, T, IndexedT]

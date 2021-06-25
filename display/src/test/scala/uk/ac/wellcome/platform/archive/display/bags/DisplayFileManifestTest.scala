@@ -2,12 +2,12 @@ package uk.ac.wellcome.platform.archive.display.bags
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.storage.generators.StorageManifestGenerators
+import weco.storage_service.storage.models.{
   FileManifest,
   StorageManifestFile
 }
-import uk.ac.wellcome.platform.archive.common.verify._
+import weco.storage_service.verify._
 
 class DisplayFileManifestTest
     extends AnyFunSpec

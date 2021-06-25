@@ -2,7 +2,7 @@ package uk.ac.wellcome.platform.archive.bag_tracker.client
 
 import akka.http.scaladsl.model.Uri
 import org.scalatest.concurrent.IntegrationPatience
-import uk.ac.wellcome.fixtures.TestWith
+import weco.fixtures.TestWith
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

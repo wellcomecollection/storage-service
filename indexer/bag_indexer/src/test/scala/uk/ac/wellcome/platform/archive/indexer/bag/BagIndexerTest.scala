@@ -2,8 +2,8 @@ package uk.ac.wellcome.platform.archive.indexer.bag
 
 import com.sksamuel.elastic4s.{ElasticClient, Index}
 import org.scalatest.Assertion
-import uk.ac.wellcome.platform.archive.common.generators.StorageManifestGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
+import weco.storage.generators.StorageManifestGenerators
+import weco.storage_service.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.indexer.IndexerTestCases
 import uk.ac.wellcome.platform.archive.indexer.bags.{
   BagIndexer,
@@ -14,8 +14,8 @@ import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
   Indexer,
   StorageServiceIndexConfig
 }
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
+import weco.json.JsonUtil._
+import weco.storage_service.bagit.models.BagVersion
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

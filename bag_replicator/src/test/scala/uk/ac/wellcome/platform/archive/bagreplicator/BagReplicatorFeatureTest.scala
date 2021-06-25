@@ -5,16 +5,16 @@ import java.nio.file.Paths
 import org.scalatest.concurrent.Eventually
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
+import weco.json.JsonUtil._
+import weco.messaging.memory.MemoryMessageSender
 import uk.ac.wellcome.platform.archive.bagreplicator.fixtures.BagReplicatorFixtures
 import uk.ac.wellcome.platform.archive.bagreplicator.models.PrimaryReplica
-import uk.ac.wellcome.platform.archive.common.ReplicaCompletePayload
-import uk.ac.wellcome.platform.archive.common.fixtures.s3.S3BagBuilder
-import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.storage.models.PrimaryS3ReplicaLocation
-import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
+import weco.storage.ReplicaCompletePayload
+import weco.storage.fixtures.s3.S3BagBuilder
+import weco.storage.generators.PayloadGenerators
+import weco.storage_service.ingests.fixtures.IngestUpdateAssertions
+import weco.storage_service.storage.models.PrimaryS3ReplicaLocation
+import weco.storage.s3.S3ObjectLocationPrefix
 
 class BagReplicatorFeatureTest
     extends AnyFunSpec

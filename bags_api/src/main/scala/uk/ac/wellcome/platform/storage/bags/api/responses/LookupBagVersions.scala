@@ -6,7 +6,7 @@ import uk.ac.wellcome.platform.archive.bag_tracker.client.{
   BagTrackerNotFoundError,
   BagTrackerUnknownListError
 }
-import uk.ac.wellcome.platform.archive.common.bagit.models.{BagId, BagVersion}
+import weco.storage_service.bagit.models.{BagId, BagVersion}
 import uk.ac.wellcome.platform.storage.bags.api.models.DisplayBagVersionList
 import weco.http.FutureDirectives
 import weco.http.models.ContextResponse

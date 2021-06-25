@@ -3,8 +3,8 @@ package uk.ac.wellcome.platform.storage.replica_aggregator.models
 import org.scalatest.TryValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.generators.ReplicaLocationGenerators
-import uk.ac.wellcome.platform.archive.common.storage.models.SecondaryReplicaLocation
+import weco.storage.generators.ReplicaLocationGenerators
+import weco.storage_service.storage.models.SecondaryReplicaLocation
 
 class AggregatorInternalRecordTest
     extends AnyFunSpec

@@ -3,8 +3,8 @@ package uk.ac.wellcome.platform.storage.bag_versioner.fixtures
 import java.util.UUID
 
 import cats.Id
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
+import weco.fixtures.TestWith
+import weco.storage_service.bagit.models.BagVersion
 import uk.ac.wellcome.platform.storage.bag_versioner.versioning.memory.MemoryIngestVersionManager
 import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
   IngestVersionManagerError,

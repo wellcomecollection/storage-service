@@ -7,20 +7,20 @@ import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
-import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
+import weco.json.utils.JsonAssertions
+import weco.storage_service.bagit.models.{
   BagVersion,
   ExternalIdentifier
 }
-import uk.ac.wellcome.platform.archive.common.generators.{
+import weco.storage.generators.{
   BagIdGenerators,
   BagInfoGenerators,
   StorageManifestGenerators
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageManifest
+import weco.storage_service.storage.models.StorageManifest
 import uk.ac.wellcome.platform.archive.display.fixtures.DisplayJsonHelpers
 import uk.ac.wellcome.platform.storage.bags.api.fixtures.BagsApiFixture
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
+import weco.storage.fixtures.S3Fixtures
 import weco.http.monitoring.HttpMetricResults
 
 /** Tests for GET /bags/:space/:id/versions

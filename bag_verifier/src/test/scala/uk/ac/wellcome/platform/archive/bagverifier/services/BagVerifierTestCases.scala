@@ -3,45 +3,45 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{Assertion, EitherValues, OptionValues, TryValues}
-import uk.ac.wellcome.fixtures.TestWith
+import weco.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FailedChecksumNoMatch,
   FileFixityCorrect
 }
 import uk.ac.wellcome.platform.archive.bagverifier.models._
 import uk.ac.wellcome.platform.archive.bagverifier.storage.LocationNotFound
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
+import weco.storage_service.bagit.models.{
   BagPath,
   BagVersion,
   ExternalIdentifier,
   PayloadOxum
 }
-import uk.ac.wellcome.platform.archive.common.bagit.services.{
+import weco.storage_service.bagit.services.{
   BagReader,
   BagUnavailable
 }
-import uk.ac.wellcome.platform.archive.common.fixtures.{
+import weco.storage.fixtures.{
   BagBuilder,
   PayloadEntry
 }
-import uk.ac.wellcome.platform.archive.common.generators.{
+import weco.storage.generators.{
   BagInfoGenerators,
   StorageSpaceGenerators
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.storage_service.storage.models.{
   EnsureTrailingSlash,
   IngestFailed,
   IngestStepResult,
   IngestStepSucceeded,
   StorageSpace
 }
-import uk.ac.wellcome.storage.azure.AzureBlobLocation
-import uk.ac.wellcome.storage.fixtures.S3Fixtures
-import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
-import uk.ac.wellcome.storage.s3.S3ObjectLocation
-import uk.ac.wellcome.storage.store.TypedStore
-import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
-import uk.ac.wellcome.storage.{Location, Prefix}
+import weco.storage.azure.AzureBlobLocation
+import weco.storage.fixtures.S3Fixtures
+import weco.storage.fixtures.S3Fixtures.Bucket
+import weco.storage.s3.S3ObjectLocation
+import weco.storage.store.TypedStore
+import weco.storage.store.fixtures.NamespaceFixtures
+import weco.storage.{Location, Prefix}
 
 import scala.util.Random
 

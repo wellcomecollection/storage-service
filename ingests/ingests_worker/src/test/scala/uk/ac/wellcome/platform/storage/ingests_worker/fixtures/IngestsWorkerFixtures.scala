@@ -4,14 +4,14 @@ import akka.stream.Materializer
 
 import java.time.Instant
 import org.scalatest.concurrent.ScalaFutures
-import uk.ac.wellcome.akka.fixtures.Akka
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.messaging.fixtures.SQS.Queue
-import uk.ac.wellcome.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
-import uk.ac.wellcome.monitoring.memory.MemoryMetrics
-import uk.ac.wellcome.platform.archive.common.generators.IngestGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.Succeeded
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.akka.fixtures.Akka
+import weco.fixtures.TestWith
+import weco.messaging.fixtures.SQS.Queue
+import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.monitoring.memory.MemoryMetrics
+import weco.storage.generators.IngestGenerators
+import weco.storage_service.ingests.models.Ingest.Succeeded
+import weco.storage_service.ingests.models.{
   Ingest,
   IngestID,
   IngestUpdate

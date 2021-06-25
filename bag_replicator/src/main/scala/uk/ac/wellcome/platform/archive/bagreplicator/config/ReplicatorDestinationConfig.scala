@@ -2,8 +2,8 @@ package uk.ac.wellcome.platform.archive.bagreplicator.config
 
 import com.typesafe.config.Config
 import uk.ac.wellcome.platform.archive.bagreplicator.models._
-import uk.ac.wellcome.platform.archive.common.ingests.models.StorageProvider
-import uk.ac.wellcome.typesafe.config.builders.EnrichConfig._
+import weco.storage_service.ingests.models.StorageProvider
+import weco.typesafe.config.builders.EnrichConfig._
 
 case class ReplicatorDestinationConfig(
   namespace: String,

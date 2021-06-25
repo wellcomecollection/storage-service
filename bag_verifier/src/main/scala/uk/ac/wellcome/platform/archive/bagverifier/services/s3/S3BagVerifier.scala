@@ -15,18 +15,18 @@ import uk.ac.wellcome.platform.archive.bagverifier.services.{
 }
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable
 import uk.ac.wellcome.platform.archive.bagverifier.storage.s3.S3Resolvable
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
+import weco.storage_service.bagit.models.{
   Bag,
   ExternalIdentifier
 }
-import uk.ac.wellcome.platform.archive.common.bagit.services.BagReader
-import uk.ac.wellcome.platform.archive.common.bagit.services.s3.S3BagReader
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import weco.storage_service.bagit.services.BagReader
+import weco.storage_service.bagit.services.s3.S3BagReader
+import weco.storage_service.storage.models.StorageSpace
 import uk.ac.wellcome.storage.listing.Listing
 import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
-import uk.ac.wellcome.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
-import uk.ac.wellcome.storage.store.StreamStore
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
+import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.store.StreamStore
+import weco.storage.store.s3.S3StreamStore
 
 trait S3BagVerifier[B <: BagVerifyContext[S3ObjectLocationPrefix]]
     extends BagVerifier[B, S3ObjectLocation, S3ObjectLocationPrefix] {

@@ -10,21 +10,21 @@ import uk.ac.wellcome.platform.archive.bagverifier.fixity.{
   FetchFileFixity
 }
 import uk.ac.wellcome.platform.archive.bagverifier.storage.Resolvable
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
+import weco.storage_service.bagit.models.{
   BagFetchMetadata,
   BagPath
 }
-import uk.ac.wellcome.platform.archive.common.generators.{
+import weco.storage.generators.{
   BagGenerators,
   FetchMetadataGenerators
 }
-import uk.ac.wellcome.platform.archive.common.verify.{
+import weco.storage_service.verify.{
   Checksum,
   ChecksumValue,
   HashingAlgorithm
 }
-import uk.ac.wellcome.storage.generators.MemoryLocationGenerators
-import uk.ac.wellcome.storage.providers.memory.{
+import weco.storage.generators.MemoryLocationGenerators
+import weco.storage.providers.memory.{
   MemoryLocation,
   MemoryLocationPrefix
 }

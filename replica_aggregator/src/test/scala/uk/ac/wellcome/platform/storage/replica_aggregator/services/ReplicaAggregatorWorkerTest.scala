@@ -6,23 +6,23 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scanamo.generic.auto._
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.common.{
+import weco.json.JsonUtil._
+import weco.messaging.memory.MemoryMessageSender
+import weco.storage.{
   KnownReplicasPayload,
   VersionedBagRootPayload
 }
-import uk.ac.wellcome.platform.archive.common.generators.PayloadGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.fixtures.IngestUpdateAssertions
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.common.storage.models._
+import weco.storage.generators.PayloadGenerators
+import weco.storage_service.ingests.fixtures.IngestUpdateAssertions
+import weco.storage_service.ingests.models.Ingest
+import weco.storage_service.storage.models._
 import uk.ac.wellcome.platform.storage.replica_aggregator.fixtures.ReplicaAggregatorFixtures
 import uk.ac.wellcome.platform.storage.replica_aggregator.models._
 import uk.ac.wellcome.storage._
-import uk.ac.wellcome.storage.fixtures.DynamoFixtures
+import weco.storage.fixtures.DynamoFixtures
 import uk.ac.wellcome.storage.maxima.memory.MemoryMaxima
-import uk.ac.wellcome.storage.store.dynamo.DynamoMultipleVersionStore
-import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryVersionedStore}
+import weco.storage.store.dynamo.DynamoMultipleVersionStore
+import weco.storage.store.memory.{MemoryStore, MemoryVersionedStore}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

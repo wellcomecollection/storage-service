@@ -10,14 +10,14 @@ import uk.ac.wellcome.platform.archive.bagunpacker.storage.{
   Unarchiver,
   UnexpectedUnarchiverError
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.storage_service.ingests.models.IngestID
+import weco.storage_service.storage.models.{
   IngestFailed,
   IngestStepResult,
   IngestStepSucceeded
 }
-import uk.ac.wellcome.storage.store.{Readable, Writable}
-import uk.ac.wellcome.storage.streaming.InputStreamWithLength
+import weco.storage.store.{Readable, Writable}
+import weco.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage._
 
 import scala.util.{Failure, Success, Try}

@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.bagverifier.models
 
-import uk.ac.wellcome.storage.s3.S3ObjectLocationPrefix
-import uk.ac.wellcome.storage.{Location, Prefix}
+import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.{Location, Prefix}
 
 sealed trait BagVerifyContext[BagPrefix <: Prefix[_ <: Location]] {
   val root: BagPrefix

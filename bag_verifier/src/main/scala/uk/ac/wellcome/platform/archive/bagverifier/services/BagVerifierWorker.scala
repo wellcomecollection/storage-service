@@ -3,21 +3,21 @@ package uk.ac.wellcome.platform.archive.bagverifier.services
 import akka.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.monitoring.Metrics
+import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import weco.monitoring.Metrics
 import uk.ac.wellcome.platform.archive.bagverifier.models.{
   BagVerifyContext,
   VerificationSummary
 }
-import uk.ac.wellcome.platform.archive.common.VerifiablePayload
-import uk.ac.wellcome.platform.archive.common.ingests.services.IngestUpdater
-import uk.ac.wellcome.platform.archive.common.operation.services.OutgoingPublisher
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.storage.VerifiablePayload
+import weco.storage_service.ingests.services.IngestUpdater
+import weco.storage_service.operation.services.OutgoingPublisher
+import weco.storage_service.storage.models.{
   EnsureTrailingSlash,
   IngestStepResult,
   IngestStepWorker
 }
-import uk.ac.wellcome.storage.{Location, Prefix}
+import weco.storage.{Location, Prefix}
 
 import scala.concurrent.Future
 import scala.util.Try

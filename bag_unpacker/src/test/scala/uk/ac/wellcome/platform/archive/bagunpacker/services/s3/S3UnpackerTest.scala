@@ -3,16 +3,16 @@ package uk.ac.wellcome.platform.archive.bagunpacker.services.s3
 import java.io.IOException
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.AmazonS3Exception
-import uk.ac.wellcome.fixtures.TestWith
+import weco.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.s3.S3CompressFixture
 import uk.ac.wellcome.platform.archive.bagunpacker.services.{
   Unpacker,
   UnpackerTestCases
 }
-import uk.ac.wellcome.storage.fixtures.S3Fixtures.Bucket
+import weco.storage.fixtures.S3Fixtures.Bucket
 import uk.ac.wellcome.storage.listing.s3.S3ObjectLocationListing
-import uk.ac.wellcome.storage.store.s3.S3StreamStore
-import uk.ac.wellcome.storage.s3.{
+import weco.storage.store.s3.S3StreamStore
+import weco.storage.s3.{
   S3ClientFactory,
   S3ObjectLocation,
   S3ObjectLocationPrefix

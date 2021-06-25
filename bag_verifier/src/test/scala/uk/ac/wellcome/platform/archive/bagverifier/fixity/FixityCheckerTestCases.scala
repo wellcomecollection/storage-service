@@ -3,14 +3,14 @@ package uk.ac.wellcome.platform.archive.bagverifier.fixity
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.fixtures.TestWith
+import weco.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagverifier.generators.FixityGenerators
 import uk.ac.wellcome.platform.archive.bagverifier.storage.LocationNotFound
-import uk.ac.wellcome.platform.archive.common.verify._
-import uk.ac.wellcome.storage.store.Readable
-import uk.ac.wellcome.storage.store.fixtures.NamespaceFixtures
-import uk.ac.wellcome.storage.streaming.InputStreamWithLength
-import uk.ac.wellcome.storage.{Location, Prefix}
+import weco.storage_service.verify._
+import weco.storage.store.Readable
+import weco.storage.store.fixtures.NamespaceFixtures
+import weco.storage.streaming.InputStreamWithLength
+import weco.storage.{Location, Prefix}
 
 trait FixityCheckerTestCases[
   BagLocation <: Location,

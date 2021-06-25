@@ -5,21 +5,21 @@ import java.nio.file.Paths
 import org.scalatest.{Assertion, EitherValues, TryValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.fixtures.TestWith
+import weco.fixtures.TestWith
 import uk.ac.wellcome.platform.archive.bagunpacker.fixtures.{
   CompressFixture,
   LocalResources
 }
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.common.storage.models.{
+import weco.storage_service.storage.models.{
   IngestFailed,
   IngestStepResult,
   IngestStepSucceeded
 }
-import uk.ac.wellcome.storage.store.StreamStore
-import uk.ac.wellcome.storage.streaming.Codec._
-import uk.ac.wellcome.storage.streaming.StreamAssertions
-import uk.ac.wellcome.storage.{Location, Prefix}
+import weco.storage.store.StreamStore
+import weco.storage.streaming.Codec._
+import weco.storage.streaming.StreamAssertions
+import weco.storage.{Location, Prefix}
 
 import scala.util.Try
 

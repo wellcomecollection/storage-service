@@ -5,14 +5,14 @@ import org.scalatest.{Assertion, EitherValues}
 import org.scanamo.generic.auto._
 import org.scanamo.{Table => ScanamoTable}
 import software.amazon.awssdk.services.dynamodb.model.ResourceNotFoundException
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
+import weco.fixtures.TestWith
+import weco.storage_service.ingests.models.IngestID
 import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
   IngestVersionManagerDao,
   IngestVersionManagerDaoTestCases,
   VersionRecord
 }
-import uk.ac.wellcome.storage.fixtures.DynamoFixtures.Table
+import weco.storage.fixtures.DynamoFixtures.Table
 
 import scala.language.higherKinds
 import scala.util.Failure

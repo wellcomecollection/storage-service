@@ -3,17 +3,17 @@ package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 import org.scalatest.{Assertion, EitherValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.fixtures.TestWith
+import weco.fixtures.TestWith
 import uk.ac.wellcome.storage.{Identified, ReadError, StoreReadError}
-import uk.ac.wellcome.storage.generators.MemoryLocationGenerators
-import uk.ac.wellcome.storage.providers.memory.{
+import weco.storage.generators.MemoryLocationGenerators
+import weco.storage.providers.memory.{
   MemoryLocation,
   MemoryLocationPrefix
 }
-import uk.ac.wellcome.storage.store.Readable
-import uk.ac.wellcome.storage.store.memory.{MemoryStore, MemoryStreamStore}
-import uk.ac.wellcome.storage.streaming.Codec._
-import uk.ac.wellcome.storage.streaming.InputStreamWithLength
+import weco.storage.store.Readable
+import weco.storage.store.memory.{MemoryStore, MemoryStreamStore}
+import weco.storage.streaming.Codec._
+import weco.storage.streaming.InputStreamWithLength
 
 class VerifyBagDeclarationTest
     extends AnyFunSpec

@@ -8,7 +8,7 @@ import uk.ac.wellcome.platform.archive.bagverifier.storage.{
   LocateFailure,
   LocationParsingError
 }
-import uk.ac.wellcome.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 
 import scala.util.Try
 

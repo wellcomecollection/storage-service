@@ -11,16 +11,16 @@ import org.scalatest.EitherValues
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.akka.fixtures.Akka
-import uk.ac.wellcome.fixtures.TestWith
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest.{
+import weco.akka.fixtures.Akka
+import weco.fixtures.TestWith
+import weco.json.JsonUtil._
+import weco.json.utils.JsonAssertions
+import weco.storage.generators.StorageRandomGenerators
+import weco.storage_service.ingests.models.Ingest.{
   Failed,
   Succeeded
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models._
+import weco.storage_service.ingests.models._
 import uk.ac.wellcome.platform.storage.ingests_tracker.fixtures.IngestsTrackerApiFixture
 import uk.ac.wellcome.platform.storage.ingests_tracker.tracker.IngestDoesNotExistError
 import weco.http.fixtures.HttpFixtures

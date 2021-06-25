@@ -1,10 +1,10 @@
 package uk.ac.wellcome.platform.archive.bagverifier.verify.steps
 
 import uk.ac.wellcome.platform.archive.bagverifier.models.BagVerifierError
-import uk.ac.wellcome.storage.store.Readable
-import uk.ac.wellcome.storage.streaming.InputStreamWithLength
+import weco.storage.store.Readable
+import weco.storage.streaming.InputStreamWithLength
 import uk.ac.wellcome.storage.{Identified, Location, NotFoundError, Prefix}
-import uk.ac.wellcome.storage.streaming.Codec._
+import weco.storage.streaming.Codec._
 
 import scala.util.matching.Regex
 

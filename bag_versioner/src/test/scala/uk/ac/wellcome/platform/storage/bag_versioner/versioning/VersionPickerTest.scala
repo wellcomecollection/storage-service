@@ -5,12 +5,12 @@ import java.time.Instant
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.common.bagit.models.BagVersion
-import uk.ac.wellcome.platform.archive.common.generators.{
+import weco.storage_service.bagit.models.BagVersion
+import weco.storage.generators.{
   ExternalIdentifierGenerators,
   StorageSpaceGenerators
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.storage_service.ingests.models.{
   CreateIngestType,
   UpdateIngestType
 }

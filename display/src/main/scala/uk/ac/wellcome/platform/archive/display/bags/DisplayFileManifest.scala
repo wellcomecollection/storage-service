@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.archive.display.bags
 
 import io.circe.generic.extras.JsonKey
-import uk.ac.wellcome.platform.archive.common.storage.models.FileManifest
+import weco.storage_service.storage.models.FileManifest
 
 case class DisplayFileManifest(
   checksumAlgorithm: String,

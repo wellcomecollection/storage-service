@@ -12,17 +12,17 @@ import io.circe.parser._
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.json.utils.JsonAssertions
-import uk.ac.wellcome.platform.archive.common.SourceLocationPayload
-import uk.ac.wellcome.platform.archive.common.bagit.models.ExternalIdentifier
-import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
-import uk.ac.wellcome.platform.archive.common.ingests.models._
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import weco.json.JsonUtil._
+import weco.json.utils.JsonAssertions
+import weco.storage.SourceLocationPayload
+import weco.storage_service.bagit.models.ExternalIdentifier
+import weco.storage.generators.StorageRandomGenerators
+import weco.storage_service.ingests.models._
+import weco.storage_service.storage.models.StorageSpace
 import uk.ac.wellcome.platform.archive.display._
 import uk.ac.wellcome.platform.archive.display.ingests._
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
-import uk.ac.wellcome.storage.s3.S3ObjectLocation
+import weco.storage.s3.S3ObjectLocation
 import weco.http.monitoring.HttpMetricResults
 
 /** Tests for POST /ingests

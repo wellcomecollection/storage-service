@@ -3,9 +3,9 @@ package uk.ac.wellcome.platform.archive.indexer.ingests
 import akka.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import uk.ac.wellcome.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import uk.ac.wellcome.monitoring.Metrics
-import uk.ac.wellcome.platform.archive.common.ingests.models.Ingest
+import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import weco.monitoring.Metrics
+import weco.storage_service.ingests.models.Ingest
 import uk.ac.wellcome.platform.archive.indexer.elasticsearch.{
   Indexer,
   IndexerWorker,

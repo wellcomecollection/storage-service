@@ -3,13 +3,13 @@ package uk.ac.wellcome.platform.storage.bag_versioner.versioning.dynamo
 import org.scanamo.syntax._
 import org.scanamo.{DynamoFormat, Scanamo, Table => ScanamoTable}
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
+import weco.storage_service.bagit.models.{
   BagId,
   ExternalIdentifier
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID._
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import weco.storage_service.ingests.models.IngestID
+import weco.storage_service.ingests.models.IngestID._
+import weco.storage_service.storage.models.StorageSpace
 import uk.ac.wellcome.platform.storage.bag_versioner.versioning.{
   IngestVersionManagerDao,
   VersionRecord

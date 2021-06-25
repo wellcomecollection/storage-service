@@ -1,7 +1,7 @@
 package uk.ac.wellcome.platform.storage.bag_versioner.services
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
+import weco.storage_service.ingests.models.IngestID
 import uk.ac.wellcome.platform.storage.bag_versioner.versioning._
 
 object UserFacingMessages extends Logging {

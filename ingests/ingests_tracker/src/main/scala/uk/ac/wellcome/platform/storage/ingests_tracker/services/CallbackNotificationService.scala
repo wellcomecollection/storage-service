@@ -3,10 +3,10 @@ package uk.ac.wellcome.platform.storage.ingests_tracker.services
 import java.net.URI
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.json.JsonUtil._
-import uk.ac.wellcome.messaging.MessageSender
-import uk.ac.wellcome.platform.archive.common.ingests.models.Callback.Pending
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.json.JsonUtil._
+import weco.messaging.MessageSender
+import weco.storage_service.ingests.models.Callback.Pending
+import weco.storage_service.ingests.models.{
   Callback,
   CallbackNotification,
   Ingest

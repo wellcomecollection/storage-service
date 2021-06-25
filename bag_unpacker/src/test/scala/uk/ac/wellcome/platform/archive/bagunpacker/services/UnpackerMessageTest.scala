@@ -5,8 +5,8 @@ import java.time.Instant
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import uk.ac.wellcome.platform.archive.bagunpacker.models.UnpackSummary
-import uk.ac.wellcome.platform.archive.common.generators.StorageRandomGenerators
-import uk.ac.wellcome.storage.generators.MemoryLocationGenerators
+import weco.storage.generators.StorageRandomGenerators
+import weco.storage.generators.MemoryLocationGenerators
 
 import scala.util.Random
 

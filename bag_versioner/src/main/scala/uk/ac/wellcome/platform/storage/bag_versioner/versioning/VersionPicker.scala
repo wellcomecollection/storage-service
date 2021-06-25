@@ -4,16 +4,16 @@ import java.time.Instant
 import java.util.UUID
 
 import cats.{Id, Monad, MonadError}
-import uk.ac.wellcome.platform.archive.common.bagit.models.{
+import weco.storage_service.bagit.models.{
   BagId,
   BagVersion,
   ExternalIdentifier
 }
-import uk.ac.wellcome.platform.archive.common.ingests.models.{
+import weco.storage_service.ingests.models.{
   IngestID,
   IngestType
 }
-import uk.ac.wellcome.platform.archive.common.storage.models.StorageSpace
+import weco.storage_service.storage.models.StorageSpace
 import uk.ac.wellcome.storage.locking.{
   FailedLockingServiceOp,
   LockDao,

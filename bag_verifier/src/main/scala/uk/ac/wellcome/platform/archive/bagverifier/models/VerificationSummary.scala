@@ -4,9 +4,9 @@ import java.time.Instant
 
 import org.apache.commons.io.FileUtils
 import uk.ac.wellcome.platform.archive.bagverifier.fixity._
-import uk.ac.wellcome.platform.archive.common.ingests.models.IngestID
-import uk.ac.wellcome.platform.archive.common.operation.models.Summary
-import uk.ac.wellcome.storage.{Location, Prefix}
+import weco.storage_service.ingests.models.IngestID
+import weco.storage_service.operation.models.Summary
+import weco.storage.{Location, Prefix}
 
 sealed trait VerificationSummary extends Summary {
   val root: Prefix[_ <: Location]
