@@ -6,7 +6,7 @@ import akka.actor.ActorSystem
 import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
-import uk.ac.wellcome.http.typesafe.HTTPServerBuilder
+import weco.http.typesafe.HTTPServerBuilder
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.bag_tracker.client.{
   AkkaBagTrackerClient,

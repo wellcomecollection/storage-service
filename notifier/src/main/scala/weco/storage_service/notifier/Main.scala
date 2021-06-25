@@ -1,9 +1,9 @@
-package uk.ac.wellcome.platform.archive.notifier
+package weco.storage_service.notifier
 
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import uk.ac.wellcome.http.typesafe.HTTPServerBuilder
+import weco.http.typesafe.HTTPServerBuilder
 import weco.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
   SNSBuilder,
@@ -11,7 +11,7 @@ import weco.messaging.typesafe.{
 }
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
-import uk.ac.wellcome.platform.archive.notifier.services.{
+import weco.storage_service.notifier.services.{
   CallbackUrlService,
   NotifierWorker
 }

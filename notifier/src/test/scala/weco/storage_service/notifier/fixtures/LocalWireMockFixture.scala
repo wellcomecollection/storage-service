@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.notifier.fixtures
+package weco.storage_service.notifier.fixtures
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import weco.fixtures.TestWith

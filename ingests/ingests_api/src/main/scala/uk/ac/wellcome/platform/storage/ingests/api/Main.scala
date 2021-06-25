@@ -5,7 +5,7 @@ import java.net.URL
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.Uri
 import com.typesafe.config.Config
-import uk.ac.wellcome.http.typesafe.HTTPServerBuilder
+import weco.http.typesafe.HTTPServerBuilder
 import weco.messaging.sns.SNSConfig
 import weco.messaging.typesafe.SNSBuilder
 import weco.monitoring.typesafe.CloudWatchBuilder

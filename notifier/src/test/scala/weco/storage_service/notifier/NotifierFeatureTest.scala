@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.notifier
+package weco.storage_service.notifier
 
 import java.net.URI
 
@@ -11,9 +11,9 @@ import org.scalatest.matchers.should.Matchers
 import weco.akka.fixtures.Akka
 import weco.json.JsonUtil._
 import weco.storage_service.bagit.models.BagVersion
-import weco.storage.generators.IngestGenerators
+import weco.storage_service.generators.IngestGenerators
 import weco.storage_service.ingests.models._
-import uk.ac.wellcome.platform.archive.notifier.fixtures.{
+import weco.storage_service.notifier.fixtures.{
   LocalWireMockFixture,
   NotifierFixtures
 }

@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.notifier.fixtures
+package weco.storage_service.notifier.fixtures
 
 import java.net.URL
 import akka.actor.ActorSystem
@@ -8,7 +8,7 @@ import weco.messaging.fixtures.SQS.Queue
 import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import weco.messaging.memory.MemoryMessageSender
 import weco.monitoring.memory.MemoryMetrics
-import uk.ac.wellcome.platform.archive.notifier.services.{
+import weco.storage_service.notifier.services.{
   CallbackUrlService,
   NotifierWorker
 }

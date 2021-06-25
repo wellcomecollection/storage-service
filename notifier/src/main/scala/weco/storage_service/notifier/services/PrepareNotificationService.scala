@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.notifier.services
+package weco.storage_service.notifier.services
 
 import akka.http.scaladsl.model.HttpResponse
 import grizzled.slf4j.Logging

@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.notifier.services
+package weco.storage_service.notifier.services
 
 import java.net.URI
 
@@ -17,12 +17,12 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.json.utils.JsonAssertions
 import weco.storage_service.bagit.models.BagVersion
-import weco.storage.generators.IngestGenerators
+import weco.storage_service.generators.IngestGenerators
 import weco.storage_service.ingests.models.{
   Ingest,
   S3SourceLocation
 }
-import uk.ac.wellcome.platform.archive.notifier.fixtures.{
+import weco.storage_service.notifier.fixtures.{
   LocalWireMockFixture,
   NotifierFixtures
 }

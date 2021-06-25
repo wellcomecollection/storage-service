@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.notifier.services
+package weco.storage_service.notifier.services
 
 import akka.http.scaladsl.model.HttpResponse
 import org.scalatest.prop.TableDrivenPropertyChecks._
@@ -6,7 +6,7 @@ import org.scalatest.Assertion
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.akka.fixtures.Akka
-import weco.storage.generators.StorageRandomGenerators
+import weco.storage_service.generators.StorageRandomGenerators
 import weco.storage_service.ingests.models.{
   Callback,
   IngestID
