@@ -1,7 +1,7 @@
 import sbt._
 
 object WellcomeDependencies {
-  val defaultVersion = "27.1.0" // This is automatically bumped by the scala-libs release process, do not edit this line manually
+  val defaultVersion = "28.0.0" // This is automatically bumped by the scala-libs release process, do not edit this line manually
 
   lazy val versions = new {
     val fixtures = defaultVersion
@@ -80,8 +80,8 @@ object WellcomeDependencies {
   )
 
   private def library(name: String, version: String): Seq[ModuleID] = Seq(
-    "uk.ac.wellcome" %% name % version,
-    "uk.ac.wellcome" %% name % version % "test" classifier "tests"
+    "weco" %% name % version,
+    "weco" %% name % version % "test" classifier "tests"
   )
 }
 

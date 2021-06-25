@@ -1,0 +1,853 @@
+package weco.storage_service.bag_verifier.services
+
+import org.scalatest.funspec.AnyFunSpec
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.{Assertion, EitherValues, OptionValues, TryValues}
+import weco.fixtures.TestWith
+import weco.storage_service.bag_verifier.fixity.{
+  FailedChecksumNoMatch,
+  FileFixityCorrect
+}
+import weco.storage_service.bag_verifier.models._
+import weco.storage_service.bag_verifier.storage.LocationNotFound
+import weco.storage_service.bagit.models.{
+  BagPath,
+  BagVersion,
+  ExternalIdentifier,
+  PayloadOxum
+}
+import weco.storage_service.bagit.services.{BagReader, BagUnavailable}
+import weco.storage_service.fixtures.{BagBuilder, PayloadEntry}
+import weco.storage_service.generators.{
+  BagInfoGenerators,
+  StorageSpaceGenerators
+}
+import weco.storage_service.storage.models.{
+  EnsureTrailingSlash,
+  IngestFailed,
+  IngestStepResult,
+  IngestStepSucceeded,
+  StorageSpace
+}
+import weco.storage.azure.AzureBlobLocation
+import weco.storage.fixtures.S3Fixtures
+import weco.storage.fixtures.S3Fixtures.Bucket
+import weco.storage.s3.S3ObjectLocation
+import weco.storage.store.TypedStore
+import weco.storage.store.fixtures.NamespaceFixtures
+import weco.storage.{Location, Prefix}
+
+import scala.util.Random
+
+trait BagVerifierTestCases[Verifier <: BagVerifier[
+  BagContext,
+  BagLocation,
+  BagPrefix
+], BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Location, BagPrefix <: Prefix[
+  BagLocation
+], Namespace]
+    extends AnyFunSpec
+    with Matchers
+    with EitherValues
+    with OptionValues
+    with TryValues
+    with StorageSpaceGenerators
+    with BagInfoGenerators
+    with NamespaceFixtures[BagLocation, Namespace]
+    with S3Fixtures {
+
+  implicit val et: EnsureTrailingSlash[BagPrefix]
+  def withTypedStore[R](
+    testWith: TestWith[TypedStore[BagLocation, String], R]
+  ): R
+
+  def withVerifier[R](primaryBucket: Bucket)(
+    testWith: TestWith[Verifier, R]
+  ): R
+
+  def withBagContext[R](bagRoot: BagPrefix)(
+    testWith: TestWith[BagContext, R]
+  ): R
+
+  val bagBuilder: BagBuilder[BagLocation, BagPrefix, Namespace]
+
+  def withBag[R](
+    space: StorageSpace,
+    externalIdentifier: ExternalIdentifier,
+    bagBuilder: BagBuilder[BagLocation, BagPrefix, Namespace] = bagBuilder,
+    version: BagVersion = BagVersion(randomInt(from = 2, to = 10))
+  )(
+    testWith: TestWith[(Bucket, BagPrefix), R]
+  )(implicit namespace: Namespace): R =
+    withTypedStore { implicit typedStore =>
+      withLocalS3Bucket { implicit primaryBucket =>
+        val (bagRoot, _) = bagBuilder.storeBagWith(
+          space = space,
+          externalIdentifier = externalIdentifier,
+          payloadFileCount = payloadFileCount,
+          version = version
+        )
+
+        testWith((primaryBucket, bagRoot))
+      }
+    }
+
+  val payloadFileCount: Int = randomInt(from = 1, to = 10)
+
+  val expectedFileCount: Int = payloadFileCount + List(
+    "manifest-sha256.txt",
+    "bagit.txt",
+    "bag-info.txt"
+  ).size
+
+  def writeFile(
+    location: BagLocation,
+    contents: String = randomAlphanumeric()
+  ): Unit
+
+  def createBagReader: BagReader[BagLocation, BagPrefix]
+
+  trait BagBuilderImpl extends BagBuilder[BagLocation, BagPrefix, Namespace] {
+    override implicit val typedStore: TypedStore[BagLocation, String] =
+      bagBuilder.typedStore
+
+    override def createBagRoot(
+      space: StorageSpace,
+      externalIdentifier: ExternalIdentifier,
+      version: BagVersion
+    )(
+      namespace: Namespace
+    ): BagPrefix =
+      bagBuilder.createBagRoot(space, externalIdentifier, version)(
+        namespace = namespace
+      )
+
+    override def createBagLocation(
+      bagRoot: BagPrefix,
+      path: String
+    ): BagLocation =
+      bagBuilder.createBagLocation(bagRoot, path)
+  }
+
+  it("passes a bag with correct checksum values") {
+    val space = createStorageSpace
+    val externalIdentifier = createExternalIdentifier
+    withNamespace { implicit namespace =>
+      withBag(space, externalIdentifier) {
+        case (primaryBucket, bagRoot) =>
+          val ingestStep =
+            withBagContext(bagRoot) { bagContext =>
+              withVerifier(primaryBucket) {
+                _.verify(
+                  ingestId = createIngestID,
+                  bagContext = bagContext,
+                  space = space,
+                  externalIdentifier = externalIdentifier
+                )
+              }
+            }
+
+          val result = ingestStep.success.get
+
+          result shouldBe a[IngestStepSucceeded[_]]
+          result.summary shouldBe a[VerificationSuccessSummary]
+
+          val summary = result.summary
+            .asInstanceOf[VerificationSuccessSummary]
+          val fixityListResult = summary.fixityListResult.value
+
+          verifySuccessCount(
+            fixityListResult.locations,
+            expectedCount = expectedFileCount
+          )
+      }
+    }
+  }
+
+  it("fails a bag with an incorrect checksum in the file manifest") {
+    val badBuilder: BagBuilderImpl = new BagBuilderImpl {
+      override protected def createPayloadManifest(
+        entries: Seq[PayloadEntry]
+      ): Option[String] =
+        super.createPayloadManifest(
+          entries.head.copy(contents = randomAlphanumeric()) +: entries.tail
+        )
+    }
+
+    assertBagFails(badBuilder) {
+      case (_, summary) =>
+        val fixityListResult = summary.fixityListResult.value
+
+        verifySuccessCount(
+          fixityListResult.correct,
+          expectedCount = expectedFileCount - 1
+        )
+        fixityListResult.errors should have size 1
+
+        val fixityError = fixityListResult.errors.head
+        val error = fixityError.e
+
+        error shouldBe a[FailedChecksumNoMatch]
+        error.getMessage should include("Checksum values do not match!")
+    }
+  }
+
+  it("fails a bag with multiple incorrect checksums in the file manifest") {
+    val badBuilder = new BagBuilderImpl {
+      override protected def createPayloadManifest(
+        entries: Seq[PayloadEntry]
+      ): Option[String] =
+        super.createPayloadManifest(
+          entries.map { _.copy(contents = randomAlphanumeric()) }
+        )
+    }
+
+    assertBagFails(badBuilder) {
+      case (ingestFailed, _) =>
+        ingestFailed.maybeUserFacingMessage.get should startWith(
+          s"Unable to verify $payloadFileCount files in the bag:"
+        )
+    }
+  }
+
+  it("fails a bag if the file manifest refers to a non-existent file") {
+    val badBuilder = new BagBuilderImpl {
+      override protected def createPayloadManifest(
+        entries: Seq[PayloadEntry]
+      ): Option[String] =
+        super.createPayloadManifest(
+          entries.tail :+ PayloadEntry(
+            bagPath = BagPath(s"data/$randomPath"),
+            path = randomAlphanumeric(),
+            contents = randomAlphanumeric()
+          )
+        )
+
+      // This ensures that the fetch file won't refer to the entry
+      // we've deleted from the manifest.
+      override protected def getFetchEntryCount(payloadFileCount: Int): Int = 0
+    }
+
+    assertBagFails(badBuilder) {
+      case (_, summary) =>
+        val fixityListResult = summary.fixityListResult.value
+
+        verifySuccessCount(
+          fixityListResult.correct,
+          expectedCount = expectedFileCount - 1
+        )
+        fixityListResult.errors should have size 1
+
+        val fixityError = fixityListResult.errors.head
+        val error = fixityError.e
+
+        error shouldBe a[LocationNotFound[_]]
+        error.getMessage should startWith("Location not available!")
+    }
+  }
+
+  it("fails a bag if the file manifest does not exist") {
+    val badBuilder = new BagBuilderImpl {
+      override protected def createPayloadManifest(
+        entries: Seq[PayloadEntry]
+      ): Option[String] =
+        None
+    }
+
+    assertBagIncomplete(badBuilder) {
+      case (ingestFailed, summary) =>
+        val error = summary.e
+
+        error shouldBe a[BagUnavailable]
+        error.getMessage should include("Error loading manifest-sha256.txt")
+
+        ingestFailed.maybeUserFacingMessage.get shouldBe "Error loading manifest-sha256.txt: no such file!"
+    }
+  }
+
+  it("fails a bag if the tag manifest does not exist") {
+    val badBuilder = new BagBuilderImpl {
+      override protected def createTagManifest(
+        entries: Seq[ManifestFile]
+      ): Option[String] =
+        None
+    }
+
+    assertBagIncomplete(badBuilder) {
+      case (ingestFailed, summary) =>
+        val error = summary.e
+
+        error shouldBe a[BagUnavailable]
+        error.getMessage should include("Error loading tagmanifest-sha256.txt")
+
+        ingestFailed.maybeUserFacingMessage.get shouldBe "Error loading tagmanifest-sha256.txt: no such file!"
+    }
+  }
+
+  it("fails a bag if the bag declaration does not exist") {
+    val badBuilder = new BagBuilderImpl {
+      override def createBagDeclaration: Option[ManifestFile] = None
+    }
+
+    assertBagIncomplete(badBuilder) {
+      case (ingestFailed, _) =>
+        ingestFailed.maybeUserFacingMessage.get shouldBe "Error loading Bag Declaration (bagit.txt): no such file!"
+    }
+  }
+
+  it("fails a bag if there are payload files outside the data/ directory") {
+    val badBuilder = new BagBuilderImpl {
+      override protected def createPayloadFiles(
+        space: StorageSpace,
+        externalIdentifier: ExternalIdentifier,
+        version: BagVersion,
+        payloadFileCount: Int,
+        isFetch: Boolean
+      ): Seq[PayloadEntry] = {
+        val bagRoot = createBagRootPath(space, externalIdentifier, version)
+
+        // We don't want to put these files in the fetch.txt, or we'll get a
+        // different error:
+        //
+        //    Error loading fetch.txt: fetch.txt should not contain tag files
+        //
+        val badFiles =
+          if (isFetch) {
+            Seq()
+          } else {
+            (1 to 3).map { _ =>
+              val bagPath = BagPath(randomPath)
+              PayloadEntry(
+                bagPath = bagPath,
+                path = s"$bagRoot/$bagPath",
+                contents = Random.nextString(length = randomInt(1, 256))
+              )
+            }
+          }
+
+        super.createPayloadFiles(
+          space,
+          externalIdentifier,
+          version,
+          payloadFileCount,
+          isFetch
+        ) ++ badFiles
+      }
+    }
+
+    assertBagIncomplete(badBuilder) {
+      case (ingestFailed, _) =>
+        ingestFailed.maybeUserFacingMessage.get should startWith(
+          "Not all payload files are in the data/ directory"
+        )
+    }
+  }
+
+  it("fails a bag if there are tag files outside the root directory") {
+    val badBuilder = new BagBuilderImpl {
+      override protected def createTagManifest(
+        entries: Seq[ManifestFile]
+      ): Option[String] =
+        super.createTagManifest(
+          entries ++ Seq(
+            ManifestFile("data/bagit.txt", contents = "123"),
+            ManifestFile("tags/metadata.csv", contents = "123")
+          )
+        )
+    }
+
+    assertBagIncomplete(badBuilder) {
+      case (ingestFailed, _) =>
+        ingestFailed.maybeUserFacingMessage.get should startWith(
+          "Not all tag files are in the root directory:"
+        )
+    }
+  }
+
+  it("fails if the external identifier in the bag-info.txt is incorrect") {
+    val space = createStorageSpace
+    val externalIdentifier = createExternalIdentifier.underlying
+    val bagInfoExternalIdentifier =
+      ExternalIdentifier(externalIdentifier + "_bag-info")
+    val payloadExternalIdentifier =
+      ExternalIdentifier(externalIdentifier + "_payload")
+
+    withNamespace { implicit namespace =>
+      withBag(space, bagInfoExternalIdentifier) {
+        case (primaryBucket, bagRoot) =>
+          val ingestStep =
+            withBagContext(bagRoot) { bagContext =>
+              withVerifier(primaryBucket) {
+                _.verify(
+                  ingestId = createIngestID,
+                  bagContext = bagContext,
+                  space = space,
+                  externalIdentifier = payloadExternalIdentifier
+                )
+              }
+            }
+
+          val result = ingestStep.success.get
+
+          result shouldBe a[IngestFailed[_]]
+          result.summary shouldBe a[VerificationIncompleteSummary]
+
+          result.maybeUserFacingMessage.get should startWith(
+            "External identifier in bag-info.txt does not match request"
+          )
+      }
+    }
+  }
+
+  describe("checks the fetch file") {
+    it("fails if the fetch file refers to a file not in the manifest") {
+      val badBuilder = new BagBuilderImpl {
+        override protected def createFetchFile(
+          primaryBucket: Bucket,
+          entries: Seq[PayloadEntry]
+        ): Option[String] =
+          super.createFetchFile(
+            primaryBucket,
+            entries :+ entries.head.copy(
+              bagPath = BagPath(entries.head.bagPath + "_extra"),
+              path = entries.head.path + "_extra",
+              contents = randomAlphanumeric()
+            )
+          )
+      }
+
+      assertBagIncomplete(badBuilder) {
+        case (ingestFailed, _) =>
+          ingestFailed.e.getMessage should startWith(
+            "fetch.txt refers to paths that aren't in the bag manifest: "
+          )
+
+          ingestFailed.maybeUserFacingMessage.get should startWith(
+            "fetch.txt refers to paths that aren't in the bag manifest: "
+          )
+      }
+    }
+
+    it("fails if the fetch file refers to a file with the wrong URI scheme") {
+      val wrongSchemeBuilder = new BagBuilderImpl {
+        override def buildFetchEntryLine(
+          primaryBucket: Bucket,
+          entry: PayloadEntry
+        ): String =
+          super
+            .buildFetchEntryLine(primaryBucket, entry)
+            .replace("s3://", "none://")
+
+        override protected def getFetchEntryCount(payloadFileCount: Int): Int =
+          payloadFileCount
+      }
+
+      assertBagIncomplete(wrongSchemeBuilder) {
+        case (ingestFailed, _) =>
+          ingestFailed.e.getMessage should startWith(
+            "fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:"
+          )
+
+          ingestFailed.maybeUserFacingMessage.get should startWith(
+            "fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:"
+          )
+      }
+    }
+
+    it("fails if the fetch file refers to a file in a different bucket") {
+      val wrongBucket = createBucket
+      val wrongBucketFetchBuilder = new BagBuilderImpl {
+        override def buildFetchEntryLine(
+          primaryBucket: Bucket,
+          entry: PayloadEntry
+        ): String =
+          super.buildFetchEntryLine(wrongBucket, entry)
+
+        override protected def getFetchEntryCount(
+          payloadFileCount: Int
+        ): Int =
+          payloadFileCount
+      }
+
+      assertBagIncomplete(wrongBucketFetchBuilder) {
+        case (ingestFailed, _) =>
+          ingestFailed.e.getMessage should startWith(
+            "fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:"
+          )
+
+          ingestFailed.maybeUserFacingMessage.get should startWith(
+            "fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:"
+          )
+      }
+    }
+
+    it("fails if the fetch file refers to a file in the wrong space") {
+      val bagSpaceFetchBuilder = new BagBuilderImpl {
+        override def buildFetchEntryLine(
+          primaryBucket: Bucket,
+          entry: PayloadEntry
+        ): String =
+          super.buildFetchEntryLine(
+            primaryBucket,
+            entry.copy(
+              path = "badspace_" + entry.path
+            )
+          )
+
+        override protected def getFetchEntryCount(payloadFileCount: Int): Int =
+          payloadFileCount
+      }
+
+      assertBagIncomplete(bagSpaceFetchBuilder) {
+        case (ingestFailed, _) =>
+          ingestFailed.e.getMessage should startWith(
+            "fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:"
+          )
+
+          ingestFailed.maybeUserFacingMessage.get should startWith(
+            "fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:"
+          )
+      }
+    }
+
+    it(
+      "fails if the fetch file refers to a file with the wrong external identifier"
+    ) {
+      val badExternalIdentifierFetchBuilder = new BagBuilderImpl {
+        override def buildFetchEntryLine(
+          primaryBucket: Bucket,
+          entry: PayloadEntry
+        ): String =
+          super.buildFetchEntryLine(
+            primaryBucket,
+            entry.copy(
+              path = entry.path.replace("/", "/wrong_")
+            )
+          )
+
+        override protected def getFetchEntryCount(payloadFileCount: Int): Int =
+          payloadFileCount
+      }
+
+      assertBagIncomplete(badExternalIdentifierFetchBuilder) {
+        case (ingestFailed, _) =>
+          ingestFailed.e.getMessage should startWith(
+            "fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:"
+          )
+
+          ingestFailed.maybeUserFacingMessage.get should startWith(
+            "fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme:"
+          )
+      }
+    }
+  }
+
+  describe("checks for unreferenced files") {
+    it("fails if there is one unreferenced file") {
+      val badBuilder = new BagBuilderImpl {
+        override def storeBagContents(
+          bagContents: BagContents
+        )(implicit typedStore: TypedStore[BagLocation, String]): Unit = {
+          super.storeBagContents(bagContents)
+
+          val location = bagContents.bagRoot.asLocation("unreferencedfile.txt")
+          writeFile(location)
+        }
+      }
+
+      assertBagIncomplete(badBuilder) {
+        case (ingestFailed, _) =>
+          ingestFailed.e.getMessage should startWith(
+            "Bag contains a file which is not referenced in the manifest:"
+          )
+
+          ingestFailed.maybeUserFacingMessage.get shouldBe
+            "Bag contains a file which is not referenced in the manifest: /unreferencedfile.txt"
+      }
+    }
+
+    it("fails if there are multiple unreferenced files") {
+      val badBuilder = new BagBuilderImpl {
+        override def storeBagContents(
+          bagContents: BagContents
+        )(implicit typedStore: TypedStore[BagLocation, String]): Unit = {
+          super.storeBagContents(bagContents)
+
+          (1 to 3).foreach { i =>
+            val location =
+              bagContents.bagRoot.asLocation(s"unreferencedfile_$i.txt")
+            writeFile(location)
+          }
+        }
+      }
+
+      assertBagIncomplete(badBuilder) {
+        case (ingestFailed, _) =>
+          ingestFailed.e.getMessage should startWith(
+            "Bag contains 3 files which are not referenced in the manifest:"
+          )
+
+          ingestFailed.maybeUserFacingMessage.get shouldBe
+            s"Bag contains 3 files which are not referenced in the manifest: " +
+              "/unreferencedfile_1.txt, /unreferencedfile_2.txt, /unreferencedfile_3.txt"
+      }
+    }
+
+    it("fails if a file in the fetch.txt also appears in the bag") {
+      val alwaysWriteAsFetchBuilder = new BagBuilderImpl {
+        override def storeBagContents(
+          bagContents: BagContents
+        )(implicit typedStore: TypedStore[BagLocation, String]): Unit = {
+          super.storeBagContents(bagContents)
+
+          val bagRoot = bagContents.bagRoot
+          val bag = createBagReader.get(bagRoot).value
+
+          // Write one of the fetch.txt entries as a concrete file
+          val badFetchPath: BagPath = bag.fetch.get.paths.head
+          val badFetchLocation = bagRoot.asLocation(badFetchPath.value)
+          writeFile(badFetchLocation)
+        }
+      }
+
+      assertBagIncomplete(alwaysWriteAsFetchBuilder) {
+        case (ingestFailed, _) =>
+          ingestFailed.e.getMessage should startWith(
+            "Files referred to in the fetch.txt also appear in the bag:"
+          )
+
+          ingestFailed.maybeUserFacingMessage.get should startWith(
+            "Files referred to in the fetch.txt also appear in the bag:"
+          )
+      }
+    }
+
+    it("passes a bag that includes an extra manifest/tag manifest") {
+      val space = createStorageSpace
+      val externalIdentifier = createExternalIdentifier
+
+      withNamespace { implicit namespace =>
+        withBag(space, externalIdentifier) {
+          case (primaryBucket, bagRoot) =>
+            val location = bagRoot.asLocation("tagmanifest-sha512.txt")
+            writeFile(location)
+
+            val ingestStep =
+              withBagContext(bagRoot) { bagContext =>
+                withVerifier(primaryBucket) {
+                  _.verify(
+                    ingestId = createIngestID,
+                    bagContext = bagContext,
+                    space = space,
+                    externalIdentifier = externalIdentifier
+                  )
+                }
+              }
+
+            ingestStep.success.get shouldBe a[IngestStepSucceeded[_]]
+        }
+      }
+
+    }
+  }
+
+  describe("checks the Payload-Oxum") {
+    it("fails if the Payload-Oxum has the wrong file count") {
+      val badBuilder = new BagBuilderImpl {
+        override protected def createPayloadOxum(
+          entries: Seq[PayloadEntry]
+        ): PayloadOxum = {
+          val oxum = super.createPayloadOxum(entries)
+
+          oxum.copy(numberOfPayloadFiles = oxum.numberOfPayloadFiles - 1)
+        }
+      }
+
+      assertBagIncomplete(badBuilder) {
+        case (ingestFailed, _) =>
+          ingestFailed.maybeUserFacingMessage.get shouldBe
+            s"""Payload-Oxum has the wrong number of payload files: ${payloadFileCount - 1}, but bag manifest has $payloadFileCount"""
+      }
+    }
+
+    it("fails if the Payload-Oxum has the wrong octet count") {
+      val badBuilder = new BagBuilderImpl {
+        override protected def createPayloadOxum(
+          entries: Seq[PayloadEntry]
+        ): PayloadOxum = {
+          val oxum = super.createPayloadOxum(entries)
+
+          oxum.copy(payloadBytes = oxum.payloadBytes - 1)
+        }
+      }
+
+      assertBagIncomplete(badBuilder) {
+        case (ingestFailed, _) =>
+          ingestFailed.maybeUserFacingMessage.get should fullyMatch regex
+            s"""Payload-Oxum has the wrong octetstream sum: \\d+ bytes, but bag actually contains \\d+ bytes"""
+      }
+    }
+  }
+
+  describe("checks for illegal filenames") {
+    it("fails if the manifest has illegal filenames") {
+      val badBuilder = new BagBuilderImpl {
+        override protected def randomPath: _root_.scala.Predef.String =
+          super.randomPath + "."
+      }
+
+      assertBagResultFails(badBuilder) { result =>
+        result.summary shouldBe a[VerificationIncompleteSummary]
+
+        val summary = result.summary.asInstanceOf[VerificationIncompleteSummary]
+
+        summary.e.getMessage should startWith("Filenames cannot end with a .:")
+      }
+    }
+
+    it("fails if the tag manifest has illegal filenames") {
+      val badBuilder = new BagBuilderImpl {
+        override protected def createTagManifest(
+          entries: Seq[ManifestFile]
+        ): Option[String] =
+          super.createTagManifest(
+            entries.map { file =>
+              file.copy(name = file.name + ".")
+            }
+          )
+      }
+
+      assertBagResultFails(badBuilder) { result =>
+        result.summary shouldBe a[VerificationIncompleteSummary]
+
+        val summary = result.summary.asInstanceOf[VerificationIncompleteSummary]
+
+        summary.e.getMessage should startWith("Filenames cannot end with a .:")
+      }
+    }
+  }
+
+  it("skips locations in a namespace with same prefix but different directory") {
+    val space = createStorageSpace
+    val externalIdentifier = createExternalIdentifier
+
+    withNamespace { implicit namespace =>
+      //put a bag in $space/$externalIdentifier/v1
+      withBag(space, externalIdentifier, version = BagVersion(1)) {
+        case (primaryBucket, bagRoot) =>
+          //put another version of the bag in $space/$externalIdentifier/v10
+          withBag(space, externalIdentifier, version = BagVersion(10)) { _ =>
+            val ingestStep =
+              withBagContext(bagRoot) { bagContext =>
+                withVerifier(primaryBucket) {
+                  _.verify(
+                    ingestId = createIngestID,
+                    bagContext = bagContext,
+                    space = space,
+                    externalIdentifier = externalIdentifier
+                  )
+                }
+              }
+
+            val result = ingestStep.success.get
+
+            result shouldBe a[IngestStepSucceeded[_]]
+            result.summary shouldBe a[VerificationSuccessSummary]
+
+            val summary = result.summary
+              .asInstanceOf[VerificationSuccessSummary]
+            val fixityListResult = summary.fixityListResult.value
+
+            verifySuccessCount(
+              fixityListResult.locations,
+              expectedCount = expectedFileCount
+            )
+          }
+      }
+    }
+  }
+
+  private def verifySuccessCount(
+    successes: List[FileFixityCorrect[_]],
+    expectedCount: Int
+  ): Assertion =
+    if (successes
+          .map { fixityEntry =>
+            fixityEntry.objectLocation match {
+              case azureBlobLocation: AzureBlobLocation =>
+                azureBlobLocation.name
+              case s3ObjectLocation: S3ObjectLocation => s3ObjectLocation.key
+            }
+          }
+          .exists { _.endsWith("/fetch.txt") }) {
+      successes.size shouldBe expectedCount + 1
+    } else {
+      successes.size shouldBe expectedCount
+    }
+
+  private def assertBagFails(badBuilder: BagBuilderImpl)(
+    assertion: (
+      IngestFailed[VerificationFailureSummary],
+      VerificationFailureSummary
+    ) => Assertion
+  ): Assertion =
+    assertBagResultFails(badBuilder) { result =>
+      result.summary shouldBe a[VerificationFailureSummary]
+
+      val failedResult =
+        result.asInstanceOf[IngestFailed[VerificationFailureSummary]]
+      val summary = result.summary.asInstanceOf[VerificationFailureSummary]
+
+      assertion(failedResult, summary)
+    }
+
+  // Given a builder that fails to create a valid bag for some reason, ensure that
+  // it is caught correctly by the verifier.
+  private def assertBagResultFails(
+    badBuilder: BagBuilderImpl
+  )(
+    assertion: IngestStepResult[VerificationSummary] => Assertion
+  ): Assertion = {
+    val space = createStorageSpace
+    val externalIdentifier = createExternalIdentifier
+
+    withNamespace { implicit namespace =>
+      withBag(space, externalIdentifier, bagBuilder = badBuilder) {
+        case (primaryBucket, bagRoot) =>
+          val ingestStep =
+            withBagContext(bagRoot) { bagContext =>
+              withVerifier(primaryBucket) {
+                _.verify(
+                  ingestId = createIngestID,
+                  bagContext = bagContext,
+                  space = space,
+                  externalIdentifier = externalIdentifier
+                )
+              }
+            }
+
+          val result = ingestStep.success.get
+          debug(s"result = $result")
+
+          result shouldBe a[IngestFailed[_]]
+          assertion(result)
+      }
+    }
+  }
+
+  private def assertBagIncomplete(badBuilder: BagBuilderImpl)(
+    assertion: (
+      IngestFailed[VerificationIncompleteSummary],
+      VerificationIncompleteSummary
+    ) => Assertion
+  ): Assertion =
+    assertBagResultFails(badBuilder) { result =>
+      result.summary shouldBe a[VerificationIncompleteSummary]
+
+      val failedResult =
+        result.asInstanceOf[IngestFailed[VerificationIncompleteSummary]]
+      val summary = result.summary.asInstanceOf[VerificationIncompleteSummary]
+
+      assertion(failedResult, summary)
+    }
+}
