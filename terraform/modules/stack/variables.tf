@@ -101,8 +101,16 @@ variable "ingests_table_arn" {
   type = string
 }
 
-variable "workflow_bucket_name" {
-  type = string
+variable "upload_bucket_arns" {
+  description = "ARNs of the S3 buckets where new bags will be uploaded"
+  type        = list(string)
+
+  validation {
+    condition = (
+      length(var.upload_bucket_arns) > 0
+    )
+    error_message = "There must be at least one bucket where you upload bags."
+  }
 }
 
 # versioner table
@@ -116,10 +124,6 @@ variable "versioner_versions_table_name" {
 }
 
 variable "versioner_versions_table_index" {
-  type = string
-}
-
-variable "archivematica_ingests_bucket" {
   type = string
 }
 
