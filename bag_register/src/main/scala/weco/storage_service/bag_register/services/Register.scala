@@ -1,9 +1,9 @@
-package uk.ac.wellcome.platform.archive.bag_register.services
+package weco.storage_service.bag_register.services
 
 import java.time.Instant
 
 import grizzled.slf4j.Logging
-import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
+import weco.storage_service.bag_register.models.RegistrationSummary
 import weco.storage_service.bag_tracker.client.{
   BagTrackerClient,
   BagTrackerCreateError

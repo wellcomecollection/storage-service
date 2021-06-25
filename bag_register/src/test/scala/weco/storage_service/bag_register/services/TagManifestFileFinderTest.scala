@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bag_register.services
+package weco.storage_service.bag_register.services
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
@@ -10,7 +10,7 @@ import weco.storage_service.verify.{
   MD5,
   SHA256
 }
-import weco.storage.storeReadError
+import weco.storage.StoreReadError
 import weco.storage.providers.memory.{
   MemoryLocation,
   MemoryLocationPrefix

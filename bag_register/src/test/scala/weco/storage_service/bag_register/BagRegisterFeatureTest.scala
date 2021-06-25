@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bag_register
+package weco.storage_service.bag_register
 
 import java.time.Instant
 
@@ -8,9 +8,9 @@ import org.scalatest.matchers.should.Matchers
 import weco.json.JsonUtil._
 import weco.messaging.fixtures.SQS.QueuePair
 import weco.messaging.memory.MemoryMessageSender
-import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
+import weco.storage_service.bag_register.fixtures.BagRegisterFixtures
 import weco.storage_service.bagit.models.BagId
-import weco.storage.generators.PayloadGenerators
+import weco.storage_service.generators.PayloadGenerators
 import weco.storage_service.storage.models._
 
 class BagRegisterFeatureTest

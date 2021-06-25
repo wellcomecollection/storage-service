@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bag_register.services
+package weco.storage_service.bag_register.services
 
 class StorageManifestException(message: String)
     extends RuntimeException(message)

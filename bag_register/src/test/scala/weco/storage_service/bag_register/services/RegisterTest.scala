@@ -1,16 +1,16 @@
-package uk.ac.wellcome.platform.archive.bag_register.services
+package weco.storage_service.bag_register.services
 
 import akka.http.scaladsl.model.Uri
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import uk.ac.wellcome.platform.archive.bag_register.fixtures.BagRegisterFixtures
-import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
+import weco.storage_service.bag_register.fixtures.BagRegisterFixtures
+import weco.storage_service.bag_register.models.RegistrationSummary
 import weco.storage_service.bag_tracker.client.AkkaBagTrackerClient
 import weco.storage_service.bag_tracker.fixtures.BagTrackerFixtures
 import weco.storage_service.bagit.models.BagId
 import weco.storage_service.bagit.services.s3.S3BagReader
-import weco.storage.generators.StorageSpaceGenerators
+import weco.storage_service.generators.StorageSpaceGenerators
 import weco.storage_service.storage.models._
 import weco.storage.store.fixtures.StringNamespaceFixtures
 

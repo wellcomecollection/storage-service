@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bag_register.services
+package weco.storage_service.bag_register.services
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
@@ -9,12 +9,12 @@ import weco.storage_service.bagit.models.{
   BagVersion
 }
 import weco.storage_service.bagit.services.s3.S3BagReader
-import weco.storage.fixtures.PayloadEntry
-import weco.storage.fixtures.s3.S3BagBuilder
-import weco.storage.generators._
+import weco.storage_service.fixtures.PayloadEntry
+import weco.storage_service.fixtures.s3.S3BagBuilder
+import weco.storage_service.generators._
 import weco.storage_service.ingests.models.IngestID
 import weco.storage_service.storage.models._
-import uk.ac.wellcome.storage._
+import weco.storage._
 import weco.storage.fixtures.S3Fixtures
 import weco.storage.fixtures.S3Fixtures.Bucket
 import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}

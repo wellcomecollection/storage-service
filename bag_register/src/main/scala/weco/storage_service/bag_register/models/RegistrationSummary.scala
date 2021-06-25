@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bag_register.models
+package weco.storage_service.bag_register.models
 
 import java.time.Instant
 

@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bag_register
+package weco.storage_service.bag_register
 
 import akka.actor.ActorSystem
 import com.amazonaws.services.s3.AmazonS3
@@ -12,7 +12,7 @@ import weco.messaging.typesafe.{
 }
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
-import uk.ac.wellcome.platform.archive.bag_register.services.{
+import weco.storage_service.bag_register.services.{
   BagRegisterWorker,
   Register,
   S3StorageManifestService

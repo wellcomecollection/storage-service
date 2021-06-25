@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bag_register.fixtures
+package weco.storage_service.bag_register.fixtures
 
 import org.scalatest.Assertion
 import weco.akka.fixtures.Akka
@@ -8,7 +8,7 @@ import weco.messaging.fixtures.SQS.{Queue, QueuePair}
 import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import weco.messaging.memory.MemoryMessageSender
 import weco.monitoring.memory.MemoryMetrics
-import uk.ac.wellcome.platform.archive.bag_register.services.{
+import weco.storage_service.bag_register.services.{
   BagRegisterWorker,
   Register,
   S3StorageManifestService
@@ -19,9 +19,9 @@ import weco.storage_service.bag_tracker.fixtures.{
 }
 import weco.storage_service.bag_tracker.storage.StorageManifestDao
 import weco.storage_service.bagit.services.s3.S3BagReader
-import weco.storage.fixtures._
-import weco.storage.fixtures.s3.S3BagBuilder
-import weco.storage.generators.StorageRandomGenerators
+import weco.storage_service.fixtures._
+import weco.storage_service.fixtures.s3.S3BagBuilder
+import weco.storage_service.generators.StorageRandomGenerators
 import weco.storage_service.ingests.fixtures.IngestUpdateAssertions
 import weco.storage_service.ingests.models.{
   Ingest,

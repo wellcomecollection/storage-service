@@ -1,4 +1,4 @@
-package uk.ac.wellcome.platform.archive.bag_register.services
+package weco.storage_service.bag_register.services
 
 import akka.actor.ActorSystem
 import io.circe.Decoder
@@ -8,8 +8,8 @@ import weco.messaging.MessageSender
 import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import weco.messaging.worker.models.Result
 import weco.monitoring.Metrics
-import uk.ac.wellcome.platform.archive.bag_register.models.RegistrationSummary
-import weco.storage.{
+import weco.storage_service.bag_register.models.RegistrationSummary
+import weco.storage_service.{
   BagRegistrationNotification,
   KnownReplicasPayload
 }

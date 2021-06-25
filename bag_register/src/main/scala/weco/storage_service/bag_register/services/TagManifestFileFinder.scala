@@ -1,11 +1,11 @@
-package uk.ac.wellcome.platform.archive.bag_register.services
+package weco.storage_service.bag_register.services
 
 import weco.storage_service.bagit.models.UnreferencedFiles
 import weco.storage_service.storage.models.StorageManifestFile
 import weco.storage_service.verify.{Hasher, HashingAlgorithm}
 import weco.storage.store.Readable
 import weco.storage.streaming.InputStreamWithLength
-import uk.ac.wellcome.storage._
+import weco.storage._
 
 import scala.util.{Failure, Success, Try}
 
