@@ -19,8 +19,8 @@ import weco.storage_service.bagit.models.ExternalIdentifier
 import weco.storage.generators.StorageRandomGenerators
 import weco.storage_service.ingests.models._
 import weco.storage_service.storage.models.StorageSpace
-import uk.ac.wellcome.platform.archive.display._
-import uk.ac.wellcome.platform.archive.display.ingests._
+import weco.storage_service.display._
+import weco.storage_service.display.ingests._
 import uk.ac.wellcome.platform.storage.ingests.api.fixtures.IngestsApiFixture
 import weco.storage.s3.S3ObjectLocation
 import weco.http.monitoring.HttpMetricResults

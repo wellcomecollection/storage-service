@@ -18,7 +18,7 @@ import weco.storage.generators.{
   StorageManifestGenerators
 }
 import weco.storage_service.storage.models.StorageManifest
-import uk.ac.wellcome.platform.archive.display.fixtures.DisplayJsonHelpers
+import weco.storage_service.display.fixtures.DisplayJsonHelpers
 import uk.ac.wellcome.platform.storage.bags.api.fixtures.BagsApiFixture
 import weco.storage.fixtures.S3Fixtures
 import weco.http.monitoring.HttpMetricResults

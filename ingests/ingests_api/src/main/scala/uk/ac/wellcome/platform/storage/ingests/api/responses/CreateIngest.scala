@@ -8,7 +8,7 @@ import weco.storage_service.ingests.models.{
   AmazonS3StorageProvider,
   StorageProvider
 }
-import uk.ac.wellcome.platform.archive.display.ingests.{
+import weco.storage_service.display.ingests.{
   RequestDisplayIngest,
   ResponseDisplayIngest
 }

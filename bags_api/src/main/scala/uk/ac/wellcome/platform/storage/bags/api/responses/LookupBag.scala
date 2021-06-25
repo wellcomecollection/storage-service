@@ -8,7 +8,7 @@ import uk.ac.wellcome.platform.archive.bag_tracker.client.{
   BagTrackerUnknownGetError
 }
 import weco.storage_service.bagit.models.{BagId, BagVersion}
-import uk.ac.wellcome.platform.archive.display.bags.DisplayStorageManifest
+import weco.storage_service.display.bags.DisplayStorageManifest
 import weco.http.FutureDirectives
 
 import weco.http.models.HTTPServerConfig

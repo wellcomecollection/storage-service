@@ -3,11 +3,11 @@ import java.util.UUID
 
 import io.circe.generic.extras.JsonKey
 import weco.storage_service.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.display.{
+import weco.storage_service.display.{
   DisplayLocation,
   DisplayStorageSpace
 }
-import uk.ac.wellcome.platform.archive.display.ingests._
+import weco.storage_service.display.ingests._
 
 // This should mirror the DisplayIngest class as much as possible, but
 // we may expose extra fields that we don't expose in the API if they're

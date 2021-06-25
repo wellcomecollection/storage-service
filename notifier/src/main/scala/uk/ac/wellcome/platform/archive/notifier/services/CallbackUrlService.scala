@@ -6,7 +6,7 @@ import io.circe.Printer
 import io.circe.syntax._
 import weco.json.JsonUtil._
 import weco.storage_service.ingests.models.Ingest
-import uk.ac.wellcome.platform.archive.display.ingests.ResponseDisplayIngest
+import weco.storage_service.display.ingests.ResponseDisplayIngest
 import weco.http.client.HttpClient
 
 import java.net.{URI, URL}
