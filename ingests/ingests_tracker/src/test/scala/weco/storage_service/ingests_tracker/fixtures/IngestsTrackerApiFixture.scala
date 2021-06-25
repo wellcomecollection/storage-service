@@ -15,7 +15,10 @@ import weco.storage.{StoreReadError, StoreWriteError, UpdateWriteError, Version}
 import weco.storage_service.generators.IngestGenerators
 import weco.storage_service.ingests.models.{Ingest, IngestID, IngestUpdate}
 import weco.storage_service.ingests_tracker.IngestsTrackerApi
-import weco.storage_service.ingests_tracker.services.{CallbackNotificationService, MessagingService}
+import weco.storage_service.ingests_tracker.services.{
+  CallbackNotificationService,
+  MessagingService
+}
 import weco.storage_service.ingests_tracker.tracker.IngestStoreUnexpectedError
 import weco.storage_service.ingests_tracker.tracker.memory.MemoryIngestTracker
 
@@ -114,7 +117,10 @@ trait IngestsTrackerApiFixture
   )(testWith: TestWith[HttpResponse, R]): R =
     withActorSystem { implicit actorSystem =>
       val request = Http().singleRequest(r)
-      whenReady(request, timeout = PatienceConfiguration.Timeout(Span.apply(5, Seconds))) { response: HttpResponse =>
+      whenReady(
+        request,
+        timeout = PatienceConfiguration.Timeout(Span.apply(5, Seconds))
+      ) { response: HttpResponse =>
         testWith(response)
       }
     }
