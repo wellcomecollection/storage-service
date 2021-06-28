@@ -47,10 +47,6 @@ variable "ingests_read_policy_json" {
   type = string
 }
 
-variable "cloudwatch_metrics_policy_json" {
-  type = string
-}
-
 variable "replicator_lock_table_policy_json" {
   type = string
 }

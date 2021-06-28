@@ -119,18 +119,6 @@ data "aws_iam_policy_document" "upload_buckets_readonly" {
   }
 }
 
-data "aws_iam_policy_document" "cloudwatch_putmetrics" {
-  statement {
-    actions = [
-      "cloudwatch:PutMetricData",
-    ]
-
-    resources = [
-      "*",
-    ]
-  }
-}
-
 data "aws_iam_policy_document" "s3_large_response_cache" {
   statement {
     actions = [
