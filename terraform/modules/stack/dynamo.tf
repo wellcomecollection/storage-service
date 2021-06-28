@@ -13,6 +13,8 @@ module "replicator_lock_table" {
 }
 
 resource "aws_dynamodb_table" "azure_verifier_tags" {
+  count = local.azure_replicator_count
+
   name     = "${var.namespace}_azure_verifier_tags"
   hash_key = "id"
 

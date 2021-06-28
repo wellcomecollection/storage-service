@@ -172,9 +172,7 @@ data "aws_iam_policy_document" "azure_verifier_tags_readwrite" {
       "dynamodb:PutItem",
     ]
 
-    resources = [
-      aws_dynamodb_table.azure_verifier_tags.arn,
-    ]
+    resources = aws_dynamodb_table.azure_verifier_tags.*.arn
   }
 }
 
