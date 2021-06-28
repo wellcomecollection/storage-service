@@ -570,8 +570,21 @@ module "replicator_verifier_glacier" {
   deployment_service_name_verifier   = "bag-verifier-glacier"
 }
 
+locals {
+  replicate_to_azure = var.azure_container_name != null
+
+  azure_replicator_count = local.replicate_to_azure ? 1 : 0
+
+  # 1 replica in S3 (primary)
+  # 1 replica in S3 (Glacier)
+  # + 1 replica in Azure (maybe)
+  expected_replica_count = local.replicate_to_azure ? 3 : 2
+}
+
 module "replicator_verifier_azure" {
   source = "./replifier"
+
+  count = local.azure_replicator_count
 
   namespace = var.namespace
 
@@ -586,7 +599,7 @@ module "replicator_verifier_azure" {
   ]
 
   verifier_environment = {
-    azure_verifier_cache_table_name = aws_dynamodb_table.azure_verifier_tags.name
+    azure_verifier_cache_table_name = aws_dynamodb_table.azure_verifier_tags[0].name
   }
 
   verifier_secrets = {
@@ -654,7 +667,7 @@ module "replica_aggregator" {
     ingest_topic_arn       = module.ingests_topic.arn
     metrics_namespace      = local.replica_aggregator_service_name
     operation_name         = "Aggregating replicas"
-    expected_replica_count = 3
+    expected_replica_count = local.expected_replica_count
     JAVA_OPTS              = local.java_opts_heap_size
   }
 

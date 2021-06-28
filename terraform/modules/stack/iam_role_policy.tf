@@ -179,6 +179,8 @@ resource "aws_iam_role_policy" "notifier_metrics" {
 # Azure bag verifier
 
 resource "aws_iam_role_policy" "allow_azure_verifier_access_cache" {
-  role   = module.replicator_verifier_azure.verifier_task_role_name
+  count = local.azure_replicator_count
+
+  role   = module.replicator_verifier_azure[count.index].verifier_task_role_name
   policy = data.aws_iam_policy_document.azure_verifier_tags_readwrite.json
 }

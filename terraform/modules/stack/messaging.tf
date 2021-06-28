@@ -5,21 +5,24 @@ module "ingests_topic" {
 
   name = "${var.namespace}_ingests"
 
-  role_names = [
-    module.bag_register.task_role_name,
-    module.bag_root_finder.task_role_name,
-    module.bag_verifier_pre_replication.task_role_name,
-    module.bag_unpacker.task_role_name,
-    module.notifier.task_role_name,
-    module.bag_versioner.task_role_name,
-    module.replica_aggregator.task_role_name,
-    module.replicator_verifier_primary.replicator_task_role_name,
-    module.replicator_verifier_primary.verifier_task_role_name,
-    module.replicator_verifier_glacier.replicator_task_role_name,
-    module.replicator_verifier_glacier.verifier_task_role_name,
-    module.replicator_verifier_azure.replicator_task_role_name,
-    module.replicator_verifier_azure.verifier_task_role_name,
-  ]
+  role_names = concat(
+    [
+      module.bag_register.task_role_name,
+      module.bag_root_finder.task_role_name,
+      module.bag_verifier_pre_replication.task_role_name,
+      module.bag_unpacker.task_role_name,
+      module.notifier.task_role_name,
+      module.bag_versioner.task_role_name,
+      module.replica_aggregator.task_role_name,
+      module.replicator_verifier_primary.replicator_task_role_name,
+      module.replicator_verifier_primary.verifier_task_role_name,
+      module.replicator_verifier_glacier.replicator_task_role_name,
+      module.replicator_verifier_glacier.verifier_task_role_name,
+      
+    ],
+    module.replicator_verifier_azure.*.replicator_task_role_name,
+    module.replicator_verifier_azure.*.verifier_task_role_name,
+  )
 }
 
 module "ingests_input_queue" {
@@ -265,11 +268,13 @@ module "replica_aggregator_input_queue" {
 
   name = "${var.namespace}_replica_aggregator_input"
 
-  topic_arns = [
-    module.replicator_verifier_primary.verifier_output_topic_arn,
-    module.replicator_verifier_glacier.verifier_output_topic_arn,
-    module.replicator_verifier_azure.verifier_output_topic_arn
-  ]
+  topic_arns = concat(
+    [
+      module.replicator_verifier_primary.verifier_output_topic_arn,
+      module.replicator_verifier_glacier.verifier_output_topic_arn,
+    ],
+    module.replicator_verifier_azure.*.verifier_output_topic_arn,
+  )
 
   role_names = [module.replica_aggregator.task_role_name]
 

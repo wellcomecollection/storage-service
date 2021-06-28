@@ -66,11 +66,13 @@ variable "replica_glacier_bucket_name" {
 }
 
 variable "azure_container_name" {
-  type = string
+  description = "The Azure container to use for replication.  If this value is null, the storage service will not replicate to Azure."
+  type        = string
 }
 
 variable "azure_ssm_parameter_base" {
-  type = string
+  description = "Prefix for the Secrets Manager secrets 'read_write_sas_url' and 'read_only_sas_url' that give access to Azure."
+  type        = string
 }
 
 variable "cognito_storage_api_identifier" {
