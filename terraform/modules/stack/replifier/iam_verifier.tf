@@ -1,8 +1,3 @@
-resource "aws_iam_role_policy" "bag_verifier_metrics" {
-  role   = module.bag_verifier.task_role_name
-  policy = var.cloudwatch_metrics_policy_json
-}
-
 # The bag verifier needs to be able to read objects from the bucket where
 # the replica is written to.
 

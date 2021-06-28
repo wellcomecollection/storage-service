@@ -482,7 +482,6 @@ module "replicator_verifier_primary" {
   unpacker_bucket_name  = aws_s3_bucket.unpacked_bags.id
 
   ingests_read_policy_json          = data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json
-  cloudwatch_metrics_policy_json    = data.aws_iam_policy_document.cloudwatch_putmetrics.json
   replicator_lock_table_policy_json = module.replicator_lock_table.iam_policy
 
   security_group_ids = [
@@ -536,7 +535,6 @@ module "replicator_verifier_glacier" {
   unpacker_bucket_name  = aws_s3_bucket.unpacked_bags.id
 
   ingests_read_policy_json          = data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json
-  cloudwatch_metrics_policy_json    = data.aws_iam_policy_document.cloudwatch_putmetrics.json
   replicator_lock_table_policy_json = module.replicator_lock_table.iam_policy
 
   security_group_ids = [
@@ -615,7 +613,6 @@ module "replicator_verifier_azure" {
   unpacker_bucket_name  = aws_s3_bucket.unpacked_bags.id
 
   ingests_read_policy_json          = data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json
-  cloudwatch_metrics_policy_json    = data.aws_iam_policy_document.cloudwatch_putmetrics.json
   replicator_lock_table_policy_json = module.replicator_lock_table.iam_policy
 
   security_group_ids = [
