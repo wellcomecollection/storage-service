@@ -56,15 +56,6 @@ resource "aws_api_gateway_authorizer" "cognito" {
   provider_arns = [var.cognito_user_pool_arn]
 }
 
-# Domains
-
-module "domain" {
-  source = "./domain"
-
-  domain_name      = var.domain_name
-  cert_domain_name = var.cert_domain_name
-}
-
 # Stages
 
 locals {

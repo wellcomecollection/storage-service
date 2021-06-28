@@ -14,10 +14,6 @@ output "unpacker_task_role_arn" {
   value = module.bag_unpacker.task_role_arn
 }
 
-output "api_domain_name" {
-  value = module.api.gateway_domain_name
-}
-
 output "registered_bag_notifications_topic_arn" {
   value = module.registered_bag_notifications_topic.arn
 }

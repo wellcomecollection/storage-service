@@ -5,8 +5,3 @@ output "api_gateway_id" {
 output "loadbalancer_arn" {
   value = aws_lb.nlb.arn
 }
-
-output "gateway_domain_name" {
-  value = module.domain.regional_domain_name
-}
-
