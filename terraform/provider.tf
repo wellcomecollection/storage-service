@@ -1,5 +1,5 @@
 locals {
-  namespace = "dams-prototype"
+  namespace = "weco-dams-prototype"
 }
 
 terraform {
