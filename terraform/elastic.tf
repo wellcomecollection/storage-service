@@ -27,6 +27,10 @@ module "elasticsearch_secrets" {
   key_value_map = {
     "elasticsearch_user"     = local.elasticsearch_user
     "elasticsearch_password" = local.elasticsearch_password
+
+    "elasticsearch/endpoint" = aws_elasticsearch_domain.elasticsearch.endpoint
+    "elasticsearch/protocol" = "https"
+    "elasticsearch/port"     = 443
   }
 }
 
@@ -50,6 +54,21 @@ resource "aws_elasticsearch_domain" "elasticsearch" {
     }
   }
 
+  access_policies = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "*"
+      },
+      "Action": "es:*",
+      "Resource": "arn:aws:es:${local.aws_region}:${local.account_id}:domain/${local.namespace}/*"
+    }
+  ]
+}
+EOF
 
   # You have to use EBS with the "r4.large.elasticsearch" instance type,
   # or Terraform returns an error.
@@ -77,4 +96,8 @@ resource "aws_elasticsearch_domain" "elasticsearch" {
   snapshot_options {
     automated_snapshot_start_hour = 23
   }
+}
+
+output "host" {
+  value = aws_elasticsearch_domain.elasticsearch.endpoint
 }

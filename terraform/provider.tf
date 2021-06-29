@@ -1,5 +1,8 @@
 locals {
   namespace = "weco-dams-prototype"
+
+  aws_region = "eu-west-1"
+  account_id = "241906670800"
 }
 
 terraform {
