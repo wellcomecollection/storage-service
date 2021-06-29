@@ -4,14 +4,19 @@ resource "aws_api_gateway_base_path_mapping" "mapping_prod" {
   base_path   = "storage"
 }
 
+module "domain" {
+  source = "../modules/stack/api/domain"
+
+  domain_name      = local.domain_name
+  cert_domain_name = local.cert_domain_name
+}
+
 module "stack_prod" {
   source = "../modules/stack"
 
   namespace = "${local.namespace}-prod"
 
-  api_url          = local.api_url
-  domain_name      = local.domain_name
-  cert_domain_name = local.cert_domain_name
+  api_url = local.api_url
 
   min_capacity = 0
   max_capacity = 10

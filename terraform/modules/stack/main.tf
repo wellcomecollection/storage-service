@@ -765,9 +765,6 @@ module "api" {
 
   subnets = var.private_subnets
 
-  domain_name      = var.domain_name
-  cert_domain_name = var.cert_domain_name
-
   namespace = var.namespace
 
   cognito_user_pool_arn = var.cognito_user_pool_arn
