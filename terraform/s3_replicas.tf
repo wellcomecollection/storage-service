@@ -1,3 +1,5 @@
+# These extra buckets are the permanent copy of our preservation files.
+
 resource "aws_s3_bucket" "replica_primary" {
   bucket = "${local.namespace}-replica-primary"
   acl    = "private"

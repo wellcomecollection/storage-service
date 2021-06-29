@@ -28,7 +28,7 @@ module "elasticsearch_secrets" {
     "elasticsearch_user"     = local.elasticsearch_user
     "elasticsearch_password" = local.elasticsearch_password
 
-    "elasticsearch/endpoint" = aws_elasticsearch_domain.elasticsearch.endpoint
+    "elasticsearch/host"     = aws_elasticsearch_domain.elasticsearch.endpoint
     "elasticsearch/protocol" = "https"
     "elasticsearch/port"     = 443
   }
@@ -54,6 +54,9 @@ resource "aws_elasticsearch_domain" "elasticsearch" {
     }
   }
 
+  # This makes the Elasticsearch cluster publicly accessible.  You'd probably
+  # use something like VPC authentication in practice or at least not put
+  # it on the public Internet, but it'll do for now.
   access_policies = <<EOF
 {
   "Version": "2012-10-17",
