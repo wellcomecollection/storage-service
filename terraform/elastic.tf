@@ -31,6 +31,11 @@ module "elasticsearch_secrets" {
     "elasticsearch/host"     = aws_elasticsearch_domain.elasticsearch.endpoint
     "elasticsearch/protocol" = "https"
     "elasticsearch/port"     = 443
+
+    "shared/logging/es_host" = aws_elasticsearch_domain.elasticsearch.endpoint
+    "shared/logging/es_port" = 443
+    "shared/logging/es_user" = local.elasticsearch_user
+    "shared/logging/es_pass" = local.elasticsearch_password
   }
 }
 
