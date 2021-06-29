@@ -36,7 +36,7 @@ resource "aws_ecr_repository_policy" "allow_cross_account_access" {
   count = length(local.repository_names)
 
   repository = local.repository_names[count.index]
-  policy = <<EOF
+  policy     = <<EOF
 {
     "Version": "2008-10-17",
     "Statement": [
