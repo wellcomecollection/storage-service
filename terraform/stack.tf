@@ -5,7 +5,7 @@ module "stack" {
 
   api_url = "https://example.org/${local.namespace}"
 
-  min_capacity = 0
+  min_capacity = 1
   max_capacity = 1
 
   vpc_id = module.vpc.vpc_id
@@ -25,7 +25,7 @@ module "stack" {
 
   # Setting these both to empty strings means the storage service won't
   # try to replicate bags to Azure.
-  azure_container_name     = ""
+  azure_container_name     = null
   azure_ssm_parameter_base = ""
 
   vhs_manifests_bucket_name = module.metadata_stores.vhs_manifests_bucket_name
