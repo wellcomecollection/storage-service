@@ -11,6 +11,11 @@ resource "aws_cognito_user_pool" "pool" {
   }
 }
 
+resource "aws_cognito_user_pool_domain" "domain" {
+  domain       = local.namespace
+  user_pool_id = aws_cognito_user_pool.pool.id
+}
+
 resource "aws_cognito_resource_server" "storage_api" {
   identifier = "https://example.org/${local.namespace}"
   name       = "Storage API V1"
