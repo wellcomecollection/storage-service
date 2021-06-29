@@ -115,7 +115,9 @@ data "aws_iam_policy_document" "upload_buckets_readonly" {
       "s3:GetObject*",
     ]
 
-    resources = var.upload_bucket_arns
+    resources = [
+      for arn in var.upload_bucket_arns : "${arn}/*"
+    ]
   }
 }
 
