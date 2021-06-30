@@ -45,6 +45,8 @@ module "bag_replicator" {
   deployment_service_env  = var.deployment_service_env
 
   use_fargate_spot = true
+
+  logging_container = var.logging_container
 }
 
 # bag_verifier
@@ -87,5 +89,7 @@ module "bag_verifier" {
   deployment_service_env  = var.deployment_service_env
 
   use_fargate_spot = true
+
+  logging_container = var.logging_container
 }
 

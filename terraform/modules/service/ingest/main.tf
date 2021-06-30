@@ -41,6 +41,8 @@ module "base" {
   # We don't use Fargate Spot for the ingests service, because it includes the
   # external-facing ingests API which has to stay up.
   use_fargate_spot = false
+
+  logging_container = var.logging_container
 }
 
 module "nginx_container" {

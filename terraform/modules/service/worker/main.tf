@@ -27,6 +27,8 @@ module "base" {
   deployment_service_env  = var.deployment_service_env
 
   use_fargate_spot = var.use_fargate_spot
+
+  logging_container = var.logging_container
 }
 
 module "app_container" {

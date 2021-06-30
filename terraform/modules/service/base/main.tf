@@ -1,6 +1,10 @@
 module "log_router_container" {
-  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/firelens?ref=v3.5.2"
+  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/firelens?ref=31e8d0f"
   namespace = var.service_name
+
+  container_registry = var.logging_container["container_registry"]
+  container_name     = var.logging_container["container_name"]
+  container_tag      = var.logging_container["container_tag"]
 }
 
 module "log_router_container_secrets_permissions" {

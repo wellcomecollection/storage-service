@@ -166,3 +166,12 @@ variable "use_fargate_spot_for_api" {
   default = false
 }
 
+variable "logging_container" {
+  description = "Specifies container used for logging within applications."
+
+  type = object({
+    container_registry = string
+    container_name     = string
+    container_tag      = string
+  })
+}

@@ -79,3 +79,13 @@ variable "deployment_service_env" {
   type        = string
   description = "Used by weco-deploy to determine which services to deploy in conjunction with deployment_service_name"
 }
+
+variable "logging_container" {
+  description = "Specifies container used for logging within applications."
+
+  type = object({
+    container_registry = string
+    container_name     = string
+    container_tag      = string
+  })
+}

@@ -89,5 +89,10 @@ module "stack_prod" {
   ]
 
   bag_register_output_subscribe_principals = [local.catalogue_pipeline_account_principal]
-}
 
+  logging_container = {
+    container_registry = "760097843905.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome"
+    container_name     = "fluentbit"
+    container_tag      = "2ccd2c68f38aa77a8ac1a32fe3ea54bbbd397a38"
+  }
+}
