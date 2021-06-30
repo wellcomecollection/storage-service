@@ -1,5 +1,5 @@
 module "stack" {
-  source = "github.com/wellcomecollection/storage-service.git//terraform/modules/stack?ref=efd6ba596c7d979dd31834f1b2596b3ce3fc1582"
+  source = "github.com/wellcomecollection/storage-service.git//terraform/modules/stack?ref=a77e5b183d490b9db66061658d72a75d7beef849"
 
   namespace = local.short_namespace
 
@@ -78,4 +78,10 @@ module "stack" {
   bag_register_output_subscribe_principals = []
 
   depends_on = [aws_iam_service_linked_role.autoscaling_linked_role]
+
+  logging_container = {
+    container_registry = "public.ecr.aws/l7a1d1z4"
+    container_name     = "fluentbit"
+    container_tag      = "8c68706fba97189fc72e3d0844458c7c5dee0bbc"
+  }
 }
