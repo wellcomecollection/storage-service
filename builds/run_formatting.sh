@@ -20,8 +20,17 @@ else
 fi
 
 docker run --tty --rm \
+	--volume "$ROOT:/repo" \
+	--workdir /repo \
+	"$ECR_REGISTRY/hashicorp/terraform:light" fmt -recursive
+
+docker run --tty --rm \
   --volume ~/.sbt:/root/.sbt \
   --volume ~/.ivy2:/root/.ivy2 \
   --volume "$HOST_COURSIER_CACHE:/root/$LINUX_COURSIER_CACHE" \
 	--volume "$ROOT:/repo" \
 	"$ECR_REGISTRY/wellcome/scalafmt:edge"
+
+docker run --tty --rm \
+	--volume "$ROOT:/repo" \
+	"$ECR_REGISTRY/wellcome/format_python:112"

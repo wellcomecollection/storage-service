@@ -9,8 +9,8 @@ WECO_DEPLOY_IMAGE="wellcome/weco-deploy:5.6.11"
 
 ROOT=$(git rev-parse --show-toplevel)
 
-IMAGE_ID="$1"
-PROJECT_ID="$2"
+PROJECT_ID="$1"
+IMAGE_ID="$2"
 
 docker run --tty --rm \
   --env AWS_PROFILE \
