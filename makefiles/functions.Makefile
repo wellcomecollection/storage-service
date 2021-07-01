@@ -70,68 +70,6 @@ define publish_service
             --image-id="$(1)"
 endef
 
-# Test an sbt project.
-#
-# Args:c
-#   $1 - Name of the project.
-#
-define sbt_test
-	$(ROOT)/docker_run.py --dind --sbt --root -- \
-		--net host \
-		$(ECR_REGISTRY)/wellcome/sbt_wrapper \
-		"project $(1)" ";dockerComposeUp;test;dockerComposeStop"
-endef
-
-# Test an sbt project without docker-compose.
-#
-# Args:
-#   $1 - Name of the project.
-#
-define sbt_test_no_docker
-	$(ROOT)/docker_run.py --dind --sbt --root -- \
-		--net host \
-		$(ECR_REGISTRY)/wellcome/sbt_wrapper \
-		"project $(1)" "test"
-endef
-
-
-# Build an sbt project.
-#
-# Args:
-#   $1 - Name of the project.
-#
-define sbt_build
-	$(ROOT)/docker_run.py --sbt --root -- \
-		$(ECR_REGISTRY)/wellcome/sbt_wrapper \
-		"project $(1)" ";stage"
-endef
-
-
-# Run docker-compose up.
-#
-# Args:
-#   $1 - Path to the docker-compose file.
-#
-define docker_compose_up
-	$(ROOT)/docker_run.py --dind --sbt --root -- \
-		--net host \
-		$(ECR_REGISTRY)/wellcome/sbt_wrapper \
-		"project $(1)" "dockerComposeUp"
-endef
-
-
-# Run docker-compose down.
-#
-# Args:
-#   $1 - Path to the docker-compose file.
-#
-define docker_compose_down
-	$(ROOT)/docker_run.py --dind --sbt --root -- \
-		--net host \
-		$(ECR_REGISTRY)/wellcome/sbt_wrapper \
-		"project $(1)" "dockerComposeDown"
-endef
-
 
 # Define a series of Make tasks (build, test, publish) for a Scala services.
 #
@@ -146,7 +84,7 @@ define __sbt_docker_target_template
 $(eval $(call __sbt_base_docker_template,$(1),$(2)))
 
 $(1)-build:
-	$(call sbt_build,$(1))
+	$(ROOT)/makefiles/run_sbt_task_in_docker.sh "project $(1)" ";stage"
 	$(call build_image,$(1),$(2)/Dockerfile)
 
 $(1)-publish: $(1)-build
@@ -157,10 +95,10 @@ endef
 
 define __sbt_no_docker_target_template
 $(1)-test:
-	$(call sbt_test_no_docker,$(1))
+	$(ROOT)/makefiles/run_sbt_task_in_docker.sh "project $(1)" "test"
 
 $(1)-build:
-	$(call sbt_build,$(1))
+	$(ROOT)/makefiles/run_sbt_task_in_docker.sh "project $(1)" ";stage"
 	$(call build_image,$(1),$(2)/Dockerfile)
 
 $(1)-publish: $(1)-build
@@ -190,15 +128,8 @@ endef
 #	$2 - Root of the project's source code.
 #
 define __sbt_base_docker_template
-$(1)-docker_compose_up:
-	$(call docker_compose_up,$(1))
-
-$(1)-docker_compose_down:
-	$(call docker_compose_down,$(1))
-
 $(1)-test:
-	$(call sbt_test,$(1))
-
+	$(ROOT)/makefiles/run_sbt_task_in_docker.sh "project $(1)" ";dockerComposeUp;test;dockerComposeStop"
 endef
 
 
@@ -210,7 +141,7 @@ endef
 #
 define __sbt_library_template
 $(1)-test:
-	$(call sbt_test_no_docker,$(1))
+	$(ROOT)/makefiles/run_sbt_task_in_docker.sh "project $(1)" "test"
 
 $(1)-publish:
 	echo "Nothing to do!"
