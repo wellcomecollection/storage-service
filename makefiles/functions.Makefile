@@ -39,7 +39,7 @@ $(1)-test:
 
 $(1)-build:
 	$(ROOT)/makefiles/run_sbt_task_in_docker.sh "project $(1)" ";stage"
-	$(ROOT)/makefiles/build_image.sh $(1) $(2)/Dockerfile
+	$(ROOT)/makefiles/build_sbt_image.sh $(1)
 
 $(1)-publish: $(1)-build
 	$(call publish_service,$(1),$(3),$(4),$(5))
@@ -53,7 +53,7 @@ $(1)-test:
 
 $(1)-build:
 	$(ROOT)/makefiles/run_sbt_task_in_docker.sh "project $(1)" ";stage"
-	$(ROOT)/makefiles/build_image.sh $(1) $(2)/Dockerfile
+	$(ROOT)/makefiles/build_sbt_image.sh $(1)
 
 $(1)-publish: $(1)-build
 	$(call publish_service,$(1),$(3),$(4),$(5))
