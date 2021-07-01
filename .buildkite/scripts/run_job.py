@@ -5,7 +5,7 @@ import argparse
 import os
 import sys
 
-from commands import make
+from commands import run_build_script
 from git_utils import (
     local_current_head,
     get_sha1_for_tag,
@@ -113,7 +113,7 @@ if __name__ == "__main__":
 
     # Perform make tasks
 
-    make(f"{args.project_name}-test")
+    run_build_script("run_sbt_tests.sh", args.project_name)
 
     if is_default_branch():
-        make(f"{args.project_name}-publish")
+        run_build_script("publish_sbt_app.sh", args.project_name)
