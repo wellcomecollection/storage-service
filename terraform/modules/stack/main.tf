@@ -46,6 +46,8 @@ module "ingest_service" {
 
   deployment_service_name = "ingests-service"
   deployment_service_env  = var.release_label
+
+  logging_container = var.logging_container
 }
 
 module "ingests_indexer" {
@@ -85,6 +87,8 @@ module "ingests_indexer" {
 
   deployment_service_name = "ingests-indexer"
   deployment_service_env  = var.release_label
+
+  logging_container = var.logging_container
 }
 
 # bag_indexer
@@ -123,6 +127,8 @@ module "bag_indexer" {
 
   deployment_service_name = "bags-indexer"
   deployment_service_env  = var.release_label
+
+  logging_container = var.logging_container
 }
 
 # file finder
@@ -159,6 +165,8 @@ module "file_finder" {
 
   deployment_service_name = "file-finder"
   deployment_service_env  = var.release_label
+
+  logging_container = var.logging_container
 }
 
 # file indexer
@@ -196,6 +204,8 @@ module "file_indexer" {
 
   deployment_service_name = "file-indexer"
   deployment_service_env  = var.release_label
+
+  logging_container = var.logging_container
 }
 
 # bags_api
@@ -245,6 +255,8 @@ module "bags_api" {
 
   deployment_service_name = "bags-api"
   deployment_service_env  = var.release_label
+
+  logging_container = var.logging_container
 }
 
 
@@ -296,6 +308,8 @@ module "bag_unpacker" {
 
   deployment_service_name = "bag-unpacker"
   deployment_service_env  = var.release_label
+
+  logging_container = var.logging_container
 }
 
 # bag root finder
@@ -336,6 +350,8 @@ module "bag_root_finder" {
 
   deployment_service_name = "bag-root-finder"
   deployment_service_env  = var.release_label
+
+  logging_container = var.logging_container
 }
 
 # bag tagger
@@ -374,6 +390,8 @@ module "bag_tagger" {
 
   deployment_service_name = "bag-tagger"
   deployment_service_env  = var.release_label
+
+  logging_container = var.logging_container
 }
 
 # bag_verifier
@@ -416,6 +434,8 @@ module "bag_verifier_pre_replication" {
 
   deployment_service_name = "bag-verifer-pre-replication"
   deployment_service_env  = var.release_label
+
+  logging_container = var.logging_container
 }
 
 # bag versioner
@@ -460,6 +480,8 @@ module "bag_versioner" {
 
   deployment_service_name = "bag-versioner"
   deployment_service_env  = var.release_label
+
+  logging_container = var.logging_container
 }
 
 module "replicator_verifier_primary" {
@@ -513,6 +535,8 @@ module "replicator_verifier_primary" {
   deployment_service_env             = var.release_label
   deployment_service_name_replicator = "bag-replicator-primary"
   deployment_service_name_verifier   = "bag-verifier-primary"
+
+  logging_container = var.logging_container
 }
 
 module "replicator_verifier_glacier" {
@@ -566,6 +590,8 @@ module "replicator_verifier_glacier" {
   deployment_service_env             = var.release_label
   deployment_service_name_replicator = "bag-replicator-glacier"
   deployment_service_name_verifier   = "bag-verifier-glacier"
+
+  logging_container = var.logging_container
 }
 
 locals {
@@ -644,6 +670,8 @@ module "replicator_verifier_azure" {
   deployment_service_env             = var.release_label
   deployment_service_name_replicator = "bag-replicator-azure"
   deployment_service_name_verifier   = "bag-verifier-azure"
+
+  logging_container = var.logging_container
 }
 
 # replica_aggregator
@@ -680,6 +708,8 @@ module "replica_aggregator" {
 
   deployment_service_name = "replica-aggregator"
   deployment_service_env  = var.release_label
+
+  logging_container = var.logging_container
 }
 
 # bag_register
@@ -720,6 +750,8 @@ module "bag_register" {
 
   deployment_service_name = "bag-register"
   deployment_service_env  = var.release_label
+
+  logging_container = var.logging_container
 }
 
 # notifier
@@ -756,6 +788,8 @@ module "notifier" {
 
   deployment_service_name = "notifier"
   deployment_service_env  = var.release_label
+
+  logging_container = var.logging_container
 }
 
 # storage API

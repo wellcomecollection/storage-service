@@ -94,5 +94,11 @@ module "stack_staging" {
   # staging service doesn't make the same guarantees of uptime and this
   # saves us money.
   use_fargate_spot_for_api = true
+
+  logging_container = {
+    container_registry = "760097843905.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome"
+    container_name     = "fluentbit"
+    container_tag      = "2ccd2c68f38aa77a8ac1a32fe3ea54bbbd397a38"
+  }
 }
 

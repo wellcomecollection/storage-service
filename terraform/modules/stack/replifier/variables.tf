@@ -126,3 +126,12 @@ variable "max_capacity" {
   type = number
 }
 
+variable "logging_container" {
+  description = "Specifies container used for logging within applications."
+
+  type = object({
+    container_registry = string
+    container_name     = string
+    container_tag      = string
+  })
+}
