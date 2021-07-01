@@ -23,6 +23,5 @@ docker run --tty --rm \
   --volume ~/.sbt:/root/.sbt \
   --volume ~/.ivy2:/root/.ivy2 \
   --volume "$HOST_COURSIER_CACHE:/root/$LINUX_COURSIER_CACHE" \
-  --volume "$ROOT:$ROOT" \
-  --workdir "$ROOT" \
-  "$ECR_REGISTRY/wellcome/sbt_wrapper" "$@"
+	--volume "$ROOT:/repo" \
+	"$ECR_REGISTRY/wellcome/scalafmt:edge"

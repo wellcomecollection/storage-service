@@ -5,25 +5,6 @@ ECR_REGISTRY = 760097843905.dkr.ecr.eu-west-1.amazonaws.com
 INFRA_BUCKET = wellcomecollection-storage-infra
 
 
-# Publish a Docker image to ECR, and put its associated release ID in S3.
-#
-# Args:
-#   $1 - Name of the Docker image
-#   $2 - Stack name
-#   $3 - ECR Repository URI
-#   $4 - Registry ID
-#
-define publish_service
-	$(ROOT)/docker_run.py \
-        --aws --dind -- \
-            $(ECR_REGISTRY)/wellcome/weco-deploy:5.6.11 \
-            --project-id="$(2)" \
-            --verbose \
-            publish \
-            --image-id="$(1)"
-endef
-
-
 # Define a series of Make tasks (build, test, publish) for a Scala services.
 #
 # Args:
@@ -42,7 +23,7 @@ $(1)-build:
 	$(ROOT)/makefiles/build_sbt_image.sh $(1)
 
 $(1)-publish: $(1)-build
-	$(call publish_service,$(1),$(3),$(4),$(5))
+	$(ROOT)/makefiles/publish_image_with_weco_deploy.sh "$(1)" "$(3)"
 endef
 
 
@@ -56,7 +37,7 @@ $(1)-build:
 	$(ROOT)/makefiles/build_sbt_image.sh $(1)
 
 $(1)-publish: $(1)-build
-	$(call publish_service,$(1),$(3),$(4),$(5))
+	$(ROOT)/makefiles/publish_image_with_weco_deploy.sh "$(1)" "$(3)"
 endef
 
 

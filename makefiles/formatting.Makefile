@@ -3,7 +3,7 @@ ROOT = $(shell git rev-parse --show-toplevel)
 ECR_REGISTRY = 760097843905.dkr.ecr.eu-west-1.amazonaws.com
 
 lint-python:
-	$(ROOT)/docker_run.py -- \
+	docker run --tty --rm \
 		--volume $(ROOT):/data \
 		--workdir /data \
 		$(ECR_REGISTRY)/wellcome/flake8:latest \
@@ -11,22 +11,18 @@ lint-python:
 		    --ignore=E501,E122,E126,E203,W503
 
 format-terraform:
-	$(ROOT)/docker_run.py --aws -- \
+	docker run --tty --rm \
 		--volume $(ROOT):/repo \
 		--workdir /repo \
 		$(ECR_REGISTRY)/hashicorp/terraform:light fmt -recursive
 
 format-python:
-	$(ROOT)/docker_run.py -- \
+	docker run --tty --rm \
 		--volume $(ROOT):/repo \
 		$(ECR_REGISTRY)/wellcome/format_python:112
 
-format-scala:
-	$(ROOT)/docker_run.py --sbt -- \
-		--volume $(ROOT):/repo \
-		$(ECR_REGISTRY)/wellcome/scalafmt:edge
-
-format: format-terraform format-scala format-python
+format: format-terraform format-python
+	$(ROOT)/makefiles/run_scalafmt.sh
 
 lint: lint-python
 	git diff --exit-code
