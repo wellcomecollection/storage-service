@@ -23,6 +23,8 @@ docker run --tty --rm \
   --volume ~/.sbt:/root/.sbt \
   --volume ~/.ivy2:/root/.ivy2 \
   --volume "$HOST_COURSIER_CACHE:/root/$LINUX_COURSIER_CACHE" \
+  --volume /var/run/docker.sock:/var/run/docker.sock \
+  --volume ~/.docker:/root/.docker \
   --volume "$ROOT:$ROOT" \
   --workdir "$ROOT" \
   "$ECR_REGISTRY/wellcome/sbt_wrapper" "$@"
