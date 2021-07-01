@@ -133,7 +133,8 @@ trait Unpacker[
       //      handle different cases differently, I'd like examples we can test with.
       //   4. These errors are hit very rarely in practice.
       //
-      case UnpackerUnexpectedError(exc: IOException) if exc.getMessage.startsWith("Gzip-compressed data is corrupt") =>
+      case UnpackerUnexpectedError(exc: IOException)
+          if exc.getMessage.startsWith("Gzip-compressed data is corrupt") =>
         Some(
           s"Error trying to unpack the archive at $srcLocation - is the gzip-compression correct?"
         )

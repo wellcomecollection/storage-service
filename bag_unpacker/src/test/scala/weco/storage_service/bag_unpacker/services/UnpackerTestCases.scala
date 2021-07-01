@@ -172,7 +172,8 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
     assertUnpackingFailsWith("/greeting.txt") {
       case (_, userFacingMessage) =>
         userFacingMessage should startWith(
-          "Error trying to unpack the archive at")
+          "Error trying to unpack the archive at"
+        )
     }
   }
 
@@ -200,7 +201,8 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
     assertUnpackingFailsWith("/truncated.tar.gz") {
       case (_, userFacingMessage) =>
         userFacingMessage should startWith(
-          "Unexpected EOF while unpacking the archive")
+          "Unexpected EOF while unpacking the archive"
+        )
     }
   }
 
@@ -223,7 +225,8 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
     assertUnpackingFailsWith("/truncated_tar.tar.gz") {
       case (_, userFacingMessage) =>
         userFacingMessage should startWith(
-          "Unexpected EOF while unpacking the archive")
+          "Unexpected EOF while unpacking the archive"
+        )
     }
   }
 
@@ -262,12 +265,16 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
   it("fails if the gzip-compressed data is corrupt") {
     assertUnpackingFailsWith("/truncated_crc32.tar.gz") {
       case (_, userFacingMessage) =>
-        userFacingMessage should startWith("Error trying to unpack the archive at")
+        userFacingMessage should startWith(
+          "Error trying to unpack the archive at"
+        )
         userFacingMessage should endWith("is the gzip-compression correct?")
     }
   }
 
-  private def assertUnpackingFailsWith[R](filename: String)(testWith: TestWith[(BagLocation, String), R]): R = {
+  private def assertUnpackingFailsWith[R](
+    filename: String
+  )(testWith: TestWith[(BagLocation, String), R]): R = {
     withNamespace { srcNamespace =>
       withStreamStore { implicit streamStore =>
         val srcLocation = createSrcLocationWith(namespace = srcNamespace)
