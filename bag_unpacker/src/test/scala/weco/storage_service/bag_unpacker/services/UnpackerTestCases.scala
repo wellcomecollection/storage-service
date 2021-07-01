@@ -331,6 +331,52 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
     }
   }
 
+  /** The file for this test was created with the following bash script:
+    *
+    *     mkdir -p truncated_crc32
+    *
+    *     for i in $(seq 0 9); do
+    *       echo "$i" > truncated_crc32/"$i"
+    *     done
+    *
+    *     tar -czvf truncated_crc32.tar.gz truncated_crc32
+    *
+    *     python3 -c 'b = open("truncated_crc32.tar.gz", "rb").read(); b = b[:-1] + b"\xff"; open("truncated_crc32.tar.gz", "wb").write(b)'
+    *
+    * The Python command changes the final bit of the file to 0xff (when I was
+    * testing, the correct byte here was always 0x00).
+    */
+  it("fails if the gzip-compressed data is corrupt") {
+    withNamespace { srcNamespace =>
+      withStreamStore { implicit streamStore =>
+        val srcLocation = createSrcLocationWith(namespace = srcNamespace)
+
+        val stream = getResource("/truncated_crc32.tar.gz")
+
+        streamStore.put(srcLocation)(stream) shouldBe a[Right[_, _]]
+
+        withNamespace { dstNamespace =>
+          val result =
+            withUnpacker {
+              _.unpack(
+                ingestId = createIngestID,
+                srcLocation = srcLocation,
+                dstPrefix = createDstPrefixWith(dstNamespace)
+              )
+            }
+
+          assertIsError(result) {
+            case (_, maybeUserFacingMessage) =>
+              val userFacingMessage = maybeUserFacingMessage.get
+
+              userFacingMessage should startWith("Error trying to unpack the archive at")
+              userFacingMessage should endWith("is the gzip-compression correct?")
+          }
+        }
+      }
+    }
+  }
+
   def assertEqual(prefix: BagPrefix, expectedFiles: Seq[File])(
     implicit store: StreamStore[BagLocation]
   ): Seq[Assertion] = {

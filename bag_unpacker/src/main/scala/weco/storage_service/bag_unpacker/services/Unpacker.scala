@@ -115,6 +115,29 @@ trait Unpacker[
           s"The archive at $srcLocation is malformed or has a duplicate entry (${err.entry.getName})"
         )
 
+      // This branch is trying to handle three exceptions that can be thrown
+      // inside GzipCompressorInputStream:
+      //
+      //      Gzip-compressed data is corrupt
+      //      Gzip-compressed data is corrupt (CRC32 error)
+      //      Gzip-compressed data is corrupt(uncompressed size mismatch)
+      //
+      // I'm not exposing the more specific error messages here for a few reasons:
+      //
+      //   1. That information will still be visible in the application logs.
+      //      It's hidden, not gone.
+      //   2. The user-facing messages are short, one-line strings meant to help
+      //      understand the issue.  Unless people are hand-crafting gzip-compressed
+      //      packages, the extra detail isn't that useful.
+      //   3. I only have a reproducible test case for the CRC32 error.  If we want to
+      //      handle different cases differently, I'd like examples we can test with.
+      //   4. These errors are hit very rarely in practice.
+      //
+      case UnpackerUnexpectedError(exc: IOException) if exc.getMessage.startsWith("Gzip-compressed data is corrupt") =>
+        Some(
+          s"Error trying to unpack the archive at $srcLocation - is the gzip-compression correct?"
+        )
+
       case _ => None
     }
 
