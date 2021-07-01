@@ -1,6 +1,6 @@
 package weco.storage_service.bag_unpacker.services
 
-import java.io.{EOFException, File, FileInputStream}
+import java.io.{File, FileInputStream}
 import java.nio.file.Paths
 import org.scalatest.{Assertion, EitherValues, TryValues}
 import org.scalatest.funspec.AnyFunSpec
@@ -17,7 +17,6 @@ import weco.storage_service.storage.models.{
   IngestStepSucceeded
 }
 import weco.storage.store.StreamStore
-import weco.storage.streaming.Codec._
 import weco.storage.streaming.StreamAssertions
 import weco.storage.{Location, Prefix}
 
@@ -170,30 +169,10 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
   }
 
   it("fails if the specified file is not in tar.gz format") {
-    withNamespace { srcNamespace =>
-      withStreamStore { implicit streamStore =>
-        val srcLocation = createSrcLocationWith(namespace = srcNamespace)
-
-        streamStore.put(srcLocation)(
-          stringCodec.toStream("hello world").value
-        ) shouldBe a[Right[_, _]]
-
-        val result =
-          withUnpacker {
-            _.unpack(
-              ingestId = createIngestID,
-              srcLocation = srcLocation,
-              dstPrefix = createDstPrefix
-            )
-          }
-
-        assertIsError(result) {
-          case (_, maybeUserFacingMessage) =>
-            maybeUserFacingMessage.get should startWith(
-              "Error trying to unpack the archive at"
-            )
-        }
-      }
+    assertUnpackingFailsWith("/greeting.txt") {
+      case (_, userFacingMessage) =>
+        userFacingMessage should startWith(
+          "Error trying to unpack the archive at")
     }
   }
 
@@ -218,33 +197,10 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
     *
     */
   it("fails if the archive has an EOF error") {
-    withNamespace { srcNamespace =>
-      withStreamStore { implicit streamStore =>
-        val srcLocation = createSrcLocationWith(namespace = srcNamespace)
-
-        val stream = getResource("/truncated.tar.gz")
-
-        streamStore.put(srcLocation)(stream) shouldBe a[Right[_, _]]
-
-        withNamespace { dstNamespace =>
-          val result =
-            withUnpacker {
-              _.unpack(
-                ingestId = createIngestID,
-                srcLocation = srcLocation,
-                dstPrefix = createDstPrefixWith(dstNamespace)
-              )
-            }
-
-          assertIsError(result) {
-            case (err, maybeUserFacingMessage) =>
-              err shouldBe a[EOFException]
-              maybeUserFacingMessage.get should startWith(
-                "Unexpected EOF while unpacking the archive"
-              )
-          }
-        }
-      }
+    assertUnpackingFailsWith("/truncated.tar.gz") {
+      case (_, userFacingMessage) =>
+        userFacingMessage should startWith(
+          "Unexpected EOF while unpacking the archive")
     }
   }
 
@@ -264,32 +220,10 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
     *
     */
   it("fails if the uncompressed tarball has an EOF error") {
-    withNamespace { srcNamespace =>
-      withStreamStore { implicit streamStore =>
-        val srcLocation = createSrcLocationWith(namespace = srcNamespace)
-
-        val stream = getResource("/truncated_tar.tar.gz")
-
-        streamStore.put(srcLocation)(stream) shouldBe a[Right[_, _]]
-
-        withNamespace { dstNamespace =>
-          val result =
-            withUnpacker {
-              _.unpack(
-                ingestId = createIngestID,
-                srcLocation = srcLocation,
-                dstPrefix = createDstPrefixWith(dstNamespace)
-              )
-            }
-
-          assertIsError(result) {
-            case (_, maybeUserFacingMessage) =>
-              maybeUserFacingMessage.get should startWith(
-                "Unexpected EOF while unpacking the archive"
-              )
-          }
-        }
-      }
+    assertUnpackingFailsWith("/truncated_tar.tar.gz") {
+      case (_, userFacingMessage) =>
+        userFacingMessage should startWith(
+          "Unexpected EOF while unpacking the archive")
     }
   }
 
@@ -304,30 +238,9 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
     *
     */
   it("fails if the archive has repeated entries") {
-    withNamespace { srcNamespace =>
-      withStreamStore { implicit streamStore =>
-        val srcLocation = createSrcLocationWith(namespace = srcNamespace)
-
-        val stream = getResource("/repetitive.tar.gz")
-
-        streamStore.put(srcLocation)(stream) shouldBe a[Right[_, _]]
-
-        withNamespace { dstNamespace =>
-          val result =
-            withUnpacker {
-              _.unpack(
-                ingestId = createIngestID,
-                srcLocation = srcLocation,
-                dstPrefix = createDstPrefixWith(dstNamespace)
-              )
-            }
-
-          assertIsError(result) {
-            case (_, maybeUserFacingMessage) =>
-              maybeUserFacingMessage.get shouldBe s"The archive at $srcLocation is malformed or has a duplicate entry (1.bin)"
-          }
-        }
-      }
+    assertUnpackingFailsWith("/repetitive.tar.gz") {
+      case (srcLocation, userFacingMessage) =>
+        userFacingMessage shouldBe s"The archive at $srcLocation is malformed or has a duplicate entry (1.bin)"
     }
   }
 
@@ -347,11 +260,19 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
     * testing, the correct byte here was always 0x00).
     */
   it("fails if the gzip-compressed data is corrupt") {
+    assertUnpackingFailsWith("/truncated_crc32.tar.gz") {
+      case (_, userFacingMessage) =>
+        userFacingMessage should startWith("Error trying to unpack the archive at")
+        userFacingMessage should endWith("is the gzip-compression correct?")
+    }
+  }
+
+  private def assertUnpackingFailsWith[R](filename: String)(testWith: TestWith[(BagLocation, String), R]): R = {
     withNamespace { srcNamespace =>
       withStreamStore { implicit streamStore =>
         val srcLocation = createSrcLocationWith(namespace = srcNamespace)
 
-        val stream = getResource("/truncated_crc32.tar.gz")
+        val stream = getResource(filename)
 
         streamStore.put(srcLocation)(stream) shouldBe a[Right[_, _]]
 
@@ -367,10 +288,7 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
 
           assertIsError(result) {
             case (_, maybeUserFacingMessage) =>
-              val userFacingMessage = maybeUserFacingMessage.get
-
-              userFacingMessage should startWith("Error trying to unpack the archive at")
-              userFacingMessage should endWith("is the gzip-compression correct?")
+              testWith((srcLocation, maybeUserFacingMessage.get))
           }
         }
       }
@@ -401,9 +319,9 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
         n + file.length()
       }
 
-  def assertIsError(result: Try[IngestStepResult[UnpackSummary[_, _]]])(
-    checkMessage: (Throwable, Option[String]) => Assertion
-  ): Assertion = {
+  def assertIsError[R](result: Try[IngestStepResult[UnpackSummary[_, _]]])(
+    checkMessage: (Throwable, Option[String]) => R
+  ): R = {
     val ingestResult = result.success.value
     ingestResult shouldBe a[IngestFailed[_]]
 
