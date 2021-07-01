@@ -19,24 +19,6 @@ define publish_lambda
 endef
 
 
-# Test a Python project.
-#
-# Args:
-#   $1 - Path to the Python project's directory, relative to the root
-#        of the repo.
-#
-define test_python
-	$(ROOT)/docker_run.py --aws --dind -- \
-		$(ECR_REGISTRY)/wellcome/build_test_python $(1)
-
-	$(ROOT)/docker_run.py --aws --dind -- \
-		--net=host \
-		--volume $(ROOT)/shared_conftest.py:/conftest.py \
-		--workdir $(ROOT)/$(1) --tty \
-		wellcome/test_python_$(shell basename $(1)):latest
-endef
-
-
 # Publish a Docker image to ECR, and put its associated release ID in S3.
 #
 # Args:
@@ -66,7 +48,8 @@ endef
 #   $5 - Registry ID
 #
 define __sbt_docker_target_template
-$(eval $(call __sbt_base_docker_template,$(1),$(2)))
+$(1)-test:
+	$(ROOT)/makefiles/run_sbt_task_in_docker.sh "project $(1)" ";dockerComposeUp;test;dockerComposeStop"
 
 $(1)-build:
 	$(ROOT)/makefiles/run_sbt_task_in_docker.sh "project $(1)" ";stage"
@@ -98,23 +81,12 @@ endef
 #	$2 - Root of the project's source code.
 #
 define __sbt_library_docker_template
-$(eval $(call __sbt_base_docker_template,$(1),$(2)))
+$(1)-test:
+	$(ROOT)/makefiles/run_sbt_task_in_docker.sh "project $(1)" ";dockerComposeUp;test;dockerComposeStop"
 
 $(1)-publish:
 	echo "Nothing to do!"
 
-endef
-
-
-# Define a series of Make tasks for a Scala modules that use docker-compose for tests.
-#
-# Args:
-#	$1 - Name of the project in sbt.
-#	$2 - Root of the project's source code.
-#
-define __sbt_base_docker_template
-$(1)-test:
-	$(ROOT)/makefiles/run_sbt_task_in_docker.sh "project $(1)" ";dockerComposeUp;test;dockerComposeStop"
 endef
 
 
@@ -141,20 +113,8 @@ endef
 #	$2 - Path to the Lambda source directory.
 #
 define __lambda_target_template
-$(1)-test:
-	$(call test_python,$(2))
-
 $(1)-publish:
 	$(call publish_lambda,$(2))
-
-$(ROOT)/$(2)/src/requirements.txt: $(ROOT)/$(2)/src/requirements.in
-	$(ROOT)/docker_run.py -- \
-		--volume $(ROOT)/$(2)/src:/src micktwomey/pip-tools
-
-$(ROOT)/$(2)/src/test_requirements.txt: $(ROOT)/$(2)/src/test_requirements.in
-	$(ROOT)/docker_run.py -- \
-		--volume $(ROOT)/$(2)/src:/src micktwomey/pip-tools \
-		pip-compile test_requirements.in
 endef
 
 
