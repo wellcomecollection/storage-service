@@ -48,7 +48,7 @@ def create_zip(src, dst):
                 if filename.startswith("."):
                     continue
                 absname = os.path.abspath(os.path.join(dirname, filename))
-                arcname = absname[len(abs_src) + 1:]
+                arcname = absname[len(abs_src) + 1 :]
                 zf.write(absname, arcname)
 
 
