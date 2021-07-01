@@ -10,6 +10,10 @@ ECR_REGISTRY="public.ecr.aws/y1p3h6z3"
 
 CURRENT_COMMIT=$(git rev-parse HEAD)
 
+# The AWS CLI installed by default doesn't include the "ecr-public" commands,
+# so go ahead and grab the latest version.
+pip3 install --user --upgrade awscli
+
 if [[ "${BUILDKITE:-}" = "true" ]]
 then
   PASSWORD=$(aws ecr-public get-login-password --region us-east-1)
