@@ -15,13 +15,15 @@ CURRENT_COMMIT=$(git rev-parse HEAD)
 pip3 install --user --upgrade awscli
 
 find / -name aws
-aws help --version
+/var/lib/buildkite-agent/.local/bin/aws help --version
+/usr/bin/aws help --version
+/opt/aws help --version
 
 if [[ "${BUILDKITE:-}" = "true" ]]
 then
-  PASSWORD=$(aws ecr-public get-login-password --region us-east-1)
+  PASSWORD=$(/var/lib/buildkite-agent/.local/bin/aws ecr-public get-login-password --region us-east-1)
 else
-  PASSWORD=$(AWS_PROFILE=storage-dev aws ecr-public get-login-password --region us-east-1)
+  PASSWORD=$(AWS_PROFILE=storage-dev /var/lib/buildkite-agent/.local/bin/aws ecr-public get-login-password --region us-east-1)
 fi
 
 docker login --username AWS --password "$PASSWORD" public.ecr.aws
