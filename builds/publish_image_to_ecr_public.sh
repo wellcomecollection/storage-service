@@ -14,15 +14,15 @@ CURRENT_COMMIT=$(git rev-parse HEAD)
 # so go ahead and grab the latest version.
 pip3 install --user --upgrade awscli
 
+find / -name aws
+aws help --version
+
 if [[ "${BUILDKITE:-}" = "true" ]]
 then
   PASSWORD=$(aws ecr-public get-login-password --region us-east-1)
 else
   PASSWORD=$(AWS_PROFILE=storage-dev aws ecr-public get-login-password --region us-east-1)
 fi
-
-find / -name aws
-aws help --version
 
 docker login --username AWS --password "$PASSWORD" public.ecr.aws
 
