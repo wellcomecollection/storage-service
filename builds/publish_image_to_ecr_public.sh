@@ -21,6 +21,9 @@ else
   PASSWORD=$(AWS_PROFILE=storage-dev aws ecr-public get-login-password --region us-east-1)
 fi
 
+find / -name aws
+aws help --version
+
 docker login --username AWS --password "$PASSWORD" public.ecr.aws
 
 docker tag "$PROJECT:$CURRENT_COMMIT" "$ECR_REGISTRY/$PROJECT:ref.$CURRENT_COMMIT"
