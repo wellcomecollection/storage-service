@@ -9,14 +9,14 @@ it pushes a new commit to your pull request and aborts the current build.
 
 import sys
 
-from commands import make, git
+from commands import run_build_script, git
 from git_utils import get_changed_paths
 from provider import current_branch, repo
 
 
 if __name__ == "__main__":
 
-    make("format")
+    run_build_script("run_formatting.sh")
 
     # If there are any changes, push to GitHub immediately and fail the
     # build.  This will abort the remaining jobs, and trigger a new build
@@ -46,4 +46,4 @@ if __name__ == "__main__":
     # Run the 'lint' tasks.  A failure in these tasks requires
     # manual intervention, so we run them second to get any automatic fixes
     # out of the way.
-    make("lint")
+    run_build_script("run_linting.sh")

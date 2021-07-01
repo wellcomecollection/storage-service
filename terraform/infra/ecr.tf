@@ -54,10 +54,6 @@ resource "aws_ecr_repository" "ingests_worker" {
   name = "uk.ac.wellcome/ingests_worker"
 }
 
-resource "aws_ecr_repository" "nginx" {
-  name = "uk.ac.wellcome/nginx"
-}
-
 resource "aws_ecr_repository" "notifier" {
   name = "uk.ac.wellcome/notifier"
 }
