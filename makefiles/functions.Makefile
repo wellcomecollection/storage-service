@@ -37,21 +37,6 @@ define test_python
 endef
 
 
-# Build and tag a Docker image.
-#
-# Args:
-#   $1 - Name of the image.
-#   $2 - Path to the Dockerfile, relative to the root of the repo.
-#
-define build_image
-	$(ROOT)/docker_run.py \
-	    --dind -- \
-	    $(ECR_REGISTRY)/wellcome/image_builder:23 \
-            --project=$(1) \
-            --file=$(2)
-endef
-
-
 # Publish a Docker image to ECR, and put its associated release ID in S3.
 #
 # Args:
@@ -85,7 +70,7 @@ $(eval $(call __sbt_base_docker_template,$(1),$(2)))
 
 $(1)-build:
 	$(ROOT)/makefiles/run_sbt_task_in_docker.sh "project $(1)" ";stage"
-	$(call build_image,$(1),$(2)/Dockerfile)
+	$(ROOT)/makefiles/build_image.sh $(1) $(2)/Dockerfile
 
 $(1)-publish: $(1)-build
 	$(call publish_service,$(1),$(3),$(4),$(5))
@@ -99,7 +84,7 @@ $(1)-test:
 
 $(1)-build:
 	$(ROOT)/makefiles/run_sbt_task_in_docker.sh "project $(1)" ";stage"
-	$(call build_image,$(1),$(2)/Dockerfile)
+	$(ROOT)/makefiles/build_image.sh $(1) $(2)/Dockerfile
 
 $(1)-publish: $(1)-build
 	$(call publish_service,$(1),$(3),$(4),$(5))
