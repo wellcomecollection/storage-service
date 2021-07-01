@@ -28,7 +28,6 @@ SBT_NO_DOCKER_APPS =
 SBT_DOCKER_LIBRARIES    = common
 SBT_NO_DOCKER_LIBRARIES = bags_common display
 
-PYTHON_APPS =
 LAMBDAS 	=
 
 TF_NAME = storage

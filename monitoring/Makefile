@@ -12,7 +12,6 @@ SBT_NO_DOCKER_APPS =
 SBT_DOCKER_LIBRARIES    =
 SBT_NO_DOCKER_LIBRARIES =
 
-PYTHON_APPS =
 LAMBDAS 	= daily_reporter end_to_end_bag_test
 
 $(val $(call stack_setup))
