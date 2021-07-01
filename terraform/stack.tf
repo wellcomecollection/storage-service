@@ -1,5 +1,5 @@
 module "stack" {
-  source = "github.com/wellcomecollection/storage-service.git//terraform/modules/stack?ref=ebef508f7745139f799456e3b3fc4169a0e50d96"
+  source = "github.com/wellcomecollection/storage-service.git//terraform/modules/stack?ref=715f3a124a4d85f70d4402c172223d81b06f5839"
 
   namespace = local.short_namespace
 
@@ -82,6 +82,12 @@ module "stack" {
   logging_container = {
     container_registry = "public.ecr.aws/l7a1d1z4"
     container_name     = "fluentbit"
+    container_tag      = "8c68706fba97189fc72e3d0844458c7c5dee0bbc"
+  }
+
+  nginx_container = {
+    container_registry = "public.ecr.aws/l7a1d1z4"
+    container_name     = "nginx_apigw"
     container_tag      = "8c68706fba97189fc72e3d0844458c7c5dee0bbc"
   }
 }
