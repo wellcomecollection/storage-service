@@ -48,6 +48,7 @@ module "ingest_service" {
   deployment_service_env  = var.release_label
 
   logging_container = var.logging_container
+  nginx_container   = var.nginx_container
 }
 
 module "ingests_indexer" {
@@ -257,6 +258,7 @@ module "bags_api" {
   deployment_service_env  = var.release_label
 
   logging_container = var.logging_container
+  nginx_container   = var.nginx_container
 }
 
 

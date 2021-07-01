@@ -112,3 +112,13 @@ variable "logging_container" {
     container_tag      = string
   })
 }
+
+variable "nginx_container" {
+  description = "Specifies container used for the nginx sidecar container."
+
+  type = object({
+    container_registry = string
+    container_name     = string
+    container_tag      = string
+  })
+}
