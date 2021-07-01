@@ -2,21 +2,7 @@ ROOT = $(shell git rev-parse --show-toplevel)
 
 ECR_REGISTRY = 760097843905.dkr.ecr.eu-west-1.amazonaws.com
 
-DEV_ROLE_ARN := arn:aws:iam::975596993436:role/storage-developer
-
 INFRA_BUCKET = wellcomecollection-storage-infra
-
-
-# Publish a ZIP file containing a Lambda definition to S3.
-#
-# Args:
-#   $1 - Path to the Lambda src directory, relative to the root of the repo.
-#
-define publish_lambda
-    $(ROOT)/docker_run.py --aws --root -- \
-        $(ECR_REGISTRY)/wellcome/publish_lambda:130 \
-        "$(1)" --key="lambdas/$(1).zip" --bucket="$(INFRA_BUCKET)" --sns-topic="arn:aws:sns:eu-west-1:760097843905:lambda_pushes"
-endef
 
 
 # Publish a Docker image to ECR, and put its associated release ID in S3.
@@ -114,7 +100,9 @@ endef
 #
 define __lambda_target_template
 $(1)-publish:
-	$(call publish_lambda,$(2))
+	AWS_PROFILE=storage-dev $(ROOT)/makefiles/publish_lambda_zip.py $(2) \
+		--bucket="$(INFRA_BUCKET)" \
+		--key="lambdas/$(2).zip"
 endef
 
 
