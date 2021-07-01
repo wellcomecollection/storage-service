@@ -43,7 +43,7 @@ module "base" {
 }
 
 module "nginx_container" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/nginx/apigw?ref=3b3660a"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/nginx/apigw?ref=v3.8.0"
 
   forward_port      = var.container_port
   log_configuration = module.base.log_configuration
@@ -54,7 +54,7 @@ module "nginx_container" {
 }
 
 module "app_container" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.7.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.8.0"
   name   = "app"
 
   image = var.api_container_image
@@ -65,7 +65,7 @@ module "app_container" {
 }
 
 module "tracker_container" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.7.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.8.0"
   name   = "tracker"
 
   image = var.tracker_container_image
