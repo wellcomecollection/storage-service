@@ -28,7 +28,7 @@ def _subprocess_run(cmd, exit_on_error=True):
 
 
 def run_build_script(name, *args):
-    """Run a Make command, and check it completes successfully."""
+    """Run a build script, and check it completes successfully."""
     _subprocess_run(["bash", f"builds/{name}"] + list(args))
 
 
