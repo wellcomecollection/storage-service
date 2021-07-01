@@ -16,7 +16,6 @@ locals {
     aws_ecr_repository.ingests_indexer.name,
     aws_ecr_repository.ingests_tracker.name,
     aws_ecr_repository.ingests_worker.name,
-    aws_ecr_repository.nginx.name,
     aws_ecr_repository.notifier.name,
     aws_ecr_repository.replica_aggregator.name,
   ]
