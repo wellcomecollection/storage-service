@@ -17,7 +17,7 @@ then
   pip3 install --user --upgrade awscli
   /var/lib/buildkite-agent/.local/bin/aws help --version
 
-  PASSWORD=$(/var/lib/buildkite-agent/.local/bin/aws ecr-public get-login-password --region us-east-1)
+  PASSWORD=$(AWS_PROFILE=platform-ci /var/lib/buildkite-agent/.local/bin/aws ecr-public get-login-password --region us-east-1)
 else
   PASSWORD=$(AWS_PROFILE=storage-dev aws ecr-public get-login-password --region us-east-1)
 fi
