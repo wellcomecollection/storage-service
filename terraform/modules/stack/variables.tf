@@ -14,7 +14,7 @@ variable "release_label" {
   type = string
 }
 
-variable "working_storage_namespace" {
+variable "working_storage_bucket_prefix" {
   type    = string
   default = ""
 }

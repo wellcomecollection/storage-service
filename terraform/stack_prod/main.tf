@@ -20,7 +20,7 @@ module "stack_prod" {
 
   namespace = "${local.namespace}-prod"
 
-  working_storage_namespace = "wellcomecollection-"
+  working_storage_bucket_prefix = "wellcomecollection-"
 
   api_url = local.api_url
 

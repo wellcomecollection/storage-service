@@ -20,7 +20,7 @@ module "stack_staging" {
 
   namespace = "${local.namespace}-staging"
 
-  working_storage_namespace = "wellcomecollection-"
+  working_storage_bucket_prefix = "wellcomecollection-"
 
   api_url = local.staging_api_url
 

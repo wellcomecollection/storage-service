@@ -2,7 +2,7 @@ module "working_storage" {
   source = "./working_storage"
 
   namespace          = var.namespace
-  bucket_name_prefix = var.working_storage_namespace
+  bucket_name_prefix = var.working_storage_bucket_prefix
 }
 
 # Ingest service
