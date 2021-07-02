@@ -46,7 +46,7 @@ class BagVersionerFeatureTest
       version = BagVersion(1)
     )
 
-    withLocalSqsQueue(visibilityTimeout = 5) { queue =>
+    withLocalSqsQueue() { queue =>
       val ingests = new MemoryMessageSender()
       val outgoing = new MemoryMessageSender()
       withBagVersionerWorker(
