@@ -3,6 +3,8 @@ module "working_storage" {
 
   namespace          = var.namespace
   bucket_name_prefix = var.working_storage_bucket_prefix
+
+  azure_replicator_enabled = local.azure_replicator_count > 0 ? true : false
 }
 
 # Ingest service
@@ -469,8 +471,8 @@ module "bag_versioner" {
     outgoing_topic_arn   = module.bag_versioner_output_topic.arn
     metrics_namespace    = local.bag_versioner_service_name
     operation_name       = "assigning bag version"
-    locking_table_name   = module.versioner_lock_table.table_name
-    locking_table_index  = module.versioner_lock_table.index_name
+    locking_table_name   = module.working_storage.versioner_lock_table_name
+    locking_table_index  = module.working_storage.versioner_lock_index_name
     versions_table_name  = var.versioner_versions_table_name
     versions_table_index = var.versioner_versions_table_index
   }
@@ -513,7 +515,7 @@ module "replicator_verifier_primary" {
   unpacker_bucket_name  = module.working_storage.unpacked_bags_bucket_name
 
   ingests_read_policy_json          = data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json
-  replicator_lock_table_policy_json = module.replicator_lock_table.iam_policy
+  replicator_lock_table_policy_json = module.working_storage.replicator_lock_iam_policy
 
   security_group_ids = [
     aws_security_group.interservice.id,
@@ -526,8 +528,8 @@ module "replicator_verifier_primary" {
 
   ingests_topic_arn = module.ingests_topic.arn
 
-  replicator_lock_table_name  = module.replicator_lock_table.table_name
-  replicator_lock_table_index = module.replicator_lock_table.index_name
+  replicator_lock_table_name  = module.working_storage.replicator_lock_table_name
+  replicator_lock_table_index = module.working_storage.replicator_lock_index_name
 
   bag_replicator_image = local.image_ids["bag_replicator"]
   bag_verifier_image   = local.image_ids["bag_verifier"]
@@ -568,7 +570,7 @@ module "replicator_verifier_glacier" {
   unpacker_bucket_name  = module.working_storage.unpacked_bags_bucket_name
 
   ingests_read_policy_json          = data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json
-  replicator_lock_table_policy_json = module.replicator_lock_table.iam_policy
+  replicator_lock_table_policy_json = module.working_storage.replicator_lock_iam_policy
 
   security_group_ids = [
     aws_security_group.interservice.id,
@@ -581,8 +583,8 @@ module "replicator_verifier_glacier" {
 
   ingests_topic_arn = module.ingests_topic.arn
 
-  replicator_lock_table_name  = module.replicator_lock_table.table_name
-  replicator_lock_table_index = module.replicator_lock_table.index_name
+  replicator_lock_table_name  = module.working_storage.replicator_lock_table_name
+  replicator_lock_table_index = module.working_storage.replicator_lock_index_name
 
   bag_replicator_image = local.image_ids["bag_replicator"]
   bag_verifier_image   = local.image_ids["bag_verifier"]
@@ -632,7 +634,7 @@ module "replicator_verifier_azure" {
   ]
 
   verifier_environment = {
-    azure_verifier_cache_table_name = aws_dynamodb_table.azure_verifier_tags[0].name
+    azure_verifier_cache_table_name = module.working_storage.azure_verifier_cache_table_name[0]
   }
 
   verifier_secrets = {
@@ -648,7 +650,7 @@ module "replicator_verifier_azure" {
   unpacker_bucket_name  = module.working_storage.unpacked_bags_bucket_name
 
   ingests_read_policy_json          = data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json
-  replicator_lock_table_policy_json = module.replicator_lock_table.iam_policy
+  replicator_lock_table_policy_json = module.working_storage.replicator_lock_iam_policy
 
   security_group_ids = [
     aws_security_group.interservice.id,
@@ -661,8 +663,8 @@ module "replicator_verifier_azure" {
 
   ingests_topic_arn = module.ingests_topic.arn
 
-  replicator_lock_table_name  = module.replicator_lock_table.table_name
-  replicator_lock_table_index = module.replicator_lock_table.index_name
+  replicator_lock_table_name  = module.working_storage.replicator_lock_table_name
+  replicator_lock_table_index = module.working_storage.replicator_lock_index_name
 
   bag_replicator_image = local.image_ids["bag_replicator"]
   bag_verifier_image   = local.image_ids["bag_verifier"]

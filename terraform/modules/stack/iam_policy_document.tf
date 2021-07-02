@@ -162,7 +162,7 @@ data "aws_iam_policy_document" "azure_verifier_tags_readwrite" {
       "dynamodb:PutItem",
     ]
 
-    resources = aws_dynamodb_table.azure_verifier_tags.*.arn
+    resources = module.working_storage.azure_verifier_cache_table_arn
   }
 }
 
@@ -226,5 +226,31 @@ data "aws_iam_policy_document" "allow_bag_registration_notification_subscription
       identifiers = var.bag_register_output_subscribe_principals
       type        = "AWS"
     }
+  }
+}
+
+data "aws_iam_policy_document" "versioner_versions_table_table_readwrite" {
+  statement {
+    actions = [
+      "dynamodb:DeleteItem",
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:Query",
+      "dynamodb:UpdateItem",
+    ]
+
+    resources = [
+      var.versioner_versions_table_arn,
+    ]
+  }
+
+  statement {
+    actions = [
+      "dynamodb:Query",
+    ]
+
+    resources = [
+      "${var.versioner_versions_table_arn}/index/*",
+    ]
   }
 }
