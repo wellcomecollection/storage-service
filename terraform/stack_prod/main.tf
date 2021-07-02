@@ -11,6 +11,10 @@ module "domain" {
   cert_domain_name = local.cert_domain_name
 }
 
+locals {
+  release_label = "prod"
+}
+
 module "stack_prod" {
   source = "../modules/stack"
 
@@ -32,7 +36,7 @@ module "stack_prod" {
   cognito_user_pool_arn          = local.cognito_user_pool_arn
   cognito_storage_api_identifier = local.cognito_storage_api_identifier
 
-  release_label = "prod"
+  release_label = local.release_label
 
   replica_primary_bucket_name = data.terraform_remote_state.critical_prod.outputs.replica_primary_bucket_name
   replica_glacier_bucket_name = data.terraform_remote_state.critical_prod.outputs.replica_glacier_bucket_name
@@ -100,5 +104,10 @@ module "stack_prod" {
     container_registry = "760097843905.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome"
     container_name     = "nginx_apigw"
     container_tag      = "f1188c2a7df01663dd96c99b26666085a4192167"
+  }
+
+  app_containers = {
+    container_registry = "975596993436.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome"
+    container_tag      = "env.${local.release_label}"
   }
 }

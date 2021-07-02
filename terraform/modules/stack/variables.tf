@@ -185,3 +185,12 @@ variable "nginx_container" {
     container_tag      = string
   })
 }
+
+variable "app_containers" {
+  description = "Specifies container info used for the app containers."
+
+  type = object({
+    container_registry = string
+    container_tag      = string
+  })
+}

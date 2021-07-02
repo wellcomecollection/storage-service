@@ -24,7 +24,7 @@ locals {
 locals {
   repo_urls = [
     for name in local.services :
-    "975596993436.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/${name}:env.${var.release_label}"
+    "${var.app_containers["container_registry"]}/${name}:${var.app_containers["container_tag"]}"
   ]
   image_ids = zipmap(local.services, local.repo_urls)
 }
