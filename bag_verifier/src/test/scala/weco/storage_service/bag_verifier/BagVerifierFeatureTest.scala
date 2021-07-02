@@ -14,6 +14,8 @@ import weco.storage_service.ingests.fixtures.IngestUpdateAssertions
 import weco.storage_service.ingests.models.{Ingest, IngestStatusUpdate}
 import weco.storage_service.{BagRootLocationPayload, VerifiablePayload}
 
+import scala.concurrent.duration._
+
 class BagVerifierFeatureTest
     extends AnyFunSpec
     with Matchers
@@ -38,7 +40,7 @@ class BagVerifierFeatureTest
     //
     // This was a cause of significant flakiness!  You can see the issue by turning down
     // the timeout and turning up the payload file count in `createS3BagWith()`.
-    withLocalSqsQueuePair(visibilityTimeout = 10) {
+    withLocalSqsQueuePair(visibilityTimeout = 10.seconds) {
       case QueuePair(queue, dlq) =>
         withLocalS3Bucket { bucket =>
           withStandaloneBagVerifierWorker(
