@@ -20,6 +20,8 @@ module "stack_prod" {
 
   namespace = "${local.namespace}-prod"
 
+  working_storage_namespace = "wellcomecollection-"
+
   api_url = local.api_url
 
   min_capacity = 0

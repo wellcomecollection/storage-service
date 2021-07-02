@@ -14,6 +14,11 @@ variable "release_label" {
   type = string
 }
 
+variable "working_storage_namespace" {
+  type    = string
+  default = ""
+}
+
 # Network
 
 variable "private_subnets" {

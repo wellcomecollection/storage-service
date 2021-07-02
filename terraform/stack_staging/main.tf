@@ -20,6 +20,8 @@ module "stack_staging" {
 
   namespace = "${local.namespace}-staging"
 
+  working_storage_namespace = "wellcomecollection-"
+
   api_url = local.staging_api_url
 
   min_capacity = 0

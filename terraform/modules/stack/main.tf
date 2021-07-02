@@ -1,3 +1,10 @@
+module "working_storage" {
+  source = "./working_storage"
+
+  namespace          = var.namespace
+  bucket_name_prefix = var.working_storage_namespace
+}
+
 # Ingest service
 
 module "ingest_service" {
@@ -225,7 +232,7 @@ module "bags_api" {
     vhs_bucket_name       = var.vhs_manifests_bucket_name
     vhs_table_name        = var.vhs_manifests_table_name
     metrics_namespace     = local.bags_api_service_name
-    responses_bucket_name = aws_s3_bucket.large_response_cache.id
+    responses_bucket_name = module.working_storage.large_response_cache_bucket_name
     bags_tracker_host     = "http://localhost:8080"
   }
 
@@ -280,7 +287,7 @@ module "bag_unpacker" {
 
   environment = {
     queue_url               = module.bag_unpacker_queue.url
-    destination_bucket_name = aws_s3_bucket.unpacked_bags.bucket
+    destination_bucket_name = module.working_storage.unpacked_bags_bucket_name
     ingest_topic_arn        = module.ingests_topic.arn
     outgoing_topic_arn      = module.bag_unpacker_output_topic.arn
     metrics_namespace       = local.bag_unpacker_service_name
@@ -503,7 +510,7 @@ module "replicator_verifier_primary" {
 
   destination_namespace = var.replica_primary_bucket_name
   primary_bucket_name   = var.replica_primary_bucket_name
-  unpacker_bucket_name  = aws_s3_bucket.unpacked_bags.id
+  unpacker_bucket_name  = module.working_storage.unpacked_bags_bucket_name
 
   ingests_read_policy_json          = data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json
   replicator_lock_table_policy_json = module.replicator_lock_table.iam_policy
@@ -558,7 +565,7 @@ module "replicator_verifier_glacier" {
 
   destination_namespace = var.replica_glacier_bucket_name
   primary_bucket_name   = var.replica_primary_bucket_name
-  unpacker_bucket_name  = aws_s3_bucket.unpacked_bags.id
+  unpacker_bucket_name  = module.working_storage.unpacked_bags_bucket_name
 
   ingests_read_policy_json          = data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json
   replicator_lock_table_policy_json = module.replicator_lock_table.iam_policy
@@ -638,7 +645,7 @@ module "replicator_verifier_azure" {
 
   destination_namespace = var.azure_container_name
   primary_bucket_name   = var.replica_primary_bucket_name
-  unpacker_bucket_name  = aws_s3_bucket.unpacked_bags.id
+  unpacker_bucket_name  = module.working_storage.unpacked_bags_bucket_name
 
   ingests_read_policy_json          = data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json
   replicator_lock_table_policy_json = module.replicator_lock_table.iam_policy
@@ -812,5 +819,5 @@ module "api" {
     "${var.cognito_storage_api_identifier}/bags",
   ]
 
-  static_content_bucket_name = aws_s3_bucket.static_content.bucket
+  static_content_bucket_name = module.working_storage.static_content_bucket_name
 }

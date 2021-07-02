@@ -49,7 +49,7 @@ data "aws_iam_policy_document" "unpacked_bags_bucket_readonly" {
     ]
 
     resources = [
-      aws_s3_bucket.unpacked_bags.arn,
+      module.working_storage.unpacked_bags_bucket_arn,
     ]
   }
 
@@ -59,7 +59,7 @@ data "aws_iam_policy_document" "unpacked_bags_bucket_readonly" {
     ]
 
     resources = [
-      "${aws_s3_bucket.unpacked_bags.arn}/*",
+      "${module.working_storage.unpacked_bags_bucket_arn}/*",
     ]
   }
 }
@@ -71,7 +71,7 @@ data "aws_iam_policy_document" "unpacked_bags_bucket_put_tags" {
     ]
 
     resources = [
-      "${aws_s3_bucket.unpacked_bags.arn}/*",
+      "${module.working_storage.unpacked_bags_bucket_arn}/*",
     ]
   }
 }
@@ -84,7 +84,7 @@ data "aws_iam_policy_document" "unpacked_bags_bucket_readwrite" {
     ]
 
     resources = [
-      "${aws_s3_bucket.unpacked_bags.arn}/*",
+      "${module.working_storage.unpacked_bags_bucket_arn}/*",
     ]
   }
 }
@@ -128,8 +128,8 @@ data "aws_iam_policy_document" "s3_large_response_cache" {
     ]
 
     resources = [
-      aws_s3_bucket.large_response_cache.arn,
-      "${aws_s3_bucket.large_response_cache.arn}/*",
+      module.working_storage.large_response_cache_bucket_arn,
+      "${module.working_storage.large_response_cache_bucket_arn}/*",
     ]
   }
 }
