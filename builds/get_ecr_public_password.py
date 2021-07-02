@@ -19,10 +19,9 @@ def get_aws_session(*, role_arn, **kwargs):
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     session = get_aws_session(
-        role_arn="arn:aws:iam::975596993436:role/storage-ci",
-        region_name="us-east-1"
+        role_arn="arn:aws:iam::975596993436:role/storage-ci", region_name="us-east-1"
     )
 
     client = session.client("ecr-public")
