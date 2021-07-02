@@ -1,5 +1,5 @@
 module "stack" {
-  source = "github.com/wellcomecollection/storage-service.git//terraform/modules/stack?ref=3448f10d7e5d79d0752a92ce689d7a2f7af24273"
+  source = "github.com/wellcomecollection/storage-service.git//terraform/modules/stack?ref=464e32486457f754d32ee05a1ec2a7e5cbd47f08"
 
   namespace = local.short_namespace
 
@@ -23,7 +23,7 @@ module "stack" {
   replica_primary_bucket_name = aws_s3_bucket.replica_primary.id
   replica_glacier_bucket_name = aws_s3_bucket.replica_glacier.id
 
-  working_storage_bucket_prefix = local.namespace
+  working_storage_bucket_prefix = "${local.namespace}-"
 
   # Setting these both to empty strings means the storage service won't
   # try to replicate bags to Azure.
