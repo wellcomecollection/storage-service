@@ -14,7 +14,6 @@ CURRENT_COMMIT=$(git rev-parse HEAD)
 # so go ahead and grab the latest version.
 pip3 install --user --upgrade awscli
 
-find / -name aws
 /var/lib/buildkite-agent/.local/bin/aws help --version
 /usr/bin/aws help --version
 /opt/aws help --version
