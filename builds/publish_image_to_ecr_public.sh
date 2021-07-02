@@ -11,12 +11,9 @@ ECR_REGISTRY="public.ecr.aws/y1p3h6z3"
 CURRENT_COMMIT=$(git rev-parse HEAD)
 
 # The AWS CLI installed by default doesn't include the "ecr-public" commands,
-# so go ahead and grab the latest version.
+# so go ahead and grab the latest version, then use that.
 pip3 install --user --upgrade awscli
-
 /var/lib/buildkite-agent/.local/bin/aws help --version
-/usr/bin/aws help --version
-/opt/aws help --version
 
 if [[ "${BUILDKITE:-}" = "true" ]]
 then
