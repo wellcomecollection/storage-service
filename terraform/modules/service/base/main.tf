@@ -27,12 +27,13 @@ module "task_definition" {
 }
 
 module "service" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/service?ref=v3.8.0"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/service?ref=8b479d8a08c55c8409dd44c3f2b6d48db88452d0"
 
   cluster_arn  = var.cluster_arn
   service_name = var.service_name
 
   service_discovery_namespace_id = var.service_discovery_namespace_id
+  enable_service_discovery       = true
 
   task_definition_arn = module.task_definition.arn
 
