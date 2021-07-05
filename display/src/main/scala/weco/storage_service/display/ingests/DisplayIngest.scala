@@ -1,6 +1,6 @@
 package weco.storage_service.display.ingests
 
-import java.net.{URI, URL}
+import java.net.URI
 import java.time.Instant
 import java.util.UUID
 
@@ -36,7 +36,6 @@ case class RequestDisplayIngest(
 }
 
 case class ResponseDisplayIngest(
-  @JsonKey("@context") context: String,
   id: UUID,
   sourceLocation: DisplayLocation,
   callback: Option[DisplayCallback],
@@ -51,9 +50,8 @@ case class ResponseDisplayIngest(
 ) extends DisplayIngest
 
 object ResponseDisplayIngest {
-  def apply(ingest: Ingest, contextUrl: URL): ResponseDisplayIngest =
+  def apply(ingest: Ingest): ResponseDisplayIngest =
     ResponseDisplayIngest(
-      context = contextUrl.toString,
       id = ingest.id.uuid,
       sourceLocation = DisplayLocation(ingest.sourceLocation),
       callback = ingest.callback.map { DisplayCallback(_) },

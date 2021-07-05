@@ -97,7 +97,6 @@ class CallbackUrlServiceTest
           requestJsonString,
           s"""
              |{
-             |  "@context": "http://localhost/context.json",
              |  "id": "${ingestId.toString}",
              |  "type": "Ingest",
              |  "ingestType": {

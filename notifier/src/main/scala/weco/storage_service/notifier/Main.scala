@@ -36,7 +36,6 @@ object Main extends WellcomeTypesafeApp {
       SQSBuilder.buildSQSAsyncClient(config)
 
     val callbackUrlService = new CallbackUrlService(
-      contextUrl = HTTPServerBuilder.buildContextURL(config),
       client = new AkkaHttpClient()
     )
 
