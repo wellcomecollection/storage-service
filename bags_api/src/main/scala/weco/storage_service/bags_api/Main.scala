@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
+import org.apache.commons.io.FileUtils
 import weco.http.typesafe.HTTPServerBuilder
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.bag_tracker.client.{
@@ -27,8 +28,7 @@ object Main extends WellcomeTypesafeApp {
   val defaultCacheDuration = 1 days
   // The size here is dictated by the AWS API Gateway limits:
   // https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html
-  // 9MB = 1048576 Bytes * 9
-  val defaultMaxByteLength = 1048576 * 9
+  val defaultMaxByteLength = 9 * FileUtils.ONE_MB
 
   runWithConfig { config: Config =>
     implicit val asMain: ActorSystem =
