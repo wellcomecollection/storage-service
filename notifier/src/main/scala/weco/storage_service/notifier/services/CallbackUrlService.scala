@@ -13,7 +13,8 @@ import scala.util.{Failure, Success, Try}
 
 class CallbackUrlService(client: HttpClient)(
   implicit ec: ExecutionContext
-) extends Logging with DisplayJsonUtil {
+) extends Logging
+    with DisplayJsonUtil {
 
   def buildHttpRequest(ingest: Ingest, callbackUri: URI): HttpRequest = {
     val entity = HttpEntity(

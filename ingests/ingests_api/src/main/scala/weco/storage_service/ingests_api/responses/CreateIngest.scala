@@ -90,7 +90,9 @@ trait CreateIngest[UnpackerDestination] extends FutureDirectives with Logging {
         // them both as 500 errors.
         case Left(err) =>
           complete(
-            StatusCodes.InternalServerError -> DisplayError(statusCode = StatusCodes.InternalServerError)
+            StatusCodes.InternalServerError -> DisplayError(
+              statusCode = StatusCodes.InternalServerError
+            )
           )
       }
       .recover {
