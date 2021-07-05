@@ -7,5 +7,5 @@ variable "namespace" {
 }
 
 variable "azure_replicator_enabled" {
-  type    = bool
+  type = bool
 }
