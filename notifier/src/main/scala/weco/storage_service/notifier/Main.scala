@@ -3,7 +3,6 @@ package weco.storage_service.notifier
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import weco.http.typesafe.HTTPServerBuilder
 import weco.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
   SNSBuilder,
