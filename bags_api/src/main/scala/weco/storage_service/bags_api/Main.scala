@@ -1,7 +1,5 @@
 package weco.storage_service.bags_api
 
-import java.net.URL
-
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import com.amazonaws.services.s3.AmazonS3
@@ -42,9 +40,6 @@ object Main extends WellcomeTypesafeApp {
     implicit val matMain: Materializer =
       AkkaBuilder.buildMaterializer()
 
-    val contextURLMain: URL =
-      HTTPServerBuilder.buildContextURL(config)
-
     implicit val s3Client: AmazonS3 =
       S3Builder.buildS3Client(config)
 
@@ -77,8 +72,6 @@ object Main extends WellcomeTypesafeApp {
       override val maximumResponseByteLength: Long = defaultMaxByteLength
       override val cacheDuration: Duration = defaultCacheDuration
       override implicit val materializer: Materializer = matMain
-
-      override def contextUrl: URL = contextURLMain
     }
 
     val appName = "BagsApi"
@@ -90,8 +83,7 @@ object Main extends WellcomeTypesafeApp {
         metrics = CloudWatchBuilder.buildCloudWatchMetrics(config)
       ),
       httpServerConfig = HTTPServerBuilder.buildHTTPServerConfig(config),
-      appName = appName,
-      contextUrl = contextURLMain
+      appName = appName
     )
   }
 }
