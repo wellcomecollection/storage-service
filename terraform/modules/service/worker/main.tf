@@ -55,7 +55,7 @@ module "scaling" {
   name = var.service_name
 
   cluster_name = var.cluster_name
-  service_name = var.service_name
+  service_name = module.base.service_name
 
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
