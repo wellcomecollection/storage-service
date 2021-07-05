@@ -2,6 +2,7 @@ locals {
   repository_names = [
     "bags_api",
     "bag_indexer",
+    "bag_register",
     "bag_replicator",
     "bag_root_finder",
     "bag_tagger",

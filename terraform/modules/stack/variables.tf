@@ -14,6 +14,11 @@ variable "release_label" {
   type = string
 }
 
+variable "working_storage_bucket_prefix" {
+  type    = string
+  default = ""
+}
+
 # Network
 
 variable "private_subnets" {
@@ -182,6 +187,15 @@ variable "nginx_container" {
   type = object({
     container_registry = string
     container_name     = string
+    container_tag      = string
+  })
+}
+
+variable "app_containers" {
+  description = "Specifies container info used for the app containers."
+
+  type = object({
+    container_registry = string
     container_tag      = string
   })
 }

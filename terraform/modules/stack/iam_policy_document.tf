@@ -49,7 +49,7 @@ data "aws_iam_policy_document" "unpacked_bags_bucket_readonly" {
     ]
 
     resources = [
-      aws_s3_bucket.unpacked_bags.arn,
+      module.working_storage.unpacked_bags_bucket_arn,
     ]
   }
 
@@ -59,7 +59,7 @@ data "aws_iam_policy_document" "unpacked_bags_bucket_readonly" {
     ]
 
     resources = [
-      "${aws_s3_bucket.unpacked_bags.arn}/*",
+      "${module.working_storage.unpacked_bags_bucket_arn}/*",
     ]
   }
 }
@@ -71,7 +71,7 @@ data "aws_iam_policy_document" "unpacked_bags_bucket_put_tags" {
     ]
 
     resources = [
-      "${aws_s3_bucket.unpacked_bags.arn}/*",
+      "${module.working_storage.unpacked_bags_bucket_arn}/*",
     ]
   }
 }
@@ -84,7 +84,7 @@ data "aws_iam_policy_document" "unpacked_bags_bucket_readwrite" {
     ]
 
     resources = [
-      "${aws_s3_bucket.unpacked_bags.arn}/*",
+      "${module.working_storage.unpacked_bags_bucket_arn}/*",
     ]
   }
 }
@@ -128,8 +128,8 @@ data "aws_iam_policy_document" "s3_large_response_cache" {
     ]
 
     resources = [
-      aws_s3_bucket.large_response_cache.arn,
-      "${aws_s3_bucket.large_response_cache.arn}/*",
+      module.working_storage.large_response_cache_bucket_arn,
+      "${module.working_storage.large_response_cache_bucket_arn}/*",
     ]
   }
 }
@@ -162,7 +162,7 @@ data "aws_iam_policy_document" "azure_verifier_tags_readwrite" {
       "dynamodb:PutItem",
     ]
 
-    resources = aws_dynamodb_table.azure_verifier_tags.*.arn
+    resources = module.working_storage.azure_verifier_cache_table_arn
   }
 }
 
@@ -226,5 +226,31 @@ data "aws_iam_policy_document" "allow_bag_registration_notification_subscription
       identifiers = var.bag_register_output_subscribe_principals
       type        = "AWS"
     }
+  }
+}
+
+data "aws_iam_policy_document" "versioner_versions_table_table_readwrite" {
+  statement {
+    actions = [
+      "dynamodb:DeleteItem",
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:Query",
+      "dynamodb:UpdateItem",
+    ]
+
+    resources = [
+      var.versioner_versions_table_arn,
+    ]
+  }
+
+  statement {
+    actions = [
+      "dynamodb:Query",
+    ]
+
+    resources = [
+      "${var.versioner_versions_table_arn}/index/*",
+    ]
   }
 }

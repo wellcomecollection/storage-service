@@ -22,7 +22,7 @@ provider "aws" {
   alias  = "us_east_1"
 
   assume_role {
-    role_arn = "arn:aws:iam::975596993436:role/storage-admin"
+    role_arn = "arn:aws:iam::975596993436:role/storage-developer"
   }
 
   default_tags {

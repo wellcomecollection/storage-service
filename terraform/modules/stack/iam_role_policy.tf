@@ -54,7 +54,7 @@ resource "aws_iam_role_policy" "bag_root_finder_unpacked_bags_bucket_readonly" {
 
 resource "aws_iam_role_policy" "bag_versioner_locking_table" {
   role   = module.bag_versioner.task_role_name
-  policy = module.versioner_lock_table.iam_policy
+  policy = module.working_storage.versioner_lock_iam_policy
 }
 
 resource "aws_iam_role_policy" "bag_versioner_versions_table" {

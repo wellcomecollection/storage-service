@@ -11,10 +11,16 @@ module "domain" {
   cert_domain_name = local.cert_domain_name
 }
 
+locals {
+  release_label = "stage"
+}
+
 module "stack_staging" {
   source = "../modules/stack"
 
   namespace = "${local.namespace}-staging"
+
+  working_storage_bucket_prefix = "wellcomecollection-"
 
   api_url = local.staging_api_url
 
@@ -32,7 +38,7 @@ module "stack_staging" {
   cognito_user_pool_arn          = local.cognito_user_pool_arn
   cognito_storage_api_identifier = local.cognito_storage_api_identifier
 
-  release_label = "stage"
+  release_label = local.release_label
 
   replica_primary_bucket_name = data.terraform_remote_state.critical_staging.outputs.replica_primary_bucket_name
   replica_glacier_bucket_name = data.terraform_remote_state.critical_staging.outputs.replica_glacier_bucket_name
@@ -105,6 +111,11 @@ module "stack_staging" {
     container_registry = "760097843905.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome"
     container_name     = "nginx_apigw"
     container_tag      = "f1188c2a7df01663dd96c99b26666085a4192167"
+  }
+
+  app_containers = {
+    container_registry = "975596993436.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome"
+    container_tag      = "env.${local.release_label}"
   }
 }
 
