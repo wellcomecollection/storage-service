@@ -422,37 +422,35 @@ class LookupBagApiTest
   }
 
   it("returns a 500 error if looking up the bag fails") {
-    withBrokenApp {
-      case metrics =>
-        whenGetRequestReady(s"/bags/$createBagId") { response =>
-          assertIsDisplayError(
-            response = response,
-            statusCode = StatusCodes.InternalServerError
-          )
+    withBrokenApp { metrics =>
+      whenGetRequestReady(s"/bags/$createBagId") { response =>
+        assertIsDisplayError(
+          response = response,
+          statusCode = StatusCodes.InternalServerError
+        )
 
-          assertMetricSent(
-            metricsName,
-            metrics,
-            result = HttpMetricResults.ServerError
-          )
-        }
+        assertMetricSent(
+          metricsName,
+          metrics,
+          result = HttpMetricResults.ServerError
+        )
+      }
     }
   }
 
   it("returns a 500 error if looking up a specific version of a bag fails") {
-    withBrokenApp {
-      case metrics =>
-        whenGetRequestReady(s"/bags/$createBagId?version=v1") { response =>
-          assertIsDisplayError(
-            response = response,
-            statusCode = StatusCodes.InternalServerError
-          )
-          assertMetricSent(
-            metricsName,
-            metrics,
-            result = HttpMetricResults.ServerError
-          )
-        }
+    withBrokenApp { metrics =>
+      whenGetRequestReady(s"/bags/$createBagId?version=v1") { response =>
+        assertIsDisplayError(
+          response = response,
+          statusCode = StatusCodes.InternalServerError
+        )
+        assertMetricSent(
+          metricsName,
+          metrics,
+          result = HttpMetricResults.ServerError
+        )
+      }
     }
   }
 
@@ -463,7 +461,6 @@ class LookupBagApiTest
     val expectedJson =
       s"""
          |{
-         |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
          |  "id": "${storageManifest.id.toString}",
          |  "space": {
          |    "id": "${storageManifest.space.underlying}",

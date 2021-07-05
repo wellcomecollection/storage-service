@@ -1,7 +1,5 @@
 package weco.storage_service.ingests_api.fixtures
 
-import java.net.URL
-
 import akka.http.scaladsl.model.HttpEntity
 import io.circe.Decoder
 import weco.fixtures.TestWith
@@ -37,12 +35,6 @@ trait IngestsApiFixture
     with IngestTrackerFixtures
     with IngestsTrackerApiFixture {
 
-  val contextURLTest = new URL(
-    "http://api.wellcomecollection.org/storage/v1/context.json"
-  )
-
-  override def contextUrl = contextURLTest
-
   val metricsName = "IngestsApiFixture"
 
   private def withIngestsApi[R](
@@ -69,7 +61,6 @@ trait IngestsApiFixture
 
         override val httpServerConfig: HTTPServerConfig =
           httpServerConfigTest
-        override val contextUrl = contextURLTest
         override val ingestCreator: IngestCreator[String] =
           ingestCreatorInstance
       }

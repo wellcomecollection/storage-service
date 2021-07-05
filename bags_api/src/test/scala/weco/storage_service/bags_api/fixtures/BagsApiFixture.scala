@@ -1,7 +1,5 @@
 package weco.storage_service.bags_api.fixtures
 
-import java.net.URL
-
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpMethods.GET
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
@@ -45,11 +43,6 @@ trait BagsApiFixture
 
   val metricsName = "BagsApiFixture"
 
-  val contextUrlTest = new URL(
-    "http://api.wellcomecollection.org/storage/v1/context.json"
-  )
-  override def contextUrl = contextUrlTest
-
   private def withBagsApi[R](
     metrics: MemoryMetrics,
     maxResponseByteLength: Long,
@@ -70,7 +63,6 @@ trait BagsApiFixture
             override val httpServerConfig: HTTPServerConfig =
               httpServerConfigTest
             override implicit val ec: ExecutionContext = global
-            override val contextUrl: URL = contextUrlTest
 
             override val bagTrackerClient: BagTrackerClient = trackerClient
 

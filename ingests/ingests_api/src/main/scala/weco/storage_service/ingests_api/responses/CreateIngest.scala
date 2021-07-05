@@ -14,7 +14,7 @@ import weco.storage_service.display.ingests.{
 }
 import weco.storage_service.ingests_api.services.IngestCreator
 import weco.http.FutureDirectives
-import weco.http.models.{ContextResponse, DisplayError, HTTPServerConfig}
+import weco.http.models.{DisplayError, HTTPServerConfig}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -61,17 +61,9 @@ trait CreateIngest[UnpackerDestination] extends FutureDirectives with Logging {
   }
 
   private def createBadRequestResponse(description: String): Future[Route] =
-    Future {
-      complete(
-        StatusCodes.BadRequest -> ContextResponse(
-          contextUrl = contextUrl,
-          DisplayError(
-            statusCode = StatusCodes.BadRequest,
-            description = description
-          )
-        )
-      )
-    }
+    Future.successful(
+      invalidRequest(description)
+    )
 
   private def triggerIngestStarter(
     requestDisplayIngest: RequestDisplayIngest
@@ -89,33 +81,22 @@ trait CreateIngest[UnpackerDestination] extends FutureDirectives with Logging {
 
           respondWithHeaders(headers) {
             complete(
-              StatusCodes.Created -> ResponseDisplayIngest(
-                ingest = ingest,
-                contextUrl = contextUrl
-              )
+              StatusCodes.Created -> ResponseDisplayIngest(ingest)
             )
           }
 
         // This will capture both a Conflict and an Internal error from the ingest
         // tracker.  There's nothing a user can do about either of them, so return
         // them both as 500 errors.
-        case Left(_) =>
+        case Left(err) =>
           complete(
-            StatusCodes.InternalServerError -> ContextResponse(
-              contextUrl = contextUrl,
-              DisplayError(statusCode = StatusCodes.InternalServerError)
-            )
+            StatusCodes.InternalServerError -> DisplayError(statusCode = StatusCodes.InternalServerError)
           )
       }
       .recover {
         case err =>
           error(s"Unexpected error while creating ingest $ingest: $err")
-          complete(
-            StatusCodes.InternalServerError -> ContextResponse(
-              contextUrl = contextUrl,
-              DisplayError(statusCode = StatusCodes.InternalServerError)
-            )
-          )
+          internalError(err)
       }
   }
 }

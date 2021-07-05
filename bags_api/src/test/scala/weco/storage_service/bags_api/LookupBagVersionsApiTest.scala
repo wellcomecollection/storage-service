@@ -66,7 +66,6 @@ class LookupBagVersionsApiTest
         val expectedJson =
           s"""
              |{
-             |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
              |  "type": "ResultList",
              |  "results": [${expectedVersionJson(storageManifest)}]
              |}
@@ -109,7 +108,6 @@ class LookupBagVersionsApiTest
         val expectedJson =
           s"""
              |{
-             |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
              |  "type": "ResultList",
              |  "results": [
              |    ${expectedVersionJson(
@@ -328,20 +326,19 @@ class LookupBagVersionsApiTest
   }
 
   it("returns a 500 if looking up the lists of versions fails") {
-    withBrokenApp {
-      case metrics =>
-        whenGetRequestReady(s"/bags/$createBagId/versions") { response =>
-          assertIsDisplayError(
-            response = response,
-            statusCode = StatusCodes.InternalServerError
-          )
+    withBrokenApp { metrics =>
+      whenGetRequestReady(s"/bags/$createBagId/versions") { response =>
+        assertIsDisplayError(
+          response = response,
+          statusCode = StatusCodes.InternalServerError
+        )
 
-          assertMetricSent(
-            metricsName,
-            metrics,
-            result = HttpMetricResults.ServerError
-          )
-        }
+        assertMetricSent(
+          metricsName,
+          metrics,
+          result = HttpMetricResults.ServerError
+        )
+      }
     }
   }
 
@@ -357,7 +354,6 @@ class LookupBagVersionsApiTest
   private def expectedVersionList(results: String*): String =
     s"""
        |{
-       |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
        |  "type": "ResultList",
        |  "results": [${results.mkString(", ")}]
        |}""".stripMargin

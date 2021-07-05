@@ -9,7 +9,6 @@ import weco.storage_service.bag_tracker.client.{
 import weco.storage_service.bagit.models.{BagId, BagVersion}
 import weco.storage_service.bags_api.models.DisplayBagVersionList
 import weco.http.FutureDirectives
-import weco.http.models.ContextResponse
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
@@ -57,12 +56,7 @@ trait LookupBagVersions extends FutureDirectives {
       .listVersionsOf(bagId = bagId, maybeBefore = maybeBefore)
       .map {
         case Right(bagVersionList) =>
-          complete(
-            ContextResponse(
-              contextUrl = contextUrl,
-              DisplayBagVersionList(bagVersionList)
-            )
-          )
+          complete(DisplayBagVersionList(bagVersionList))
 
         case Left(_: BagTrackerNotFoundError) => notFound(notFoundMessage)
 
