@@ -60,7 +60,6 @@ class NotifierFeatureTest
             val expectedJson =
               s"""
                  |{
-                 |  "@context": "http://localhost/context.json",
                  |  "id": "${ingest.id.toString}",
                  |  "type": "Ingest",
                  |  "ingestType": {
@@ -173,7 +172,6 @@ class NotifierFeatureTest
               val expectedJson =
                 s"""
                    |{
-                   |  "@context": "http://localhost/context.json",
                    |  "id": "${ingest.id.toString}",
                    |  "type": "Ingest",
                    |  "ingestType": {

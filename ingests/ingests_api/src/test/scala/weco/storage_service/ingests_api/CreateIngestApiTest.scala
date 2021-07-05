@@ -36,9 +36,6 @@ class CreateIngestApiTest
     with JsonAssertions
     with StorageRandomGenerators {
 
-  val contextUrlTest =
-    "http://api.wellcomecollection.org/storage/v1/context.json"
-
   it("creates an ingest") {
     withConfiguredApp() {
       case (ingestTracker, messageSender, metrics, baseUrl) =>
@@ -75,7 +72,6 @@ class CreateIngestApiTest
             }
 
           whenReady(ingestFuture) { retrievedIngest =>
-            retrievedIngest.context shouldBe contextUrlTest
             retrievedIngest.id shouldBe id
             retrievedIngest.sourceLocation shouldBe DisplayLocation(
               provider = DisplayProvider(id = "amazon-s3"),
@@ -131,7 +127,7 @@ class CreateIngestApiTest
 
   it("allows requesting an ingestType 'create'") {
     withConfiguredApp() {
-      case (_, messageSender, metrics, baseUrl) =>
+      case (_, messageSender, metrics, _) =>
         val url = s"/ingests"
 
         val entity = createRequestWith(
@@ -159,7 +155,7 @@ class CreateIngestApiTest
 
   it("allows requesting an ingestType 'update'") {
     withConfiguredApp() {
-      case (_, messageSender, metrics, baseUrl) =>
+      case (_, messageSender, metrics, _) =>
         val url = s"/ingests"
 
         val entity = createRequestWith(
@@ -187,7 +183,7 @@ class CreateIngestApiTest
 
   it("creates an ingest with a slash in the external identifier") {
     withConfiguredApp() {
-      case (_, _, _, baseUrl) =>
+      case (_, _, _, _) =>
         val url = s"/ingests"
 
         val externalIdentifier = ExternalIdentifier("PP/MIA/1")

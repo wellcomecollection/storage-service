@@ -1,13 +1,10 @@
 package weco.storage_service.display.bags
 
-import java.net.URL
-
 import io.circe.generic.extras.JsonKey
 import weco.storage_service.storage.models.StorageManifest
 import weco.storage_service.display.{DisplayLocation, DisplayStorageSpace}
 
 case class DisplayStorageManifest(
-  @JsonKey("@context") context: String,
   id: String,
   space: DisplayStorageSpace,
   info: ResponseDisplayBagInfo,
@@ -21,12 +18,8 @@ case class DisplayStorageManifest(
 )
 
 object DisplayStorageManifest {
-  def apply(
-    storageManifest: StorageManifest,
-    contextUrl: URL
-  ): DisplayStorageManifest =
+  def apply(storageManifest: StorageManifest): DisplayStorageManifest =
     DisplayStorageManifest(
-      context = contextUrl.toString,
       id = storageManifest.id.toString,
       space = DisplayStorageSpace(storageManifest.space.underlying),
       info = ResponseDisplayBagInfo(storageManifest.info),

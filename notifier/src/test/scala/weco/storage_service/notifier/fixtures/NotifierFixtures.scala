@@ -1,6 +1,5 @@
 package weco.storage_service.notifier.fixtures
 
-import java.net.URL
 import akka.actor.ActorSystem
 import weco.akka.fixtures.Akka
 import weco.fixtures.TestWith
@@ -22,7 +21,6 @@ trait NotifierFixtures extends Akka with AlpakkaSQSWorkerFixtures {
     testWith: TestWith[CallbackUrlService, R]
   )(implicit actorSystem: ActorSystem): R = {
     val callbackUrlService = new CallbackUrlService(
-      contextUrl = new URL("http://localhost/context.json"),
       client = new AkkaHttpClient()
     )
     testWith(callbackUrlService)

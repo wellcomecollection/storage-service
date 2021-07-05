@@ -3,7 +3,6 @@ package weco.storage_service.notifier
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import weco.http.typesafe.HTTPServerBuilder
 import weco.messaging.typesafe.{
   AlpakkaSqsWorkerConfigBuilder,
   SNSBuilder,
@@ -36,7 +35,6 @@ object Main extends WellcomeTypesafeApp {
       SQSBuilder.buildSQSAsyncClient(config)
 
     val callbackUrlService = new CallbackUrlService(
-      contextUrl = HTTPServerBuilder.buildContextURL(config),
       client = new AkkaHttpClient()
     )
 

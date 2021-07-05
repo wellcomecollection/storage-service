@@ -1,6 +1,5 @@
 package weco.storage_service.bags_api
 
-import akka.http.scaladsl.model.StatusCodes.NotFound
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Route
@@ -10,7 +9,6 @@ import weco.storage_service.storage.LargeResponses
 import weco.storage_service.storage.models.StorageSpace
 import weco.storage_service.bags_api.responses.{LookupBag, LookupBagVersions}
 import weco.storage.s3.S3ObjectLocation
-import weco.http.models.{ContextResponse, DisplayError}
 
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
@@ -113,16 +111,7 @@ trait BagsApi
               }
 
             case Failure(_) =>
-              complete(
-                NotFound -> ContextResponse(
-                  contextUrl = contextUrl,
-                  DisplayError(
-                    statusCode = StatusCodes.NotFound,
-                    description =
-                      s"Storage manifest $space/$remaining not found"
-                  )
-                )
-              )
+              notFound(s"Storage manifest $space/$remaining not found")
           }
         }
       }

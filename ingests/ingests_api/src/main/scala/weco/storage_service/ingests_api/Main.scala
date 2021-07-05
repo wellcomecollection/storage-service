@@ -1,7 +1,5 @@
 package weco.storage_service.ingests_api
 
-import java.net.URL
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.Uri
 import com.typesafe.config.Config
@@ -31,7 +29,6 @@ object Main extends WellcomeTypesafeApp {
       AkkaBuilder.buildExecutionContext()
 
     val httpServerConfigMain = HTTPServerBuilder.buildHTTPServerConfig(config)
-    val contextURLMain = HTTPServerBuilder.buildContextURL(config)
 
     val ingestTrackerHost = Uri(
       config.requireString("ingests.tracker.host")
@@ -55,8 +52,6 @@ object Main extends WellcomeTypesafeApp {
 
       override val httpServerConfig: HTTPServerConfig = httpServerConfigMain
 
-      override def contextUrl: URL = contextURLMain
-
       override implicit val ec: ExecutionContext = executionContext
     }
 
@@ -71,8 +66,7 @@ object Main extends WellcomeTypesafeApp {
       routes = router.ingests,
       httpMetrics = httpMetrics,
       httpServerConfig = httpServerConfigMain,
-      appName = appName,
-      contextUrl = contextURLMain
+      appName = appName
     )
   }
 }

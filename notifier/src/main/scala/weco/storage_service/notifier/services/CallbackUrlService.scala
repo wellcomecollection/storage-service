@@ -2,35 +2,24 @@ package weco.storage_service.notifier.services
 
 import akka.http.scaladsl.model._
 import grizzled.slf4j.Logging
-import io.circe.Printer
-import io.circe.syntax._
-import weco.json.JsonUtil._
-import weco.storage_service.ingests.models.Ingest
-import weco.storage_service.display.ingests.ResponseDisplayIngest
 import weco.http.client.HttpClient
+import weco.http.json.DisplayJsonUtil
+import weco.storage_service.display.ingests.ResponseDisplayIngest
+import weco.storage_service.ingests.models.Ingest
 
-import java.net.{URI, URL}
+import java.net.URI
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-class CallbackUrlService(contextUrl: URL, client: HttpClient)(
+class CallbackUrlService(client: HttpClient)(
   implicit ec: ExecutionContext
-) extends Logging {
+) extends Logging
+    with DisplayJsonUtil {
 
   def buildHttpRequest(ingest: Ingest, callbackUri: URI): HttpRequest = {
-    val json = ResponseDisplayIngest(
-      ingest = ingest,
-      contextUrl = contextUrl
-    ).asJson
-
-    val jsonString =
-      Printer.noSpaces
-        .copy(dropNullValues = true)
-        .print(json)
-
     val entity = HttpEntity(
       contentType = ContentTypes.`application/json`,
-      string = jsonString
+      string = toJson(ResponseDisplayIngest(ingest))
     )
 
     debug(s"POST to $callbackUri request:$entity")

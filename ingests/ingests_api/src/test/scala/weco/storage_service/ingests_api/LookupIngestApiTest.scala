@@ -24,9 +24,6 @@ class LookupIngestApiTest
     with IntegrationPatience
     with JsonAssertions {
 
-  val contextUrlTest =
-    "http://api.wellcomecollection.org/storage/v1/context.json"
-
   it("finds an ingest") {
     val ingest = createIngestWith(
       createdDate = Instant.now(),
@@ -49,7 +46,6 @@ class LookupIngestApiTest
               jsonString,
               s"""
                  |{
-                 |  "@context": "http://api.wellcomecollection.org/storage/v1/context.json",
                  |  "id": "${ingest.id.toString}",
                  |  "type": "Ingest",
                  |  "ingestType": {

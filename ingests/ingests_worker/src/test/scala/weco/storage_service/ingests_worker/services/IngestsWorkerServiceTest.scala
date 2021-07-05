@@ -1,7 +1,5 @@
 package weco.storage_service.ingests_worker.services
 
-import java.net.URL
-
 import akka.http.scaladsl.model.Uri
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
@@ -33,10 +31,6 @@ class IngestsWorkerServiceTest
     with IngestsWorkerFixtures
     with IngestsTrackerApiFixture
     with IntegrationPatience {
-
-  val visibilityTimeout = 5
-
-  override def contextUrl = new URL("http://www.example.com")
 
   describe("When the client succeeds") {
     it("returns Successful") {
@@ -106,5 +100,4 @@ class IngestsWorkerServiceTest
 
       testWith(client)
     }
-
 }

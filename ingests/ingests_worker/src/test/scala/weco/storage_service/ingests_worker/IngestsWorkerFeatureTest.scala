@@ -1,7 +1,5 @@
 package weco.storage_service.ingests_worker
 
-import java.net.URL
-
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
@@ -20,8 +18,6 @@ class IngestsWorkerFeatureTest
     with IngestsWorkerFixtures
     with IngestGenerators
     with IntegrationPatience {
-
-  override def contextUrl = new URL("http://www.example.com")
 
   it("When the client succeeds it consumes the message") {
     withLocalSqsQueuePair() {

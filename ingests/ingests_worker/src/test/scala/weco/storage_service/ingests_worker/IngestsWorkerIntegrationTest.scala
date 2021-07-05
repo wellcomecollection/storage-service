@@ -1,6 +1,5 @@
 package weco.storage_service.ingests_worker
 
-import java.net.URL
 import java.time.Instant
 
 import akka.actor.ActorSystem
@@ -38,8 +37,6 @@ class IngestsWorkerIntegrationTest
 
   val host = "http://localhost:8080"
   val healthcheckPath = s"$host/healthcheck"
-
-  override def contextUrl = new URL("http://www.example.com")
 
   val ingestTrackerClient = new AkkaIngestTrackerClient(Uri(host))
 

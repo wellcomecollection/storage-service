@@ -66,10 +66,7 @@ trait LookupBag extends FutureDirectives {
 
         respondWithHeader(etag) {
           complete(
-            DisplayStorageManifest(
-              storageManifest = storageManifest,
-              contextUrl = contextUrl
-            )
+            DisplayStorageManifest(storageManifest)
           )
         }
 

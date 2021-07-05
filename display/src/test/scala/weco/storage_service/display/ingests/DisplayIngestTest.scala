@@ -1,6 +1,6 @@
 package weco.storage_service.display.ingests
 
-import java.net.{URI, URL}
+import java.net.URI
 import java.time.Instant
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
@@ -24,9 +24,6 @@ class DisplayIngestTest
   private val createdDate = "2018-10-10T09:38:55.321Z"
   private val eventDate = "2018-10-10T09:38:55.323Z"
   private val eventDescription = "Event description"
-  private val contextUrl = new URL(
-    "http://api.wellcomecollection.org/storage/v1/context.json"
-  )
 
   describe("ResponseDisplayIngest") {
     it("creates a DisplayIngest from Ingest") {
@@ -45,7 +42,7 @@ class DisplayIngestTest
         events = List(IngestEvent(eventDescription, Instant.parse(eventDate)))
       )
 
-      val displayIngest = ResponseDisplayIngest(ingest, contextUrl)
+      val displayIngest = ResponseDisplayIngest(ingest)
 
       displayIngest.id shouldBe id.uuid
       displayIngest.sourceLocation shouldBe DisplayLocation(
@@ -79,7 +76,7 @@ class DisplayIngestTest
 
       val ingest = createIngestWith(events = events)
 
-      val displayIngest = ResponseDisplayIngest(ingest, contextUrl)
+      val displayIngest = ResponseDisplayIngest(ingest)
 
       displayIngest.events.map { _.description } shouldBe Seq(
         "Event 1",
@@ -93,7 +90,7 @@ class DisplayIngestTest
     it("sets an ingestType of 'create'") {
       val ingest = createIngestWith(ingestType = CreateIngestType)
 
-      val displayIngest = ResponseDisplayIngest(ingest, contextUrl)
+      val displayIngest = ResponseDisplayIngest(ingest)
 
       displayIngest.ingestType.id shouldBe "create"
     }
@@ -101,7 +98,7 @@ class DisplayIngestTest
     it("sets an ingestType of 'update'") {
       val ingest = createIngestWith(ingestType = UpdateIngestType)
 
-      val displayIngest = ResponseDisplayIngest(ingest, contextUrl)
+      val displayIngest = ResponseDisplayIngest(ingest)
 
       displayIngest.ingestType.id shouldBe "update"
     }
