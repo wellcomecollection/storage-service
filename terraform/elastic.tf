@@ -116,7 +116,3 @@ EOF
     automated_snapshot_start_hour = 23
   }
 }
-
-output "host" {
-  value = aws_elasticsearch_domain.elasticsearch.endpoint
-}
