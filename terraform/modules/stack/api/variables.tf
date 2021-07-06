@@ -21,7 +21,3 @@ variable "auth_scopes" {
 variable "alarm_topic_arn" {
   type = string
 }
-
-variable "static_content_bucket_name" {
-  type = string
-}

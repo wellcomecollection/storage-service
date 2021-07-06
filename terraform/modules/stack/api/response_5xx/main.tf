@@ -8,13 +8,9 @@ variable "status_code" {
   default = 500
 }
 
-variable "context_url" {
-}
-
 data "template_file" "error" {
   template = <<EOF
 {
-"@context":"${var.context_url}",
 "errorType":"http",
 "httpStatus":"${var.status_code}",
 "label":"Server Error",

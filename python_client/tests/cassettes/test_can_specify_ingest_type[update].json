@@ -140,7 +140,7 @@
       "response": {
         "body": {
           "encoding": null,
-          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"id\":\"0fe322c0-559f-4784-9535-ffaccccd1145\",\"sourceLocation\":{\"provider\":{\"id\":\"aws-s3-standard\",\"type\":\"Provider\"},\"bucket\":\"testing-bucket\",\"path\":\"bagit.zip\",\"type\":\"Location\"},\"ingestType\":{\"id\":\"update\",\"type\":\"IngestType\"},\"space\":{\"id\":\"digitised\",\"type\":\"Space\"},\"status\":{\"id\":\"accepted\",\"type\":\"Status\"},\"bag\":{\"info\":{\"externalIdentifier\":\"b12345\",\"type\":\"BagInfo\"},\"type\":\"Bag\"},\"events\":[],\"createdDate\":\"2019-07-09T12:39:15.848465Z\",\"type\":\"Ingest\"}"
+          "string": "{\"id\":\"0fe322c0-559f-4784-9535-ffaccccd1145\",\"sourceLocation\":{\"provider\":{\"id\":\"aws-s3-standard\",\"type\":\"Provider\"},\"bucket\":\"testing-bucket\",\"path\":\"bagit.zip\",\"type\":\"Location\"},\"ingestType\":{\"id\":\"update\",\"type\":\"IngestType\"},\"space\":{\"id\":\"digitised\",\"type\":\"Space\"},\"status\":{\"id\":\"accepted\",\"type\":\"Status\"},\"bag\":{\"info\":{\"externalIdentifier\":\"b12345\",\"type\":\"BagInfo\"},\"type\":\"Bag\"},\"events\":[],\"createdDate\":\"2019-07-09T12:39:15.848465Z\",\"type\":\"Ingest\"}"
         },
         "headers": {
           "Access-Control-Allow-Credentials": [
@@ -238,7 +238,7 @@
       "response": {
         "body": {
           "encoding": null,
-          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"id\":\"0fe322c0-559f-4784-9535-ffaccccd1145\",\"sourceLocation\":{\"provider\":{\"id\":\"aws-s3-standard\",\"type\":\"Provider\"},\"bucket\":\"testing-bucket\",\"path\":\"bagit.zip\",\"type\":\"Location\"},\"ingestType\":{\"id\":\"update\",\"type\":\"IngestType\"},\"space\":{\"id\":\"digitised\",\"type\":\"Space\"},\"status\":{\"id\":\"failed\",\"type\":\"Status\"},\"bag\":{\"info\":{\"externalIdentifier\":\"b12345\",\"type\":\"BagInfo\"},\"type\":\"Bag\"},\"events\":[{\"description\":\"Unpacking started\",\"createdDate\":\"2019-07-09T12:39:16.186Z\",\"type\":\"IngestEvent\"},{\"description\":\"Unpacking failed\",\"createdDate\":\"2019-07-09T12:39:16.225Z\",\"type\":\"IngestEvent\"}],\"createdDate\":\"2019-07-09T12:39:15.848Z\",\"type\":\"Ingest\"}"
+          "string": "{\"id\":\"0fe322c0-559f-4784-9535-ffaccccd1145\",\"sourceLocation\":{\"provider\":{\"id\":\"aws-s3-standard\",\"type\":\"Provider\"},\"bucket\":\"testing-bucket\",\"path\":\"bagit.zip\",\"type\":\"Location\"},\"ingestType\":{\"id\":\"update\",\"type\":\"IngestType\"},\"space\":{\"id\":\"digitised\",\"type\":\"Space\"},\"status\":{\"id\":\"failed\",\"type\":\"Status\"},\"bag\":{\"info\":{\"externalIdentifier\":\"b12345\",\"type\":\"BagInfo\"},\"type\":\"Bag\"},\"events\":[{\"description\":\"Unpacking started\",\"createdDate\":\"2019-07-09T12:39:16.186Z\",\"type\":\"IngestEvent\"},{\"description\":\"Unpacking failed\",\"createdDate\":\"2019-07-09T12:39:16.225Z\",\"type\":\"IngestEvent\"}],\"createdDate\":\"2019-07-09T12:39:15.848Z\",\"type\":\"Ingest\"}"
         },
         "headers": {
           "Access-Control-Allow-Credentials": [

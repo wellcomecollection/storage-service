@@ -131,7 +131,7 @@
       "response": {
         "body": {
           "encoding": null,
-          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"httpStatus\":500,\"label\":\"Server Error\",\"type\":\"Error\"}"
+          "string": "{\"httpStatus\":500,\"label\":\"Server Error\",\"type\":\"Error\"}"
         },
         "headers": {
           "Allow": [

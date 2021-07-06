@@ -131,7 +131,7 @@
       "response": {
         "body": {
           "encoding": null,
-          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"httpStatus\":405,\"description\":\"HTTP method not allowed, supported methods: POST\",\"label\":\"Method Not Allowed\",\"type\":\"Error\"}"
+          "string": "{\"httpStatus\":405,\"description\":\"HTTP method not allowed, supported methods: POST\",\"label\":\"Method Not Allowed\",\"type\":\"Error\"}"
         },
         "headers": {
           "Allow": [

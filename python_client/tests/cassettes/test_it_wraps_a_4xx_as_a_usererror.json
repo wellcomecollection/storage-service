@@ -140,7 +140,7 @@
       "response": {
         "body": {
           "encoding": null,
-          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"httpStatus\":400,\"description\":\"Invalid value at .space.id: must not contain slashes.\",\"label\":\"Bad Request\",\"type\":\"Error\"}"
+          "string": "{\"httpStatus\":400,\"description\":\"Invalid value at .space.id: must not contain slashes.\",\"label\":\"Bad Request\",\"type\":\"Error\"}"
         },
         "headers": {
           "Access-Control-Allow-Credentials": [

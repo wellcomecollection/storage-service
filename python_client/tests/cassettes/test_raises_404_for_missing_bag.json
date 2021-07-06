@@ -134,7 +134,7 @@
       "response": {
         "body": {
           "encoding": null,
-          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"httpStatus\":404,\"description\":\"Storage manifest alex-testing/doesnotexist not found\",\"label\":\"Not Found\",\"type\":\"Error\"}"
+          "string": "{\"httpStatus\":404,\"description\":\"Storage manifest alex-testing/doesnotexist not found\",\"label\":\"Not Found\",\"type\":\"Error\"}"
         },
         "headers": {
           "Connection": [
