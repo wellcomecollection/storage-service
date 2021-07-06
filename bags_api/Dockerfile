@@ -1,5 +1,7 @@
-FROM 760097843905.dkr.ecr.eu-west-1.amazonaws.com/wellcome/typesafe_config_base:edge
+FROM 760097843905.dkr.ecr.eu-west-1.amazonaws.com/openjdk:11
+
+LABEL maintainer = "Wellcome Collection <digital@wellcomecollection.org>"
 
 ADD target/universal/stage /opt/docker
 
-ENV PROJECT=bags_api
+ENTRYPOINT ["/opt/docker/bin/bags_api"]
