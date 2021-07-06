@@ -5,3 +5,7 @@ output "api_gateway_id" {
 output "loadbalancer_arn" {
   value = aws_lb.nlb.arn
 }
+
+output "invoke_url" {
+  value = aws_api_gateway_deployment.v1.invoke_url
+}

@@ -21,3 +21,7 @@ output "registered_bag_notifications_topic_arn" {
 output "unpacked_bags_bucket_name" {
   value = module.working_storage.unpacked_bags_bucket_name
 }
+
+output "api_invoke_url" {
+  value = module.api.invoke_url
+}
