@@ -10,10 +10,22 @@
 # the superuser account.  This allows us to bootstrap quickly, but you
 # shouldn't use this in production.
 
+
 resource "random_password" "elasticsearch" {
   length           = 32
   special          = true
   override_special = "_%@"
+
+  # Previously, this stack would fail to apply with the error:
+  #
+  #     Error creating ElasticSearch domain: ValidationException:
+  #     The master user password must contain at least one uppercase letter,
+  #     one lowercase letter, one number, and one special character.
+  #
+  min_upper   = 1
+  min_lower   = 1
+  min_numeric = 1
+  min_special = 1
 }
 
 locals {
@@ -25,9 +37,8 @@ module "elasticsearch_secrets" {
   source = "github.com/wellcomecollection/storage-service.git//terraform/modules/secrets?ref=b24ea38"
 
   key_value_map = {
-    "elasticsearch_user"     = local.elasticsearch_user
-    "elasticsearch_password" = local.elasticsearch_password
-
+    "elasticsearch/user"     = local.elasticsearch_user
+    "elasticsearch/password" = local.elasticsearch_password
     "elasticsearch/host"     = aws_elasticsearch_domain.elasticsearch.endpoint
     "elasticsearch/protocol" = "https"
     "elasticsearch/port"     = 443
