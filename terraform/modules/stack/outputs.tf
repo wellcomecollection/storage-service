@@ -17,3 +17,7 @@ output "unpacker_task_role_arn" {
 output "registered_bag_notifications_topic_arn" {
   value = module.registered_bag_notifications_topic.arn
 }
+
+output "unpacked_bags_bucket_name" {
+  value = module.working_storage.unpacked_bags_bucket_name
+}
