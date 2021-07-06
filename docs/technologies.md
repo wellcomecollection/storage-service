@@ -30,10 +30,8 @@ This document provides a brief overview of some of the key technologies we use i
     </td>
     <td>
       <strong>SNS/SQS</strong> – inter-app message queues.
-      Our apps form a pipeline: an app gets a message from an SQS queue, does some work, then sends an SNS notification to the next app.<br/><br/>
-      We use SNS <em>topics</em> and SQS <em>queues</em>.
-      Queues can subscribe to the output of topics, in a many-to-many relationship.
-      This allows one app to send messages to multiple apps, or one app to receive messages from multiple apps.
+      Our apps form a pipeline: an app receives a message, does some work, then sends another message to the next app in line.
+      This inter-app messaging uses SNS and SQS, for more see <a href="./inter-app-messaging.md">inter-app messaging</a>.
     </td>
   </tr>
   <tr>
