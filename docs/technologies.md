@@ -65,7 +65,8 @@ This document provides a brief overview of some of the key technologies we use i
       <img src="./images/terraform_logo.png">
     </td>
     <td>
-      <strong>Terraform</strong> – an infrastructure-as-code tool that we use to manage our resources (AWS services, Elastic Cloud clusters, Azure storage containers, and so on).
+      <strong>Terraform</strong> – an infrastructure-as-code tool that we use to manage our resources: AWS services, Elastic Cloud clusters, Azure storage containers, and so on.
+      Using Terraform makes it easier for us to track changes to our infrastructure, and to run multiple identical copies of the storage service (one for real content, one for testing).
     </td>
   </tr>
   <tr>
