@@ -21,10 +21,15 @@ This document explains how requests are routed from a publicly visible HTTP endp
     This NLB is running inside a private VPC, which isn't accessible from the Internet.
     API Gateway uses a [VPC Link](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-vpc-links.html) to connect to the NLB.
 
+    API Gateway uses two different ports to distinguish between the APIs.
+
+    -   If the request is for the bags API, it forwards the request to port 65534.
+    -   If the request is for the ingests API, it forwards the request to port 65535.
+
 4.  The NLB looks at the request, and applies two listener rules:
 
-    -   If this request is for the bags API, forward it to the bags target group
-    -   If this request is for the ingests API, forward it to the items target group
+    -   If this request is on port 65534 (bags API), forward it to the bags target group
+    -   If this request is on port 65535 (ingests API), forward it to the items target group
 
 5.  The [target group](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html) routes the request to one of the registered targets.
 
@@ -34,6 +39,8 @@ This document explains how requests are routed from a publicly visible HTTP endp
 
     If there are multiple tasks running, the target group distributes requests between them.
 
+    Requests are routed to an externally published port on the ECS task; in this case, port 9000.
+
 6.  Within the ECS task, we run two containers:
 
     -   The app container (e.g. `bags_api`, `ingests_api`)
@@ -41,3 +48,6 @@ This document explains how requests are routed from a publicly visible HTTP endp
 
     Requests from the target group are initially routed to the nginx container, and then passed to the app container.
     The separate nginx container lets us apply some HTTP-specific config that's shared among all our apps (e.g. CORS).
+
+    The nginx container runs on port 9000; the app container runs on port 9001.
+    Only port 9000 is externally accessible.
