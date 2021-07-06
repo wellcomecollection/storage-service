@@ -30,7 +30,7 @@ This document explains how requests are routed from a publicly visible HTTP endp
 
     In this case, the targets are ECS tasks running either the bags API or the ingests API.
     When the task starts, it tries to register with the target group.
-    The target group runs some health checks to ensure the task can process requests before it becomes "registered" and can serve requests.
+    The target group runs some health checks to ensure the task can process requests before it becomes "registered" and is used to serve requests.
 
     If there are multiple tasks running, the target group distributes requests between them.
 
