@@ -134,7 +134,7 @@
       "response": {
         "body": {
           "encoding": null,
-          "string": "{\"@context\":\"https://api.wellcomecollection.org/context.json\",\"httpStatus\":404,\"description\":\"Ingest 1e4b384e-857b-49aa-a1cb-6c57762b0c3f not found\",\"label\":\"Not Found\",\"type\":\"Error\"}"
+          "string": "{\"httpStatus\":404,\"description\":\"Ingest 1e4b384e-857b-49aa-a1cb-6c57762b0c3f not found\",\"label\":\"Not Found\",\"type\":\"Error\"}"
         },
         "headers": {
           "Connection": [

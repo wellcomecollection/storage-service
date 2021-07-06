@@ -26,7 +26,6 @@ module "ingest_service" {
   worker_container_image       = local.image_ids["ingests_worker"]
 
   external_api_environment = {
-    context_url          = "${var.api_url}/context.json"
     app_base_url         = "${var.api_url}/storage/v1/ingests"
     unpacker_topic_arn   = module.bag_unpacker_input_topic.arn
     metrics_namespace    = local.ingests_api_service_name
@@ -229,7 +228,6 @@ module "bags_api" {
   tracker_container_image = local.image_ids["bag_tracker"]
 
   api_environment = {
-    context_url           = "${var.api_url}/context.json"
     app_base_url          = "${var.api_url}/storage/v1/bags"
     vhs_bucket_name       = var.vhs_manifests_bucket_name
     vhs_table_name        = var.vhs_manifests_table_name
@@ -782,7 +780,6 @@ module "notifier" {
   service_name = "${var.namespace}-notifier"
 
   environment = {
-    context_url        = "https://api.wellcomecollection.org/storage/v1/context.json"
     notifier_queue_url = module.notifier_input_queue.url
     ingest_topic_arn   = module.ingests_topic.arn
     metrics_namespace  = local.notifier_service_name
@@ -820,6 +817,4 @@ module "api" {
     "${var.cognito_storage_api_identifier}/ingests",
     "${var.cognito_storage_api_identifier}/bags",
   ]
-
-  static_content_bucket_name = module.working_storage.static_content_bucket_name
 }

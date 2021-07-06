@@ -8,47 +8,6 @@ resource "aws_api_gateway_rest_api" "api" {
   }
 }
 
-resource "aws_api_gateway_resource" "resource" {
-  rest_api_id = aws_api_gateway_rest_api.api.id
-  parent_id   = aws_api_gateway_rest_api.api.root_resource_id
-  path_part   = "context.json"
-}
-
-resource "aws_api_gateway_method" "root_resource_method" {
-  rest_api_id = aws_api_gateway_rest_api.api.id
-  resource_id = aws_api_gateway_resource.resource.id
-  http_method = "GET"
-
-  authorization = "NONE"
-}
-
-# context.json
-
-resource "aws_api_gateway_integration" "root_static_response" {
-  rest_api_id             = aws_api_gateway_rest_api.api.id
-  resource_id             = aws_api_gateway_resource.resource.id
-  http_method             = "GET"
-  integration_http_method = "GET"
-  type                    = "AWS"
-  uri                     = "arn:aws:apigateway:${var.aws_region}:s3:path//${aws_s3_bucket_object.context.bucket}/${aws_s3_bucket_object.context.key}"
-
-  credentials = aws_iam_role.static_resource_role.arn
-}
-
-resource "aws_api_gateway_method_response" "root_resource_http_200" {
-  rest_api_id = aws_api_gateway_rest_api.api.id
-  resource_id = aws_api_gateway_resource.resource.id
-  http_method = "GET"
-  status_code = "200"
-}
-
-resource "aws_api_gateway_integration_response" "root_resource_http_200" {
-  rest_api_id = aws_api_gateway_rest_api.api.id
-  resource_id = aws_api_gateway_resource.resource.id
-  http_method = "GET"
-  status_code = aws_api_gateway_method_response.root_resource_http_200.status_code
-}
-
 resource "aws_api_gateway_authorizer" "cognito" {
   name          = "cognito"
   type          = "COGNITO_USER_POOLS"
@@ -80,10 +39,9 @@ resource "aws_api_gateway_deployment" "v1" {
   stage_name  = "v1"
 
   variables = {
-    bags_port          = local.bags_listener_port
-    ingests_port       = local.ingests_listener_port,
-    static_response_id = aws_api_gateway_integration.root_static_response.id,
-    integration_uris   = local.integration_uri_variable
+    bags_port        = local.bags_listener_port
+    ingests_port     = local.ingests_listener_port,
+    integration_uris = local.integration_uri_variable
   }
 
   lifecycle {
@@ -97,10 +55,9 @@ resource "aws_api_gateway_stage" "v1" {
   deployment_id = aws_api_gateway_deployment.v1.id
 
   variables = {
-    bags_port          = local.bags_listener_port
-    ingests_port       = local.ingests_listener_port,
-    static_response_id = aws_api_gateway_integration.root_static_response.id,
-    integration_uris   = local.integration_uri_variable
+    bags_port        = local.bags_listener_port
+    ingests_port     = local.ingests_listener_port,
+    integration_uris = local.integration_uri_variable
   }
 }
 

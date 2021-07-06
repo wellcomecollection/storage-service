@@ -1,14 +1,9 @@
-locals {
-  context_url = "https://api.wellcomecollection.org/storage/v1/context.json"
-}
-
 module "response_default_5xx" {
   source = "./response_5xx"
 
   response_type = "DEFAULT_5XX"
 
   rest_api_id = aws_api_gateway_rest_api.api.id
-  context_url = local.context_url
 }
 
 module "response_default_4xx" {
@@ -18,7 +13,6 @@ module "response_default_4xx" {
   label         = "Client Error"
 
   rest_api_id = aws_api_gateway_rest_api.api.id
-  context_url = local.context_url
 }
 
 module "response_access_denied" {
@@ -29,7 +23,6 @@ module "response_access_denied" {
   status_code   = 401
 
   rest_api_id = aws_api_gateway_rest_api.api.id
-  context_url = local.context_url
 }
 
 module "response_bad_request_parameters" {
@@ -39,7 +32,6 @@ module "response_bad_request_parameters" {
   label         = "Bad Request Parameters"
 
   rest_api_id = aws_api_gateway_rest_api.api.id
-  context_url = local.context_url
 }
 
 module "response_bad_request_body" {
@@ -50,7 +42,6 @@ module "response_bad_request_body" {
   status_code   = 401
 
   rest_api_id = aws_api_gateway_rest_api.api.id
-  context_url = local.context_url
 }
 
 module "response_expired_token" {
@@ -61,7 +52,6 @@ module "response_expired_token" {
   status_code   = 401
 
   rest_api_id = aws_api_gateway_rest_api.api.id
-  context_url = local.context_url
 }
 
 module "response_invalid_api_key" {
@@ -72,7 +62,6 @@ module "response_invalid_api_key" {
   status_code   = 403
 
   rest_api_id = aws_api_gateway_rest_api.api.id
-  context_url = local.context_url
 }
 
 module "response_invalid_signature" {
@@ -83,7 +72,6 @@ module "response_invalid_signature" {
   status_code   = 403
 
   rest_api_id = aws_api_gateway_rest_api.api.id
-  context_url = local.context_url
 }
 
 module "response_missing_authentication_token" {
@@ -94,7 +82,6 @@ module "response_missing_authentication_token" {
   status_code   = 403
 
   rest_api_id = aws_api_gateway_rest_api.api.id
-  context_url = local.context_url
 }
 
 module "response_quota_exceeded" {
@@ -105,7 +92,6 @@ module "response_quota_exceeded" {
   status_code   = 429
 
   rest_api_id = aws_api_gateway_rest_api.api.id
-  context_url = local.context_url
 }
 
 module "response_request_too_large" {
@@ -116,7 +102,6 @@ module "response_request_too_large" {
   status_code   = 413
 
   rest_api_id = aws_api_gateway_rest_api.api.id
-  context_url = local.context_url
 }
 
 module "response_not_found" {
@@ -127,7 +112,6 @@ module "response_not_found" {
   status_code   = 404
 
   rest_api_id = aws_api_gateway_rest_api.api.id
-  context_url = local.context_url
 }
 
 module "response_throttled" {
@@ -138,7 +122,6 @@ module "response_throttled" {
   status_code   = 429
 
   rest_api_id = aws_api_gateway_rest_api.api.id
-  context_url = local.context_url
 }
 
 module "response_unauthorized" {
@@ -149,7 +132,6 @@ module "response_unauthorized" {
   status_code   = 401
 
   rest_api_id = aws_api_gateway_rest_api.api.id
-  context_url = local.context_url
 }
 
 module "response_unsupported_media_type" {
@@ -160,6 +142,4 @@ module "response_unsupported_media_type" {
   status_code   = 415
 
   rest_api_id = aws_api_gateway_rest_api.api.id
-  context_url = local.context_url
 }
-
