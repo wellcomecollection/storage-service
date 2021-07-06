@@ -11,6 +11,10 @@ resource "aws_cognito_user_pool" "pool" {
   }
 }
 
+locals {
+  token_url = "https://${aws_cognito_user_pool.pool.domain}.auth.${local.aws_region}.amazoncognito.com/token"
+}
+
 resource "aws_cognito_user_pool_domain" "domain" {
   domain       = local.namespace
   user_pool_id = aws_cognito_user_pool.pool.id

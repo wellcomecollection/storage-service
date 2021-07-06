@@ -2,11 +2,13 @@ locals {
   namespace       = "weco-dams-prototype"
   short_namespace = "weco"
 
-  aws_region = "eu-west-1"
+  aws_region = data.aws_region.current.name
   account_id = "241906670800"
 
   cidr_block = "172.14.0.0/16"
 }
+
+data "aws_region" "current" {}
 
 terraform {
   backend "s3" {
