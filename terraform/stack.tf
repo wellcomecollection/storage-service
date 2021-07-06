@@ -1,5 +1,5 @@
 module "stack" {
-  source = "github.com/wellcomecollection/storage-service.git//terraform/modules/stack?ref=9a242da154b99ed440ec59154f61b877d4964438"
+  source = "github.com/wellcomecollection/storage-service.git//terraform/modules/stack?ref=a37123380ca56dadc7ea5d45439fef473d3772e8"
 
   namespace = local.short_namespace
 
@@ -55,22 +55,22 @@ module "stack" {
   es_ingests_index_name = "storage_ingests"
 
   ingests_indexer_secrets = {
-    es_username = "elasticsearch_user"
-    es_password = "elasticsearch_password"
+    es_username = "elasticsearch/user"
+    es_password = "elasticsearch/password"
   }
 
   es_bags_index_name = "storage_bags"
 
   bag_indexer_secrets = {
-    es_username = "elasticsearch_user"
-    es_password = "elasticsearch_password"
+    es_username = "elasticsearch/user"
+    es_password = "elasticsearch/password"
   }
 
   es_files_index_name = "storage_files"
 
   file_indexer_secrets = {
-    es_username = "elasticsearch_user"
-    es_password = "elasticsearch_password"
+    es_username = "elasticsearch/user"
+    es_password = "elasticsearch/password"
   }
 
   upload_bucket_arns = [
@@ -79,7 +79,10 @@ module "stack" {
 
   bag_register_output_subscribe_principals = []
 
-  depends_on = [aws_iam_service_linked_role.autoscaling_linked_role]
+  depends_on = [
+    aws_iam_service_linked_role.autoscaling_linked_role,
+    module.elasticsearch_secrets,
+  ]
 
   logging_container = {
     container_registry = "public.ecr.aws/l7a1d1z4"

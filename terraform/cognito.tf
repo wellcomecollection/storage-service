@@ -45,10 +45,7 @@ resource "aws_cognito_user_pool_client" "client" {
 
   allowed_oauth_flows_user_pool_client = true
 
-  allowed_oauth_scopes = [
-    "https://example.org/${local.namespace}/ingests",
-    "https://example.org/${local.namespace}/bags",
-  ]
+  allowed_oauth_scopes = aws_cognito_resource_server.storage_api.scope_identifiers
 
   supported_identity_providers = [
     "COGNITO",
