@@ -13,8 +13,8 @@ Each bag is identified with a **space** (a broad category) an **external identif
 
 ## Demo: use Terraform and AWS to run the storage service
 
-We have a Terraform configuration that spins up an instance of the storage service inside your AWS account.
-You can use this to try the storage service.
+We have [a Terraform configuration](../demo/terraform) that spins up an instance of the storage service.
+You can use this to try the storage service in your own AWS account.
 
 ## How-to
 

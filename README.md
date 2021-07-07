@@ -49,7 +49,7 @@ For instructions, see [our documentation](docs).
 
 ### Use Terraform and AWS to run a storage service demo
 
-We have [a Terraform configuration](demo) that spins up an instance of the storage service.
+We have [a Terraform configuration](demo/terraform) that spins up an instance of the storage service.
 You can use this to try the storage service in your own AWS account.
 
 [prod]: https://en.wikipedia.org/wiki/Deployment_environment#Production
