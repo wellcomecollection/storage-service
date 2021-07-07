@@ -26,7 +26,7 @@ It does not do any introspection of the bag contents, or change its behaviour ba
 
 The storage service runs entirely in AWS, with no on-premise infrastructure required.
 
-For more detailed designs, see [our documentation](docs).
+For more detailed information about the design, see [our documentation](docs).
 
 [bagit]: https://datatracker.ietf.org/doc/html/rfc8493
 

@@ -7,7 +7,7 @@ You need:
 -   A bag in [the BagIt packaging format](https://datatracker.ietf.org/doc/html/rfc8493).
     This bag should have a single External-Identifier in the [bag-info.txt](https://datatracker.ietf.org/doc/html/rfc8493#section-2.2.2).
 
-    There is an example bag with the External-Identifier `test_bag` alongside this guide.
+    There is an example bag with the External-Identifier `test_bag` in the same directory as this guide.
 
 You need to know:
 
@@ -25,7 +25,7 @@ To store a bag in the storage service:
 
 1.  If not already compressed, tar-gzip compress your BagIt bag:
 
-    ```
+    ```sghel
     tar -czf bag.tar.gz "$BAG_DIRECTORY"
     ```
 
@@ -38,7 +38,7 @@ To store a bag in the storage service:
 1.  Fetch an access token for the OAuth2 credentials grant:
 
     ```
-    curl -X POST "${token_url}" \
+    curl -X POST "$TOKEN_URL" \
       --data grant_type=client_credentials \
       --data client_id="$CLIENT_ID" \
       --data client_secret="$CLIENT_SECRET"
@@ -53,7 +53,10 @@ To store a bag in the storage service:
     Remember the `access_token`.
 
 1.  Send a POST request to the /ingests API to create an ingest.
-    This asks the storage service to store your bag:
+    This asks the storage service to store your bag.
+
+    If this is the first bag with this (space, external identifier) pair, use ingest type `"create"`.
+    If there is already a bag with this (space, external identifier) pair, use ingest type `"update"`.
 
     ```
     curl -X POST "$API_URL/ingests" \
@@ -61,7 +64,7 @@ To store a bag in the storage service:
       --header "Content-Type: application/json" \
       --data '{
         "type": "Ingest",
-        "ingestType": {"id": "create", "type": "IngestType"},
+        "ingestType": {"id": "$INGEST_TYPE", "type": "IngestType"},
         "space": {"id": "$SPACE", "type": "Space"},
         "sourceLocation": {
           "provider": {"id": "amazon-s3", "type": "Provider"},
