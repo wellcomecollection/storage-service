@@ -1,11 +1,12 @@
 module "demo_stack" {
-  source = "github.com/wellcomecollection/storage-service.git//demo/terraform/demo_stack?ref=63a832f295bc9fcff3a21ef2cb01c1c85f298b36"
+  source = "github.com/wellcomecollection/storage-service.git//demo/terraform/demo_stack?ref=f8fce1c"
 
   namespace       = "weco-dams-prototype"
   short_namespace = "weco"
 }
 
 output "elasticsearch_host" { value = module.demo_stack.elasticsearch_host }
+output "kibana_endpoint" { value = module.demo_stack.kibana_endpoint }
 output "token_url" { value = module.demo_stack.token_url }
 output "api_url" { value = module.demo_stack.api_url }
 output "replica_primary_bucket_name" { value = module.demo_stack.replica_primary_bucket_name }
