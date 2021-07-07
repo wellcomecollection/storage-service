@@ -19,7 +19,7 @@ services:
       - "DATA_DIR=/tmp/localstack/data"
 
   ingests_tracker:
-    image: "ingests_tracker:43c9ad494468929d4a7edb98da7b93f72ac144af"
+    image: "ingests_tracker:74884e3ba074efb36c6c6632b38d264b29f8f155"
 
     restart: "on-failure"
 
@@ -31,6 +31,23 @@ services:
       - "AWS_REGION=eu-west-1"
 
       - "ingests_table_name=demo-ingests"
-      # - "ingest_tracker_store=memory"
       - "callback_notifications_topic_arn=arn:aws:sns:eu-west-1:000000000000:callback_notifications"
       - "updated_ingests_topic_arn=arn:aws:sns:eu-west-1:000000000000:updated_ingests"
+
+      - "ingests_tracker_host=0.0.0.0"
+
+  ingests_worker:
+    image: "ingests_worker:74884e3ba074efb36c6c6632b38d264b29f8f155"
+
+    restart: "on-failure"
+
+    environment:
+      - "aws_key=test"
+      - "aws_secret=test"
+      - "aws_endpoint=http://aws:4566"
+      - "aws_region=eu-west-1"
+      - "AWS_REGION=eu-west-1"
+
+      - "queue_url=http://aws:4566/000000000000/ingests_worker_input"
+      - "metrics_namespace=ingests_worker"
+      - "ingests_tracker_host=http://ingests_tracker:8080"

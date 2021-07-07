@@ -47,7 +47,7 @@ module "working_storage" {
 
 locals {
   queue_names = [
-    "ingest_tracker_input"
+    "ingests_worker_input"
   ]
 
   topic_names = [
