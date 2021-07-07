@@ -2,6 +2,10 @@ output "elasticsearch_host" {
   value = aws_elasticsearch_domain.elasticsearch.endpoint
 }
 
+output "kibana_domain" {
+  value = aws_elasticsearch_domain.elasticsearch.kibana_domain
+}
+
 output "token_url" {
   value = local.token_url
 }
