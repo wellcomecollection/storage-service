@@ -1,5 +1,5 @@
 resource "local_file" "readme" {
-  content  = templatefile(
+  content = templatefile(
     "${path.module}/README.html.template",
     {
       primary_bucket  = aws_s3_bucket.replica_primary.bucket,
