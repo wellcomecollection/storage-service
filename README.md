@@ -13,15 +13,7 @@ It manages the storage of our digital collections, including:
 
 ## High-level design
 
-<figure>
-  <img src="docs/images/high_level_design.svg">
-  <figcaption>
-    Icons:
-    <a href="https://thenounproject.com/term/paper-bag/28579/">Paper bag</a> by Dorian Dance. From The Noun Project, CC BY.
-    <a href="https://thenounproject.com/term/process/2473979/">Process</a>, by Alice Design. From The Noun Project, CC BY.
-    <a href="https://aws.amazon.com/architecture/icons/">Bucket</a>, from the AWS Architecture icons.
-  </figcaption>
-</figure>
+<img src="docs/images/high_level_design.svg">
 
 The user uploads a "bag" to the storage service.
 This should use the [BagIt packaging format][bagit].
