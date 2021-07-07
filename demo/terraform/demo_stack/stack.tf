@@ -1,7 +1,7 @@
 module "stack" {
   source = "github.com/wellcomecollection/storage-service.git//terraform/modules/stack?ref=1b4648911f12d27b78cdde48c86054d7cdee8115"
 
-  namespace = local.short_namespace
+  namespace = var.short_namespace
 
   min_capacity = 0
   max_capacity = 1
