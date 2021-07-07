@@ -5,7 +5,7 @@ module "stack" {
 
   api_url = "https://example.org/${local.namespace}"
 
-  min_capacity = 1
+  min_capacity = 0
   max_capacity = 1
 
   vpc_id = module.vpc.vpc_id
