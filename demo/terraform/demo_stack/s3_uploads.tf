@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "uploads" {
-  bucket = "${local.namespace}-uploads"
+  bucket = "${var.namespace}-uploads"
   acl    = "private"
 }
 

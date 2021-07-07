@@ -1,7 +1,7 @@
 # These extra buckets are the permanent copy of our preservation files.
 
 resource "aws_s3_bucket" "replica_primary" {
-  bucket = "${local.namespace}-replica-primary"
+  bucket = "${var.namespace}-replica-primary"
   acl    = "private"
 
   # Note: we enable versioning in our real buckets, but I've disabled
@@ -25,7 +25,7 @@ resource "aws_s3_bucket" "replica_primary" {
 # TODO: Create an S3 inventory of the primary replica bucket.
 
 resource "aws_s3_bucket" "replica_glacier" {
-  bucket = "${local.namespace}-replica-glacier"
+  bucket = "${var.namespace}-replica-glacier"
   acl    = "private"
 
   # Note: see above.

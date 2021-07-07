@@ -51,7 +51,7 @@ module "elasticsearch_secrets" {
 }
 
 resource "aws_elasticsearch_domain" "elasticsearch" {
-  domain_name = local.namespace
+  domain_name = var.namespace
 
   elasticsearch_version = "7.10"
 
@@ -83,7 +83,7 @@ resource "aws_elasticsearch_domain" "elasticsearch" {
         "AWS": "*"
       },
       "Action": "es:*",
-      "Resource": "arn:aws:es:${local.aws_region}:${local.account_id}:domain/${local.namespace}/*"
+      "Resource": "arn:aws:es:${local.aws_region}:${local.account_id}:domain/${var.namespace}/*"
     }
   ]
 }
