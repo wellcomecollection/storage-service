@@ -1,16 +1,3 @@
-resource "aws_api_gateway_base_path_mapping" "mapping_staging" {
-  api_id      = module.stack_staging.api_gateway_id
-  domain_name = local.staging_domain_name
-  base_path   = "storage"
-}
-
-module "domain" {
-  source = "../modules/stack/api/domain"
-
-  domain_name      = local.staging_domain_name
-  cert_domain_name = local.cert_domain_name
-}
-
 locals {
   release_label = "stage"
 }

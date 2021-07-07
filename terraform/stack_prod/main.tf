@@ -1,16 +1,3 @@
-resource "aws_api_gateway_base_path_mapping" "mapping_prod" {
-  api_id      = module.stack_prod.api_gateway_id
-  domain_name = local.domain_name
-  base_path   = "storage"
-}
-
-module "domain" {
-  source = "../modules/stack/api/domain"
-
-  domain_name      = local.domain_name
-  cert_domain_name = local.cert_domain_name
-}
-
 locals {
   release_label = "prod"
 }

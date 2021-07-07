@@ -1,7 +1,3 @@
-output "prod_domain_name" {
-  value = module.domain.regional_domain_name
-}
-
 output "unpacker_task_role_name" {
   value = module.stack_prod.unpacker_task_role_name
 }

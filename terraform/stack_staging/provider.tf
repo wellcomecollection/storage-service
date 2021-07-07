@@ -20,3 +20,18 @@ provider "aws" {
     keys = ["deployment:label"]
   }
 }
+
+provider "aws" {
+  alias = "dns"
+
+  assume_role {
+    role_arn = "arn:aws:iam::267269328833:role/wellcomecollection-assume_role_hosted_zone_update"
+  }
+
+  region = var.aws_region
+
+  default_tags {
+    tags = local.default_tags
+  }
+}
+
