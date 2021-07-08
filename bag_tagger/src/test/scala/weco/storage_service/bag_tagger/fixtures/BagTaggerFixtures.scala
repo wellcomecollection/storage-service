@@ -1,7 +1,10 @@
 package weco.storage_service.bag_tagger.fixtures
 
+import scala.concurrent.duration._
+
 import io.circe.Decoder
 import org.scalatest.Suite
+
 import weco.fixtures.TestWith
 import weco.messaging.fixtures.SQS.Queue
 import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
@@ -35,7 +38,7 @@ trait BagTaggerFixtures
     queue: Queue = Queue(
       url = "q://bag-tagger-tests",
       arn = "arn::bag-tagger-tests",
-      visibilityTimeout = 1
+      visibilityTimeout = 1 seconds
     ),
     storageManifestDao: StorageManifestDao = createStorageManifestDao(),
     applyTags: ApplyTags = ApplyTags(),
