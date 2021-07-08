@@ -16,7 +16,6 @@ import weco.storage_service.bag_tracker.fixtures.{
 }
 import weco.storage_service.indexer.file_finder.FileFinderWorker
 
-
 trait WorkerServiceFixture
     extends AlpakkaSQSWorkerFixtures
     with BagTrackerFixtures
