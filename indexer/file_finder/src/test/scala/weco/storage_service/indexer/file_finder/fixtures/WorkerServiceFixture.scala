@@ -1,5 +1,8 @@
 package weco.storage_service.indexer.file_finder.fixtures
 
+import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
+
 import weco.fixtures.TestWith
 import weco.json.JsonUtil._
 import weco.messaging.fixtures.SQS.Queue
@@ -13,14 +16,12 @@ import weco.storage_service.bag_tracker.fixtures.{
 }
 import weco.storage_service.indexer.file_finder.FileFinderWorker
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 trait WorkerServiceFixture
     extends AlpakkaSQSWorkerFixtures
     with BagTrackerFixtures
     with StorageManifestDaoFixture {
   def withWorkerService[R](
-    queue: Queue = Queue("q", "arn::q", visibilityTimeout = 1),
+    queue: Queue = Queue("q", "arn::q", visibilityTimeout = 1 seconds),
     messageSender: MemoryMessageSender,
     bagTrackerClient: BagTrackerClient,
     batchSize: Int = 100

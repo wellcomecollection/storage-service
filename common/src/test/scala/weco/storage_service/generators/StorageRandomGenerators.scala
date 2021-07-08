@@ -10,6 +10,7 @@ import weco.storage_service.bagit.models._
 import weco.storage_service.ingests.models.{IngestID, StorageProvider}
 import weco.storage_service.verify._
 
+import scala.concurrent.duration._
 import scala.util.Random
 
 trait StorageRandomGenerators extends RandomGenerators {
@@ -19,7 +20,7 @@ trait StorageRandomGenerators extends RandomGenerators {
   val dummyQueue: Queue = Queue(
     url = "test://test-q",
     arn = "arn::sqs::test",
-    visibilityTimeout = 1
+    visibilityTimeout = 1 seconds
   )
 
   def randomPaths(maxDepth: Int = 4, dirs: Int = 4): List[String] = {
