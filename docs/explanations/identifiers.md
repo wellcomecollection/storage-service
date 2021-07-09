@@ -26,7 +26,7 @@ Why did we choose this approach?
 -   We match bags to records in systems outside the storage service (for example, the library catalogue).
     This approach allows us to use the same identifier as the external system, rather than [inventing another type of identifier][standards].
 
--   Using human-readable identifiers allows us to use the identifiers directly in the underlying storage:
+-   This structure allows us to group related content by space within the underlying storage, in a way that is human-readable:
 
     ```
     digitised/
@@ -44,6 +44,8 @@ Why did we choose this approach?
             └── v1/
                  └── ...
     ```
+
+    The human-readable storage layout means our files are not tied to the specific software implementation of the storage service.
 
 [uuids]: https://en.wikipedia.org/wiki/Universally_unique_identifier
 [standards]: https://xkcd.com/927/

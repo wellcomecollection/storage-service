@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 170">
+  <defs>
+    <style>
+      .app {
+        stroke: #D45B07;
+        stroke-width: 1;
+        fill: rgba(212, 91, 7, 0.3);
+      }
+
+      .topic, .queue {
+        stroke: #FF4F8B;
+        stroke-width: 1;
+        fill: rgba(255, 79, 139, 0.3);
+      }
+
+      text {
+        fill: black;
+        font-size: 13px;
+        stroke: none;
+        text-anchor: middle;
+        dominant-baseline: middle;
+        font-family: sans-serif;
+      }
+
+      line {
+        stroke: #222;
+        stroke-width: 1.5;
+        stroke-linecap: round;
+      }
+    </style>
+  </defs>
+
+
+  <svg y="0">
+    <circle class="queue" cx="240" cy="30" r="20"/>
+    <rect class="app" x="325" y="10" width="40" height="40" rx="10"/>
+    <text x="240" y="32">Q</text>
+    <text x="345" y="30">app</text>
+
+    <svg x="210">
+      <line x1="57" y1="30" x2="105" y2="30"/>
+      <line x1="107" y1="30" x2="101" y2="33"/>
+      <line x1="107" y1="30" x2="101" y2="27"/>
+    </svg>
+
+    <svg x="105">
+      <line x1="80.5" y1="30" x2="105" y2="30"/>
+      <line x1="107" y1="30" x2="101" y2="33"/>
+      <line x1="107" y1="30" x2="101" y2="27"/>
+    </svg>
+  </svg>
+
+  <svg y="55">
+    <circle class="queue" cx="240" cy="30" r="20"/>
+    <rect class="app" x="325" y="10" width="40" height="40" rx="10"/>
+    <text x="240" y="32">Q</text>
+    <text x="345" y="30">app</text>
+
+    <svg x="210">
+      <line x1="57" y1="30" x2="105" y2="30"/>
+      <line x1="107" y1="30" x2="101" y2="33"/>
+      <line x1="107" y1="30" x2="101" y2="27"/>
+    </svg>
+  </svg>
+
+  <svg y="110">
+    <circle class="queue" cx="240" cy="30" r="20"/>
+    <rect class="app" x="325" y="10" width="40" height="40" rx="10"/>
+    <text x="240" y="32">Q</text>
+    <text x="345" y="30">app</text>
+
+    <svg x="210">
+      <line x1="57" y1="30" x2="105" y2="30"/>
+      <line x1="107" y1="30" x2="101" y2="33"/>
+      <line x1="107" y1="30" x2="101" y2="27"/>
+    </svg>
+
+    <svg x="105">
+      <line x1="80.5" y1="30" x2="105" y2="30"/>
+      <line x1="107" y1="30" x2="101" y2="33"/>
+      <line x1="107" y1="30" x2="101" y2="27"/>
+    </svg>
+  </svg>
+
+  <line x1="185.5" y1="30" x2="185.5" y2="140"/>
+
+  <svg y="55">
+    <rect class="app" x="10" y="10" width="40" height="40" rx="10"/>
+    <polygon class="topic" points="135,10 155,30 135,50 115,30"/>
+    <text x="30" y="30">app</text>
+    <text x="135" y="32">T</text>
+
+    <svg x="0">
+      <line x1="57" y1="30" x2="105" y2="30"/>
+      <line x1="107" y1="30" x2="101" y2="33"/>
+      <line x1="107" y1="30" x2="101" y2="27"/>
+    </svg>
+
+    <svg x="105">
+      <line x1="57" y1="30" x2="105" y2="30"/>
+      <line x1="107" y1="30" x2="101" y2="33"/>
+      <line x1="107" y1="30" x2="101" y2="27"/>
+    </svg>
+  </svg>
+</svg>
