@@ -11,6 +11,20 @@ It manages the storage of our digital collections, including:
 
 
 
+## Requirements
+
+The storage service is designed to:
+
+-   Ensure the safe, long-term (i.e. decades) storage of our digital assets
+-   Provide a scalable mechanism for identifying, retrieving, and storing content
+-   Follow industry best-practices around file integrity and audit trails
+-   Enable us to meet [NDSA Level 4][ndsa] for both digitised and ["born-digital"][born_digital] assets
+
+[ndsa]: https://ndsa.org/activities/levels-of-digital-preservation/
+[born_digital]: https://en.wikipedia.org/wiki/Born-digital
+
+
+
 ## High-level design
 
 <img src="docs/images/high_level_design.svg">
