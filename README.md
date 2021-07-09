@@ -30,10 +30,11 @@ The storage service is designed to:
 <img src="docs/images/high_level_design.svg">
 
 The user uploads a "bag" to the storage service.
-This should use the [BagIt packaging format][bagit].
+This bag should use the [BagIt packaging format][bagit].
+The user could be a person, of an automated workflow system like [Goobi](https://www.intranda.com/en/digiverso/goobi/goobi-overview/) or [Archivematica](https://archivematica.org/).
 
 The storage service verifies the fixity information in the bag (checksums, file sizes, filenames).
-If the fixity information is correct, it replicates the bag to three storage locations, split across different cloud providers and geographic locations.
+If the fixity information is correct, it replicates the bag to multiple storage locations, split across different cloud providers and geographic locations.
 
 The storage service stores exactly the bytes you give it; no more, no less.
 It does not do any introspection of the bag contents, or change its behaviour based on the files a bag contains.
