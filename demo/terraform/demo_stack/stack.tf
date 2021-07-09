@@ -1,11 +1,9 @@
 module "stack" {
-  source = "github.com/wellcomecollection/storage-service.git//terraform/modules/stack?ref=8f90f3ca640795d61743ee7d035a2c3217d7fed8"
+  source = "github.com/wellcomecollection/storage-service.git//terraform/modules/stack?ref=1b4648911f12d27b78cdde48c86054d7cdee8115"
 
-  namespace = local.short_namespace
+  namespace = var.short_namespace
 
-  api_url = "https://example.org/${local.namespace}"
-
-  min_capacity = 1
+  min_capacity = 0
   max_capacity = 1
 
   vpc_id = module.vpc.vpc_id
@@ -23,7 +21,7 @@ module "stack" {
   replica_primary_bucket_name = aws_s3_bucket.replica_primary.id
   replica_glacier_bucket_name = aws_s3_bucket.replica_glacier.id
 
-  working_storage_bucket_prefix = "${local.namespace}-"
+  working_storage_bucket_prefix = "${var.namespace}-"
 
   # Setting these both to empty strings means the storage service won't
   # try to replicate bags to Azure.

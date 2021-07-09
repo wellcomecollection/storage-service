@@ -3,7 +3,8 @@ variable "namespace" {
 }
 
 variable "api_url" {
-  type = string
+  type    = string
+  default = null
 }
 
 variable "dlq_alarm_arn" {

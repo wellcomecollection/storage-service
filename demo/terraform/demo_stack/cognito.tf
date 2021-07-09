@@ -1,5 +1,5 @@
 resource "aws_cognito_user_pool" "pool" {
-  name = local.namespace
+  name = var.namespace
 
   admin_create_user_config {
     allow_admin_create_user_only = true
@@ -16,12 +16,12 @@ locals {
 }
 
 resource "aws_cognito_user_pool_domain" "domain" {
-  domain       = local.namespace
+  domain       = var.namespace
   user_pool_id = aws_cognito_user_pool.pool.id
 }
 
 resource "aws_cognito_resource_server" "storage_api" {
-  identifier = "https://example.org/${local.namespace}"
+  identifier = "https://example.org/${var.namespace}"
   name       = "Storage API V1"
 
   scope {

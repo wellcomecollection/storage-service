@@ -1,3 +1,7 @@
+locals {
+  base_url = var.api_url != null ? "${var.api_url}/storage/v1" : module.api.invoke_url
+}
+
 module "working_storage" {
   source = "./working_storage"
 
@@ -26,7 +30,7 @@ module "ingest_service" {
   worker_container_image       = local.image_ids["ingests_worker"]
 
   external_api_environment = {
-    app_base_url         = "${var.api_url}/storage/v1/ingests"
+    app_base_url         = "${local.base_url}/ingests"
     unpacker_topic_arn   = module.bag_unpacker_input_topic.arn
     metrics_namespace    = local.ingests_api_service_name
     ingests_tracker_host = "http://localhost:8080"
@@ -228,7 +232,7 @@ module "bags_api" {
   tracker_container_image = local.image_ids["bag_tracker"]
 
   api_environment = {
-    app_base_url          = "${var.api_url}/storage/v1/bags"
+    app_base_url          = "${local.base_url}/bags"
     vhs_bucket_name       = var.vhs_manifests_bucket_name
     vhs_table_name        = var.vhs_manifests_table_name
     metrics_namespace     = local.bags_api_service_name
