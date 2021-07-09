@@ -61,9 +61,9 @@ These topics explain how the storage service work, and why it's designed in the 
 
 These topics are useful for a developer looking to modify or extend the storage service:
 
--   [Key technologies]
+-   [Key technologies](developers/key-technologies.md)
 -   [Repository layout]
 -   [Adding support for another replica location (e.g. Google Cloud)]
--   [Inter-app messaging: why we use SNS and SQS]
+-   [Inter-app messaging with SQS and SNS](developers/inter-app-messaging.md)
 -   [How requests are routed from the API to app containers]
 -   [Locking around operations in S3 and Azure Blob]

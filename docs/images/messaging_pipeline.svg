@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 60">
+  <defs>
+    <style>
+      .app {
+        stroke: #D45B07;
+        stroke-width: 1;
+        fill: rgba(212, 91, 7, 0.3);
+      }
+
+      .topic, .queue {
+        stroke: #FF4F8B;
+        stroke-width: 1;
+        fill: rgba(255, 79, 139, 0.3);
+      }
+
+      text {
+        fill: black;
+        font-size: 13px;
+        stroke: none;
+        text-anchor: middle;
+        dominant-baseline: middle;
+        font-family: sans-serif;
+      }
+
+      line {
+        stroke: #222;
+        stroke-width: 1.5;
+        stroke-linecap: round;
+      }
+    </style>
+  </defs>
+
+  <rect class="app" x="10" y="10" width="40" height="40" rx="10"/>
+  <rect class="app" x="115" y="10" width="40" height="40" rx="10"/>
+  <rect class="app" x="220" y="10" width="40" height="40" rx="10"/>
+  <rect class="app" x="325" y="10" width="40" height="40" rx="10"/>
+
+  <text x="30" y="30">app</text>
+  <text x="135" y="30">app</text>
+  <text x="240" y="30">app</text>
+  <text x="345" y="30">app</text>
+
+  <svg x="0">
+    <line x1="57" y1="30" x2="105" y2="30"/>
+    <line x1="107" y1="30" x2="101" y2="33"/>
+    <line x1="107" y1="30" x2="101" y2="27"/>
+  </svg>
+
+  <svg x="105">
+    <line x1="57" y1="30" x2="105" y2="30"/>
+    <line x1="107" y1="30" x2="101" y2="33"/>
+    <line x1="107" y1="30" x2="101" y2="27"/>
+  </svg>
+
+  <svg x="210">
+    <line x1="57" y1="30" x2="105" y2="30"/>
+    <line x1="107" y1="30" x2="101" y2="33"/>
+    <line x1="107" y1="30" x2="101" y2="27"/>
+  </svg>
+</svg>
