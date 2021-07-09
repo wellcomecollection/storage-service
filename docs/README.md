@@ -11,7 +11,7 @@ Each bag is identified with a **space** (a broad category) an **external identif
 
 [bagit]: https://datatracker.ietf.org/doc/html/rfc8493
 
-## Demo: use Terraform and AWS to run the storage service
+## Getting started: use Terraform and AWS to run the storage service
 
 We have [a Terraform configuration](../demo/terraform) that spins up an instance of the storage service.
 You can use this to try the storage service in your own AWS account.

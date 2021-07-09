@@ -47,7 +47,7 @@ We publish our Docker images and infrastructure code, to allow other people to r
 
 For instructions, see [our documentation](docs).
 
-### Use Terraform and AWS to run a storage service demo
+### Getting started: use Terraform and AWS to run a storage service demo
 
 We have [a Terraform configuration](demo/terraform) that spins up an instance of the storage service.
 You can use this to try the storage service in your own AWS account.
