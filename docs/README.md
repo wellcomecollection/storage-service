@@ -65,5 +65,5 @@ These topics are useful for a developer looking to modify or extend the storage 
 -   [Repository layout](developers/repository-layout.md)
 -   [Adding support for another replica location (e.g. Google Cloud)]
 -   [Inter-app messaging with SQS and SNS](developers/inter-app-messaging.md)
--   [How requests are routed from the API to app containers]
+-   [How requests are routed from the API to app containers](explanations/how-requests-are-routed.md)
 -   [Locking around operations in S3 and Azure Blob]
