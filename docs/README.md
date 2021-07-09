@@ -62,7 +62,7 @@ These topics explain how the storage service work, and why it's designed in the 
 These topics are useful for a developer looking to modify or extend the storage service:
 
 -   [Key technologies](developers/key-technologies.md)
--   [Repository layout]
+-   [Repository layout](developers/repository-layout.md)
 -   [Adding support for another replica location (e.g. Google Cloud)]
 -   [Inter-app messaging with SQS and SNS](developers/inter-app-messaging.md)
 -   [How requests are routed from the API to app containers]
