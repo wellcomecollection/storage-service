@@ -38,7 +38,7 @@ The archive holds our digital collections, including:
 Useful reading:
 
 -   [Building Wellcome Collection’s new archival storage service](https://stacks.wellcomecollection.org/building-wellcome-collections-new-archival-storage-service-3f68ff21927e) is a blog post that explains the high-level design of the service, why and how we built it.
--   [The architecture document](docs/architecture.md) explains the inner workings of the storage service.
+-   [The architecture document](architecture.md) explains the inner workings of the storage service.
     It is intended for developers who are working on the storage service code.
 
 
@@ -156,5 +156,4 @@ You can see a list of open issues for the storage service [in the wellcomecollec
 terraform init
 terraform apply
 ```
-
 
