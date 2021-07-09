@@ -25,3 +25,22 @@ The demo is meant for testing the storage service, not to be a production-ready 
     This is sub-optimal for a variety of reasons.
 
     If non-Wellcome organisations want to use the storage service for real data, then we (Wellcome) need to come up with a better way to deliver software and updates.
+
+-   **The demo doesn't have any monitoring.**
+
+    We have proactive monitoring to warn us about issues in the storage service, like:
+
+    -   A daily report in Slack telling us how many bags were stored, and if any failed unexpectedly or have stalled
+    -   Alarms in Slack for DLQ failures
+
+    This monitoring isn't provided as part of the demo.
+
+-   **The demo only keeps your files in a single geographic region and cloud provider.**
+
+    Ideally, you should keep your files spread across:
+
+    -   Multiple geographic regions
+    -   Multiple cloud storage providers
+
+    To keep the demo simple, it only creates two copies of your files in Amazon S3, both in the same region.
+    The storage service also supports replicating to Azure Blob in a different region, but this is not enabled in the demo.
