@@ -27,7 +27,7 @@ Multiple queues can subscribe to the same topic:
 
 <img src="../images/messaging_one_to_many.svg">
 
-For example, after the bag versioner has assigned a version to a bag, it sends a notification to every replicator at once.
+For example, after the bag versioner has assigned a version to a bag, the notification is forwarded to every replicator at once.
 This allows replications to occur in parallel, rather than in serial.
 
 This also allows a single app to process notifications from multiple apps.
@@ -47,7 +47,7 @@ To save money, we can use autoscaling: by default, we aren't running any of our 
 
 Specifically, we set up CloudWatch Alarms that monitor the size of each queue:
 
--   If a queue has messages waiting to be handled, start an instance of the app that reads from that queue
+-   If a queue has messages waiting to be handled, start an instance of the app that reads from that queue (up to a given maximum)
 -   If a queue has no messages waiting and no messages in-flight, turn off any running instances of the app
 
 This makes the storage service more cost-efficient, but it means bags can take longer to process than if it was always-on.
