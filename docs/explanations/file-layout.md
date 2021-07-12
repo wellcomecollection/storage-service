@@ -1,6 +1,6 @@
 # How files are laid out in the underlying storage
 
-The storage service is meant to be used for a digital archive, where files aren't being saved for years or months -- we're preserving them for *years*.
+The storage service is meant to be used for a digital archive, where files aren't being saved for weeks or months -- we're preserving them for *years*.
 Our files will outlive any particular software stack (including the storage service), so we want to organise them in a way that will remain useful after all the code is gone.
 
 Within each storage location (Amazon S3 bucket, Azure Blob container), we group bags into related "spaces" of content.
