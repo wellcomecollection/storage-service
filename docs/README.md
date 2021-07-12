@@ -34,6 +34,7 @@ You can read the [API reference] for more detailed information about how to use 
 Once you're comfortable storing individual bags, you can read about more advanced topics:
 
 -   [Storing multiple versions of the same bag]
+-   [Sending a partial update to a bag]
 -   [Storing preservation and access copies in different storage classes]
 -   [Reporting on the contents of the storage service]
 -   [Getting callback notifications from the storage service]
