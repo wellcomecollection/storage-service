@@ -1,5 +1,5 @@
 resource "aws_sns_topic" "topic" {
-  name = replace(var.name, "-", "_")
+  name = var.name
 }
 
 data "aws_iam_policy_document" "publish_to_topic" {

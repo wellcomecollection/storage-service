@@ -5,7 +5,8 @@ This continues until the work is finished (in this case, a bag has been successf
 
 <img src="../images/messaging_pipeline.svg">
 
-This document explains the details of how our inter-app messaging works.
+This is the [pub/sub (publish-subscribe) pattern](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern).
+This document explains a bit more about our specific implementation.
 
 
 
