@@ -56,6 +56,8 @@ These topics explain how the storage service work, and why it's designed in the 
 -   [How bags are verified]
 -   [Compressed vs uncompressed bags, and the choice of tar.gz]
 
+We also have the [storage service RFC](https://github.com/wellcomecollection/docs/tree/main/rfcs/002-archival_storage), the original design document -- although this isn't actively updated, and some of the details have changed in the implementation.
+
 
 
 ## Developer information
