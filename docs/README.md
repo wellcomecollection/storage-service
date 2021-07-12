@@ -29,7 +29,7 @@ These guides walk you through some basic operations:
 -   [Look up an already-stored bag in the storage service](howto/look-up-a-bag.md)
 -   [Look up the versions of a bag in the storage service](howto/look-up-versions-of-a-bag.md)
 
-You can read the [API reference] for more detailed information about how to use the storage service.
+You can read the [API reference](developers/api-reference.md) for more detailed information about how to use the storage service.
 
 Once you're comfortable storing individual bags, you can read about more advanced topics:
 
@@ -64,6 +64,7 @@ We also have the [storage service RFC](https://github.com/wellcomecollection/doc
 
 These topics are useful for a developer looking to modify or extend the storage service:
 
+-   [An API reference for the user-facing storage service APIs](developers/api-reference.md)
 -   [Key technologies](developers/key-technologies.md)
 -   [Repository layout](developers/repository-layout.md)
 -   [Adding support for another replica location (e.g. Google Cloud)]
