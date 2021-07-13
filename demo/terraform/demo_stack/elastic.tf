@@ -34,7 +34,7 @@ locals {
 }
 
 module "elasticsearch_secrets" {
-  source = "github.com/wellcomecollection/storage-service.git//terraform/modules/secrets?ref=b24ea38"
+  source = "github.com/wellcomecollection/storage-service.git//terraform/modules/secrets?ref=4457ad5"
 
   key_value_map = {
     "elasticsearch/user"     = local.elasticsearch_user
