@@ -27,7 +27,7 @@ def get_file_paths_under(root="."):
 def update_commit_id(line, commit_id):
     return re.sub(
         r'source = "github\.com/wellcomecollection/storage-service\.git//(?P<directory>[^\?]+)\?ref=[a-f0-9]+"',
-        f'source = "github.com/wellcomecollection/storage-service.git//\g<directory>?ref={commit_id}"',
+        f'source = "github.com/wellcomecollection/storage-service.git//\\g<directory>?ref={commit_id}"',
         line
     )
 
