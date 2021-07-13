@@ -1,4 +1,11 @@
 #!/usr/bin/env python
+"""
+This script bumps all the module references in the demo stack to
+a given Git commit, then bumps the README and example instance to match.
+
+This is meant to make it easier to keep the demo working/up-to-date with
+changes in the storage service.
+"""
 
 import os
 import re
