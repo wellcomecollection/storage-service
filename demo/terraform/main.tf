@@ -1,5 +1,5 @@
 module "demo_stack" {
-  source = "github.com/wellcomecollection/storage-service.git//demo/terraform/demo_stack?ref=fb7559b"
+  source = "github.com/wellcomecollection/storage-service.git//demo/terraform/demo_stack?ref=6d55162"
 
   namespace       = "weco-dams-prototype"
   short_namespace = "weco"
