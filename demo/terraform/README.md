@@ -91,8 +91,16 @@ aws secretsmanager get-secret-value --secret-id client_secret
 -   For testing purposes, there is a known-working bag in the "uploads" bucket.
     This has the external identifier `test_bag` and is stored in the key `example_bag.tar.gz`.
 
--   Application logs are written to an Amazon Elasticsearch cluster.
-    To see these logs, see the [logging instructions](readme/demo_logging.md).
+
+
+## Find your application logs
+
+Application logs are written to an Kibana instance running in AWS.
+Read the [logging instructions](readme/demo_logging.md) to find out how:
+
+- To connect to your Kibana instance
+- To get the username/password for your Kibana instance
+- To search your logs
 
 
 
