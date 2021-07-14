@@ -13,7 +13,11 @@ import weco.storage.typesafe.S3Builder
 import weco.storage_service.bag_unpacker.config.builders.UnpackerWorkerConfigBuilder
 import weco.storage_service.bag_unpacker.services.BagUnpackerWorker
 import weco.storage_service.bag_unpacker.services.s3.S3Unpacker
-import weco.storage_service.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
+import weco.storage_service.config.builders.{
+  IngestUpdaterBuilder,
+  OperationNameBuilder,
+  OutgoingPublisherBuilder
+}
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder
 import weco.typesafe.config.builders.EnrichConfig._
