@@ -1,5 +1,5 @@
 module "stack" {
-  source = "github.com/wellcomecollection/storage-service.git//terraform/modules/stack?ref=1b4648911f12d27b78cdde48c86054d7cdee8115"
+  source = "github.com/wellcomecollection/storage-service.git//terraform/modules/stack?ref=e78ef5d"
 
   namespace = var.short_namespace
 
@@ -10,8 +10,8 @@ module "stack" {
 
   private_subnets = module.vpc.private_subnets
 
-  dlq_alarm_arn   = module.dlq_alarm.arn
-  alarm_topic_arn = module.gateway_server_error_alarm.arn
+  dlq_alarm_arn   = aws_sns_topic.dlq_alarm.arn
+  alarm_topic_arn = aws_sns_topic.gateway_server_error_alarm.arn
 
   cognito_user_pool_arn          = aws_cognito_user_pool.pool.arn
   cognito_storage_api_identifier = aws_cognito_resource_server.storage_api.identifier

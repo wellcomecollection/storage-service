@@ -59,7 +59,7 @@ resource "aws_cognito_user_pool_client" "client" {
 }
 
 module "client_secrets" {
-  source = "github.com/wellcomecollection/storage-service.git//terraform/modules/secrets?ref=b24ea38"
+  source = "github.com/wellcomecollection/terraform-aws-secrets.git?ref=v1.0.1"
 
   key_value_map = {
     "client_id"     = aws_cognito_user_pool_client.client.id
