@@ -1,5 +1,5 @@
 module "metadata_stores" {
-  source = "github.com/wellcomecollection/storage-service.git//terraform/modules/critical/metadata_stores?ref=f0ba7e2"
+  source = "github.com/wellcomecollection/storage-service.git//terraform/modules/critical/metadata_stores?ref=82377ba"
 
   namespace = var.namespace
 

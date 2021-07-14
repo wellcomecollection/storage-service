@@ -1,5 +1,5 @@
 module "stack" {
-  source = "github.com/wellcomecollection/storage-service.git//terraform/modules/stack?ref=f0ba7e2"
+  source = "github.com/wellcomecollection/storage-service.git//terraform/modules/stack?ref=82377ba"
 
   namespace = var.short_namespace
 
