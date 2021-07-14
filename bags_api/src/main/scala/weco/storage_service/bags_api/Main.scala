@@ -40,8 +40,7 @@ object Main extends WellcomeTypesafeApp {
     implicit val matMain: Materializer =
       AkkaBuilder.buildMaterializer()
 
-    implicit val s3Client: AmazonS3 =
-      S3Builder.buildS3Client(config)
+    implicit val s3Client: AmazonS3 = S3Builder.buildS3Client
 
     val uploader = new S3Uploader()
 
