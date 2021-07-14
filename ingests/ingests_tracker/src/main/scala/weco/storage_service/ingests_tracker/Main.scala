@@ -21,7 +21,7 @@ object Main extends WellcomeTypesafeApp {
       AkkaBuilder.buildActorSystem()
 
     implicit val dynamoClient: DynamoDbClient =
-      DynamoBuilder.buildDynamoClient(config)
+      DynamoBuilder.buildDynamoClient
 
     val callbackNotificationService: CallbackNotificationService[SNSConfig] =
       new CallbackNotificationService(

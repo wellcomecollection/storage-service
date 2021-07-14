@@ -45,13 +45,13 @@ object Main extends WellcomeTypesafeApp {
       CloudWatchBuilder.buildCloudWatchMetrics(config)
 
     implicit val sqsClient: SqsAsyncClient =
-      SQSBuilder.buildSQSAsyncClient(config)
+      SQSBuilder.buildSQSAsyncClient
 
     val dynamoConfig: DynamoConfig =
       DynamoBuilder.buildDynamoConfig(config, namespace = "replicas")
 
     implicit val dynamoClient: DynamoDbClient =
-      DynamoBuilder.buildDynamoClient(config)
+      DynamoBuilder.buildDynamoClient
 
     val dynamoVersionedStore =
       new DynamoSingleVersionStore[ReplicaPath, AggregatorInternalRecord](

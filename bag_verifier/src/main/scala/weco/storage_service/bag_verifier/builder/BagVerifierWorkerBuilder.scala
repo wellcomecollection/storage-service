@@ -63,7 +63,7 @@ object BagVerifierWorkerBuilder {
             .buildClient()
 
         implicit val dynamoClient: DynamoDbClient =
-          DynamoBuilder.buildDynamoClient(config)
+          DynamoBuilder.buildDynamoClient
 
         val dynamoConfig = DynamoBuilder
           .buildDynamoConfig(config, namespace = "azure_verifier_cache")

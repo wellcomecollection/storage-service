@@ -10,10 +10,10 @@ import weco.storage.typesafe.{DynamoBuilder, S3Builder}
 object StorageManifestDaoBuilder {
   def build(config: Config): StorageManifestDao = {
     implicit val dynamoClient: DynamoDbClient =
-      DynamoBuilder.buildDynamoClient(config)
+      DynamoBuilder.buildDynamoClient
 
     implicit val s3Client: AmazonS3 =
-      S3Builder.buildS3Client(config)
+      S3Builder.buildS3Client
 
     new DynamoStorageManifestDao(
       dynamoConfig = DynamoBuilder.buildDynamoConfig(config, namespace = "vhs"),

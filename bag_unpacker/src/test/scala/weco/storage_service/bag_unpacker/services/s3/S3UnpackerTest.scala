@@ -1,19 +1,18 @@
 package weco.storage_service.bag_unpacker.services.s3
 
-import java.io.IOException
-import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
 import com.amazonaws.services.s3.model.AmazonS3Exception
+import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import weco.fixtures.TestWith
-import weco.storage_service.bag_unpacker.fixtures.s3.S3CompressFixture
-import weco.storage_service.bag_unpacker.services.{Unpacker, UnpackerTestCases}
 import weco.storage.fixtures.S3Fixtures.Bucket
 import weco.storage.listing.s3.S3ObjectLocationListing
+import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.store.s3.S3StreamStore
-import weco.storage.s3.{
-  S3ClientFactory,
-  S3ObjectLocation,
-  S3ObjectLocationPrefix
-}
+import weco.storage_service.bag_unpacker.fixtures.s3.S3CompressFixture
+import weco.storage_service.bag_unpacker.services.{Unpacker, UnpackerTestCases}
+
+import java.io.IOException
 
 class S3UnpackerTest
     extends UnpackerTestCases[
@@ -98,12 +97,21 @@ class S3UnpackerTest
             // See https://s3-server.readthedocs.io/en/latest/DOCKER.html#scality-access-key-id-and-scality-secret-access-key
             // https://github.com/scality/cloudserver/blob/5e17ec8343cd181936616efc0ac8d19d06dcd97d/conf/authdata.json
             implicit val badS3Client: AmazonS3 =
-              S3ClientFactory.create(
-                region = "localhost",
-                endpoint = "http://localhost:33333",
-                accessKey = "accessKey2",
-                secretKey = "verySecretKey2"
-              )
+              AmazonS3ClientBuilder
+                .standard()
+                .withCredentials(
+                  new AWSStaticCredentialsProvider(
+                    new BasicAWSCredentials("accessKey2", "verySecretKey2")
+                  )
+                )
+                .withPathStyleAccessEnabled(true)
+                .withEndpointConfiguration(
+                  new EndpointConfiguration(
+                    "http://localhost:33333",
+                    "localhost"
+                  )
+                )
+                .build()
 
             val badUnpacker: S3Unpacker =
               new S3Unpacker()(badS3Client)
