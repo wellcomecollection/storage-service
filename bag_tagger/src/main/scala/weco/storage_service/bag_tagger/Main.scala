@@ -31,14 +31,14 @@ object Main extends WellcomeTypesafeApp {
       CloudWatchBuilder.buildCloudWatchMetrics(config)
 
     implicit val sqsClient: SqsAsyncClient =
-      SQSBuilder.buildSQSAsyncClient(config)
+      SQSBuilder.buildSQSAsyncClient
 
     val bagTrackerClient = new AkkaBagTrackerClient(
       trackerHost = config.requireString("bags.tracker.host")
     )
 
     implicit val s3Client: AmazonS3 =
-      S3Builder.buildS3Client(config)
+      S3Builder.buildS3Client
 
     new BagTaggerWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),

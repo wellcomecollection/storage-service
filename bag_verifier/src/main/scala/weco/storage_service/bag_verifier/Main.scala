@@ -28,13 +28,13 @@ object Main extends WellcomeTypesafeApp {
       AkkaBuilder.buildExecutionContext()
 
     implicit val s3Client: AmazonS3 =
-      S3Builder.buildS3Client(config)
+      S3Builder.buildS3Client
 
     implicit val metrics: CloudWatchMetrics =
       CloudWatchBuilder.buildCloudWatchMetrics(config)
 
     implicit val sqsClient: SqsAsyncClient =
-      SQSBuilder.buildSQSAsyncClient(config)
+      SQSBuilder.buildSQSAsyncClient
 
     val operationName =
       OperationNameBuilder.getName(config)

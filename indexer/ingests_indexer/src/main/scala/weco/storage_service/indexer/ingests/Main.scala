@@ -27,7 +27,7 @@ object Main extends WellcomeTypesafeApp {
       CloudWatchBuilder.buildCloudWatchMetrics(config)
 
     implicit val sqsClient: SqsAsyncClient =
-      SQSBuilder.buildSQSAsyncClient(config)
+      SQSBuilder.buildSQSAsyncClient
 
     val index = Index(name = config.requireString("es.ingests.index-name"))
     info(s"Writing ingests to index $index")

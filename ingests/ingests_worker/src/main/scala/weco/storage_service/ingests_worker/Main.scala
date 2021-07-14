@@ -26,7 +26,7 @@ object Main extends WellcomeTypesafeApp {
       CloudWatchBuilder.buildCloudWatchMetrics(config)
 
     implicit val sqsClient: SqsAsyncClient =
-      SQSBuilder.buildSQSAsyncClient(config)
+      SQSBuilder.buildSQSAsyncClient
 
     val ingestTrackerHost = Uri(
       config.requireString("ingests.tracker.host")

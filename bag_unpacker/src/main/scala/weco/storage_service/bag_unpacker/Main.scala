@@ -9,15 +9,11 @@ import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
 import weco.messaging.typesafe.SQSBuilder.buildSQSAsyncClient
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
+import weco.storage.typesafe.S3Builder
 import weco.storage_service.bag_unpacker.config.builders.UnpackerWorkerConfigBuilder
 import weco.storage_service.bag_unpacker.services.BagUnpackerWorker
 import weco.storage_service.bag_unpacker.services.s3.S3Unpacker
-import weco.storage_service.config.builders.{
-  IngestUpdaterBuilder,
-  OperationNameBuilder,
-  OutgoingPublisherBuilder
-}
-import weco.storage.typesafe.S3Builder._
+import weco.storage_service.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder
 import weco.typesafe.config.builders.EnrichConfig._
@@ -33,13 +29,13 @@ object Main extends WellcomeTypesafeApp {
       AkkaBuilder.buildExecutionContext()
 
     implicit val s3Client: AmazonS3 =
-      buildS3Client(config)
+      S3Builder.buildS3Client
 
     implicit val metrics: CloudWatchMetrics =
       CloudWatchBuilder.buildCloudWatchMetrics(config)
 
     implicit val sqsClient: SqsAsyncClient =
-      buildSQSAsyncClient(config)
+      buildSQSAsyncClient
 
     val alpakkaSQSWorkerConfig =
       AlpakkaSqsWorkerConfigBuilder.build(config)

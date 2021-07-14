@@ -30,13 +30,13 @@ object Main extends WellcomeTypesafeApp {
     implicit val executionContext: ExecutionContextExecutor =
       actorSystem.dispatcher
 
-    implicit val s3Client: AmazonS3 = S3Builder.buildS3Client(config)
+    implicit val s3Client: AmazonS3 = S3Builder.buildS3Client
 
     implicit val metrics: CloudWatchMetrics =
       CloudWatchBuilder.buildCloudWatchMetrics(config)
 
     implicit val sqsClient: SqsAsyncClient =
-      SQSBuilder.buildSQSAsyncClient(config)
+      SQSBuilder.buildSQSAsyncClient
 
     val operationName = OperationNameBuilder.getName(config)
 
