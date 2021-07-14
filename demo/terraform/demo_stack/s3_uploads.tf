@@ -6,5 +6,5 @@ resource "aws_s3_bucket" "uploads" {
 resource "aws_s3_bucket_object" "example_bag" {
   bucket = aws_s3_bucket.uploads.bucket
   key    = "example_bag.tar.gz"
-  source = "example_bag.tar.gz"
+  source = "${path.module}/example_bag.tar.gz"
 }
