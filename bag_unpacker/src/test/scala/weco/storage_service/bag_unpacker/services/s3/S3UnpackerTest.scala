@@ -97,11 +97,20 @@ class S3UnpackerTest
             // See https://s3-server.readthedocs.io/en/latest/DOCKER.html#scality-access-key-id-and-scality-secret-access-key
             // https://github.com/scality/cloudserver/blob/5e17ec8343cd181936616efc0ac8d19d06dcd97d/conf/authdata.json
             implicit val badS3Client: AmazonS3 =
-              AmazonS3ClientBuilder.standard()
-                .withCredentials(new AWSStaticCredentialsProvider(
-                  new BasicAWSCredentials("accessKey2", "verySecretKey2")))
+              AmazonS3ClientBuilder
+                .standard()
+                .withCredentials(
+                  new AWSStaticCredentialsProvider(
+                    new BasicAWSCredentials("accessKey2", "verySecretKey2")
+                  )
+                )
                 .withPathStyleAccessEnabled(true)
-                .withEndpointConfiguration(new EndpointConfiguration("http://localhost:33333", "localhost"))
+                .withEndpointConfiguration(
+                  new EndpointConfiguration(
+                    "http://localhost:33333",
+                    "localhost"
+                  )
+                )
                 .build()
 
             val badUnpacker: S3Unpacker =
