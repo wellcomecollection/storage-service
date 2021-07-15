@@ -1,8 +1,9 @@
 module "demo_stack" {
-  source = "github.com/wellcomecollection/storage-service.git//demo/terraform/demo_stack?ref=8306392"
+  source = "github.com/wellcomecollection/storage-service.git//demo/terraform/demo_stack?ref=b155543"
 
   namespace       = "weco-dams-prototype"
   short_namespace = "weco"
+  min_capacity = 1
 }
 
 output "elasticsearch_host" { value = module.demo_stack.elasticsearch_host }
