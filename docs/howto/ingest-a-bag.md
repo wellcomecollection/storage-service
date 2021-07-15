@@ -62,24 +62,24 @@ To store a bag in the storage service:
     curl -X POST "$API_URL/ingests" \
       --header "Authorization: $ACCESS_TOKEN" \
       --header "Content-Type: application/json" \
-      --data '{
-        "type": "Ingest",
-        "ingestType": {"id": "$INGEST_TYPE", "type": "IngestType"},
-        "space": {"id": "$SPACE", "type": "Space"},
-        "sourceLocation": {
-          "provider": {"id": "amazon-s3", "type": "Provider"},
-          "bucket": "$UPLOADS_BUCKET",
-          "path": "$UPLOADED_BAG_KEY",
-          "type": "Location"
+      --data "{
+        \"type\": \"Ingest\",
+        \"ingestType\": {\"id\": \"$INGEST_TYPE\", \"type\": \"IngestType\"},
+        \"space\": {\"id\": \"$SPACE\", \"type\": \"Space\"},
+        \"sourceLocation\": {
+          \"provider\": {\"id\": \"amazon-s3\", \"type\": \"Provider\"},
+          \"bucket\": \"$UPLOADS_BUCKET\",
+          \"path\": \"$UPLOADED_BAG_KEY\",
+          \"type\": \"Location\"
         },
-        "bag": {
-          "info": {
-            "externalIdentifier": "$EXTERNAL_IDENTIFIER",
-            "type": "BagInfo"
+        \"bag\": {
+          \"info\": {
+            \"externalIdentifier\": \"$EXTERNAL_IDENTIFIER\",
+            \"type\": \"BagInfo\"
           },
-          "type": "Bag"
+          \"type\": \"Bag\"
         }
-      }'
+      }"
     ```
 
     This returns a response like:
