@@ -30,11 +30,6 @@ variable "vpc_id" {
   type = string
 }
 
-variable "aws_region" {
-  default = "eu-west-1"
-}
-
-
 # Storage manifests VHS
 
 variable "vhs_manifests_bucket_name" {

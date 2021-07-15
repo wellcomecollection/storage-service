@@ -18,10 +18,6 @@ variable "replica_type" {
   type = string
 }
 
-variable "aws_region" {
-  type = string
-}
-
 variable "topic_arns" {
   type = list(string)
 }

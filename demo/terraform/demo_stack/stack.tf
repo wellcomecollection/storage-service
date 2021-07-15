@@ -1,10 +1,10 @@
 module "stack" {
-  source = "github.com/wellcomecollection/storage-service.git//terraform/modules/stack?ref=caab5b2"
+  source = "github.com/wellcomecollection/storage-service.git//terraform/modules/stack?ref=52e10ed"
 
   namespace = var.short_namespace
 
-  min_capacity = 0
-  max_capacity = 1
+  min_capacity = var.min_capacity
+  max_capacity = var.max_capacity
 
   vpc_id = module.vpc.vpc_id
 
@@ -96,6 +96,6 @@ module "stack" {
 
   app_containers = {
     container_registry = "public.ecr.aws/y1p3h6z3"
-    container_tag      = "latest"
+    container_tag      = "ref.c3b7e5a1557ba0115a31ad06e6a7edd5ad143a64"
   }
 }

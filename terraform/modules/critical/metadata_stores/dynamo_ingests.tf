@@ -12,8 +12,6 @@ resource "aws_dynamodb_table" "ingests" {
   }
 
   lifecycle {
-    prevent_destroy = true
-
     ignore_changes = [
       read_capacity,
       write_capacity,
