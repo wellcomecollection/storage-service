@@ -3,8 +3,8 @@ module "stack" {
 
   namespace = var.short_namespace
 
-  min_capacity = 0
-  max_capacity = 1
+  min_capacity = var.min_capacity
+  max_capacity = var.max_capacity
 
   vpc_id = module.vpc.vpc_id
 
