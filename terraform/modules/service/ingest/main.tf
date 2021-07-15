@@ -22,6 +22,8 @@ module "base" {
   #     enabled Availability Zone has at least one registered target
   #
   # See: https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/how-elastic-load-balancing-works.html
+  #
+  # TODO: Consider parametrising this using https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/availability_zones
   desired_task_count = max(3, var.desired_task_count)
 
   security_group_ids = var.security_group_ids

@@ -1,11 +1,6 @@
-locals {
-  queue_name = replace(var.name, "-", "_")
-}
-
 module "queue" {
-  source     = "git::github.com/wellcomecollection/terraform-aws-sqs//queue?ref=v1.1.2"
-  queue_name = replace(var.name, "-", "_")
-  aws_region = var.aws_region
+  source     = "git::github.com/wellcomecollection/terraform-aws-sqs//queue?ref=v1.2.1"
+  queue_name = var.name
   topic_arns = var.topic_arns
 
   visibility_timeout_seconds = var.visibility_timeout_seconds
@@ -15,8 +10,8 @@ module "queue" {
 }
 
 module "scaling_alarm" {
-  source     = "git::github.com/wellcomecollection/terraform-aws-sqs//autoscaling?ref=v1.1.2"
-  queue_name = local.queue_name
+  source     = "git::github.com/wellcomecollection/terraform-aws-sqs//autoscaling?ref=v1.2.1"
+  queue_name = module.queue.name
 
   queue_high_actions = var.queue_high_actions
   queue_low_actions  = var.queue_low_actions
