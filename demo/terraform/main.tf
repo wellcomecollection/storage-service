@@ -3,7 +3,7 @@ module "demo_stack" {
 
   namespace       = "weco-dams-prototype"
   short_namespace = "weco"
-  min_capacity = 1
+  min_capacity    = 1
 }
 
 output "elasticsearch_host" { value = module.demo_stack.elasticsearch_host }
