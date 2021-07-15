@@ -1,5 +1,5 @@
 module "demo_stack" {
-  source = "github.com/wellcomecollection/storage-service.git//demo/terraform/demo_stack?ref=ba1da89"
+  source = "github.com/wellcomecollection/storage-service.git//demo/terraform/demo_stack?ref=2cf78b5"
 
   namespace       = "weco-dams-prototype"
   short_namespace = "weco"
@@ -19,7 +19,7 @@ provider "aws" {
     role_arn = "arn:aws:iam::241906670800:role/dam_prototype-admin"
   }
 
-  region = "eu-west-1"
+  region = "eu-west-3"
 }
 
 terraform {
