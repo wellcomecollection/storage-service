@@ -1,7 +1,8 @@
 package weco.storage_service.notifier
 
-import java.net.URI
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 
+import java.net.URI
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.apache.http.HttpStatus
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
@@ -18,6 +19,11 @@ import weco.storage_service.notifier.fixtures.{
   NotifierFixtures
 }
 import weco.fixtures.TimeAssertions
+import weco.http.client.HttpClient
+import weco.http.fixtures.HttpFixtures
+
+import scala.concurrent.Future
+import scala.language.reflectiveCalls
 
 class NotifierFeatureTest
     extends AnyFunSpec
@@ -30,97 +36,108 @@ class NotifierFeatureTest
     with Inside
     with IngestGenerators
     with TimeAssertions
+    with HttpFixtures
     with Eventually {
 
   describe("Making callbacks") {
     it("makes a POST request when it receives an Ingest with a callback") {
-      withLocalWireMockClient { wireMock =>
-        withNotifier {
-          case (queue, _) =>
-            val ingestId = createIngestID
+      val recordingClient = new HttpClient {
+        var requests: Seq[HttpRequest] = Seq()
 
-            val callbackUri =
-              new URI(s"http://$callbackHost:$callbackPort/callback/$ingestId")
+        override def singleRequest(r: HttpRequest): Future[HttpResponse] = synchronized {
+          requests = requests :+ r
+          Future.successful(HttpResponse())
+        }
+      }
 
-            val ingest = createIngestWith(
-              id = ingestId,
-              callback = Some(createCallbackWith(uri = callbackUri)),
-              events = createIngestEvents(count = 2),
-              version = None
-            )
+      withNotifier2(recordingClient) { case (queue, _) =>
+        val ingestId = createIngestID
 
-            sendNotificationToSQS(
-              queue,
-              CallbackNotification(ingestId, callbackUri, ingest)
-            )
+        val callbackUri =
+          new URI(s"http://$callbackHost:$callbackPort/callback/$ingestId")
 
-            val ingestLocation =
-              ingest.sourceLocation.asInstanceOf[S3SourceLocation]
+        val ingest = createIngestWith(
+          id = ingestId,
+          callback = Some(createCallbackWith(uri = callbackUri)),
+          events = createIngestEvents(count = 2),
+          version = None
+        )
 
-            val expectedJson =
-              s"""
-                 |{
-                 |  "id": "${ingest.id.toString}",
-                 |  "type": "Ingest",
-                 |  "ingestType": {
-                 |    "id": "${ingest.ingestType.id}",
-                 |    "type": "IngestType"
-                 |  },
-                 |  "space": {
-                 |    "id": "${ingest.space.underlying}",
-                 |    "type": "Space"
-                 |  },
-                 |  "bag": {
-                 |    "type": "Bag",
-                 |    "info": {
-                 |      "type": "BagInfo",
-                 |      "externalIdentifier": "${ingest.externalIdentifier.underlying}"
-                 |    }
-                 |  },
-                 |  "status": {
-                 |    "id": "${ingest.status.toString}",
-                 |    "type": "Status"
-                 |  },
-                 |  "sourceLocation": {
-                 |    "type": "Location",
-                 |    "provider": {
-                 |      "type": "Provider",
-                 |      "id": "amazon-s3"
-                 |    },
-                 |    "bucket": "${ingestLocation.location.bucket}",
-                 |    "path": "${ingestLocation.location.key}"
-                 |  },
-                 |  "callback": {
-                 |    "type": "Callback",
-                 |    "url": "${ingest.callback.get.uri}",
-                 |    "status": {
-                 |      "id": "${ingest.callback.get.status.toString}",
-                 |      "type": "Status"
-                 |    }
-                 |  },
-                 |  "createdDate": "${ingest.createdDate}",
-                 |  "lastModifiedDate": "${ingest.lastModifiedDate.get}",
-                 |  "events": [
-                 |    {
-                 |      "type": "IngestEvent",
-                 |      "createdDate": "${ingest.events(0).createdDate}",
-                 |      "description": "${ingest.events(0).description}"
-                 |    },
-                 |    {
-                 |      "type": "IngestEvent",
-                 |      "createdDate": "${ingest.events(1).createdDate}",
-                 |      "description": "${ingest.events(1).description}"
-                 |    }
-                 |  ]
-                 |}
+        sendNotificationToSQS(
+          queue,
+          CallbackNotification(ingestId, callbackUri, ingest)
+        )
+
+        val ingestLocation =
+          ingest.sourceLocation.asInstanceOf[S3SourceLocation]
+
+        val expectedJson =
+          s"""
+             |{
+             |  "id": "${ingest.id.toString}",
+             |  "type": "Ingest",
+             |  "ingestType": {
+             |    "id": "${ingest.ingestType.id}",
+             |    "type": "IngestType"
+             |  },
+             |  "space": {
+             |    "id": "${ingest.space.underlying}",
+             |    "type": "Space"
+             |  },
+             |  "bag": {
+             |    "type": "Bag",
+             |    "info": {
+             |      "type": "BagInfo",
+             |      "externalIdentifier": "${ingest.externalIdentifier.underlying}"
+             |    }
+             |  },
+             |  "status": {
+             |    "id": "${ingest.status.toString}",
+             |    "type": "Status"
+             |  },
+             |  "sourceLocation": {
+             |    "type": "Location",
+             |    "provider": {
+             |      "type": "Provider",
+             |      "id": "amazon-s3"
+             |    },
+             |    "bucket": "${ingestLocation.location.bucket}",
+             |    "path": "${ingestLocation.location.key}"
+             |  },
+             |  "callback": {
+             |    "type": "Callback",
+             |    "url": "${ingest.callback.get.uri}",
+             |    "status": {
+             |      "id": "${ingest.callback.get.status.toString}",
+             |      "type": "Status"
+             |    }
+             |  },
+             |  "createdDate": "${ingest.createdDate}",
+             |  "lastModifiedDate": "${ingest.lastModifiedDate.get}",
+             |  "events": [
+             |    {
+             |      "type": "IngestEvent",
+             |      "createdDate": "${ingest.events(0).createdDate}",
+             |      "description": "${ingest.events(0).description}"
+             |    },
+             |    {
+             |      "type": "IngestEvent",
+             |      "createdDate": "${ingest.events(1).createdDate}",
+             |      "description": "${ingest.events(1).description}"
+             |    }
+             |  ]
+             |}
                  """.stripMargin
 
-            eventually {
-              wireMock.verifyThat(
-                postRequestedFor(urlPathEqualTo(callbackUri.getPath))
-                  .withRequestBody(equalToJson(expectedJson))
-              )
-            }
+        eventually {
+          recordingClient.requests should have size 1
+
+          val request = recordingClient.requests.head
+          request.uri.toString shouldBe callbackUri.toString
+
+          withStringEntity(request.entity) {
+            assertJsonStringsAreEqual(_, expectedJson)
+          }
         }
       }
     }
