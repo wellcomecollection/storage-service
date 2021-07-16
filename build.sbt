@@ -21,7 +21,7 @@ def setupProject(
       )
     }
 
-  
+
   project
     .in(new File(folder))
     .settings(Common.settings: _*)

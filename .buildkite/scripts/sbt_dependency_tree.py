@@ -6,17 +6,19 @@ import os
 
 
 class Project:
-    def __init__(self, name, folder, dependencies):
+    def __init__(self, name, folder, dependencies, description):
         self.name = name
         self.folder = folder
         self.dependencies = dependencies
+        self.description = description
 
     def __repr__(self):
-        return "<%s name=%r folder=%r dependencies=%r>" % (
+        return "<%s name=%r folder=%r dependencies=%r description=%r>" % (
             type(self).__name__,
             self.name,
             self.folder,
             ",".join(sorted(d.name for d in self.dependencies)),
+            self.description,
         )
 
     def all_folders(self):
@@ -55,6 +57,7 @@ class Repository:
                 name=data["id"],
                 folder=data["folder"],
                 dependencies=[self.get_project(d) for d in data["dependencyIds"]],
+                description=data["description"]
             )
 
             self.projects[name] = project
