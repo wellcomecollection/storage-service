@@ -22,7 +22,6 @@ module "bag_replicator_input_queue" {
     module.bag_replicator.scale_down_arn,
   ]
 
-  aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 }
 
@@ -59,7 +58,6 @@ module "bag_verifier_queue" {
     module.bag_verifier.scale_down_arn,
   ]
 
-  aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 }
 

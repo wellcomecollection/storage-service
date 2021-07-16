@@ -541,8 +541,6 @@ module "replicator_verifier_primary" {
 
   dlq_alarm_arn = var.dlq_alarm_arn
 
-  aws_region = var.aws_region
-
   service_discovery_namespace_id = local.service_discovery_namespace_id
 
   deployment_service_env             = var.release_label
@@ -595,8 +593,6 @@ module "replicator_verifier_glacier" {
   max_capacity = var.max_capacity
 
   dlq_alarm_arn = var.dlq_alarm_arn
-
-  aws_region = var.aws_region
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
 
@@ -675,8 +671,6 @@ module "replicator_verifier_azure" {
   max_capacity = var.max_capacity
 
   dlq_alarm_arn = var.dlq_alarm_arn
-
-  aws_region = var.aws_region
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
 

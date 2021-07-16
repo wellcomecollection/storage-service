@@ -34,7 +34,7 @@ locals {
 }
 
 module "elasticsearch_secrets" {
-  source = "github.com/wellcomecollection/terraform-aws-secrets.git?ref=v1.0.1"
+  source = "github.com/wellcomecollection/terraform-aws-secrets.git?ref=v1.2.0"
 
   key_value_map = {
     "elasticsearch/user"     = local.elasticsearch_user
@@ -48,6 +48,8 @@ module "elasticsearch_secrets" {
     "shared/logging/es_user" = local.elasticsearch_user
     "shared/logging/es_pass" = local.elasticsearch_password
   }
+
+  deletion_mode = "IMMEDIATE"
 }
 
 resource "aws_elasticsearch_domain" "elasticsearch" {

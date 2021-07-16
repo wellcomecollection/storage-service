@@ -1,26 +1,47 @@
-module "demo_stack" {
-  source = "github.com/wellcomecollection/storage-service.git//demo/terraform/demo_stack?ref=6d55162"
-
-  namespace       = "weco-dams-prototype"
-  short_namespace = "weco"
-}
-
-output "elasticsearch_host" { value = module.demo_stack.elasticsearch_host }
-output "kibana_endpoint" { value = module.demo_stack.kibana_endpoint }
-output "token_url" { value = module.demo_stack.token_url }
-output "api_url" { value = module.demo_stack.api_url }
-output "replica_primary_bucket_name" { value = module.demo_stack.replica_primary_bucket_name }
-output "replica_glacier_bucket_name" { value = module.demo_stack.replica_glacier_bucket_name }
-output "uploads_bucket_name" { value = module.demo_stack.uploads_bucket_name }
-output "unpacked_bags_bucket_name" { value = module.demo_stack.unpacked_bags_bucket_name }
-
 provider "aws" {
   assume_role {
     role_arn = "arn:aws:iam::241906670800:role/dam_prototype-admin"
   }
 
-  region = "eu-west-1"
+  region = "eu-west-3"
 }
+
+
+
+
+module "us_demo_stack" {
+  source = "github.com/wellcomecollection/storage-service.git//demo/terraform/demo_stack?ref=b155543"
+
+  namespace       = "weco-us-dams-prototype"
+  short_namespace = "weco-us"
+
+  providers = {
+    aws = aws.us_east_1
+  }
+}
+
+output "us_elasticsearch_host" { value = module.us_demo_stack.elasticsearch_host }
+output "us_kibana_endpoint" { value = module.us_demo_stack.kibana_endpoint }
+output "us_token_url" { value = module.us_demo_stack.token_url }
+output "us_api_url" { value = module.us_demo_stack.api_url }
+output "us_replica_primary_bucket_name" { value = module.us_demo_stack.replica_primary_bucket_name }
+output "us_replica_glacier_bucket_name" { value = module.us_demo_stack.replica_glacier_bucket_name }
+output "us_uploads_bucket_name" { value = module.us_demo_stack.uploads_bucket_name }
+output "us_unpacked_bags_bucket_name" { value = module.us_demo_stack.unpacked_bags_bucket_name }
+
+provider "aws" {
+  alias = "us_east_1"
+
+  assume_role {
+    role_arn = "arn:aws:iam::241906670800:role/dam_prototype-admin"
+  }
+
+  region = "us-east-1"
+}
+
+
+
+
 
 terraform {
   backend "s3" {

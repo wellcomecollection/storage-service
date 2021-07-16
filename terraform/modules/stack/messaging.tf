@@ -40,7 +40,6 @@ module "ingests_input_queue" {
 
   queue_low_actions = []
 
-  aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 
   # Updates sent to the ingests monitor can fail with a ConditionalUpdate error
@@ -84,7 +83,6 @@ module "updated_ingests_queue" {
     module.ingests_indexer.scale_down_arn,
   ]
 
-  aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 }
 
@@ -107,7 +105,6 @@ module "notifier_input_queue" {
     module.notifier.scale_down_arn,
   ]
 
-  aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 }
 
@@ -144,7 +141,6 @@ module "bag_unpacker_queue" {
     module.bag_unpacker.scale_down_arn,
   ]
 
-  aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 }
 
@@ -177,7 +173,6 @@ module "bag_root_finder_queue" {
     module.bag_root_finder.scale_down_arn,
   ]
 
-  aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 }
 
@@ -214,7 +209,6 @@ module "bag_verifier_pre_replicate_queue" {
     module.bag_verifier_pre_replication.scale_down_arn,
   ]
 
-  aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 }
 
@@ -247,7 +241,6 @@ module "bag_versioner_queue" {
     module.bag_versioner.scale_down_arn,
   ]
 
-  aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 }
 
@@ -286,7 +279,6 @@ module "replica_aggregator_input_queue" {
     module.replica_aggregator.scale_down_arn,
   ]
 
-  aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 
   # The aggregator may have to retry messages if two replicas complete
@@ -323,7 +315,6 @@ module "bag_register_input_queue" {
     module.bag_register.scale_down_arn,
   ]
 
-  aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 
   # Only a handful of big bags take more than half an hour to assemble
@@ -368,7 +359,6 @@ module "registered_bag_notifications_queue" {
 
   role_names = []
 
-  aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 }
 
@@ -402,7 +392,6 @@ module "bag_indexer_input_queue" {
     module.bag_indexer.scale_down_arn,
   ]
 
-  aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 }
 
@@ -436,7 +425,6 @@ module "file_finder_input_queue" {
     module.file_finder.scale_down_arn,
   ]
 
-  aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 }
 
@@ -471,7 +459,6 @@ module "file_indexer_input_queue" {
     module.file_indexer.scale_down_arn,
   ]
 
-  aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 }
 
@@ -497,6 +484,5 @@ module "bag_tagger_input_queue" {
     module.bag_tagger.scale_down_arn,
   ]
 
-  aws_region    = var.aws_region
   dlq_alarm_arn = var.dlq_alarm_arn
 }
