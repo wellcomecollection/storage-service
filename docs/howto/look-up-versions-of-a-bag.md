@@ -32,7 +32,7 @@ To look up a bag in the storage service:
 1.  Make a GET request to the /bags API, passing the space and external identiifer in the path:
 
     ```
-    curl -X POST "$API_URL/bags/$SPACE/$EXTERNAL_IDENTIFIER/versions" \
+    curl "$API_URL/bags/$SPACE/$EXTERNAL_IDENTIFIER/versions" \
       --header "Authorization: $ACCESS_TOKEN"
     ```
 
