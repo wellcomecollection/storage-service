@@ -14,12 +14,12 @@ Ingests are immutable once complete, and if a bag undergoes further processing, 
 The **ingest type** tells you what sort of processing this ingest is recording.
 Currently it takes two values:
 
--		`create` – store a brand new bag
--		`update` – add an additional manifestation/version of an already existing bag
+- `create` – store a brand new bag
+-	`update` – add an additional manifestation/version of an already existing bag
 
 This is designed to allow for future extension, for example adding operations like:
 
--		`delete` – remove a bag or a single manifestation of a bag
--		`replicate` – create an additional replica of a bag in a new storage provider
+-	`delete` – remove a bag or a single manifestation of a bag
+-	`replicate` – create an additional replica of a bag in a new storage provider
 
 Neither of these operations are currently supported, but we may support them in the future.
