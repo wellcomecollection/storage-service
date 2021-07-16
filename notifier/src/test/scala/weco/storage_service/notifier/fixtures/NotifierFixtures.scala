@@ -15,7 +15,9 @@ import weco.http.client.HttpClient
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait NotifierFixtures extends Akka with AlpakkaSQSWorkerFixtures {
-  def withNotifier[R](client: HttpClient)(testWith: TestWith[(Queue, MemoryMessageSender), R]): R =
+  def withNotifier[R](
+    client: HttpClient
+  )(testWith: TestWith[(Queue, MemoryMessageSender), R]): R =
     withLocalSqsQueue() { queue =>
       val messageSender = new MemoryMessageSender()
 

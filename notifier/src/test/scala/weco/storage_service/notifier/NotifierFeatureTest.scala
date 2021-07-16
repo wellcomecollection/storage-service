@@ -37,34 +37,36 @@ class NotifierFeatureTest
       val recordingClient = new HttpClient {
         var requests: Seq[HttpRequest] = Seq()
 
-        override def singleRequest(r: HttpRequest): Future[HttpResponse] = synchronized {
-          requests = requests :+ r
-          Future.successful(HttpResponse())
-        }
+        override def singleRequest(r: HttpRequest): Future[HttpResponse] =
+          synchronized {
+            requests = requests :+ r
+            Future.successful(HttpResponse())
+          }
       }
 
-      withNotifier(recordingClient) { case (queue, _) =>
-        val ingestId = createIngestID
+      withNotifier(recordingClient) {
+        case (queue, _) =>
+          val ingestId = createIngestID
 
-        val callbackUri = new URI(s"http://example.org/callback/$ingestId")
+          val callbackUri = new URI(s"http://example.org/callback/$ingestId")
 
-        val ingest = createIngestWith(
-          id = ingestId,
-          callback = Some(createCallbackWith(uri = callbackUri)),
-          events = createIngestEvents(count = 2),
-          version = None
-        )
+          val ingest = createIngestWith(
+            id = ingestId,
+            callback = Some(createCallbackWith(uri = callbackUri)),
+            events = createIngestEvents(count = 2),
+            version = None
+          )
 
-        sendNotificationToSQS(
-          queue,
-          CallbackNotification(ingestId, callbackUri, ingest)
-        )
+          sendNotificationToSQS(
+            queue,
+            CallbackNotification(ingestId, callbackUri, ingest)
+          )
 
-        val ingestLocation =
-          ingest.sourceLocation.asInstanceOf[S3SourceLocation]
+          val ingestLocation =
+            ingest.sourceLocation.asInstanceOf[S3SourceLocation]
 
-        val expectedJson =
-          s"""
+          val expectedJson =
+            s"""
              |{
              |  "id": "${ingest.id.toString}",
              |  "type": "Ingest",
@@ -121,16 +123,16 @@ class NotifierFeatureTest
              |}
                  """.stripMargin
 
-        eventually {
-          recordingClient.requests should have size 1
+          eventually {
+            recordingClient.requests should have size 1
 
-          val request = recordingClient.requests.head
-          request.uri.toString shouldBe callbackUri.toString
+            val request = recordingClient.requests.head
+            request.uri.toString shouldBe callbackUri.toString
 
-          withStringEntity(request.entity) {
-            assertJsonStringsAreEqual(_, expectedJson)
+            withStringEntity(request.entity) {
+              assertJsonStringsAreEqual(_, expectedJson)
+            }
           }
-        }
       }
     }
   }
@@ -143,50 +145,53 @@ class NotifierFeatureTest
       StatusCodes.OK,
       StatusCodes.Created,
       StatusCodes.Accepted,
-      StatusCodes.NoContent,
+      StatusCodes.NoContent
     )
   describe("Updating status") {
     it("sends an IngestUpdate when it receives a successful callback") {
       forAll(successfulStatuscodes) { statusCode =>
         val client = new HttpClient {
-          override def singleRequest(request: HttpRequest): Future[HttpResponse] =
+          override def singleRequest(
+            request: HttpRequest
+          ): Future[HttpResponse] =
             Future.successful(HttpResponse(status = statusCode))
         }
 
-        withNotifier(client) { case (queue, messageSender) =>
-          val ingestID = createIngestID
+        withNotifier(client) {
+          case (queue, messageSender) =>
+            val ingestID = createIngestID
 
-          val callbackUri = new URI(s"http://example.org/callback/$ingestID")
+            val callbackUri = new URI(s"http://example.org/callback/$ingestID")
 
-          val ingest = createIngestWith(
-            id = ingestID,
-            callback = Some(createCallbackWith(uri = callbackUri)),
-            events = createIngestEvents(count = 2),
-            version = Some(BagVersion(2))
-          )
+            val ingest = createIngestWith(
+              id = ingestID,
+              callback = Some(createCallbackWith(uri = callbackUri)),
+              events = createIngestEvents(count = 2),
+              version = Some(BagVersion(2))
+            )
 
-          sendNotificationToSQS(
-            queue,
-            CallbackNotification(ingestID, callbackUri, ingest)
-          )
+            sendNotificationToSQS(
+              queue,
+              CallbackNotification(ingestID, callbackUri, ingest)
+            )
 
-          eventually {
-            val updates = messageSender.getMessages[IngestUpdate]
-            updates should have size 1
-            val receivedUpdate = updates.head
+            eventually {
+              val updates = messageSender.getMessages[IngestUpdate]
+              updates should have size 1
+              val receivedUpdate = updates.head
 
-            inside(receivedUpdate) {
-              case IngestCallbackStatusUpdate(
-              id,
-              callbackStatus,
-              List(ingestEvent)
-              ) =>
-                id shouldBe ingest.id
-                ingestEvent.description shouldBe "Callback fulfilled"
-                callbackStatus shouldBe Callback.Succeeded
-                assertRecent(ingestEvent.createdDate)
+              inside(receivedUpdate) {
+                case IngestCallbackStatusUpdate(
+                    id,
+                    callbackStatus,
+                    List(ingestEvent)
+                    ) =>
+                  id shouldBe ingest.id
+                  ingestEvent.description shouldBe "Callback fulfilled"
+                  callbackStatus shouldBe Callback.Succeeded
+                  assertRecent(ingestEvent.createdDate)
+              }
             }
-          }
         }
       }
     }
@@ -262,10 +267,10 @@ class NotifierFeatureTest
 
             inside(receivedUpdate) {
               case IngestCallbackStatusUpdate(
-              id,
-              callbackStatus,
-              List(ingestEvent)
-              ) =>
+                  id,
+                  callbackStatus,
+                  List(ingestEvent)
+                  ) =>
                 id shouldBe ingest.id
                 ingestEvent.description shouldBe s"Callback failed for: ${ingest.id} (BOOM!)"
                 callbackStatus shouldBe Callback.Failed

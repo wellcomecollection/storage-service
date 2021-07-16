@@ -79,7 +79,8 @@ class CallbackUrlServiceTest
   }
 
   describe("builds the correct HTTP request") {
-    val service = new CallbackUrlService(client = new MemoryHttpClient(responses = Seq()))
+    val service =
+      new CallbackUrlService(client = new MemoryHttpClient(responses = Seq()))
 
     it("creates a JSON string") {
       val ingestId = createIngestID
@@ -93,7 +94,8 @@ class CallbackUrlServiceTest
         version = None
       )
 
-      val request = service.buildHttpRequest(ingest = ingest, callbackUri = callbackUri)
+      val request =
+        service.buildHttpRequest(ingest = ingest, callbackUri = callbackUri)
 
       val ingestLocation =
         ingest.sourceLocation.asInstanceOf[S3SourceLocation]
@@ -189,7 +191,7 @@ class CallbackUrlServiceTest
 
       assertIsJsonRequest(request, uri = callbackUri) { requestJsonString =>
         val json = parse(requestJsonString).value
-        json.asObject.get.keys should not contain("lastModifiedDate")
+        json.asObject.get.keys should not contain ("lastModifiedDate")
       }
     }
 
