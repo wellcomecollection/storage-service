@@ -15,10 +15,7 @@ import weco.json.utils.JsonAssertions
 import weco.storage_service.bagit.models.BagVersion
 import weco.storage_service.generators.IngestGenerators
 import weco.storage_service.ingests.models.{Ingest, S3SourceLocation}
-import weco.storage_service.notifier.fixtures.{
-  LocalWireMockFixture,
-  NotifierFixtures
-}
+import weco.storage_service.notifier.fixtures.NotifierFixtures
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -30,7 +27,6 @@ class CallbackUrlServiceTest
     with EitherValues
     with IntegrationPatience
     with NotifierFixtures
-    with LocalWireMockFixture
     with IngestGenerators
     with HttpFixtures
     with JsonAssertions {
@@ -38,7 +34,7 @@ class CallbackUrlServiceTest
   describe("sends the request successfully") {
     it("returns a Success if the request succeeds") {
       val ingest = createIngest
-      val callbackUri = s"http://$callbackHost:$callbackPort/callback/${ingest.id}"
+      val callbackUri = s"http://example.org/callback/${ingest.id}"
 
       val client = new HttpClient {
         override def singleRequest(request: HttpRequest): Future[HttpResponse] =
@@ -61,19 +57,25 @@ class CallbackUrlServiceTest
     }
 
     it("returns a failed future if the HTTP request fails") {
-      withActorSystem { implicit actorSystem =>
-        withCallbackUrlService { service =>
-          val ingest = createIngest
+      val exception = new Throwable("BOOM!")
 
-          val future = service.getHttpResponse(
-            ingest = ingest,
-            callbackUri = new URI(s"http://nope.nope/callback/${ingest.id}")
-          )
+      val client = new HttpClient {
+        override def singleRequest(request: HttpRequest): Future[HttpResponse] =
+          Future.failed(exception)
+      }
 
-          whenReady(future) { result =>
-            result.isFailure shouldBe true
-          }
-        }
+      val callbackUrlService = new CallbackUrlService(client = client)
+
+      val ingest = createIngest
+
+      val future = callbackUrlService.getHttpResponse(
+        ingest = ingest,
+        callbackUri = new URI(s"http://nope.nope/callback/${ingest.id}")
+      )
+
+      whenReady(future) { result =>
+        result.isFailure shouldBe true
+        result.failed.get shouldBe exception
       }
     }
   }
