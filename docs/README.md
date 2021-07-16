@@ -3,8 +3,7 @@
 The unit of storage in the storage service is a **bag**.
 This is a collection of files packaged together with [the BagIt packaging format][bagit], which are ingested and stored together.
 
-An **ingest** is a request to store a bag in the storage service.
-It may succeed (if the bag is copied to permanent storage) or fail (if the bag is rejected, say for fixity errors).
+An **ingest** is a record of some processing on a bag, such as creating a new bag or adding a new version of a bag.
 
 Each bag is identified with a **space** (a broad category) an **external identifier** (a specific identifier) and a **version**.
 [Read more about identifiers](explanations/identifiers.md).
@@ -50,6 +49,7 @@ and some information about what to do when things go wrong:
 
 These topics explain how the storage service work, and why it's designed in the way it is:
 
+-   [The semantics of bags, ingests and ingest types](explanations/ingest-type.md)
 -   [Detailed architecture: what do the different services do?]
 -   [How identifiers work in the storage service](explanations/identifiers.md)
 -   [How files are laid out in the underlying storage](explanations/file-layout.md)

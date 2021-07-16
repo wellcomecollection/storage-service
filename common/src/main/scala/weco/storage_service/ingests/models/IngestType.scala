@@ -6,6 +6,13 @@ import io.circe._
 
 import scala.util.{Failure, Success, Try}
 
+/** The ingest type tells you what sort of processing is occurring in this ingest.
+  *
+  * Although currently we only support two values, it's designed to allow for future
+  * extension, for example creating ingests that delete a bag, or replicate it to
+  * a new location.
+  *
+  */
 sealed trait IngestType { val id: String }
 
 object CreateIngestType extends IngestType {
