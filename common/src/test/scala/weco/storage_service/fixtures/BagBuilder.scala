@@ -38,7 +38,7 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
   def createBagRoot(
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
-    version: BagVersion
+    version: BagVersion = createBagVersion
   )(namespace: Namespace): BagPrefix
 
   def createBagLocation(bagRoot: BagPrefix, path: String): BagLocation
