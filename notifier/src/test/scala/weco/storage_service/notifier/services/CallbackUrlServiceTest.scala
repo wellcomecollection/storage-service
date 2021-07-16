@@ -2,7 +2,6 @@ package weco.storage_service.notifier.services
 
 import java.net.URI
 import akka.http.scaladsl.model._
-import io.circe.optics.JsonPath.root
 import io.circe.parser.parse
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{Assertion, EitherValues}
@@ -10,8 +9,10 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.http.client.{HttpClient, MemoryHttpClient}
 import weco.http.fixtures.HttpFixtures
+import weco.json.JsonUtil._
 import weco.json.utils.JsonAssertions
 import weco.storage_service.bagit.models.BagVersion
+import weco.storage_service.display.ingests.ResponseDisplayIngest
 import weco.storage_service.generators.IngestGenerators
 import weco.storage_service.ingests.models.S3SourceLocation
 
@@ -170,8 +171,8 @@ class CallbackUrlServiceTest
       val request = service.buildHttpRequest(ingest, callbackUri)
 
       assertIsJsonRequest(request, uri = callbackUri) { requestJsonString =>
-        val json = parse(requestJsonString).value
-        root.bag.info.version.string.getOption(json) shouldBe Some("v3")
+        val ingest = fromJson[ResponseDisplayIngest](requestJsonString).get
+        ingest.bag.info.version shouldBe Some("v3")
       }
     }
 
@@ -188,7 +189,7 @@ class CallbackUrlServiceTest
 
       assertIsJsonRequest(request, uri = callbackUri) { requestJsonString =>
         val json = parse(requestJsonString).value
-        root.lastModifiedDate.string.getOption(json) shouldBe None
+        json.asObject.get.keys should not contain("lastModifiedDate")
       }
     }
 
