@@ -22,13 +22,17 @@ def build_repo_guide(libraries, services):
         lines.extend(["", "## Libraries", ""])
 
         for name, project in sorted(libraries.items()):
-            lines.append(f"* [**{name}**](../../{project.folder}) – {project.description}")
+            lines.append(
+                f"* [**{name}**](../../{project.folder}) – {project.description}"
+            )
 
     if services:
         lines.extend(["", "## Services", ""])
 
         for name, project in sorted(services.items()):
-            lines.append(f"* [**{name}**](../../{project.folder}) – {project.description}")
+            lines.append(
+                f"* [**{name}**](../../{project.folder}) – {project.description}"
+            )
 
     return "\n".join(lines)
 
