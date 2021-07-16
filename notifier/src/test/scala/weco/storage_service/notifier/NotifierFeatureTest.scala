@@ -43,7 +43,7 @@ class NotifierFeatureTest
         }
       }
 
-      withNotifier2(recordingClient) { case (queue, _) =>
+      withNotifier(recordingClient) { case (queue, _) =>
         val ingestId = createIngestID
 
         val callbackUri = new URI(s"http://example.org/callback/$ingestId")
@@ -153,7 +153,7 @@ class NotifierFeatureTest
             Future.successful(HttpResponse(status = statusCode))
         }
 
-        withNotifier2(client) { case (queue, messageSender) =>
+        withNotifier(client) { case (queue, messageSender) =>
           val ingestID = createIngestID
 
           val callbackUri = new URI(s"http://example.org/callback/$ingestID")
@@ -197,7 +197,7 @@ class NotifierFeatureTest
           Future.successful(HttpResponse(status = StatusCodes.NotFound))
       }
 
-      withNotifier2(client) {
+      withNotifier(client) {
         case (queue, messageSender) =>
           val ingestId = createIngestID
 
@@ -239,7 +239,7 @@ class NotifierFeatureTest
           Future.failed(new Throwable("BOOM!"))
       }
 
-      withNotifier2(client) {
+      withNotifier(client) {
         case (queue, messageSender) =>
           val ingestId = createIngestID
 
