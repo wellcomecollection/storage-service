@@ -3,5 +3,6 @@
   "folder" : "bag_root_finder",
   "dependencyIds" : [
     "common"
-  ]
+  ],
+  "description" : "Finds the root of an unpacked bag (was it compressed top-level or in a directory?)"
 }

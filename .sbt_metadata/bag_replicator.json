@@ -3,5 +3,6 @@
   "folder" : "bag_replicator",
   "dependencyIds" : [
     "common"
-  ]
+  ],
+  "description" : "Replicates the bag to one or more permanent storage locations"
 }

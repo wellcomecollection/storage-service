@@ -3,5 +3,6 @@
   "folder" : "indexer/file_indexer",
   "dependencyIds" : [
     "indexer_common"
-  ]
+  ],
+  "description" : "Indexes information about files in an Elasticsearch cluster"
 }

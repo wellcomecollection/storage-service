@@ -3,5 +3,6 @@
   "folder" : "replica_aggregator",
   "dependencyIds" : [
     "common"
-  ]
+  ],
+  "description" : "Checks a bag has enough successful replicas before allowing it to continue"
 }

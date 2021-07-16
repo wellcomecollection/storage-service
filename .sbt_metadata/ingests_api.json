@@ -4,5 +4,6 @@
   "dependencyIds" : [
     "display",
     "ingests_tracker"
-  ]
+  ],
+  "description" : "User-facing ingests API"
 }
