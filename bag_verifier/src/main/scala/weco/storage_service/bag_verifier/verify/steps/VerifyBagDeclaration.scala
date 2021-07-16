@@ -55,8 +55,11 @@ trait VerifyBagDeclaration[BagLocation <: Location, BagPrefix <: Prefix[
             )
 
           case Right(declaration) =>
-            validateDeclaration(declaration)
-              .left.map { message => BagVerifierError(s"Error loading Bag Declaration (bagit.txt): $message") }
+            validateDeclaration(declaration).left.map { message =>
+              BagVerifierError(
+                s"Error loading Bag Declaration (bagit.txt): $message"
+              )
+            }
         }
 
       case Left(err: NotFoundError) =>
@@ -84,11 +87,12 @@ trait VerifyBagDeclaration[BagLocation <: Location, BagPrefix <: Prefix[
     */
   private def validateDeclaration(contents: String): Either[String, Unit] =
     contents.lines.toList match {
-      case Seq(versionLine(), encodingLine())       => Right(())
-      case Seq(versionLine(), encodingLinePrefix()) => Left("encoding must be UTF-8")
-      case Seq(versionLine(), _)                    => Left("encoding line was not correct")
-      case Seq(_, encodingLine())                   => Left("version line was not correct")
-      case Seq(_, _)                                => Left("not correctly formatted")
-      case other                                    => Left(s"expected 2 lines, got ${other.size}")
+      case Seq(versionLine(), encodingLine()) => Right(())
+      case Seq(versionLine(), encodingLinePrefix()) =>
+        Left("encoding must be UTF-8")
+      case Seq(versionLine(), _)  => Left("encoding line was not correct")
+      case Seq(_, encodingLine()) => Left("version line was not correct")
+      case Seq(_, _)              => Left("not correctly formatted")
+      case other                  => Left(s"expected 2 lines, got ${other.size}")
     }
 }

@@ -90,25 +90,33 @@ class VerifyBagDeclarationTest
   it("fails if the bagit.txt has no BagIt-Version line") {
     assertFails(
       contents = "Tag-File-Character-Encoding: UTF-8\n",
-      expectedMessage = s"Error loading Bag Declaration (bagit.txt): expected 2 lines, got 1")
+      expectedMessage =
+        s"Error loading Bag Declaration (bagit.txt): expected 2 lines, got 1"
+    )
   }
 
   it("fails if the bagit.txt has no Tag-File-Character-Encoding line") {
     assertFails(
       contents = "BagIt-Version: 0.97\n",
-      expectedMessage = s"Error loading Bag Declaration (bagit.txt): expected 2 lines, got 1")
+      expectedMessage =
+        s"Error loading Bag Declaration (bagit.txt): expected 2 lines, got 1"
+    )
   }
 
   it("fails if the bagit.txt has the wrong Tag-File-Character-Encoding") {
     assertFails(
       contents = "BagIt-Version: 0.97\nTag-File-Character-Encoding: Latin-1",
-      expectedMessage = s"Error loading Bag Declaration (bagit.txt): encoding must be UTF-8")
+      expectedMessage =
+        s"Error loading Bag Declaration (bagit.txt): encoding must be UTF-8"
+    )
   }
 
   it("fails if the bagit.txt is empty") {
     assertFails(
       contents = "",
-      expectedMessage = s"Error loading Bag Declaration (bagit.txt): expected 2 lines, got 0")
+      expectedMessage =
+        s"Error loading Bag Declaration (bagit.txt): expected 2 lines, got 0"
+    )
   }
 
   it("fails if the bagit.txt is nonsense") {
@@ -120,22 +128,28 @@ class VerifyBagDeclarationTest
 
   it("fails if the bagit.txt has an unwanted key") {
     assertFails(
-      contents = "BagIt-Version: 1.0\nTag-File-Character-Encoding: UTF-8\nExtra-Key: ShouldNotBeHere",
-      expectedMessage = s"Error loading Bag Declaration (bagit.txt): expected 2 lines, got 3"
+      contents =
+        "BagIt-Version: 1.0\nTag-File-Character-Encoding: UTF-8\nExtra-Key: ShouldNotBeHere",
+      expectedMessage =
+        s"Error loading Bag Declaration (bagit.txt): expected 2 lines, got 3"
     )
   }
 
   it("fails if the bagit.txt has unwanted keys") {
     assertFails(
-      contents = "BagIt-Version: 1.0\nTag-File-Character-Encoding: UTF-8\nExtra-Key1: ShouldNotBeHere\nExtra-Key2: ShouldNotBeHere",
-      expectedMessage = s"Error loading Bag Declaration (bagit.txt): expected 2 lines, got 4"
+      contents =
+        "BagIt-Version: 1.0\nTag-File-Character-Encoding: UTF-8\nExtra-Key1: ShouldNotBeHere\nExtra-Key2: ShouldNotBeHere",
+      expectedMessage =
+        s"Error loading Bag Declaration (bagit.txt): expected 2 lines, got 4"
     )
   }
 
   it("fails if the bagit.txt has duplicate keys") {
     assertFails(
-      contents = "BagIt-Version: 1.0\nTag-File-Character-Encoding: UTF-8\nBagIt-Version: 1.0",
-      expectedMessage = s"Error loading Bag Declaration (bagit.txt): expected 2 lines, got 3"
+      contents =
+        "BagIt-Version: 1.0\nTag-File-Character-Encoding: UTF-8\nBagIt-Version: 1.0",
+      expectedMessage =
+        s"Error loading Bag Declaration (bagit.txt): expected 2 lines, got 3"
     )
   }
 
