@@ -6,6 +6,7 @@ import weco.storage.streaming.InputStreamWithLength
 import weco.storage.{Identified, Location, NotFoundError, Prefix}
 import weco.storage.streaming.Codec._
 
+import scala.io.Source
 import scala.util.matching.Regex
 
 trait VerifyBagDeclaration[BagLocation <: Location, BagPrefix <: Prefix[
@@ -85,8 +86,10 @@ trait VerifyBagDeclaration[BagLocation <: Location, BagPrefix <: Prefix[
     * it isn't if not.
     *
     */
-  private def validateDeclaration(contents: String): Either[String, Unit] =
-    contents.linesIterator.toList match {
+  private def validateDeclaration(contents: String): Either[String, Unit] = {
+    val lines = Source.fromString(contents).getLines().toList
+
+    lines match {
       case Seq(versionLine(), encodingLine()) => Right(())
       case Seq(versionLine(), encodingLinePrefix()) =>
         Left("encoding must be UTF-8")
@@ -95,4 +98,5 @@ trait VerifyBagDeclaration[BagLocation <: Location, BagPrefix <: Prefix[
       case Seq(_, _)              => Left("not correctly formatted")
       case other                  => Left(s"expected 2 lines, got ${other.size}")
     }
+  }
 }
