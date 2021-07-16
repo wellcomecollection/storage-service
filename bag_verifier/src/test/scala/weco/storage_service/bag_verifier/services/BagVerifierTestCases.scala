@@ -183,23 +183,23 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
           fetchObjects = Map(),
           bagObjects = Map(
             bagRoot.asLocation("data/README.txt") ->
-              "This is a file with Windows line endings.\\r\\n",
+              "This is a file with Windows line endings.\r\n",
             bagRoot.asLocation("bag-info.txt") -> (
-              "Bag-Software-Agent: bagit.py v1.7.0 <https://github.com/LibraryOfCongress/bagit-python>\\r\\n" +
-                "Bagging-Date: 2021-07-16\\r\\n" +
-                "External-Identifier: windows_line_endings_bag\\r\\n" + "" +
-                "Payload-Oxum: 43.1\\r\\n"
+              "Bag-Software-Agent: bagit.py v1.7.0 <https://github.com/LibraryOfCongress/bagit-python>\r\n" +
+                "Bagging-Date: 2021-07-16\r\n" +
+                "External-Identifier: windows_line_endings_bag\r\n" +
+                "Payload-Oxum: 43.1\r\n"
             ),
             bagRoot.asLocation("bagit.txt") -> (
-              "BagIt-Version: 0.97\\r\\n" +
-                "Tag-File-Character-Encoding: UTF-8\\r\\n"
+              "BagIt-Version: 0.97\r\n" +
+                "Tag-File-Character-Encoding: UTF-8\r\n"
             ),
             bagRoot.asLocation("manifest-sha256.txt") ->
-              "3145c4eacf0ff758f80ed68f6c6fa8d94ec3d31b1b7f421b8dc4a1f61973f4c8  data/README.txt\\r\\n",
-            bagRoot.asLocation("tagmanifest-sha256") -> (
-              "c2c8f2cf0726d04b0dab99d67f951d77a33ffe6eae2a46cee67dbb2bccb96b0d  bag-info.txt\\r\\n" +
-                "4ec18508e945726d1bdbdbdfef3e8973ede85fef1f4839bc166883dc958fbe93  bagit.txt\\r\\n" +
-                "d1d9d610ceeaee50b744d06731bdc7dffa5b24ea59987ab57ba46489550e9118  manifest-sha256.txt\\r\\n",
+              "3145c4eacf0ff758f80ed68f6c6fa8d94ec3d31b1b7f421b8dc4a1f61973f4c8  data/README.txt\r\n",
+            bagRoot.asLocation("tagmanifest-sha256.txt") -> (
+              "c2c8f2cf0726d04b0dab99d67f951d77a33ffe6eae2a46cee67dbb2bccb96b0d  bag-info.txt\r\n" +
+                "4ec18508e945726d1bdbdbdfef3e8973ede85fef1f4839bc166883dc958fbe93  bagit.txt\r\n" +
+                "d1d9d610ceeaee50b744d06731bdc7dffa5b24ea59987ab57ba46489550e9118  manifest-sha256.txt\r\n",
             )
           ),
           bagRoot = bagRoot,
