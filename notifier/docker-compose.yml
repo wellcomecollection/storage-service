@@ -3,9 +3,3 @@ sqs:
   ports:
     - "9324:9324"
     - "4789:9324"
-wiremock:
-  image: "760097843905.dkr.ecr.eu-west-1.amazonaws.com/rodolpheche/wiremock"
-  ports:
-    - "8080:8080"
-  volumes:
-    - "${ROOT}/archive/notifier/src/test/resources/wiremock:/home/wiremock"
