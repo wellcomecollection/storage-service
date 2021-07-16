@@ -86,7 +86,7 @@ trait VerifyBagDeclaration[BagLocation <: Location, BagPrefix <: Prefix[
     *
     */
   private def validateDeclaration(contents: String): Either[String, Unit] =
-    contents.lines.toList match {
+    contents.linesIterator.toList match {
       case Seq(versionLine(), encodingLine()) => Right(())
       case Seq(versionLine(), encodingLinePrefix()) =>
         Left("encoding must be UTF-8")
