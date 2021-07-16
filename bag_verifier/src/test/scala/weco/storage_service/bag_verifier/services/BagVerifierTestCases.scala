@@ -206,8 +206,6 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
           bagInfo = createBagInfoWith(externalIdentifier = externalIdentifier)
         )
 
-        println(bagContents)
-
         bagBuilder.storeBagContents(bagContents)
 
         val ingestStep =
