@@ -3,5 +3,6 @@
   "folder" : "ingests/ingests_tracker",
   "dependencyIds" : [
     "common"
-  ]
+  ],
+  "description" : "Internal app: controls access to the ingests database"
 }

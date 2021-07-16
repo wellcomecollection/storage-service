@@ -16,8 +16,9 @@ object Metadata {
   def write(
     project: Project,
     folder: String,
-    localDependencies: Seq[Project] = Seq()
-  ) = {
+    localDependencies: Seq[Project] = Seq(),
+    description: String
+  ): Unit = {
     // Here we write a bit of metadata about the project, and the other
     // local projects it depends on.  This can be used to determine whether
     // to run tests based on the up-to-date project graph.
@@ -30,13 +31,15 @@ object Metadata {
     case class ProjectMetadata(
       id: String,
       folder: String,
-      dependencyIds: List[String]
+      dependencyIds: List[String],
+      description: String
     )
 
     val metadata = ProjectMetadata(
       id = project.id,
       folder = folder,
-      dependencyIds = dependencyIds
+      dependencyIds = dependencyIds,
+      description = description
     )
 
     IO.write(file, metadata.asJson.spaces2)

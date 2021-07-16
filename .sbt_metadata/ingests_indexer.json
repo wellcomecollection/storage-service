@@ -4,5 +4,6 @@
   "dependencyIds" : [
     "display",
     "indexer_common"
-  ]
+  ],
+  "description" : "Indexes information about ingests in an Elasticsearch cluster"
 }

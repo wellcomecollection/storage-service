@@ -4,5 +4,6 @@
   "dependencyIds" : [
     "bag_tracker",
     "indexer_common"
-  ]
+  ],
+  "description" : "Finds new files that need indexing after a bag is successfully stored"
 }

@@ -4,5 +4,6 @@
   "dependencyIds" : [
     "common",
     "bag_tracker"
-  ]
+  ],
+  "description" : "Creates a storage manifest for a bag once ingested, so the bag can be retrieved from the bags API"
 }

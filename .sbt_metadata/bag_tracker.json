@@ -3,5 +3,6 @@
   "folder" : "bag_tracker",
   "dependencyIds" : [
     "common"
-  ]
+  ],
+  "description" : "Internal app: controls access to the database of storage manifests (i.e. metadata descriptions of bags)"
 }

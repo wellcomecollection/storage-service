@@ -3,5 +3,6 @@
   "folder" : "display",
   "dependencyIds" : [
     "common"
-  ]
+  ],
+  "description" : "Models used in the user-facing APIs (ingests and bags APIs)"
 }

@@ -34,3 +34,5 @@ docker run --tty --rm \
 docker run --tty --rm \
 	--volume "$ROOT:/repo" \
 	"$ECR_REGISTRY/wellcome/format_python:112"
+
+python3 $ROOT/.buildkite/scripts/build_repo_guide.py

@@ -3,5 +3,6 @@
   "folder" : "bag_tagger",
   "dependencyIds" : [
     "bag_tracker"
-  ]
+  ],
+  "description" : "Adds tags to bags in permanent storage after they've been successfully stored"
 }

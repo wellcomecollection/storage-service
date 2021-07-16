@@ -8,7 +8,7 @@ This document lists the key repositories for the storage service, and how to fin
     This contains:
 
     -   Code for our Scala applications.
-        To find the code for an individual application inside the repo, read [build.sbt](https://github.com/wellcomecollection/storage-service/blob/main/build.sbt), which defines the repo layout for sbt (Scala build tool).
+        For a guide to the projects within the repo, see the [project guide](project-guide.md).
     -   Documentation for the storage service, in [the `docs` directory](https://github.com/wellcomecollection/storage-service/tree/main/docs).
     -   Infrastructure definitions in Terraform, in [the `terraform` directory](https://github.com/wellcomecollection/storage-service/tree/main/terraform).
         This includes both the infrastructure for the Wellcome instance of the storage service and modules that can be used to run other instances of the storage service.

@@ -3,5 +3,6 @@
   "folder" : "bag_verifier",
   "dependencyIds" : [
     "common"
-  ]
+  ],
+  "description" : "Runs checks and rules against a bag: fixity information, file sizes, no missing files, and so on"
 }
