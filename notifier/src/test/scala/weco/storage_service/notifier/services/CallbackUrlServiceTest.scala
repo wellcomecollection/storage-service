@@ -8,13 +8,13 @@ import akka.http.scaladsl.model.{
   HttpRequest,
   StatusCodes
 }
-import akka.stream.scaladsl.Sink
 import io.circe.optics.JsonPath.root
 import io.circe.parser.parse
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{Assertion, EitherValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
+import weco.http.fixtures.HttpFixtures
 import weco.json.utils.JsonAssertions
 import weco.storage_service.bagit.models.BagVersion
 import weco.storage_service.generators.IngestGenerators
@@ -33,6 +33,7 @@ class CallbackUrlServiceTest
     with NotifierFixtures
     with LocalWireMockFixture
     with IngestGenerators
+    with HttpFixtures
     with JsonAssertions {
 
   describe("sends the request successfully") {
@@ -203,11 +204,8 @@ class CallbackUrlServiceTest
       request.method shouldBe HttpMethods.POST
       request.uri.toString() shouldBe uri.toString
 
-      withMaterializer { implicit materializer =>
-        val future = request.entity.dataBytes.runWith(Sink.seq)
-        whenReady(future) { byteString =>
-          assertJson(byteString.head.utf8String)
-        }
+      withStringEntity(request.entity) {
+        assertJson(_)
       }
 
       request.entity.contentType shouldBe ContentTypes.`application/json`
