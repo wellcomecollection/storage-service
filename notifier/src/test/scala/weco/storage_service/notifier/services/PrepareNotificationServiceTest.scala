@@ -38,7 +38,7 @@ class PrepareNotificationServiceTest
   it("returns a successful IngestUpdate when a callback succeeds") {
     forAll(successfulStatuscodes) { responseStatus: Int =>
       assertPreparedNotificationIsCorrect(
-        httpResponse = Success(HttpResponse(responseStatus)),
+        httpResponse = Success(HttpResponse(status = responseStatus)),
         expectedCallbackStatus = Callback.Succeeded,
         expectedDescription = "Callback fulfilled"
       )

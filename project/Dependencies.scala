@@ -92,7 +92,6 @@ object ExternalDependencies {
     val commonsIO = "2.6"
     val mockito = "1.9.5"
     val scalatest = "3.2.3"
-    val wiremock = "2.18.0"
 
     // This should match the version of circe used in scala-json; see
     // https://github.com/wellcomecollection/scala-json/blob/master/project/Dependencies.scala
@@ -117,10 +116,6 @@ object ExternalDependencies {
 
   val mockitoDependencies: Seq[ModuleID] = Seq(
     "org.mockito" % "mockito-core" % versions.mockito % "test"
-  )
-
-  val wiremockDependencies = Seq[ModuleID](
-    "com.github.tomakehurst" % "wiremock" % versions.wiremock % "test"
   )
 }
 

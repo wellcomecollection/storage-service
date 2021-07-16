@@ -1,28 +1,23 @@
 package weco.storage_service.notifier.services
 
 import java.net.URI
-
-import akka.http.scaladsl.model.{
-  ContentTypes,
-  HttpMethods,
-  HttpRequest,
-  StatusCodes
-}
-import akka.stream.scaladsl.Sink
-import io.circe.optics.JsonPath.root
+import akka.http.scaladsl.model._
 import io.circe.parser.parse
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{Assertion, EitherValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
+import weco.http.client.{HttpClient, MemoryHttpClient}
+import weco.http.fixtures.HttpFixtures
+import weco.json.JsonUtil._
 import weco.json.utils.JsonAssertions
 import weco.storage_service.bagit.models.BagVersion
+import weco.storage_service.display.ingests.ResponseDisplayIngest
 import weco.storage_service.generators.IngestGenerators
-import weco.storage_service.ingests.models.{Ingest, S3SourceLocation}
-import weco.storage_service.notifier.fixtures.{
-  LocalWireMockFixture,
-  NotifierFixtures
-}
+import weco.storage_service.ingests.models.S3SourceLocation
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class CallbackUrlServiceTest
     extends AnyFunSpec
@@ -30,51 +25,63 @@ class CallbackUrlServiceTest
     with ScalaFutures
     with EitherValues
     with IntegrationPatience
-    with NotifierFixtures
-    with LocalWireMockFixture
     with IngestGenerators
+    with HttpFixtures
     with JsonAssertions {
 
   describe("sends the request successfully") {
     it("returns a Success if the request succeeds") {
-      withActorSystem { implicit actorSystem =>
-        withCallbackUrlService { service =>
-          val ingest = createIngest
+      val ingest = createIngest
+      val callbackUri = s"http://example.org/callback/${ingest.id}"
 
-          val future = service.getHttpResponse(
-            ingest = ingest,
-            callbackUri = new URI(
-              s"http://$callbackHost:$callbackPort/callback/${ingest.id}"
-            )
+      val client = new HttpClient {
+        override def singleRequest(request: HttpRequest): Future[HttpResponse] =
+          Future.successful(
+            HttpResponse(status = StatusCodes.NotFound)
           )
+      }
 
-          whenReady(future) { result =>
-            result.isSuccess shouldBe true
-            result.get.status shouldBe StatusCodes.NotFound
-          }
-        }
+      val callbackUrlService = new CallbackUrlService(client = client)
+
+      val future = callbackUrlService.getHttpResponse(
+        ingest = ingest,
+        callbackUri = new URI(callbackUri)
+      )
+
+      whenReady(future) { result =>
+        result.isSuccess shouldBe true
+        result.get.status shouldBe StatusCodes.NotFound
       }
     }
 
     it("returns a failed future if the HTTP request fails") {
-      withActorSystem { implicit actorSystem =>
-        withCallbackUrlService { service =>
-          val ingest = createIngest
+      val exception = new Throwable("BOOM!")
 
-          val future = service.getHttpResponse(
-            ingest = ingest,
-            callbackUri = new URI(s"http://nope.nope/callback/${ingest.id}")
-          )
+      val client = new HttpClient {
+        override def singleRequest(request: HttpRequest): Future[HttpResponse] =
+          Future.failed(exception)
+      }
 
-          whenReady(future) { result =>
-            result.isFailure shouldBe true
-          }
-        }
+      val callbackUrlService = new CallbackUrlService(client = client)
+
+      val ingest = createIngest
+
+      val future = callbackUrlService.getHttpResponse(
+        ingest = ingest,
+        callbackUri = new URI(s"http://nope.nope/callback/${ingest.id}")
+      )
+
+      whenReady(future) { result =>
+        result.isFailure shouldBe true
+        result.failed.get shouldBe exception
       }
     }
   }
 
   describe("builds the correct HTTP request") {
+    val service =
+      new CallbackUrlService(client = new MemoryHttpClient(responses = Seq()))
+
     it("creates a JSON string") {
       val ingestId = createIngestID
 
@@ -87,7 +94,8 @@ class CallbackUrlServiceTest
         version = None
       )
 
-      val request = buildRequest(ingest, callbackUri)
+      val request =
+        service.buildHttpRequest(ingest = ingest, callbackUri = callbackUri)
 
       val ingestLocation =
         ingest.sourceLocation.asInstanceOf[S3SourceLocation]
@@ -162,11 +170,11 @@ class CallbackUrlServiceTest
         version = Some(BagVersion(3))
       )
 
-      val request = buildRequest(ingest, callbackUri)
+      val request = service.buildHttpRequest(ingest, callbackUri)
 
       assertIsJsonRequest(request, uri = callbackUri) { requestJsonString =>
-        val json = parse(requestJsonString).value
-        root.bag.info.version.string.getOption(json) shouldBe Some("v3")
+        val ingest = fromJson[ResponseDisplayIngest](requestJsonString).get
+        ingest.bag.info.version shouldBe Some("v3")
       }
     }
 
@@ -179,23 +187,13 @@ class CallbackUrlServiceTest
 
       ingest.lastModifiedDate shouldBe None
 
-      val request = buildRequest(ingest, callbackUri)
+      val request = service.buildHttpRequest(ingest, callbackUri)
 
       assertIsJsonRequest(request, uri = callbackUri) { requestJsonString =>
         val json = parse(requestJsonString).value
-        root.lastModifiedDate.string.getOption(json) shouldBe None
+        json.asObject.get.keys should not contain ("lastModifiedDate")
       }
     }
-
-    def buildRequest(ingest: Ingest, callbackUri: URI): HttpRequest =
-      withActorSystem { implicit actorSystem =>
-        withCallbackUrlService { service =>
-          service.buildHttpRequest(
-            ingest = ingest,
-            callbackUri = callbackUri
-          )
-        }
-      }
 
     def assertIsJsonRequest(request: HttpRequest, uri: URI)(
       assertJson: String => Assertion
@@ -203,11 +201,8 @@ class CallbackUrlServiceTest
       request.method shouldBe HttpMethods.POST
       request.uri.toString() shouldBe uri.toString
 
-      withMaterializer { implicit materializer =>
-        val future = request.entity.dataBytes.runWith(Sink.seq)
-        whenReady(future) { byteString =>
-          assertJson(byteString.head.utf8String)
-        }
+      withStringEntity(request.entity) {
+        assertJson(_)
       }
 
       request.entity.contentType shouldBe ContentTypes.`application/json`
