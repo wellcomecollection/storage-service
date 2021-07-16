@@ -238,73 +238,33 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
   }
 
   it("passes a bag with uppercase checksum values") {
-    val primaryBucket = createBucket
-
     val space = createStorageSpace
     val externalIdentifier = ExternalIdentifier("uppercase_checksums")
 
-    withTypedStore { implicit typedStore =>
-      withNamespace { implicit namespace =>
-        val bagRoot = bagBuilder.createBagRoot(
-          space = space,
-          externalIdentifier = externalIdentifier
-        )(
-          namespace = namespace
-        )
+    val uppercaseBuilder = new BagBuilderImpl {
+      override protected def createDigest(string: String): String =
+        super.createDigest(string).toUpperCase
+    }
 
-        val bagContents = bagBuilder.BagContents(
-          fetchObjects = Map(),
-          bagObjects = Map(
-            bagRoot.asLocation("data/README.txt") -> "This is a bag with SHOUTY CHECKSUMS.",
-            bagRoot.asLocation("bag-info.txt") -> (
-              "Bag-Software-Agent: bagit.py v1.7.0 <https://github.com/LibraryOfCongress/bagit-python>\n" +
-                "Bagging-Date: 2021-07-16\n" +
-                "External-Identifier: uppercase_checksums\n" +
-                "Payload-Oxum: 36.1\n"
-              ),
-            bagRoot.asLocation("bagit.txt") -> (
-              "BagIt-Version: 0.97\n" +
-                "Tag-File-Character-Encoding: UTF-8\n"
-              ),
-            bagRoot.asLocation("manifest-sha256.txt") ->
-              "8201431729E5337D046EB10CD36ACA589DB0CD260A6F5C91BCDA36503ABB7BFE  data/README.txt\n",
-            bagRoot.asLocation("tagmanifest-sha256.txt") -> (
-              "BB8722BC52D8D6DB57D40C80EFF0B1B068D95B021B0313BAEC6BA5F70F86CA57  bag-info.txt\r\n" +
-                "E91F941BE5973FF71F1DCCBDD1A32D598881893A7F21BE516ACA743DA38B1689  bagit.txt\r\n" +
-                "AC7140581CBD92303E359E163E08A9CB64D09130908A365D643776DA7747DA26  manifest-sha256.txt\r\n",
-              )
-          ),
-          bagRoot = bagRoot,
-          bagInfo = createBagInfoWith(externalIdentifier = externalIdentifier)
-        )
-
-        bagBuilder.storeBagContents(bagContents)
-
-        val ingestStep =
-          withBagContext(bagRoot) { bagContext =>
-            withVerifier(primaryBucket) {
-              _.verify(
-                ingestId = createIngestID,
-                bagContext = bagContext,
-                space = space,
-                externalIdentifier = externalIdentifier
-              )
+    withNamespace { implicit namespace =>
+      withBag(space, externalIdentifier, bagBuilder = uppercaseBuilder) {
+        case (primaryBucket, bagRoot) =>
+          val ingestStep =
+            withBagContext(bagRoot) { bagContext =>
+              withVerifier(primaryBucket) {
+                _.verify(
+                  ingestId = createIngestID,
+                  bagContext = bagContext,
+                  space = space,
+                  externalIdentifier = externalIdentifier
+                )
+              }
             }
-          }
 
-        val result = ingestStep.success.get
+          val result = ingestStep.success.get
 
-        result shouldBe a[IngestStepSucceeded[_]]
-        result.summary shouldBe a[VerificationSuccessSummary]
-
-        val summary = result.summary
-          .asInstanceOf[VerificationSuccessSummary]
-        val fixityListResult = summary.fixityListResult.value
-
-        verifySuccessCount(
-          fixityListResult.locations,
-          expectedCount = 4
-        )
+          result shouldBe a[IngestStepSucceeded[_]]
+          result.summary shouldBe a[VerificationSuccessSummary]
       }
     }
   }
