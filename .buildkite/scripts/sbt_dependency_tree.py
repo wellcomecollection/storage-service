@@ -57,7 +57,7 @@ class Repository:
                 name=data["id"],
                 folder=data["folder"],
                 dependencies=[self.get_project(d) for d in data["dependencyIds"]],
-                description=data["description"]
+                description=data["description"],
             )
 
             self.projects[name] = project

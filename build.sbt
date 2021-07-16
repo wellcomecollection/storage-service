@@ -21,7 +21,6 @@ def setupProject(
       )
     }
 
-
   project
     .in(new File(folder))
     .settings(Common.settings: _*)
@@ -42,7 +41,8 @@ lazy val replica_aggregator = setupProject(
   project,
   folder = "replica_aggregator",
   localDependencies = Seq(common),
-  description = "Checks a bag has enough successful replicas before allowing it to continue"
+  description =
+    "Checks a bag has enough successful replicas before allowing it to continue"
 )
 
 lazy val bag_versioner = setupProject(
@@ -56,14 +56,16 @@ lazy val bag_root_finder = setupProject(
   project,
   folder = "bag_root_finder",
   localDependencies = Seq(common),
-  description = "Finds the root of an unpacked bag (was it compressed top-level or in a directory?)"
+  description =
+    "Finds the root of an unpacked bag (was it compressed top-level or in a directory?)"
 )
 
 lazy val bag_register = setupProject(
   project,
   folder = "bag_register",
   localDependencies = Seq(common, bag_tracker),
-  description = "Creates a storage manifest for a bag once ingested, so the bag can be retrieved from the bags API"
+  description =
+    "Creates a storage manifest for a bag once ingested, so the bag can be retrieved from the bags API"
 )
 
 lazy val bag_replicator = setupProject(
@@ -78,14 +80,16 @@ lazy val bag_tracker = setupProject(
   project,
   folder = "bag_tracker",
   localDependencies = Seq(common),
-  description = "Internal app: controls access to the database of storage manifests (i.e. metadata descriptions of bags)"
+  description =
+    "Internal app: controls access to the database of storage manifests (i.e. metadata descriptions of bags)"
 )
 
 lazy val bag_tagger = setupProject(
   project,
   folder = "bag_tagger",
   localDependencies = Seq(bag_tracker),
-  description = "Adds tags to bags in permanent storage after they've been successfully stored"
+  description =
+    "Adds tags to bags in permanent storage after they've been successfully stored"
 )
 
 lazy val bag_verifier = setupProject(
@@ -93,7 +97,8 @@ lazy val bag_verifier = setupProject(
   folder = "bag_verifier",
   localDependencies = Seq(common),
   externalDependencies = ExternalDependencies.mockitoDependencies,
-  description = "Runs checks and rules against a bag: fixity information, file sizes, no missing files, and so on"
+  description =
+    "Runs checks and rules against a bag: fixity information, file sizes, no missing files, and so on"
 )
 
 lazy val bag_unpacker = setupProject(
@@ -103,7 +108,8 @@ lazy val bag_unpacker = setupProject(
   externalDependencies =
     ExternalDependencies.commonsCompressDependencies ++
       ExternalDependencies.commonsIODependencies,
-  description = "Unpacks a bag that's compressed as a tar.gz into individual files"
+  description =
+    "Unpacks a bag that's compressed as a tar.gz into individual files"
 )
 
 lazy val ingests_tracker = setupProject(
@@ -131,7 +137,8 @@ lazy val notifier = setupProject(
   project,
   folder = "notifier",
   localDependencies = Seq(display),
-  description = "Sends a callback notification to an external service after an ingest completes"
+  description =
+    "Sends a callback notification to an external service after an ingest completes"
 )
 
 lazy val ingests_api = setupProject(
@@ -165,14 +172,16 @@ lazy val bag_indexer = setupProject(
   project,
   folder = "indexer/bag_indexer",
   localDependencies = Seq(display, indexer_common, bag_tracker),
-  description = "Indexes top-level information about bags in an Elasticsearch cluster"
+  description =
+    "Indexes top-level information about bags in an Elasticsearch cluster"
 )
 
 lazy val file_finder = setupProject(
   project,
   folder = "indexer/file_finder",
   localDependencies = Seq(bag_tracker, indexer_common),
-  description = "Finds new files that need indexing after a bag is successfully stored"
+  description =
+    "Finds new files that need indexing after a bag is successfully stored"
 )
 
 lazy val file_indexer = setupProject(
