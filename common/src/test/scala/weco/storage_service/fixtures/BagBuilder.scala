@@ -19,6 +19,12 @@ import scala.util.Random
 
 case class PayloadEntry(bagPath: BagPath, path: String, contents: String)
 
+/** This is used to build example bags for testing.
+  *
+  * It exposes a bunch of protected methods that control different bits of the
+  * bag creation process, so you can simulate different mistakes when creating
+  * the bag.  This is particularly useful for testing the bag verifier.
+  */
 trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Namespace]
     extends StorageSpaceGenerators
     with BagInfoGenerators
@@ -38,7 +44,7 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
   def createBagRoot(
     space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
-    version: BagVersion
+    version: BagVersion = createBagVersion
   )(namespace: Namespace): BagPrefix
 
   def createBagLocation(bagRoot: BagPrefix, path: String): BagLocation

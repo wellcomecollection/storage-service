@@ -69,6 +69,37 @@ class BagInfoParserTest
         )
     }
 
+    it("a bag-info.txt with Windows line endings") {
+      val externalIdentifier = createExternalIdentifier
+      val payloadOxum = createPayloadOxum
+      val baggingDate = randomLocalDate
+      val sourceOrganisation = Some(randomSourceOrganisation)
+      val externalDescription = Some(randomExternalDescription)
+      val internalSenderIdentifier = Some(randomInternalSenderIdentifier)
+      val internalSenderDescription = Some(randomInternalSenderDescription)
+
+      val bagInfoString = Seq(
+        s"External-Identifier: $externalIdentifier",
+        s"Payload-Oxum: $payloadOxum",
+        s"Bagging-Date: $baggingDate",
+        s"Source-Organization: ${sourceOrganisation.get}",
+        s"External-Description: ${externalDescription.get}",
+        s"Internal-Sender-Identifier: ${internalSenderIdentifier.get}",
+        s"Internal-Sender-Description: ${internalSenderDescription.get}"
+      ).mkString("\r\n")
+
+      BagInfoParser.create(toInputStream(bagInfoString)).success.value shouldBe
+        BagInfo(
+          externalIdentifier,
+          payloadOxum,
+          baggingDate,
+          sourceOrganisation,
+          externalDescription,
+          internalSenderIdentifier,
+          internalSenderDescription
+        )
+    }
+
     it("it ignores other metadata fields in the bag-info.txt") {
       val bagInfoString =
         s"""|External-Identifier: $createExternalIdentifier
