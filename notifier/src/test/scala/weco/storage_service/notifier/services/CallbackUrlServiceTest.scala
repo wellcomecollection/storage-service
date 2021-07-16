@@ -1,7 +1,6 @@
 package weco.storage_service.notifier.services
 
 import java.net.URI
-
 import akka.http.scaladsl.model._
 import io.circe.optics.JsonPath.root
 import io.circe.parser.parse
@@ -9,13 +8,12 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{Assertion, EitherValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import weco.http.client.HttpClient
+import weco.http.client.{HttpClient, MemoryHttpClient}
 import weco.http.fixtures.HttpFixtures
 import weco.json.utils.JsonAssertions
 import weco.storage_service.bagit.models.BagVersion
 import weco.storage_service.generators.IngestGenerators
-import weco.storage_service.ingests.models.{Ingest, S3SourceLocation}
-import weco.storage_service.notifier.fixtures.NotifierFixtures
+import weco.storage_service.ingests.models.S3SourceLocation
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -26,7 +24,6 @@ class CallbackUrlServiceTest
     with ScalaFutures
     with EitherValues
     with IntegrationPatience
-    with NotifierFixtures
     with IngestGenerators
     with HttpFixtures
     with JsonAssertions {
@@ -81,6 +78,8 @@ class CallbackUrlServiceTest
   }
 
   describe("builds the correct HTTP request") {
+    val service = new CallbackUrlService(client = new MemoryHttpClient(responses = Seq()))
+
     it("creates a JSON string") {
       val ingestId = createIngestID
 
@@ -93,7 +92,7 @@ class CallbackUrlServiceTest
         version = None
       )
 
-      val request = buildRequest(ingest, callbackUri)
+      val request = service.buildHttpRequest(ingest = ingest, callbackUri = callbackUri)
 
       val ingestLocation =
         ingest.sourceLocation.asInstanceOf[S3SourceLocation]
@@ -168,7 +167,7 @@ class CallbackUrlServiceTest
         version = Some(BagVersion(3))
       )
 
-      val request = buildRequest(ingest, callbackUri)
+      val request = service.buildHttpRequest(ingest, callbackUri)
 
       assertIsJsonRequest(request, uri = callbackUri) { requestJsonString =>
         val json = parse(requestJsonString).value
@@ -185,23 +184,13 @@ class CallbackUrlServiceTest
 
       ingest.lastModifiedDate shouldBe None
 
-      val request = buildRequest(ingest, callbackUri)
+      val request = service.buildHttpRequest(ingest, callbackUri)
 
       assertIsJsonRequest(request, uri = callbackUri) { requestJsonString =>
         val json = parse(requestJsonString).value
         root.lastModifiedDate.string.getOption(json) shouldBe None
       }
     }
-
-    def buildRequest(ingest: Ingest, callbackUri: URI): HttpRequest =
-      withActorSystem { implicit actorSystem =>
-        withCallbackUrlService { service =>
-          service.buildHttpRequest(
-            ingest = ingest,
-            callbackUri = callbackUri
-          )
-        }
-      }
 
     def assertIsJsonRequest(request: HttpRequest, uri: URI)(
       assertJson: String => Assertion
