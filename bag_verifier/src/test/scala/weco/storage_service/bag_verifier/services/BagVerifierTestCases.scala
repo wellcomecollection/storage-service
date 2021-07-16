@@ -233,7 +233,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
 
         verifySuccessCount(
           fixityListResult.locations,
-          expectedCount = 1
+          expectedCount = 4
         )
       }
     }
