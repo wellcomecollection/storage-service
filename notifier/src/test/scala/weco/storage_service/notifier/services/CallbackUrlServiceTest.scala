@@ -2,18 +2,14 @@ package weco.storage_service.notifier.services
 
 import java.net.URI
 
-import akka.http.scaladsl.model.{
-  ContentTypes,
-  HttpMethods,
-  HttpRequest,
-  StatusCodes
-}
+import akka.http.scaladsl.model._
 import io.circe.optics.JsonPath.root
 import io.circe.parser.parse
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{Assertion, EitherValues}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
+import weco.http.client.HttpClient
 import weco.http.fixtures.HttpFixtures
 import weco.json.utils.JsonAssertions
 import weco.storage_service.bagit.models.BagVersion
@@ -23,6 +19,9 @@ import weco.storage_service.notifier.fixtures.{
   LocalWireMockFixture,
   NotifierFixtures
 }
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class CallbackUrlServiceTest
     extends AnyFunSpec
@@ -38,22 +37,26 @@ class CallbackUrlServiceTest
 
   describe("sends the request successfully") {
     it("returns a Success if the request succeeds") {
-      withActorSystem { implicit actorSystem =>
-        withCallbackUrlService { service =>
-          val ingest = createIngest
+      val ingest = createIngest
+      val callbackUri = s"http://$callbackHost:$callbackPort/callback/${ingest.id}"
 
-          val future = service.getHttpResponse(
-            ingest = ingest,
-            callbackUri = new URI(
-              s"http://$callbackHost:$callbackPort/callback/${ingest.id}"
-            )
+      val client = new HttpClient {
+        override def singleRequest(request: HttpRequest): Future[HttpResponse] =
+          Future.successful(
+            HttpResponse(status = StatusCodes.NotFound)
           )
+      }
 
-          whenReady(future) { result =>
-            result.isSuccess shouldBe true
-            result.get.status shouldBe StatusCodes.NotFound
-          }
-        }
+      val callbackUrlService = new CallbackUrlService(client = client)
+
+      val future = callbackUrlService.getHttpResponse(
+        ingest = ingest,
+        callbackUri = new URI(callbackUri)
+      )
+
+      whenReady(future) { result =>
+        result.isSuccess shouldBe true
+        result.get.status shouldBe StatusCodes.NotFound
       }
     }
 
