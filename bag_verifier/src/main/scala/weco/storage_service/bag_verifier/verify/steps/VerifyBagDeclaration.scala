@@ -13,9 +13,9 @@ trait VerifyBagDeclaration[BagLocation <: Location, BagPrefix <: Prefix[
 ]] {
   protected val streamReader: Readable[BagLocation, InputStreamWithLength]
 
-  private val declaration = new Regex(
-    "BagIt-Version: \\d\\.\\d+\nTag-File-Character-Encoding: UTF-8\n?"
-  )
+  private val versionLine = new Regex("BagIt-Version: \\d\\.\\d+")
+  private val encodingLine = new Regex("Tag-File-Character-Encoding: UTF-8")
+  private val encodingLinePrefix = new Regex("Tag-File-Character-Encoding:.*")
 
   // Quoting from the BagIt spec (https://tools.ietf.org/html/rfc8493#section-2.1.1):
   //
@@ -54,15 +54,9 @@ trait VerifyBagDeclaration[BagLocation <: Location, BagPrefix <: Prefix[
               )
             )
 
-          case Right(declaration()) =>
-            Right(())
-
-          case Right(_) =>
-            Left(
-              BagVerifierError(
-                "Error loading Bag Declaration (bagit.txt): not correctly formatted"
-              )
-            )
+          case Right(declaration) =>
+            validateDeclaration(declaration)
+              .left.map { message => BagVerifierError(s"Error loading Bag Declaration (bagit.txt): $message") }
         }
 
       case Left(err: NotFoundError) =>
@@ -83,4 +77,18 @@ trait VerifyBagDeclaration[BagLocation <: Location, BagPrefix <: Prefix[
         )
     }
   }
+
+  /** Checks whether the Bag Declaration is correctly formatted, or explains why
+    * it isn't if not.
+    *
+    */
+  private def validateDeclaration(contents: String): Either[String, Unit] =
+    contents.lines.toList match {
+      case Seq(versionLine(), encodingLine())       => Right(())
+      case Seq(versionLine(), encodingLinePrefix()) => Left("encoding must be UTF-8")
+      case Seq(versionLine(), _)                    => Left("encoding line was not correct")
+      case Seq(_, encodingLine())                   => Left("version line was not correct")
+      case Seq(_, _)                                => Left("not correctly formatted")
+      case other                                    => Left(s"expected 2 lines, got ${other.size}")
+    }
 }
