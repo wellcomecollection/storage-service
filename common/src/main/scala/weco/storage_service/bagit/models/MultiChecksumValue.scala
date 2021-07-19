@@ -25,6 +25,10 @@ case class MultiChecksumValue[T](
     throw MultiChecksumException.OnlyWeakChecksums
   }
 
+  def algorithms: Seq[HashingAlgorithm] =
+    Seq(md5.map(_ => MD5), sha1.map(_ => SHA1), sha256.map(_ => SHA256), sha512.map(_ => SHA512))
+      .flatten
+
   def getValue(h: HashingAlgorithm): Option[T] =
     h match {
       case SHA512 => sha512
