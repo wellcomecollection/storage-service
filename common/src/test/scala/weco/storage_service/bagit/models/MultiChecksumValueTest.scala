@@ -13,7 +13,7 @@ class MultiChecksumValueTest extends AnyFunSpec with Matchers {
       md5 = Some(FileManifest(MD5, files = Seq())),
       sha1 = Some(FileManifest(SHA1, files = Seq())),
       sha256 = Some(FileManifest(SHA256, files = Seq())),
-      sha512 = Some(FileManifest(SHA512, files = Seq())),
+      sha512 = Some(FileManifest(SHA512, files = Seq()))
     )
   }
 
@@ -23,7 +23,7 @@ class MultiChecksumValueTest extends AnyFunSpec with Matchers {
         md5 = None,
         sha1 = None,
         sha256 = None,
-        sha512 = None,
+        sha512 = None
       )
     }
 
@@ -36,7 +36,7 @@ class MultiChecksumValueTest extends AnyFunSpec with Matchers {
         md5 = Some(FileManifest(MD5, files = Seq())),
         sha1 = Some(FileManifest(MD5, files = Seq())),
         sha256 = None,
-        sha512 = None,
+        sha512 = None
       )
     }
 

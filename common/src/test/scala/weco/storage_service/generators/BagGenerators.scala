@@ -6,7 +6,8 @@ import weco.storage_service.verify._
 trait BagGenerators extends BagInfoGenerators {
   def createBagWith(
     manifestEntries: Map[BagPath, MultiChecksumValue[ChecksumValue]] = Map.empty,
-    tagManifestEntries: Map[BagPath, MultiChecksumValue[ChecksumValue]] = Map.empty,
+    tagManifestEntries: Map[BagPath, MultiChecksumValue[ChecksumValue]] =
+      Map.empty,
     fetchEntries: Map[BagPath, BagFetchMetadata] = Map.empty
   ): Bag =
     Bag(

@@ -2,7 +2,14 @@ package weco.storage_service.bagit.services
 
 import java.io.InputStream
 import weco.storage_service.bagit.models._
-import weco.storage_service.verify.{ChecksumValue, HashingAlgorithm, MD5, SHA1, SHA256, SHA512}
+import weco.storage_service.verify.{
+  ChecksumValue,
+  HashingAlgorithm,
+  MD5,
+  SHA1,
+  SHA256,
+  SHA512
+}
 import weco.storage._
 import weco.storage.store.Readable
 import weco.storage.streaming.InputStreamWithLength
@@ -33,10 +40,18 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
       //
 
       payloadManifest <- loadManifestEntries(bagRoot, payloadManifest) match {
-        case Right(entries)                            => Right(NewPayloadManifest(entries))
-        case Left(ManifestError.CannotBeLoaded(err))   => Left(err)
-        case Left(ManifestError.NoManifests)           => Left(BagUnavailable("Could not find any payload manifests in the bag"))
-        case Left(ManifestError.InconsistentFilenames) => Left(BagUnavailable("Payload manifests are inconsistent: every payload file must be listed in every payload manifest"))
+        case Right(entries)                          => Right(NewPayloadManifest(entries))
+        case Left(ManifestError.CannotBeLoaded(err)) => Left(err)
+        case Left(ManifestError.NoManifests) =>
+          Left(
+            BagUnavailable("Could not find any payload manifests in the bag")
+          )
+        case Left(ManifestError.InconsistentFilenames) =>
+          Left(
+            BagUnavailable(
+              "Payload manifests are inconsistent: every payload file must be listed in every payload manifest"
+            )
+          )
       }
 
       // RFC 8493 § 2.2.1:
@@ -47,10 +62,16 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
       // We treat this as a MUST because it makes things simpler elsewhere.
       //
       tagManifest <- loadManifestEntries(bagRoot, tagManifest) match {
-        case Right(entries)                            => Right(NewTagManifest(entries))
-        case Left(ManifestError.CannotBeLoaded(err))   => Left(err)
-        case Left(ManifestError.NoManifests)           => Left(BagUnavailable("Could not find any tag manifests in the bag"))
-        case Left(ManifestError.InconsistentFilenames) => Left(BagUnavailable("Tag manifests are inconsistent: each tag manifest should list the same set of tag files"))
+        case Right(entries)                          => Right(NewTagManifest(entries))
+        case Left(ManifestError.CannotBeLoaded(err)) => Left(err)
+        case Left(ManifestError.NoManifests) =>
+          Left(BagUnavailable("Could not find any tag manifests in the bag"))
+        case Left(ManifestError.InconsistentFilenames) =>
+          Left(
+            BagUnavailable(
+              "Tag manifests are inconsistent: each tag manifest should list the same set of tag files"
+            )
+          )
       }
 
       bagFetch <- loadOptional[BagFetch](bagRoot)(bagFetch)(BagFetch.create)
@@ -66,7 +87,10 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
     case object InconsistentFilenames extends ManifestError
   }
 
-  private def loadManifestEntries(root: BagPrefix, filename: HashingAlgorithm => BagPath): Either[ManifestError, Map[BagPath, MultiChecksumValue[ChecksumValue]]] =
+  private def loadManifestEntries(
+    root: BagPrefix,
+    filename: HashingAlgorithm => BagPath
+  ): Either[ManifestError, Map[BagPath, MultiChecksumValue[ChecksumValue]]] =
     for {
       md5 <- loadSingleManifest(root, filename(MD5))
       sha1 <- loadSingleManifest(root, filename(SHA1))
@@ -83,22 +107,24 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
         case _          => Left(ManifestError.InconsistentFilenames)
       }
 
-      entries = filenames
-        .map { bagPath =>
-          bagPath -> MultiChecksumValue(
-            md5 = md5.map(_(bagPath)),
-            sha1 = sha1.map(_(bagPath)),
-            sha256 = sha256.map(_(bagPath)),
-            sha512 = sha512.map(_(bagPath)),
-          )
-        }
-        .toMap
+      entries = filenames.map { bagPath =>
+        bagPath -> MultiChecksumValue(
+          md5 = md5.map(_(bagPath)),
+          sha1 = sha1.map(_(bagPath)),
+          sha256 = sha256.map(_(bagPath)),
+          sha512 = sha512.map(_(bagPath))
+        )
+      }.toMap
     } yield entries
 
-  private def loadSingleManifest(root: BagPrefix, path: BagPath): Either[ManifestError.CannotBeLoaded, Option[ManifestEntries]] =
+  private def loadSingleManifest(
+    root: BagPrefix,
+    path: BagPath
+  ): Either[ManifestError.CannotBeLoaded, Option[ManifestEntries]] =
     loadOptional[ManifestEntries](root)(path)(BagManifestParser.parse) match {
-      case Right(entries)       => Right(entries)
-      case Left(bagUnavailable) => Left(ManifestError.CannotBeLoaded(bagUnavailable))
+      case Right(entries) => Right(entries)
+      case Left(bagUnavailable) =>
+        Left(ManifestError.CannotBeLoaded(bagUnavailable))
     }
 
   private def loadOptional[T](
