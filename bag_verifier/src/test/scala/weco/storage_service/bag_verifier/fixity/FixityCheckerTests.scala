@@ -125,7 +125,7 @@ class FixityCheckerTests
 
       val contentString = "HelloWorld"
       val multiChecksum = MultiChecksumValue(
-        md5 = Some(ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6"))
+        sha256 = Some(ChecksumValue("872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"))
       )
 
       val location = createMemoryLocation
@@ -155,9 +155,9 @@ class FixityCheckerTests
   describe("it closes the InputStream when it's done reading") {
     it("if the checksum is correct") {
       val contentString = "HelloWorld"
-      // md5("HelloWorld")
+      // sha256("HelloWorld")
       val multiChecksum = MultiChecksumValue(
-        md5 = Some(ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6"))
+        sha256 = Some(ChecksumValue("872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"))
       )
 
       var isClosed: Boolean = false

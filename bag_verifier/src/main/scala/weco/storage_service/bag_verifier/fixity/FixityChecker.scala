@@ -263,11 +263,15 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     fixityResult
   }
 
-  private def isMatch(hashingResult: HashingResult, multiChecksumValue: MultiChecksumValue[ChecksumValue]): Boolean =
-    multiChecksumValue.md5.contains(hashingResult.md5) &&
-      multiChecksumValue.sha1.contains(hashingResult.sha1) &&
-      multiChecksumValue.sha256.contains(hashingResult.sha256) &&
-      multiChecksumValue.sha512.contains(hashingResult.sha512)
+  private def isMatch(hashingResult: HashingResult, multiChecksum: MultiChecksumValue[ChecksumValue]): Boolean =
+    multiChecksum.algorithms
+      .map { h =>
+        val expectedValue = multiChecksum.getValue(h).get
+        val actualValue = hashingResult.getChecksumValue(h)
+
+        expectedValue == actualValue
+      }
+      .forall(_ == true)
 
   private def writeFixityTags(
     fileFixity: ExpectedFileFixity,
