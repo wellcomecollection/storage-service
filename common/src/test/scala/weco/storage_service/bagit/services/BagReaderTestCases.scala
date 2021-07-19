@@ -208,6 +208,67 @@ trait BagReaderTestCases[
     }
   }
 
+  it("errors if the payload manifests have different files") {
+    withFixtures { fixtures =>
+      implicit val (context, typedStore, namespace, bucket) = fixtures
+
+      val space = createStorageSpace
+      val externalIdentifier = ExternalIdentifier("multiple_manifests")
+      val version = createBagVersion
+
+      val bagRoot: BagPrefix = createBagRoot(space, externalIdentifier, version)(namespace)
+
+      val bagInfo = BagInfo(
+        payloadOxum = PayloadOxum(payloadBytes = 15, numberOfPayloadFiles = 1),
+        externalIdentifier = externalIdentifier,
+        baggingDate = LocalDate.now()
+      )
+
+      val bagContents = BagContents(
+        fetchObjects = Map(),
+        bagObjects = Map(
+          bagRoot.asLocation("data/README.txt") -> "This is a file\n",
+          bagRoot.asLocation("data/ANOTHER.txt") -> "This is another file\n",
+          bagRoot.asLocation("bag-info.txt") -> (
+            "Bagging-Date: 2021-07-16\n" +
+              "External-Identifier: mismatched_files\n" +
+              "Payload-Oxum: 35.2\n"
+            ),
+          bagRoot.asLocation("bagit.txt") -> (
+            "BagIt-Version: 0.97\n" +
+              "Tag-File-Character-Encoding: UTF-8\n"
+            ),
+
+          bagRoot.asLocation("manifest-sha1.txt") -> "897589b7c274b17a1d02a74cf0b1128ad286d94e  data/ANOTHER.txt\n",
+          bagRoot.asLocation("manifest-md5.txt") -> "a86e2699931d4f3d1456e79383749e43  data/README.txt\n",
+
+          bagRoot.asLocation("tagmanifest-sha1.txt") -> (
+            "7c3b03a943e9c9311f1b63348359fc603235a367  bag-info.txt\n" +
+              "e2924b081506bac23f5fffe650ad1848a1c8ac1d  bagit.txt\n" +
+              "620cf3a28d891c8e27e3f8b79fb9b87eec0b9543  manifest-sha1.txt\n" +
+              "e0f93804f40bbeae4c5440ce197d3856e1367d77  manifest-md5.txt\n"
+            ),
+          bagRoot.asLocation("tagmanifest-md5.txt") -> (
+            "139536a64db2ac0373fcfd83a379718b  bag-info.txt\n" +
+              "9e5ad981e0d29adc278f6a294b8c2aca  bagit.txt\n" +
+              "a1e301444f5e48cebfb0480e6ded97ec  manifest-sha1.txt\n" +
+              "7983626d0844789acfe8059b6730b9d1  manifest-md5.txt\n"
+            ),
+        ),
+        bagRoot = bagRoot,
+        bagInfo = bagInfo
+      )
+
+      storeBagContents(bagContents)
+
+      val err = withBagReader {
+        _.get(bagRoot).left.value
+      }
+
+      err.msg shouldBe "Payload manifests are inconsistent: every payload file must be listed in every payload manifest"
+    }
+  }
+
   it("errors if there is no tag manifest") {
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace, bucket) = fixtures
@@ -233,6 +294,64 @@ trait BagReaderTestCases[
           "Error loading tagmanifest-sha256.txt"
         )
       }
+    }
+  }
+
+  it("errors if the tag manifests are inconsistent") {
+    withFixtures { fixtures =>
+      implicit val (context, typedStore, namespace, bucket) = fixtures
+
+      val space = createStorageSpace
+      val externalIdentifier = ExternalIdentifier("multiple_manifests")
+      val version = createBagVersion
+
+      val bagRoot: BagPrefix = createBagRoot(space, externalIdentifier, version)(namespace)
+
+      val bagInfo = BagInfo(
+        payloadOxum = PayloadOxum(payloadBytes = 15, numberOfPayloadFiles = 1),
+        externalIdentifier = externalIdentifier,
+        baggingDate = LocalDate.now()
+      )
+
+      val bagContents = BagContents(
+        fetchObjects = Map(),
+        bagObjects = Map(
+          bagRoot.asLocation("data/README.txt") -> "This is a file\n",
+          bagRoot.asLocation("bag-info.txt") -> (
+            "Bagging-Date: 2021-07-16\n" +
+              "External-Identifier: multiple_manifests\n" +
+              "Payload-Oxum: 15.1\n"
+            ),
+          bagRoot.asLocation("bagit.txt") -> (
+            "BagIt-Version: 0.97\n" +
+              "Tag-File-Character-Encoding: UTF-8\n"
+            ),
+
+          bagRoot.asLocation("manifest-sha512.txt") -> "7cd31c95fc5a40e5be7bf46e84df52c6d8d50e9003dfb7e3b85ac9c704b90a63ac220147645ff22d410166356133d241a7346e452c863601ce68b82d075031f8  data/README.txt\n",
+          bagRoot.asLocation("manifest-md5.txt") -> "a86e2699931d4f3d1456e79383749e43  data/README.txt\n",
+
+          bagRoot.asLocation("tagmanifest-sha512.txt") -> (
+            "b7112a34f6892c1d3bfb6054dc4977c2ffd32bd7e4d8b686d08f68d1ef407c35857ad3cf552543318238701afb390faad20ac7a0a22b1cf43cd916dfb5d97efa  bag-info.txt\n" +
+              "418dcfbe17d5f4b454b18630be795462cf7da4ceb6313afa49451aa2568e41f7ca3d34cf0280c7d056dc5681a70c37586aa1755620520b9198eede905ba2d0f6  bagit.txt\n" +
+              "bfbd969850673f65d14917bcbe42e86df867e4e383702a4471eb0776f2f1cfa48ec102489416741dcf278344bc0229ac2a9011080ffe2a4e55a64540ed0291d9  manifest-sha512.txt\n"
+            ),
+          bagRoot.asLocation("tagmanifest-md5.txt") -> (
+            "aa3c5e977224a9186dbb36ef1193be0d  bag-info.txt\n" +
+              "9e5ad981e0d29adc278f6a294b8c2aca  bagit.txt\n" +
+              "7983626d0844789acfe8059b6730b9d1  manifest-md5.txt\n"
+            ),
+        ),
+        bagRoot = bagRoot,
+        bagInfo = bagInfo
+      )
+
+      storeBagContents(bagContents)
+
+      val err = withBagReader {
+        _.get(bagRoot).left.value
+      }
+
+      err.msg shouldBe "Tag manifests are inconsistent: each tag manifest should list the same set of tag files"
     }
   }
 

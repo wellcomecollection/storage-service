@@ -25,8 +25,33 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
     for {
       bagInfo <- loadRequired[BagInfo](bagRoot)(bagInfo)(BagInfoParser.create)
 
-      payloadManifest <- loadManifests(bagRoot, payloadManifest, description = "payload manifest").map(NewPayloadManifest)
-      tagManifest <- loadManifests(bagRoot, tagManifest, description = "tag manifest").map(NewTagManifest)
+      // RFC 8493 § 3:
+      //
+      //    For BagIt 1.0, every payload file MUST be listed in every payload
+      //    manifest.  Note that older versions of BagIt allowed payload
+      //    files to be listed in just one of the manifests.
+      //
+
+      payloadManifest <- loadManifestEntries(bagRoot, payloadManifest) match {
+        case Right(entries)                            => Right(NewPayloadManifest(entries))
+        case Left(ManifestError.CannotBeLoaded(err))   => Left(err)
+        case Left(ManifestError.NoManifests)           => Left(BagUnavailable("Could not find any payload manifests in the bag"))
+        case Left(ManifestError.InconsistentFilenames) => Left(BagUnavailable("Payload manifests are inconsistent: every payload file must be listed in every payload manifest"))
+      }
+
+      // RFC 8493 § 2.2.1:
+      //
+      //    A bag MAY contain one or more tag manifests, in which case each tag
+      //    manifest SHOULD list the same set of tag files.
+      //
+      // We treat this as a MUST because it makes things simpler elsewhere.
+      //
+      tagManifest <- loadManifestEntries(bagRoot, tagManifest) match {
+        case Right(entries)                            => Right(NewTagManifest(entries))
+        case Left(ManifestError.CannotBeLoaded(err))   => Left(err)
+        case Left(ManifestError.NoManifests)           => Left(BagUnavailable("Could not find any tag manifests in the bag"))
+        case Left(ManifestError.InconsistentFilenames) => Left(BagUnavailable("Tag manifests are inconsistent: each tag manifest should list the same set of tag files"))
+      }
 
       bagFetch <- loadOptional[BagFetch](bagRoot)(bagFetch)(BagFetch.create)
 
@@ -34,27 +59,29 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
 
   type ManifestEntries = Map[BagPath, ChecksumValue]
 
-  private def loadManifests(root: BagPrefix, filename: HashingAlgorithm => BagPath, description: String): Either[BagUnavailable, Map[BagPath, MultiChecksumValue[ChecksumValue]]] =
+  private sealed trait ManifestError
+  private object ManifestError {
+    case class CannotBeLoaded(err: BagUnavailable) extends ManifestError
+    case object NoManifests extends ManifestError
+    case object InconsistentFilenames extends ManifestError
+  }
+
+  private def loadManifestEntries(root: BagPrefix, filename: HashingAlgorithm => BagPath): Either[ManifestError, Map[BagPath, MultiChecksumValue[ChecksumValue]]] =
     for {
-      md5 <- loadOptional[ManifestEntries](root)(filename(MD5))(BagManifestParser.parse)
-      sha1 <- loadOptional[ManifestEntries](root)(filename(SHA1))(BagManifestParser.parse)
-      sha256 <- loadOptional[ManifestEntries](root)(filename(SHA256))(BagManifestParser.parse)
-      sha512 <- loadOptional[ManifestEntries](root)(filename(SHA512))(BagManifestParser.parse)
+      md5 <- loadSingleManifest(root, filename(MD5))
+      sha1 <- loadSingleManifest(root, filename(SHA1))
+      sha256 <- loadSingleManifest(root, filename(SHA256))
+      sha512 <- loadSingleManifest(root, filename(SHA512))
 
       manifests <- Seq(md5, sha1, sha256, sha512).flatten match {
-        case Nil   => Left(BagUnavailable(s"Could not find any ${description}s in the bag"))
+        case Nil   => Left(ManifestError.NoManifests)
         case other => Right(other)
       }
 
-      // RFC 8493 § 3 says that:
-      //
-      //    For BagIt 1.0, every payload file MUST be listed in every payload
-      //    manifest.  Note that older versions of BagIt allowed payload
-      //    files to be listed in just one of the manifests.
-      //
-      // TODO: Enforce this.
-
-      filenames = manifests.head.keys.toSeq
+      filenames <- manifests.map(_.keys.toSeq).distinct match {
+        case Seq(names) => Right(names)
+        case _          => Left(ManifestError.InconsistentFilenames)
+      }
 
       entries = filenames
         .map { bagPath =>
@@ -67,6 +94,12 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
         }
         .toMap
     } yield entries
+
+  private def loadSingleManifest(root: BagPrefix, path: BagPath): Either[ManifestError.CannotBeLoaded, Option[ManifestEntries]] =
+    loadOptional[ManifestEntries](root)(path)(BagManifestParser.parse) match {
+      case Right(entries)       => Right(entries)
+      case Left(bagUnavailable) => Left(ManifestError.CannotBeLoaded(bagUnavailable))
+    }
 
   private def loadOptional[T](
     root: BagPrefix
