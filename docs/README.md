@@ -62,12 +62,16 @@ We also have the [storage service RFC](https://github.com/wellcomecollection/doc
 
 ## Developer information
 
-These topics are useful for a developer looking to modify or extend the storage service:
+These topics are useful for a developer looking to modify or extend the storage service.
 
 -   [An API reference for the user-facing storage service APIs](developers/api-reference.md)
 -   [Key technologies](developers/key-technologies.md)
--   [Repository layout](developers/repository-layout.md)
 -   [Adding support for another replica location (e.g. Google Cloud)]
 -   [Inter-app messaging with SQS and SNS](developers/inter-app-messaging.md)
 -   [How requests are routed from the API to app containers](explanations/how-requests-are-routed.md)
 -   [Locking around operations in S3 and Azure Blob]
+
+Developer workflow:
+
+-   [Repository layout](developers/repository-layout.md)
+-   [How Docker images are published to ECR](developers/ecr-publishing.md)
