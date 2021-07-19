@@ -7,9 +7,9 @@ import weco.storage_service.verify.{MD5, SHA1, SHA256, SHA512}
 
 import scala.util.Try
 
-class MultiManifestTest extends AnyFunSpec with Matchers {
+class MultiChecksumValueTest extends AnyFunSpec with Matchers {
   it("can be created") {
-    MultiManifest(
+    MultiChecksumValue(
       md5 = Some(FileManifest(MD5, files = Seq())),
       sha1 = Some(FileManifest(SHA1, files = Seq())),
       sha256 = Some(FileManifest(SHA256, files = Seq())),
@@ -19,7 +19,7 @@ class MultiManifestTest extends AnyFunSpec with Matchers {
 
   it("can't be created if there are no values") {
     val result = Try {
-      MultiManifest(
+      MultiChecksumValue(
         md5 = None,
         sha1 = None,
         sha256 = None,
@@ -27,12 +27,12 @@ class MultiManifestTest extends AnyFunSpec with Matchers {
       )
     }
 
-    result.failed.get shouldBe MultiManifestException.NoManifest
+    result.failed.get shouldBe MultiChecksumException.NoChecksum
   }
 
   it("can't be created if there are only weak values") {
     val result = Try {
-      MultiManifest(
+      MultiChecksumValue(
         md5 = Some(FileManifest(MD5, files = Seq())),
         sha1 = Some(FileManifest(MD5, files = Seq())),
         sha256 = None,
@@ -40,6 +40,6 @@ class MultiManifestTest extends AnyFunSpec with Matchers {
       )
     }
 
-    result.failed.get shouldBe MultiManifestException.OnlyWeakChecksums
+    result.failed.get shouldBe MultiChecksumException.OnlyWeakChecksums
   }
 }

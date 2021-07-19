@@ -7,7 +7,7 @@ import weco.storage_service.verify.{ChecksumValue, HashingAlgorithm}
 
 import scala.util.Try
 
-sealed trait BagManifest {
+sealed trait BagManifest extends HasChecksumAlgorithm {
   val checksumAlgorithm: HashingAlgorithm
   val entries: Map[BagPath, ChecksumValue]
 
