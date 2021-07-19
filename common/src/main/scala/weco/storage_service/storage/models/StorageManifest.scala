@@ -1,7 +1,7 @@
 package weco.storage_service.storage.models
 
 import java.time.Instant
-import weco.storage_service.bagit.models.{BagId, BagInfo, BagVersion, HasChecksumAlgorithm}
+import weco.storage_service.bagit.models.{BagId, BagInfo, BagVersion}
 import weco.storage_service.ingests.models.IngestID
 import weco.storage_service.verify.{ChecksumValue, HashingAlgorithm}
 
@@ -15,7 +15,7 @@ case class StorageManifestFile(
 case class FileManifest(
   checksumAlgorithm: HashingAlgorithm,
   files: Seq[StorageManifestFile]
-) extends HasChecksumAlgorithm
+)
 
 case class StorageManifest(
   space: StorageSpace,

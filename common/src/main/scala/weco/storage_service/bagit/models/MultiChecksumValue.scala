@@ -1,7 +1,5 @@
 package weco.storage_service.bagit.models
 
-import weco.storage_service.verify.{MD5, SHA1, SHA256, SHA512}
-
 sealed trait MultiChecksumException extends RuntimeException
 
 object MultiChecksumException {
@@ -9,11 +7,11 @@ object MultiChecksumException {
   case object OnlyWeakChecksums extends MultiChecksumException
 }
 
-case class MultiChecksumValue[T <: HasChecksumAlgorithm](
-  md5: Option[T],
-  sha1: Option[T],
-  sha256: Option[T],
-  sha512: Option[T]
+case class MultiChecksumValue[T](
+  md5: Option[T] = None,
+  sha1: Option[T] = None,
+  sha256: Option[T] = None,
+  sha512: Option[T] = None
 ) {
   if (md5.isEmpty && sha1.isEmpty && sha256.isEmpty && sha512.isEmpty) {
     throw MultiChecksumException.NoChecksum
@@ -24,9 +22,4 @@ case class MultiChecksumValue[T <: HasChecksumAlgorithm](
   if (sha256.isEmpty && sha512.isEmpty) {
     throw MultiChecksumException.OnlyWeakChecksums
   }
-
-  require(md5.map(_.checksumAlgorithm).contains(MD5))
-  require(sha1.map(_.checksumAlgorithm).contains(SHA1))
-  require(sha256.map(_.checksumAlgorithm).contains(SHA256))
-  require(sha512.map(_.checksumAlgorithm).contains(SHA512))
 }
