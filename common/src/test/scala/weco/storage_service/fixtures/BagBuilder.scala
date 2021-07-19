@@ -319,7 +319,7 @@ trait BagBuilder[BagLocation <: Location, BagPrefix <: Prefix[BagLocation], Name
       }
       .mkString("/")
 
-  private def createDigest(string: String): String =
+  protected def createDigest(string: String): String =
     MessageDigest
       .getInstance("SHA-256")
       .digest(string.getBytes)
