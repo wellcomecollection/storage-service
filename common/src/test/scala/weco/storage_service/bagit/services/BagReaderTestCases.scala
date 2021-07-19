@@ -180,7 +180,7 @@ trait BagReaderTestCases[
     }
   }
 
-  it("errors if the file manifest does not exist") {
+  it("errors if there is no payload manifest") {
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace, bucket) = fixtures
 
@@ -188,14 +188,12 @@ trait BagReaderTestCases[
       deleteFile(bagRoot, path = "manifest-sha256.txt")
 
       withBagReader {
-        _.get(bagRoot).left.value.msg should startWith(
-          "Error loading manifest-sha256.txt"
-        )
+        _.get(bagRoot).left.value.msg shouldBe "Could not find any payload manifests in the bag"
       }
     }
   }
 
-  it("errors if the file manifest is malformed") {
+  it("errors if the payload manifest is malformed") {
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace, bucket) = fixtures
 
@@ -210,7 +208,7 @@ trait BagReaderTestCases[
     }
   }
 
-  it("errors if the tag manifest does not exist") {
+  it("errors if there is no tag manifest") {
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace, bucket) = fixtures
 
@@ -218,9 +216,7 @@ trait BagReaderTestCases[
       deleteFile(bagRoot, "tagmanifest-sha256.txt")
 
       withBagReader {
-        _.get(bagRoot).left.value.msg should startWith(
-          "Error loading tagmanifest-sha256.txt"
-        )
+        _.get(bagRoot).left.value.msg shouldBe "Could not find any tag manifests in the bag"
       }
     }
   }

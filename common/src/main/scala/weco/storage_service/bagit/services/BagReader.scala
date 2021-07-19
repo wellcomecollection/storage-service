@@ -25,8 +25,8 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
     for {
       bagInfo <- loadRequired[BagInfo](bagRoot)(bagInfo)(BagInfoParser.create)
 
-      payloadManifest <- loadManifests(bagRoot, payloadManifest).map(NewPayloadManifest)
-      tagManifest <- loadManifests(bagRoot, tagManifest).map(NewTagManifest)
+      payloadManifest <- loadManifests(bagRoot, payloadManifest, description = "payload manifest").map(NewPayloadManifest)
+      tagManifest <- loadManifests(bagRoot, tagManifest, description = "tag manifest").map(NewTagManifest)
 
       bagFetch <- loadOptional[BagFetch](bagRoot)(bagFetch)(BagFetch.create)
 
@@ -34,12 +34,17 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
 
   type ManifestEntries = Map[BagPath, ChecksumValue]
 
-  private def loadManifests(root: BagPrefix, filename: HashingAlgorithm => BagPath): Either[BagUnavailable, Map[BagPath, MultiChecksumValue[ChecksumValue]]] =
+  private def loadManifests(root: BagPrefix, filename: HashingAlgorithm => BagPath, description: String): Either[BagUnavailable, Map[BagPath, MultiChecksumValue[ChecksumValue]]] =
     for {
       md5 <- loadOptional[ManifestEntries](root)(filename(MD5))(BagManifestParser.parse)
       sha1 <- loadOptional[ManifestEntries](root)(filename(SHA1))(BagManifestParser.parse)
       sha256 <- loadOptional[ManifestEntries](root)(filename(SHA256))(BagManifestParser.parse)
       sha512 <- loadOptional[ManifestEntries](root)(filename(SHA512))(BagManifestParser.parse)
+
+      manifests <- Seq(md5, sha1, sha256, sha512).flatten match {
+        case Nil   => Left(BagUnavailable(s"Could not find any ${description}s in the bag"))
+        case other => Right(other)
+      }
 
       // RFC 8493 § 3 says that:
       //
@@ -48,7 +53,7 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
       //    files to be listed in just one of the manifests.
       //
       // TODO: Enforce this.
-      manifests: Seq[ManifestEntries] = Seq(md5, sha1, sha256, sha512).flatten
+
       filenames = manifests.head.keys.toSeq
 
       entries = filenames
