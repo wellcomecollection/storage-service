@@ -1,5 +1,7 @@
 package weco.storage_service.bagit.models
 
+import weco.storage_service.verify.{HashingAlgorithm, MD5, SHA1, SHA256, SHA512}
+
 sealed trait MultiChecksumException extends RuntimeException
 
 object MultiChecksumException {
@@ -22,4 +24,12 @@ case class MultiChecksumValue[T](
   if (sha256.isEmpty && sha512.isEmpty) {
     throw MultiChecksumException.OnlyWeakChecksums
   }
+
+  def getValue(h: HashingAlgorithm): Option[T] =
+    h match {
+      case SHA512 => sha512
+      case SHA256 => sha256
+      case SHA1 => sha1
+      case MD5 => md5
+    }
 }
