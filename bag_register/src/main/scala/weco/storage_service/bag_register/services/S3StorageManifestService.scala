@@ -114,18 +114,26 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
     *     by the BagReader. class
     *
     */
-  private def chooseAlgorithm(tagManifest: NewTagManifest): Try[HashingAlgorithm] = {
+  private def chooseAlgorithm(
+    tagManifest: NewTagManifest
+  ): Try[HashingAlgorithm] = {
     val (_, checksum) = tagManifest.entries.head
 
     val algorithms =
       Seq(SHA512, SHA256)
-        .map { ha => (ha, checksum.getValue(ha)) }
+        .map { ha =>
+          (ha, checksum.getValue(ha))
+        }
         .collect { case (ha, Some(_)) => ha }
 
     algorithms.headOption match {
       case Some(algo) => Success(algo)
       case None =>
-        Failure(new Throwable(s"Unable to choose algorithm from tag manifest: $tagManifest"))
+        Failure(
+          new Throwable(
+            s"Unable to choose algorithm from tag manifest: $tagManifest"
+          )
+        )
     }
   }
 

@@ -22,9 +22,14 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
     ] {
 
   val contentString = "HelloWorld"
-  val checksumString = "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
+  val checksumString =
+    "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
   val multiChecksum = MultiChecksumValue(
-    sha256 = Some(ChecksumValue("872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"))
+    sha256 = Some(
+      ChecksumValue(
+        "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
+      )
+    )
   )
 
   def tagName(algorithm: HashingAlgorithm): String =
@@ -214,7 +219,11 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
     val multiChecksum = MultiChecksumValue(
       md5 = Some(ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6")),
       sha1 = Some(ChecksumValue("db8ac1c259eb89d4a131b253bacfca5f319d54f2")),
-      sha256 = Some(ChecksumValue("872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"))
+      sha256 = Some(
+        ChecksumValue(
+          "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
+        )
+      )
     )
 
     withContext { implicit context =>

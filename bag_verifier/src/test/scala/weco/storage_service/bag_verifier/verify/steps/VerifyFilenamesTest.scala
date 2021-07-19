@@ -10,7 +10,11 @@ import weco.storage_service.bagit.models.{
 }
 import weco.storage_service.generators.StorageRandomGenerators
 
-class VerifyFilenamesTest extends AnyFunSpec with Matchers with EitherValues with StorageRandomGenerators {
+class VerifyFilenamesTest
+    extends AnyFunSpec
+    with Matchers
+    with EitherValues
+    with StorageRandomGenerators {
   val verifier: VerifyFilenames =
     new VerifyFilenames {}
 

@@ -54,7 +54,9 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
   private def loadBagInfo(bagRoot: BagPrefix): Either[BagUnavailable, BagInfo] =
     loadRequired[BagInfo](bagRoot)(bagInfo)(BagInfoParser.create)
 
-  private def loadBagFetch(bagRoot: BagPrefix): Either[BagUnavailable, Option[BagFetch]] =
+  private def loadBagFetch(
+    bagRoot: BagPrefix
+  ): Either[BagUnavailable, Option[BagFetch]] =
     loadOptional[BagFetch](bagRoot)(bagFetch)(BagFetch.create)
 
   type ManifestEntries = Map[BagPath, ChecksumValue]
@@ -65,9 +67,12 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
   //    manifest.  Note that older versions of BagIt allowed payload
   //    files to be listed in just one of the manifests.
   //
-  private def loadPayloadManifest(bagRoot: BagPrefix): Either[BagUnavailable, (Seq[HashingAlgorithm], NewPayloadManifest)] =
+  private def loadPayloadManifest(
+    bagRoot: BagPrefix
+  ): Either[BagUnavailable, (Seq[HashingAlgorithm], NewPayloadManifest)] =
     loadManifestEntries(bagRoot, payloadManifest) match {
-      case Right((algorithms, entries))            => Right((algorithms, NewPayloadManifest(entries)))
+      case Right((algorithms, entries)) =>
+        Right((algorithms, NewPayloadManifest(entries)))
       case Left(ManifestError.CannotBeLoaded(err)) => Left(err)
       case Left(ManifestError.NoManifests) =>
         Left(
@@ -81,7 +86,9 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
         )
       case Left(ManifestError.OnlyWeakChecksums) =>
         Left(
-          BagUnavailable("Payload manifests only use weak checksums: add a payload manifest using SHA-256 or SHA-512")
+          BagUnavailable(
+            "Payload manifests only use weak checksums: add a payload manifest using SHA-256 or SHA-512"
+          )
         )
       case Left(_) =>
         Left(
@@ -95,9 +102,12 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
   //    manifest SHOULD list the same set of tag files.
   //
   // We interpret this as a MUST.
-  private def loadTagManifest(bagRoot: BagPrefix): Either[BagUnavailable, (Seq[HashingAlgorithm], NewTagManifest)] =
+  private def loadTagManifest(
+    bagRoot: BagPrefix
+  ): Either[BagUnavailable, (Seq[HashingAlgorithm], NewTagManifest)] =
     loadManifestEntries(bagRoot, tagManifest) match {
-      case Right((algorithms, entries))            => Right((algorithms, NewTagManifest(entries)))
+      case Right((algorithms, entries)) =>
+        Right((algorithms, NewTagManifest(entries)))
       case Left(ManifestError.CannotBeLoaded(err)) => Left(err)
       case Left(ManifestError.NoManifests) =>
         Left(BagUnavailable("Could not find any tag manifests in the bag"))
@@ -109,7 +119,9 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
         )
       case Left(ManifestError.OnlyWeakChecksums) =>
         Left(
-          BagUnavailable("Tag manifests only use weak checksums: add a tag manifest using SHA-256 or SHA-512")
+          BagUnavailable(
+            "Tag manifests only use weak checksums: add a tag manifest using SHA-256 or SHA-512"
+          )
         )
       case Left(_) =>
         Left(
@@ -123,11 +135,18 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
   //    that are present in the bag.
   //
   // We interpret this as a MUST.
-  private def compareManifestAlgorithms(payload: Seq[HashingAlgorithm], tag: Seq[HashingAlgorithm]): Either[BagUnavailable, Unit] =
+  private def compareManifestAlgorithms(
+    payload: Seq[HashingAlgorithm],
+    tag: Seq[HashingAlgorithm]
+  ): Either[BagUnavailable, Unit] =
     if (payload == tag) {
       Right(())
     } else {
-      Left(BagUnavailable("Manifests are inconsistent: tag manifests should use the same algorithms as the payload manifests in the bag"))
+      Left(
+        BagUnavailable(
+          "Manifests are inconsistent: tag manifests should use the same algorithms as the payload manifests in the bag"
+        )
+      )
     }
 
   private sealed trait ManifestError
@@ -142,7 +161,10 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
   private def loadManifestEntries(
     root: BagPrefix,
     filename: HashingAlgorithm => BagPath
-  ): Either[ManifestError, (Seq[HashingAlgorithm], Map[BagPath, MultiChecksumValue[ChecksumValue]])] =
+  ): Either[
+    ManifestError,
+    (Seq[HashingAlgorithm], Map[BagPath, MultiChecksumValue[ChecksumValue]])
+  ] =
     for {
       md5 <- loadSingleManifest(root, filename(MD5))
       sha1 <- loadSingleManifest(root, filename(SHA1))
@@ -176,9 +198,10 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
           )
         }.toMap
       } match {
-        case Success(entries)                                  => Right(entries)
-        case Failure(MultiChecksumException.OnlyWeakChecksums) => Left(ManifestError.OnlyWeakChecksums)
-        case Failure(t)                                        => Left(ManifestError.UnknownError(t))
+        case Success(entries) => Right(entries)
+        case Failure(MultiChecksumException.OnlyWeakChecksums) =>
+          Left(ManifestError.OnlyWeakChecksums)
+        case Failure(t) => Left(ManifestError.UnknownError(t))
       }
     } yield (algorithms, entries)
 

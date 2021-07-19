@@ -9,8 +9,10 @@ case class FailedChecksumCreation(e: Throwable)
     extends Throwable(s"Could not create checksum: ${e.getMessage}")
     with FailedChecksum
 
-case class FailedChecksumNoMatch(actual: HashingResult, expected: MultiChecksumValue[ChecksumValue])
-    extends Throwable(
+case class FailedChecksumNoMatch(
+  actual: HashingResult,
+  expected: MultiChecksumValue[ChecksumValue]
+) extends Throwable(
       s"Checksum values do not match! Expected: $expected, saw: $actual"
     )
     with FailedChecksum

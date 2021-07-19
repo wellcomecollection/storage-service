@@ -26,14 +26,18 @@ case class MultiChecksumValue[T](
   }
 
   def algorithms: Seq[HashingAlgorithm] =
-    Seq(md5.map(_ => MD5), sha1.map(_ => SHA1), sha256.map(_ => SHA256), sha512.map(_ => SHA512))
-      .flatten
+    Seq(
+      md5.map(_ => MD5),
+      sha1.map(_ => SHA1),
+      sha256.map(_ => SHA256),
+      sha512.map(_ => SHA512)
+    ).flatten
 
   def getValue(h: HashingAlgorithm): Option[T] =
     h match {
       case SHA512 => sha512
       case SHA256 => sha256
-      case SHA1 => sha1
-      case MD5 => md5
+      case SHA1   => sha1
+      case MD5    => md5
     }
 }

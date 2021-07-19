@@ -145,12 +145,17 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     val algorithms = expectedFileFixity.multiChecksum.algorithms
 
     val expectedChecksumTags =
-      algorithms
-        .map { h => fixityTagName(h) -> expectedFileFixity.multiChecksum.getValue(h).get.value }
-        .toMap
+      algorithms.map { h =>
+        fixityTagName(h) -> expectedFileFixity.multiChecksum
+          .getValue(h)
+          .get
+          .value
+      }.toMap
 
     val existingChecksumTags =
-      existingTags.filter { case (key, _) => expectedChecksumTags.contains(key) }
+      existingTags.filter {
+        case (key, _) => expectedChecksumTags.contains(key)
+      }
 
     (expectedChecksumTags, existingChecksumTags) match {
 
@@ -167,7 +172,9 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
 
       // Case 2: there's a fixity tag on the object which is different from the
       // value we expected.
-      case (expected, actual) if actual.exists { case (key, value) => expected(key) != value } =>
+      case (expected, actual) if actual.exists {
+            case (key, value) => expected(key) != value
+          } =>
         Left(
           FileFixityMismatch(
             expectedFileFixity = expectedFileFixity,
@@ -233,7 +240,8 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
           )
         )
 
-      case Success(hashingResult) if isMatch(hashingResult, expectedFileFixity.multiChecksum) =>
+      case Success(hashingResult)
+          if isMatch(hashingResult, expectedFileFixity.multiChecksum) =>
         Right(
           FileFixityCorrect(
             expectedFileFixity = expectedFileFixity,
@@ -263,7 +271,10 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     fixityResult
   }
 
-  private def isMatch(hashingResult: HashingResult, multiChecksum: MultiChecksumValue[ChecksumValue]): Boolean =
+  private def isMatch(
+    hashingResult: HashingResult,
+    multiChecksum: MultiChecksumValue[ChecksumValue]
+  ): Boolean =
     multiChecksum.algorithms
       .map { h =>
         val expectedValue = multiChecksum.getValue(h).get
@@ -280,11 +291,9 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     tags
       .update(location) { existingTags =>
         val fixityTags =
-          fileFixity
-            .multiChecksum.algorithms.map {
-              h => fixityTagName(h) -> fileFixity.multiChecksum.getValue(h).get.value
-            }
-            .toMap
+          fileFixity.multiChecksum.algorithms.map { h =>
+            fixityTagName(h) -> fileFixity.multiChecksum.getValue(h).get.value
+          }.toMap
 
         // We've already checked the tags on this location once, so we shouldn't
         // see conflicting values here.  Check we're not about to blat some existing
@@ -293,12 +302,16 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
         //
         // Note: this is a fairly weak guarantee, because tags aren't locked during
         // an update operation.
-        existingTags.foreach { case (tagName, tagValue) =>
-          fixityTags.get(tagName) match {
-            case Some(value) =>
-              assert(value == tagValue, s"Trying to write $fixityTags to $location; existing tags conflict: $existingTags")
-            case _ => ()
-          }
+        existingTags.foreach {
+          case (tagName, tagValue) =>
+            fixityTags.get(tagName) match {
+              case Some(value) =>
+                assert(
+                  value == tagValue,
+                  s"Trying to write $fixityTags to $location; existing tags conflict: $existingTags"
+                )
+              case _ => ()
+            }
         }
 
         Right(existingTags ++ fixityTags)

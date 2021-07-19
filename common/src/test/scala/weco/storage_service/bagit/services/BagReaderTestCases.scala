@@ -387,11 +387,11 @@ trait BagReaderTestCases[
             "Bagging-Date: 2021-07-16\n" +
               "External-Identifier: weak_algorithms\n" +
               "Payload-Oxum: 15.1\n"
-            ),
+          ),
           bagRoot.asLocation("bagit.txt") -> (
             "BagIt-Version: 0.97\n" +
               "Tag-File-Character-Encoding: UTF-8\n"
-            ),
+          ),
           bagRoot
             .asLocation("manifest-md5.txt") -> "a86e2699931d4f3d1456e79383749e43  data/README.txt\n",
           bagRoot.asLocation("tagmanifest-md5.txt") -> (
@@ -399,7 +399,7 @@ trait BagReaderTestCases[
               "9e5ad981e0d29adc278f6a294b8c2aca  bagit.txt\n" +
               "d570da37be627c3955c165422e667245  manifest-sha512.txt\n" +
               "7983626d0844789acfe8059b6730b9d1  manifest-md5.txt\n"
-            )
+          )
         ),
         bagRoot = bagRoot,
         bagInfo = bagInfo
@@ -440,18 +440,18 @@ trait BagReaderTestCases[
             "Bagging-Date: 2021-07-16\n" +
               "External-Identifier: different_checksums\n" +
               "Payload-Oxum: 15.1\n"
-            ),
+          ),
           bagRoot.asLocation("bagit.txt") -> (
             "BagIt-Version: 0.97\n" +
               "Tag-File-Character-Encoding: UTF-8\n"
-            ),
+          ),
           bagRoot
             .asLocation("manifest-sha512.txt") -> "7cd31c95fc5a40e5be7bf46e84df52c6d8d50e9003dfb7e3b85ac9c704b90a63ac220147645ff22d410166356133d241a7346e452c863601ce68b82d075031f8  data/README.txt\n",
           bagRoot.asLocation("tagmanifest-sha256.txt") -> (
             "1ad8750c4a30a82cff48049c6aa65d60dfef7d54bc7f5f54055d2c60a5bba851  bag-info.txt\n" +
               "e91f941be5973ff71f1dccbdd1a32d598881893a7f21be516aca743da38b1689  bagit.txt\n" +
               "33f48fd5df3bb188f874c033adab20e39b8e24c823e32fae99ee539317e8badf  manifest-sha512.txt\n"
-            )
+          )
         ),
         bagRoot = bagRoot,
         bagInfo = bagInfo

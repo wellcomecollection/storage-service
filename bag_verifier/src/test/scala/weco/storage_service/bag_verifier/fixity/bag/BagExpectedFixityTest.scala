@@ -167,7 +167,7 @@ class BagExpectedFixityTest
   }
 
   def getExpectedLocations(
-    manifestEntries: Map[BagPath, MultiChecksumValue[ChecksumValue]],
+    manifestEntries: Map[BagPath, MultiChecksumValue[ChecksumValue]]
   ): Seq[ExpectedFileFixity] =
     manifestEntries.map {
       case (bagPath, multiChecksum) =>
