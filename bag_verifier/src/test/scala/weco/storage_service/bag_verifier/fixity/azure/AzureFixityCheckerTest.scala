@@ -70,7 +70,7 @@ class AzureFixityCheckerTest
   override def createId(implicit container: Container): AzureBlobLocation =
     createAzureBlobLocationWith(container)
 
-  override def tagName(algorithm: HashingAlgorithm): String =
+  override def tagName(algorithm: ChecksumAlgorithm): String =
     algorithm match {
       case MD5    => "ContentMD5"
       case SHA1   => "ContentSHA1"

@@ -1,6 +1,6 @@
 package weco.storage_service.bagit.models
 
-import weco.storage_service.verify.HashingAlgorithms
+import weco.storage_service.verify.ChecksumAlgorithms
 
 /** In a bag, we have payload files.  Those files are referred to by a payload
   * manifest file, which is in turn referred to by a tag manifest file.  But how
@@ -34,7 +34,7 @@ import weco.storage_service.verify.HashingAlgorithms
   */
 object UnreferencedFiles {
   val tagManifestFiles: Seq[String] =
-    HashingAlgorithms.algorithms.map { h =>
+    ChecksumAlgorithms.algorithms.map { h =>
       s"tagmanifest-${h.pathRepr}.txt"
     }
 }

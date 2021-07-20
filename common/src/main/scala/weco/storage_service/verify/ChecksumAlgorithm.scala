@@ -11,7 +11,7 @@ import org.apache.commons.codec.digest.MessageDigestAlgorithms
  * within this directory, to make it as easy as possible to add new algorithms later.
  *
  */
-sealed trait HashingAlgorithm {
+sealed trait ChecksumAlgorithm {
   val value: String
 
   // Quoting RFC 8493 § 2.4:
@@ -35,25 +35,25 @@ sealed trait HashingAlgorithm {
   override def toString: String = value
 }
 
-case object HashingAlgorithms {
-  val algorithms: Seq[HashingAlgorithm] = Seq(SHA512, SHA256, SHA1, MD5)
+case object ChecksumAlgorithms {
+  val algorithms: Seq[ChecksumAlgorithm] = Seq(SHA512, SHA256, SHA1, MD5)
 }
 
-case object SHA512 extends HashingAlgorithm {
+case object SHA512 extends ChecksumAlgorithm {
   val value: String = MessageDigestAlgorithms.SHA_512
 }
 
-case object SHA256 extends HashingAlgorithm {
+case object SHA256 extends ChecksumAlgorithm {
   val value: String = MessageDigestAlgorithms.SHA_256
 }
 
-case object SHA1 extends HashingAlgorithm {
+case object SHA1 extends ChecksumAlgorithm {
   val value: String = MessageDigestAlgorithms.SHA_1
 
   override val isForBackwardsCompatibilityOnly: Boolean = true
 }
 
-case object MD5 extends HashingAlgorithm {
+case object MD5 extends ChecksumAlgorithm {
   val value: String = MessageDigestAlgorithms.MD5
 
   override val isForBackwardsCompatibilityOnly: Boolean = true

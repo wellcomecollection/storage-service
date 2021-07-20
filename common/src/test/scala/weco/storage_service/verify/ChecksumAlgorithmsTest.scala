@@ -4,12 +4,12 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.storage_service.fixtures.ReflectionHelpers
 
-class HashingAlgorithmsTest extends AnyFunSpec with Matchers with ReflectionHelpers {
+class ChecksumAlgorithmsTest extends AnyFunSpec with Matchers with ReflectionHelpers {
 
   // This is meant to help us remember to update the list if/when we add
   // new algorithms.
   it("knows about all the algorithms") {
-    HashingAlgorithms.algorithms.size shouldBe getSubclasses[HashingAlgorithm].size
+    ChecksumAlgorithms.algorithms.size shouldBe getSubclasses[ChecksumAlgorithm].size
   }
 
   it("gets the correct path name") {

@@ -13,9 +13,9 @@ import weco.storage_service.verify._
 trait BagGenerators extends BagInfoGenerators {
   def createBagWith(
     manifestEntries: Map[BagPath, ChecksumValue] = Map.empty,
-    manifestChecksumAlgorithm: HashingAlgorithm = SHA256,
+    manifestChecksumAlgorithm: ChecksumAlgorithm = SHA256,
     tagManifestEntries: Map[BagPath, ChecksumValue] = Map.empty,
-    tagManifestChecksumAlgorithm: HashingAlgorithm = SHA256,
+    tagManifestChecksumAlgorithm: ChecksumAlgorithm = SHA256,
     fetchEntries: Map[BagPath, BagFetchMetadata] = Map.empty
   ): Bag =
     Bag(

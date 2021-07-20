@@ -143,7 +143,7 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     expectedFileFixity: ExpectedFileFixity,
     location: BagLocation,
     existingTags: Map[String, String],
-    algorithm: HashingAlgorithm,
+    algorithm: ChecksumAlgorithm,
     size: Long
   ): Either[FileFixityError[BagLocation], FileFixityCorrect[BagLocation]] =
     existingTags.get(fixityTagName(expectedFileFixity)) match {
@@ -197,7 +197,7 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     expectedFileFixity: ExpectedFileFixity,
     location: BagLocation,
     inputStream: InputStreamWithLength,
-    algorithm: HashingAlgorithm,
+    algorithm: ChecksumAlgorithm,
     size: Long
   ): Either[FileFixityError[BagLocation], FileFixityCorrect[BagLocation]] = {
     // This assertion should never fire in practice -- if it does, it means

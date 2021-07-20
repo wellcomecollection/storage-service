@@ -2,7 +2,7 @@ package weco.storage_service.bag_register.services
 
 import weco.storage_service.bagit.models.UnreferencedFiles
 import weco.storage_service.storage.models.StorageManifestFile
-import weco.storage_service.verify.{Hasher, HashingAlgorithm}
+import weco.storage_service.verify.{Hasher, ChecksumAlgorithm}
 import weco.storage.store.Readable
 import weco.storage.streaming.InputStreamWithLength
 import weco.storage._
@@ -22,7 +22,7 @@ class TagManifestFileFinder[BagLocation <: Location](
 
   def getTagManifestFiles(
     prefix: Prefix[BagLocation],
-    algorithm: HashingAlgorithm
+    algorithm: ChecksumAlgorithm
   ): Try[Seq[StorageManifestFile]] = Try {
     val entries: Seq[StorageManifestFile] =
       UnreferencedFiles.tagManifestFiles.flatMap {
@@ -39,7 +39,7 @@ class TagManifestFileFinder[BagLocation <: Location](
   private def findIndividualTagManifestFile(
     name: String,
     prefix: Prefix[BagLocation],
-    algorithm: HashingAlgorithm
+    algorithm: ChecksumAlgorithm
   ): Option[StorageManifestFile] =
     streamReader.get(prefix.asLocation(name)) match {
       case Right(is) =>
