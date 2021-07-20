@@ -3,7 +3,7 @@ package weco.storage_service.bagit.services
 import java.io.InputStream
 
 import weco.storage_service.bagit.models._
-import weco.storage_service.verify.{ChecksumAlgorithm, SHA256}
+import weco.storage_service.checksum.{ChecksumAlgorithm, SHA256}
 import weco.storage._
 import weco.storage.store.Readable
 import weco.storage.streaming.InputStreamWithLength

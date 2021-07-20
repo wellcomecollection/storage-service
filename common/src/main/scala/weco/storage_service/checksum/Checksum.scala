@@ -1,4 +1,4 @@
-package weco.storage_service.verify
+package weco.storage_service.checksum
 
 import grizzled.slf4j.Logging
 

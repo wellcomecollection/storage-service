@@ -10,7 +10,7 @@ import weco.storage_service.bag_verifier.storage.{
   LocationNotFound,
   LocationParsingError
 }
-import weco.storage_service.verify._
+import weco.storage_service.checksum._
 import weco.storage.services.SizeFinder
 import weco.storage.store.Readable
 import weco.storage.streaming.InputStreamWithLength

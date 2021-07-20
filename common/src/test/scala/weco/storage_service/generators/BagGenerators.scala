@@ -8,7 +8,7 @@ import weco.storage_service.bagit.models.{
   PayloadManifest,
   TagManifest
 }
-import weco.storage_service.verify._
+import weco.storage_service.checksum._
 
 trait BagGenerators extends BagInfoGenerators {
   def createBagWith(

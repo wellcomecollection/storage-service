@@ -8,7 +8,7 @@ import weco.fixtures.RandomGenerators
 import weco.messaging.fixtures.SQS.Queue
 import weco.storage_service.bagit.models._
 import weco.storage_service.ingests.models.{IngestID, StorageProvider}
-import weco.storage_service.verify._
+import weco.storage_service.checksum._
 
 import scala.concurrent.duration._
 import scala.util.Random

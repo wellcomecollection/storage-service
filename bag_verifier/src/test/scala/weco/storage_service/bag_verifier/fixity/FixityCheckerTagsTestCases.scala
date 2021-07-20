@@ -2,7 +2,7 @@ package weco.storage_service.bag_verifier.fixity
 
 import org.mockito.Mockito
 import org.mockito.Mockito.{times, verify}
-import weco.storage_service.verify._
+import weco.storage_service.checksum._
 import weco.storage.store.Readable
 import weco.storage.streaming.InputStreamWithLength
 import weco.storage.{Identified, Location, Prefix}

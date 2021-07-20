@@ -8,7 +8,7 @@ import weco.storage_service.storage.models.{
   StorageManifestFile,
   StorageSpace
 }
-import weco.storage_service.verify.ChecksumAlgorithm
+import weco.storage_service.checksum.ChecksumAlgorithm
 
 import java.time.Instant
 

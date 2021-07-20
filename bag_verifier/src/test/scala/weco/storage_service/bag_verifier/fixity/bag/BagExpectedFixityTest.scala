@@ -12,7 +12,7 @@ import weco.storage_service.bag_verifier.fixity.{
 import weco.storage_service.bag_verifier.storage.Resolvable
 import weco.storage_service.bagit.models.{BagFetchMetadata, BagPath}
 import weco.storage_service.generators.{BagGenerators, FetchMetadataGenerators}
-import weco.storage_service.verify.{Checksum, ChecksumValue, ChecksumAlgorithm}
+import weco.storage_service.checksum.{Checksum, ChecksumValue, ChecksumAlgorithm}
 import weco.storage.generators.MemoryLocationGenerators
 import weco.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
 

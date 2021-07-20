@@ -1,6 +1,6 @@
 package weco.storage_service.bagit.models
 
-import weco.storage_service.verify.ChecksumAlgorithms
+import weco.storage_service.checksum.ChecksumAlgorithms
 
 /** In a bag, we have payload files.  Those files are referred to by a payload
   * manifest file, which is in turn referred to by a tag manifest file.  But how

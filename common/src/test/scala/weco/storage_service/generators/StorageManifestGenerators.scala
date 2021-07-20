@@ -6,7 +6,7 @@ import weco.storage_service.bagit.models.{BagInfo, BagVersion}
 import weco.storage_service.ingests.models.IngestID
 import weco.storage_service.storage.models._
 import weco.storage_service.storage.services.DestinationBuilder
-import weco.storage_service.verify.{ChecksumAlgorithm, SHA256}
+import weco.storage_service.checksum.{ChecksumAlgorithm, SHA256}
 
 import scala.util.Random
 

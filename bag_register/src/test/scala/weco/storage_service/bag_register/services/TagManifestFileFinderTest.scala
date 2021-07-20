@@ -5,7 +5,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.{EitherValues, TryValues}
 import weco.fixtures.{RandomGenerators, TestWith}
 import weco.storage_service.storage.models.StorageManifestFile
-import weco.storage_service.verify.{ChecksumValue, MD5, SHA256}
+import weco.storage_service.checksum.{ChecksumValue, MD5, SHA256}
 import weco.storage.StoreReadError
 import weco.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
 import weco.storage.store.Readable

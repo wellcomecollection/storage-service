@@ -2,7 +2,7 @@ package weco.storage_service.bag_register.services
 
 import weco.storage_service.bagit.models.UnreferencedFiles
 import weco.storage_service.storage.models.StorageManifestFile
-import weco.storage_service.verify.{Hasher, ChecksumAlgorithm}
+import weco.storage_service.checksum.{Hasher, ChecksumAlgorithm}
 import weco.storage.store.Readable
 import weco.storage.streaming.InputStreamWithLength
 import weco.storage._
