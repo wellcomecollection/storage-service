@@ -214,7 +214,7 @@ class TagManifestFileFinderTest
 
     result.failed.get shouldBe a[RuntimeException]
     result.failed.get.getMessage should startWith(
-      s"Error looking up $prefix/tagmanifest-md5.txt:"
+      s"Error looking up $prefix/tagmanifest-"
     )
   }
 }
