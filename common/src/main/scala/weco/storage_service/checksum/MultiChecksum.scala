@@ -6,8 +6,9 @@ import java.io.InputStream
 import java.security.MessageDigest
 import scala.util.Try
 
-/** This class reads an InputStream, and records the checksum for
-  * every checksum supported by the storage service.
+/** This class records the actual checksum of a file in a bag, based on the
+  * contents of the file as read from storage.  It records checksums for every
+  * checksum algorithm supported by the storage service.
   *
   */
 case class MultiChecksum(
@@ -23,6 +24,20 @@ case class MultiChecksum(
       case SHA256 => sha256
       case SHA512 => sha512
     }
+
+  /** Compare to the expected checksum information.  Does the actual file match the
+    * expected checksum, or are they different?
+    *
+    */
+  def matches(manifestChecksum: MultiManifestChecksum): Boolean =
+    manifestChecksum
+      .definedAlgorithms
+      .forall { a =>
+        val expected = manifestChecksum.getValue(a)
+        val actual = getValue(a)
+
+        expected.contains(actual)
+      }
 }
 
 case object MultiChecksum {

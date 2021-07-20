@@ -7,8 +7,9 @@ object MultiManifestChecksumException {
   case object OnlyDeprecatedChecksums extends MultiManifestChecksumException
 }
 
-/** This class records checksum information about a file that has checksums
-  * in multiple manifests, e.g. a checksum in an MD5 manifest and a SHA-256 manifest.
+/** This class records the expected checksum of a file in a bag, based on the
+  * manifests provided in the bag.  It can record checksums for multiple checksum
+  * algorithms, e.g. a file in an MD5 manifest and a SHA-256 manifest.
   *
   */
 case class MultiManifestChecksum(
@@ -25,6 +26,14 @@ case class MultiManifestChecksum(
       sha256.map(_ => SHA256),
       sha512.map(_ => SHA512)
     ).flatten
+
+  def getValue(algorithm: ChecksumAlgorithm): Option[ChecksumValue] =
+    algorithm match {
+      case MD5    => md5
+      case SHA1   => sha1
+      case SHA256 => sha256
+      case SHA512 => sha512
+    }
 
   if (definedAlgorithms.isEmpty) {
     throw MultiManifestChecksumException.NoChecksums

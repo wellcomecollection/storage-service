@@ -67,4 +67,38 @@ class MultiChecksumTest
     val result = MultiChecksum.create(inputStream)
     result.failed.get shouldBe exception
   }
+
+  describe("can be compared to a MultiManifestChecksum") {
+    it("is a match if all the defined checksums are the same") {
+      val expected = MultiManifestChecksum(
+        md5 = Some(ChecksumValue("aaaaaaa")),
+        sha256 = Some(ChecksumValue("ccccccc"))
+      )
+
+      val actual = MultiChecksum(
+        md5 = ChecksumValue("aaaaaaa"),
+        sha1 = ChecksumValue("bbbbbbb"),
+        sha256 = ChecksumValue("ccccccc"),
+        sha512 = ChecksumValue("ddddddd")
+      )
+
+      actual.matches(expected) shouldBe true
+    }
+
+    it("isn't a match if one of the checksums is difference") {
+      val expected = MultiManifestChecksum(
+        md5 = Some(ChecksumValue("aaaaaaa")),
+        sha256 = Some(ChecksumValue("aaaaaaa"))
+      )
+
+      val actual = MultiChecksum(
+        md5 = ChecksumValue("aaaaaab"),
+        sha1 = ChecksumValue("bbbbbbb"),
+        sha256 = ChecksumValue("ccccccc"),
+        sha512 = ChecksumValue("ddddddd")
+      )
+
+      actual.matches(expected) shouldBe false
+    }
+  }
 }
