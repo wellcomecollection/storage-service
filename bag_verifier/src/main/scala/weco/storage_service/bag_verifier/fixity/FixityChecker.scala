@@ -212,37 +212,39 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
         s"The size of $location has changed!  Before: $size, after: ${inputStream.length}"
     )
 
-    val fixityResult = MultiChecksum.create(inputStream).map(_.getValue(algorithm)) match {
-      case Failure(e) =>
-        Left(
-          FileFixityCouldNotGetChecksum(
-            expectedFileFixity = expectedFileFixity,
-            objectLocation = location,
-            e = FailedChecksumCreation(algorithm, e)
-          )
-        )
-
-      case Success(value) if Checksum(algorithm, value) == expectedFileFixity.checksum =>
-        Right(
-          FileFixityCorrect(
-            expectedFileFixity = expectedFileFixity,
-            objectLocation = location,
-            size = inputStream.length
-          )
-        )
-
-      case Success(value) =>
-        Left(
-          FileFixityMismatch(
-            expectedFileFixity = expectedFileFixity,
-            objectLocation = location,
-            e = FailedChecksumNoMatch(
-              actual = Checksum(algorithm, value),
-              expected = expectedFileFixity.checksum
+    val fixityResult =
+      MultiChecksum.create(inputStream).map(_.getValue(algorithm)) match {
+        case Failure(e) =>
+          Left(
+            FileFixityCouldNotGetChecksum(
+              expectedFileFixity = expectedFileFixity,
+              objectLocation = location,
+              e = FailedChecksumCreation(algorithm, e)
             )
           )
-        )
-    }
+
+        case Success(value)
+            if Checksum(algorithm, value) == expectedFileFixity.checksum =>
+          Right(
+            FileFixityCorrect(
+              expectedFileFixity = expectedFileFixity,
+              objectLocation = location,
+              size = inputStream.length
+            )
+          )
+
+        case Success(value) =>
+          Left(
+            FileFixityMismatch(
+              expectedFileFixity = expectedFileFixity,
+              objectLocation = location,
+              e = FailedChecksumNoMatch(
+                actual = Checksum(algorithm, value),
+                expected = expectedFileFixity.checksum
+              )
+            )
+          )
+      }
 
     // Remember to close the InputStream when we're done, whatever the result.
     // If we don't, the verifier will accumulate open streams and run out of

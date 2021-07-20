@@ -6,7 +6,10 @@ import weco.storage_service.generators.StorageRandomGenerators
 
 import scala.util.Try
 
-class MultiManifestChecksumTest extends AnyFunSpec with Matchers with StorageRandomGenerators {
+class MultiManifestChecksumTest
+    extends AnyFunSpec
+    with Matchers
+    with StorageRandomGenerators {
   it("can be created") {
     MultiManifestChecksum(
       md5 = Some(randomChecksumValue),
@@ -42,4 +45,3 @@ class MultiManifestChecksumTest extends AnyFunSpec with Matchers with StorageRan
     result.failed.get shouldBe MultiManifestChecksumException.OnlyDeprecatedChecksums
   }
 }
-

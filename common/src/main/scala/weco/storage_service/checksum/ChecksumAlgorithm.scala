@@ -3,14 +3,14 @@ package weco.storage_service.checksum
 import org.apache.commons.codec.digest.MessageDigestAlgorithms
 
 /** The list of algorithms here is based on the list in RFC 8493 § 2.4:
- * https://datatracker.ietf.org/doc/html/rfc8493#section-2.4
- *
- * It is not an exhaustive list, and we may add new checksums in the future.
- *
- * As much as possible, we try to keep all the code related to checksum algorithms
- * within this directory, to make it as easy as possible to add new algorithms later.
- *
- */
+  * https://datatracker.ietf.org/doc/html/rfc8493#section-2.4
+  *
+  * It is not an exhaustive list, and we may add new checksums in the future.
+  *
+  * As much as possible, we try to keep all the code related to checksum algorithms
+  * within this directory, to make it as easy as possible to add new algorithms later.
+  *
+  */
 sealed trait ChecksumAlgorithm {
   val value: String
 

@@ -4,7 +4,10 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.storage_service.fixtures.ReflectionHelpers
 
-class ChecksumAlgorithmsTest extends AnyFunSpec with Matchers with ReflectionHelpers {
+class ChecksumAlgorithmsTest
+    extends AnyFunSpec
+    with Matchers
+    with ReflectionHelpers {
 
   // This is meant to help us remember to update the list if/when we add
   // new algorithms.
