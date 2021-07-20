@@ -7,7 +7,7 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.storage.streaming.Codec._
 
-class HasherTest
+class MultiChecksumTest
     extends AnyFunSpec
     with Matchers
     with EitherValues
@@ -16,11 +16,11 @@ class HasherTest
     val input = "Hello world"
     val inputStream = stringCodec.toStream(input).value
 
-    val result = Hasher.hash(inputStream)
+    val result = MultiChecksum.create(inputStream)
 
     // Expected values obtained by searching "md5 Hello World" in DuckDuckGo,
     // and similar for other algorithms.
-    result.success.value shouldBe HashingResult(
+    result.success.value shouldBe MultiChecksum(
       md5 = ChecksumValue("3e25960a79dbc69b674cd4ec67a72c62"),
       sha1 = ChecksumValue("7b502c3a1f48c8609ae212cdfb639dee39673f5e"),
       sha256 = ChecksumValue(
@@ -37,10 +37,10 @@ class HasherTest
     val input = "Hello world " * 1024
     val inputStream = stringCodec.toStream(input).value
 
-    val result = Hasher.hash(inputStream)
+    val result = MultiChecksum.create(inputStream)
 
     // Expected values obtained by using the Python hashlib library.
-    result.success.value shouldBe HashingResult(
+    result.success.value shouldBe MultiChecksum(
       md5 = ChecksumValue("6a2d892099d210d049be9276c2659c17"),
       sha1 = ChecksumValue("dc92fd07cfbfbb450eb0703fdea3ef9154e38db1"),
       sha256 = ChecksumValue(
@@ -64,7 +64,7 @@ class HasherTest
       is = stringCodec.toStream("Hello world").value
     )
 
-    val result = Hasher.hash(inputStream)
+    val result = MultiChecksum.create(inputStream)
     result.failed.get shouldBe exception
   }
 }

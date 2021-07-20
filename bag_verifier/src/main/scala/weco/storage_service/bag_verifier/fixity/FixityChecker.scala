@@ -212,7 +212,7 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
         s"The size of $location has changed!  Before: $size, after: ${inputStream.length}"
     )
 
-    val fixityResult = Checksum.create(inputStream, algorithm) match {
+    val fixityResult = MultiChecksum.create(inputStream).map(_.getValue(algorithm)) match {
       case Failure(e) =>
         Left(
           FileFixityCouldNotGetChecksum(

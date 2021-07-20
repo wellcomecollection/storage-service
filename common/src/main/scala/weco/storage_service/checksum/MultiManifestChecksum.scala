@@ -9,6 +9,7 @@ object MultiManifestChecksumException {
 
 /** This class records checksum information about a file that has checksums
   * in multiple manifests, e.g. a checksum in an MD5 manifest and a SHA-256 manifest.
+  *
   */
 case class MultiManifestChecksum(
   md5: Option[ChecksumValue] = None,

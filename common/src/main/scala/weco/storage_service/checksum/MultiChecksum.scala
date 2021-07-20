@@ -1,19 +1,22 @@
 package weco.storage_service.checksum
 
-import java.io.InputStream
-import java.security.MessageDigest
-
 import org.apache.commons.codec.binary.Hex
 
+import java.io.InputStream
+import java.security.MessageDigest
 import scala.util.Try
 
-case class HashingResult(
+/** This class reads an InputStream, and records the checksum for
+  * every checksum supported by the storage service.
+  *
+  */
+case class MultiChecksum(
   md5: ChecksumValue,
   sha1: ChecksumValue,
   sha256: ChecksumValue,
   sha512: ChecksumValue
 ) {
-  def getChecksumValue(algorithm: ChecksumAlgorithm): ChecksumValue =
+  def getValue(algorithm: ChecksumAlgorithm): ChecksumValue =
     algorithm match {
       case MD5    => md5
       case SHA1   => sha1
@@ -22,13 +25,8 @@ case class HashingResult(
     }
 }
 
-object Hasher {
-
-  /** Given an InputStream, read the complete contents and hash it using the four
-    * algorithms suggested by the BagIt spec.
-    *
-    */
-  def hash(inputStream: InputStream): Try[HashingResult] = Try {
+case object MultiChecksum {
+  def create(inputStream: InputStream): Try[MultiChecksum] = Try {
     val digest_MD5: MessageDigest = MessageDigest.getInstance(MD5.value)
     val digest_SHA1 = MessageDigest.getInstance(SHA1.value)
     val digest_SHA256 = MessageDigest.getInstance(SHA256.value)
@@ -51,7 +49,7 @@ object Hasher {
     }
     // == MessageDigest.updateDigest() ends ==
 
-    HashingResult(
+    MultiChecksum(
       md5 = asChecksumValue(digest_MD5),
       sha1 = asChecksumValue(digest_SHA1),
       sha256 = asChecksumValue(digest_SHA256),
