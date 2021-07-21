@@ -35,7 +35,9 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
   private def loadBagInfo(bagRoot: BagPrefix): Either[BagUnavailable, BagInfo] =
     loadRequired[BagInfo](bagRoot)(bagInfo)(BagInfoParser.create)
 
-  private def loadManifest(bagRoot: BagPrefix): Either[BagUnavailable, PayloadManifest] =
+  private def loadManifest(
+    bagRoot: BagPrefix
+  ): Either[BagUnavailable, PayloadManifest] =
     loadRequired[PayloadManifest](bagRoot)(fileManifest(SHA256))(
       (inputStream: InputStream) =>
         BagManifestParser.parse(inputStream).map { entries =>
@@ -57,7 +59,9 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
         }
     )
 
-  private def loadFetch(bagRoot: BagPrefix): Either[BagUnavailable, Option[BagFetch]] =
+  private def loadFetch(
+    bagRoot: BagPrefix
+  ): Either[BagUnavailable, Option[BagFetch]] =
     loadOptional[BagFetch](bagRoot)(bagFetch)(BagFetch.create)
 
   private def loadOptional[T](

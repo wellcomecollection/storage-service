@@ -38,7 +38,10 @@ case class Bag(
   //
   require(
     (newManifest.entries.values ++ newTagManifest.entries.values)
-      .map(_.definedAlgorithms).toSeq.distinct.size == 1,
+      .map(_.definedAlgorithms)
+      .toSeq
+      .distinct
+      .size == 1,
     "Payload and tag manifests use different algorithms!"
   )
 }
@@ -48,19 +51,22 @@ case object Bag {
     info: BagInfo,
     manifest: PayloadManifest,
     tagManifest: TagManifest,
-    fetch: Option[BagFetch]): Bag =
+    fetch: Option[BagFetch]
+  ): Bag =
     Bag(
       info = info,
       newManifest = NewPayloadManifest(
         entries = manifest.entries
-          .map { case (path, checksum) =>
-            path -> MultiManifestChecksum(sha256 = Some(checksum))
+          .map {
+            case (path, checksum) =>
+              path -> MultiManifestChecksum(sha256 = Some(checksum))
           }
       ),
       newTagManifest = NewTagManifest(
         entries = tagManifest.entries
-          .map { case (path, checksum) =>
-            path -> MultiManifestChecksum(sha256 = Some(checksum))
+          .map {
+            case (path, checksum) =>
+              path -> MultiManifestChecksum(sha256 = Some(checksum))
           }
       ),
       fetch = fetch

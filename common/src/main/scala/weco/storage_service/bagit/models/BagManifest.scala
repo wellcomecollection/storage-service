@@ -1,6 +1,10 @@
 package weco.storage_service.bagit.models
 
-import weco.storage_service.checksum.{ChecksumAlgorithm, ChecksumValue, MultiManifestChecksum}
+import weco.storage_service.checksum.{
+  ChecksumAlgorithm,
+  ChecksumValue,
+  MultiManifestChecksum
+}
 
 sealed trait BagManifest {
   val checksumAlgorithm: ChecksumAlgorithm
@@ -48,6 +52,8 @@ sealed trait NewBagManifest {
   )
 }
 
-case class NewPayloadManifest(entries: Map[BagPath, MultiManifestChecksum]) extends NewBagManifest
+case class NewPayloadManifest(entries: Map[BagPath, MultiManifestChecksum])
+    extends NewBagManifest
 
-case class NewTagManifest(entries: Map[BagPath, MultiManifestChecksum]) extends NewBagManifest
+case class NewTagManifest(entries: Map[BagPath, MultiManifestChecksum])
+    extends NewBagManifest
