@@ -8,6 +8,11 @@ case class Bag(
   newTagManifest: NewTagManifest,
   fetch: Option[BagFetch]
 ) {
+  // These methods exist for backwards compatibility while we migrate to the
+  // new models, but will eventually be removed.
+  require(newManifest.algorithmsInUse == Set(SHA256))
+  require(newTagManifest.algorithmsInUse == Set(SHA256))
+
   def manifest: PayloadManifest =
     PayloadManifest(
       checksumAlgorithm = SHA256,
@@ -20,10 +25,18 @@ case class Bag(
   def tagManifest: TagManifest =
     TagManifest(
       checksumAlgorithm = SHA256,
-      entries = newManifest.entries.map {
+      entries = newTagManifest.entries.map {
         case (path, multiChecksum) =>
           path -> multiChecksum.sha256.get
       }
+    )
+
+  def copy(tagManifest: TagManifest): Bag =
+    Bag(
+      info = info,
+      manifest = manifest,
+      tagManifest = tagManifest,
+      fetch = fetch
     )
 
   // Quoting RFC 8493 § 2.2.1 (https://datatracker.ietf.org/doc/html/rfc8493#section-2.2.1):
