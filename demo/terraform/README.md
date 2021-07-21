@@ -23,7 +23,7 @@ It spins up real resources in your AWS account and you will be billed for them.
 
     ```hcl
     module "demo_stack" {
-      source = "github.com/wellcomecollection/storage-service.git//demo/terraform/demo_stack?ref=b155543"
+      source = "github.com/wellcomecollection/storage-service.git//demo/terraform/demo_stack?ref=5a61182"
 
       namespace       = "..."  # e.g. weco-dams-prototype
       short_namespace = "..."  # e.g. weco -- this should be 5 chars or less
