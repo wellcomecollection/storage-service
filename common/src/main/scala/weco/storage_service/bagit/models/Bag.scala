@@ -37,11 +37,7 @@ case class Bag(
   // storage service code, not malformed bags uploaded by users.
   //
   require(
-    (newManifest.entries.values ++ newTagManifest.entries.values)
-      .map(_.definedAlgorithms)
-      .toSeq
-      .distinct
-      .size == 1,
+    newManifest.algorithmsInUse == newTagManifest.algorithmsInUse,
     "Payload and tag manifests use different algorithms!"
   )
 }
@@ -56,6 +52,7 @@ case object Bag {
     Bag(
       info = info,
       newManifest = NewPayloadManifest(
+        algorithmsInUse = Set(SHA256),
         entries = manifest.entries
           .map {
             case (path, checksum) =>
@@ -63,6 +60,7 @@ case object Bag {
           }
       ),
       newTagManifest = NewTagManifest(
+        algorithmsInUse = Set(SHA256),
         entries = tagManifest.entries
           .map {
             case (path, checksum) =>
