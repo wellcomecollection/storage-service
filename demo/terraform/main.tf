@@ -10,7 +10,7 @@ provider "aws" {
 
 
 module "us_demo_stack" {
-  source = "github.com/wellcomecollection/storage-service.git//demo/terraform/demo_stack?ref=b155543"
+  source = "github.com/wellcomecollection/storage-service.git//demo/terraform/demo_stack?ref=af310ba"
 
   namespace       = "weco-us-dams-prototype"
   short_namespace = "weco-us"
