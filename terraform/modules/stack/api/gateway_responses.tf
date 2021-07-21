@@ -143,3 +143,21 @@ module "response_unsupported_media_type" {
 
   rest_api_id = aws_api_gateway_rest_api.api.id
 }
+
+locals {
+  gateway_responses_resource_fingerprint = sha1(jsonencode([
+    module.response_default_5xx.api_deployment_component_fingerprint,
+    module.response_default_4xx.api_deployment_component_fingerprint,
+    module.response_access_denied.api_deployment_component_fingerprint,
+    module.response_bad_request_parameters.api_deployment_component_fingerprint,
+    module.response_bad_request_body.api_deployment_component_fingerprint,
+    module.response_expired_token.api_deployment_component_fingerprint,
+    module.response_invalid_api_key.api_deployment_component_fingerprint,
+    module.response_invalid_signature.api_deployment_component_fingerprint,
+    module.response_missing_authentication_token.api_deployment_component_fingerprint,
+    module.response_quota_exceeded.api_deployment_component_fingerprint,
+    module.response_request_too_large.api_deployment_component_fingerprint,
+    module.response_unauthorized.api_deployment_component_fingerprint,
+    module.response_unsupported_media_type.api_deployment_component_fingerprint,
+  ]))
+}

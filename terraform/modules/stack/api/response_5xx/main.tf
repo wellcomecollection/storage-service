@@ -30,3 +30,7 @@ resource "aws_api_gateway_gateway_response" "response" {
   }
 }
 
+output "api_deployment_component_fingerprint" {
+  description = "An opaque value which changes if the module's API Gateway resources change."
+  value       = sha1(jsonencode(aws_api_gateway_gateway_response.response))
+}
