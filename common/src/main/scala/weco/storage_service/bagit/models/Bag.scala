@@ -8,11 +8,6 @@ case class Bag(
   newTagManifest: NewTagManifest,
   fetch: Option[BagFetch]
 ) {
-  // These methods exist for backwards compatibility while we migrate to the
-  // new models, but will eventually be removed.
-  require(newManifest.algorithmsInUse == Set(SHA256))
-  require(newTagManifest.algorithmsInUse == Set(SHA256))
-
   def manifest: PayloadManifest =
     PayloadManifest(
       checksumAlgorithm = SHA256,
@@ -61,7 +56,10 @@ case object Bag {
     manifest: PayloadManifest,
     tagManifest: TagManifest,
     fetch: Option[BagFetch]
-  ): Bag =
+  ): Bag = {
+    require(manifest.checksumAlgorithm == SHA256)
+    require(tagManifest.checksumAlgorithm == SHA256)
+
     Bag(
       info = info,
       newManifest = NewPayloadManifest(
@@ -82,4 +80,5 @@ case object Bag {
       ),
       fetch = fetch
     )
+  }
 }
