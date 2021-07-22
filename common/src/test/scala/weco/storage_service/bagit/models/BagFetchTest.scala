@@ -1,11 +1,12 @@
 package weco.storage_service.bagit.models
 
 import java.io.InputStream
-
 import org.apache.commons.io.IOUtils
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.storage_service.generators.FetchMetadataGenerators
+
+import java.net.URI
 
 class BagFetchTest
     extends AnyFunSpec
@@ -68,18 +69,54 @@ class BagFetchTest
       BagFetch.create(contents).get.entries shouldBe expected
     }
 
-    it("correctly decodes a percent-encoded CR/LF/CRLF in the file path") {
+    it(
+      "correctly decodes a percent-encoded CR/LF/CRLF or percentage in the file path"
+    ) {
       val contents = toInputStream(s"""
                                       |http://example.org/abc - data/example%0D1%0D.txt
                                       |http://example.org/abc - data/example%0A2%0A.txt
                                       |http://example.org/abc - data/example%0D%0A3%0D%0A.txt
+                                      |http://example.org/abc - data/example%254%25.txt
        """.stripMargin)
 
       BagFetch.create(contents).get.paths.map { _.toString } shouldBe Seq(
         "data/example\r1\r.txt",
         "data/example\n2\n.txt",
-        "data/example\r\n3\r\n.txt"
+        "data/example\r\n3\r\n.txt",
+        "data/example%4%.txt"
       )
+    }
+
+    it("correctly decodes a percent-encoded space in the URI") {
+      val lines = "http://example.org/abc%20def - data/example 1.txt"
+
+      val contents = toInputStream(lines)
+
+      BagFetch.create(contents).get shouldBe BagFetch(
+        entries = Map(
+          BagPath("data/example 1.txt") -> BagFetchMetadata(
+            uri = new URI("http://example.org/abc%20def"),
+            length = None
+          )
+        )
+      )
+    }
+
+    it("returns a helpful error for spaces in the URI") {
+      val line = "http://example.org/abc def - data/example.txt"
+      val contents = toInputStream(line)
+
+      val exc = BagFetch.create(contents).failed.get
+      exc shouldBe a[RuntimeException]
+      exc.getMessage shouldBe s"URI is incorrectly formatted on line 1. Spaces should be URI-encoded: $line"
+    }
+
+    it("throws an exception for an illegal URI") {
+      val line = "{uri} - data/example.txt"
+      val contents = toInputStream(line)
+
+      val exc = BagFetch.create(contents).failed.get
+      exc.getMessage shouldBe s"URI is incorrectly formatted on line 1. Illegal character in path at index 0: {uri} - data/example.txt"
     }
 
     it("throws an exception if a line is incorrectly formatted") {

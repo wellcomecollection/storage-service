@@ -1,9 +1,8 @@
 package weco.storage_service.bagit.models
 
 import java.io.{BufferedReader, InputStream, InputStreamReader}
-import java.net.URI
-
-import scala.util.Try
+import java.net.{URI, URISyntaxException}
+import scala.util.{Failure, Success, Try}
 import scala.util.matching.Regex
 
 case class BagFetchMetadata(
@@ -55,22 +54,29 @@ object BagFetch {
         .filterNot { _.trim.isEmpty }
         .toList
 
-    val entries = lines
-      .map { line: String =>
-        FETCH_LINE_REGEX.findFirstMatchIn(line) match {
-          case Some(m) =>
-            val path = BagPath(decodeFilepath(m.group("filepath")))
-            val metadata = BagFetchMetadata(
-              uri = new URI(m.group("url")),
-              length = decodeLength(m.group("length"))
-            )
+    val entries = lines.zipWithIndex
+      .map {
+        case (line, lineNo) =>
+          // Ensure line numbers are 1-indexed
+          (line, lineNo + 1)
+      }
+      .map {
+        case (line, lineNo) =>
+          FETCH_LINE_REGEX.findFirstMatchIn(line) match {
+            case Some(m) =>
+              val path = BagPath(decodeFilepath(m.group("filepath")))
 
-            path -> metadata
-          case None =>
-            throw new RuntimeException(
-              s"Line <<$line>> is incorrectly formatted!"
-            )
-        }
+              val metadata = BagFetchMetadata(
+                uri = decodeUri(line, lineNo, m.group("url")),
+                length = decodeLength(m.group("length"))
+              )
+
+              path -> metadata
+            case None =>
+              throw new RuntimeException(
+                s"Line <<$line>> is incorrectly formatted!"
+              )
+          }
       }
 
     // The BagIt spec says the fetch.txt must not list any tag files; that is, metadata
@@ -109,9 +115,34 @@ object BagFetch {
     BagFetch(entries.toMap)
   }
 
+  private def decodeUri(line: String, lineNo: Int, u: String): URI =
+    Try { new URI(u) } match {
+      case Failure(_: URISyntaxException) if u.contains(" ") =>
+        throw new RuntimeException(
+          s"URI is incorrectly formatted on line $lineNo. Spaces should be URI-encoded: $line"
+        )
+
+      case Failure(e: URISyntaxException) =>
+        val wrappedExc = new URISyntaxException(line, e.getReason, e.getIndex)
+        throw new Throwable(
+          s"URI is incorrectly formatted on line $lineNo. ${wrappedExc.getMessage}"
+        )
+
+      case Success(uri) => uri
+      case Failure(err) => throw err
+    }
+
   private def decodeLength(ls: String): Option[Long] =
     if (ls == "-") None else Some(ls.toLong)
 
+  // Quoting RFC 8493 § 2.2.3 (https://datatracker.ietf.org/doc/html/rfc8493#section-2.2.3):
+  //
+  //      If _filename_ includes an LF, a CR, a CRLF, or a percent sign (%), those
+  //      characters (and only those) MUST be percent-encoded as described in [RFC3986].
+  //
   private def decodeFilepath(path: String): String =
-    path.replaceAll("%0A", "\n").replaceAll("%0D", "\r")
+    path
+      .replaceAll("%0A", "\n")
+      .replaceAll("%0D", "\r")
+      .replaceAll("%25", "%")
 }
