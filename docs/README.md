@@ -54,7 +54,7 @@ These topics explain how the storage service work, and why it's designed in the 
 -   [How identifiers work in the storage service](explanations/identifiers.md)
 -   [How files are laid out in the underlying storage](explanations/file-layout.md)
 -   [How bags are verified]
--   [Compressed vs uncompressed bags, and the choice of tar.gz]
+-   [Compressed vs uncompressed bags, and the choice of tar.gz](explanations/compression-formats.md)
 
 We also have the [storage service RFC](https://github.com/wellcomecollection/docs/tree/main/rfcs/002-archival_storage), the original design document -- although this isn't actively updated, and some of the details have changed in the implementation.
 
