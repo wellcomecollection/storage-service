@@ -36,16 +36,34 @@ locals {
 
 resource "aws_api_gateway_deployment" "v1" {
   rest_api_id = aws_api_gateway_rest_api.api.id
-  stage_name  = "v1"
+
+  triggers = {
+    # Re-deploy this deployment if any of the resources it contains are updated.
+    # This also orders the resources to ensure the deployment is created after
+    # all of its consitutent resources are created/updated. See the terraform
+    # docs for aws_api_gateway_deployment which suggests this pattern.
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_authorizer.cognito,
+      local.gateway_responses_resource_fingerprint,
+      module.bags.api_deployment_resource_fingerprint,
+      module.ingests.api_deployment_resource_fingerprint,
+    ]))
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_api_gateway_stage" "v1" {
+  stage_name    = "v1"
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  deployment_id = aws_api_gateway_deployment.v1.id
 
   variables = {
     bags_port        = local.bags_listener_port
     ingests_port     = local.ingests_listener_port,
     integration_uris = local.integration_uri_variable
-  }
-
-  lifecycle {
-    create_before_destroy = true
   }
 }
 
