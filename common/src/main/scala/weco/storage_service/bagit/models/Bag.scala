@@ -50,6 +50,8 @@ case class Bag(
   )
 }
 
+// These methods/assertions are for backwards compatibility only, and will
+// be removed at the end of the work to support multiple checksums.
 case object Bag {
   def apply(
     info: BagInfo,
