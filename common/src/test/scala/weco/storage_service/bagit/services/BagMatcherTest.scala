@@ -96,7 +96,7 @@ class BagMatcherTest
       val fetchPath = createBagPath
       val fetchChecksumValue = randomChecksumValue
 
-      val checksumAlgorithm = randomHashingAlgorithm
+      val checksumAlgorithm = randomChecksumAlgorithm
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
         manifest = PayloadManifest(

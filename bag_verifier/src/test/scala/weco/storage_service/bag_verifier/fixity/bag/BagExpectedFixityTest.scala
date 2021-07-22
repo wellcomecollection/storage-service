@@ -1,7 +1,6 @@
 package weco.storage_service.bag_verifier.fixity.bag
 
 import java.net.URI
-
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.storage_service.bag_verifier.fixity.{
@@ -15,7 +14,8 @@ import weco.storage_service.generators.{BagGenerators, FetchMetadataGenerators}
 import weco.storage_service.checksum.{
   Checksum,
   ChecksumAlgorithm,
-  ChecksumValue
+  ChecksumValue,
+  SHA256
 }
 import weco.storage.generators.MemoryLocationGenerators
 import weco.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
@@ -56,7 +56,7 @@ class BagExpectedFixityTest
         BagPath("names.txt") -> randomChecksumValue
       )
 
-      val manifestChecksumAlgorithm = randomHashingAlgorithm
+      val manifestChecksumAlgorithm = SHA256
 
       val bag = createBagWith(
         manifestEntries = manifestEntries,
@@ -76,7 +76,7 @@ class BagExpectedFixityTest
         BagPath("manifest-sha256.txt") -> randomChecksumValue
       )
 
-      val tagManifestChecksumAlgorithm = randomHashingAlgorithm
+      val tagManifestChecksumAlgorithm = SHA256
 
       val bag = createBagWith(
         tagManifestEntries = tagManifestEntries,
@@ -101,7 +101,7 @@ class BagExpectedFixityTest
         BagPath("manifest-sha256.txt") -> randomChecksumValue
       )
 
-      val checksumAlgorithm = randomHashingAlgorithm
+      val checksumAlgorithm = SHA256
 
       val bag = createBagWith(
         manifestEntries = manifestEntries,
@@ -132,7 +132,7 @@ class BagExpectedFixityTest
         _ -> createFetchMetadata
       }.toMap
 
-      val manifestChecksumAlgorithm = randomHashingAlgorithm
+      val manifestChecksumAlgorithm = SHA256
 
       val bag = createBagWith(
         manifestEntries = manifestEntries ++ fetchedManifestEntries,
