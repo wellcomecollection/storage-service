@@ -54,28 +54,29 @@ object BagFetch {
         .filterNot { _.trim.isEmpty }
         .toList
 
-    val entries = lines
-      .zipWithIndex
-      .map { case (line, lineNo) =>
-        // Ensure line numbers are 1-indexed
-        (line, lineNo + 1)
+    val entries = lines.zipWithIndex
+      .map {
+        case (line, lineNo) =>
+          // Ensure line numbers are 1-indexed
+          (line, lineNo + 1)
       }
-      .map { case (line, lineNo) =>
-        FETCH_LINE_REGEX.findFirstMatchIn(line) match {
-          case Some(m) =>
-            val path = BagPath(decodeFilepath(m.group("filepath")))
+      .map {
+        case (line, lineNo) =>
+          FETCH_LINE_REGEX.findFirstMatchIn(line) match {
+            case Some(m) =>
+              val path = BagPath(decodeFilepath(m.group("filepath")))
 
-            val metadata = BagFetchMetadata(
-              uri = decodeUri(line, lineNo, m.group("url")),
-              length = decodeLength(m.group("length"))
-            )
+              val metadata = BagFetchMetadata(
+                uri = decodeUri(line, lineNo, m.group("url")),
+                length = decodeLength(m.group("length"))
+              )
 
-            path -> metadata
-          case None =>
-            throw new RuntimeException(
-              s"Line <<$line>> is incorrectly formatted!"
-            )
-        }
+              path -> metadata
+            case None =>
+              throw new RuntimeException(
+                s"Line <<$line>> is incorrectly formatted!"
+              )
+          }
       }
 
     // The BagIt spec says the fetch.txt must not list any tag files; that is, metadata
@@ -117,11 +118,15 @@ object BagFetch {
   private def decodeUri(line: String, lineNo: Int, u: String): URI =
     Try { new URI(u) } match {
       case Failure(_: URISyntaxException) if u.contains(" ") =>
-        throw new RuntimeException(s"URI is incorrectly formatted on line $lineNo. Spaces should be URI-encoded: $line")
+        throw new RuntimeException(
+          s"URI is incorrectly formatted on line $lineNo. Spaces should be URI-encoded: $line"
+        )
 
       case Failure(e: URISyntaxException) =>
         val wrappedExc = new URISyntaxException(line, e.getReason, e.getIndex)
-        throw new Throwable(s"URI is incorrectly formatted on line $lineNo. ${wrappedExc.getMessage}")
+        throw new Throwable(
+          s"URI is incorrectly formatted on line $lineNo. ${wrappedExc.getMessage}"
+        )
 
       case Success(uri) => uri
       case Failure(err) => throw err
