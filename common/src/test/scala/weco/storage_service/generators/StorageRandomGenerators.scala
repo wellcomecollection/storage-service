@@ -122,11 +122,8 @@ trait StorageRandomGenerators extends RandomGenerators {
   def createBagVersion: BagVersion =
     BagVersion(randomInt(from = 1, to = 100000))
 
-  def randomHashingAlgorithm: ChecksumAlgorithm = {
-    val algorithms = List(MD5, SHA1, SHA256, SHA512)
-
-    algorithms(Random.nextInt(algorithms.length))
-  }
+  def randomChecksumAlgorithm: ChecksumAlgorithm =
+    chooseFrom(ChecksumAlgorithms.algorithms: _*)
 
   def createBagPath: BagPath = BagPath(randomAlphanumeric())
 

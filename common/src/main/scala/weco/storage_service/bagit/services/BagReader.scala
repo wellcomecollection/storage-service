@@ -24,21 +24,45 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
 
   def get(bagRoot: BagPrefix): Either[BagUnavailable, Bag] =
     for {
-      bagInfo <- loadRequired[BagInfo](bagRoot)(bagInfo)(BagInfoParser.create)
+      bagInfo <- loadBagInfo(bagRoot)
 
-      fileManifest <- loadRequired[PayloadManifest](bagRoot)(
-        fileManifest(SHA256)
-      )(
-        PayloadManifest.create(_, SHA256)
-      )
+      manifest <- loadManifest(bagRoot)
+      tagManifest <- loadTagManifest(bagRoot)
 
-      tagManifest <- loadRequired[TagManifest](bagRoot)(tagManifest(SHA256))(
-        TagManifest.create(_, SHA256)
-      )
+      bagFetch <- loadFetch(bagRoot)
+    } yield Bag(bagInfo, manifest, tagManifest, bagFetch)
 
-      bagFetch <- loadOptional[BagFetch](bagRoot)(bagFetch)(BagFetch.create)
+  private def loadBagInfo(bagRoot: BagPrefix): Either[BagUnavailable, BagInfo] =
+    loadRequired[BagInfo](bagRoot)(bagInfo)(BagInfoParser.create)
 
-    } yield Bag(bagInfo, fileManifest, tagManifest, bagFetch)
+  private def loadManifest(
+    bagRoot: BagPrefix
+  ): Either[BagUnavailable, PayloadManifest] =
+    loadRequired[PayloadManifest](bagRoot)(fileManifest(SHA256))(
+      (inputStream: InputStream) =>
+        BagManifestParser.parse(inputStream).map { entries =>
+          PayloadManifest(
+            checksumAlgorithm = SHA256,
+            entries = entries
+          )
+        }
+    )
+
+  private def loadTagManifest(bagRoot: BagPrefix) =
+    loadRequired[TagManifest](bagRoot)(tagManifest(SHA256))(
+      (inputStream: InputStream) =>
+        BagManifestParser.parse(inputStream).map { entries =>
+          TagManifest(
+            checksumAlgorithm = SHA256,
+            entries = entries
+          )
+        }
+    )
+
+  private def loadFetch(
+    bagRoot: BagPrefix
+  ): Either[BagUnavailable, Option[BagFetch]] =
+    loadOptional[BagFetch](bagRoot)(bagFetch)(BagFetch.create)
 
   private def loadOptional[T](
     root: BagPrefix
