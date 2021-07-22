@@ -8,11 +8,12 @@ import weco.storage_service.generators.BagInfoGenerators
 class BagTest extends AnyFunSpec with Matchers with BagInfoGenerators {
   describe("has backwards compatibility") {
     it("keeps the payload manifest") {
-      val entries = (1 to randomInt(from = 1, to = 10))
-        .map { _ => createBagPath -> randomChecksumValue }
-        .toMap
+      val entries = (1 to randomInt(from = 1, to = 10)).map { _ =>
+        createBagPath -> randomChecksumValue
+      }.toMap
 
-      val manifest = PayloadManifest(checksumAlgorithm = SHA256, entries = entries)
+      val manifest =
+        PayloadManifest(checksumAlgorithm = SHA256, entries = entries)
 
       val bag = Bag(
         info = createBagInfo,
@@ -25,11 +26,12 @@ class BagTest extends AnyFunSpec with Matchers with BagInfoGenerators {
     }
 
     it("keeps the tag manifest") {
-      val entries = (1 to randomInt(from = 1, to = 10))
-        .map { _ => createBagPath -> randomChecksumValue }
-        .toMap
+      val entries = (1 to randomInt(from = 1, to = 10)).map { _ =>
+        createBagPath -> randomChecksumValue
+      }.toMap
 
-      val tagManifest = TagManifest(checksumAlgorithm = SHA256, entries = entries)
+      val tagManifest =
+        TagManifest(checksumAlgorithm = SHA256, entries = entries)
 
       val bag = Bag(
         info = createBagInfo,

@@ -53,10 +53,10 @@ sealed trait NewBagManifest {
 
 case class NewPayloadManifest(
   algorithmsInUse: Set[ChecksumAlgorithm],
-  entries: Map[BagPath, MultiManifestChecksum])
-    extends NewBagManifest
+  entries: Map[BagPath, MultiManifestChecksum]
+) extends NewBagManifest
 
 case class NewTagManifest(
   algorithmsInUse: Set[ChecksumAlgorithm],
-  entries: Map[BagPath, MultiManifestChecksum])
-    extends NewBagManifest
+  entries: Map[BagPath, MultiManifestChecksum]
+) extends NewBagManifest
