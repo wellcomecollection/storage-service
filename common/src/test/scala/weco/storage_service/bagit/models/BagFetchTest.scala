@@ -69,17 +69,19 @@ class BagFetchTest
       BagFetch.create(contents).get.entries shouldBe expected
     }
 
-    it("correctly decodes a percent-encoded CR/LF/CRLF in the file path") {
+    it("correctly decodes a percent-encoded CR/LF/CRLF or percentage in the file path") {
       val contents = toInputStream(s"""
                                       |http://example.org/abc - data/example%0D1%0D.txt
                                       |http://example.org/abc - data/example%0A2%0A.txt
                                       |http://example.org/abc - data/example%0D%0A3%0D%0A.txt
+                                      |http://example.org/abc - data/example%254%25.txt
        """.stripMargin)
 
       BagFetch.create(contents).get.paths.map { _.toString } shouldBe Seq(
         "data/example\r1\r.txt",
         "data/example\n2\n.txt",
-        "data/example\r\n3\r\n.txt"
+        "data/example\r\n3\r\n.txt",
+        "data/example%4%.txt",
       )
     }
 

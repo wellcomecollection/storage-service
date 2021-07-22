@@ -130,8 +130,14 @@ object BagFetch {
   private def decodeLength(ls: String): Option[Long] =
     if (ls == "-") None else Some(ls.toLong)
 
+  // Quoting RFC 8493 § 2.2.3 (https://datatracker.ietf.org/doc/html/rfc8493#section-2.2.3):
+  //
+  //      If _filename_ includes an LF, a CR, a CRLF, or a percent sign (%), those
+  //      characters (and only those) MUST be percent-encoded as described in [RFC3986].
+  //
   private def decodeFilepath(path: String): String =
     path
       .replaceAll("%0A", "\n")
       .replaceAll("%0D", "\r")
+      .replaceAll("%25", "%")
 }
