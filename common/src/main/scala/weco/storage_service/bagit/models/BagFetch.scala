@@ -1,9 +1,8 @@
 package weco.storage_service.bagit.models
 
 import java.io.{BufferedReader, InputStream, InputStreamReader}
-import java.net.URI
-
-import scala.util.Try
+import java.net.{URI, URISyntaxException}
+import scala.util.{Failure, Success, Try}
 import scala.util.matching.Regex
 
 case class BagFetchMetadata(
@@ -56,12 +55,18 @@ object BagFetch {
         .toList
 
     val entries = lines
-      .map { line: String =>
+      .zipWithIndex
+      .map { case (line, lineNo) =>
+        // Ensure line numbers are 1-indexed
+        (line, lineNo + 1)
+      }
+      .map { case (line, lineNo) =>
         FETCH_LINE_REGEX.findFirstMatchIn(line) match {
           case Some(m) =>
             val path = BagPath(decodeFilepath(m.group("filepath")))
+
             val metadata = BagFetchMetadata(
-              uri = new URI(m.group("url")),
+              uri = decodeUri(line, lineNo, m.group("url")),
               length = decodeLength(m.group("length"))
             )
 
@@ -109,9 +114,24 @@ object BagFetch {
     BagFetch(entries.toMap)
   }
 
+  private def decodeUri(line: String, lineNo: Int, u: String): URI =
+    Try { new URI(u) } match {
+      case Failure(_: URISyntaxException) if u.contains(" ") =>
+        throw new RuntimeException(s"URI is incorrectly formatted on line $lineNo. Spaces should be URL-encoded: $line")
+
+      case Failure(e: URISyntaxException) =>
+        val wrappedExc = new URISyntaxException(line, e.getReason, e.getIndex)
+        throw new Throwable(s"URI is incorrectly formatted on line $lineNo. ${wrappedExc.getMessage}")
+
+      case Success(uri) => uri
+      case Failure(err) => throw err
+    }
+
   private def decodeLength(ls: String): Option[Long] =
     if (ls == "-") None else Some(ls.toLong)
 
   private def decodeFilepath(path: String): String =
-    path.replaceAll("%0A", "\n").replaceAll("%0D", "\r")
+    path
+      .replaceAll("%0A", "\n")
+      .replaceAll("%0D", "\r")
 }
