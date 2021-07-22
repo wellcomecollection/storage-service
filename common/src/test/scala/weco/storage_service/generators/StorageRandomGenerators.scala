@@ -123,7 +123,7 @@ trait StorageRandomGenerators extends RandomGenerators {
     BagVersion(randomInt(from = 1, to = 100000))
 
   def randomChecksumAlgorithm: ChecksumAlgorithm =
-    chooseFrom(ChecksumAlgorithms.algorithms)
+    chooseFrom(ChecksumAlgorithms.algorithms: _*)
 
   def createBagPath: BagPath = BagPath(randomAlphanumeric())
 
