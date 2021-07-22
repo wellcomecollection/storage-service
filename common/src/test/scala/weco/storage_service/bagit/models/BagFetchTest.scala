@@ -106,7 +106,7 @@ class BagFetchTest
 
       val exc = BagFetch.create(contents).failed.get
       exc shouldBe a[RuntimeException]
-      exc.getMessage shouldBe s"URI is incorrectly formatted on line 1. Spaces should be URL-encoded: $line"
+      exc.getMessage shouldBe s"URI is incorrectly formatted on line 1. Spaces should be URI-encoded: $line"
     }
 
     it("throws an exception for an illegal URI") {

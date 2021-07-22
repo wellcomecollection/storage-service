@@ -117,7 +117,7 @@ object BagFetch {
   private def decodeUri(line: String, lineNo: Int, u: String): URI =
     Try { new URI(u) } match {
       case Failure(_: URISyntaxException) if u.contains(" ") =>
-        throw new RuntimeException(s"URI is incorrectly formatted on line $lineNo. Spaces should be URL-encoded: $line")
+        throw new RuntimeException(s"URI is incorrectly formatted on line $lineNo. Spaces should be URI-encoded: $line")
 
       case Failure(e: URISyntaxException) =>
         val wrappedExc = new URISyntaxException(line, e.getReason, e.getIndex)
