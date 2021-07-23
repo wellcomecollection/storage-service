@@ -12,7 +12,7 @@ Why do we store bags as uncompressed files?
 
 -   Our digitised bags are mostly made up of a small number of medium-sized images.
     (Typically a few hundred files per bag, each 5–10MB.)
-    It's useful to be able to address these images individually, both programatically and for humans browsing our S3 buckets by hand.
+    It's useful to be able to address these images individually, both programatically and for humans browsing our S3 buckets.
 -   It removes a layer of obfusaction in the file layout.
     You can list all the files to see what's in the storage service, rather than opening a bunch of archives.
 
@@ -53,4 +53,5 @@ We don't need to provision any EBS storage, and we can read an arbitrarily large
 
 It was simpler to update our workflow tools to send tar.gz archives than get zip unpacking working, so that's what we did.
 
-Uploading zip files as the initial bag is currently unsupported.
+Currently you can only upload bags which are compressed as tar.gz.
+You cannot upload bags which are compressed as zips.
