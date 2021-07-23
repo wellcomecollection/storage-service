@@ -72,7 +72,9 @@ class MultiChecksumTest
     it("is a match if all the defined checksums are the same") {
       val expected = MultiManifestChecksum(
         md5 = Some(ChecksumValue("aaaaaaa")),
-        sha256 = Some(ChecksumValue("ccccccc"))
+        sha1 = None,
+        sha256 = Some(ChecksumValue("ccccccc")),
+        sha512 = None
       )
 
       val actual = MultiChecksum(
@@ -88,7 +90,9 @@ class MultiChecksumTest
     it("isn't a match if one of the checksums is difference") {
       val expected = MultiManifestChecksum(
         md5 = Some(ChecksumValue("aaaaaaa")),
-        sha256 = Some(ChecksumValue("aaaaaaa"))
+        sha1 = None,
+        sha256 = Some(ChecksumValue("aaaaaaa")),
+        sha512 = None,
       )
 
       val actual = MultiChecksum(

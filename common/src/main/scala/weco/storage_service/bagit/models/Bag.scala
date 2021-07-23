@@ -69,7 +69,12 @@ case object Bag {
         entries = manifest.entries
           .map {
             case (path, checksum) =>
-              path -> MultiManifestChecksum(sha256 = Some(checksum))
+              path -> MultiManifestChecksum(
+                md5 = None,
+                sha1 = None,
+                sha256 = Some(checksum),
+                sha512 = None
+              )
           }
       ),
       newTagManifest = NewTagManifest(
@@ -77,7 +82,12 @@ case object Bag {
         entries = tagManifest.entries
           .map {
             case (path, checksum) =>
-              path -> MultiManifestChecksum(sha256 = Some(checksum))
+              path -> MultiManifestChecksum(
+                md5 = None,
+                sha1 = None,
+                sha256 = Some(checksum),
+                sha512 = None
+              )
           }
       ),
       fetch = fetch
