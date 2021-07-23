@@ -24,7 +24,7 @@ case class TagManifest(
 ) extends BagManifest
 
 sealed trait NewBagManifest {
-  val algorithmsInUse: Set[ChecksumAlgorithm]
+  val algorithms: Set[ChecksumAlgorithm]
   val entries: Map[BagPath, MultiManifestChecksum]
 
   def paths: Seq[BagPath] = entries.keys.toSeq
@@ -46,17 +46,17 @@ sealed trait NewBagManifest {
   // storage service code, not malformed bags uploaded by users.
   //
   require(
-    entries.values.forall(_.definedAlgorithms.toSet == algorithmsInUse),
+    entries.values.forall(_.definedAlgorithms.toSet == algorithms),
     s"Different manifest entries are using different algorithms!"
   )
 }
 
 case class NewPayloadManifest(
-  algorithmsInUse: Set[ChecksumAlgorithm],
+  algorithms: Set[ChecksumAlgorithm],
   entries: Map[BagPath, MultiManifestChecksum]
 ) extends NewBagManifest
 
 case class NewTagManifest(
-  algorithmsInUse: Set[ChecksumAlgorithm],
+  algorithms: Set[ChecksumAlgorithm],
   entries: Map[BagPath, MultiManifestChecksum]
 ) extends NewBagManifest
