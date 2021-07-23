@@ -8,7 +8,7 @@ import weco.storage_service.generators.{
   FetchMetadataGenerators,
   StorageRandomGenerators
 }
-import weco.storage_service.checksum.{Checksum, MD5, SHA256}
+import weco.storage_service.checksum.{MultiManifestChecksum, SHA256}
 
 class BagMatcherTest
     extends AnyFunSpec
@@ -49,36 +49,11 @@ class BagMatcherTest
         case (bagPath, checksumValue) =>
           MatchedLocation(
             bagPath = bagPath,
-            checksum = Checksum(
-              algorithm = SHA256,
-              value = checksumValue
-            ),
-            fetchMetadata = None
-          )
-      }
-    }
-
-    it("uses the hashing algorithm from the manifest") {
-      val manifestEntries = Map(
-        createBagPath -> randomChecksumValue,
-        createBagPath -> randomChecksumValue
-      )
-
-      val result = BagMatcher.correlateFetchEntryToBagFile(
-        manifest = PayloadManifest(
-          checksumAlgorithm = MD5,
-          entries = manifestEntries
-        ),
-        fetchEntries = Map.empty
-      )
-
-      result.value shouldBe manifestEntries.map {
-        case (bagPath, checksumValue) =>
-          MatchedLocation(
-            bagPath = bagPath,
-            checksum = Checksum(
-              algorithm = MD5,
-              value = checksumValue
+            multiChecksum = MultiManifestChecksum(
+              md5 = None,
+              sha1 = None,
+              sha256 = Some(checksumValue),
+              sha512 = None
             ),
             fetchMetadata = None
           )
@@ -96,7 +71,7 @@ class BagMatcherTest
       val fetchPath = createBagPath
       val fetchChecksumValue = randomChecksumValue
 
-      val checksumAlgorithm = randomChecksumAlgorithm
+      val checksumAlgorithm = SHA256
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
         manifest = PayloadManifest(
@@ -110,17 +85,21 @@ class BagMatcherTest
         case (bagPath, checksumValue) =>
           MatchedLocation(
             bagPath = bagPath,
-            checksum = Checksum(
-              algorithm = checksumAlgorithm,
-              value = checksumValue
+            multiChecksum = MultiManifestChecksum(
+              md5 = None,
+              sha1 = None,
+              sha256 = Some(checksumValue),
+              sha512 = None
             ),
             fetchMetadata = None
           )
       }.toSeq :+ MatchedLocation(
         bagPath = fetchPath,
-        checksum = Checksum(
-          algorithm = checksumAlgorithm,
-          value = fetchChecksumValue
+        multiChecksum = MultiManifestChecksum(
+          md5 = None,
+          sha1 = None,
+          sha256 = Some(fetchChecksumValue),
+          sha512 = None
         ),
         fetchMetadata = Some(fetchMetadata)
       )

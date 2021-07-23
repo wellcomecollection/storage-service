@@ -7,7 +7,7 @@ import weco.storage_service.bagit.models.{
   BagPath,
   MatchedLocation
 }
-import weco.storage_service.checksum.Checksum
+import weco.storage_service.checksum.{MultiManifestChecksum, SHA256}
 
 /** A bag can contain concrete files or refer to files stored elsewhere
   * in the fetch file.  This object takes a list of files referenced in
@@ -40,6 +40,10 @@ object BagMatcher {
     manifest: BagManifest,
     fetchEntries: Map[BagPath, BagFetchMetadata]
   ): Either[Throwable, Seq[MatchedLocation]] = {
+
+    // TODO: While we do back-compatibility
+    require(manifest.checksumAlgorithm == SHA256)
+
     // First construct the list of matched locations -- for every file in the bag,
     // we either have a fetch.txt entry or we don't.
     val matchedLocations =
@@ -48,9 +52,11 @@ object BagMatcher {
           case (bagPath, checksumValue) =>
             MatchedLocation(
               bagPath = bagPath,
-              checksum = Checksum(
-                algorithm = manifest.checksumAlgorithm,
-                value = checksumValue
+              multiChecksum = MultiManifestChecksum(
+                md5 = None,
+                sha1 = None,
+                sha256 = Some(checksumValue),
+                sha512 = None
               ),
               fetchMetadata = fetchEntries.get(bagPath)
             )
