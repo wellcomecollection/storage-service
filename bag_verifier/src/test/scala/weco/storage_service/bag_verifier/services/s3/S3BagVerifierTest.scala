@@ -54,7 +54,7 @@ trait S3BagVerifierTests[Verifier <: BagVerifier[
     new S3BagReader()
 
   override val bagBuilder
-  : BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix, Bucket] =
+    : BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix, Bucket] =
     new S3BagBuilder {}
 }
 
