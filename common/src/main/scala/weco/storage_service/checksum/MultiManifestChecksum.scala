@@ -19,8 +19,8 @@ case class MultiManifestChecksum(
   sha512: Option[ChecksumValue] = None
 ) {
 
-  def definedAlgorithms: Seq[ChecksumAlgorithm] =
-    Seq(
+  def definedAlgorithms: Set[ChecksumAlgorithm] =
+    Set(
       md5.map(_ => MD5),
       sha1.map(_ => SHA1),
       sha256.map(_ => SHA256),

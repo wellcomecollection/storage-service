@@ -36,7 +36,7 @@ sealed trait ChecksumAlgorithm {
 }
 
 case object ChecksumAlgorithms {
-  val algorithms: Seq[ChecksumAlgorithm] = Seq(SHA512, SHA256, SHA1, MD5)
+  val algorithms: Set[ChecksumAlgorithm] = Set(SHA512, SHA256, SHA1, MD5)
 }
 
 case object SHA512 extends ChecksumAlgorithm {
