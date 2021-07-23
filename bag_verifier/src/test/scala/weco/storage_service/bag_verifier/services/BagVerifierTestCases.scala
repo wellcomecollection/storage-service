@@ -351,7 +351,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     }
   }
 
-  it("fails a bag if the file manifest does not exist") {
+  it("fails a bag if there are no payload manifests") {
     val badBuilder = new BagBuilderImpl {
       override protected def createPayloadManifest(
         entries: Seq[PayloadEntry]
@@ -364,13 +364,13 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
         val error = summary.e
 
         error shouldBe a[BagUnavailable]
-        error.getMessage should include("Error loading manifest-sha256.txt")
+        error.getMessage should include("Could not find any payload manifests in the bag")
 
-        ingestFailed.maybeUserFacingMessage.get shouldBe "Error loading manifest-sha256.txt: no such file!"
+        ingestFailed.maybeUserFacingMessage.get shouldBe "Could not find any payload manifests in the bag"
     }
   }
 
-  it("fails a bag if the tag manifest does not exist") {
+  it("fails a bag if there are no tag manifests") {
     val badBuilder = new BagBuilderImpl {
       override protected def createTagManifest(
         entries: Seq[ManifestFile]
@@ -383,9 +383,9 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
         val error = summary.e
 
         error shouldBe a[BagUnavailable]
-        error.getMessage should include("Error loading tagmanifest-sha256.txt")
+        error.getMessage should include("Could not find any tag manifests in the bag")
 
-        ingestFailed.maybeUserFacingMessage.get shouldBe "Error loading tagmanifest-sha256.txt: no such file!"
+        ingestFailed.maybeUserFacingMessage.get shouldBe "Could not find any tag manifests in the bag"
     }
   }
 
@@ -725,34 +725,6 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
             "Files referred to in the fetch.txt also appear in the bag:"
           )
       }
-    }
-
-    it("passes a bag that includes an extra manifest/tag manifest") {
-      val space = createStorageSpace
-      val externalIdentifier = createExternalIdentifier
-
-      withNamespace { implicit namespace =>
-        withBag(space, externalIdentifier) {
-          case (primaryBucket, bagRoot) =>
-            val location = bagRoot.asLocation("tagmanifest-sha512.txt")
-            writeFile(location)
-
-            val ingestStep =
-              withBagContext(bagRoot) { bagContext =>
-                withVerifier(primaryBucket) {
-                  _.verify(
-                    ingestId = createIngestID,
-                    bagContext = bagContext,
-                    space = space,
-                    externalIdentifier = externalIdentifier
-                  )
-                }
-              }
-
-            ingestStep.success.get shouldBe a[IngestStepSucceeded[_]]
-        }
-      }
-
     }
   }
 
