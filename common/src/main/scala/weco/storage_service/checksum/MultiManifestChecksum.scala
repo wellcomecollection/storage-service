@@ -30,6 +30,12 @@ case class MultiManifestChecksum(
       sha512.map(_ => SHA512)
     ).flatten
 
+  def definedChecksums: Set[(ChecksumAlgorithm, ChecksumValue)] =
+    definedAlgorithms
+      .map { algorithm =>
+        algorithm -> getValue(algorithm).get
+      }
+
   def getValue(algorithm: ChecksumAlgorithm): Option[ChecksumValue] =
     algorithm match {
       case MD5    => md5

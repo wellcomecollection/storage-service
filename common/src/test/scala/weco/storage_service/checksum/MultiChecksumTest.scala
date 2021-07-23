@@ -84,7 +84,7 @@ class MultiChecksumTest
         sha512 = ChecksumValue("ddddddd")
       )
 
-      actual.matches(expected) shouldBe true
+      actual.compare(expected) shouldBe Right(())
     }
 
     it("isn't a match if one of the checksums is difference") {
@@ -96,13 +96,21 @@ class MultiChecksumTest
       )
 
       val actual = MultiChecksum(
-        md5 = ChecksumValue("aaaaaab"),
+        md5 = ChecksumValue("aaaaaaa"),
         sha1 = ChecksumValue("bbbbbbb"),
         sha256 = ChecksumValue("ccccccc"),
         sha512 = ChecksumValue("ddddddd")
       )
 
-      actual.matches(expected) shouldBe false
+      actual.compare(expected) shouldBe Left(
+        Seq(
+          MismatchedChecksum(
+            algorithm = SHA256,
+            expected = ChecksumValue("aaaaaaa"),
+            actual = ChecksumValue("ccccccc")
+          )
+        )
+      )
     }
   }
 }

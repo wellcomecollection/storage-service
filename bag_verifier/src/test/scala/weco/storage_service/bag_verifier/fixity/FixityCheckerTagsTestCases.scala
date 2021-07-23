@@ -43,7 +43,7 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           checksum = checksum
         )
 
-        withFixityChecker { fixityChecker =>
+        withFixityChecker() { fixityChecker =>
           fixityChecker.check(expectedFileFixity) shouldBe a[
             FileFixityCorrect[_]
           ]
@@ -191,7 +191,7 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           location = location
         )
 
-        withFixityChecker { fixityChecker =>
+        withFixityChecker() { fixityChecker =>
           fixityChecker.check(expectedFileFixity) shouldBe a[
             FileFixityMismatch[_]
           ]
@@ -227,7 +227,7 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
         val location = createLocationWith(namespace)
         putString(location, contentString)
 
-        withFixityChecker { fixityChecker =>
+        withFixityChecker() { fixityChecker =>
           allChecksums.foreach { checksum =>
             val expectedFileFixity = createDataDirectoryFileFixityWith(
               location = location,

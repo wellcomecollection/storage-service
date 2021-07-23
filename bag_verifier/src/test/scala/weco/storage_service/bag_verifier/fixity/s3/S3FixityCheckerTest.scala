@@ -88,7 +88,7 @@ class S3FixityCheckerTest
     )
 
     val result =
-      withFixityChecker {
+      withFixityChecker() {
         _.check(expectedFileFixity)
       }
 
@@ -112,7 +112,7 @@ class S3FixityCheckerTest
     )
 
     val result =
-      withFixityChecker {
+      withFixityChecker() {
         _.check(expectedFileFixity)
       }
 
@@ -137,7 +137,7 @@ class S3FixityCheckerTest
       )
 
       val result =
-        withFixityChecker {
+        withFixityChecker() {
           _.check(expectedFileFixity)
         }
 

@@ -29,14 +29,36 @@ case class MultiChecksum(
     * expected checksum, or are they different?
     *
     */
-  def matches(manifestChecksum: MultiManifestChecksum): Boolean =
-    manifestChecksum.definedAlgorithms
-      .forall { a =>
-        val expected = manifestChecksum.getValue(a)
-        val actual = getValue(a)
+  def compare(
+    manifestChecksum: MultiManifestChecksum
+  ): Either[Seq[MismatchedChecksum], Unit] = {
+    val mismatches =
+      manifestChecksum.definedChecksums
+        .flatMap {
+          case (algorithm, expectedValue) =>
+            val actualValue = getValue(algorithm)
 
-        expected.contains(actual)
-      }
+            if (expectedValue == actualValue) {
+              None
+            } else {
+              Some(
+                MismatchedChecksum(
+                  algorithm = algorithm,
+                  expected = expectedValue,
+                  actual = actualValue
+                )
+              )
+            }
+        }
+        .toSeq
+        .sortBy { _.algorithm.value }
+
+    Either.cond(
+      mismatches.isEmpty,
+      (),
+      mismatches
+    )
+  }
 }
 
 case object MultiChecksum {

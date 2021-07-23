@@ -52,6 +52,10 @@ trait S3BagVerifierTests[Verifier <: BagVerifier[
   override def createBagReader
     : BagReader[S3ObjectLocation, S3ObjectLocationPrefix] =
     new S3BagReader()
+
+  override val bagBuilder
+    : BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix, Bucket] =
+    new S3BagBuilder {}
 }
 
 class S3ReplicatedBagVerifierTest
@@ -79,11 +83,6 @@ class S3ReplicatedBagVerifierTest
     testWith(
       S3BagVerifier.replicated(primaryBucket = primaryBucket.name)
     )
-
-  override val bagBuilder
-    : BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix, Bucket] =
-    new S3BagBuilder {}
-
 }
 
 class S3StandaloneBagVerifierTest
@@ -104,10 +103,6 @@ class S3StandaloneBagVerifierTest
     testWith(
       S3BagVerifier.standalone(primaryBucket = primaryBucket.name)
     )
-
-  override val bagBuilder
-    : BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix, Bucket] =
-    new S3BagBuilder {}
 
   override def withBagContext[R](bagRoot: S3ObjectLocationPrefix)(
     testWith: TestWith[StandaloneBagVerifyContext, R]
