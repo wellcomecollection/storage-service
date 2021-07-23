@@ -2,7 +2,17 @@ package weco.storage_service.bagit.services
 
 import java.io.InputStream
 import weco.storage_service.bagit.models._
-import weco.storage_service.checksum.{ChecksumAlgorithm, ChecksumAlgorithms, ChecksumValue, MD5, MultiManifestChecksum, MultiManifestChecksumException, SHA1, SHA256, SHA512}
+import weco.storage_service.checksum.{
+  ChecksumAlgorithm,
+  ChecksumAlgorithms,
+  ChecksumValue,
+  MD5,
+  MultiManifestChecksum,
+  MultiManifestChecksumException,
+  SHA1,
+  SHA256,
+  SHA512
+}
 import weco.storage._
 import weco.storage.store.Readable
 import weco.storage.streaming.InputStreamWithLength
@@ -58,7 +68,9 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
         // We'll need to update this error message if we add support for other checksum algorithms.
         // A runtime assertion is meant to draw our attention to it, rather than introducing the
         // unnecessary complexity of creating this message dynamically.
-        require(ChecksumAlgorithms.nonDeprecatedAlgorithms == Set(SHA256, SHA512))
+        require(
+          ChecksumAlgorithms.nonDeprecatedAlgorithms == Set(SHA256, SHA512)
+        )
         Left(
           BagUnavailable(
             "Payload manifests only use deprecated checksums: add a payload manifest using SHA-256 or SHA-512"
@@ -89,7 +101,9 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
         // We'll need to update this error message if we add support for other checksum algorithms.
         // A runtime assertion is meant to draw our attention to it, rather than introducing the
         // unnecessary complexity of creating this message dynamically.
-        require(ChecksumAlgorithms.nonDeprecatedAlgorithms == Set(SHA256, SHA512))
+        require(
+          ChecksumAlgorithms.nonDeprecatedAlgorithms == Set(SHA256, SHA512)
+        )
         Left(
           BagUnavailable(
             "Tag manifests only use weak checksums: add a tag manifest using SHA-256 or SHA-512"
@@ -110,11 +124,16 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
   // We're already stricter than the spec by requiring tag manifests be present (which are
   // optional in the spec); similarly here we treat this SHOULD as a MUST.
   //
-  private def compareAlgorithms(payloadManifest: NewPayloadManifest, tagManifest: NewTagManifest): Either[BagUnavailable, Unit] =
+  private def compareAlgorithms(
+    payloadManifest: NewPayloadManifest,
+    tagManifest: NewTagManifest
+  ): Either[BagUnavailable, Unit] =
     Either.cond(
       payloadManifest.algorithms == tagManifest.algorithms,
       (),
-      BagUnavailable("Manifests are inconsistent: tag manifests should use the same algorithms as the payload manifests in the bag")
+      BagUnavailable(
+        "Manifests are inconsistent: tag manifests should use the same algorithms as the payload manifests in the bag"
+      )
     )
 
   private sealed trait ManifestError
@@ -141,11 +160,12 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
     * data is consistent, although we can't easily enforce that in the type system.
     *
     */
-  private def loadManifestEntries(root: BagPrefix)(filename: ChecksumAlgorithm => BagPath): Either[
+  private def loadManifestEntries(
+    root: BagPrefix
+  )(filename: ChecksumAlgorithm => BagPath): Either[
     ManifestError,
     (Set[ChecksumAlgorithm], Map[BagPath, MultiManifestChecksum])
   ] =
-
     for {
       md5 <- loadSingleManifest(root, filename(MD5))
       sha1 <- loadSingleManifest(root, filename(SHA1))
@@ -172,7 +192,7 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
 
         val extantValues: Map[ChecksumAlgorithm, Map[BagPath, ChecksumValue]] =
           readValues
-            .collect { case (algorithm, Some(entries)) => (algorithm, entries)}
+            .collect { case (algorithm, Some(entries)) => (algorithm, entries) }
 
         Either.cond(
           extantValues.nonEmpty,
@@ -219,12 +239,13 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
 
     } yield (algorithms, entries)
 
-
   private def loadSingleManifest(
     root: BagPrefix,
     path: BagPath
   ): Either[ManifestError.CannotBeLoaded, Option[Map[BagPath, ChecksumValue]]] =
-    loadOptional[Map[BagPath, ChecksumValue]](root)(path)(BagManifestParser.parse) match {
+    loadOptional[Map[BagPath, ChecksumValue]](root)(path)(
+      BagManifestParser.parse
+    ) match {
       case Right(entries) => Right(entries)
       case Left(bagUnavailable) =>
         Left(ManifestError.CannotBeLoaded(bagUnavailable))
