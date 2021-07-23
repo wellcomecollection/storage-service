@@ -26,16 +26,16 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
     for {
       bagInfo <- loadBagInfo(bagRoot)
 
-      manifest <- loadManifest(bagRoot)
+      payloadManifest <- loadPayloadManifest(bagRoot)
       tagManifest <- loadTagManifest(bagRoot)
 
       bagFetch <- loadFetch(bagRoot)
-    } yield Bag(bagInfo, manifest, tagManifest, bagFetch)
+    } yield Bag(bagInfo, payloadManifest, tagManifest, bagFetch)
 
   private def loadBagInfo(bagRoot: BagPrefix): Either[BagUnavailable, BagInfo] =
     loadRequired[BagInfo](bagRoot)(bagInfo)(BagInfoParser.create)
 
-  private def loadManifest(
+  private def loadPayloadManifest(
     bagRoot: BagPrefix
   ): Either[BagUnavailable, PayloadManifest] =
     loadRequired[PayloadManifest](bagRoot)(fileManifest(SHA256))(
