@@ -37,7 +37,11 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
         val multiChecksum = MultiManifestChecksum(
           md5 = None,
           sha1 = None,
-          sha256 = Some(ChecksumValue("872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4")),
+          sha256 = Some(
+            ChecksumValue(
+              "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
+            )
+          ),
           sha512 = None
         )
 
@@ -225,14 +229,15 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           ]
 
           val expectedTags =
-            multiChecksum
-              .definedChecksums
-              .map { case (algorithm, checksumValue) =>
+            multiChecksum.definedChecksums.map {
+              case (algorithm, checksumValue) =>
                 tagName(algorithm) -> checksumValue.value
-              }
-              .toMap
+            }.toMap
 
-          fixityChecker.tags.get(location).value shouldBe Identified(location, expectedTags)
+          fixityChecker.tags.get(location).value shouldBe Identified(
+            location,
+            expectedTags
+          )
         }
       }
     }

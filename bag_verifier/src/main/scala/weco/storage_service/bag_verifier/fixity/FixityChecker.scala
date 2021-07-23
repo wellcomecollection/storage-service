@@ -139,20 +139,35 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
   implicit class ExpectedFileFixityOps(e: ExpectedFileFixity) {
     def matchesAllExistingTags(existingTags: Map[String, String]): Boolean =
       e.multiChecksum.definedChecksums
-        .forall { case (algorithm, value) =>
-          existingTags.get(fixityTagName(algorithm)).contains(fixityTagValue(value))
+        .forall {
+          case (algorithm, value) =>
+            existingTags
+              .get(fixityTagName(algorithm))
+              .contains(fixityTagValue(value))
         }
 
     def isDifferentToExistingTags(existingTags: Map[String, String]): Boolean =
       e.findMismatches(existingTags).nonEmpty
 
-    def findMismatches(existingTags: Map[String, String]): Set[MismatchedChecksum] =
+    def findMismatches(
+      existingTags: Map[String, String]
+    ): Set[MismatchedChecksum] =
       e.multiChecksum.definedChecksums
-        .map { case (algorithm, expected) =>
-          (algorithm, expected, existingTags.get(fixityTagName(algorithm)).map(ChecksumValue(_)))
+        .map {
+          case (algorithm, expected) =>
+            (
+              algorithm,
+              expected,
+              existingTags.get(fixityTagName(algorithm)).map(ChecksumValue(_))
+            )
         }
-        .collect { case (algorithm, expected, Some(actual)) if expected != actual =>
-          MismatchedChecksum(algorithm = algorithm, expected = expected, actual = actual)
+        .collect {
+          case (algorithm, expected, Some(actual)) if expected != actual =>
+            MismatchedChecksum(
+              algorithm = algorithm,
+              expected = expected,
+              actual = actual
+            )
         }
   }
 
@@ -275,11 +290,10 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     tags
       .update(location) { existingTags =>
         val newFixityTags =
-          expectedFileFixity.multiChecksum.definedChecksums
-            .map { case (algorithm, value) =>
+          expectedFileFixity.multiChecksum.definedChecksums.map {
+            case (algorithm, value) =>
               fixityTagName(algorithm) -> fixityTagValue(value)
-            }
-            .toMap
+          }.toMap
 
         // We've already checked the tags on this location once, so we shouldn't
         // see conflicting values here.  Check we're not about to blat some existing
@@ -308,9 +322,15 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
 
   implicit class MapOps[K, V](m: Map[K, V]) {
     def isCompatibleWith(other: Map[K, V]): Boolean =
-      m.keySet.intersect(other.keySet)
-        .map { key => (m(key), other(key)) }
-        .collect { case (mValue, otherValue) if mValue != otherValue => (mValue, otherValue) }
+      m.keySet
+        .intersect(other.keySet)
+        .map { key =>
+          (m(key), other(key))
+        }
+        .collect {
+          case (mValue, otherValue) if mValue != otherValue =>
+            (mValue, otherValue)
+        }
         .isEmpty
   }
 

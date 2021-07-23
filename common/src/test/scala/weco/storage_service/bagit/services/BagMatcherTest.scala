@@ -5,7 +5,10 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.storage_service.bagit.models.{MatchedLocation, NewPayloadManifest}
 import weco.storage_service.checksum.{ChecksumAlgorithms, SHA256}
-import weco.storage_service.generators.{FetchMetadataGenerators, StorageRandomGenerators}
+import weco.storage_service.generators.{
+  FetchMetadataGenerators,
+  StorageRandomGenerators
+}
 
 class BagMatcherTest
     extends AnyFunSpec

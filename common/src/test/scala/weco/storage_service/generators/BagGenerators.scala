@@ -21,17 +21,13 @@ trait BagGenerators extends BagInfoGenerators {
     Bag(
       info = createBagInfo,
       newManifest = NewPayloadManifest(
-        algorithms = payloadManifestEntries
-          .values
-          .headOption
+        algorithms = payloadManifestEntries.values.headOption
           .map(_.definedAlgorithms)
           .getOrElse(ChecksumAlgorithms.algorithms),
         entries = payloadManifestEntries
       ),
       newTagManifest = NewTagManifest(
-        algorithms = tagManifestEntries
-          .values
-          .headOption
+        algorithms = tagManifestEntries.values.headOption
           .map(_.definedAlgorithms)
           .getOrElse(ChecksumAlgorithms.algorithms),
         entries = tagManifestEntries

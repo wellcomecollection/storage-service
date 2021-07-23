@@ -64,8 +64,16 @@ trait FixityCheckerTestCases[
   val multiChecksum = MultiManifestChecksum(
     md5 = Some(ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6")),
     sha1 = Some(ChecksumValue("db8ac1c259eb89d4a131b253bacfca5f319d54f2")),
-    sha256 = Some(ChecksumValue("872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4")),
-    sha512 = Some(ChecksumValue("8ae6ae71a75d3fb2e0225deeb004faf95d816a0a58093eb4cb5a3aa0f197050d7a4dc0a2d5c6fbae5fb5b0d536a0a9e6b686369fa57a027687c3630321547596"))
+    sha256 = Some(
+      ChecksumValue(
+        "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
+      )
+    ),
+    sha512 = Some(
+      ChecksumValue(
+        "8ae6ae71a75d3fb2e0225deeb004faf95d816a0a58093eb4cb5a3aa0f197050d7a4dc0a2d5c6fbae5fb5b0d536a0a9e6b686369fa57a027687c3630321547596"
+      )
+    )
   )
 
   it("returns a success if the checksum is correct") {
