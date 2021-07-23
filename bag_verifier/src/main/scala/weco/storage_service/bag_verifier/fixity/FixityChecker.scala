@@ -266,10 +266,7 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
   ): Either[FileFixityCouldNotWriteTag[BagLocation], Unit] =
     tags
       .update(location) { existingTags =>
-        val tagName = fixityTagName(expectedFileFixity.checksum.algorithm)
-        val tagValue = fixityTagValue(expectedFileFixity.checksum.value)
-
-        val fixityTags = Map(tagName -> tagValue)
+        val newFixityTags = expectedFileFixity.fixityTags
 
         // We've already checked the tags on this location once, so we shouldn't
         // see conflicting values here.  Check we're not about to blat some existing
@@ -279,11 +276,11 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
         // Note: this is a fairly weak guarantee, because tags aren't locked during
         // an update operation.
         assert(
-          existingTags.getOrElse(tagName, tagValue) == tagValue,
-          s"Trying to write $fixityTags to $location; existing tags conflict: $existingTags"
+          existingTags.isCompatibleWith(newFixityTags),
+          s"Trying to write $newFixityTags to $location; existing tags conflict: $existingTags"
         )
 
-        Right(existingTags ++ fixityTags)
+        Right(existingTags ++ newFixityTags)
       } match {
       case Right(_) => Right(())
       case Left(writeError) =>
