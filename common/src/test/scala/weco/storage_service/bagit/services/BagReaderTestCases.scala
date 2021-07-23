@@ -108,7 +108,7 @@ trait BagReaderTestCases[
     }
   }
 
-  it("errors if the file manifest does not exist") {
+  it("errors if the payload manifest does not exist") {
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace, bucket) = fixtures
 
@@ -123,7 +123,7 @@ trait BagReaderTestCases[
     }
   }
 
-  it("errors if the file manifest is malformed") {
+  it("errors if the payload manifest is malformed") {
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace, bucket) = fixtures
 

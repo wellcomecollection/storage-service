@@ -11,16 +11,19 @@ object MultiManifestChecksumException {
   * manifests provided in the bag.  It can record checksums for multiple checksum
   * algorithms, e.g. a file in an MD5 manifest and a SHA-256 manifest.
   *
+  * Note: the omission of default values is deliberate here -- it's so that if we add
+  * a new checksum algorithm, we remember to add it everywhere we use MultiManifestChecksum.
+  *
   */
 case class MultiManifestChecksum(
-  md5: Option[ChecksumValue] = None,
-  sha1: Option[ChecksumValue] = None,
-  sha256: Option[ChecksumValue] = None,
-  sha512: Option[ChecksumValue] = None
+  md5: Option[ChecksumValue],
+  sha1: Option[ChecksumValue],
+  sha256: Option[ChecksumValue],
+  sha512: Option[ChecksumValue]
 ) {
 
-  def definedAlgorithms: Seq[ChecksumAlgorithm] =
-    Seq(
+  def definedAlgorithms: Set[ChecksumAlgorithm] =
+    Set(
       md5.map(_ => MD5),
       sha1.map(_ => SHA1),
       sha256.map(_ => SHA256),
