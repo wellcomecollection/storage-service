@@ -92,7 +92,7 @@ class MultiChecksumTest
         md5 = Some(ChecksumValue("aaaaaaa")),
         sha1 = None,
         sha256 = Some(ChecksumValue("aaaaaaa")),
-        sha512 = None,
+        sha512 = None
       )
 
       val actual = MultiChecksum(
