@@ -146,9 +146,8 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     algorithm: ChecksumAlgorithm,
     size: Long
   ): Either[FileFixityError[BagLocation], FileFixityCorrect[BagLocation]] =
-    existingTags.get(fixityTagName(expectedFileFixity.checksum.algorithm)) match {
-      case Some(cachedFixityValue)
-          if cachedFixityValue == fixityTagValue(expectedFileFixity.checksum.value) =>
+    existingTags match {
+      case _ if expectedFileFixity.matchesAllExistingTags(existingTags) =>
         Right(
           FileFixityCorrect(
             expectedFileFixity = expectedFileFixity,
@@ -157,7 +156,7 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
           )
         )
 
-      case Some(_) =>
+      case _ if expectedFileFixity.conflictsWithExistingTags(existingTags) =>
         Left(
           FileFixityMismatch(
             expectedFileFixity = expectedFileFixity,
@@ -168,7 +167,7 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
           )
         )
 
-      case None =>
+      case _ =>
         // Note: it is possible for something to go wrong *after* we open
         // the input stream, e.g. if the stream gets interrupted.
         //
