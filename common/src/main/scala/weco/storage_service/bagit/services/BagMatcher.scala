@@ -1,13 +1,6 @@
 package weco.storage_service.bagit.services
 
-import weco.storage_service.bagit.models.{
-  Bag,
-  BagFetchMetadata,
-  BagManifest,
-  BagPath,
-  MatchedLocation
-}
-import weco.storage_service.checksum.{MultiManifestChecksum, SHA256}
+import weco.storage_service.bagit.models._
 
 /** A bag can contain concrete files or refer to files stored elsewhere
   * in the fetch file.  This object takes a list of files referenced in
@@ -22,7 +15,7 @@ object BagMatcher {
   ): Either[Throwable, Seq[MatchedLocation]] =
     for {
       payloadMatchedLocations <- correlateFetchEntryToBagFile(
-        manifest = bag.manifest,
+        manifest = bag.newManifest,
         fetchEntries = bag.fetch match {
           case Some(fetchEntry) => fetchEntry.entries
           case None             => Map.empty
@@ -31,33 +24,25 @@ object BagMatcher {
 
       // The fetch.txt should never refer to tag files
       tagMatchedLocations <- correlateFetchEntryToBagFile(
-        manifest = bag.tagManifest,
+        manifest = bag.newTagManifest,
         fetchEntries = Map.empty
       )
     } yield payloadMatchedLocations ++ tagMatchedLocations
 
   def correlateFetchEntryToBagFile(
-    manifest: BagManifest,
+    manifest: NewBagManifest,
     fetchEntries: Map[BagPath, BagFetchMetadata]
   ): Either[Throwable, Seq[MatchedLocation]] = {
-
-    // TODO: While we do back-compatibility
-    require(manifest.checksumAlgorithm == SHA256)
 
     // First construct the list of matched locations -- for every file in the bag,
     // we either have a fetch.txt entry or we don't.
     val matchedLocations =
       manifest.entries
         .map {
-          case (bagPath, checksumValue) =>
+          case (bagPath, multiChecksum) =>
             MatchedLocation(
               bagPath = bagPath,
-              multiChecksum = MultiManifestChecksum(
-                md5 = None,
-                sha1 = None,
-                sha256 = Some(checksumValue),
-                sha512 = None
-              ),
+              multiChecksum = multiChecksum,
               fetchMetadata = fetchEntries.get(bagPath)
             )
         }
