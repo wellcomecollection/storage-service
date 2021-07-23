@@ -23,7 +23,7 @@ import scala.util.{Failure, Success}
   *
   */
 trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
-    extends Logging {
+    extends FixityTagChecker with Logging {
   protected val streamReader: Readable[BagLocation, InputStreamWithLength]
   protected val sizeFinder: SizeFinder[BagLocation]
   val tags: Tags[BagLocation]
@@ -294,13 +294,6 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
           )
         )
     }
-
-  // e.g. Content-MD5, Content-SHA256
-  protected def fixityTagName(algorithm: ChecksumAlgorithm): String =
-    s"Content-${algorithm.pathRepr.toUpperCase}"
-
-  private def fixityTagValue(value: ChecksumValue): String =
-    value.toString
 
   private def handleReadErrors[T](
     t: Either[ReadError, T],
