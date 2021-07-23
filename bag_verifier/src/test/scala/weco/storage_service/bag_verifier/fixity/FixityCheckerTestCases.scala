@@ -149,7 +149,7 @@ trait FixityCheckerTestCases[
         fixityMismatch.expectedFileFixity shouldBe expectedFileFixity
         fixityMismatch.e shouldBe a[FailedChecksumNoMatch]
         fixityMismatch.e.getMessage should startWith(
-          s"Checksum values do not match! Expected: $checksum"
+          s"Checksum values do not match: expected $checksum"
         )
       }
     }

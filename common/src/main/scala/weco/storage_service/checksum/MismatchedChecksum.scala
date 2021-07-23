@@ -8,5 +8,5 @@ case class MismatchedChecksum(
   require(expected != actual)
 
   def description: String =
-    s"Expected ${algorithm.pathRepr}:$expected, saw ${algorithm.pathRepr}:$actual"
+    s"expected ${algorithm.pathRepr}:$expected, saw ${algorithm.pathRepr}:$actual"
 }
