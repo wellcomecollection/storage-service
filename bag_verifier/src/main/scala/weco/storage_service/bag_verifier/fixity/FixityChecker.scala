@@ -219,7 +219,7 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
             FileFixityCouldNotGetChecksum(
               expectedFileFixity = expectedFileFixity,
               objectLocation = location,
-              e = FailedChecksumCreation(algorithm, e)
+              e = FailedChecksumCreation(e)
             )
           )
 
