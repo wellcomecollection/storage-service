@@ -48,7 +48,7 @@ trait FixityCheckerTestCases[
     implicit context: Context
   ): R
 
-  def withFixityChecker[R](
+  def withFixityChecker[R]()(
     testWith: TestWith[FixityChecker[BagLocation, BagPrefix], R]
   )(
     implicit context: Context
@@ -79,7 +79,7 @@ trait FixityCheckerTestCases[
         )
 
         val result =
-          withFixityChecker {
+          withFixityChecker() {
             _.check(expectedFileFixity)
           }
 
@@ -105,7 +105,7 @@ trait FixityCheckerTestCases[
         )
 
         val result =
-          withFixityChecker {
+          withFixityChecker() {
             _.check(expectedFileFixity)
           }
 
@@ -137,7 +137,7 @@ trait FixityCheckerTestCases[
         )
 
         val result =
-          withFixityChecker {
+          withFixityChecker() {
             _.check(expectedFileFixity)
           }
 
@@ -177,7 +177,7 @@ trait FixityCheckerTestCases[
         putString(location, contentString)
 
         val result =
-          withFixityChecker {
+          withFixityChecker() {
             _.check(expectedFileFixity)
           }
 
@@ -216,7 +216,7 @@ trait FixityCheckerTestCases[
         putString(location, contentString)
 
         val result =
-          withFixityChecker {
+          withFixityChecker() {
             _.check(expectedFileFixity)
           }
 
@@ -250,7 +250,7 @@ trait FixityCheckerTestCases[
         putString(location, contentString)
 
         val result =
-          withFixityChecker {
+          withFixityChecker() {
             _.check(expectedFileFixity)
           }
 
