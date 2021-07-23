@@ -293,7 +293,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
         val error = fixityError.e
 
         error shouldBe a[FailedChecksumNoMatch]
-        error.getMessage should include("Checksum values do not match!")
+        error.getMessage should include("Checksum values do not match:")
     }
   }
 

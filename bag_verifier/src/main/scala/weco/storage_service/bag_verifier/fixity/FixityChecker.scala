@@ -233,14 +233,19 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
             )
           )
 
-        case Success(value) =>
+        case Success(actualChecksum) =>
           Left(
             FileFixityMismatch(
               expectedFileFixity = expectedFileFixity,
               objectLocation = location,
               e = FailedChecksumNoMatch(
-                actual = Checksum(algorithm, value),
-                expected = expectedFileFixity.checksum
+                mismatches = Seq(
+                  MismatchedChecksum(
+                    algorithm = algorithm,
+                    expected = expectedFileFixity.checksum.value,
+                    actual = actualChecksum
+                  )
+                )
               )
             )
           )
