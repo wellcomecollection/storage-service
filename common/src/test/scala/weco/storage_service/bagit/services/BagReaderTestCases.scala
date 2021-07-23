@@ -117,7 +117,7 @@ trait BagReaderTestCases[
 
       withBagReader {
         _.get(bagRoot).left.value.msg should startWith(
-          "Error loading manifest-sha256.txt"
+          "Could not find any payload manifests in the bag"
         )
       }
     }
@@ -147,7 +147,7 @@ trait BagReaderTestCases[
 
       withBagReader {
         _.get(bagRoot).left.value.msg should startWith(
-          "Error loading tagmanifest-sha256.txt"
+          "Could not find any tag manifests in the bag"
         )
       }
     }
