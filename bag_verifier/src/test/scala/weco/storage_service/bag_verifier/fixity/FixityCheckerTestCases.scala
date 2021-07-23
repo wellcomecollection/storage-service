@@ -125,14 +125,14 @@ trait FixityCheckerTestCases[
   it("fails if the checksum is incorrect") {
     withContext { implicit context =>
       withNamespace { implicit namespace =>
-        val multiChecksum = randomMultiChecksum
-
         val location = createLocationWith(namespace)
-        putString(location, randomAlphanumeric())
+        putString(location, contentString)
 
         val expectedFileFixity = createDataDirectoryFileFixityWith(
           location = location,
-          multiChecksum = multiChecksum
+          multiChecksum = multiChecksum.copy(
+            sha1 = Some(ChecksumValue("aaaaaa"))
+          )
         )
 
         val result =
@@ -148,7 +148,7 @@ trait FixityCheckerTestCases[
         fixityMismatch.expectedFileFixity shouldBe expectedFileFixity
         fixityMismatch.e shouldBe a[FailedChecksumNoMatch]
         fixityMismatch.e.getMessage should startWith(
-          s"Checksum values do not match! Expected: $multiChecksum"
+          s"Checksum values do not match! Expected sha1:aaaaaa, saw sha1:db8ac1c259eb89d4a131b253bacfca5f319d54f2."
         )
       }
     }

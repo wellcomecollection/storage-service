@@ -224,15 +224,17 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
             FileFixityCorrect[_]
           ]
 
-          fixityChecker.tags.get(location).value shouldBe Identified(
-            location,
-            multiChecksum.definedChecksums.map { case (algorithm, checksumValue) =>
-              tagName(algorithm) -> checksumValue.value
-            }
-          )
+          val expectedTags =
+            multiChecksum
+              .definedChecksums
+              .map { case (algorithm, checksumValue) =>
+                tagName(algorithm) -> checksumValue.value
+              }
+              .toMap
+
+          fixityChecker.tags.get(location).value shouldBe Identified(location, expectedTags)
         }
       }
     }
-
   }
 }

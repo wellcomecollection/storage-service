@@ -1,15 +1,8 @@
 package weco.storage_service.bag_verifier.fixity.azure
 
-import java.net.URI
 import com.azure.storage.blob.BlobServiceClient
 import org.apache.commons.io.FileUtils
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
-import weco.storage_service.bag_verifier.fixity.{
-  ExpectedFileFixity,
-  FixityChecker
-}
-import weco.storage_service.bag_verifier.storage.Locatable
-import weco.storage_service.bag_verifier.storage.azure.AzureLocatable
 import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import weco.storage.dynamo.DynamoConfig
 import weco.storage.services.SizeFinder
@@ -17,6 +10,12 @@ import weco.storage.services.azure.{AzureLargeStreamReader, AzureSizeFinder}
 import weco.storage.store.Readable
 import weco.storage.streaming.InputStreamWithLength
 import weco.storage.tags.Tags
+import weco.storage_service.bag_verifier.fixity.FixityChecker
+import weco.storage_service.bag_verifier.storage.Locatable
+import weco.storage_service.bag_verifier.storage.azure.AzureLocatable
+import weco.storage_service.checksum.ChecksumAlgorithm
+
+import java.net.URI
 
 class AzureFixityChecker(
   val streamReader: Readable[AzureBlobLocation, InputStreamWithLength],
@@ -29,10 +28,8 @@ class AzureFixityChecker(
   // We can't include a hyphen in the name because Azure metadata names have to be
   // valid C# identifiers.
   // See https://docs.microsoft.com/en-us/rest/api/storageservices/setting-and-retrieving-properties-and-metadata-for-blob-resources#Subheading1
-  override protected def fixityTagName(
-    expectedFileFixity: ExpectedFileFixity
-  ): String =
-    s"Content${expectedFileFixity.checksum.algorithm.pathRepr.toUpperCase}"
+  override protected def fixityTagName(algorithm: ChecksumAlgorithm): String =
+    s"Content${algorithm.pathRepr.toUpperCase}"
 }
 
 object AzureFixityChecker {
