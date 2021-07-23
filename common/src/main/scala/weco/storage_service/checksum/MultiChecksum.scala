@@ -30,12 +30,9 @@ case class MultiChecksum(
     *
     */
   def matches(manifestChecksum: MultiManifestChecksum): Boolean =
-    manifestChecksum.definedAlgorithms
-      .forall { a =>
-        val expected = manifestChecksum.getValue(a)
-        val actual = getValue(a)
-
-        expected.contains(actual)
+    manifestChecksum.definedChecksums
+      .forall { case (algorithm, expectedValue) =>
+        expectedValue == getValue(algorithm)
       }
 }
 
