@@ -28,6 +28,8 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
       payloadManifest <- loadPayloadManifest(bagRoot)
       tagManifest <- loadTagManifest(bagRoot)
 
+      _ <- compareAlgorithms(payloadManifest, tagManifest)
+
       bagFetch <- loadFetch(bagRoot)
     } yield Bag(bagInfo, payloadManifest, tagManifest, bagFetch)
 
@@ -99,6 +101,21 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
           BagUnavailable("Unknown error while trying to read tag manifests")
         )
     }
+
+  // Quoting RFC 8493 § 2.2.1 (https://datatracker.ietf.org/doc/html/rfc8493#section-2.2.1):
+  //
+  //      Tag manifests SHOULD use the same algorithms as the payload manifests
+  //      that are present in the bag.
+  //
+  // We're already stricter than the spec by requiring tag manifests be present (which are
+  // optional in the spec); similarly here we treat this SHOULD as a MUST.
+  //
+  private def compareAlgorithms(payloadManifest: NewPayloadManifest, tagManifest: NewTagManifest): Either[BagUnavailable, Unit] =
+    Either.cond(
+      payloadManifest.algorithms == tagManifest.algorithms,
+      (),
+      BagUnavailable("Manifests are inconsistent: tag manifests should use the same algorithms as the payload manifests in the bag")
+    )
 
   private sealed trait ManifestError
   private object ManifestError {
