@@ -364,7 +364,9 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
         val error = summary.e
 
         error shouldBe a[BagUnavailable]
-        error.getMessage should include("Could not find any payload manifests in the bag")
+        error.getMessage should include(
+          "Could not find any payload manifests in the bag"
+        )
 
         ingestFailed.maybeUserFacingMessage.get shouldBe "Could not find any payload manifests in the bag"
     }
@@ -383,7 +385,9 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
         val error = summary.e
 
         error shouldBe a[BagUnavailable]
-        error.getMessage should include("Could not find any tag manifests in the bag")
+        error.getMessage should include(
+          "Could not find any tag manifests in the bag"
+        )
 
         ingestFailed.maybeUserFacingMessage.get shouldBe "Could not find any tag manifests in the bag"
     }
