@@ -157,12 +157,14 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
         )
 
       case _ if expectedFileFixity.conflictsWithExistingTags(existingTags) =>
+        val mismatches = expectedFileFixity.mismatchesWith(existingTags)
+        // TODO: Add a test for the message when there are multiple mismatches
         Left(
           FileFixityMismatch(
             expectedFileFixity = expectedFileFixity,
             objectLocation = location,
             e = new Throwable(
-              s"Cached verification tag doesn't match expected checksum for $location: $existingTags (${expectedFileFixity.checksum})"
+              s"Cached verification tag doesn't match expected checksum for $location: ${mismatches.map(_.message).mkString("; ")}"
             )
           )
         )

@@ -1,6 +1,6 @@
 package weco.storage_service.bag_verifier.fixity
 
-import weco.storage_service.checksum.{ChecksumAlgorithm, ChecksumValue, MismatchedChecksum}
+import weco.storage_service.checksum.{ChecksumAlgorithm, ChecksumValue}
 
 trait FixityTagChecker {
 
@@ -10,6 +10,15 @@ trait FixityTagChecker {
 
   protected def fixityTagValue(value: ChecksumValue): String =
     value.toString
+
+  case class MismatchedTag(
+    name: String,
+    expectedValue: String,
+    actualValue: String
+  ) {
+    def message: String =
+      s"tag $name: expected $expectedValue, saw $actualValue"
+  }
 
   implicit class ExpectedFileFixityOps(e: ExpectedFileFixity) {
     def fixityTags: Map[String, String] =
@@ -21,16 +30,16 @@ trait FixityTagChecker {
       fixityTags.toSet.subsetOf(existingTags.toSet)
 
     def conflictsWithExistingTags(existingTags: Map[String, String]): Boolean =
-      e.findMismatches(existingTags).nonEmpty
+      e.mismatchesWith(existingTags).nonEmpty
 
-    def findMismatches(existingTags: Map[String, String]): Set[MismatchedChecksum] =
-      Seq((e.checksum.algorithm, e.checksum.value))
-        .map { case (algorithm, expected) =>
-          (algorithm, expected, existingTags.get(fixityTagName(algorithm)).map(ChecksumValue(_)))
+    def mismatchesWith(existingTags: Map[String, String]): Seq[MismatchedTag] =
+      fixityTags
+        .map { case (name, expectedValue) =>
+          (name, expectedValue, existingTags.get(name))
         }
-        .collect { case (algorithm, expected, Some(actual)) if expected != actual =>
-          MismatchedChecksum(algorithm = algorithm, expected = expected, actual = actual)
+        .collect { case (name, expectedValue, Some(actualValue)) if expectedValue != actualValue =>
+          MismatchedTag(name, expectedValue, actualValue)
         }
-        .toSet
+        .toSeq
   }
 }
