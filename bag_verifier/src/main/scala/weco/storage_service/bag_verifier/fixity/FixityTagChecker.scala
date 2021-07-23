@@ -34,20 +34,29 @@ trait FixityTagChecker {
 
     def mismatchesWith(existingTags: Map[String, String]): Seq[MismatchedTag] =
       fixityTags
-        .map { case (name, expectedValue) =>
-          (name, expectedValue, existingTags.get(name))
+        .map {
+          case (name, expectedValue) =>
+            (name, expectedValue, existingTags.get(name))
         }
-        .collect { case (name, expectedValue, Some(actualValue)) if expectedValue != actualValue =>
-          MismatchedTag(name, expectedValue, actualValue)
+        .collect {
+          case (name, expectedValue, Some(actualValue))
+              if expectedValue != actualValue =>
+            MismatchedTag(name, expectedValue, actualValue)
         }
         .toSeq
   }
 
   implicit class MapOps[K, V](m: Map[K, V]) {
     def isCompatibleWith(other: Map[K, V]): Boolean =
-      m.keySet.intersect(other.keySet)
-        .map { key => (m(key), other(key)) }
-        .collect { case (mValue, otherValue) if mValue != otherValue => (mValue, otherValue) }
+      m.keySet
+        .intersect(other.keySet)
+        .map { key =>
+          (m(key), other(key))
+        }
+        .collect {
+          case (mValue, otherValue) if mValue != otherValue =>
+            (mValue, otherValue)
+        }
         .isEmpty
   }
 }
