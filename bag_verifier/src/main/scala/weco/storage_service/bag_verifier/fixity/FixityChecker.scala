@@ -146,9 +146,9 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     algorithm: ChecksumAlgorithm,
     size: Long
   ): Either[FileFixityError[BagLocation], FileFixityCorrect[BagLocation]] =
-    existingTags.get(fixityTagName(expectedFileFixity)) match {
+    existingTags.get(fixityTagName(expectedFileFixity.checksum.algorithm)) match {
       case Some(cachedFixityValue)
-          if cachedFixityValue == fixityTagValue(expectedFileFixity) =>
+          if cachedFixityValue == fixityTagValue(expectedFileFixity.checksum.value) =>
         Right(
           FileFixityCorrect(
             expectedFileFixity = expectedFileFixity,
@@ -260,8 +260,8 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
   ): Either[FileFixityCouldNotWriteTag[BagLocation], Unit] =
     tags
       .update(location) { existingTags =>
-        val tagName = fixityTagName(expectedFileFixity)
-        val tagValue = fixityTagValue(expectedFileFixity)
+        val tagName = fixityTagName(expectedFileFixity.checksum.algorithm)
+        val tagValue = fixityTagValue(expectedFileFixity.checksum.value)
 
         val fixityTags = Map(tagName -> tagValue)
 
@@ -291,11 +291,11 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     }
 
   // e.g. Content-MD5, Content-SHA256
-  protected def fixityTagName(expectedFileFixity: ExpectedFileFixity): String =
-    s"Content-${expectedFileFixity.checksum.algorithm.pathRepr.toUpperCase}"
+  protected def fixityTagName(algorithm: ChecksumAlgorithm): String =
+    s"Content-${algorithm.pathRepr.toUpperCase}"
 
-  private def fixityTagValue(expectedFileFixity: ExpectedFileFixity): String =
-    expectedFileFixity.checksum.value.toString
+  private def fixityTagValue(value: ChecksumValue): String =
+    value.toString
 
   private def handleReadErrors[T](
     t: Either[ReadError, T],
