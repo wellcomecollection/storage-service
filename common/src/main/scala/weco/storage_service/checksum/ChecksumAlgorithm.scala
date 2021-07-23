@@ -37,6 +37,10 @@ sealed trait ChecksumAlgorithm {
 
 case object ChecksumAlgorithms {
   val algorithms: Set[ChecksumAlgorithm] = Set(SHA512, SHA256, SHA1, MD5)
+
+  val nonDeprecatedAlgorithms: Set[ChecksumAlgorithm] =
+    algorithms
+      .filterNot(_.isForBackwardsCompatibilityOnly)
 }
 
 case object SHA512 extends ChecksumAlgorithm {
