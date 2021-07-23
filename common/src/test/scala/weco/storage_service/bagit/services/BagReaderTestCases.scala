@@ -172,14 +172,6 @@ trait BagReaderTestCases[
     }
   }
 
-  private def createMultiManifestChecksumWith(md5: String, sha512: String): MultiManifestChecksum =
-    MultiManifestChecksum(
-      md5 = Some(ChecksumValue(md5)),
-      sha1 = None,
-      sha256 = None,
-      sha512 = Some(ChecksumValue(sha512))
-    )
-
   it("errors if the bag-info.txt file does not exist") {
     withFixtures { fixtures =>
       implicit val (context, typedStore, namespace, bucket) = fixtures
@@ -535,4 +527,12 @@ trait BagReaderTestCases[
 
     (bagContents.bagRoot, bagContents.bagInfo)
   }
+
+  private def createMultiManifestChecksumWith(md5: String, sha512: String): MultiManifestChecksum =
+    MultiManifestChecksum(
+      md5 = Some(ChecksumValue(md5)),
+      sha1 = None,
+      sha256 = None,
+      sha512 = Some(ChecksumValue(sha512))
+    )
 }
