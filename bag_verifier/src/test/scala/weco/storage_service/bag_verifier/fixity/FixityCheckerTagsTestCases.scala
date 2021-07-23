@@ -20,10 +20,6 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
       StreamReaderImpl
     ] {
 
-  val contentString = "HelloWorld"
-  val checksumString = "68e109f0f40ca72a15e05cc22786f8e6"
-  val checksum = Checksum(MD5, ChecksumValue(checksumString))
-
   def tagName(algorithm: ChecksumAlgorithm): String =
     algorithm match {
       case MD5    => "Content-MD5"
@@ -38,9 +34,16 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
         val location = createLocationWith(namespace)
         putString(location, contentString)
 
+        val multiChecksum = MultiManifestChecksum(
+          md5 = None,
+          sha1 = None,
+          sha256 = Some(ChecksumValue("872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4")),
+          sha512 = None
+        )
+
         val expectedFileFixity = createDataDirectoryFileFixityWith(
           location = location,
-          checksum = checksum
+          multiChecksum = multiChecksum
         )
 
         withFixityChecker() { fixityChecker =>
@@ -50,7 +53,7 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
           fixityChecker.tags.get(location).value shouldBe Identified(
             location,
             Map(
-              tagName(checksum.algorithm) -> checksumString
+              tagName(SHA256) -> "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
             )
           )
         }
@@ -66,7 +69,7 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
 
         val expectedFileFixity = createDataDirectoryFileFixityWith(
           location = location,
-          checksum = checksum
+          multiChecksum = multiChecksum
         )
 
         withStreamReader { streamReader =>
@@ -101,12 +104,12 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
 
         val expectedFileFixity = createDataDirectoryFileFixityWith(
           location = location,
-          checksum = checksum
+          multiChecksum = multiChecksum
         )
 
         val badExpectedFixity = expectedFileFixity.copy(
-          checksum = checksum.copy(
-            value = randomChecksumValue
+          multiChecksum = multiChecksum.copy(
+            sha256 = Some(randomChecksumValue)
           )
         )
 
@@ -147,7 +150,7 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
 
         val expectedFileFixity = createFetchFileFixityWith(
           location = location,
-          checksum = checksum
+          multiChecksum = multiChecksum
         )
 
         val badExpectedFixity = expectedFileFixity.copy(
@@ -206,46 +209,26 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
   }
 
   it("adds one tag per checksum algorithm") {
-    val contentString = "HelloWorld"
-
-    val allChecksums = Seq(
-      Checksum(MD5, ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6")),
-      Checksum(
-        SHA1,
-        ChecksumValue("db8ac1c259eb89d4a131b253bacfca5f319d54f2")
-      ),
-      Checksum(
-        SHA256,
-        ChecksumValue(
-          "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
-        )
-      )
-    )
-
     withContext { implicit context =>
       withNamespace { implicit namespace =>
         val location = createLocationWith(namespace)
         putString(location, contentString)
 
         withFixityChecker() { fixityChecker =>
-          allChecksums.foreach { checksum =>
-            val expectedFileFixity = createDataDirectoryFileFixityWith(
-              location = location,
-              checksum = checksum
-            )
+          val expectedFileFixity = createDataDirectoryFileFixityWith(
+            location = location,
+            multiChecksum = multiChecksum
+          )
 
-            fixityChecker.check(expectedFileFixity) shouldBe a[
-              FileFixityCorrect[_]
-            ]
-          }
+          fixityChecker.check(expectedFileFixity) shouldBe a[
+            FileFixityCorrect[_]
+          ]
 
           fixityChecker.tags.get(location).value shouldBe Identified(
             location,
-            Map(
-              tagName(MD5) -> "68e109f0f40ca72a15e05cc22786f8e6",
-              tagName(SHA1) -> "db8ac1c259eb89d4a131b253bacfca5f319d54f2",
-              tagName(SHA256) -> "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
-            )
+            multiChecksum.definedChecksums.map { case (algorithm, checksumValue) =>
+              tagName(algorithm) -> checksumValue.value
+            }
           )
         }
       }

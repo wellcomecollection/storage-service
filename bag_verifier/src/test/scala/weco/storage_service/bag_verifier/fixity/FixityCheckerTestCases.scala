@@ -59,23 +59,24 @@ trait FixityCheckerTestCases[
       }
     }
 
+  val contentString = "HelloWorld"
+
+  val multiChecksum = MultiManifestChecksum(
+    md5 = Some(ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6")),
+    sha1 = Some(ChecksumValue("db8ac1c259eb89d4a131b253bacfca5f319d54f2")),
+    sha256 = Some(ChecksumValue("872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4")),
+    sha512 = Some(ChecksumValue("8ae6ae71a75d3fb2e0225deeb004faf95d816a0a58093eb4cb5a3aa0f197050d7a4dc0a2d5c6fbae5fb5b0d536a0a9e6b686369fa57a027687c3630321547596"))
+  )
+
   it("returns a success if the checksum is correct") {
     withContext { implicit context =>
       withNamespace { implicit namespace =>
-        val contentHashingAlgorithm = MD5
-        val contentString = "HelloWorld"
-        // md5("HelloWorld")
-        val contentStringChecksum = ChecksumValue(
-          "68e109f0f40ca72a15e05cc22786f8e6"
-        )
-        val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
-
         val location = createLocationWith(namespace)
         putString(location, contentString)
 
         val expectedFileFixity = createDataDirectoryFileFixityWith(
           location = location,
-          checksum = checksum
+          multiChecksum = multiChecksum
         )
 
         val result =
@@ -95,13 +96,11 @@ trait FixityCheckerTestCases[
   it("fails if the object doesn't exist") {
     withContext { implicit context =>
       withNamespace { implicit namespace =>
-        val checksum = randomChecksum
-
         val location = createLocationWith(namespace)
 
         val expectedFileFixity = createDataDirectoryFileFixityWith(
           location = location,
-          checksum = checksum
+          multiChecksum = randomMultiChecksum
         )
 
         val result =
@@ -126,14 +125,14 @@ trait FixityCheckerTestCases[
   it("fails if the checksum is incorrect") {
     withContext { implicit context =>
       withNamespace { implicit namespace =>
-        val checksum = randomChecksum
+        val multiChecksum = randomMultiChecksum
 
         val location = createLocationWith(namespace)
         putString(location, randomAlphanumeric())
 
         val expectedFileFixity = createDataDirectoryFileFixityWith(
           location = location,
-          checksum = checksum
+          multiChecksum = multiChecksum
         )
 
         val result =
@@ -149,7 +148,7 @@ trait FixityCheckerTestCases[
         fixityMismatch.expectedFileFixity shouldBe expectedFileFixity
         fixityMismatch.e shouldBe a[FailedChecksumNoMatch]
         fixityMismatch.e.getMessage should startWith(
-          s"Checksum values do not match! Expected: $checksum"
+          s"Checksum values do not match! Expected: $multiChecksum"
         )
       }
     }
@@ -158,19 +157,11 @@ trait FixityCheckerTestCases[
   it("fails if the checksum is correct but the expected length is wrong") {
     withContext { implicit context =>
       withNamespace { implicit namespace =>
-        val contentHashingAlgorithm = MD5
-        val contentString = "HelloWorld"
-        // md5("HelloWorld")
-        val contentStringChecksum = ChecksumValue(
-          "68e109f0f40ca72a15e05cc22786f8e6"
-        )
-
         val location = createLocationWith(namespace)
-        val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
         val expectedFileFixity = createFetchFileFixityWith(
           location = location,
-          checksum = checksum,
+          multiChecksum = multiChecksum,
           length = Some(contentString.getBytes().length - 1)
         )
 
@@ -198,19 +189,11 @@ trait FixityCheckerTestCases[
   it("succeeds if the checksum is correct and the lengths match") {
     withContext { implicit context =>
       withNamespace { implicit namespace =>
-        val contentHashingAlgorithm = MD5
-        val contentString = "HelloWorld"
-        // md5("HelloWorld")
-        val contentStringChecksum = ChecksumValue(
-          "68e109f0f40ca72a15e05cc22786f8e6"
-        )
-
         val location = createLocationWith(namespace)
-        val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
         val expectedFileFixity = createDataDirectoryFileFixityWith(
           location = location,
-          checksum = checksum
+          multiChecksum = multiChecksum
         )
 
         putString(location, contentString)
@@ -232,19 +215,11 @@ trait FixityCheckerTestCases[
   it("supports different checksum algorithms") {
     withContext { implicit context =>
       withNamespace { implicit namespace =>
-        val contentHashingAlgorithm = SHA256
-        val contentString = "HelloWorld"
-        // sha256("HelloWorld")
-        val contentStringChecksum = ChecksumValue(
-          "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
-        )
-
         val location = createLocationWith(namespace)
-        val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
         val expectedFileFixity = createDataDirectoryFileFixityWith(
           location = location,
-          checksum = checksum
+          multiChecksum = multiChecksum
         )
 
         putString(location, contentString)
@@ -262,5 +237,4 @@ trait FixityCheckerTestCases[
       }
     }
   }
-
 }

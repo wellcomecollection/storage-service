@@ -54,17 +54,17 @@ class BagExpectedFixity[BagLocation <: Location, BagPrefix <: Prefix[
     matched: MatchedLocation
   ): Either[Throwable, ExpectedFileFixity] =
     matched match {
-      case loc @ MatchedLocation(bagPath, _, Some(fetchEntry)) =>
+      case MatchedLocation(bagPath, multiChecksum, Some(fetchEntry)) =>
         Right(
           FetchFileFixity(
             uri = fetchEntry.uri,
             path = bagPath,
-            checksum = loc.checksum,
+            multiChecksum = multiChecksum,
             length = fetchEntry.length
           )
         )
 
-      case loc @ MatchedLocation(bagPath, _, None) =>
+      case MatchedLocation(bagPath, multiChecksum, None) =>
         bagPath.locateWith(root) match {
           case Left(e) => Left(CannotCreateExpectedFixity(e.msg))
           case Right(location) =>
@@ -72,7 +72,7 @@ class BagExpectedFixity[BagLocation <: Location, BagPrefix <: Prefix[
               DataDirectoryFileFixity(
                 uri = resolvable.resolve(location),
                 path = bagPath,
-                checksum = loc.checksum
+                multiChecksum = multiChecksum
               )
             )
         }

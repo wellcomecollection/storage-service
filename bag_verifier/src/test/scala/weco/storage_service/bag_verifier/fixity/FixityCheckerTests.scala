@@ -1,19 +1,8 @@
 package weco.storage_service.bag_verifier.fixity
 
-import java.io.FilterInputStream
-import java.net.URI
-
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import weco.storage_service.bag_verifier.fixity.memory.MemoryFixityChecker
-import weco.storage_service.bag_verifier.generators.FixityGenerators
-import weco.storage_service.bag_verifier.storage.{
-  Locatable,
-  LocateFailure,
-  LocationParsingError
-}
-import weco.storage_service.checksum.{Checksum, ChecksumValue, MD5}
 import weco.storage._
 import weco.storage.generators.{MemoryLocationGenerators, StreamGenerators}
 import weco.storage.providers.memory.{MemoryLocation, MemoryLocationPrefix}
@@ -22,6 +11,17 @@ import weco.storage.store.memory.{MemoryStore, MemoryStreamStore}
 import weco.storage.streaming.Codec.stringCodec
 import weco.storage.streaming.{Codec, InputStreamWithLength}
 import weco.storage.tags.memory.MemoryTags
+import weco.storage_service.bag_verifier.fixity.memory.MemoryFixityChecker
+import weco.storage_service.bag_verifier.generators.FixityGenerators
+import weco.storage_service.bag_verifier.storage.{
+  Locatable,
+  LocateFailure,
+  LocationParsingError
+}
+import weco.storage_service.checksum.{ChecksumValue, MultiManifestChecksum}
+
+import java.io.FilterInputStream
+import java.net.URI
 
 class FixityCheckerTests
     extends AnyFunSpec
@@ -35,6 +35,15 @@ class FixityCheckerTests
 
   override def createLocation: MemoryLocation =
     createMemoryLocation
+
+  val contentString = "HelloWorld"
+
+  val multiChecksum = MultiManifestChecksum(
+    md5 = Some(ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6")),
+    sha1 = Some(ChecksumValue("db8ac1c259eb89d4a131b253bacfca5f319d54f2")),
+    sha256 = Some(ChecksumValue("872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4")),
+    sha512 = Some(ChecksumValue("8ae6ae71a75d3fb2e0225deeb004faf95d816a0a58093eb4cb5a3aa0f197050d7a4dc0a2d5c6fbae5fb5b0d536a0a9e6b686369fa57a027687c3630321547596"))
+  )
 
   describe("handles errors correctly") {
     it("turns an error in locate() into a FileFixityCouldNotRead") {
@@ -122,10 +131,6 @@ class FixityCheckerTests
         }
       }
 
-      val contentString = "HelloWorld"
-      val checksum =
-        Checksum(MD5, ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6"))
-
       val location = createMemoryLocation
 
       val inputStream = stringCodec.toStream(contentString).value
@@ -133,7 +138,7 @@ class FixityCheckerTests
 
       val expectedFileFixity = createDataDirectoryFileFixityWith(
         location = location,
-        checksum = checksum
+        multiChecksum = multiChecksum
       )
 
       val checker = new MemoryFixityChecker(streamStore, tags) {
@@ -152,13 +157,6 @@ class FixityCheckerTests
 
   describe("it closes the InputStream when it's done reading") {
     it("if the checksum is correct") {
-      val contentHashingAlgorithm = MD5
-      val contentString = "HelloWorld"
-      // md5("HelloWorld")
-      val contentStringChecksum =
-        ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6")
-      val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
-
       var isClosed: Boolean = false
 
       val inputStream: InputStreamWithLength = new InputStreamWithLength(
@@ -181,7 +179,7 @@ class FixityCheckerTests
       }
 
       val expectedFileFixity =
-        createDataDirectoryFileFixityWith(checksum = checksum)
+        createDataDirectoryFileFixityWith(multiChecksum = multiChecksum)
 
       val tags = createMemoryTags
 
