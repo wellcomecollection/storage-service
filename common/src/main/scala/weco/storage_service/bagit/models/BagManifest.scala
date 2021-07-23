@@ -9,8 +9,6 @@ import weco.storage_service.checksum.{
 sealed trait BagManifest {
   val checksumAlgorithm: ChecksumAlgorithm
   val entries: Map[BagPath, ChecksumValue]
-
-  def paths: Seq[BagPath] = entries.keys.toSeq
 }
 
 case class PayloadManifest(
@@ -26,8 +24,6 @@ case class TagManifest(
 sealed trait NewBagManifest {
   val algorithms: Set[ChecksumAlgorithm]
   val entries: Map[BagPath, MultiManifestChecksum]
-
-  def paths: Seq[BagPath] = entries.keys.toSeq
 
   // Check that every file is using the same set of algorithms.  It would be
   // an error if, say, one file had an MD5 and SHA-256 checksum and another file
