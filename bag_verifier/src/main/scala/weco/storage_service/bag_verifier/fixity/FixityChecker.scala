@@ -35,8 +35,6 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
   ): FileFixityResult[BagLocation] = {
     debug(s"Attempting to verify: $expectedFileFixity")
 
-    val algorithm = expectedFileFixity.checksum.algorithm
-
     // The verifier writes a tag to the storage location after it's verified.
     //
     // If it tries to verify a location and finds the correct tag, it skips
@@ -65,7 +63,6 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
         expectedFileFixity = expectedFileFixity,
         location = location,
         existingTags = existingTags,
-        algorithm = algorithm,
         size = size
       )
 
@@ -144,7 +141,6 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     expectedFileFixity: ExpectedFileFixity,
     location: BagLocation,
     existingTags: Map[String, String],
-    algorithm: ChecksumAlgorithm,
     size: Long
   ): Either[FileFixityError[BagLocation], FileFixityCorrect[BagLocation]] =
     existingTags match {
@@ -189,7 +185,6 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
               expectedFileFixity = expectedFileFixity,
               location = location,
               inputStream = inputStream,
-              algorithm = algorithm,
               size = size
             )
         }
@@ -199,7 +194,6 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     expectedFileFixity: ExpectedFileFixity,
     location: BagLocation,
     inputStream: InputStreamWithLength,
-    algorithm: ChecksumAlgorithm,
     size: Long
   ): Either[FileFixityError[BagLocation], FileFixityCorrect[BagLocation]] = {
     // This assertion should never fire in practice -- if it does, it means
@@ -213,6 +207,8 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
       message =
         s"The size of $location has changed!  Before: $size, after: ${inputStream.length}"
     )
+
+    val algorithm = expectedFileFixity.checksum.algorithm
 
     val fixityResult =
       MultiChecksum.create(inputStream).map(_.getValue(algorithm)) match {
