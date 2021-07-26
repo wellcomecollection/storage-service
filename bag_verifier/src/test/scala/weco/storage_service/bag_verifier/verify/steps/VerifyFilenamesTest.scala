@@ -3,7 +3,7 @@ package weco.storage_service.bag_verifier.verify.steps
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import weco.storage_service.bagit.models.{BagPath, PayloadManifest, TagManifest}
+import weco.storage_service.bagit.models.{BagPath, NewPayloadManifest, NewTagManifest}
 import weco.storage_service.checksum.SHA256
 import weco.storage_service.generators.StorageRandomGenerators
 
@@ -91,15 +91,15 @@ class VerifyFilenamesTest extends AnyFunSpec with Matchers with EitherValues wit
     }
   }
 
-  private def createPayloadManifestWith(filenames: String*): PayloadManifest =
-    PayloadManifest(
-      checksumAlgorithm = SHA256,
-      entries = filenames.map { BagPath(_) -> randomChecksumValue }.toMap
+  private def createPayloadManifestWith(filenames: String*): NewPayloadManifest =
+    NewPayloadManifest(
+      entries = filenames.map { BagPath(_) -> randomMultiChecksum }.toMap,
+      algorithms = Set(SHA256)
     )
 
-  private def createTagManifestWith(filenames: String*): TagManifest =
-    TagManifest(
-      checksumAlgorithm = SHA256,
-      entries = filenames.map { BagPath(_) -> randomChecksumValue }.toMap
+  private def createTagManifestWith(filenames: String*): NewTagManifest =
+    NewTagManifest(
+      entries = filenames.map { BagPath(_) -> randomMultiChecksum }.toMap,
+      algorithms = Set(SHA256)
     )
 }
