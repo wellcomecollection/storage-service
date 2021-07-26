@@ -241,8 +241,8 @@ class StorageManifestServiceTest
         }.toMap
 
       val bagChecksums =
-        bag.manifest.entries
-          .map { case (bagPath, checksum) => bagPath.value -> checksum.value }
+        bag.newManifest.entries
+          .map { case (bagPath, multiChecksum) => bagPath.value -> multiChecksum.sha256.get.value }
 
       storageManifestChecksums shouldBe bagChecksums
 
