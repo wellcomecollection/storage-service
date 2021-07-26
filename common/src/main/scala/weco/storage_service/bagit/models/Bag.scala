@@ -26,14 +26,6 @@ case class Bag(
       }
     )
 
-  def copy(tagManifest: TagManifest): Bag =
-    Bag(
-      info = info,
-      manifest = manifest,
-      tagManifest = tagManifest,
-      fetch = fetch
-    )
-
   // Quoting RFC 8493 § 2.2.1 (https://datatracker.ietf.org/doc/html/rfc8493#section-2.2.1):
   //
   //      Tag manifests SHOULD use the same algorithms as the payload manifests

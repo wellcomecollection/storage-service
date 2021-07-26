@@ -36,9 +36,14 @@ sealed trait ChecksumAlgorithm {
 }
 
 case object ChecksumAlgorithms {
-  val algorithms: Set[ChecksumAlgorithm] = Set(SHA512, SHA256, SHA1, MD5)
 
-  val nonDeprecatedAlgorithms: Set[ChecksumAlgorithm] =
+  // A list of all checksum algorithms, in order of decreasing preference.
+  //
+  // i.e. SHA512 is preferable to SHA256, SHA256 to SHA1, and so on.
+  //
+  val algorithms: Seq[ChecksumAlgorithm] = Seq(SHA512, SHA256, SHA1, MD5)
+
+  val nonDeprecatedAlgorithms: Seq[ChecksumAlgorithm] =
     algorithms
       .filterNot(_.isForBackwardsCompatibilityOnly)
 }
