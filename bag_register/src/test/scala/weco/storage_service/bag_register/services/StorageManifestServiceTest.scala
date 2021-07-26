@@ -358,7 +358,7 @@ class StorageManifestServiceTest
         createBagPath -> createFetchMetadata
       )
 
-      val bag = createNewBagWith(
+      val bag = createBagWith(
         fetchEntries = fetchEntries
       )
 
@@ -407,7 +407,7 @@ class StorageManifestServiceTest
 
       val files = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
 
-      val bag = createNewBagWith(
+      val bag = createBagWith(
         manifestEntries = files.map { BagPath(_) -> randomMultiChecksum }.toMap
       )
 

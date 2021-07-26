@@ -11,7 +11,7 @@ import weco.storage_service.bagit.models.{
 import weco.storage_service.checksum._
 
 trait BagGenerators extends BagInfoGenerators {
-  def createNewBagWith(
+  def createBagWith(
     manifestEntries: Map[BagPath, MultiManifestChecksum] = Map.empty,
     manifestAlgorithms: Set[ChecksumAlgorithm] = Set(SHA256),
     tagManifestEntries: Map[BagPath, MultiManifestChecksum] = Map.empty,
@@ -31,5 +31,5 @@ trait BagGenerators extends BagInfoGenerators {
       fetch = if (fetchEntries.isEmpty) None else Some(BagFetch(fetchEntries))
     )
 
-  def createBag: Bag = createNewBagWith()
+  def createBag: Bag = createBagWith()
 }

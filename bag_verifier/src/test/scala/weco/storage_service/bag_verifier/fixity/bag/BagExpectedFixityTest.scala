@@ -51,7 +51,7 @@ class BagExpectedFixityTest
         BagPath("names.txt") -> randomMultiChecksum
       )
 
-      val bag = createNewBagWith(
+      val bag = createBagWith(
         manifestEntries = manifestEntries
       )
 
@@ -67,7 +67,7 @@ class BagExpectedFixityTest
         BagPath("manifest-sha256.txt") -> randomMultiChecksum
       )
 
-      val bag = createNewBagWith(
+      val bag = createBagWith(
         tagManifestEntries = tagManifestEntries
       )
 
@@ -88,7 +88,7 @@ class BagExpectedFixityTest
         BagPath("manifest-sha256.txt") -> randomMultiChecksum
       )
 
-      val bag = createNewBagWith(
+      val bag = createBagWith(
         manifestEntries = manifestEntries,
         tagManifestEntries = tagManifestEntries
       )
@@ -114,7 +114,7 @@ class BagExpectedFixityTest
         _ -> createFetchMetadata
       }.toMap
 
-      val bag = createNewBagWith(
+      val bag = createBagWith(
         manifestEntries = manifestEntries ++ fetchedManifestEntries,
         fetchEntries = fetchEntries
       )
@@ -139,7 +139,7 @@ class BagExpectedFixityTest
         )
       )
 
-      val bag = createNewBagWith(fetchEntries = fetchEntries)
+      val bag = createBagWith(fetchEntries = fetchEntries)
 
       val result = bagExpectedFixity.create(bag)
       result shouldBe a[Left[_, _]]
@@ -156,7 +156,7 @@ class BagExpectedFixityTest
         )
       )
 
-      val bag = createNewBagWith(fetchEntries = fetchEntries)
+      val bag = createBagWith(fetchEntries = fetchEntries)
 
       val result = bagExpectedFixity.create(bag)
       result shouldBe a[Left[_, _]]
