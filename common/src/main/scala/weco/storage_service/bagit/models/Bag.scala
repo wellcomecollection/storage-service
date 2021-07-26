@@ -2,8 +2,8 @@ package weco.storage_service.bagit.models
 
 case class Bag(
   info: BagInfo,
-  newManifest: PayloadManifest,
-  newTagManifest: TagManifest,
+  payloadManifest: PayloadManifest,
+  tagManifest: TagManifest,
   fetch: Option[BagFetch]
 ) {
 
@@ -18,7 +18,7 @@ case class Bag(
   // storage service code, not malformed bags uploaded by users.
   //
   require(
-    newManifest.algorithms == newTagManifest.algorithms,
+    payloadManifest.algorithms == tagManifest.algorithms,
     "Payload and tag manifests use different algorithms!"
   )
 }

@@ -21,7 +21,7 @@ object BagMatcher {
   ): Either[Throwable, Seq[MatchedLocation]] =
     for {
       payloadMatchedLocations <- correlateFetchEntryToBagFile(
-        manifest = bag.newManifest,
+        manifest = bag.payloadManifest,
         fetchEntries = bag.fetch match {
           case Some(fetchEntry) => fetchEntry.entries
           case None             => Map.empty
@@ -30,7 +30,7 @@ object BagMatcher {
 
       // The fetch.txt should never refer to tag files
       tagMatchedLocations <- correlateFetchEntryToBagFile(
-        manifest = bag.newTagManifest,
+        manifest = bag.tagManifest,
         fetchEntries = Map.empty
       )
     } yield payloadMatchedLocations ++ tagMatchedLocations

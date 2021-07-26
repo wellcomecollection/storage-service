@@ -20,11 +20,11 @@ trait BagGenerators extends BagInfoGenerators {
   ): Bag =
     Bag(
       info = createBagInfo,
-      newManifest = PayloadManifest(
+      payloadManifest = PayloadManifest(
         algorithms = manifestAlgorithms,
         entries = manifestEntries
       ),
-      newTagManifest = TagManifest(
+      tagManifest = TagManifest(
         algorithms = tagManifestAlgorithms,
         entries = tagManifestEntries
       ),
