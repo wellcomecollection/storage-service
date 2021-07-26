@@ -22,9 +22,11 @@ trait FixityTagChecker {
 
   implicit class ExpectedFileFixityOps(e: ExpectedFileFixity) {
     def fixityTags: Map[String, String] =
-      Map(
-        fixityTagName(e.checksum.algorithm) -> fixityTagValue(e.checksum.value)
-      )
+      e.multiChecksum.definedChecksums
+        .map { case (algorithm, value) =>
+          fixityTagName(algorithm) -> fixityTagValue(value)
+        }
+        .toMap
 
     def matchesAllExistingTags(existingTags: Map[String, String]): Boolean =
       fixityTags.toSet.subsetOf(existingTags.toSet)
