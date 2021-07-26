@@ -4,8 +4,16 @@ import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.storage_service.bagit.models.{MatchedLocation, NewPayloadManifest}
-import weco.storage_service.generators.{FetchMetadataGenerators, StorageRandomGenerators}
-import weco.storage_service.checksum.{Checksum, MD5, MultiManifestChecksum, SHA256}
+import weco.storage_service.generators.{
+  FetchMetadataGenerators,
+  StorageRandomGenerators
+}
+import weco.storage_service.checksum.{
+  Checksum,
+  MD5,
+  MultiManifestChecksum,
+  SHA256
+}
 
 class BagMatcherTest
     extends AnyFunSpec
@@ -63,7 +71,10 @@ class BagMatcherTest
       }
 
       result.value.foreach { loc =>
-        loc.checksum shouldBe Checksum(algorithm = SHA256, value = loc.multiChecksum.sha256.get)
+        loc.checksum shouldBe Checksum(
+          algorithm = SHA256,
+          value = loc.multiChecksum.sha256.get
+        )
       }
     }
 
@@ -81,7 +92,7 @@ class BagMatcherTest
       val result = BagMatcher.correlateFetchEntryToBagFile(
         manifest = NewPayloadManifest(
           entries = manifestEntries ++ Map(fetchPath -> fetchMultiChecksum),
-          algorithms = Set(MD5, SHA256),
+          algorithms = Set(MD5, SHA256)
         ),
         algorithm = SHA256,
         fetchEntries = Map(fetchPath -> fetchMetadata)
