@@ -11,20 +11,4 @@ object BagPath extends TypedStringOps[BagPath] {
 
   def create(raw: String): BagPath =
     BagPath(raw.trim)
-
-  def apply(
-    itemPath: String,
-    maybeBagRootPath: Option[String] = None
-  ): BagPath =
-    maybeBagRootPath match {
-      case None => BagPath(itemPath)
-      case Some(bagRootPath) =>
-        BagPath(f"${rTrimPath(bagRootPath)}/${lTrimPath(itemPath)}")
-    }
-
-  private def lTrimPath(path: String): String =
-    path.replaceAll("^/", "")
-
-  private def rTrimPath(path: String): String =
-    path.replaceAll("/$", "")
 }
