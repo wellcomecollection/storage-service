@@ -10,7 +10,7 @@ import weco.storage_service.bag_verifier.storage.{
   LocationNotFound,
   LocationParsingError
 }
-import weco.storage_service.checksum._
+import weco.storage_service.checksum.MultiChecksum
 import weco.storage.services.SizeFinder
 import weco.storage.store.Readable
 import weco.storage.streaming.InputStreamWithLength
@@ -208,10 +208,8 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
         s"The size of $location has changed!  Before: $size, after: ${inputStream.length}"
     )
 
-    val algorithm = expectedFileFixity.checksum.algorithm
-
     val fixityResult =
-      MultiChecksum.create(inputStream).map(_.getValue(algorithm)) match {
+      MultiChecksum.create(inputStream) match {
         case Failure(e) =>
           Left(
             FileFixityCouldNotGetChecksum(
@@ -221,8 +219,10 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
             )
           )
 
-        case Success(value)
-            if Checksum(algorithm, value) == expectedFileFixity.checksum =>
+        case Success(actualChecksum)
+            if actualChecksum
+              .compare(expectedFileFixity.multiChecksum)
+              .isRight =>
           Right(
             FileFixityCorrect(
               expectedFileFixity = expectedFileFixity,
@@ -232,19 +232,17 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
           )
 
         case Success(actualChecksum) =>
+          val mismatches =
+            actualChecksum
+              .compare(expectedFileFixity.multiChecksum)
+              .left
+              .get
+
           Left(
             FileFixityMismatch(
               expectedFileFixity = expectedFileFixity,
               objectLocation = location,
-              e = FailedChecksumNoMatch(
-                mismatches = Seq(
-                  MismatchedChecksum(
-                    algorithm = algorithm,
-                    expected = expectedFileFixity.checksum.value,
-                    actual = actualChecksum
-                  )
-                )
-              )
+              e = FailedChecksumNoMatch(mismatches = mismatches)
             )
           )
       }

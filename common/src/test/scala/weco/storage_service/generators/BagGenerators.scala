@@ -5,6 +5,8 @@ import weco.storage_service.bagit.models.{
   BagFetch,
   BagFetchMetadata,
   BagPath,
+  NewPayloadManifest,
+  NewTagManifest,
   PayloadManifest,
   TagManifest
 }
@@ -26,6 +28,26 @@ trait BagGenerators extends BagInfoGenerators {
       ),
       tagManifest = TagManifest(
         checksumAlgorithm = tagManifestChecksumAlgorithm,
+        entries = tagManifestEntries
+      ),
+      fetch = if (fetchEntries.isEmpty) None else Some(BagFetch(fetchEntries))
+    )
+
+  def createNewBagWith(
+    manifestEntries: Map[BagPath, MultiManifestChecksum] = Map.empty,
+    manifestAlgorithms: Set[ChecksumAlgorithm] = Set(SHA256),
+    tagManifestEntries: Map[BagPath, MultiManifestChecksum] = Map.empty,
+    tagManifestAlgorithms: Set[ChecksumAlgorithm] = Set(SHA256),
+    fetchEntries: Map[BagPath, BagFetchMetadata] = Map.empty
+  ): Bag =
+    Bag(
+      info = createBagInfo,
+      newManifest = NewPayloadManifest(
+        algorithms = manifestAlgorithms,
+        entries = manifestEntries
+      ),
+      newTagManifest = NewTagManifest(
+        algorithms = tagManifestAlgorithms,
         entries = tagManifestEntries
       ),
       fetch = if (fetchEntries.isEmpty) None else Some(BagFetch(fetchEntries))
