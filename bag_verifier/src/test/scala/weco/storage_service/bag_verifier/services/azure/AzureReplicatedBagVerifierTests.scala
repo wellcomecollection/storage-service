@@ -60,7 +60,8 @@ class AzureReplicatedBagVerifierTests
     azureTypedStore.put(location)(contents)
 
   override def createBagReader
-    : BagReader[AzureBlobLocation, AzureBlobLocationPrefix] = new AzureBagReader()
+    : BagReader[AzureBlobLocation, AzureBlobLocationPrefix] =
+    new AzureBagReader()
 
   override def withNamespace[R](testWith: TestWith[Container, R]): R =
     withAzureContainer { container =>

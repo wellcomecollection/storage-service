@@ -9,6 +9,7 @@ import weco.storage_service.bagit.services.BagReader
 
 class AzureBagReader()(implicit blobClient: BlobServiceClient)
     extends BagReader[AzureBlobLocation, AzureBlobLocationPrefix] {
-  override implicit val readable: Readable[AzureBlobLocation, InputStreamWithLength] =
+  override implicit val readable
+    : Readable[AzureBlobLocation, InputStreamWithLength] =
     new AzureStreamStore()
 }
