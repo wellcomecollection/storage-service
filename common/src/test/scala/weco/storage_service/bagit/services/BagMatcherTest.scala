@@ -21,7 +21,7 @@ class BagMatcherTest
     with FetchMetadataGenerators
     with StorageRandomGenerators {
 
-  def randomMultiChecksum: MultiManifestChecksum =
+  override def randomMultiChecksum: MultiManifestChecksum =
     MultiManifestChecksum(
       md5 = Some(randomChecksumValue),
       sha1 = None,

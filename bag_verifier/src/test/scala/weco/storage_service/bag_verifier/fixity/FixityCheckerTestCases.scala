@@ -59,23 +59,23 @@ trait FixityCheckerTestCases[
       }
     }
 
+  val contentString = "HelloWorld"
+  val multiChecksum = MultiManifestChecksum(
+    md5 = Some(ChecksumValue("68e109f0f40ca72a15e05cc22786f8e6")),
+    sha1 = None,
+    sha256 = Some(ChecksumValue("872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4")),
+    sha512 = None
+  )
+
   it("returns a success if the checksum is correct") {
     withContext { implicit context =>
       withNamespace { implicit namespace =>
-        val contentHashingAlgorithm = MD5
-        val contentString = "HelloWorld"
-        // md5("HelloWorld")
-        val contentStringChecksum = ChecksumValue(
-          "68e109f0f40ca72a15e05cc22786f8e6"
-        )
-        val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
-
         val location = createLocationWith(namespace)
         putString(location, contentString)
 
         val expectedFileFixity = createDataDirectoryFileFixityWith(
           location = location,
-          checksum = checksum
+          multiChecksum = multiChecksum
         )
 
         val result =
@@ -95,13 +95,10 @@ trait FixityCheckerTestCases[
   it("fails if the object doesn't exist") {
     withContext { implicit context =>
       withNamespace { implicit namespace =>
-        val checksum = randomChecksum
-
         val location = createLocationWith(namespace)
 
         val expectedFileFixity = createDataDirectoryFileFixityWith(
-          location = location,
-          checksum = checksum
+          location = location
         )
 
         val result =
@@ -126,14 +123,12 @@ trait FixityCheckerTestCases[
   it("fails if the checksum is incorrect") {
     withContext { implicit context =>
       withNamespace { implicit namespace =>
-        val checksum = randomChecksum
-
         val location = createLocationWith(namespace)
         putString(location, randomAlphanumeric())
 
         val expectedFileFixity = createDataDirectoryFileFixityWith(
           location = location,
-          checksum = checksum
+          multiChecksum = randomMultiChecksum
         )
 
         val result =
@@ -149,7 +144,7 @@ trait FixityCheckerTestCases[
         fixityMismatch.expectedFileFixity shouldBe expectedFileFixity
         fixityMismatch.e shouldBe a[FailedChecksumNoMatch]
         fixityMismatch.e.getMessage should startWith(
-          s"Checksum values do not match: expected $checksum"
+          s"Checksum values do not match: expected"
         )
       }
     }
@@ -158,19 +153,11 @@ trait FixityCheckerTestCases[
   it("fails if the checksum is correct but the expected length is wrong") {
     withContext { implicit context =>
       withNamespace { implicit namespace =>
-        val contentHashingAlgorithm = MD5
-        val contentString = "HelloWorld"
-        // md5("HelloWorld")
-        val contentStringChecksum = ChecksumValue(
-          "68e109f0f40ca72a15e05cc22786f8e6"
-        )
-
         val location = createLocationWith(namespace)
-        val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
         val expectedFileFixity = createFetchFileFixityWith(
           location = location,
-          checksum = checksum,
+          multiChecksum = multiChecksum,
           length = Some(contentString.getBytes().length - 1)
         )
 
@@ -195,22 +182,47 @@ trait FixityCheckerTestCases[
     }
   }
 
+  it("fails if one of the checksum algorithms is wrong") {
+    withContext { implicit context =>
+      withNamespace { implicit namespace =>
+        val location = createLocationWith(namespace)
+
+        val expectedFileFixity = createDataDirectoryFileFixityWith(
+          location = location,
+          multiChecksum = multiChecksum.copy(
+            sha1 = Some(randomChecksumValue)
+          )
+        )
+
+        putString(location, contentString)
+
+        val result =
+          withFixityChecker() {
+            _.check(expectedFileFixity)
+          }
+
+        result shouldBe a[FileFixityMismatch[_]]
+
+        val fixityMismatch =
+          result.asInstanceOf[FileFixityMismatch[BagLocation]]
+
+        fixityMismatch.expectedFileFixity shouldBe expectedFileFixity
+        fixityMismatch.e shouldBe a[FailedChecksumNoMatch]
+        fixityMismatch.e.getMessage should startWith(
+          s"Checksum values do not match: expected"
+        )
+      }
+    }
+  }
+
   it("succeeds if the checksum is correct and the lengths match") {
     withContext { implicit context =>
       withNamespace { implicit namespace =>
-        val contentHashingAlgorithm = MD5
-        val contentString = "HelloWorld"
-        // md5("HelloWorld")
-        val contentStringChecksum = ChecksumValue(
-          "68e109f0f40ca72a15e05cc22786f8e6"
-        )
-
         val location = createLocationWith(namespace)
-        val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
 
         val expectedFileFixity = createDataDirectoryFileFixityWith(
           location = location,
-          checksum = checksum
+          multiChecksum = multiChecksum
         )
 
         putString(location, contentString)
@@ -228,39 +240,4 @@ trait FixityCheckerTestCases[
       }
     }
   }
-
-  it("supports different checksum algorithms") {
-    withContext { implicit context =>
-      withNamespace { implicit namespace =>
-        val contentHashingAlgorithm = SHA256
-        val contentString = "HelloWorld"
-        // sha256("HelloWorld")
-        val contentStringChecksum = ChecksumValue(
-          "872e4e50ce9990d8b041330c47c9ddd11bec6b503ae9386a99da8584e9bb12c4"
-        )
-
-        val location = createLocationWith(namespace)
-        val checksum = Checksum(contentHashingAlgorithm, contentStringChecksum)
-
-        val expectedFileFixity = createDataDirectoryFileFixityWith(
-          location = location,
-          checksum = checksum
-        )
-
-        putString(location, contentString)
-
-        val result =
-          withFixityChecker() {
-            _.check(expectedFileFixity)
-          }
-
-        result shouldBe a[FileFixityCorrect[_]]
-
-        val fixityCorrect = result.asInstanceOf[FileFixityCorrect[BagLocation]]
-        fixityCorrect.expectedFileFixity shouldBe expectedFileFixity
-        fixityCorrect.size shouldBe contentString.getBytes.length
-      }
-    }
-  }
-
 }

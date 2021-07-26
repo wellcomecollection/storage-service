@@ -17,6 +17,14 @@ trait StorageRandomGenerators extends RandomGenerators {
 
   def randomChecksumValue = ChecksumValue(randomAlphanumeric())
 
+  def randomMultiChecksum: MultiManifestChecksum =
+    MultiManifestChecksum(
+      md5 = None,
+      sha1 = None,
+      sha256 = Some(randomChecksumValue),
+      sha512 = None
+    )
+
   val dummyQueue: Queue = Queue(
     url = "test://test-q",
     arn = "arn::sqs::test",
