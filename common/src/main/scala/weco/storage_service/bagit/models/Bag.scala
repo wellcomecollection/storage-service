@@ -1,7 +1,5 @@
 package weco.storage_service.bagit.models
 
-import weco.storage_service.checksum.{MultiManifestChecksum, SHA256}
-
 case class Bag(
   info: BagInfo,
   newManifest: NewPayloadManifest,
@@ -23,49 +21,4 @@ case class Bag(
     newManifest.algorithms == newTagManifest.algorithms,
     "Payload and tag manifests use different algorithms!"
   )
-}
-
-// These methods/assertions are for backwards compatibility only, and will
-// be removed at the end of the work to support multiple checksums.
-case object Bag {
-  def apply(
-    info: BagInfo,
-    manifest: PayloadManifest,
-    tagManifest: TagManifest,
-    fetch: Option[BagFetch]
-  ): Bag = {
-    require(manifest.checksumAlgorithm == SHA256)
-    require(tagManifest.checksumAlgorithm == SHA256)
-
-    Bag(
-      info = info,
-      newManifest = NewPayloadManifest(
-        algorithms = Set(SHA256),
-        entries = manifest.entries
-          .map {
-            case (path, checksum) =>
-              path -> MultiManifestChecksum(
-                md5 = None,
-                sha1 = None,
-                sha256 = Some(checksum),
-                sha512 = None
-              )
-          }
-      ),
-      newTagManifest = NewTagManifest(
-        algorithms = Set(SHA256),
-        entries = tagManifest.entries
-          .map {
-            case (path, checksum) =>
-              path -> MultiManifestChecksum(
-                md5 = None,
-                sha1 = None,
-                sha256 = Some(checksum),
-                sha512 = None
-              )
-          }
-      ),
-      fetch = fetch
-    )
-  }
 }
