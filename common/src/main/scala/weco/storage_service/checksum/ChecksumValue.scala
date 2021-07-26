@@ -27,7 +27,4 @@ class ChecksumValue(val value: String) extends TypedString[ChecksumValue] {
 object ChecksumValue extends TypedStringOps[ChecksumValue] {
   override def apply(value: String): ChecksumValue =
     new ChecksumValue(value)
-
-  def create(raw: String): ChecksumValue =
-    ChecksumValue(raw.trim)
 }

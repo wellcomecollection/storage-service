@@ -8,7 +8,4 @@ class BagPath(val value: String) extends TypedString[BagPath] {
 
 object BagPath extends TypedStringOps[BagPath] {
   override def apply(underlying: String): BagPath = new BagPath(underlying)
-
-  def create(raw: String): BagPath =
-    BagPath(raw.trim)
 }
