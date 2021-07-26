@@ -2,7 +2,6 @@ package weco.storage_service.bag_register.services
 
 import java.net.URI
 import java.time.Instant
-
 import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
 import weco.storage_service.bagit.models._
@@ -17,6 +16,7 @@ import weco.storage.services.s3.S3SizeFinder
 import weco.storage.store.Readable
 import weco.storage.store.s3.S3StreamStore
 import weco.storage.streaming.InputStreamWithLength
+import weco.storage_service.checksum.{ChecksumAlgorithm, ChecksumAlgorithms}
 
 import scala.util.{Failure, Success, Try}
 
@@ -59,22 +59,29 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
         version = version
       )
 
+      algorithm <- chooseAlgorithm(
+        manifest = bag.newManifest,
+        tagManifest = bag.newTagManifest
+      )
+
       fileManifestFiles <- createManifestFiles(
         bagRoot = bagRoot,
-        manifest = bag.manifest,
+        manifest = bag.newManifest,
+        algorithm = algorithm,
         entries = entries
       )
 
       tagManifestFiles <- createManifestFiles(
         bagRoot = bagRoot,
-        manifest = bag.tagManifest,
+        manifest = bag.newTagManifest,
+        algorithm = algorithm,
         entries = entries
       )
 
       unreferencedTagManifestFiles <- getUnreferencedFiles(
         bagRoot = bagRoot,
         version = version,
-        tagManifest = bag.tagManifest
+        algorithm = algorithm
       )
 
       storageManifest = StorageManifest(
@@ -82,11 +89,11 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
         info = bag.info,
         version = version,
         manifest = FileManifest(
-          checksumAlgorithm = bag.manifest.checksumAlgorithm,
+          checksumAlgorithm = algorithm,
           files = fileManifestFiles
         ),
         tagManifest = FileManifest(
-          checksumAlgorithm = bag.tagManifest.checksumAlgorithm,
+          checksumAlgorithm = algorithm,
           files = tagManifestFiles ++ unreferencedTagManifestFiles
         ),
         location = PrimaryStorageLocation(bagRoot),
@@ -141,6 +148,26 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
         )
     }
 
+  /** The storage manifest contains checksums for a single manifest, but
+    * user-uploaded bags can contain multiple manifests.
+    *
+    * In general, we choose the strongest available checksum.
+    *
+    * We should have a consistent set of checksums between the payload and tag
+    * manifest -- if not, the bag verifier should have warned us before now.
+    */
+  private def chooseAlgorithm(
+    manifest: NewPayloadManifest,
+    tagManifest: NewTagManifest
+  ): Try[ChecksumAlgorithm] =
+    ChecksumAlgorithms.algorithms
+      .find { algorithm =>
+        manifest.algorithms.contains(algorithm) && tagManifest.algorithms.contains(algorithm)
+      } match {
+        case Some(algorithm) =>Success(algorithm)
+        case None => Failure(new Throwable("Unable to find common checksum algorithm!"))
+      }
+
   private def getSizeAndLocation(
     matchedLocation: MatchedLocation,
     bagRoot: S3ObjectLocationPrefix,
@@ -189,12 +216,15 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
     }
 
   private def createManifestFiles(
-    manifest: BagManifest,
+    manifest: NewBagManifest,
+    algorithm: ChecksumAlgorithm,
     entries: Map[BagPath, (S3ObjectLocation, Option[Long])],
     bagRoot: S3ObjectLocationPrefix
   ): Try[Seq[StorageManifestFile]] = Try {
+    require(manifest.algorithms.contains(algorithm))
+
     manifest.entries.map {
-      case (bagPath, checksumValue) =>
+      case (bagPath, multiChecksum) =>
         // This lookup should never file -- the BagMatcher populates the
         // entries from the original manifests in the bag.
         //
@@ -224,8 +254,14 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
             }
         }
 
+        // We already have checks on the PayloadManifest model that this
+        // value is defined, so the .get is safe.  It should be impossible
+        // for this lookup to fail -- it's just tricky to communicate that
+        // in the type system.
+        val checksum = multiChecksum.getValue(algorithm).get
+
         StorageManifestFile(
-          checksum = checksumValue,
+          checksum = checksum,
           name = bagPath.value,
           path = path,
           size = size
@@ -242,13 +278,13 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
   private def getUnreferencedFiles(
     bagRoot: S3ObjectLocationPrefix,
     version: BagVersion,
-    tagManifest: BagManifest
+    algorithm: ChecksumAlgorithm
   ): Try[Seq[StorageManifestFile]] =
     tagManifestFileFinder
       .getTagManifestFiles(
         // TODO: Upstream a join() method into scala-libs
         prefix = bagRoot.asLocation(version.toString).asPrefix,
-        algorithm = tagManifest.checksumAlgorithm
+        algorithm = algorithm
       )
       .map {
         // Remember to prefix all the entries with a version string
