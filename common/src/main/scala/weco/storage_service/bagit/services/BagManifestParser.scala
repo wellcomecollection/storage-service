@@ -95,7 +95,7 @@ object BagManifestParser {
     line: String
   ): Either[String, Map[BagPath, ChecksumValue]] = line match {
     case LINE_REGEX(checksum, filepath) =>
-      Right(Map(BagPath.create(filepath) -> ChecksumValue.create(checksum)))
+      Right(Map(BagPath(filepath.trim) -> ChecksumValue(checksum)))
     case _ => Left(line)
   }
 }

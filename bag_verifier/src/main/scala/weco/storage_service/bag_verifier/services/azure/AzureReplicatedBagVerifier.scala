@@ -48,7 +48,7 @@ object AzureReplicatedBagVerifier {
     blobClient: BlobServiceClient,
     dynamoClient: DynamoDbClient
   ): AzureReplicatedBagVerifier = {
-    val bagReader = AzureBagReader()
+    val bagReader = new AzureBagReader()
     val listing = AzureBlobLocationListing()
     val resolvable = new AzureResolvable()
     implicit val fixityChecker = AzureFixityChecker(dynamoConfig)

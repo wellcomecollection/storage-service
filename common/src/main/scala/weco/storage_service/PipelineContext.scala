@@ -19,7 +19,7 @@ case object PipelineContext {
     PipelineContext(
       ingestId = ingest.id,
       ingestType = ingest.ingestType,
-      storageSpace = StorageSpace(ingest.space.underlying),
+      storageSpace = ingest.space,
       ingestDate = ingest.createdDate,
       externalIdentifier = ingest.externalIdentifier
     )
