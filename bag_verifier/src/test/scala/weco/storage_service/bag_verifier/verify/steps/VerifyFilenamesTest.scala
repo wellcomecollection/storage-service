@@ -7,7 +7,11 @@ import weco.storage_service.bagit.models.{BagPath, PayloadManifest, TagManifest}
 import weco.storage_service.checksum.SHA256
 import weco.storage_service.generators.StorageRandomGenerators
 
-class VerifyFilenamesTest extends AnyFunSpec with Matchers with EitherValues with StorageRandomGenerators {
+class VerifyFilenamesTest
+    extends AnyFunSpec
+    with Matchers
+    with EitherValues
+    with StorageRandomGenerators {
   val verifier: VerifyFilenames =
     new VerifyFilenames {}
 

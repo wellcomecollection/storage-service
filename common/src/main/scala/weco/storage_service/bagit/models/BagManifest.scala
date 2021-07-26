@@ -1,9 +1,6 @@
 package weco.storage_service.bagit.models
 
-import weco.storage_service.checksum.{
-  ChecksumAlgorithm,
-  MultiManifestChecksum
-}
+import weco.storage_service.checksum.{ChecksumAlgorithm, MultiManifestChecksum}
 
 sealed trait BagManifest {
   val algorithms: Set[ChecksumAlgorithm]

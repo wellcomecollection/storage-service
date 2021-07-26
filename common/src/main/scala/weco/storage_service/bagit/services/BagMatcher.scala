@@ -3,9 +3,9 @@ package weco.storage_service.bagit.services
 import weco.storage_service.bagit.models.{
   Bag,
   BagFetchMetadata,
+  BagManifest,
   BagPath,
-  MatchedLocation,
-  BagManifest
+  MatchedLocation
 }
 
 /** A bag can contain concrete files or refer to files stored elsewhere

@@ -9,8 +9,8 @@ import weco.storage_service.bagit.models.{
   BagPath,
   ExternalIdentifier,
   PayloadManifest,
-  TagManifest,
-  PayloadOxum
+  PayloadOxum,
+  TagManifest
 }
 import weco.storage_service.fixtures.BagBuilder
 import weco.storage_service.generators.StorageRandomGenerators
