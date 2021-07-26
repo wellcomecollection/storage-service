@@ -36,5 +36,5 @@ object UnreferencedFiles {
   val tagManifestFiles: Seq[String] =
     ChecksumAlgorithms.algorithms.map { h =>
       s"tagmanifest-${h.pathRepr}.txt"
-    }.toSeq
+    }
 }
