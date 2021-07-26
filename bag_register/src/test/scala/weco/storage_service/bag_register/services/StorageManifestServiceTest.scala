@@ -3,7 +3,12 @@ package weco.storage_service.bag_register.services
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{Assertion, TryValues}
-import weco.storage_service.bagit.models.{Bag, BagPath, BagVersion, ExternalIdentifier}
+import weco.storage_service.bagit.models.{
+  Bag,
+  BagPath,
+  BagVersion,
+  ExternalIdentifier
+}
 import weco.storage_service.bagit.services.s3.S3BagReader
 import weco.storage_service.fixtures.PayloadEntry
 import weco.storage_service.fixtures.s3.S3BagBuilder
@@ -242,7 +247,10 @@ class StorageManifestServiceTest
 
       val bagChecksums =
         bag.newManifest.entries
-          .map { case (bagPath, multiChecksum) => bagPath.value -> multiChecksum.sha256.get.value }
+          .map {
+            case (bagPath, multiChecksum) =>
+              bagPath.value -> multiChecksum.sha256.get.value
+          }
 
       storageManifestChecksums shouldBe bagChecksums
 
@@ -254,7 +262,10 @@ class StorageManifestServiceTest
 
       val tagChecksums =
         bag.newTagManifest.entries
-          .map { case (bagPath, multiChecksum) => bagPath.value -> multiChecksum.sha256.get.value }
+          .map {
+            case (bagPath, multiChecksum) =>
+              bagPath.value -> multiChecksum.sha256.get.value
+          }
 
       tagManifestChecksums.filterKeys { _ != "tagmanifest-sha256.txt" } shouldBe tagChecksums
     }
@@ -283,11 +294,11 @@ class StorageManifestServiceTest
             "Bagging-Date: 2021-07-16\n" +
               "External-Identifier: multiple_manifests\n" +
               "Payload-Oxum: 15.1\n"
-            ),
+          ),
           bagRoot.asLocation("bagit.txt") -> (
             "BagIt-Version: 0.97\n" +
               "Tag-File-Character-Encoding: UTF-8\n"
-            ),
+          ),
           bagRoot
             .asLocation("manifest-sha512.txt") -> "7cd31c95fc5a40e5be7bf46e84df52c6d8d50e9003dfb7e3b85ac9c704b90a63ac220147645ff22d410166356133d241a7346e452c863601ce68b82d075031f8  data/README.txt\n",
           bagRoot
@@ -297,13 +308,13 @@ class StorageManifestServiceTest
               "418dcfbe17d5f4b454b18630be795462cf7da4ceb6313afa49451aa2568e41f7ca3d34cf0280c7d056dc5681a70c37586aa1755620520b9198eede905ba2d0f6  bagit.txt\n" +
               "bfbd969850673f65d14917bcbe42e86df867e4e383702a4471eb0776f2f1cfa48ec102489416741dcf278344bc0229ac2a9011080ffe2a4e55a64540ed0291d9  manifest-sha512.txt\n" +
               "f8036c779eba074e72101458d675c287b731f5bec4cbe744d59565ce4cc26f96d5259d8f7b1cc55f3999d4db34eba59d99dc131200f1bdf8ddc89912ed23afe6  manifest-md5.txt\n"
-            ),
+          ),
           bagRoot.asLocation("tagmanifest-md5.txt") -> (
             "aa3c5e977224a9186dbb36ef1193be0d  bag-info.txt\n" +
               "9e5ad981e0d29adc278f6a294b8c2aca  bagit.txt\n" +
               "d570da37be627c3955c165422e667245  manifest-sha512.txt\n" +
               "7983626d0844789acfe8059b6730b9d1  manifest-md5.txt\n"
-            )
+          )
         ),
         bagRoot = bagRoot,
         bagInfo = bagInfo
@@ -321,12 +332,16 @@ class StorageManifestServiceTest
       )
 
       manifest.manifest.checksumAlgorithm shouldBe SHA512
-      manifest.manifest.files.map { f => f.path -> f.checksum.value }.toMap shouldBe Map(
+      manifest.manifest.files.map { f =>
+        f.path -> f.checksum.value
+      }.toMap shouldBe Map(
         s"$version/data/README.txt" -> "7cd31c95fc5a40e5be7bf46e84df52c6d8d50e9003dfb7e3b85ac9c704b90a63ac220147645ff22d410166356133d241a7346e452c863601ce68b82d075031f8"
       )
 
       manifest.tagManifest.checksumAlgorithm shouldBe SHA512
-      manifest.tagManifest.files.map { f => f.path -> f.checksum.value }.toMap shouldBe Map(
+      manifest.tagManifest.files.map { f =>
+        f.path -> f.checksum.value
+      }.toMap shouldBe Map(
         s"$version/bag-info.txt" -> "b7112a34f6892c1d3bfb6054dc4977c2ffd32bd7e4d8b686d08f68d1ef407c35857ad3cf552543318238701afb390faad20ac7a0a22b1cf43cd916dfb5d97efa",
         s"$version/bagit.txt" -> "418dcfbe17d5f4b454b18630be795462cf7da4ceb6313afa49451aa2568e41f7ca3d34cf0280c7d056dc5681a70c37586aa1755620520b9198eede905ba2d0f6",
         s"$version/manifest-sha512.txt" -> "bfbd969850673f65d14917bcbe42e86df867e4e383702a4471eb0776f2f1cfa48ec102489416741dcf278344bc0229ac2a9011080ffe2a4e55a64540ed0291d9",

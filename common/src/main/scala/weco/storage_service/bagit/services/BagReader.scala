@@ -69,7 +69,10 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
         // A runtime assertion is meant to draw our attention to it, rather than introducing the
         // unnecessary complexity of creating this message dynamically.
         require(
-          ChecksumAlgorithms.nonDeprecatedAlgorithms.toSet == Set(SHA256, SHA512)
+          ChecksumAlgorithms.nonDeprecatedAlgorithms.toSet == Set(
+            SHA256,
+            SHA512
+          )
         )
         Left(
           BagUnavailable(
@@ -102,7 +105,10 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
         // A runtime assertion is meant to draw our attention to it, rather than introducing the
         // unnecessary complexity of creating this message dynamically.
         require(
-          ChecksumAlgorithms.nonDeprecatedAlgorithms.toSet == Set(SHA256, SHA512)
+          ChecksumAlgorithms.nonDeprecatedAlgorithms.toSet == Set(
+            SHA256,
+            SHA512
+          )
         )
         Left(
           BagUnavailable(

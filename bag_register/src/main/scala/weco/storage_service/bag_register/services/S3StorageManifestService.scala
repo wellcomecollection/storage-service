@@ -162,11 +162,13 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
   ): Try[ChecksumAlgorithm] =
     ChecksumAlgorithms.algorithms
       .find { algorithm =>
-        manifest.algorithms.contains(algorithm) && tagManifest.algorithms.contains(algorithm)
+        manifest.algorithms.contains(algorithm) && tagManifest.algorithms
+          .contains(algorithm)
       } match {
-        case Some(algorithm) =>Success(algorithm)
-        case None => Failure(new Throwable("Unable to find common checksum algorithm!"))
-      }
+      case Some(algorithm) => Success(algorithm)
+      case None =>
+        Failure(new Throwable("Unable to find common checksum algorithm!"))
+    }
 
   private def getSizeAndLocation(
     matchedLocation: MatchedLocation,
