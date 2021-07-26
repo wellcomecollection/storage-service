@@ -219,7 +219,10 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
             )
           )
 
-        case Success(actualChecksum) if actualChecksum.compare(expectedFileFixity.multiChecksum).isRight =>
+        case Success(actualChecksum)
+            if actualChecksum
+              .compare(expectedFileFixity.multiChecksum)
+              .isRight =>
           Right(
             FileFixityCorrect(
               expectedFileFixity = expectedFileFixity,
@@ -232,7 +235,8 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
           val mismatches =
             actualChecksum
               .compare(expectedFileFixity.multiChecksum)
-              .left.get
+              .left
+              .get
 
           Left(
             FileFixityMismatch(

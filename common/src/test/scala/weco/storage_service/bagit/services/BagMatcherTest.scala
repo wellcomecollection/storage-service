@@ -8,11 +8,7 @@ import weco.storage_service.generators.{
   FetchMetadataGenerators,
   StorageRandomGenerators
 }
-import weco.storage_service.checksum.{
-  MD5,
-  MultiManifestChecksum,
-  SHA256
-}
+import weco.storage_service.checksum.{MD5, MultiManifestChecksum, SHA256}
 
 class BagMatcherTest
     extends AnyFunSpec
