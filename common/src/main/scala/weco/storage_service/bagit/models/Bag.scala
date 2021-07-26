@@ -2,8 +2,8 @@ package weco.storage_service.bagit.models
 
 case class Bag(
   info: BagInfo,
-  newManifest: NewPayloadManifest,
-  newTagManifest: NewTagManifest,
+  newManifest: PayloadManifest,
+  newTagManifest: TagManifest,
   fetch: Option[BagFetch]
 ) {
 

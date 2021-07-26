@@ -1,7 +1,7 @@
 package weco.storage_service.bag_verifier.verify.steps
 
 import weco.storage_service.bag_verifier.models.BagVerifierError
-import weco.storage_service.bagit.models.{NewPayloadManifest, NewTagManifest}
+import weco.storage_service.bagit.models.{PayloadManifest, TagManifest}
 
 trait VerifyFilenames {
   def verifyAllowedFilenames(
@@ -39,7 +39,7 @@ trait VerifyFilenames {
   //
   // See https://tools.ietf.org/html/rfc8493#section-2.1.2
   def verifyPayloadFilenames(
-    manifest: NewPayloadManifest
+    manifest: PayloadManifest
   ): Either[BagVerifierError, Unit] = {
     val paths = manifest.entries.map { case (path, _) => path.value }
     val badPaths = paths.filterNot { _.startsWith("data/") }
@@ -65,7 +65,7 @@ trait VerifyFilenames {
   // itself.  We have a separate check (VerifyNoUnreferencedFiles) that would warn us if
   // there's a tag manifest somewhere other than the root of the bag.
   def verifyTagFileFilenames(
-    tagManifest: NewTagManifest
+    tagManifest: TagManifest
   ): Either[BagVerifierError, Unit] = {
     val paths = tagManifest.entries.map { case (path, _) => path.value }
     val badPaths = paths.filter { _.contains("/") }

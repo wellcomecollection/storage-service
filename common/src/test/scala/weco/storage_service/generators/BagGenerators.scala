@@ -5,8 +5,8 @@ import weco.storage_service.bagit.models.{
   BagFetch,
   BagFetchMetadata,
   BagPath,
-  NewPayloadManifest,
-  NewTagManifest
+  PayloadManifest,
+  TagManifest
 }
 import weco.storage_service.checksum._
 
@@ -20,11 +20,11 @@ trait BagGenerators extends BagInfoGenerators {
   ): Bag =
     Bag(
       info = createBagInfo,
-      newManifest = NewPayloadManifest(
+      newManifest = PayloadManifest(
         algorithms = manifestAlgorithms,
         entries = manifestEntries
       ),
-      newTagManifest = NewTagManifest(
+      newTagManifest = TagManifest(
         algorithms = tagManifestAlgorithms,
         entries = tagManifestEntries
       ),

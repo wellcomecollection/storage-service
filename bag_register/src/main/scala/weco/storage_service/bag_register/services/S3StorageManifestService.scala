@@ -157,8 +157,8 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
     * manifest -- if not, the bag verifier should have warned us before now.
     */
   private def chooseAlgorithm(
-    manifest: NewPayloadManifest,
-    tagManifest: NewTagManifest
+    manifest: PayloadManifest,
+    tagManifest: TagManifest
   ): Try[ChecksumAlgorithm] =
     ChecksumAlgorithms.algorithms
       .find { algorithm =>
@@ -218,7 +218,7 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
     }
 
   private def createManifestFiles(
-    manifest: NewBagManifest,
+    manifest: BagManifest,
     algorithm: ChecksumAlgorithm,
     entries: Map[BagPath, (S3ObjectLocation, Option[Long])],
     bagRoot: S3ObjectLocationPrefix

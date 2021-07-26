@@ -5,7 +5,7 @@ import weco.storage_service.bagit.models.{
   BagFetchMetadata,
   BagPath,
   MatchedLocation,
-  NewBagManifest
+  BagManifest
 }
 
 /** A bag can contain concrete files or refer to files stored elsewhere
@@ -36,7 +36,7 @@ object BagMatcher {
     } yield payloadMatchedLocations ++ tagMatchedLocations
 
   def correlateFetchEntryToBagFile(
-    manifest: NewBagManifest,
+    manifest: BagManifest,
     fetchEntries: Map[BagPath, BagFetchMetadata]
   ): Either[Throwable, Seq[MatchedLocation]] = {
     // First construct the list of matched locations -- for every file in the bag,
