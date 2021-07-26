@@ -8,23 +8,6 @@ case class Bag(
   newTagManifest: NewTagManifest,
   fetch: Option[BagFetch]
 ) {
-  def manifest: PayloadManifest =
-    PayloadManifest(
-      checksumAlgorithm = SHA256,
-      entries = newManifest.entries.map {
-        case (path, multiChecksum) =>
-          path -> multiChecksum.sha256.get
-      }
-    )
-
-  def tagManifest: TagManifest =
-    TagManifest(
-      checksumAlgorithm = SHA256,
-      entries = newTagManifest.entries.map {
-        case (path, multiChecksum) =>
-          path -> multiChecksum.sha256.get
-      }
-    )
 
   // Quoting RFC 8493 § 2.2.1 (https://datatracker.ietf.org/doc/html/rfc8493#section-2.2.1):
   //
