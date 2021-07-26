@@ -139,7 +139,7 @@ class BagExpectedFixityTest
         )
       )
 
-      val bag = createBagWith(fetchEntries = fetchEntries)
+      val bag = createNewBagWith(fetchEntries = fetchEntries)
 
       val result = bagExpectedFixity.create(bag)
       result shouldBe a[Left[_, _]]
@@ -156,7 +156,7 @@ class BagExpectedFixityTest
         )
       )
 
-      val bag = createBagWith(fetchEntries = fetchEntries)
+      val bag = createNewBagWith(fetchEntries = fetchEntries)
 
       val result = bagExpectedFixity.create(bag)
       result shouldBe a[Left[_, _]]
