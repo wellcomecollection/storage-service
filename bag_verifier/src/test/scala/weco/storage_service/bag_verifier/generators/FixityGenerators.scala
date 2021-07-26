@@ -1,25 +1,18 @@
 package weco.storage_service.bag_verifier.generators
 
-import java.net.URI
+import weco.storage.Location
 import weco.storage_service.bag_verifier.fixity.{
   DataDirectoryFileFixity,
   ExpectedFileFixity,
   FetchFileFixity
 }
+import weco.storage_service.checksum.MultiManifestChecksum
 import weco.storage_service.generators.StorageRandomGenerators
-import weco.storage_service.checksum.{
-  Checksum,
-  MD5,
-  MultiManifestChecksum,
-  SHA256
-}
-import weco.storage.Location
+
+import java.net.URI
 
 trait FixityGenerators[BagLocation <: Location]
     extends StorageRandomGenerators {
-
-  def randomChecksum = Checksum(SHA256, randomChecksumValue)
-  def badChecksum = Checksum(MD5, randomChecksumValue)
 
   def resolve(location: BagLocation): URI
 
