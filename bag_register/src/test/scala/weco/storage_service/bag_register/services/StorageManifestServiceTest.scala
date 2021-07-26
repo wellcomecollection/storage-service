@@ -253,8 +253,8 @@ class StorageManifestServiceTest
         }.toMap
 
       val tagChecksums =
-        bag.tagManifest.entries
-          .map { case (bagPath, checksum) => bagPath.value -> checksum.value }
+        bag.newTagManifest.entries
+          .map { case (bagPath, multiChecksum) => bagPath.value -> multiChecksum.sha256.get.value }
 
       tagManifestChecksums.filterKeys { _ != "tagmanifest-sha256.txt" } shouldBe tagChecksums
     }
@@ -451,7 +451,7 @@ class StorageManifestServiceTest
 
         val storageManifest = createManifest(
           bag = bag.copy(
-            tagManifest = bag.tagManifest.copy(entries = Map.empty)
+            newTagManifest = bag.newTagManifest.copy(entries = Map())
           ),
           location = location,
           version = version,
@@ -509,7 +509,7 @@ class StorageManifestServiceTest
 
         val storageManifest = createManifest(
           bag = bag.copy(
-            tagManifest = bag.tagManifest.copy(entries = Map.empty)
+            newTagManifest = bag.newTagManifest.copy(entries = Map())
           ),
           location = location,
           version = version,
