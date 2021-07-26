@@ -127,7 +127,7 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
 
       _ <- verifyPayloadOxumFileCount(bag)
 
-      _ <- verifyPayloadFilenames(bag.manifest)
+      _ <- verifyPayloadFilenames(bag.payloadManifest)
       _ <- verifyTagFileFilenames(bag.tagManifest)
 
       _ <- verifyFetchPrefixes(
@@ -138,7 +138,7 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Loca
         )
       )
 
-      filenames = (bag.manifest.entries ++ bag.tagManifest.entries).map {
+      filenames = (bag.payloadManifest.entries ++ bag.tagManifest.entries).map {
         case (path, _) => path.value
       }
       _ <- verifyAllowedFilenames(filenames.toSeq)

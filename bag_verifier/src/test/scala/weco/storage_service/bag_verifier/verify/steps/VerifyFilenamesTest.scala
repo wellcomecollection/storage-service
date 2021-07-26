@@ -4,9 +4,14 @@ import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.storage_service.bagit.models.{BagPath, PayloadManifest, TagManifest}
-import weco.storage_service.checksum.{ChecksumValue, MD5}
+import weco.storage_service.checksum.SHA256
+import weco.storage_service.generators.StorageRandomGenerators
 
-class VerifyFilenamesTest extends AnyFunSpec with Matchers with EitherValues {
+class VerifyFilenamesTest
+    extends AnyFunSpec
+    with Matchers
+    with EitherValues
+    with StorageRandomGenerators {
   val verifier: VerifyFilenames =
     new VerifyFilenames {}
 
@@ -37,36 +42,27 @@ class VerifyFilenamesTest extends AnyFunSpec with Matchers with EitherValues {
 
   describe("verifyPayloadFilenames") {
     it("allows filenames that start with data/") {
-      val manifest = PayloadManifest(
-        checksumAlgorithm = MD5,
-        entries = Map(
-          BagPath("data/README.txt") -> ChecksumValue("123"),
-          BagPath("data/animals/cat.jpg") -> ChecksumValue("123"),
-          BagPath("data/animals/dog.png") -> ChecksumValue("123")
-        )
+      val manifest = createPayloadManifestWith(
+        "data/README.txt",
+        "data/animals/cat.jpg",
+        "data/animals/dog.png"
       )
 
       verifier.verifyPayloadFilenames(manifest) shouldBe Right(())
     }
 
     it("allows an empty manifest") {
-      val manifest = PayloadManifest(
-        checksumAlgorithm = MD5,
-        entries = Map.empty
-      )
+      val manifest = createPayloadManifestWith()
 
       verifier.verifyPayloadFilenames(manifest) shouldBe Right(())
     }
 
     it("fails a manifest with filenames outside data/") {
-      val manifest = PayloadManifest(
-        checksumAlgorithm = MD5,
-        entries = Map(
-          BagPath("data/README.txt") -> ChecksumValue("123"),
-          BagPath("data/animals/cat.jpg") -> ChecksumValue("123"),
-          BagPath("dog.png") -> ChecksumValue("123"),
-          BagPath("tags/metadata.csv") -> ChecksumValue("123")
-        )
+      val manifest = createPayloadManifestWith(
+        "data/README.txt",
+        "data/animals/cat.jpg",
+        "dog.png",
+        "tags/metadata.csv"
       )
 
       val err = verifier.verifyPayloadFilenames(manifest).left.value
@@ -79,25 +75,16 @@ class VerifyFilenamesTest extends AnyFunSpec with Matchers with EitherValues {
 
   describe("verifyTagFileFilenames") {
     it("allows tag files in the root") {
-      val manifest = TagManifest(
-        checksumAlgorithm = MD5,
-        entries = Map(
-          BagPath("bagit.txt") -> ChecksumValue("123"),
-          BagPath("bag-info.txt") -> ChecksumValue("123")
-        )
-      )
+      val manifest = createTagManifestWith("bagit.txt", "bag-info.txt")
 
       verifier.verifyTagFileFilenames(manifest) shouldBe Right(())
     }
 
     it("fails a manifest with tag files in subdirectories") {
-      val manifest = TagManifest(
-        checksumAlgorithm = MD5,
-        entries = Map(
-          BagPath("bagit.txt") -> ChecksumValue("123"),
-          BagPath("data/bag-info.txt") -> ChecksumValue("123"),
-          BagPath("tags/metadata.csv") -> ChecksumValue("123")
-        )
+      val manifest = createTagManifestWith(
+        "bagit.txt",
+        "data/bag-info.txt",
+        "tags/metadata.csv"
       )
 
       val err = verifier.verifyTagFileFilenames(manifest).left.value
@@ -107,4 +94,16 @@ class VerifyFilenamesTest extends AnyFunSpec with Matchers with EitherValues {
       )
     }
   }
+
+  private def createPayloadManifestWith(filenames: String*): PayloadManifest =
+    PayloadManifest(
+      entries = filenames.map { BagPath(_) -> randomMultiChecksum }.toMap,
+      algorithms = Set(SHA256)
+    )
+
+  private def createTagManifestWith(filenames: String*): TagManifest =
+    TagManifest(
+      entries = filenames.map { BagPath(_) -> randomMultiChecksum }.toMap,
+      algorithms = Set(SHA256)
+    )
 }

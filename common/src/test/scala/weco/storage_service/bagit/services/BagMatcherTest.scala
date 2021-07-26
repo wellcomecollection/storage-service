@@ -3,7 +3,7 @@ package weco.storage_service.bagit.services
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import weco.storage_service.bagit.models.{MatchedLocation, NewPayloadManifest}
+import weco.storage_service.bagit.models.{MatchedLocation, PayloadManifest}
 import weco.storage_service.generators.{
   FetchMetadataGenerators,
   StorageRandomGenerators
@@ -29,7 +29,7 @@ class BagMatcherTest
     it("for an empty bag") {
       BagMatcher
         .correlateFetchEntryToBagFile(
-          manifest = NewPayloadManifest(
+          manifest = PayloadManifest(
             entries = Map.empty,
             algorithms = Set(SHA256)
           ),
@@ -46,7 +46,7 @@ class BagMatcherTest
       )
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
-        manifest = NewPayloadManifest(
+        manifest = PayloadManifest(
           entries = manifestEntries,
           algorithms = Set(MD5, SHA256)
         ),
@@ -75,7 +75,7 @@ class BagMatcherTest
       val fetchMultiChecksum = randomMultiChecksum
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
-        manifest = NewPayloadManifest(
+        manifest = PayloadManifest(
           entries = manifestEntries ++ Map(fetchPath -> fetchMultiChecksum),
           algorithms = Set(MD5, SHA256)
         ),
@@ -105,7 +105,7 @@ class BagMatcherTest
       val fetchEntries = Map(fetchPath -> createFetchMetadata)
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
-        manifest = NewPayloadManifest(
+        manifest = PayloadManifest(
           entries = Map.empty,
           algorithms = Set(SHA256)
         ),
@@ -122,7 +122,7 @@ class BagMatcherTest
       }.toMap
 
       val result = BagMatcher.correlateFetchEntryToBagFile(
-        manifest = NewPayloadManifest(
+        manifest = PayloadManifest(
           entries = Map.empty,
           algorithms = Set(SHA256)
         ),

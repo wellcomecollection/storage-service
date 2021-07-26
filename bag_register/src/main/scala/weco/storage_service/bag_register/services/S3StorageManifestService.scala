@@ -60,20 +60,20 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
       )
 
       algorithm <- chooseAlgorithm(
-        manifest = bag.newManifest,
-        tagManifest = bag.newTagManifest
+        payloadManifest = bag.payloadManifest,
+        tagManifest = bag.tagManifest
       )
 
       fileManifestFiles <- createManifestFiles(
         bagRoot = bagRoot,
-        manifest = bag.newManifest,
+        manifest = bag.payloadManifest,
         algorithm = algorithm,
         entries = entries
       )
 
       tagManifestFiles <- createManifestFiles(
         bagRoot = bagRoot,
-        manifest = bag.newTagManifest,
+        manifest = bag.tagManifest,
         algorithm = algorithm,
         entries = entries
       )
@@ -157,12 +157,12 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
     * manifest -- if not, the bag verifier should have warned us before now.
     */
   private def chooseAlgorithm(
-    manifest: NewPayloadManifest,
-    tagManifest: NewTagManifest
+    payloadManifest: PayloadManifest,
+    tagManifest: TagManifest
   ): Try[ChecksumAlgorithm] =
     ChecksumAlgorithms.algorithms
       .find { algorithm =>
-        manifest.algorithms.contains(algorithm) && tagManifest.algorithms
+        payloadManifest.algorithms.contains(algorithm) && tagManifest.algorithms
           .contains(algorithm)
       } match {
       case Some(algorithm) => Success(algorithm)
@@ -218,7 +218,7 @@ class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
     }
 
   private def createManifestFiles(
-    manifest: NewBagManifest,
+    manifest: BagManifest,
     algorithm: ChecksumAlgorithm,
     entries: Map[BagPath, (S3ObjectLocation, Option[Long])],
     bagRoot: S3ObjectLocationPrefix

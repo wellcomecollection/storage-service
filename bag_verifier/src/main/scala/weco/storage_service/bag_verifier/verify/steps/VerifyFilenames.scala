@@ -65,9 +65,9 @@ trait VerifyFilenames {
   // itself.  We have a separate check (VerifyNoUnreferencedFiles) that would warn us if
   // there's a tag manifest somewhere other than the root of the bag.
   def verifyTagFileFilenames(
-    manifest: TagManifest
+    tagManifest: TagManifest
   ): Either[BagVerifierError, Unit] = {
-    val paths = manifest.entries.map { case (path, _) => path.value }
+    val paths = tagManifest.entries.map { case (path, _) => path.value }
     val badPaths = paths.filter { _.contains("/") }
 
     if (badPaths.isEmpty) {

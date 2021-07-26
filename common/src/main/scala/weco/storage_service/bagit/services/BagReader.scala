@@ -48,10 +48,10 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
 
   private def loadPayloadManifest(
     bagRoot: BagPrefix
-  ): Either[BagUnavailable, NewPayloadManifest] =
+  ): Either[BagUnavailable, PayloadManifest] =
     loadManifestEntries(bagRoot)(fileManifest) match {
       case Right((algorithms, entries)) =>
-        Right(NewPayloadManifest(algorithms, entries))
+        Right(PayloadManifest(algorithms, entries))
       case Left(ManifestError.CannotBeLoaded(err)) => Left(err)
       case Left(ManifestError.NoManifestsFound) =>
         Left(
@@ -89,7 +89,7 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
   private def loadTagManifest(bagRoot: BagPrefix) =
     loadManifestEntries(bagRoot)(tagManifest) match {
       case Right((algorithms, entries)) =>
-        Right(NewTagManifest(algorithms, entries))
+        Right(TagManifest(algorithms, entries))
       case Left(ManifestError.CannotBeLoaded(err)) => Left(err)
       case Left(ManifestError.NoManifestsFound) =>
         Left(BagUnavailable("Could not find any tag manifests in the bag"))
@@ -131,8 +131,8 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
   // optional in the spec); similarly here we treat this SHOULD as a MUST.
   //
   private def compareAlgorithms(
-    payloadManifest: NewPayloadManifest,
-    tagManifest: NewTagManifest
+    payloadManifest: PayloadManifest,
+    tagManifest: TagManifest
   ): Either[BagUnavailable, Unit] =
     Either.cond(
       payloadManifest.algorithms == tagManifest.algorithms,

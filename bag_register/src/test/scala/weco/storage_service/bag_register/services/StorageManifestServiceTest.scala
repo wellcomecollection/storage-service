@@ -246,7 +246,7 @@ class StorageManifestServiceTest
         }.toMap
 
       val bagChecksums =
-        bag.newManifest.entries
+        bag.payloadManifest.entries
           .map {
             case (bagPath, multiChecksum) =>
               bagPath.value -> multiChecksum.sha256.get.value
@@ -261,7 +261,7 @@ class StorageManifestServiceTest
         }.toMap
 
       val tagChecksums =
-        bag.newTagManifest.entries
+        bag.tagManifest.entries
           .map {
             case (bagPath, multiChecksum) =>
               bagPath.value -> multiChecksum.sha256.get.value
@@ -408,7 +408,7 @@ class StorageManifestServiceTest
       val files = Seq("data/file1.txt", "data/file2.txt", "data/dir/file3.txt")
 
       val bag = createBagWith(
-        manifestEntries = files.map { BagPath(_) -> randomChecksumValue }.toMap
+        manifestEntries = files.map { BagPath(_) -> randomMultiChecksum }.toMap
       )
 
       val err = new Throwable("BOOM!")
@@ -466,7 +466,7 @@ class StorageManifestServiceTest
 
         val storageManifest = createManifest(
           bag = bag.copy(
-            newTagManifest = bag.newTagManifest.copy(entries = Map())
+            tagManifest = bag.tagManifest.copy(entries = Map())
           ),
           location = location,
           version = version,
@@ -524,7 +524,7 @@ class StorageManifestServiceTest
 
         val storageManifest = createManifest(
           bag = bag.copy(
-            newTagManifest = bag.newTagManifest.copy(entries = Map())
+            tagManifest = bag.tagManifest.copy(entries = Map())
           ),
           location = location,
           version = version,

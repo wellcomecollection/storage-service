@@ -7,7 +7,7 @@ import weco.storage_service.bagit.models.Bag
 trait VerifyPayloadOxum {
   def verifyPayloadOxumFileCount(bag: Bag): Either[BagVerifierError, Unit] = {
     val payloadOxumCount = bag.info.payloadOxum.numberOfPayloadFiles
-    val manifestCount = bag.newManifest.entries.size
+    val manifestCount = bag.payloadManifest.entries.size
 
     if (payloadOxumCount != manifestCount) {
       Left(
@@ -27,7 +27,7 @@ trait VerifyPayloadOxum {
     // The Payload-Oxum octetstream sum only counts the size of files in the payload,
     // not manifest files such as the bag-info.txt file.
     // We need to filter those out.
-    val payloadPaths = bag.newManifest.entries.keys.toSet
+    val payloadPaths = bag.payloadManifest.entries.keys.toSet
 
     val actualSize =
       locations

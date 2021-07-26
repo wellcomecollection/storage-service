@@ -8,9 +8,9 @@ import weco.storage_service.bagit.models.{
   BagInfo,
   BagPath,
   ExternalIdentifier,
-  NewPayloadManifest,
-  NewTagManifest,
-  PayloadOxum
+  PayloadManifest,
+  PayloadOxum,
+  TagManifest
 }
 import weco.storage_service.fixtures.BagBuilder
 import weco.storage_service.generators.StorageRandomGenerators
@@ -150,7 +150,7 @@ trait BagReaderTestCases[
         _.get(bagRoot).value
       }
 
-      bag.newManifest shouldBe NewPayloadManifest(
+      bag.payloadManifest shouldBe PayloadManifest(
         algorithms = Set(MD5, SHA512),
         entries = Map(
           BagPath("data/README.txt") -> createMultiManifestChecksumWith(
@@ -161,7 +161,7 @@ trait BagReaderTestCases[
         )
       )
 
-      bag.newTagManifest shouldBe NewTagManifest(
+      bag.tagManifest shouldBe TagManifest(
         algorithms = Set(MD5, SHA512),
         entries = Map(
           BagPath("bag-info.txt") -> createMultiManifestChecksumWith(
