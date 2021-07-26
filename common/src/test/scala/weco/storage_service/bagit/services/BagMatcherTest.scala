@@ -9,7 +9,6 @@ import weco.storage_service.generators.{
   StorageRandomGenerators
 }
 import weco.storage_service.checksum.{
-  Checksum,
   MD5,
   MultiManifestChecksum,
   SHA256
@@ -38,7 +37,6 @@ class BagMatcherTest
             entries = Map.empty,
             algorithms = Set(SHA256)
           ),
-          algorithm = SHA256,
           fetchEntries = Map.empty
         )
         .value shouldBe Seq.empty
@@ -56,7 +54,6 @@ class BagMatcherTest
           entries = manifestEntries,
           algorithms = Set(MD5, SHA256)
         ),
-        algorithm = SHA256,
         fetchEntries = Map.empty
       )
 
@@ -65,16 +62,8 @@ class BagMatcherTest
           MatchedLocation(
             bagPath = bagPath,
             multiChecksum = multiChecksum,
-            algorithm = SHA256,
             fetchMetadata = None
           )
-      }
-
-      result.value.foreach { loc =>
-        loc.checksum shouldBe Checksum(
-          algorithm = SHA256,
-          value = loc.multiChecksum.sha256.get
-        )
       }
     }
 
@@ -94,7 +83,6 @@ class BagMatcherTest
           entries = manifestEntries ++ Map(fetchPath -> fetchMultiChecksum),
           algorithms = Set(MD5, SHA256)
         ),
-        algorithm = SHA256,
         fetchEntries = Map(fetchPath -> fetchMetadata)
       )
 
@@ -103,13 +91,11 @@ class BagMatcherTest
           MatchedLocation(
             bagPath = bagPath,
             multiChecksum = multiChecksum,
-            algorithm = SHA256,
             fetchMetadata = None
           )
       }.toSeq :+ MatchedLocation(
         bagPath = fetchPath,
         multiChecksum = fetchMultiChecksum,
-        algorithm = SHA256,
         fetchMetadata = Some(fetchMetadata)
       )
 
@@ -127,7 +113,6 @@ class BagMatcherTest
           entries = Map.empty,
           algorithms = Set(SHA256)
         ),
-        algorithm = SHA256,
         fetchEntries = fetchEntries
       )
 
@@ -145,7 +130,6 @@ class BagMatcherTest
           entries = Map.empty,
           algorithms = Set(SHA256)
         ),
-        algorithm = SHA256,
         fetchEntries = fetchEntries
       )
 
