@@ -96,6 +96,6 @@ module "stack" {
 
   app_containers = {
     container_registry = "public.ecr.aws/y1p3h6z3"
-    container_tag      = "ref.c3b7e5a1557ba0115a31ad06e6a7edd5ad143a64"
+    container_tag      = "ref.6a52d4926819ddc090da5cd51144db0d08d693d2"
   }
 }
