@@ -1,6 +1,10 @@
 locals {
   default_tags = {
     TerraformConfigurationURL = "https://github.com/wellcomecollection/storage-service/tree/main/terraform/stack_prod"
+    Department                = "Digital Platform"
+    Division                  = "Culture and Society"
+    Use                       = "Storage service"
+    Environment               = "Staging"
   }
 }
 
