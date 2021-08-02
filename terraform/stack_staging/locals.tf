@@ -9,7 +9,7 @@ locals {
 
   cert_domain_name = "storage.api.wellcomecollection.org"
 
-  dlq_alarm_arn = data.terraform_remote_state.infra_shared.outputs.dlq_alarm_arn
+  dlq_alarm_arn = data.terraform_remote_state.monitoring.outputs.storage_dlq_alarm_topic_arn
 
   cognito_user_pool_arn          = data.terraform_remote_state.app_clients.outputs.cognito_user_pool_arn
   cognito_storage_api_identifier = data.terraform_remote_state.app_clients.outputs.cognito_storage_api_identifier
