@@ -3,7 +3,7 @@ locals {
 }
 
 module "catalogue_secrets" {
-  source = "../modules/secrets"
+  source = "github.com/wellcomecollection/terraform-aws-secrets.git?ref=v1.3.0"
 
   providers = {
     aws = aws.platform
@@ -16,7 +16,7 @@ module "catalogue_secrets" {
 }
 
 module "end_to_end_tester_secrets" {
-  source = "../modules/secrets"
+  source = "github.com/wellcomecollection/terraform-aws-secrets.git?ref=v1.3.0"
 
   providers = {
     aws = aws.storage
@@ -29,7 +29,7 @@ module "end_to_end_tester_secrets" {
 }
 
 module "dev_secrets" {
-  source = "../modules/secrets"
+  source = "github.com/wellcomecollection/terraform-aws-secrets.git?ref=v1.3.0"
 
   providers = {
     aws = aws.storage
