@@ -76,7 +76,7 @@ variable "cognito_user_pool_arn" {
   type = string
 }
 
-variable "alarm_topic_arn" {
+variable "api_gateway_alarm_topic_arn" {
   type = string
 }
 
