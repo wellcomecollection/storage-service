@@ -41,7 +41,7 @@ module "stack_prod" {
   versioner_versions_table_name  = data.terraform_remote_state.critical_prod.outputs.versions_table_name
   versioner_versions_table_index = data.terraform_remote_state.critical_prod.outputs.versions_table_index
 
-  alarm_topic_arn = local.gateway_server_error_alarm_arn
+  api_gateway_alarm_topic_arn = local.api_gateway_alarm_topic_arn
 
   ingests_table_name = data.terraform_remote_state.critical_prod.outputs.ingests_table_name
   ingests_table_arn  = data.terraform_remote_state.critical_prod.outputs.ingests_table_arn
