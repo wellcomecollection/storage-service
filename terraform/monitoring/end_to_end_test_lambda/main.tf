@@ -11,6 +11,8 @@ module "lambda" {
   s3_key    = "lambdas/monitoring/end_to_end_bag_test.zip"
 
   timeout = 15
+
+  lambda_error_alerts_topic_arn = var.lambda_error_alerts_topic_arn
 }
 
 output "function_name" {

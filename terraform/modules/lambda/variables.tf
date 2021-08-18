@@ -43,3 +43,7 @@ variable "memory_size" {
   default = 128
   type    = number
 }
+
+variable "lambda_error_alerts_topic_arn" {
+  type = string
+}

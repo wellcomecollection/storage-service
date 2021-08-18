@@ -8,6 +8,8 @@ module "daily_reporter_lambda" {
   s3_key    = "lambdas/monitoring/daily_reporter.zip"
 
   timeout = 300
+
+  lambda_error_alerts_topic_arn = local.lambda_error_alerts_topic_arn
 }
 
 data "aws_secretsmanager_secret_version" "storage_service_reporter_slack_webhook" {
