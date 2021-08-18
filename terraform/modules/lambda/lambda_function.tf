@@ -22,3 +22,21 @@ resource "aws_lambda_function" "lambda_function" {
     variables = var.environment
   }
 }
+
+resource "aws_cloudwatch_metric_alarm" "lambda" {
+  alarm_name          = "lambda-${var.name}-errors"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "Errors"
+  namespace           = "AWS/Lambda"
+  period              = "60"
+  statistic           = "Sum"
+  threshold           = "1"
+
+  dimensions = {
+    FunctionName = var.name
+  }
+
+  alarm_description = "This metric monitors Lambda errors in the function ${var.name}"
+  alarm_actions     = [var.lambda_error_alerts_topic_arn]
+}
