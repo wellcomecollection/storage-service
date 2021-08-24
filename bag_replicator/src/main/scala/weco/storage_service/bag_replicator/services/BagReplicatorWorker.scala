@@ -41,7 +41,8 @@ class BagReplicatorWorker[
   ]],
   destinationConfig: ReplicatorDestinationConfig,
   replicator: Replicator[SrcLocation, DstLocation, DstPrefix],
-  val metricsNamespace: String
+  val metricsNamespace: String,
+  override val visibilityTimeout: Duration = 3.minutes
 )(
   implicit
   val mc: Metrics[Future],
@@ -51,7 +52,6 @@ class BagReplicatorWorker[
 ) extends IngestStepWorker[VersionedBagRootPayload, ReplicationSummary[
       DstPrefix
     ]] {
-  override val visibilityTimeout: Duration = 3.minutes
 
   def processMessage(
     payload: VersionedBagRootPayload
