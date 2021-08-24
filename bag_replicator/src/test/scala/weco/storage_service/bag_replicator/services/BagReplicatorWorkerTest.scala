@@ -2,13 +2,12 @@ package weco.storage_service.bag_replicator.services
 
 import java.nio.file.Paths
 import java.util.UUID
-
 import org.scalatest.TryValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import software.amazon.awssdk.services.sqs.model.QueueAttributeName
 import weco.json.JsonUtil._
+import weco.messaging.fixtures.SQS.QueuePair
 import weco.messaging.memory.MemoryMessageSender
 import weco.storage_service.bag_replicator.fixtures.BagReplicatorFixtures
 import weco.storage_service.bag_replicator.models.{
@@ -24,6 +23,7 @@ import weco.storage.locking.memory.MemoryLockDao
 import weco.storage.locking.{LockDao, LockFailure}
 import weco.storage.s3.S3ObjectLocationPrefix
 
+import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -267,41 +267,19 @@ class BagReplicatorWorkerTest
         bagRoot = srcBagRoot
       )
 
-      withLocalSqsQueue() { queue =>
+      withLocalSqsQueuePair(visibilityTimeout = 1.second) { case QueuePair(queue, dlq) =>
         withLocalS3Bucket { dstBucket =>
           withBagReplicatorWorker(
             queue = queue,
             bucket = dstBucket,
-            lockServiceDao = neverAllowLockDao
+            lockServiceDao = neverAllowLockDao,
+            visibilityTimeout = 1.second
           ) { _ =>
             sendNotificationToSQS(queue, payload)
 
-            // Give the worker time to pick up the message, discover it
-            // can't lock, and mark the message visibility timeout.
-            Thread.sleep(2000)
-
             eventually {
-              val messagesNotVisible = getQueueAttribute(
-                queue,
-                attributeName =
-                  QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES_NOT_VISIBLE
-              )
-
-              assert(
-                messagesNotVisible == "1",
-                s"Expected ${queue.url} to have 1 visible message, actually found $messagesNotVisible"
-              )
-
-              val messagesVisible = getQueueAttribute(
-                queue,
-                attributeName =
-                  QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES
-              )
-
-              assert(
-                messagesVisible == "0",
-                s"Expected ${queue.url} to have no visible messages, actually found $messagesVisible"
-              )
+              assertQueueEmpty(queue)
+              assertQueueHasSize(dlq, size = 1)
             }
           }
         }

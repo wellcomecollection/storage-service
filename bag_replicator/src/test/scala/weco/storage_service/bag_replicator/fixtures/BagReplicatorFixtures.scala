@@ -1,7 +1,6 @@
 package weco.storage_service.bag_replicator.fixtures
 
 import java.util.UUID
-
 import org.scalatest.Assertion
 import weco.akka.fixtures.Akka
 import weco.fixtures.TestWith
@@ -28,6 +27,7 @@ import weco.storage.locking.memory.{MemoryLockDao, MemoryLockDaoFixtures}
 import weco.storage.locking.{LockDao, LockingService}
 import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
+import scala.concurrent.duration._
 import scala.util.Try
 
 trait BagReplicatorFixtures
@@ -67,7 +67,8 @@ trait BagReplicatorFixtures
     outgoing: MemoryMessageSender = new MemoryMessageSender(),
     lockServiceDao: LockDao[String, UUID] = new MemoryLockDao[String, UUID] {},
     stepName: String = createStepName,
-    replicaType: ReplicaType = chooseFrom(PrimaryReplica, SecondaryReplica)
+    replicaType: ReplicaType = chooseFrom(PrimaryReplica, SecondaryReplica),
+    visibilityTimeout: Duration = 5.seconds
   )(
     testWith: TestWith[
       BagReplicatorWorker[
@@ -104,7 +105,8 @@ trait BagReplicatorFixtures
         lockingService = lockingService,
         destinationConfig = replicatorDestinationConfig,
         replicator = replicator,
-        metricsNamespace = "bag_replicator"
+        metricsNamespace = "bag_replicator",
+        visibilityTimeout = visibilityTimeout
       )
 
       service.run()
