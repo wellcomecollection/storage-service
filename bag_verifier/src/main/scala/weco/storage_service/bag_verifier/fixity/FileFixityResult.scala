@@ -33,9 +33,3 @@ case class FileFixityCouldNotGetChecksum[BagLocation](
   objectLocation: BagLocation,
   e: Throwable
 ) extends FileFixityError[BagLocation]
-
-case class FileFixityCouldNotWriteTag[BagLocation](
-  expectedFileFixity: ExpectedFileFixity,
-  objectLocation: BagLocation,
-  e: Throwable
-) extends FileFixityError[BagLocation]
