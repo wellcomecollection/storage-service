@@ -108,55 +108,53 @@ class FixityCheckerTests
         FileFixityCouldNotGetChecksum[_]
       ]
     }
+  }
 
-    it("if it can't write the fixity tags") {
-      val streamStore = MemoryStreamStore[MemoryLocation]()
+  it("succeeds if the checksum is correct but it cannot write tags") {
+    val streamStore = MemoryStreamStore[MemoryLocation]()
 
-      val tags = new MemoryTags[MemoryLocation](initialTags = Map.empty) {
-        override def get(
-          location: MemoryLocation
-        ): Either[ReadError, Identified[MemoryLocation, Map[String, String]]] =
-          super.get(location) match {
-            case Right(t) => Right(t)
-            case Left(_: DoesNotExistError) =>
-              Right(Identified(location, Map[String, String]()))
-            case Left(err) => Left(err)
-          }
-
-        override protected def writeTags(
-          id: MemoryLocation,
-          tags: Map[String, String]
-        ): Either[WriteError, Map[String, String]] = {
-          Left(
-            StoreWriteError(new Throwable("BOOM!"))
-          )
+    val tags = new MemoryTags[MemoryLocation](initialTags = Map.empty) {
+      override def get(
+        location: MemoryLocation
+      ): Either[ReadError, Identified[MemoryLocation, Map[String, String]]] =
+        super.get(location) match {
+          case Right(t) => Right(t)
+          case Left(_: DoesNotExistError) =>
+            Right(Identified(location, Map[String, String]()))
+          case Left(err) => Left(err)
         }
+
+      override protected def writeTags(
+        id: MemoryLocation,
+        tags: Map[String, String]
+      ): Either[WriteError, Map[String, String]] = {
+        Left(
+          StoreWriteError(new Throwable("BOOM!"))
+        )
       }
-
-      val contentString = "HelloWorld"
-
-      val location = createMemoryLocation
-
-      val inputStream = stringCodec.toStream(contentString).value
-      streamStore.put(location)(inputStream) shouldBe a[Right[_, _]]
-
-      val expectedFileFixity = createDataDirectoryFileFixityWith(
-        location = location,
-        multiChecksum = multiChecksum
-      )
-
-      val checker = new MemoryFixityChecker(streamStore, tags) {
-        override protected val sizeFinder: SizeFinder[MemoryLocation] =
-          new SizeFinder[MemoryLocation] {
-            override def get(location: MemoryLocation): ReadEither =
-              Right(Identified(location, contentString.length))
-          }
-      }
-
-      checker.check(expectedFileFixity) shouldBe a[FileFixityCouldNotWriteTag[
-        _
-      ]]
     }
+
+    val contentString = "HelloWorld"
+
+    val location = createMemoryLocation
+
+    val inputStream = stringCodec.toStream(contentString).value
+    streamStore.put(location)(inputStream) shouldBe a[Right[_, _]]
+
+    val expectedFileFixity = createDataDirectoryFileFixityWith(
+      location = location,
+      multiChecksum = multiChecksum
+    )
+
+    val checker = new MemoryFixityChecker(streamStore, tags) {
+      override protected val sizeFinder: SizeFinder[MemoryLocation] =
+        new SizeFinder[MemoryLocation] {
+          override def get(location: MemoryLocation): ReadEither =
+            Right(Identified(location, contentString.length))
+        }
+    }
+
+    checker.check(expectedFileFixity) shouldBe a[FileFixityCorrect[_]]
   }
 
   describe("it closes the InputStream when it's done reading") {

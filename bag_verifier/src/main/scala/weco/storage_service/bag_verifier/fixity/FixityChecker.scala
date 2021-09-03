@@ -66,7 +66,7 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
         size = size
       )
 
-      _ <- writeFixityTags(expectedFileFixity, location)
+      _ = writeFixityTags(expectedFileFixity, location)
     } yield result
 
     debug(s"Fixity check result for ${expectedFileFixity.uri}: $fixityResult")
@@ -258,35 +258,39 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
   private def writeFixityTags(
     expectedFileFixity: ExpectedFileFixity,
     location: BagLocation
-  ): Either[FileFixityCouldNotWriteTag[BagLocation], Unit] =
-    tags
-      .update(location) { existingTags =>
-        val newFixityTags = expectedFileFixity.fixityTags
+  ): Unit = {
+    val updateResult =
+      tags
+        .update(location) { existingTags =>
+          val newFixityTags = expectedFileFixity.fixityTags
 
-        // We've already checked the tags on this location once, so we shouldn't
-        // see conflicting values here.  Check we're not about to blat some existing
-        // tags just in case.  If we do see conflicting tags here, there's something
-        // badly wrong with the storage service.
-        //
-        // Note: this is a fairly weak guarantee, because tags aren't locked during
-        // an update operation.
-        assert(
-          existingTags.isCompatibleWith(newFixityTags),
-          s"Trying to write $newFixityTags to $location; existing tags conflict: $existingTags"
-        )
-
-        Right(existingTags ++ newFixityTags)
-      } match {
-      case Right(_) => Right(())
-      case Left(writeError) =>
-        Left(
-          FileFixityCouldNotWriteTag(
-            expectedFileFixity = expectedFileFixity,
-            objectLocation = location,
-            e = writeError.e
+          // We've already checked the tags on this location once, so we shouldn't
+          // see conflicting values here.  Check we're not about to blat some existing
+          // tags just in case.  If we do see conflicting tags here, there's something
+          // badly wrong with the storage service.
+          //
+          // Note: this is a fairly weak guarantee, because tags aren't locked during
+          // an update operation.
+          assert(
+            existingTags.isCompatibleWith(newFixityTags),
+            s"Trying to write $newFixityTags to $location; existing tags conflict: $existingTags"
           )
-        )
+
+          Right(existingTags ++ newFixityTags)
+        }
+
+    updateResult match {
+      case Right(_) => ()
+
+      // At this point we've already verified the content of the object, which is what
+      // we really care about.  The fixity tags are useful, but not a requirement -- if
+      // we can't write them (e.g. if S3 is having issues), let them fail with a warning
+      // rather than failing the entire verification.
+      case Left(updateError) =>
+        warn(s"Could not write fixity tags to $location: $updateError")
+        ()
     }
+  }
 
   private def handleReadErrors[T](
     t: Either[ReadError, T],
