@@ -40,3 +40,16 @@ module "dev_secrets" {
     "dev_testing/client_secret" = module.dev_client.secret
   }
 }
+
+module "buildkite_secrets" {
+  source = "github.com/wellcomecollection/terraform-aws-secrets.git?ref=v1.3.0"
+
+  providers = {
+    aws = aws.platform
+  }
+
+  key_value_map = {
+    "buildkite/storage_service/client_id"     = module.buildkite_client.id
+    "buildkite/storage_service/client_secret" = module.buildkite_client.secret
+  }
+}

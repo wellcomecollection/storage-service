@@ -1,0 +1,39 @@
+steps:
+  - label: deploy to stage
+    plugins:
+      - docker#v3.5.0:
+          image: "760097843905.dkr.ecr.eu-west-1.amazonaws.com/wellcome/weco-deploy:5.6.11"
+          workdir: /repo
+          mount-ssh-agent: true
+          command: [
+              "--confirm",
+              "release-deploy",
+              "--from-label", "latest",
+              "--environment-id", "stage",
+              "--description", $BUILDKITE_BUILD_URL,
+              "--confirmation-wait-for", 3600]
+    agents:
+      queue: nano
+
+  - wait
+
+  - label: send a test bag in stage
+    command:
+      pip3 install --user boto3 wellcome_storage_service &&
+      python3 .buildkite/scripts/send_and_wait_for_test_bag.py stage
+    agents:
+      queue: nano
+
+  - wait
+
+  - label: trigger prod deploy
+    trigger: "storage-service-deploy-prod"
+    async: true
+    build:
+      message: "${BUILDKITE_MESSAGE}"
+      commit: "${BUILDKITE_COMMIT}"
+      branch: "${BUILDKITE_BRANCH}"
+      env:
+        BUILDKITE_PULL_REQUEST: "${BUILDKITE_PULL_REQUEST}"
+        BUILDKITE_PULL_REQUEST_BASE_BRANCH: "${BUILDKITE_PULL_REQUEST_BASE_BRANCH}"
+        BUILDKITE_PULL_REQUEST_REPO: "${BUILDKITE_PULL_REQUEST_REPO}"

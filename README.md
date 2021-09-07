@@ -1,6 +1,8 @@
 # storage-service
 
 [![Build status](https://badge.buildkite.com/844e7fa8968b4cea276557cd9886753395d159dc2823eb8249.svg?branch=main)](https://buildkite.com/wellcomecollection/storage-service)
+[![Deploy stage](https://img.shields.io/buildkite/d7ca8f1ecfccb947cf48d9835a27dad5d2c731646f7c270296/main.svg?label=deploy%20stage)](https://buildkite.com/wellcomecollection/storage-service-deploy-stage)
+[![Deploy prod](https://img.shields.io/buildkite/61753d376ae4d5bfdf4e0514417dcc96178dc169ff7ca3e2a8/main.svg?label=deploy%20prod)](https://buildkite.com/wellcomecollection/storage-service-deploy-prod)
 
 This is the Wellcome Collection storage service.
 It manages the storage of our digital collections, including:
