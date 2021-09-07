@@ -19,7 +19,6 @@ def get_secret_string(sess, *, secret_id):
 
 def get_client(*, api_url):
     sess = boto3.Session()
-    secrets_client = sess.client("secretsmanager")
 
     client_id = get_secret_string(sess, secret_id="buildkite/storage_service/client_id")
     client_secret = get_secret_string(
