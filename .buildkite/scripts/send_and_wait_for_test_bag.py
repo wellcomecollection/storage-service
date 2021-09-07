@@ -60,7 +60,7 @@ if __name__ == "__main__":
         status = current_ingest["status"]["id"]
         elapsed_time = time.time() - now
 
-        print(f"status = {status} (t = {int(elapsed_time)}s)")
+        print(f"status = {status.ljust(9)} (t = {int(elapsed_time)}s)")
 
         if status == "succeeded":
             print(f"🎉 Test bag successful!")
