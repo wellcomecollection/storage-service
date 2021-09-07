@@ -49,7 +49,7 @@ module "buildkite_secrets" {
   }
 
   key_value_map = {
-    "buildkite/storage_service/client_id" = module.buildkite_client.id
-    "buildkite/storage_service/client_secret"    = module.buildkite_client.secret
+    "buildkite/storage_service/client_id"     = module.buildkite_client.id
+    "buildkite/storage_service/client_secret" = module.buildkite_client.secret
   }
 }
