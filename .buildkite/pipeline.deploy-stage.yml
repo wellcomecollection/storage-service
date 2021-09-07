@@ -15,5 +15,5 @@ steps:
   - wait
   - label: send a test bag in stage
     command:
-      pip3 install --user wellcome_storage_service &&
+      pip3 install --user boto3 wellcome_storage_service &&
       python3 .buildkite/scripts/send_and_wait_for_test_bag.py stage
