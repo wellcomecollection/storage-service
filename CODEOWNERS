@@ -1,0 +1,5 @@
+# To ensure only properly audited changes are run in CI, we require reviews
+# from @wellcomecollection/buildkite-admin when updating pipeline config
+
+/.buildkite/    @wellcomecollection/buildkite-admin
+/builds/      @wellcomecollection/buildkite-admin
