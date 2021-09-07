@@ -52,6 +52,8 @@ steps:
   - command: .buildkite/scripts/complete_build.py
     label: "tag commit as latest"
     if: build.branch == "main"
+    agents:
+      queue: nano
 
   - wait
 

@@ -12,13 +12,20 @@ steps:
               "--environment-id", "stage",
               "--description", $BUILDKITE_BUILD_URL,
               "--confirmation-wait-for", 3600]
+    agents:
+      queue: nano
+
   - wait
+
   - label: send a test bag in stage
     command:
       pip3 install --user boto3 wellcome_storage_service &&
       python3 .buildkite/scripts/send_and_wait_for_test_bag.py stage
+    agents:
+      queue: nano
 
   - wait
+
   - label: trigger prod deploy
     trigger: "storage-service-deploy-prod"
     async: true
