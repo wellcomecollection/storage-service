@@ -77,3 +77,13 @@ module "dev_client" {
   allow_bags_access    = true
   allow_ingests_access = true
 }
+
+module "buildkite_client" {
+  source = "../modules/app_client"
+
+  name         = "Buildkite ingest testing"
+  user_pool_id = aws_cognito_user_pool.pool.id
+
+  allow_bags_access    = false
+  allow_ingests_access = true
+}
