@@ -14,7 +14,11 @@ import weco.storage_service.bag_register.fixtures.BagRegisterFixtures
 import weco.storage_service.bag_tracker.storage.memory.MemoryStorageManifestDao
 import weco.storage_service.bagit.models.BagId
 import weco.storage_service.generators.PayloadGenerators
-import weco.storage_service.ingests.models.{Ingest, IngestStatusUpdate, IngestUpdate}
+import weco.storage_service.ingests.models.{
+  Ingest,
+  IngestStatusUpdate,
+  IngestUpdate
+}
 import weco.storage_service.storage.models._
 
 import scala.concurrent.duration._
@@ -105,8 +109,9 @@ class BagRegisterFeatureTest
   it("can receive the same update twice") {
     val ingests = new MemoryMessageSender()
 
-    val store = new MemoryStore[Version[BagId, Int], StorageManifest](initialEntries = Map())
-      with MemoryMaxima[BagId, StorageManifest]
+    val store = new MemoryStore[Version[BagId, Int], StorageManifest](
+      initialEntries = Map()
+    ) with MemoryMaxima[BagId, StorageManifest]
 
     val storageManifestDao =
       new MemoryStorageManifestDao(
@@ -135,27 +140,32 @@ class BagRegisterFeatureTest
         knownReplicas = knownReplicas
       )
 
-      withLocalSqsQueuePair(visibilityTimeout = 1 second) { case QueuePair(queue, dlq) =>
-        withBagRegisterWorker(
-          queue = queue,
-          ingests = ingests,
-          storageManifestDao = storageManifestDao
-        ) { _ =>
-          sendNotificationToSQS(queue, payload)
-          sendNotificationToSQS(queue, payload)
+      withLocalSqsQueuePair(visibilityTimeout = 1 second) {
+        case QueuePair(queue, dlq) =>
+          withBagRegisterWorker(
+            queue = queue,
+            ingests = ingests,
+            storageManifestDao = storageManifestDao
+          ) { _ =>
+            sendNotificationToSQS(queue, payload)
+            sendNotificationToSQS(queue, payload)
 
-          eventually {
-            store.entries should have size 1
+            eventually {
+              store.entries should have size 1
 
-            assertQueueEmpty(queue)
-            assertQueueEmpty(dlq)
+              assertQueueEmpty(queue)
+              assertQueueEmpty(dlq)
 
-            // (started + succeeded) × 2 = 4 events
-            ingests.messages should have size 4
-            ingests.getMessages[IngestUpdate]
-              .collect { case IngestStatusUpdate(_, status, _) => status} shouldBe List(Ingest.Succeeded, Ingest.Succeeded)
+              // (started + succeeded) × 2 = 4 events
+              ingests.messages should have size 4
+              ingests
+                .getMessages[IngestUpdate]
+                .collect { case IngestStatusUpdate(_, status, _) => status } shouldBe List(
+                Ingest.Succeeded,
+                Ingest.Succeeded
+              )
+            }
           }
-        }
       }
     }
   }

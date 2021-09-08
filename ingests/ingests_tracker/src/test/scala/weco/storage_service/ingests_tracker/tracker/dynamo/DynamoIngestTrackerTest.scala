@@ -78,7 +78,8 @@ class DynamoIngestTrackerTest
             )(t: Ingest): WriteEither =
               Left(StoreWriteError(new Throwable("BOOM!")))
 
-            override implicit val consistencyMode: ConsistencyMode = StronglyConsistent
+            override implicit val consistencyMode: ConsistencyMode =
+              StronglyConsistent
           }
         )
       }
