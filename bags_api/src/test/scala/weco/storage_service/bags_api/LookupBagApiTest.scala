@@ -204,10 +204,8 @@ class LookupBagApiTest
 
       val manifests = (1 to 5).map { version =>
         createStorageManifestWith(
-          bagInfo = createBagInfoWith(
-            externalIdentifier = externalIdentifier
-          ),
           space = storageSpace,
+          externalIdentifier = externalIdentifier,
           version = BagVersion(version)
         )
       }
@@ -243,15 +241,11 @@ class LookupBagApiTest
 
   it("finds bag with unusual external identifiers") {
     val manifestWithSlash: StorageManifest = createStorageManifestWith(
-      bagInfo = createBagInfoWith(
-        externalIdentifier = ExternalIdentifier("alfa/bravo")
-      )
+      externalIdentifier = ExternalIdentifier("alfa/bravo")
     )
 
     val manifestWithSlashAndSpace: StorageManifest = createStorageManifestWith(
-      bagInfo = createBagInfoWith(
-        externalIdentifier = ExternalIdentifier("miro/A images")
-      )
+      externalIdentifier = ExternalIdentifier("miro/A images")
     )
 
     val lookupPaths = Table(
@@ -303,8 +297,8 @@ class LookupBagApiTest
   }
 
   it("does not output null values") {
-    val storageManifest = createStorageManifestWith(
-      bagInfo = createBagInfoWith(externalDescription = None)
+    val storageManifest = createStorageManifest.copy(
+      info = createBagInfoWith(externalDescription = None)
     )
 
     withConfiguredApp(initialManifests = Seq(storageManifest)) {

@@ -33,7 +33,7 @@ trait StorageManifestDaoTestCases[Context]
 
       val newStorageManifest = createStorageManifestWith(
         space = storageManifest.space,
-        bagInfo = storageManifest.info,
+        externalIdentifier = storageManifest.info.externalIdentifier,
         version = storageManifest.version
       )
 

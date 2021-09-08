@@ -19,28 +19,24 @@ class IndexedStorageManifestTest
     val v3Version: BagVersion = BagVersion(3)
     val ingest = createIngestWith(version = Some(v3Version))
 
-    val bagInfo = createBagInfoWith(
-      externalIdentifier = ingest.externalIdentifier
-    )
-
     val v1PathPrefix = DestinationBuilder
       .buildPath(
         ingest.space,
-        bagInfo.externalIdentifier,
+        ingest.externalIdentifier,
         BagVersion(1)
       )
 
     val v2pathPrefix = DestinationBuilder
       .buildPath(
         ingest.space,
-        bagInfo.externalIdentifier,
+        ingest.externalIdentifier,
         BagVersion(2)
       )
 
     val v3pathPrefix = DestinationBuilder
       .buildPath(
         ingest.space,
-        bagInfo.externalIdentifier,
+        ingest.externalIdentifier,
         v3Version
       )
 
@@ -89,8 +85,8 @@ class IndexedStorageManifestTest
     val storageManifest = createStorageManifestWith(
       ingestId = ingest.id,
       space = ingest.space,
+      externalIdentifier = ingest.externalIdentifier,
       version = v3Version,
-      bagInfo = bagInfo,
       files = files
     )
 

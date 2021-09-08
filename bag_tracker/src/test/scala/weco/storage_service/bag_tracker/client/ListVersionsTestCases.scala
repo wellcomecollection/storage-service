@@ -57,7 +57,7 @@ trait ListVersionsTestCases
       val manifests = (1 to 5).map { version =>
         createStorageManifestWith(
           space = space,
-          bagInfo = createBagInfoWith(externalIdentifier = externalIdentifier),
+          externalIdentifier = externalIdentifier,
           version = BagVersion(version)
         )
       }
@@ -93,7 +93,7 @@ trait ListVersionsTestCases
       val manifests = (1 to 5).map { version =>
         createStorageManifestWith(
           space = space,
-          bagInfo = createBagInfoWith(externalIdentifier = externalIdentifier),
+          externalIdentifier = externalIdentifier,
           version = BagVersion(version)
         )
       }
@@ -128,9 +128,7 @@ trait ListVersionsTestCases
     it("lists versions of a bag with spaces in the identifier") {
       forAll(unusualIdentifiers) { identifier =>
         val manifest = createStorageManifestWith(
-          bagInfo = createBagInfoWith(
-            externalIdentifier = ExternalIdentifier(identifier)
-          )
+          externalIdentifier = ExternalIdentifier(identifier)
         )
 
         val expectedList = BagVersionList(
@@ -180,7 +178,7 @@ trait ListVersionsTestCases
       val manifests = (5 to 10).map { version =>
         createStorageManifestWith(
           space = space,
-          bagInfo = createBagInfoWith(externalIdentifier = externalIdentifier),
+          externalIdentifier = externalIdentifier,
           version = BagVersion(version)
         )
       }
