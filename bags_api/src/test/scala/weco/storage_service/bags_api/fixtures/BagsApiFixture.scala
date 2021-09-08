@@ -49,8 +49,7 @@ trait BagsApiFixture
     locationPrefix: S3ObjectLocationPrefix,
     storageManifestDao: StorageManifestDao,
     uploader: S3Uploader
-  )(testWith: TestWith[WellcomeHttpApp, R]): R = {
-
+  )(testWith: TestWith[WellcomeHttpApp, R]): R =
     withActorSystem { implicit actorSystem =>
       withMaterializer { implicit mat =>
         withBagTrackerClient(storageManifestDao) { trackerClient =>
@@ -80,7 +79,6 @@ trait BagsApiFixture
         }
       }
     }
-  }
 
   def withConfiguredApp[R](
     initialManifests: Seq[StorageManifest] = Seq.empty,
@@ -159,10 +157,7 @@ trait BagsApiFixture
   def whenAbsoluteGetRequestReady[R](
     path: String
   )(testWith: TestWith[HttpResponse, R]): R = {
-    val request = HttpRequest(
-      method = GET,
-      uri = s"$path"
-    )
+    val request = HttpRequest(method = GET, uri = path)
 
     whenRequestReady(request) { response =>
       testWith(response)

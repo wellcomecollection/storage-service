@@ -195,15 +195,11 @@ class LookupBagVersionsApiTest
 
   it("finds versions of bags with unusual external identifiers") {
     val manifestWithSlash: StorageManifest = createStorageManifestWith(
-      bagInfo = createBagInfoWith(
-        externalIdentifier = ExternalIdentifier("alfa/bravo")
-      )
+      externalIdentifier = ExternalIdentifier("alfa/bravo")
     )
 
     val manifestWithSlashAndSpace: StorageManifest = createStorageManifestWith(
-      bagInfo = createBagInfoWith(
-        externalIdentifier = ExternalIdentifier("miro/A images")
-      )
+      externalIdentifier = ExternalIdentifier("miro/A images")
     )
 
     val testCases = Table(

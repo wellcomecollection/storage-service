@@ -51,9 +51,7 @@ class DynamoStorageManifestDaoTest
 
     val storageManifest = createStorageManifestWith(
       space = space,
-      bagInfo = createBagInfoWith(
-        externalIdentifier = externalIdentifier
-      )
+      externalIdentifier = externalIdentifier
     )
 
     withLocalDynamoDbTable { table =>
@@ -91,9 +89,7 @@ class DynamoStorageManifestDaoTest
 
     val storageManifest = createStorageManifestWith(
       space = space,
-      bagInfo = createBagInfoWith(
-        externalIdentifier = externalIdentifier
-      )
+      externalIdentifier = externalIdentifier
     )
 
     withLocalDynamoDbTable { table =>

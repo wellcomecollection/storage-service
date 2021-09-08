@@ -34,7 +34,7 @@ trait GetBagTestCases
       val manifests = (0 to 5).map { version =>
         createStorageManifestWith(
           space = space,
-          bagInfo = createBagInfoWith(externalIdentifier = externalIdentifier),
+          externalIdentifier = externalIdentifier,
           version = BagVersion(version)
         )
       }
@@ -55,9 +55,7 @@ trait GetBagTestCases
     it("finds a bag with unusual identifiers") {
       forAll(unusualIdentifiers) { identifier =>
         val manifest = createStorageManifestWith(
-          bagInfo = createBagInfoWith(
-            externalIdentifier = ExternalIdentifier(identifier)
-          )
+          externalIdentifier = ExternalIdentifier(identifier)
         )
 
         withApi(initialManifests = Seq(manifest)) { _ =>
@@ -79,7 +77,7 @@ trait GetBagTestCases
       val manifests = (1 to 3).map { version =>
         createStorageManifestWith(
           space = space,
-          bagInfo = createBagInfoWith(externalIdentifier = externalIdentifier),
+          externalIdentifier = externalIdentifier,
           version = BagVersion(version)
         )
       }

@@ -33,7 +33,7 @@ trait GetLatestBagTestCases
       val manifests = (1 to 5).map { version =>
         createStorageManifestWith(
           space = space,
-          bagInfo = createBagInfoWith(externalIdentifier = externalIdentifier),
+          externalIdentifier = externalIdentifier,
           version = BagVersion(version)
         )
       }
@@ -54,9 +54,7 @@ trait GetLatestBagTestCases
     it("finds a bag with spaces in the identifier") {
       forAll(unusualIdentifiers) { identifier =>
         val manifest = createStorageManifestWith(
-          bagInfo = createBagInfoWith(
-            externalIdentifier = ExternalIdentifier(identifier)
-          )
+          externalIdentifier = ExternalIdentifier(identifier)
         )
 
         withApi(initialManifests = Seq(manifest)) { _ =>

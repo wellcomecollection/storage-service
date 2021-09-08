@@ -16,23 +16,23 @@ class DestinationBuilderTest
     with StorageSpaceGenerators {
 
   it("constructs the correct path") {
-    val storageSpace = createStorageSpace
+    val space = createStorageSpace
     val externalIdentifier = createExternalIdentifier
     val version = createBagVersion
 
     val path = DestinationBuilder.buildPath(
-      storageSpace = storageSpace,
+      space = space,
       externalIdentifier = externalIdentifier,
       version = version
     )
 
-    path shouldBe s"${storageSpace.underlying}/${externalIdentifier.toString}/$version"
+    path shouldBe s"${space.underlying}/${externalIdentifier.toString}/$version"
   }
 
   it("uses slashes in the external identifier to build a hierarchy") {
     val version = createBagVersion
     val path = DestinationBuilder.buildPath(
-      storageSpace = StorageSpace("alfa"),
+      space = StorageSpace("alfa"),
       externalIdentifier = ExternalIdentifier("bravo/charlie"),
       version = version
     )

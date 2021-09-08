@@ -57,10 +57,8 @@ trait BagIndexerFixtures
 
   val storageManifest: StorageManifest = createStorageManifestWith(
     space = space,
-    version = version,
-    bagInfo = createBagInfoWith(
-      externalIdentifier = externalIdentifier
-    )
+    externalIdentifier = externalIdentifier,
+    version = version
   )
   val payload: BagRegistrationNotification = BagRegistrationNotification(
     storageManifest
