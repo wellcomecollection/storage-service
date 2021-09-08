@@ -2,7 +2,6 @@ package weco.storage_service.generators
 
 import java.time.Instant
 import weco.storage_service.bagit.models.{
-  BagInfo,
   BagVersion,
   ExternalIdentifier
 }
