@@ -40,7 +40,7 @@ trait BagTrackerClient extends Logging {
           Future(Right(()))
 
         case status =>
-          val err = new Exception(s"$status for POST to IngestsTracker")
+          val err = new Exception(s"$status for POST to bag tracker")
           error(
             f"Unexpected status for POST to /bags with ${storageManifest.idWithVersion}",
             err
