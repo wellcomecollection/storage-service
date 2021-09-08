@@ -147,13 +147,13 @@ class BagRegisterFeatureTest
           eventually {
             store.entries should have size 1
 
+            assertQueueEmpty(queue)
+            assertQueueEmpty(dlq)
+
             // (started + succeeded) × 2 = 4 events
             ingests.messages should have size 4
             ingests.getMessages[IngestUpdate]
               .collect { case IngestStatusUpdate(_, status, _) => status} shouldBe List(Ingest.Succeeded, Ingest.Succeeded)
-
-            assertQueueEmpty(queue)
-            assertQueueEmpty(dlq)
           }
         }
       }
