@@ -45,7 +45,7 @@ trait BagTrackerClient extends Logging {
             f"Unexpected status for POST to /bags with ${storageManifest.idWithVersion}",
             err
           )
-          Future(Left(BagTrackerCreateError(err)))
+          Future(Left(new BagTrackerCreateError(err) with RetryableError))
       }
     } yield result
 
