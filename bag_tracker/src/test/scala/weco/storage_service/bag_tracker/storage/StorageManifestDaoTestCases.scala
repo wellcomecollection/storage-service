@@ -85,14 +85,30 @@ trait StorageManifestDaoTestCases[Context]
       }
     }
 
-    it("blocks putting two manifests with the same version") {
+    it("allows writing the same manifest to the same version twice") {
       val storageManifest = createStorageManifest
 
       withContext { implicit context =>
         withDao { dao =>
           dao.put(storageManifest).value shouldBe storageManifest
+          dao.put(storageManifest).value shouldBe storageManifest
+        }
+      }
+    }
+
+    it("blocks putting two different manifests with the same id and version") {
+      val storageManifest1 = createStorageManifestWith(version = BagVersion(1))
+      val storageManifest2 = createStorageManifestWith(
+        space = storageManifest1.space,
+        externalIdentifier = storageManifest1.info.externalIdentifier,
+        version = BagVersion(1)
+      )
+
+      withContext { implicit context =>
+        withDao { dao =>
+          dao.put(storageManifest1).value shouldBe storageManifest1
           dao
-            .put(storageManifest)
+            .put(storageManifest2)
             .left
             .value shouldBe a[VersionAlreadyExistsError]
         }
