@@ -16,7 +16,11 @@ import weco.storage.dynamo._
 import weco.storage.fixtures.DynamoFixtures
 import weco.storage.fixtures.DynamoFixtures.{Table => DynamoTable}
 import weco.storage.store.VersionedStore
-import weco.storage.store.dynamo.DynamoHashStore
+import weco.storage.store.dynamo.{
+  ConsistencyMode,
+  DynamoHashStore,
+  StronglyConsistent
+}
 
 import scala.language.higherKinds
 
@@ -73,6 +77,8 @@ class DynamoIngestTrackerTest
               id: Version[IngestID, Int]
             )(t: Ingest): WriteEither =
               Left(StoreWriteError(new Throwable("BOOM!")))
+
+            override implicit val consistencyMode: ConsistencyMode = StronglyConsistent
           }
         )
       }
