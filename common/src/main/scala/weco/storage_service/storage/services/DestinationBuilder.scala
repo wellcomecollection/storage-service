@@ -7,13 +7,13 @@ import weco.storage_service.storage.models.StorageSpace
 
 object DestinationBuilder {
   def buildPath(
-    storageSpace: StorageSpace,
+    space: StorageSpace,
     externalIdentifier: ExternalIdentifier,
     version: BagVersion
   ): String =
     Paths
       .get(
-        storageSpace.toString,
+        space.toString,
         externalIdentifier.toString,
         version.toString
       )
