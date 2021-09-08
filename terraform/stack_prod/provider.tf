@@ -4,7 +4,7 @@ locals {
     Department                = "Digital Platform"
     Division                  = "Culture and Society"
     Use                       = "Storage service"
-    Environment               = "Staging"
+    Environment               = "Production"
   }
 }
 
