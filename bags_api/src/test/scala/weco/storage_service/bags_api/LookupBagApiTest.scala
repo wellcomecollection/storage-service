@@ -297,14 +297,14 @@ class LookupBagApiTest
   }
 
   it("does not output null values") {
-    val storageManifest = createStorageManifest.copy(
-      info = createBagInfoWith(externalDescription = None)
-    )
+    val storageManifest = createStorageManifest
+    val info = createBagInfoWith(externalDescription = None)
+    val manifestWithoutInfo = storageManifest.copy(info = info)
 
-    withConfiguredApp(initialManifests = Seq(storageManifest)) {
+    withConfiguredApp(initialManifests = Seq(manifestWithoutInfo)) {
       case (_, _) =>
         whenGetRequestReady(
-          s"/bags/${storageManifest.id}?version=${storageManifest.version}"
+          s"/bags/${manifestWithoutInfo.id}?version=${manifestWithoutInfo.version}"
         ) { response =>
           response.status shouldBe StatusCodes.OK
 
