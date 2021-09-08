@@ -53,20 +53,20 @@ trait IngestTrackerTestCases[Context]
       }
     }
 
-    it("only allows calling init() once") {
+    it("allows calling init() twice with the same value") {
       withIngestTrackerFixtures() { tracker =>
         val ingest = createIngest
-        tracker.init(ingest)
-
-        tracker.init(ingest).left.value shouldBe a[IngestAlreadyExistsError]
+        tracker.init(ingest) shouldBe a[Right[_, _]]
+        tracker.init(ingest) shouldBe a[Right[_, _]]
       }
     }
 
-    it("blocks calling init() on a pre-existing ingest") {
-      val ingest = createIngest
-
-      withIngestTrackerFixtures(initialIngests = Seq(ingest)) { tracker =>
-        tracker.init(ingest).left.value shouldBe a[IngestAlreadyExistsError]
+    it("doesn't allow calling init() twice with different values") {
+      withIngestTrackerFixtures() { tracker =>
+        val ingest1 = createIngest
+        val ingest2 = createIngestWith(id = ingest1.id)
+        tracker.init(ingest1) shouldBe a[Right[_, _]]
+        tracker.init(ingest2).left.value shouldBe a[IngestAlreadyExistsError]
       }
     }
 
