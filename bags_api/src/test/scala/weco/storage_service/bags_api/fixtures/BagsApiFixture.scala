@@ -159,10 +159,7 @@ trait BagsApiFixture
   def whenAbsoluteGetRequestReady[R](
     path: String
   )(testWith: TestWith[HttpResponse, R]): R = {
-    val request = HttpRequest(
-      method = GET,
-      uri = s"$path"
-    )
+    val request = HttpRequest(method = GET, uri = path)
 
     whenRequestReady(request) { response =>
       testWith(response)
