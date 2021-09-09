@@ -1,7 +1,6 @@
 package weco.storage_service.ingests_tracker.tracker.dynamo
 
 import java.time.temporal.ChronoUnit
-import org.scalatest.Assertion
 import org.scanamo.generic.auto._
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 import weco.fixtures.TestWith

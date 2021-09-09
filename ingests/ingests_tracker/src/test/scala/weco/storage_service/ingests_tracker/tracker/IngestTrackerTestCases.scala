@@ -3,12 +3,12 @@ package weco.storage_service.ingests_tracker.tracker
 import java.net.URI
 
 import org.scalatest.prop.TableDrivenPropertyChecks
-import org.scalatest.{Assertion, EitherValues}
+import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.fixtures.TestWith
 import weco.storage_service.generators.IngestGenerators
-import weco.storage_service.ingests.models.{Callback, Ingest, IngestEvent}
+import weco.storage_service.ingests.models.{Callback, Ingest}
 import weco.storage._
 
 trait IngestTrackerTestCases[Context]
