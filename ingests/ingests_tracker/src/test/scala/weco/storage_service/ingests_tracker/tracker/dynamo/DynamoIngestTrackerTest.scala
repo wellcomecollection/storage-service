@@ -5,7 +5,15 @@ import org.scalatest.Assertion
 import org.scanamo.generic.auto._
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 import weco.fixtures.TestWith
-import weco.storage_service.ingests.models.{Ingest, IngestEvent, IngestID}
+import weco.storage_service.ingests.models.{
+  Callback,
+  CreateIngestType,
+  Ingest,
+  IngestEvent,
+  IngestID,
+  IngestType,
+  SourceLocation
+}
 import weco.storage_service.ingests.models.IngestID._
 import weco.storage_service.ingests_tracker.tracker.{
   IngestTracker,
@@ -21,7 +29,11 @@ import weco.storage.store.dynamo.{
   DynamoHashStore,
   StronglyConsistent
 }
+import weco.storage_service.bagit.models.{BagVersion, ExternalIdentifier}
+import weco.storage_service.ingests.models.Ingest.Status
+import weco.storage_service.storage.models.StorageSpace
 
+import java.time.Instant
 import scala.language.higherKinds
 
 class DynamoIngestTrackerTest
@@ -119,38 +131,46 @@ class DynamoIngestTrackerTest
 
   // TODO: Add tests for handling DynamoDB errors
 
-  override protected def assertIngestsEqual(
-    ingest1: Ingest,
-    ingest2: Ingest
-  ): Assertion = {
-    // DynamoDB only serialises an Instant to the nearest second, but
-    // an Instant can have millisecond precision.
-    //
-    // This means the Instant we send in may not be the Instant that
-    // gets stored, e.g. 2001-01-01:01:01:01.000999Z gets returned as
-    //                   2001-01-01:01:01:01.000Z
-    //
-    val adjusted1 = ingest1.copy(
-      createdDate = ingest1.createdDate.truncatedTo(ChronoUnit.SECONDS)
-    )
-    val adjusted2 = ingest2.copy(
-      createdDate = ingest2.createdDate.truncatedTo(ChronoUnit.SECONDS)
+  // DynamoDB only serialises an Instant to the nearest second, but
+  // an Instant can have millisecond precision.
+  //
+  // This means the Instant we send in may not be the Instant that
+  // gets stored, e.g. 2001-01-01:01:01:01.000999Z gets returned as
+  //                   2001-01-01:01:01:01.000Z
+  //
+  override def createIngestWith(
+    id: IngestID = createIngestID,
+    ingestType: IngestType = CreateIngestType,
+    sourceLocation: SourceLocation = createSourceLocation,
+    callback: Option[Callback] = Some(createCallback()),
+    space: StorageSpace = createStorageSpace,
+    status: Status = Ingest.Accepted,
+    externalIdentifier: ExternalIdentifier = createExternalIdentifier,
+    version: Option[BagVersion] = maybeVersion,
+    createdDate: Instant =
+    Instant.now().plusSeconds(randomInt(from = 0, to = 30)),
+    events: Seq[IngestEvent] = Seq.empty
+  ): Ingest =
+    Ingest(
+      id = id,
+      ingestType = ingestType,
+      sourceLocation = sourceLocation,
+      callback = callback,
+      space = space,
+      status = status,
+      externalIdentifier = externalIdentifier,
+      version = version,
+      createdDate = createdDate.truncatedTo(ChronoUnit.SECONDS),
+      events = events
     )
 
-    adjusted1 shouldBe adjusted2
-  }
-
-  override protected def assertIngestEventsEqual(
-    event1: IngestEvent,
-    event2: IngestEvent
-  ): Assertion = {
-    val adjusted1 = event1.copy(
-      createdDate = event1.createdDate.truncatedTo(ChronoUnit.SECONDS)
+  override def createIngestEventWith(
+    description: String = randomAlphanumeric(),
+    createdDate: Instant =
+      Instant.now().plusSeconds(randomInt(from = 0, to = 30))
+  ): IngestEvent =
+    IngestEvent(
+      description = description,
+      createdDate = createdDate.truncatedTo(ChronoUnit.SECONDS)
     )
-    val adjusted2 = event2.copy(
-      createdDate = event2.createdDate.truncatedTo(ChronoUnit.SECONDS)
-    )
-
-    adjusted1 shouldBe adjusted2
-  }
 }
