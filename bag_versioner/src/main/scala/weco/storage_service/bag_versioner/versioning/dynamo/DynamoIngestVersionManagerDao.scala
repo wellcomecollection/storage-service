@@ -51,10 +51,10 @@ class DynamoIngestVersionManagerDao(
 
   override def lookupLatestVersionFor(
     externalIdentifier: ExternalIdentifier,
-    storageSpace: StorageSpace
+    space: StorageSpace
   ): Either[MaximaError, VersionRecord] = {
     val bagId = BagId(
-      space = storageSpace,
+      space = space,
       externalIdentifier = externalIdentifier
     )
 
@@ -68,7 +68,9 @@ class DynamoIngestVersionManagerDao(
       case Success(List(Left(err))) =>
         val error = new Error(s"DynamoReadError: ${err.toString}")
         Left(MaximaReadError(error))
-      case Success(Nil) => Left(NoMaximaValueError())
+      case Success(Nil) =>
+        val error = new Error(s"No versions found for bag $space/$externalIdentifier")
+        Left(NoMaximaValueError(error))
       case Failure(err) => Left(MaximaReadError(err))
 
       // This case should be impossible to hit in practice -- limit(1)
