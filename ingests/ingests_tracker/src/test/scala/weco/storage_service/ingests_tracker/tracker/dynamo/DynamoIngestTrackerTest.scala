@@ -147,7 +147,7 @@ class DynamoIngestTrackerTest
     externalIdentifier: ExternalIdentifier = createExternalIdentifier,
     version: Option[BagVersion] = maybeVersion,
     createdDate: Instant =
-    Instant.now().plusSeconds(randomInt(from = 0, to = 30)),
+      Instant.now().plusSeconds(randomInt(from = 0, to = 30)),
     events: Seq[IngestEvent] = Seq.empty
   ): Ingest =
     Ingest(

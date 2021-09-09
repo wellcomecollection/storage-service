@@ -48,14 +48,18 @@ trait StorageManifestDao {
       // manifests include their creation time.  Two manifests created at different
       // times are not _equal_, but they may be _equivalent_.  The latter is sufficient
       // for our purposes.
-      case Left(_: VersionAlreadyExistsError) if equivalentManifestIsAlreadyStored(id, storageManifest) =>
+      case Left(_: VersionAlreadyExistsError)
+          if equivalentManifestIsAlreadyStored(id, storageManifest) =>
         Right(storageManifest)
 
       case result => result
     }
   }
 
-  private def equivalentManifestIsAlreadyStored(id: Version[BagId, Int], manifest: StorageManifest): Boolean =
+  private def equivalentManifestIsAlreadyStored(
+    id: Version[BagId, Int],
+    manifest: StorageManifest
+  ): Boolean =
     vhs.get(id) match {
       // Two manifests are equivalent if they are the same modulo createdDate.
       case Right(Identified(_, storedManifest)) =>
