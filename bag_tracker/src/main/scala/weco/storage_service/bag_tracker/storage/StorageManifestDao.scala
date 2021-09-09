@@ -3,7 +3,14 @@ package weco.storage_service.bag_tracker.storage
 import weco.storage_service.bagit.models.{BagId, BagVersion}
 import weco.storage_service.storage.models.StorageManifest
 import weco.storage.store.VersionedStore
-import weco.storage.{HigherVersionExistsError, ReadError, Version, WriteError}
+import weco.storage.{
+  HigherVersionExistsError,
+  Identified,
+  ReadError,
+  Version,
+  VersionAlreadyExistsError,
+  WriteError
+}
 
 trait StorageManifestDao {
   val vhs: VersionedStore[
@@ -34,9 +41,28 @@ trait StorageManifestDao {
       case Left(_: HigherVersionExistsError) =>
         vhs.store.put(id)(storageManifest).map { _.identifiedT }
 
+      // For storage manifests, we may be asked to write the same manifest twice,
+      // e.g. if SQS queues deliver the message twice.
+      //
+      // We can't rely on the idempotence of the underlying store because storage
+      // manifests include their creation time.  Two manifests created at different
+      // times are not _equal_, but they may be _equivalent_.  The latter is sufficient
+      // for our purposes.
+      case Left(_: VersionAlreadyExistsError) if equivalentManifestIsAlreadyStored(id, storageManifest) =>
+        Right(storageManifest)
+
       case result => result
     }
   }
+
+  private def equivalentManifestIsAlreadyStored(id: Version[BagId, Int], manifest: StorageManifest): Boolean =
+    vhs.get(id) match {
+      // Two manifests are equivalent if they are the same modulo createdDate.
+      case Right(Identified(_, storedManifest)) =>
+        manifest.copy(createdDate = storedManifest.createdDate) == storedManifest
+
+      case _ => false
+    }
 
   def listVersions(
     bagId: BagId,

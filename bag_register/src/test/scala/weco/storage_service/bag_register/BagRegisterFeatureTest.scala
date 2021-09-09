@@ -148,6 +148,11 @@ class BagRegisterFeatureTest
             storageManifestDao = storageManifestDao
           ) { _ =>
             sendNotificationToSQS(queue, payload)
+
+            // The sleep here is very deliberate: it means the two storage manifests will
+            // have slightly different creation times.  We should still recognise them as
+            // "equivalent" and allow the idempotent-ish write.
+            Thread.sleep(1000)
             sendNotificationToSQS(queue, payload)
 
             eventually {
