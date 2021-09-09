@@ -91,7 +91,12 @@ class IngestsTrackerApiFeatureTest
     describe("with an existing Ingest") {
       withIngestsTrackerApi(Seq(ingest)) {
         case (callbackSender, ingestsSender, ingestTracker) =>
-          whenAbsolutePostRequestReady(path, ingestEntity) { response =>
+          val otherIngestEntity = HttpEntity(
+            ContentTypes.`application/json`,
+            createIngestWith(id = ingest.id).asJson.noSpaces
+          )
+
+          whenAbsolutePostRequestReady(path, otherIngestEntity) { response =>
             it("responds Conflict") {
               response.status shouldBe StatusCodes.Conflict
             }

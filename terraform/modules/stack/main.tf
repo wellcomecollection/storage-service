@@ -741,6 +741,9 @@ module "bag_register" {
     JAVA_OPTS               = local.java_opts_heap_size
   }
 
+  cpu    = 1024
+  memory = 2048
+
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
 

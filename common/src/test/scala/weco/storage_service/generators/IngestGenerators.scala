@@ -19,7 +19,7 @@ trait IngestGenerators extends BagIdGenerators with S3Fixtures {
   val testCallbackUri =
     new URI("http://www.wellcomecollection.org/callback/ok")
 
-  private def maybeVersion: Option[BagVersion] =
+  protected def maybeVersion: Option[BagVersion] =
     chooseFrom(Some(createBagVersion), None)
 
   def createIngestWith(
