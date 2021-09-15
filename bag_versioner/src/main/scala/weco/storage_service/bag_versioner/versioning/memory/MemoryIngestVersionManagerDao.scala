@@ -35,7 +35,9 @@ class MemoryIngestVersionManagerDao() extends IngestVersionManagerDao {
         }
 
     if (matchingVersions.isEmpty) {
-      val error = new Error(s"No versions found for bag $space/$externalIdentifier")
+      val error = new Error(
+        s"No versions found for bag $space/$externalIdentifier"
+      )
       Left(NoMaximaValueError(error))
     } else
       Right(matchingVersions.maxBy { _.version.underlying })

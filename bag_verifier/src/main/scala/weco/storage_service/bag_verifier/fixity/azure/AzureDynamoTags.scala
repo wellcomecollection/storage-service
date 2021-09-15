@@ -86,7 +86,9 @@ class AzureDynamoTags(dynamoConfig: DynamoConfig)(
       }
     } else {
       Left(
-        DoesNotExistError(e = new Throwable(s"There is no item for Azure location $location"))
+        DoesNotExistError(
+          e = new Throwable(s"There is no item for Azure location $location")
+        )
       )
     }
 }

@@ -69,7 +69,9 @@ class DynamoIngestVersionManagerDao(
         val error = new Error(s"DynamoReadError: ${err.toString}")
         Left(MaximaReadError(error))
       case Success(Nil) =>
-        val error = new Error(s"No versions found for bag $space/$externalIdentifier")
+        val error = new Error(
+          s"No versions found for bag $space/$externalIdentifier"
+        )
         Left(NoMaximaValueError(error))
       case Failure(err) => Left(MaximaReadError(err))
 

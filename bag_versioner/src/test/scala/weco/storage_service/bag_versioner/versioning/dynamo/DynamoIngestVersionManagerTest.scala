@@ -53,8 +53,8 @@ class DynamoIngestVersionManagerTest
         dynamoConfig = createDynamoConfigWith(table)
       ) {
         override def lookupLatestVersionFor(
-                                             externalIdentifier: ExternalIdentifier,
-                                             space: StorageSpace
+          externalIdentifier: ExternalIdentifier,
+          space: StorageSpace
         ): Either[MaximaError, VersionRecord] =
           Left(MaximaReadError(new Throwable("BOOM!")))
       }
