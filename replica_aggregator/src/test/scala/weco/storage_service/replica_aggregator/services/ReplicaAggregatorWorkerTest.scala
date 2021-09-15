@@ -218,10 +218,8 @@ class ReplicaAggregatorWorkerTest
       ) {
         override def put(
           id: Version[ReplicaPath, Int]
-        )(t: AggregatorInternalRecord): WriteEither = {
-          val error = new Throwable(s"There is already an entry for $id")
-          Left(VersionAlreadyExistsError(error))
-        }
+        )(t: AggregatorInternalRecord): WriteEither =
+          Left(VersionAlreadyExistsError(s"There is already an entry for $id"))
       }
 
     val ingests = new MemoryMessageSender()

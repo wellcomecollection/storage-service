@@ -315,7 +315,7 @@ trait IngestVersionManagerTestCases[DaoImpl <: IngestVersionManagerDao, Context]
                 ingestId = createIngestID,
                 ingestDate = Instant.now(),
                 ingestType = CreateIngestType,
-                storageSpace = storageSpace
+                space = storageSpace
               )
 
               val result = manager.assignVersion(
@@ -323,7 +323,7 @@ trait IngestVersionManagerTestCases[DaoImpl <: IngestVersionManagerDao, Context]
                 ingestId = createIngestID,
                 ingestDate = Instant.now(),
                 ingestType = CreateIngestType,
-                storageSpace = storageSpace
+                space = storageSpace
               )
 
               result.left.value shouldBe a[IngestTypeCreateForExistingBag]
@@ -353,7 +353,7 @@ trait IngestVersionManagerTestCases[DaoImpl <: IngestVersionManagerDao, Context]
                 ingestId = createIngestID,
                 ingestDate = Instant.now(),
                 ingestType = UpdateIngestType,
-                storageSpace = space
+                space = space
               )
 
               result.left.value shouldBe IngestTypeUpdateForNewBag()
@@ -383,7 +383,7 @@ trait IngestVersionManagerTestCases[DaoImpl <: IngestVersionManagerDao, Context]
                   ingestId = createIngestID,
                   ingestDate = Instant.now,
                   ingestType = CreateIngestType,
-                  storageSpace = createStorageSpace
+                  space = createStorageSpace
                 )
                 .left
                 .value shouldBe an[IngestVersionManagerDaoError]
@@ -402,7 +402,7 @@ trait IngestVersionManagerTestCases[DaoImpl <: IngestVersionManagerDao, Context]
                   ingestId = createIngestID,
                   ingestDate = Instant.now,
                   ingestType = CreateIngestType,
-                  storageSpace = createStorageSpace
+                  space = createStorageSpace
                 )
                 .left
                 .value shouldBe an[IngestVersionManagerDaoError]
@@ -421,7 +421,7 @@ trait IngestVersionManagerTestCases[DaoImpl <: IngestVersionManagerDao, Context]
                   ingestId = createIngestID,
                   ingestDate = Instant.now,
                   ingestType = CreateIngestType,
-                  storageSpace = createStorageSpace
+                  space = createStorageSpace
                 )
                 .left
                 .value shouldBe an[IngestVersionManagerDaoError]

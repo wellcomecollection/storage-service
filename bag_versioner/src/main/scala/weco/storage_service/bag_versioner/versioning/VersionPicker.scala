@@ -38,7 +38,7 @@ class VersionPicker(
           ingestId = ingestId,
           ingestDate = ingestDate,
           ingestType = ingestType,
-          storageSpace = storageSpace
+          space = storageSpace
         )
       }
 
