@@ -44,7 +44,7 @@ class MemoryIngestVersionManagerTest
     testWith(new MemoryIngestVersionManagerDao() {
       override def lookupLatestVersionFor(
         externalIdentifier: ExternalIdentifier,
-        storageSpace: StorageSpace
+        space: StorageSpace
       ): Either[MaximaError, VersionRecord] =
         Left(MaximaReadError(new Throwable("BOOM!")))
     })

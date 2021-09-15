@@ -22,7 +22,7 @@ trait IngestVersionManager {
     ingestId: IngestID,
     ingestDate: Instant,
     ingestType: IngestType,
-    storageSpace: StorageSpace
+    space: StorageSpace
   ): Either[IngestVersionManagerError, BagVersion] = {
     // As in, the previously stored version for this ingest ID.
     val previouslyStoredVersion = dao.lookupExistingVersion(ingestId = ingestId)
@@ -32,7 +32,7 @@ trait IngestVersionManager {
         verifyExistingVersion(
           existingVersion = existingVersion,
           externalIdentifier = externalIdentifier,
-          space = storageSpace
+          space = space
         )
 
       case Success(None) =>
@@ -41,7 +41,7 @@ trait IngestVersionManager {
           ingestId = ingestId,
           ingestDate = ingestDate,
           ingestType = ingestType,
-          storageSpace = storageSpace
+          space = space
         )
 
       case Failure(err) => Left(IngestVersionManagerDaoError(err))
@@ -53,11 +53,11 @@ trait IngestVersionManager {
     ingestId: IngestID,
     ingestDate: Instant,
     ingestType: IngestType,
-    storageSpace: StorageSpace
+    space: StorageSpace
   ): Either[IngestVersionManagerError, BagVersion] = {
     val latestVersion = dao.lookupLatestVersionFor(
       externalIdentifier = externalIdentifier,
-      storageSpace = storageSpace
+      space = space
     )
 
     latestVersion match {
@@ -72,7 +72,7 @@ trait IngestVersionManager {
             externalIdentifier = externalIdentifier,
             ingestId = ingestId,
             ingestDate = ingestDate,
-            storageSpace = storageSpace,
+            storageSpace = space,
             newVersion = existingRecord.version.increment
           )
         else
@@ -93,7 +93,7 @@ trait IngestVersionManager {
           externalIdentifier = externalIdentifier,
           ingestId = ingestId,
           ingestDate = ingestDate,
-          storageSpace = storageSpace,
+          storageSpace = space,
           newVersion = BagVersion(1)
         )
 

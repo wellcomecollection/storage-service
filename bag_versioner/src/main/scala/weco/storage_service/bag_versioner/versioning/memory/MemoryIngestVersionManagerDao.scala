@@ -25,18 +25,21 @@ class MemoryIngestVersionManagerDao() extends IngestVersionManagerDao {
 
   override def lookupLatestVersionFor(
     externalIdentifier: ExternalIdentifier,
-    storageSpace: StorageSpace
+    space: StorageSpace
   ): Either[MaximaError, VersionRecord] = {
     val matchingVersions =
       records
         .filter { record =>
           record.externalIdentifier == externalIdentifier &&
-          record.storageSpace == storageSpace
+          record.storageSpace == space
         }
 
-    if (matchingVersions.isEmpty)
-      Left(NoMaximaValueError())
-    else
+    if (matchingVersions.isEmpty) {
+      val error = new Error(
+        s"No versions found for bag $space/$externalIdentifier"
+      )
+      Left(NoMaximaValueError(error))
+    } else
       Right(matchingVersions.maxBy { _.version.underlying })
   }
 

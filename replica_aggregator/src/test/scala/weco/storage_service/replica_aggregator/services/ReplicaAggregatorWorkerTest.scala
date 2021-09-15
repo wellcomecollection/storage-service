@@ -219,7 +219,7 @@ class ReplicaAggregatorWorkerTest
         override def put(
           id: Version[ReplicaPath, Int]
         )(t: AggregatorInternalRecord): WriteEither =
-          Left(VersionAlreadyExistsError())
+          Left(VersionAlreadyExistsError(s"There is already an entry for $id"))
       }
 
     val ingests = new MemoryMessageSender()
@@ -246,7 +246,6 @@ class ReplicaAggregatorWorkerTest
 
       val failure = result.summary.asInstanceOf[ReplicationAggregationFailed]
       failure.replicaPath shouldBe ReplicaPath(payload.dstLocation.prefix)
-      failure.e shouldBe a[java.lang.Error]
     }
 
     it("does not send an outgoing message") {
