@@ -89,7 +89,7 @@ class DynamoIngestVersionManagerDaoTest
       withDao(initialRecords = Seq.empty) { dao =>
         val result = dao.lookupLatestVersionFor(
           externalIdentifier = createExternalIdentifier,
-          storageSpace = createStorageSpace
+          space = createStorageSpace
         )
 
         result.left.value.e shouldBe a[ResourceNotFoundException]

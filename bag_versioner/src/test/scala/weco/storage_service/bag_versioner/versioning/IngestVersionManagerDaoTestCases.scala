@@ -90,7 +90,7 @@ trait IngestVersionManagerDaoTestCases[Context]
           dao
             .lookupLatestVersionFor(
               externalIdentifier = ExternalIdentifier("acorn"),
-              storageSpace = storageSpaceA
+              space = storageSpaceA
             )
             .value
 
@@ -100,7 +100,7 @@ trait IngestVersionManagerDaoTestCases[Context]
           dao
             .lookupLatestVersionFor(
               externalIdentifier = ExternalIdentifier("barley"),
-              storageSpace = storageSpaceB
+              space = storageSpaceB
             )
             .value
 
@@ -109,7 +109,7 @@ trait IngestVersionManagerDaoTestCases[Context]
         dao
           .lookupLatestVersionFor(
             externalIdentifier = ExternalIdentifier("chestnut"),
-            storageSpace = createStorageSpace
+            space = createStorageSpace
           )
           .left
           .value shouldBe a[NoMaximaValueError]
@@ -135,7 +135,7 @@ trait IngestVersionManagerDaoTestCases[Context]
           dao2
             .lookupLatestVersionFor(
               externalIdentifier = record.externalIdentifier,
-              storageSpace = record.storageSpace
+              space = record.storageSpace
             )
             .value
 
@@ -187,7 +187,7 @@ trait IngestVersionManagerDaoTestCases[Context]
           dao
             .lookupLatestVersionFor(
               externalIdentifier = createExternalIdentifier,
-              storageSpace = createStorageSpace
+              space = createStorageSpace
             )
             .left
             .value shouldBe a[NoMaximaValueError]
@@ -236,7 +236,7 @@ trait IngestVersionManagerDaoTestCases[Context]
             dao
               .lookupLatestVersionFor(
                 externalIdentifier = externalIdentifier,
-                storageSpace = record1.storageSpace
+                space = record1.storageSpace
               )
               .value
 
@@ -246,7 +246,7 @@ trait IngestVersionManagerDaoTestCases[Context]
             dao
               .lookupLatestVersionFor(
                 externalIdentifier = externalIdentifier,
-                storageSpace = record2.storageSpace
+                space = record2.storageSpace
               )
               .value
 
@@ -255,7 +255,7 @@ trait IngestVersionManagerDaoTestCases[Context]
           dao
             .lookupLatestVersionFor(
               externalIdentifier = externalIdentifier,
-              storageSpace = createStorageSpace
+              space = createStorageSpace
             )
             .left
             .value shouldBe a[NoMaximaValueError]
