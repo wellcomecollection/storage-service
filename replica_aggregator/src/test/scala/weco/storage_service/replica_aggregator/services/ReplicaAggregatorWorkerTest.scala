@@ -246,7 +246,6 @@ class ReplicaAggregatorWorkerTest
 
       val failure = result.summary.asInstanceOf[ReplicationAggregationFailed]
       failure.replicaPath shouldBe ReplicaPath(payload.dstLocation.prefix)
-      failure.e shouldBe a[java.lang.Error]
     }
 
     it("does not send an outgoing message") {
