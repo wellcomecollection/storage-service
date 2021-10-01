@@ -2,11 +2,11 @@ steps:
   - command: .buildkite/scripts/run_autoformat.py
     label: "autoformat"
   - wait
+
   - command: .buildkite/scripts/run_job.py common
     label: "common"
   - command: .buildkite/scripts/run_job.py display
     label: "display"
-  - wait
   - command: .buildkite/scripts/run_job.py bags_api
     label: "bags API"
   - command: .buildkite/scripts/run_job.py bag_register
@@ -48,7 +48,9 @@ steps:
       cd scripts &&
       /var/lib/buildkite-agent/.local/bin/tox -e py3
     label: "Test Python scripts"
+
   - wait
+
   - command: .buildkite/scripts/complete_build.py
     label: "tag commit as latest"
     if: build.branch == "main"
