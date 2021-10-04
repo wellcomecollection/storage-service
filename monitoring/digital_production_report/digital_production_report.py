@@ -99,7 +99,7 @@ def born_digital_query(*, start_date, end_date):
                     "terms": {"space": ["born-digital", "born-digital-accessions"]}
                 },
             }
-        },
+        }
     }
 
 
@@ -213,11 +213,7 @@ def main(event, context):
     payload = {
         "username": "monthly-storage-service-stats",
         "icon_emoji": ":bar_chart:",
-        "attachments": [
-            {
-                "fields": [{"value": "\n".join(lines)}],
-            }
-        ],
+        "attachments": [{"fields": [{"value": "\n".join(lines)}]}],
     }
 
     req = urllib.request.Request(
