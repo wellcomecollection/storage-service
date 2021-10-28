@@ -58,7 +58,7 @@ trait BagsApiFixture
             metrics = metrics
           )
 
-          lazy val router: BagsApi = new BagsApi {
+          lazy val bagsApi: BagsApi = new BagsApi {
             override val httpServerConfig: HTTPServerConfig =
               httpServerConfigTest
             override implicit val ec: ExecutionContext = global
@@ -73,9 +73,16 @@ trait BagsApiFixture
             override val maximumResponseByteLength: Long = maxResponseByteLength
           }
 
-          withApp(router.bags, Some(httpMetrics), Some(actorSystem)) { app =>
-            testWith(app)
-          }
+          val app = new WellcomeHttpApp(
+            routes = bagsApi.bags,
+            httpMetrics = httpMetrics,
+            httpServerConfig = httpServerConfigTest,
+            appName = "bags.test"
+          )
+
+          app.run()
+
+          testWith(app)
         }
       }
     }

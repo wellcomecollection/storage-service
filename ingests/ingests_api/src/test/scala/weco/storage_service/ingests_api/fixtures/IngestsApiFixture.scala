@@ -65,9 +65,16 @@ trait IngestsApiFixture
           ingestCreatorInstance
       }
 
-      withApp(ingestsApi.ingests, Some(httpMetrics), Some(actorSystem)) { app =>
-        testWith(app)
-      }
+      val app = new WellcomeHttpApp(
+        routes = ingestsApi.ingests,
+        httpMetrics = httpMetrics,
+        httpServerConfig = httpServerConfigTest,
+        appName = "ingests.test"
+      )
+
+      app.run()
+
+      testWith(app)
     }
 
   def withBrokenApp[R](
