@@ -9,6 +9,17 @@ data "aws_iam_policy_document" "bucket_readwrite" {
       "arn:aws:s3:::${var.destination_namespace}/*",
     ]
   }
+
+  statement {
+    actions = [
+      "s3:List*",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${var.destination_namespace}",
+      "arn:aws:s3:::${var.destination_namespace}/*",
+    ]
+  }
 }
 
 resource "aws_iam_role_policy" "bag_replicator_read_write" {
