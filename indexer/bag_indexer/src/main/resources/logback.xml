@@ -16,6 +16,7 @@
     </root>
 
     <!-- reduce external logging -->
+    <logger name="com.sksamuel.elastic4s" level="INFO"/>
     <logger name="org.apache.http" level="ERROR"/>
     <logger name="io.netty" level="ERROR"/>
     <logger name="com.amazonaws" level="WARN"/>
