@@ -26,17 +26,3 @@ steps:
       python3 .buildkite/scripts/send_and_wait_for_test_bag.py prod
     agents:
       queue: nano
-
-  - wait
-
-  - label: trigger prod deploy
-    trigger: "storage-service-deploy-prod"
-    async: true
-    build:
-      message: "${BUILDKITE_MESSAGE}"
-      commit: "${BUILDKITE_COMMIT}"
-      branch: "${BUILDKITE_BRANCH}"
-      env:
-        BUILDKITE_PULL_REQUEST: "${BUILDKITE_PULL_REQUEST}"
-        BUILDKITE_PULL_REQUEST_BASE_BRANCH: "${BUILDKITE_PULL_REQUEST_BASE_BRANCH}"
-        BUILDKITE_PULL_REQUEST_REPO: "${BUILDKITE_PULL_REQUEST_REPO}"
