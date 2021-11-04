@@ -209,7 +209,9 @@ class S3UnpackerTest
       //
       assertUnpackingFailsWith("/truncated_header.tar.gz") {
         case (_, err, userFacingMessage) =>
-          userFacingMessage should startWith("Error trying to unpack the archive")
+          userFacingMessage should startWith(
+            "Error trying to unpack the archive"
+          )
 
           err shouldBe a[IOException]
           err.getMessage shouldBe "Error detected parsing the header"
@@ -255,7 +257,9 @@ class S3UnpackerTest
       //
       assertUnpackingFailsWith("/truncated_s3.tar.gz") {
         case (_, _, userFacingMessage) =>
-          userFacingMessage should startWith("Unexpected EOF while unpacking the archive at")
+          userFacingMessage should startWith(
+            "Unexpected EOF while unpacking the archive at"
+          )
       }
     }
   }
