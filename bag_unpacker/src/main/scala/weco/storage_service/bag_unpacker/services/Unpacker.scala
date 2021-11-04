@@ -139,7 +139,9 @@ trait Unpacker[
           s"Error trying to unpack the archive at $srcLocation - is the gzip-compression correct?"
         )
 
-      case _ => None
+      case _ =>
+        warn(s"Unhandled error while reading $srcLocation: $error")
+        None
     }
 
   private def unpack(
