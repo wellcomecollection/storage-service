@@ -193,48 +193,26 @@ class S3UnpackerTest
     }
 
     it("if there's an error parsing the header") {
-      withLocalS3Bucket { srcBucket =>
-        withLocalS3Bucket { dstBucket =>
-          implicit val streamStore: S3StreamStore = new S3StreamStore()
+      // This file was created with the following bash script:
+      //
+      //    for i in 1 2 3 4 5 6 7 8 9 10
+      //    do
+      //      dd if=/dev/urandom bs=8192 count=1 > "$i.bin"
+      //    done
+      //
+      //    tar -cvf truncated_header.tar *.bin
+      //    gzip truncated_header.tar
+      //    python3 -c 'import os; os.truncate("truncated_header.tar.gz", 80000)'
+      //
+      // I found this particular error path by accident while trying to write
+      // a regression test for https://github.com/wellcomecollection/platform/issues/4911
+      //
+      assertUnpackingFailsWith("/truncated_header.tar.gz") {
+        case (_, err, userFacingMessage) =>
+          userFacingMessage should startWith("Error trying to unpack the archive")
 
-          // This file was created with the following bash script:
-          //
-          //    for i in 1 2 3 4 5 6 7 8 9 10
-          //    do
-          //      dd if=/dev/urandom bs=8192 count=1 > "$i.bin"
-          //    done
-          //
-          //    tar -cvf truncated_header.tar *.bin
-          //    gzip truncated_header.tar
-          //    python3 -c 'import os; os.truncate("truncated_header.tar.gz", 80000)'
-          //
-          // I found this particular error path by accident while trying to write
-          // a regression test for https://github.com/wellcomecollection/platform/issues/4911
-          //
-          val stream = getResource("/truncated_header.tar.gz")
-
-          val srcLocation = createS3ObjectLocationWith(srcBucket)
-          streamStore.put(srcLocation)(stream) shouldBe a[Right[_, _]]
-
-          val dstPrefix = createDstPrefixWith(dstBucket)
-
-          val result =
-            unpacker.unpack(
-              ingestId = createIngestID,
-              srcLocation = srcLocation,
-              dstPrefix = dstPrefix
-            )
-
-          assertIsError(result) {
-            case (err, maybeUserFacingMessage) =>
-              maybeUserFacingMessage.get should startWith(
-                "Error trying to unpack the archive"
-              )
-
-              err shouldBe a[IOException]
-              err.getMessage shouldBe "Error detected parsing the header"
-          }
-        }
+          err shouldBe a[IOException]
+          err.getMessage shouldBe "Error detected parsing the header"
       }
     }
 
@@ -263,42 +241,21 @@ class S3UnpackerTest
       * See https://github.com/wellcomecollection/platform/issues/4911
       *
       */
-    it("if there's an EOF while writing an unpacked file ") {
-      withLocalS3Bucket { srcBucket =>
-        withLocalS3Bucket { dstBucket =>
-          implicit val streamStore: S3StreamStore = new S3StreamStore()
+    it("if there's an EOF while writing an unpacked file") {
 
-          // This file was created with the following bash script:
-          //
-          //    for i in 1 2 3
-          //    do
-          //      dd if=/dev/urandom bs=131072 count=1 > "$i.bin"
-          //    done
-          //    tar -cvf truncated_s3.tar *.bin
-          //    gzip truncated_s3.tar
-          //    python3 -c 'import os; os.truncate("truncated_s3.tar.gz", 25000)'
-          //
-          val stream = getResource("/truncated_s3.tar.gz")
-
-          val srcLocation = createS3ObjectLocationWith(srcBucket)
-          streamStore.put(srcLocation)(stream) shouldBe a[Right[_, _]]
-
-          val dstPrefix = createDstPrefixWith(dstBucket)
-
-          val result =
-            unpacker.unpack(
-              ingestId = createIngestID,
-              srcLocation = srcLocation,
-              dstPrefix = dstPrefix
-            )
-
-          assertIsError(result) {
-            case (_, maybeUserFacingMessage) =>
-              maybeUserFacingMessage.get should startWith(
-                "Unexpected EOF while unpacking the archive at"
-              )
-          }
-        }
+      // This file was created with the following bash script:
+      //
+      //    for i in 1 2 3
+      //    do
+      //      dd if=/dev/urandom bs=131072 count=1 > "$i.bin"
+      //    done
+      //    tar -cvf truncated_s3.tar *.bin
+      //    gzip truncated_s3.tar
+      //    python3 -c 'import os; os.truncate("truncated_s3.tar.gz", 25000)'
+      //
+      assertUnpackingFailsWith("/truncated_s3.tar.gz") {
+        case (_, _, userFacingMessage) =>
+          userFacingMessage should startWith("Unexpected EOF while unpacking the archive at")
       }
     }
   }

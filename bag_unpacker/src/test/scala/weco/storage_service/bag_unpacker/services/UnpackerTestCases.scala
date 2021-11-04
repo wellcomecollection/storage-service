@@ -170,7 +170,7 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
 
   it("fails if the specified file is not in tar.gz format") {
     assertUnpackingFailsWith("/greeting.txt") {
-      case (_, userFacingMessage) =>
+      case (_, _, userFacingMessage) =>
         userFacingMessage should startWith(
           "Error trying to unpack the archive at"
         )
@@ -199,7 +199,7 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
     */
   it("fails if the archive has an EOF error") {
     assertUnpackingFailsWith("/truncated.tar.gz") {
-      case (_, userFacingMessage) =>
+      case (_, _, userFacingMessage) =>
         userFacingMessage should startWith(
           "Unexpected EOF while unpacking the archive"
         )
@@ -223,7 +223,7 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
     */
   it("fails if the uncompressed tarball has an EOF error") {
     assertUnpackingFailsWith("/truncated_tar.tar.gz") {
-      case (_, userFacingMessage) =>
+      case (_, _, userFacingMessage) =>
         userFacingMessage should startWith(
           "Unexpected EOF while unpacking the archive"
         )
@@ -242,7 +242,7 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
     */
   it("fails if the archive has repeated entries") {
     assertUnpackingFailsWith("/repetitive.tar.gz") {
-      case (srcLocation, userFacingMessage) =>
+      case (srcLocation, _, userFacingMessage) =>
         userFacingMessage shouldBe s"The archive at $srcLocation is malformed or has a duplicate entry (1.bin)"
     }
   }
@@ -264,7 +264,7 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
     */
   it("fails if the gzip-compressed data is corrupt") {
     assertUnpackingFailsWith("/truncated_crc32.tar.gz") {
-      case (_, userFacingMessage) =>
+      case (_, _, userFacingMessage) =>
         userFacingMessage should startWith(
           "Error trying to unpack the archive at"
         )
@@ -272,9 +272,9 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
     }
   }
 
-  private def assertUnpackingFailsWith[R](
+  protected def assertUnpackingFailsWith[R](
     filename: String
-  )(testWith: TestWith[(BagLocation, String), R]): R = {
+  )(testWith: TestWith[(BagLocation, Throwable, String), R]): R = {
     withNamespace { srcNamespace =>
       withStreamStore { implicit streamStore =>
         val srcLocation = createSrcLocationWith(namespace = srcNamespace)
@@ -294,8 +294,8 @@ trait UnpackerTestCases[BagLocation <: Location, BagPrefix <: Prefix[
             }
 
           assertIsError(result) {
-            case (_, maybeUserFacingMessage) =>
-              testWith((srcLocation, maybeUserFacingMessage.get))
+            case (err, maybeUserFacingMessage) =>
+              testWith((srcLocation, err, maybeUserFacingMessage.get))
           }
         }
       }
