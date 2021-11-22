@@ -24,7 +24,7 @@ docker run --tty --rm \
   --volume ~/.ivy2:/root/.ivy2 \
   --volume "$HOST_COURSIER_CACHE:/root/$LINUX_COURSIER_CACHE" \
   --volume /var/run/docker.sock:/var/run/docker.sock \
-  --volume ~/.docker:/root/.docker \
+  --volume "$DOCKER_CONFIG:/root/.docker" \
   --net host \
   --volume "$ROOT:$ROOT" \
   --workdir "$ROOT" \
