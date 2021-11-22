@@ -16,7 +16,7 @@ docker run --tty --rm \
   --env AWS_PROFILE \
   --volume ~/.aws:/root/.aws \
   --volume /var/run/docker.sock:/var/run/docker.sock \
-  --volume ~/.docker:/root/.docker \
+  --volume "$DOCKER_CONFIG:/root/.docker" \
   --volume "$ROOT:$ROOT" \
   --workdir "$ROOT" \
   "$ECR_REGISTRY/$WECO_DEPLOY_IMAGE" \
