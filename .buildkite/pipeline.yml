@@ -1,7 +1,6 @@
 steps:
   - command: .buildkite/scripts/run_autoformat.py
     label: "autoformat"
-  - wait
 
   - command: .buildkite/scripts/run_job.py common
     label: "common"
