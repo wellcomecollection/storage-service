@@ -4,8 +4,8 @@ module "base" {
   service_name = var.service_name
   cluster_arn  = var.cluster_arn
 
-  cpu    = 1024
-  memory = 2048
+  cpu    = 512
+  memory = 1024
 
   container_definitions = [
     module.nginx_container.container_definition,

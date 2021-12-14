@@ -245,9 +245,6 @@ module "bags_api" {
     vhs_table_name  = var.vhs_manifests_table_name
   }
 
-  cpu    = 1024
-  memory = 2048
-
   load_balancer_arn           = module.api.loadbalancer_arn
   load_balancer_listener_port = local.bags_listener_port
 
