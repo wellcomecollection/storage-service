@@ -18,14 +18,6 @@ variable "tracker_environment" {
   type = map(string)
 }
 
-variable "cpu" {
-  type = number
-}
-
-variable "memory" {
-  type = number
-}
-
 variable "container_port" {
   type    = number
   default = 9001
