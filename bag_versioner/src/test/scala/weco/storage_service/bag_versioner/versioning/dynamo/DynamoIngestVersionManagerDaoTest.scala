@@ -43,13 +43,7 @@ class DynamoIngestVersionManagerDaoTest
       implicit val badTable: Table = Table("does-not-exist", "does-not-exist")
 
       withDao(initialRecords = Seq.empty) { dao =>
-        val result = dao.lookupExistingVersion(createIngestID)
-
-        result shouldBe a[Failure[_]]
-        result.failed.get shouldBe a[ResourceNotFoundException]
-        result.failed.get.getMessage should startWith(
-          "Cannot do operations on a non-existent table"
-        )
+        dao.lookupExistingVersion(createIngestID) shouldBe a[Failure[_]]
       }
     }
 
