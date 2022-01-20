@@ -1,4 +1,6 @@
-dynamodb:
-  image: "760097843905.dkr.ecr.eu-west-1.amazonaws.com/peopleperhour/dynamodb"
+localstack:
+  image: "760097843905.dkr.ecr.eu-west-1.amazonaws.com/localstack/localstack"
+  environment:
+    - SERVICES=dynamodb
   ports:
-    - "45678:8000"
+    - "4566:4566"

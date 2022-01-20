@@ -1,10 +1,6 @@
 localstack:
   image: "760097843905.dkr.ecr.eu-west-1.amazonaws.com/localstack/localstack"
   environment:
-    - SERVICES=sqs
+    - SERVICES=dynamodb,sqs
   ports:
     - "4566:4566"
-dynamodb:
-  image: "760097843905.dkr.ecr.eu-west-1.amazonaws.com/peopleperhour/dynamodb"
-  ports:
-    - "45678:8000"
