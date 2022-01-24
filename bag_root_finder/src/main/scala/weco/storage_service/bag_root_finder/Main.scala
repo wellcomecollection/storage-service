@@ -43,7 +43,7 @@ object Main extends WellcomeTypesafeApp {
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
       bagRootFinder = new BagRootFinder(),
       ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
-      outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName),
+      outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName)
     )
   }
 }

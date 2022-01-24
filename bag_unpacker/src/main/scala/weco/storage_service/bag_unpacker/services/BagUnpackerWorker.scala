@@ -26,7 +26,7 @@ class BagUnpackerWorker[IngestDestination, OutgoingDestination](
     S3ObjectLocation,
     S3ObjectLocation,
     S3ObjectLocationPrefix
-  ],
+  ]
 )(
   implicit val mc: Metrics[Future],
   val as: ActorSystem,

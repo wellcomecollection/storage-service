@@ -43,7 +43,7 @@ trait BagUnpackerFixtures
         bagUnpackerWorkerConfig = BagUnpackerWorkerConfig(dstBucket.name),
         ingestUpdater = ingestUpdater,
         outgoingPublisher = outgoingPublisher,
-        unpacker = new S3Unpacker(),
+        unpacker = new S3Unpacker()
       )
 
       bagUnpackerWorker.run()

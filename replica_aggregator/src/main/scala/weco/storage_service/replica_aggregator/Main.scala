@@ -69,7 +69,7 @@ object Main extends WellcomeTypesafeApp {
           config.requireInt("aggregator.expected_replica_count")
       ),
       ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
-      outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName),
+      outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName)
     )
   }
 }

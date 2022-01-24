@@ -48,7 +48,7 @@ trait ReplicaAggregatorFixtures
         replicaCounter =
           new ReplicaCounter(expectedReplicaCount = expectedReplicaCount),
         ingestUpdater = ingestUpdater,
-        outgoingPublisher = outgoingPublisher,
+        outgoingPublisher = outgoingPublisher
       )
 
       worker.run()

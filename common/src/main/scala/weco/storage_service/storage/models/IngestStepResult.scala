@@ -59,8 +59,7 @@ case class IngestShouldRetry[T](
   maybeUserFacingMessage: Option[String] = None
 ) extends IngestStepResult[T]
 
-trait IngestStepWorker[Work <: PipelinePayload, Summary]
-    extends Runnable {
+trait IngestStepWorker[Work <: PipelinePayload, Summary] extends Runnable {
 
   // TODO: Move visibilityTimeout into SQSConfig
   val config: AlpakkaSQSWorkerConfig

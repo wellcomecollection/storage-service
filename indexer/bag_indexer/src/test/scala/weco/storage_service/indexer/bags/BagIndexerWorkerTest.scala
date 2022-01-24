@@ -103,8 +103,7 @@ class BagIndexerWorkerTest
     }
   }
 
-  it("fails with a retryable failure when it can't read from the store"
-  ) {
+  it("fails with a retryable failure when it can't read from the store") {
     val (t, _) = createT
     withLocalElasticsearchIndex(indexConfig) { index =>
       withLocalSqsQueue() { queue =>

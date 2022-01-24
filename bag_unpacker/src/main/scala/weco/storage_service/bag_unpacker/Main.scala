@@ -59,7 +59,7 @@ object Main extends WellcomeTypesafeApp {
       bagUnpackerWorkerConfig = unpackerWorkerConfig,
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,
-      unpacker = new S3Unpacker(),
+      unpacker = new S3Unpacker()
     )
   }
 }

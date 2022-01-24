@@ -15,11 +15,11 @@ import weco.storage_service.bagit.models.{BagId, BagVersion}
 import weco.storage_service.storage.models.StorageManifest
 import weco.storage_service.indexer.bags.models.IndexedStorageManifest
 import weco.storage_service.indexer.{
-  TerminalIndexingError,
   Indexer,
   IndexerWorker,
   IndexerWorkerError,
-  RetryableIndexingError
+  RetryableIndexingError,
+  TerminalIndexingError
 }
 
 import scala.concurrent.Future

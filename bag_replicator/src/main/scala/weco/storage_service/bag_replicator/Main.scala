@@ -97,7 +97,7 @@ object Main extends WellcomeTypesafeApp {
         lockingService = lockingService,
         destinationConfig = ReplicatorDestinationConfig
           .buildDestinationConfig(config),
-        replicator = replicator,
+        replicator = replicator
       )
 
     provider match {

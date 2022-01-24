@@ -70,7 +70,7 @@ object Main extends WellcomeTypesafeApp {
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
       ingestUpdater = ingestUpdater,
       registrationNotifications = registrationNotifications,
-      register = register,
+      register = register
     )
   }
 }

@@ -51,7 +51,7 @@ trait BagVersionerFixtures
           config = createAlpakkaSQSWorkerConfig(queue),
           bagVersioner = bagVersioner,
           ingestUpdater = ingestUpdater,
-          outgoingPublisher = outgoingPublisher,
+          outgoingPublisher = outgoingPublisher
         )
 
         worker.run()
