@@ -49,12 +49,7 @@ class FileFinderWorker(
     with Logging {
 
   private val worker =
-    new AlpakkaSQSWorker[
-      BagRegistrationNotification,
-      Instant,
-      Instant,
-      Nothing
-    ](config)(processMessage)
+    new AlpakkaSQSWorker[BagRegistrationNotification, Nothing](config)(processMessage)
 
   def processMessage(
     notification: BagRegistrationNotification

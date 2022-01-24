@@ -91,10 +91,8 @@ class BagTaggerWorker(
   }
 
   val worker
-    : AlpakkaSQSWorker[BagRegistrationNotification, Instant, Instant, Unit] =
-    new AlpakkaSQSWorker[BagRegistrationNotification, Instant, Instant, Unit](
-      config
-    )(process) {
+    : AlpakkaSQSWorker[BagRegistrationNotification, Unit] =
+    new AlpakkaSQSWorker[BagRegistrationNotification, Unit](config)(process) {
       override val retryAction: Message => sqs.MessageAction =
         (message: Message) =>
           MessageAction.changeMessageVisibility(message, visibilityTimeout = 0)
