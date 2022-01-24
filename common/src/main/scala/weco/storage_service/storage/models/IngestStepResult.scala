@@ -3,7 +3,6 @@ package weco.storage_service.storage.models
 import akka.actor.ActorSystem
 import akka.stream.alpakka.sqs
 import akka.stream.alpakka.sqs.MessageAction
-import grizzled.slf4j.Logging
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.Message
@@ -61,8 +60,7 @@ case class IngestShouldRetry[T](
 ) extends IngestStepResult[T]
 
 trait IngestStepWorker[Work <: PipelinePayload, Summary]
-    extends Runnable
-    with Logging {
+    extends Runnable {
 
   // TODO: Move visibilityTimeout into SQSConfig
   val config: AlpakkaSQSWorkerConfig
