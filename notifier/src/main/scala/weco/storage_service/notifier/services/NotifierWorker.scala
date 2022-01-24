@@ -1,6 +1,5 @@
 package weco.storage_service.notifier.services
 
-import java.time.Instant
 import akka.actor.ActorSystem
 import grizzled.slf4j.Logging
 import software.amazon.awssdk.services.sqs.SqsAsyncClient

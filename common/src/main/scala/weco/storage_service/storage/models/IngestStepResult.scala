@@ -1,6 +1,5 @@
 package weco.storage_service.storage.models
 
-import java.time.Instant
 import akka.actor.ActorSystem
 import akka.stream.alpakka.sqs
 import akka.stream.alpakka.sqs.MessageAction

@@ -22,7 +22,6 @@ import weco.messaging.worker.models.{
 import weco.monitoring.Metrics
 import weco.typesafe.Runnable
 
-import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
 abstract class IndexerWorker[SourceT, T, IndexedT](

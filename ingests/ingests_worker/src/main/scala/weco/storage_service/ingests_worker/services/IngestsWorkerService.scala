@@ -24,7 +24,6 @@ import weco.storage_service.ingests_tracker.client.{
 }
 import weco.typesafe.Runnable
 
-import java.time.Instant
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
 class IngestsWorkerService(

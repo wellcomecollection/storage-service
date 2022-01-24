@@ -1,6 +1,5 @@
 package weco.storage_service.indexer.file_finder
 
-import java.time.Instant
 import akka.actor.ActorSystem
 import grizzled.slf4j.Logging
 import io.circe.Decoder
