@@ -19,7 +19,7 @@ import weco.messaging.worker.models.{
   Result,
   Successful
 }
-import weco.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
+import weco.messaging.worker.monitoring.metrics.MetricsProcessor
 import weco.monitoring.Metrics
 import weco.typesafe.Runnable
 
@@ -28,8 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 abstract class IndexerWorker[SourceT, T, IndexedT](
   config: AlpakkaSQSWorkerConfig,
-  indexer: Indexer[T, IndexedT],
-  metricsNamespace: String
+  indexer: Indexer[T, IndexedT]
 )(
   implicit
   actorSystem: ActorSystem,
@@ -57,27 +56,30 @@ abstract class IndexerWorker[SourceT, T, IndexedT](
 
   def load(source: SourceT): Future[Either[IndexerWorkerError, T]]
 
-  def process(sourceT: SourceT): Future[Result[Unit]] =
-    (for {
-      t <- EitherT(load(sourceT))
-      result <- EitherT(indexT(t))
-    } yield result).value map {
+  def process(sourceT: SourceT): Future[Result[Unit]] = {
+    val loadAndIndex =
+      for {
+        t <- EitherT(load(sourceT))
+        result <- EitherT(indexT(t))
+      } yield result
+
+    loadAndIndex.value map {
       case Right(t) =>
         debug(s"Successfully indexed $t")
-        Successful(None)
+        Successful[Unit](None)
       case Left(RetryableIndexingError(t, e)) =>
         warn(s"RetryableIndexingError: Unable to index $t")
-        NonDeterministicFailure(e)
+        NonDeterministicFailure[Unit](e)
       case Left(e @ FatalIndexingError(t)) =>
         warn(s"FatalIndexingError: Unable to index $t")
-        DeterministicFailure(e)
+        DeterministicFailure[Unit](e)
     }
+  }
 
   val worker: AlpakkaSQSWorker[SourceT, Instant, Instant, Unit] =
     new AlpakkaSQSWorker[SourceT, Instant, Instant, Unit](
       config,
-      monitoringProcessorBuilder = (ec: ExecutionContext) =>
-        new MetricsMonitoringProcessor[SourceT](metricsNamespace)(metrics, ec)
+      new MetricsProcessor(config.metricsConfig.namespace)
     )(process) {
       // If we retry set a non-zero visibility timeout to give
       // whatever dependency isn't working time to recover

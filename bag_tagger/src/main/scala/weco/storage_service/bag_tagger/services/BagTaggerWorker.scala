@@ -1,7 +1,6 @@
 package weco.storage_service.bag_tagger.services
 
 import java.time.Instant
-
 import akka.actor.ActorSystem
 import akka.stream.alpakka.sqs
 import akka.stream.alpakka.sqs.MessageAction
@@ -18,7 +17,7 @@ import weco.messaging.worker.models.{
   Result,
   Successful
 }
-import weco.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
+import weco.messaging.worker.monitoring.metrics.MetricsProcessor
 import weco.monitoring.Metrics
 import weco.storage_service.bag_tracker.client.BagTrackerClient
 import weco.storage_service.BagRegistrationNotification
@@ -29,11 +28,10 @@ import weco.storage_service.storage.models.{
 }
 import weco.typesafe.Runnable
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 class BagTaggerWorker(
-  val config: AlpakkaSQSWorkerConfig,
-  val metricsNamespace: String,
+  config: AlpakkaSQSWorkerConfig,
   bagTrackerClient: BagTrackerClient,
   applyTags: ApplyTags,
   tagRules: StorageManifest => Map[StorageManifestFile, Map[String, String]]
@@ -97,10 +95,7 @@ class BagTaggerWorker(
     : AlpakkaSQSWorker[BagRegistrationNotification, Instant, Instant, Unit] =
     new AlpakkaSQSWorker[BagRegistrationNotification, Instant, Instant, Unit](
       config,
-      monitoringProcessorBuilder = (ec: ExecutionContext) =>
-        new MetricsMonitoringProcessor[BagRegistrationNotification](
-          metricsNamespace
-        )(mc, ec)
+      new MetricsProcessor(config.metricsConfig.namespace)
     )(process) {
       override val retryAction: Message => sqs.MessageAction =
         (message: Message) =>

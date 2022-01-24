@@ -27,10 +27,9 @@ trait NotifierFixtures extends Akka with AlpakkaSQSWorkerFixtures {
 
       withActorSystem { implicit actorSystem =>
         val workerService = new NotifierWorker(
-          alpakkaSQSWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+          config = createAlpakkaSQSWorkerConfig(queue),
           callbackUrlService = callbackUrlService,
-          messageSender = messageSender,
-          metricsNamespace = "notifier"
+          messageSender = messageSender
         )
 
         workerService.run()

@@ -17,9 +17,8 @@ import weco.storage_service.indexer.files.models.IndexedFile
 import scala.concurrent.Future
 
 class FileIndexerWorker(
-  val config: AlpakkaSQSWorkerConfig,
-  val indexer: Indexer[FileContext, IndexedFile],
-  val metricsNamespace: String
+  config: AlpakkaSQSWorkerConfig,
+  val indexer: Indexer[FileContext, IndexedFile]
 )(
   implicit
   val actorSystem: ActorSystem,
@@ -28,8 +27,7 @@ class FileIndexerWorker(
   val decoder: Decoder[FileContext]
 ) extends IndexerWorker[Seq[FileContext], FileContext, IndexedFile](
       config,
-      indexer,
-      metricsNamespace
+      indexer
     ) {
 
   override def process(contexts: Seq[FileContext]): Future[Result[Unit]] =

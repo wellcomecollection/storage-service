@@ -56,7 +56,6 @@ object Main extends WellcomeTypesafeApp {
     new BagIndexerWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
       indexer = bagIndexer,
-      metricsNamespace = config.requireString("aws.metrics.namespace"),
       bagTrackerClient = bagTrackerClient
     )
   }

@@ -12,22 +12,16 @@ import weco.storage_service.indexer.ingests.models.IndexedIngest
 import scala.concurrent.Future
 
 class IngestsIndexerWorker(
-  val config: AlpakkaSQSWorkerConfig,
-  val indexer: Indexer[Ingest, IndexedIngest],
-  val metricsNamespace: String
+  config: AlpakkaSQSWorkerConfig,
+  val indexer: Indexer[Ingest, IndexedIngest]
 )(
   implicit
   val actorSystem: ActorSystem,
   val sqsAsync: SqsAsyncClient,
   val metrics: Metrics[Future],
   val decoder: Decoder[Ingest]
-) extends IndexerWorker[Ingest, Ingest, IndexedIngest](
-      config,
-      indexer,
-      metricsNamespace
-    ) {
+) extends IndexerWorker[Ingest, Ingest, IndexedIngest](config, indexer) {
 
   def load(source: Ingest): Future[Either[IndexerWorkerError, Ingest]] =
     Future.successful(Right(source))
-
 }

@@ -90,8 +90,7 @@ trait IngestsWorkerFixtures
       implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
       val service = new IngestsWorkerService(
-        workerConfig = createAlpakkaSQSWorkerConfig(queue),
-        metricsNamespace = "ingests_worker",
+        config = createAlpakkaSQSWorkerConfig(queue),
         ingestTrackerClient = ingestTrackerClient
       )
 

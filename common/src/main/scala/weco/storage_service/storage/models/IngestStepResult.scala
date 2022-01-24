@@ -18,14 +18,14 @@ import weco.messaging.worker.models.{
   Result,
   Successful
 }
-import weco.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
+import weco.messaging.worker.monitoring.metrics.MetricsProcessor
 import weco.monitoring.Metrics
 import weco.storage_service.PipelinePayload
 import weco.storage_service.ingests.models.IngestID
 import weco.typesafe.Runnable
 
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 import scala.util.Try
 
 sealed trait IngestStep[+T]
@@ -86,8 +86,7 @@ trait IngestStepWorker[Work <: PipelinePayload, Summary]
   val worker =
     new AlpakkaSQSWorker[Work, Instant, Instant, Summary](
       config,
-      monitoringProcessorBuilder = (ec: ExecutionContext) =>
-        new MetricsMonitoringProcessor[Work](metricsNamespace)(mc, ec)
+      metricsProcessor = new MetricsProcessor(metricsNamespace)
     )(process) {
       override val retryAction: Message => sqs.MessageAction =
         (message: Message) =>

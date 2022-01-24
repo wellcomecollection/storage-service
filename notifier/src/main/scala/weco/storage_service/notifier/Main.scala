@@ -16,7 +16,6 @@ import weco.storage_service.notifier.services.{
 }
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder
-import weco.typesafe.config.builders.EnrichConfig._
 import weco.http.client.AkkaHttpClient
 
 import scala.concurrent.ExecutionContext
@@ -39,13 +38,12 @@ object Main extends WellcomeTypesafeApp {
     )
 
     new NotifierWorker(
-      alpakkaSQSWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),
+      config = AlpakkaSqsWorkerConfigBuilder.build(config),
       callbackUrlService = callbackUrlService,
       messageSender = SNSBuilder.buildSNSMessageSender(
         config,
         subject = "Sent from the notifier"
-      ),
-      metricsNamespace = config.requireString("aws.metrics.namespace")
+      )
     )
   }
 }

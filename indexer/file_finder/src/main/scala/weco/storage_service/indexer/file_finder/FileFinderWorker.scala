@@ -1,7 +1,6 @@
 package weco.storage_service.indexer.file_finder
 
 import java.time.Instant
-
 import akka.actor.ActorSystem
 import grizzled.slf4j.Logging
 import io.circe.Decoder
@@ -17,7 +16,7 @@ import weco.messaging.worker.models.{
   Result,
   Successful
 }
-import weco.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
+import weco.messaging.worker.monitoring.metrics.MetricsProcessor
 import weco.monitoring.Metrics
 import weco.storage_service.bag_tracker.client.{
   BagTrackerClient,
@@ -52,20 +51,12 @@ class FileFinderWorker(
     with Logging {
 
   private val worker =
-    AlpakkaSQSWorker[
+    new AlpakkaSQSWorker[
       BagRegistrationNotification,
       Instant,
       Instant,
       Nothing
-    ](
-      config,
-      monitoringProcessorBuilder = (ec: ExecutionContext) =>
-        new MetricsMonitoringProcessor[BagRegistrationNotification](
-          metricsNamespace
-        )(mc, ec)
-    ) {
-      processMessage
-    }
+    ](config, new MetricsProcessor(metricsNamespace))(processMessage)
 
   def processMessage(
     notification: BagRegistrationNotification

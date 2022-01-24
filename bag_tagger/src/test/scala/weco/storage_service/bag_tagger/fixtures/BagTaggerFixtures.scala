@@ -54,7 +54,6 @@ trait BagTaggerFixtures
         trackerClient =>
           val worker = new BagTaggerWorker(
             config = createAlpakkaSQSWorkerConfig(queue),
-            metricsNamespace = "bag_tagger",
             bagTrackerClient = trackerClient,
             applyTags = applyTags,
             tagRules = tagRules

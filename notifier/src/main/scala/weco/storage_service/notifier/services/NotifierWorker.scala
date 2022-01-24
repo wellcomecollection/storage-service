@@ -1,7 +1,6 @@
 package weco.storage_service.notifier.services
 
 import java.time.Instant
-
 import akka.actor.ActorSystem
 import grizzled.slf4j.Logging
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
@@ -12,7 +11,7 @@ import weco.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorkerConfig
 }
 import weco.messaging.worker.models.{DeterministicFailure, Result, Successful}
-import weco.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
+import weco.messaging.worker.monitoring.metrics.MetricsProcessor
 import weco.monitoring.Metrics
 import weco.storage_service.ingests.models.{
   CallbackNotification,
@@ -24,10 +23,9 @@ import weco.typesafe.Runnable
 import scala.concurrent.{ExecutionContext, Future}
 
 class NotifierWorker[Destination](
-  alpakkaSQSWorkerConfig: AlpakkaSQSWorkerConfig,
+  config: AlpakkaSQSWorkerConfig,
   callbackUrlService: CallbackUrlService,
-  messageSender: MessageSender[Destination],
-  val metricsNamespace: String
+  messageSender: MessageSender[Destination]
 )(
   implicit actorSystem: ActorSystem,
   ec: ExecutionContext,
@@ -36,20 +34,14 @@ class NotifierWorker[Destination](
 ) extends Runnable
     with Logging {
   private val worker =
-    AlpakkaSQSWorker[
+    new AlpakkaSQSWorker[
       CallbackNotification,
       Instant,
       Instant,
       IngestCallbackStatusUpdate
-    ](
-      alpakkaSQSWorkerConfig,
-      monitoringProcessorBuilder = (ec: ExecutionContext) =>
-        new MetricsMonitoringProcessor[CallbackNotification](
-          metricsNamespace
-        )(mc, ec)
-    ) {
+    ](config, new MetricsProcessor(config.metricsConfig.namespace))(
       processMessage
-    }
+    )
 
   def processMessage(
     callbackNotification: CallbackNotification

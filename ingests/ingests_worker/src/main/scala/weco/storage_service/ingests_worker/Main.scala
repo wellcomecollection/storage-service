@@ -33,8 +33,7 @@ object Main extends WellcomeTypesafeApp {
     )
 
     new IngestsWorkerService(
-      workerConfig = AlpakkaSqsWorkerConfigBuilder.build(config),
-      metricsNamespace = config.requireString("aws.metrics.namespace"),
+      config = AlpakkaSqsWorkerConfigBuilder.build(config),
       ingestTrackerClient = new AkkaIngestTrackerClient(ingestTrackerHost)
     )
   }
