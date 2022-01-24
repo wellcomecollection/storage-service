@@ -39,7 +39,9 @@ class NotifierWorker[Destination](
       Instant,
       Instant,
       IngestCallbackStatusUpdate
-    ](config, new MetricsProcessor(config.metricsConfig.namespace))(processMessage)
+    ](config, new MetricsProcessor(config.metricsConfig.namespace))(
+      processMessage
+    )
 
   def processMessage(
     callbackNotification: CallbackNotification

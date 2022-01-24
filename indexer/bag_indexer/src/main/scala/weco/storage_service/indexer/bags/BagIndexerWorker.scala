@@ -27,7 +27,7 @@ import scala.concurrent.Future
 class BagIndexerWorker(
   config: AlpakkaSQSWorkerConfig,
   val indexer: Indexer[StorageManifest, IndexedStorageManifest],
-  val bagTrackerClient: BagTrackerClient,
+  val bagTrackerClient: BagTrackerClient
 )(
   implicit
   val actorSystem: ActorSystem,

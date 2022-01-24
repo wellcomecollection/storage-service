@@ -41,7 +41,8 @@ class BagTaggerWorker(
   val as: ActorSystem,
   val sc: SqsAsyncClient,
   val wd: Decoder[BagRegistrationNotification]
-) extends Runnable with Logging {
+) extends Runnable
+    with Logging {
 
   implicit val ec = as.dispatcher
 

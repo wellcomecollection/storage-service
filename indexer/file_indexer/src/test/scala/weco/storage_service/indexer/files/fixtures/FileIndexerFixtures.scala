@@ -61,7 +61,7 @@ trait FileIndexerFixtures
 
       val worker = new FileIndexerWorker(
         config = createAlpakkaSQSWorkerConfig(queue),
-        indexer = createIndexer(index),
+        indexer = createIndexer(index)
       )
 
       testWith(worker)

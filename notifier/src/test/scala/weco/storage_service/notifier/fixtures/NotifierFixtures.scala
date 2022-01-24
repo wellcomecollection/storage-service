@@ -29,7 +29,7 @@ trait NotifierFixtures extends Akka with AlpakkaSQSWorkerFixtures {
         val workerService = new NotifierWorker(
           config = createAlpakkaSQSWorkerConfig(queue),
           callbackUrlService = callbackUrlService,
-          messageSender = messageSender,
+          messageSender = messageSender
         )
 
         workerService.run()

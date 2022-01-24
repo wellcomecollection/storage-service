@@ -44,7 +44,7 @@ trait IngestsIndexerFixtures
 
       val worker = new IngestsIndexerWorker(
         config = createAlpakkaSQSWorkerConfig(queue),
-        indexer = createIndexer(index),
+        indexer = createIndexer(index)
       )
 
       testWith(worker)

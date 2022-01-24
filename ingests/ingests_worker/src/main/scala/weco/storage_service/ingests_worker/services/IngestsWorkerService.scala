@@ -42,7 +42,9 @@ class IngestsWorkerService(
 
   private val worker =
     new AlpakkaSQSWorker[IngestUpdate, Instant, Instant, Ingest](
-      config, new MetricsProcessor(config.metricsConfig.namespace))(processMessage)
+      config,
+      new MetricsProcessor(config.metricsConfig.namespace)
+    )(processMessage)
 
   def processMessage(ingestUpdate: IngestUpdate): Future[Result[Ingest]] = {
     ingestTrackerClient.updateIngest(ingestUpdate).map {
