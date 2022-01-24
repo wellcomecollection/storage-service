@@ -3,7 +3,6 @@ package weco.storage_service.storage.models
 import akka.actor.ActorSystem
 import akka.stream.alpakka.sqs
 import akka.stream.alpakka.sqs.MessageAction
-import grizzled.slf4j.Logging
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.Message
@@ -12,18 +11,18 @@ import weco.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorkerConfig
 }
 import weco.messaging.worker.models.{
-  DeterministicFailure,
-  NonDeterministicFailure,
   Result,
-  Successful
+  RetryableFailure,
+  Successful,
+  TerminalFailure
 }
 import weco.monitoring.Metrics
 import weco.storage_service.PipelinePayload
 import weco.storage_service.ingests.models.IngestID
 import weco.typesafe.Runnable
 
-import scala.concurrent.duration._
 import scala.concurrent.Future
+import scala.concurrent.duration._
 import scala.util.Try
 
 sealed trait IngestStep[+T]
@@ -60,9 +59,7 @@ case class IngestShouldRetry[T](
   maybeUserFacingMessage: Option[String] = None
 ) extends IngestStepResult[T]
 
-trait IngestStepWorker[Work <: PipelinePayload, Summary]
-    extends Runnable
-    with Logging {
+trait IngestStepWorker[Work <: PipelinePayload, Summary] extends Runnable {
 
   // TODO: Move visibilityTimeout into SQSConfig
   val config: AlpakkaSQSWorkerConfig
@@ -72,8 +69,6 @@ trait IngestStepWorker[Work <: PipelinePayload, Summary]
   implicit val as: ActorSystem
   implicit val wd: Decoder[Work]
   implicit val sc: SqsAsyncClient
-
-  implicit val metricsNamespace: String
 
   def processMessage(payload: Work): Try[IngestStepResult[Summary]]
 
@@ -97,7 +92,7 @@ trait IngestStepWorker[Work <: PipelinePayload, Summary]
     ingestResult match {
       case IngestStepSucceeded(s, _)  => Successful(Some(s))
       case IngestCompleted(s)         => Successful(Some(s))
-      case IngestFailed(s, t, _)      => DeterministicFailure(t, Some(s))
-      case IngestShouldRetry(s, t, _) => NonDeterministicFailure(t, Some(s))
+      case IngestFailed(s, t, _)      => TerminalFailure(t, Some(s))
+      case IngestShouldRetry(s, t, _) => RetryableFailure(t, Some(s))
     }
 }

@@ -7,4 +7,4 @@ case class RetryableIndexingError[T](payload: T, cause: Throwable)
   initCause(cause)
 }
 
-case class FatalIndexingError[T](payload: T) extends IndexerWorkerError
+case class TerminalIndexingError[T](payload: T) extends IndexerWorkerError

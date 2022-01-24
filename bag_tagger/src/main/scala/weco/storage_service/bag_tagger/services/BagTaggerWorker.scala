@@ -11,11 +11,7 @@ import weco.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorker,
   AlpakkaSQSWorkerConfig
 }
-import weco.messaging.worker.models.{
-  NonDeterministicFailure,
-  Result,
-  Successful
-}
+import weco.messaging.worker.models.{Result, RetryableFailure, Successful}
 import weco.monitoring.Metrics
 import weco.storage_service.bag_tracker.client.BagTrackerClient
 import weco.storage_service.BagRegistrationNotification
@@ -84,8 +80,7 @@ class BagTaggerWorker(
     // very cheap, so assume it's a flaky error and can be retried.
     result
       .recover {
-        case err: Throwable =>
-          NonDeterministicFailure[Unit](err)
+        case err: Throwable => RetryableFailure[Unit](err)
       }
   }
 

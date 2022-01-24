@@ -4,7 +4,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.json.JsonUtil._
-import weco.messaging.worker.models.{NonDeterministicFailure, Successful}
+import weco.messaging.worker.models.{RetryableFailure, Successful}
 import weco.storage_service.bag_tracker.storage.memory.MemoryStorageManifestDao
 import weco.storage_service.BagRegistrationNotification
 import weco.storage_service.bagit.models.{BagId, BagVersion}
@@ -200,11 +200,14 @@ class BagTaggerWorkerTest
         version = "not-a-version-string"
       )
 
+      // TODO: We're never going to be able to parse the version string
+      // if it's unparseable, so we should consider throwing a terminal
+      // failure here, rather than retrying.
       withWorkerService() { worker =>
         whenReady(worker.process(badNotification)) { result =>
-          result shouldBe a[NonDeterministicFailure[_]]
+          result shouldBe a[RetryableFailure[_]]
 
-          val err = result.asInstanceOf[NonDeterministicFailure[_]].failure
+          val err = result.asInstanceOf[RetryableFailure[_]].failure
           err shouldBe a[IllegalArgumentException]
           err.getMessage should startWith("Could not parse version string")
         }
@@ -233,9 +236,9 @@ class BagTaggerWorkerTest
 
       withWorkerService(storageManifestDao = brokenDao) { worker =>
         whenReady(worker.process(notification)) { result =>
-          result shouldBe a[NonDeterministicFailure[_]]
+          result shouldBe a[RetryableFailure[_]]
 
-          val err = result.asInstanceOf[NonDeterministicFailure[_]].failure
+          val err = result.asInstanceOf[RetryableFailure[_]].failure
           err shouldBe a[Throwable]
           err.getMessage should startWith("Unable to get bag")
         }
@@ -267,10 +270,10 @@ class BagTaggerWorkerTest
         applyTags = brokenApplyTags
       ) { worker =>
         whenReady(worker.process(notification)) { result =>
-          result shouldBe a[NonDeterministicFailure[_]]
+          result shouldBe a[RetryableFailure[_]]
 
           result
-            .asInstanceOf[NonDeterministicFailure[_]]
+            .asInstanceOf[RetryableFailure[_]]
             .failure shouldBe applyError
         }
       }

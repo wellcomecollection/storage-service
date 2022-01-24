@@ -4,11 +4,7 @@ import akka.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import weco.messaging.worker.models.{
-  NonDeterministicFailure,
-  Result,
-  Successful
-}
+import weco.messaging.worker.models.{Result, RetryableFailure, Successful}
 import weco.monitoring.Metrics
 import weco.storage_service.indexer._
 import weco.storage_service.indexer.models.FileContext
@@ -37,7 +33,7 @@ class FileIndexerWorker(
         Successful(None)
       case Left(failedDocuments) =>
         warn(s"RetryableIndexingError: Unable to index $failedDocuments")
-        NonDeterministicFailure(
+        RetryableFailure(
           new Throwable(s"Unable to index ${failedDocuments.size} documents")
         )
     }

@@ -9,7 +9,7 @@ import weco.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorker,
   AlpakkaSQSWorkerConfig
 }
-import weco.messaging.worker.models.{DeterministicFailure, Result, Successful}
+import weco.messaging.worker.models.{Result, Successful}
 import weco.monitoring.Metrics
 import weco.storage_service.ingests.models.{
   CallbackNotification,
@@ -38,8 +38,8 @@ class NotifierWorker[Destination](
 
   def processMessage(
     callbackNotification: CallbackNotification
-  ): Future[Result[IngestCallbackStatusUpdate]] = {
-    val future = for {
+  ): Future[Result[IngestCallbackStatusUpdate]] =
+    for {
       httpResponse <- callbackUrlService.getHttpResponse(
         ingest = callbackNotification.payload,
         callbackUri = callbackNotification.callbackUri
@@ -52,16 +52,7 @@ class NotifierWorker[Destination](
       _ <- Future.fromTry {
         messageSender.sendT[IngestUpdate](ingestUpdate)
       }
-    } yield ingestUpdate
-
-    future
-      .map { ingestUpdate =>
-        Successful(Some(ingestUpdate))
-      }
-      .recover {
-        case throwable => DeterministicFailure(throwable, summary = None)
-      }
-  }
+    } yield Successful(summary = Some(ingestUpdate))
 
   override def run(): Future[Any] = worker.start
 }

@@ -36,8 +36,7 @@ trait BagRootFinderFixtures
         config = createAlpakkaSQSWorkerConfig(queue),
         bagRootFinder = new BagRootFinder(),
         ingestUpdater = ingestUpdater,
-        outgoingPublisher = outgoingPublisher,
-        metricsNamespace = "bag_root_finder"
+        outgoingPublisher = outgoingPublisher
       )
 
       worker.run()

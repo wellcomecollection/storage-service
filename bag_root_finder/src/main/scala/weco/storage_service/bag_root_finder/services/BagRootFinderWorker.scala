@@ -25,8 +25,7 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
   val config: AlpakkaSQSWorkerConfig,
   bagRootFinder: BagRootFinder,
   ingestUpdater: IngestUpdater[IngestDestination],
-  outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  val metricsNamespace: String
+  outgoingPublisher: OutgoingPublisher[OutgoingDestination]
 )(
   implicit
   val mc: Metrics[Future],

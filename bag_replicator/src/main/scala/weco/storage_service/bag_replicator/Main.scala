@@ -97,8 +97,7 @@ object Main extends WellcomeTypesafeApp {
         lockingService = lockingService,
         destinationConfig = ReplicatorDestinationConfig
           .buildDestinationConfig(config),
-        replicator = replicator,
-        metricsNamespace = config.requireString("aws.metrics.namespace")
+        replicator = replicator
       )
 
     provider match {

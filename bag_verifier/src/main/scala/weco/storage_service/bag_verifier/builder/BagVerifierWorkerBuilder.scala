@@ -39,8 +39,6 @@ object BagVerifierWorkerBuilder {
     as: ActorSystem,
     sc: SqsAsyncClient
   ) = {
-    val metricsNamespace = config.requireString("aws.metrics.namespace")
-
     val alpakkaSqsWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config)
 
     val verifierMode = config.getString("bag-verifier.mode")
@@ -51,8 +49,7 @@ object BagVerifierWorkerBuilder {
       case "replica-s3" =>
         buildReplicaS3BagVerifierWorker(
           primaryBucket,
-          metricsNamespace = metricsNamespace,
-          alpakkaSqsWorkerConfig = alpakkaSqsWorkerConfig,
+          alpakkaSqsWorkerConfig,
           ingestUpdater,
           outgoingPublisher
         )
@@ -70,17 +67,15 @@ object BagVerifierWorkerBuilder {
 
         buildReplicaAzureBagVerifierWorker(
           primaryBucket,
-          dynamoConfig = dynamoConfig,
-          metricsNamespace = metricsNamespace,
-          alpakkaSqsWorkerConfig = alpakkaSqsWorkerConfig,
+          dynamoConfig,
+          alpakkaSqsWorkerConfig,
           ingestUpdater,
           outgoingPublisher
         )
       case "standalone" =>
         buildStandaloneVerifierWorker(
           primaryBucket,
-          metricsNamespace = metricsNamespace,
-          alpakkaSqsWorkerConfig = alpakkaSqsWorkerConfig,
+          alpakkaSqsWorkerConfig,
           ingestUpdater,
           outgoingPublisher
         )
@@ -93,7 +88,6 @@ object BagVerifierWorkerBuilder {
 
   def buildStandaloneVerifierWorker[IngestDestination, OutgoingDestination](
     primaryBucket: String,
-    metricsNamespace: String,
     alpakkaSqsWorkerConfig: AlpakkaSQSWorkerConfig,
     ingestUpdater: IngestUpdater[IngestDestination],
     outgoingPublisher: OutgoingPublisher[OutgoingDestination]
@@ -117,7 +111,6 @@ object BagVerifierWorkerBuilder {
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,
       verifier = verifier,
-      metricsNamespace = metricsNamespace,
       (payload: BagRootLocationPayload) =>
         StandaloneBagVerifyContext(payload.bagRoot)
     )
@@ -125,7 +118,6 @@ object BagVerifierWorkerBuilder {
 
   def buildReplicaS3BagVerifierWorker[IngestDestination, OutgoingDestination](
     primaryBucket: String,
-    metricsNamespace: String,
     alpakkaSqsWorkerConfig: AlpakkaSQSWorkerConfig,
     ingestUpdater: IngestUpdater[IngestDestination],
     outgoingPublisher: OutgoingPublisher[OutgoingDestination]
@@ -148,7 +140,6 @@ object BagVerifierWorkerBuilder {
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,
       verifier = verifier,
-      metricsNamespace = metricsNamespace,
       (payload: ReplicaCompletePayload) =>
         ReplicatedBagVerifyContext(
           srcRoot = payload.srcPrefix,
@@ -164,7 +155,6 @@ object BagVerifierWorkerBuilder {
   ](
     primaryBucket: String,
     dynamoConfig: DynamoConfig,
-    metricsNamespace: String,
     alpakkaSqsWorkerConfig: AlpakkaSQSWorkerConfig,
     ingestUpdater: IngestUpdater[IngestDestination],
     outgoingPublisher: OutgoingPublisher[OutgoingDestination]
@@ -192,7 +182,6 @@ object BagVerifierWorkerBuilder {
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,
       verifier = verifier,
-      metricsNamespace = metricsNamespace,
       (payload: ReplicaCompletePayload) =>
         ReplicatedBagVerifyContext(
           srcRoot = payload.srcPrefix,

@@ -61,7 +61,6 @@ trait BagVerifierFixtures
       val worker = BagVerifierWorkerBuilder
         .buildStandaloneVerifierWorker(
           primaryBucket = bucket.name,
-          metricsNamespace = "bag_verifier",
           alpakkaSqsWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
           ingestUpdater = ingestUpdater,
           outgoingPublisher = outgoingPublisher
@@ -100,7 +99,6 @@ trait BagVerifierFixtures
 
       val worker = BagVerifierWorkerBuilder.buildReplicaS3BagVerifierWorker(
         primaryBucket = bucket.name,
-        metricsNamespace = "bag_verifier",
         alpakkaSqsWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
         ingestUpdater = ingestUpdater,
         outgoingPublisher = outgoingPublisher
@@ -142,7 +140,6 @@ trait BagVerifierFixtures
           BagVerifierWorkerBuilder.buildReplicaAzureBagVerifierWorker(
             primaryBucket = bucket.name,
             dynamoConfig = createDynamoConfigWith(table),
-            metricsNamespace = "bag_verifier",
             alpakkaSqsWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
             ingestUpdater = ingestUpdater,
             outgoingPublisher = outgoingPublisher

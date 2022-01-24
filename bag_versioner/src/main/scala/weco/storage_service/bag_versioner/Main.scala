@@ -31,7 +31,6 @@ import weco.storage.locking.dynamo.DynamoLockingService
 import weco.storage.typesafe.{DynamoBuilder, DynamoLockDaoBuilder}
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder
-import weco.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.language.higherKinds
@@ -75,8 +74,7 @@ object Main extends WellcomeTypesafeApp {
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
       bagVersioner = new BagVersioner(versionPicker = versionPicker),
       ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
-      outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName),
-      metricsNamespace = config.requireString("aws.metrics.namespace")
+      outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName)
     )
   }
 }

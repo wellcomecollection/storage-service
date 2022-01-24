@@ -20,7 +20,6 @@ import weco.storage_service.bag_root_finder.services.{
 import weco.storage.typesafe.S3Builder
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder
-import weco.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.ExecutionContextExecutor
 
@@ -44,8 +43,7 @@ object Main extends WellcomeTypesafeApp {
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
       bagRootFinder = new BagRootFinder(),
       ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
-      outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName),
-      metricsNamespace = config.requireString("aws.metrics.namespace")
+      outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName)
     )
   }
 }

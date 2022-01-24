@@ -66,11 +66,10 @@ object Main extends WellcomeTypesafeApp {
       replicaAggregator = new ReplicaAggregator(dynamoVersionedStore),
       replicaCounter = new ReplicaCounter(
         expectedReplicaCount =
-          config.requireString("aggregator.expected_replica_count").toInt
+          config.requireInt("aggregator.expected_replica_count")
       ),
       ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
-      outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName),
-      metricsNamespace = config.requireString("aws.metrics.namespace")
+      outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName)
     )
   }
 }

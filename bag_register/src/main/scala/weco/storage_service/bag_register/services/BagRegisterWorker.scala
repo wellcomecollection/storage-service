@@ -25,8 +25,7 @@ class BagRegisterWorker[IngestDestination, NotificationDestination](
   val config: AlpakkaSQSWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   registrationNotifications: MessageSender[NotificationDestination],
-  register: Register,
-  val metricsNamespace: String
+  register: Register
 )(
   implicit
   val mc: Metrics[Future],

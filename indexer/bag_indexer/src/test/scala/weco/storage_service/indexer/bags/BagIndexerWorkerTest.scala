@@ -5,7 +5,7 @@ import io.circe.Decoder
 import weco.fixtures.TestWith
 import weco.json.JsonUtil._
 import weco.messaging.fixtures.SQS
-import weco.messaging.worker.models.NonDeterministicFailure
+import weco.messaging.worker.models.RetryableFailure
 import weco.monitoring.memory.MemoryMetrics
 import weco.storage_service.bag_tracker.storage.StorageManifestDao
 import weco.storage_service.bag_tracker.storage.memory.MemoryStorageManifestDao
@@ -103,28 +103,26 @@ class BagIndexerWorkerTest
     }
   }
 
-  it(
-    "fails with a NonDeterministicFailure when a StoreReadError is encountered"
-  ) {
+  it("fails with a retryable failure when it can't read from the store") {
     val (t, _) = createT
     withLocalElasticsearchIndex(indexConfig) { index =>
       withLocalSqsQueue() { queue =>
         withStoreReadErrorIndexerWorker(index, queue) { worker =>
           whenReady(worker.process(t)) {
-            _ shouldBe a[NonDeterministicFailure[_]]
+            _ shouldBe a[RetryableFailure[_]]
           }
         }
       }
     }
   }
 
-  it("fails with a NonDeterministicFailure if a bag doesn't exist") {
+  it("fails with a retryable failure if a bag doesn't exist") {
     val (t, _) = createT
     withLocalElasticsearchIndex(indexConfig) { index =>
       withLocalSqsQueue() { queue =>
         withDoesNotExistErrorIndexerWorker(index, queue) { worker =>
           whenReady(worker.process(t)) {
-            _ shouldBe a[NonDeterministicFailure[_]]
+            _ shouldBe a[RetryableFailure[_]]
           }
         }
       }

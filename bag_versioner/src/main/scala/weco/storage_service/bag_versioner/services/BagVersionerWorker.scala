@@ -31,8 +31,7 @@ class BagVersionerWorker[IngestDestination, OutgoingDestination](
   val config: AlpakkaSQSWorkerConfig,
   bagVersioner: BagVersioner,
   ingestUpdater: IngestUpdater[IngestDestination],
-  outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  val metricsNamespace: String
+  outgoingPublisher: OutgoingPublisher[OutgoingDestination]
 )(
   implicit val mc: Metrics[Future],
   val as: ActorSystem,

@@ -74,8 +74,7 @@ trait BagRegisterFixtures
           ingestUpdater =
             createIngestUpdaterWith(ingests, stepName = "register"),
           registrationNotifications = registrationNotifications,
-          register = register,
-          metricsNamespace = "bag_register"
+          register = register
         )
 
         service.run()

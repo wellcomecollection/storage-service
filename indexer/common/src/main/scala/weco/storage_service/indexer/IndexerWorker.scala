@@ -14,10 +14,10 @@ import weco.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorkerConfig
 }
 import weco.messaging.worker.models.{
-  DeterministicFailure,
-  NonDeterministicFailure,
   Result,
-  Successful
+  RetryableFailure,
+  Successful,
+  TerminalFailure
 }
 import weco.monitoring.Metrics
 import weco.typesafe.Runnable
@@ -67,10 +67,10 @@ abstract class IndexerWorker[SourceT, T, IndexedT](
         Successful[Unit](None)
       case Left(RetryableIndexingError(t, e)) =>
         warn(s"RetryableIndexingError: Unable to index $t")
-        NonDeterministicFailure[Unit](e)
-      case Left(e @ FatalIndexingError(t)) =>
-        warn(s"FatalIndexingError: Unable to index $t")
-        DeterministicFailure[Unit](e)
+        RetryableFailure[Unit](e)
+      case Left(e @ TerminalIndexingError(t)) =>
+        warn(s"TerminalIndexingError: Unable to index $t")
+        TerminalFailure[Unit](e)
     }
   }
 

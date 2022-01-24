@@ -15,11 +15,11 @@ import weco.storage_service.bagit.models.{BagId, BagVersion}
 import weco.storage_service.storage.models.StorageManifest
 import weco.storage_service.indexer.bags.models.IndexedStorageManifest
 import weco.storage_service.indexer.{
-  FatalIndexingError,
   Indexer,
   IndexerWorker,
   IndexerWorkerError,
-  RetryableIndexingError
+  RetryableIndexingError,
+  TerminalIndexingError
 }
 
 import scala.concurrent.Future
@@ -85,7 +85,7 @@ class BagIndexerWorker(
 
         case Left(e) =>
           error(new Exception(f"Failed to load $notification, got $e"))
-          Left(FatalIndexingError(payload = notification))
+          Left(TerminalIndexingError(payload = notification))
       }
     } yield result
 }

@@ -9,10 +9,10 @@ import weco.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorkerConfig
 }
 import weco.messaging.worker.models.{
-  DeterministicFailure,
-  NonDeterministicFailure,
   Result,
-  Successful
+  RetryableFailure,
+  Successful,
+  TerminalFailure
 }
 import weco.monitoring.Metrics
 import weco.storage_service.ingests.models.{Ingest, IngestUpdate}
@@ -51,22 +51,22 @@ class IngestsWorkerService(
           f"Error trying to apply update $ingestUpdate, got Conflict"
         )
         warn(err)
-        DeterministicFailure[Ingest](err)
+        TerminalFailure[Ingest](err)
       // This may be caused by something like a consistency issue in DynamoDB;
       // if we retry later the ingest may become available.
       // See https://github.com/wellcomecollection/platform/issues/4781
       case Left(IngestTrackerUpdateNonExistentIngestError(_)) =>
         error(s"Could not apply $ingestUpdate to non-existent ingest")
-        NonDeterministicFailure[Ingest](
+        RetryableFailure[Ingest](
           new Throwable(s"Could not apply $ingestUpdate to non-existent ingest")
         )
       case Left(IngestTrackerUnknownUpdateError(_, err)) =>
         error(s"Error trying to apply $ingestUpdate, got UnknownError", err)
-        NonDeterministicFailure[Ingest](err)
+        RetryableFailure[Ingest](err)
     } recover {
       case err =>
         warn(s"Error trying to apply update $ingestUpdate: $err")
-        NonDeterministicFailure[Ingest](err)
+        RetryableFailure[Ingest](err)
     }
   }
 

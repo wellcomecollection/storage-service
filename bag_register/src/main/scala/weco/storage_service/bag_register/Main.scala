@@ -70,8 +70,7 @@ object Main extends WellcomeTypesafeApp {
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
       ingestUpdater = ingestUpdater,
       registrationNotifications = registrationNotifications,
-      register = register,
-      metricsNamespace = config.requireString("aws.metrics.namespace")
+      register = register
     )
   }
 }

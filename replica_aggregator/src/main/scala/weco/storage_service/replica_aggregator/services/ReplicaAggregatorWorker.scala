@@ -27,8 +27,7 @@ class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
   replicaAggregator: ReplicaAggregator,
   replicaCounter: ReplicaCounter,
   ingestUpdater: IngestUpdater[IngestDestination],
-  outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  val metricsNamespace: String
+  outgoingPublisher: OutgoingPublisher[OutgoingDestination]
 )(
   implicit val mc: Metrics[Future],
   val as: ActorSystem,
