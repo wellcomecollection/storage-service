@@ -14,7 +14,6 @@ import weco.messaging.worker.models.{
   Result,
   Successful
 }
-import weco.messaging.worker.monitoring.metrics.MetricsProcessor
 import weco.monitoring.Metrics
 import weco.storage_service.ingests.models.{Ingest, IngestUpdate}
 import weco.storage_service.ingests_tracker.client.{
@@ -41,10 +40,9 @@ class IngestsWorkerService(
   implicit val ec: ExecutionContextExecutor = actorSystem.dispatcher
 
   private val worker =
-    new AlpakkaSQSWorker[IngestUpdate, Instant, Instant, Ingest](
-      config,
-      new MetricsProcessor(config.metricsConfig.namespace)
-    )(processMessage)
+    new AlpakkaSQSWorker[IngestUpdate, Instant, Instant, Ingest](config)(
+      processMessage
+    )
 
   def processMessage(ingestUpdate: IngestUpdate): Future[Result[Ingest]] = {
     ingestTrackerClient.updateIngest(ingestUpdate).map {

@@ -18,7 +18,6 @@ import weco.messaging.worker.models.{
   Result,
   Successful
 }
-import weco.messaging.worker.monitoring.metrics.MetricsProcessor
 import weco.monitoring.Metrics
 import weco.storage_service.PipelinePayload
 import weco.storage_service.ingests.models.IngestID
@@ -84,10 +83,7 @@ trait IngestStepWorker[Work <: PipelinePayload, Summary]
   }
 
   val worker =
-    new AlpakkaSQSWorker[Work, Instant, Instant, Summary](
-      config,
-      metricsProcessor = new MetricsProcessor(metricsNamespace)
-    )(process) {
+    new AlpakkaSQSWorker[Work, Instant, Instant, Summary](config)(process) {
       override val retryAction: Message => sqs.MessageAction =
         (message: Message) =>
           MessageAction.changeMessageVisibility(
