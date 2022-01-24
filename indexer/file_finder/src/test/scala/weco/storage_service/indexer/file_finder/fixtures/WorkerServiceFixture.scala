@@ -34,7 +34,6 @@ trait WorkerServiceFixture
       val service = new FileFinderWorker(
         config = createAlpakkaSQSWorkerConfig(queue),
         bagTrackerClient = bagTrackerClient,
-        metricsNamespace = s"metrics-${randomAlphanumeric()}",
         messageSender = messageSender,
         batchSize = batchSize
       )

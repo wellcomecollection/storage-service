@@ -45,7 +45,6 @@ object Main extends WellcomeTypesafeApp {
     new FileFinderWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
       bagTrackerClient = bagTrackerClient,
-      metricsNamespace = config.requireString("aws.metrics.namespace"),
       messageSender = sender
     )
   }

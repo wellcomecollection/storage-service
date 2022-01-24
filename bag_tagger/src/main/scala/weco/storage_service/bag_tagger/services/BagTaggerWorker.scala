@@ -17,7 +17,6 @@ import weco.messaging.worker.models.{
   Result,
   Successful
 }
-import weco.messaging.worker.monitoring.metrics.MetricsProcessor
 import weco.monitoring.Metrics
 import weco.storage_service.bag_tracker.client.BagTrackerClient
 import weco.storage_service.BagRegistrationNotification
@@ -93,10 +92,7 @@ class BagTaggerWorker(
 
   val worker
     : AlpakkaSQSWorker[BagRegistrationNotification, Instant, Instant, Unit] =
-    new AlpakkaSQSWorker[BagRegistrationNotification, Instant, Instant, Unit](
-      config,
-      new MetricsProcessor(config.metricsConfig.namespace)
-    )(process) {
+    new AlpakkaSQSWorker[BagRegistrationNotification, Instant, Instant, Unit](config)(process) {
       override val retryAction: Message => sqs.MessageAction =
         (message: Message) =>
           MessageAction.changeMessageVisibility(message, visibilityTimeout = 0)

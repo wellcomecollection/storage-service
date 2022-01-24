@@ -16,7 +16,6 @@ import weco.messaging.worker.models.{
   Result,
   Successful
 }
-import weco.messaging.worker.monitoring.metrics.MetricsProcessor
 import weco.monitoring.Metrics
 import weco.storage_service.bag_tracker.client.{
   BagTrackerClient,
@@ -32,7 +31,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class FileFinderWorker(
   val config: AlpakkaSQSWorkerConfig,
   val bagTrackerClient: BagTrackerClient,
-  val metricsNamespace: String,
   messageSender: MessageSender[_],
   // How this default was derived: the max SNS message size is 256KB.
   // Looking in SQS, the average message size was ~1.42KB, and that's
@@ -56,7 +54,7 @@ class FileFinderWorker(
       Instant,
       Instant,
       Nothing
-    ](config, new MetricsProcessor(metricsNamespace))(processMessage)
+    ](config)(processMessage)
 
   def processMessage(
     notification: BagRegistrationNotification
