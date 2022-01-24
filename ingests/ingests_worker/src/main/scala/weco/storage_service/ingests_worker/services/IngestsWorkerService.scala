@@ -40,7 +40,9 @@ class IngestsWorkerService(
   implicit val ec: ExecutionContextExecutor = actorSystem.dispatcher
 
   private val worker =
-    new AlpakkaSQSWorker[IngestUpdate, Instant, Instant, Ingest](config)(processMessage)
+    new AlpakkaSQSWorker[IngestUpdate, Instant, Instant, Ingest](config)(
+      processMessage
+    )
 
   def processMessage(ingestUpdate: IngestUpdate): Future[Result[Ingest]] = {
     ingestTrackerClient.updateIngest(ingestUpdate).map {
