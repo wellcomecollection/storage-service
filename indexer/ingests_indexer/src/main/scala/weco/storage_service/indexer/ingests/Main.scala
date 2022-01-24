@@ -50,7 +50,7 @@ object Main extends WellcomeTypesafeApp {
 
     new IngestsIndexerWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
-      indexer = ingestIndexer,
+      indexer = ingestIndexer
     )
   }
 }
