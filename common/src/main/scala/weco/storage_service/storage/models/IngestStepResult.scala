@@ -1,6 +1,5 @@
 package weco.storage_service.storage.models
 
-import java.time.Instant
 import akka.actor.ActorSystem
 import akka.stream.alpakka.sqs
 import akka.stream.alpakka.sqs.MessageAction
@@ -82,8 +81,8 @@ trait IngestStepWorker[Work <: PipelinePayload, Summary]
     processMessage(payload).map(toResult)
   }
 
-  val worker =
-    new AlpakkaSQSWorker[Work, Instant, Instant, Summary](config)(process) {
+  val worker: AlpakkaSQSWorker[Work, Summary] =
+    new AlpakkaSQSWorker[Work, Summary](config)(process) {
       override val retryAction: Message => sqs.MessageAction =
         (message: Message) =>
           MessageAction.changeMessageVisibility(

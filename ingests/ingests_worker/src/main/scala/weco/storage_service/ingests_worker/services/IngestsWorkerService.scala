@@ -24,7 +24,6 @@ import weco.storage_service.ingests_tracker.client.{
 }
 import weco.typesafe.Runnable
 
-import java.time.Instant
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
 class IngestsWorkerService(
@@ -40,9 +39,7 @@ class IngestsWorkerService(
   implicit val ec: ExecutionContextExecutor = actorSystem.dispatcher
 
   private val worker =
-    new AlpakkaSQSWorker[IngestUpdate, Instant, Instant, Ingest](config)(
-      processMessage
-    )
+    new AlpakkaSQSWorker[IngestUpdate, Ingest](config)(processMessage)
 
   def processMessage(ingestUpdate: IngestUpdate): Future[Result[Ingest]] = {
     ingestTrackerClient.updateIngest(ingestUpdate).map {

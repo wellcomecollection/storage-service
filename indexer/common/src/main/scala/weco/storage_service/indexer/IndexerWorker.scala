@@ -22,7 +22,6 @@ import weco.messaging.worker.models.{
 import weco.monitoring.Metrics
 import weco.typesafe.Runnable
 
-import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
 abstract class IndexerWorker[SourceT, T, IndexedT](
@@ -75,8 +74,8 @@ abstract class IndexerWorker[SourceT, T, IndexedT](
     }
   }
 
-  val worker: AlpakkaSQSWorker[SourceT, Instant, Instant, Unit] =
-    new AlpakkaSQSWorker[SourceT, Instant, Instant, Unit](config)(process) {
+  val worker: AlpakkaSQSWorker[SourceT, Unit] =
+    new AlpakkaSQSWorker[SourceT, Unit](config)(process) {
       // If we retry set a non-zero visibility timeout to give
       // whatever dependency isn't working time to recover
       val visibilityTimeoutInSeconds = 5

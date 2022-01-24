@@ -1,6 +1,5 @@
 package weco.storage_service.notifier.services
 
-import java.time.Instant
 import akka.actor.ActorSystem
 import grizzled.slf4j.Logging
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
@@ -33,12 +32,9 @@ class NotifierWorker[Destination](
 ) extends Runnable
     with Logging {
   private val worker =
-    new AlpakkaSQSWorker[
-      CallbackNotification,
-      Instant,
-      Instant,
-      IngestCallbackStatusUpdate
-    ](config)(processMessage)
+    new AlpakkaSQSWorker[CallbackNotification, IngestCallbackStatusUpdate](
+      config
+    )(processMessage)
 
   def processMessage(
     callbackNotification: CallbackNotification

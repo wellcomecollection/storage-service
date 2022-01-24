@@ -1,6 +1,5 @@
 package weco.storage_service.bag_tagger.services
 
-import java.time.Instant
 import akka.actor.ActorSystem
 import akka.stream.alpakka.sqs
 import akka.stream.alpakka.sqs.MessageAction
@@ -90,11 +89,8 @@ class BagTaggerWorker(
       }
   }
 
-  val worker
-    : AlpakkaSQSWorker[BagRegistrationNotification, Instant, Instant, Unit] =
-    new AlpakkaSQSWorker[BagRegistrationNotification, Instant, Instant, Unit](
-      config
-    )(process) {
+  val worker: AlpakkaSQSWorker[BagRegistrationNotification, Unit] =
+    new AlpakkaSQSWorker[BagRegistrationNotification, Unit](config)(process) {
       override val retryAction: Message => sqs.MessageAction =
         (message: Message) =>
           MessageAction.changeMessageVisibility(message, visibilityTimeout = 0)
