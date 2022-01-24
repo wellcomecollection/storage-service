@@ -8,7 +8,7 @@ import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.elasticsearch.IndexConfig
-import weco.messaging.worker.models.{NonDeterministicFailure, Successful}
+import weco.messaging.worker.models.{RetryableFailure, Successful}
 import weco.storage_service.indexer.fixtures.IndexerFixtures
 import weco.storage_service.indexer.elasticsearch.StorageServiceIndexConfig
 
@@ -63,7 +63,7 @@ abstract class IndexerWorkerTestCases[SourceT, T, IndexedT](
     withLocalElasticsearchIndex(badConfig) { index =>
       withIndexerWorker(index) { worker =>
         whenReady(worker.process(t)) {
-          _ shouldBe a[NonDeterministicFailure[_]]
+          _ shouldBe a[RetryableFailure[_]]
         }
       }
     }

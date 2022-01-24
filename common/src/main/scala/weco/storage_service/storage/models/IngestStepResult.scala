@@ -12,18 +12,18 @@ import weco.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorkerConfig
 }
 import weco.messaging.worker.models.{
-  DeterministicFailure,
-  NonDeterministicFailure,
   Result,
-  Successful
+  RetryableFailure,
+  Successful,
+  TerminalFailure
 }
 import weco.monitoring.Metrics
 import weco.storage_service.PipelinePayload
 import weco.storage_service.ingests.models.IngestID
 import weco.typesafe.Runnable
 
-import scala.concurrent.duration._
 import scala.concurrent.Future
+import scala.concurrent.duration._
 import scala.util.Try
 
 sealed trait IngestStep[+T]
@@ -97,7 +97,7 @@ trait IngestStepWorker[Work <: PipelinePayload, Summary]
     ingestResult match {
       case IngestStepSucceeded(s, _)  => Successful(Some(s))
       case IngestCompleted(s)         => Successful(Some(s))
-      case IngestFailed(s, t, _)      => DeterministicFailure(t, Some(s))
-      case IngestShouldRetry(s, t, _) => NonDeterministicFailure(t, Some(s))
+      case IngestFailed(s, t, _)      => TerminalFailure(t, Some(s))
+      case IngestShouldRetry(s, t, _) => RetryableFailure(t, Some(s))
     }
 }

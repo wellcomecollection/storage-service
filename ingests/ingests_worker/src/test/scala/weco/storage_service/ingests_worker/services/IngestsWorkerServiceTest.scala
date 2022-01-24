@@ -6,10 +6,10 @@ import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.fixtures.TestWith
 import weco.messaging.worker.models.{
-  DeterministicFailure,
-  NonDeterministicFailure,
   Result,
-  Successful
+  RetryableFailure,
+  Successful,
+  TerminalFailure
 }
 import weco.storage_service.ingests.models.Ingest
 import weco.storage_service.ingests_tracker.client.{
@@ -45,36 +45,33 @@ class IngestsWorkerServiceTest
   }
 
   describe("When the client return a conflict") {
-    it("returns DeterministicFailure") {
+    it("returns a terminal failure") {
       withIngestWorker(ingestTrackerClient = conflictClient(ingestStatusUpdate)) {
         worker =>
           whenReady(worker.processMessage(ingestStatusUpdate)) {
-            result: Result[Ingest] =>
-              result shouldBe a[DeterministicFailure[_]]
+            _ shouldBe a[TerminalFailure[_]]
           }
       }
     }
   }
 
   describe("When the client return an unknown error") {
-    it("returns NonDeterministicFailure") {
+    it("returns a retryable failure") {
       withIngestWorker(
         ingestTrackerClient = unknownErrorClient(ingestStatusUpdate)
       ) { worker =>
         whenReady(worker.processMessage(ingestStatusUpdate)) {
-          result: Result[Ingest] =>
-            result shouldBe a[NonDeterministicFailure[_]]
+          _ shouldBe a[RetryableFailure[_]]
         }
       }
     }
   }
 
   describe("When the client fails") {
-    it("returns NonDeterministicFailure") {
+    it("returns a retryable failure") {
       withIngestWorker(ingestTrackerClient = failedFutureClient()) { worker =>
         whenReady(worker.processMessage(ingestStatusUpdate)) {
-          result: Result[Ingest] =>
-            result shouldBe a[NonDeterministicFailure[_]]
+          _ shouldBe a[RetryableFailure[_]]
         }
       }
     }
@@ -85,7 +82,7 @@ class IngestsWorkerServiceTest
       withIngestTrackerClient(trackerUri) { client =>
         withIngestWorker(ingestTrackerClient = client) { worker =>
           whenReady(worker.processMessage(createIngestEventUpdate)) {
-            _ shouldBe a[NonDeterministicFailure[_]]
+            _ shouldBe a[RetryableFailure[_]]
           }
         }
       }

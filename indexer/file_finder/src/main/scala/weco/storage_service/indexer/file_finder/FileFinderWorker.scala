@@ -10,11 +10,7 @@ import weco.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorker,
   AlpakkaSQSWorkerConfig
 }
-import weco.messaging.worker.models.{
-  NonDeterministicFailure,
-  Result,
-  Successful
-}
+import weco.messaging.worker.models.{Result, RetryableFailure, Successful}
 import weco.monitoring.Metrics
 import weco.storage_service.bag_tracker.client.{
   BagTrackerClient,
@@ -88,11 +84,11 @@ class FileFinderWorker(
             warn(
               f"BagTrackerUnknownGetError: Failed to load $notification, got $e"
             )
-            Left(NonDeterministicFailure(e))
+            Left(RetryableFailure(e))
           case Left(e) =>
             error(new Exception(s"Failed to load $notification, got $e"))
             Left(
-              NonDeterministicFailure(
+              RetryableFailure(
                 new Throwable(s"Failed to load $notification, got $e")
               )
             )
@@ -121,7 +117,7 @@ class FileFinderWorker(
           .map { _ =>
             Successful(None)
           }
-          .recover { case t: Throwable => NonDeterministicFailure(t) }
+          .recover { case t: Throwable => RetryableFailure(t) }
 
       case Left(err) => Future.successful(err)
     }
