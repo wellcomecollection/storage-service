@@ -51,7 +51,6 @@ object Main extends WellcomeTypesafeApp {
     new IngestsIndexerWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
       indexer = ingestIndexer,
-      metricsNamespace = config.requireString("aws.metrics.namespace")
     )
   }
 }

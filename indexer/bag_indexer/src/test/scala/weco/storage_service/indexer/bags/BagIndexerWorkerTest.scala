@@ -57,7 +57,6 @@ class BagIndexerWorkerTest
         val worker = new BagIndexerWorker(
           config = createAlpakkaSQSWorkerConfig(queue),
           indexer = createIndexer(index),
-          metricsNamespace = "indexer",
           bagTrackerClient = trackerClient
         )
 
@@ -96,7 +95,6 @@ class BagIndexerWorkerTest
         val worker = new BagIndexerWorker(
           config = createAlpakkaSQSWorkerConfig(queue),
           indexer = createIndexer(index),
-          metricsNamespace = "indexer",
           bagTrackerClient = trackerClient
         )
 
