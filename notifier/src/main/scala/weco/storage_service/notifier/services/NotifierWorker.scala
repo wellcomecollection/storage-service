@@ -32,7 +32,9 @@ class NotifierWorker[Destination](
 ) extends Runnable
     with Logging {
   private val worker =
-    new AlpakkaSQSWorker[CallbackNotification, IngestCallbackStatusUpdate](config)(processMessage)
+    new AlpakkaSQSWorker[CallbackNotification, IngestCallbackStatusUpdate](
+      config
+    )(processMessage)
 
   def processMessage(
     callbackNotification: CallbackNotification
