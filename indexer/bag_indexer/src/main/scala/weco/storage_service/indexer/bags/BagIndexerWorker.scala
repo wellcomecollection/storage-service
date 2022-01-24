@@ -25,10 +25,9 @@ import weco.storage_service.indexer.{
 import scala.concurrent.Future
 
 class BagIndexerWorker(
-  val config: AlpakkaSQSWorkerConfig,
+  config: AlpakkaSQSWorkerConfig,
   val indexer: Indexer[StorageManifest, IndexedStorageManifest],
   val bagTrackerClient: BagTrackerClient,
-  val metricsNamespace: String
 )(
   implicit
   val actorSystem: ActorSystem,
@@ -39,7 +38,7 @@ class BagIndexerWorker(
       BagRegistrationNotification,
       StorageManifest,
       IndexedStorageManifest
-    ](config, indexer, metricsNamespace) {
+    ](config, indexer) {
 
   def load(
     notification: BagRegistrationNotification

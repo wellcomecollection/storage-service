@@ -42,7 +42,6 @@ object Main extends WellcomeTypesafeApp {
 
     new BagTaggerWorker(
       config = AlpakkaSqsWorkerConfigBuilder.build(config),
-      metricsNamespace = config.requireString("aws.metrics.namespace"),
       bagTrackerClient = bagTrackerClient,
       applyTags = ApplyTags(),
       tagRules = TagRules.chooseTags

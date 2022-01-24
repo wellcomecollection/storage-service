@@ -1,7 +1,5 @@
 package weco.storage_service.ingests_worker.services
 
-import java.time.Instant
-
 import akka.actor.ActorSystem
 import grizzled.slf4j.Logging
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
@@ -16,7 +14,7 @@ import weco.messaging.worker.models.{
   Result,
   Successful
 }
-import weco.messaging.worker.monitoring.metrics.MetricsMonitoringProcessor
+import weco.messaging.worker.monitoring.metrics.MetricsProcessor
 import weco.monitoring.Metrics
 import weco.storage_service.ingests.models.{Ingest, IngestUpdate}
 import weco.storage_service.ingests_tracker.client.{
@@ -27,11 +25,11 @@ import weco.storage_service.ingests_tracker.client.{
 }
 import weco.typesafe.Runnable
 
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
+import java.time.Instant
+import scala.concurrent.{ExecutionContextExecutor, Future}
 
 class IngestsWorkerService(
-  workerConfig: AlpakkaSQSWorkerConfig,
-  metricsNamespace: String,
+  config: AlpakkaSQSWorkerConfig,
   ingestTrackerClient: IngestTrackerClient
 )(
   implicit actorSystem: ActorSystem,
@@ -42,14 +40,9 @@ class IngestsWorkerService(
 
   implicit val ec: ExecutionContextExecutor = actorSystem.dispatcher
 
-  private val monitoringProcessorBuilder = (ec: ExecutionContext) =>
-    new MetricsMonitoringProcessor[IngestUpdate](metricsNamespace)(mc, ec)
-
   private val worker =
-    AlpakkaSQSWorker[IngestUpdate, Instant, Instant, Ingest](
-      config = workerConfig,
-      monitoringProcessorBuilder = monitoringProcessorBuilder
-    )(processMessage)
+    new AlpakkaSQSWorker[IngestUpdate, Instant, Instant, Ingest](
+      config, new MetricsProcessor(config.metricsConfig.namespace))(processMessage)
 
   def processMessage(ingestUpdate: IngestUpdate): Future[Result[Ingest]] = {
     ingestTrackerClient.updateIngest(ingestUpdate).map {

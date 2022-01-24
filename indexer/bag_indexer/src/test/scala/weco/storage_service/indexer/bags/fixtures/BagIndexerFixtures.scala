@@ -95,7 +95,6 @@ trait BagIndexerFixtures
         val worker = new BagIndexerWorker(
           config = createAlpakkaSQSWorkerConfig(queue),
           indexer = createIndexer(index),
-          metricsNamespace = "indexer",
           bagTrackerClient = bagTrackerClient
         )
 
