@@ -11,11 +11,7 @@ import weco.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorker,
   AlpakkaSQSWorkerConfig
 }
-import weco.messaging.worker.models.{
-  Result,
-  RetryableFailure,
-  Successful
-}
+import weco.messaging.worker.models.{Result, RetryableFailure, Successful}
 import weco.monitoring.Metrics
 import weco.storage_service.bag_tracker.client.BagTrackerClient
 import weco.storage_service.BagRegistrationNotification
