@@ -12,7 +12,6 @@ import weco.messaging.sqsworker.alpakka.{
   AlpakkaSQSWorkerConfig
 }
 import weco.messaging.worker.models.{
-  NonDeterministicFailure,
   Result,
   RetryableFailure,
   Successful
