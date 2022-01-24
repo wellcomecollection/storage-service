@@ -52,7 +52,6 @@ trait BagVersionerFixtures
           bagVersioner = bagVersioner,
           ingestUpdater = ingestUpdater,
           outgoingPublisher = outgoingPublisher,
-          metricsNamespace = "bag_versioner"
         )
 
         worker.run()

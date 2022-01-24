@@ -26,7 +26,6 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
   bagRootFinder: BagRootFinder,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  val metricsNamespace: String
 )(
   implicit
   val mc: Metrics[Future],

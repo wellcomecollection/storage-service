@@ -41,7 +41,6 @@ class BagReplicatorWorker[
   ]],
   destinationConfig: ReplicatorDestinationConfig,
   replicator: Replicator[SrcLocation, DstLocation, DstPrefix],
-  val metricsNamespace: String,
   override val visibilityTimeout: Duration = 3.minutes
 )(
   implicit

@@ -32,7 +32,6 @@ class BagVersionerWorker[IngestDestination, OutgoingDestination](
   bagVersioner: BagVersioner,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
-  val metricsNamespace: String
 )(
   implicit val mc: Metrics[Future],
   val as: ActorSystem,

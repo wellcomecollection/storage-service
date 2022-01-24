@@ -71,7 +71,6 @@ object Main extends WellcomeTypesafeApp {
       ingestUpdater = ingestUpdater,
       registrationNotifications = registrationNotifications,
       register = register,
-      metricsNamespace = config.requireString("aws.metrics.namespace")
     )
   }
 }

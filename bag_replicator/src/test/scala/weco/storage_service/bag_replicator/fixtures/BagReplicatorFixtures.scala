@@ -105,7 +105,6 @@ trait BagReplicatorFixtures
         lockingService = lockingService,
         destinationConfig = replicatorDestinationConfig,
         replicator = replicator,
-        metricsNamespace = "bag_replicator",
         visibilityTimeout = visibilityTimeout
       )
 

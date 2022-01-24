@@ -37,7 +37,6 @@ trait BagRootFinderFixtures
         bagRootFinder = new BagRootFinder(),
         ingestUpdater = ingestUpdater,
         outgoingPublisher = outgoingPublisher,
-        metricsNamespace = "bag_root_finder"
       )
 
       worker.run()

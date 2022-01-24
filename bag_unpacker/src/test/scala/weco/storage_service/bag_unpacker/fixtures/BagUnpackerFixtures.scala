@@ -44,7 +44,6 @@ trait BagUnpackerFixtures
         ingestUpdater = ingestUpdater,
         outgoingPublisher = outgoingPublisher,
         unpacker = new S3Unpacker(),
-        metricsNamespace = "bag_unpacker"
       )
 
       bagUnpackerWorker.run()

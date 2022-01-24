@@ -98,7 +98,6 @@ object Main extends WellcomeTypesafeApp {
         destinationConfig = ReplicatorDestinationConfig
           .buildDestinationConfig(config),
         replicator = replicator,
-        metricsNamespace = config.requireString("aws.metrics.namespace")
       )
 
     provider match {

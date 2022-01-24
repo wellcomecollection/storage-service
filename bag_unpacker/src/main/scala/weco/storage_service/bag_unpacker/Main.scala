@@ -20,7 +20,6 @@ import weco.storage_service.config.builders.{
 }
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder
-import weco.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.ExecutionContext
 
@@ -61,7 +60,6 @@ object Main extends WellcomeTypesafeApp {
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,
       unpacker = new S3Unpacker(),
-      metricsNamespace = config.requireString("aws.metrics.namespace")
     )
   }
 }

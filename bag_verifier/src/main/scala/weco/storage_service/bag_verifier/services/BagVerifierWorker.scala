@@ -43,7 +43,6 @@ class BagVerifierWorker[
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
   verifier: BagVerifier[BagContext, BagLocation, BagPrefix],
-  val metricsNamespace: String,
   bagPayloadTranslator: BagPayloadTranslator[
     Payload,
     BagContext,
