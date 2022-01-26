@@ -105,11 +105,9 @@ class IngestsTrackerApi[CallbackDestination, IngestsDestination](
 
   override def run(): Future[Any] = {
     for {
-      server <- Http().bindAndHandle(
-        handler = route,
-        interface = host,
-        port = port
-      )
+      server <- Http()
+        .newServerAt(host, port)
+        .bindFlow(route)
 
       _ = info(s"Listening: $host:$port")
       _ <- server.whenTerminated

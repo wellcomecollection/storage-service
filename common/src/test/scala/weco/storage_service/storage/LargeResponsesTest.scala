@@ -193,7 +193,7 @@ class LargeResponsesTest extends AnyFunSpec with S3Fixtures with Akka {
     })
 
     val binding: Future[Http.ServerBinding] =
-      Http().bindAndHandle(routes, interface, port)
+      Http().newServerAt(interface, port).bindFlow(routes)
 
     val madeRequest = Http().singleRequest(
       HttpRequest(uri = s"http://$interface:$port")
