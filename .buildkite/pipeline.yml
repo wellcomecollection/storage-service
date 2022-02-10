@@ -1,47 +1,115 @@
 steps:
   - command: .buildkite/scripts/run_autoformat.py
     label: "autoformat"
+    agents:
+      queue: "scala"
 
   - command: .buildkite/scripts/run_job.py common
     label: "common"
+    agents:
+      queue: "scala"
+
   - command: .buildkite/scripts/run_job.py display
     label: "display"
+    agents:
+      queue: "scala"
+
+  - command: .buildkite/scripts/run_job.py indexer_common
+    label: "indexer common"
+    agents:
+      queue: "scala"
+    skip: "this only contains helpers for other test suites, not actual tests"
+
   - command: .buildkite/scripts/run_job.py bags_api
     label: "bags API"
+    agents:
+      queue: "scala"
+
   - command: .buildkite/scripts/run_job.py bag_register
     label: "bag register"
+    agents:
+      queue: "scala"
+
   - command: .buildkite/scripts/run_job.py bag_replicator
     label: "bag replicator"
+    agents:
+      queue: "scala"
+
   - command: .buildkite/scripts/run_job.py bag_root_finder
     label: "bag root finder"
+    agents:
+      queue: "scala"
+
   - command: .buildkite/scripts/run_job.py bag_tagger
     label: "bag tagger"
+    agents:
+      queue: "scala"
+
   - command: .buildkite/scripts/run_job.py bag_tracker
     label: "bag tracker"
+    agents:
+      queue: "scala"
+
   - command: .buildkite/scripts/run_job.py bag_verifier
     label: "bag verifier"
+    agents:
+      queue: "scala"
+
   - command: .buildkite/scripts/run_job.py bag_unpacker
     label: "bag unpacker"
+    agents:
+      queue: "scala"
+
   - command: .buildkite/scripts/run_job.py bag_versioner
     label: "bag versioner"
+    agents:
+      queue: "scala"
+
   - command: .buildkite/scripts/run_job.py replica_aggregator
     label: "replica aggregator"
+    agents:
+      queue: "scala"
+
   - command: .buildkite/scripts/run_job.py bag_indexer
     label: "bag indexer"
+    agents:
+      queue: "scala"
+
   - command: .buildkite/scripts/run_job.py ingests_indexer
     label: "ingests indexer"
+    agents:
+      queue: "scala"
+
   - command: .buildkite/scripts/run_job.py file_finder
     label: "file finder"
+    agents:
+      queue: "scala"
+
   - command: .buildkite/scripts/run_job.py file_indexer
     label: "file indexer"
+    agents:
+      queue: "scala"
+
   - command: .buildkite/scripts/run_job.py ingests_worker
     label: "ingests worker"
+    agents:
+      queue: "scala"
+
   - command: .buildkite/scripts/run_job.py ingests_tracker
     label: "ingests tracker"
+    agents:
+      queue: "scala"
+
   - command: .buildkite/scripts/run_job.py ingests_api
     label: "ingests API"
+    agents:
+      queue: "scala"
+
   - command: .buildkite/scripts/run_job.py notifier
     label: "notifier"
+    agents:
+      queue: "scala"
+
   - command:
       pip3 install --user tox &&
       cd scripts &&
