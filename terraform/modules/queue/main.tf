@@ -10,11 +10,13 @@ module "queue" {
 }
 
 module "scaling_alarm" {
-  source     = "git::github.com/wellcomecollection/terraform-aws-sqs//autoscaling?ref=v1.2.1"
+  source     = "git::github.com/wellcomecollection/terraform-aws-sqs//autoscaling?ref=v1.3.0"
   queue_name = module.queue.name
 
   queue_high_actions = var.queue_high_actions
   queue_low_actions  = var.queue_low_actions
+
+  cooldown_period = var.cooldown_period
 }
 
 resource "aws_iam_role_policy" "read_from_q" {

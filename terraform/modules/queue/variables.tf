@@ -30,3 +30,7 @@ variable "queue_low_actions" {
   type    = list(string)
 }
 
+variable "cooldown_period" {
+  type    = string
+  default = "1m"
+}

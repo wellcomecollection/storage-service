@@ -14,6 +14,10 @@ module "bag_replicator_input_queue" {
   # avoid messages appearing to time out and fail.
   visibility_timeout_seconds = 60 * 60 * 5
 
+  # We want to make sure the bag replicator doesn't get interrupted mid-work,
+  # so we increase the cooldown period to avoid premature scaling down.
+  cooldown_period = "15m"
+
   queue_high_actions = [
     module.bag_replicator.scale_up_arn,
   ]
@@ -49,6 +53,10 @@ module "bag_verifier_queue" {
   # We keep a high visibility timeout to
   # avoid messages appearing to time out and fail.
   visibility_timeout_seconds = 60 * 60 * 5
+
+  # We want to make sure the bag verifier doesn't get interrupted mid-work,
+  # so we increase the cooldown period to avoid premature scaling down.
+  cooldown_period = "15m"
 
   queue_high_actions = [
     module.bag_verifier.scale_up_arn,
