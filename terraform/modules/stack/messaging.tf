@@ -210,6 +210,10 @@ module "bag_verifier_pre_replicate_queue" {
   ]
 
   dlq_alarm_arn = var.dlq_alarm_arn
+
+  # We want to make sure the bag verifier doesn't get interrupted mid-work,
+  # so we increase the cooldown period to avoid premature scaling down.
+  cooldown_period = "15m"
 }
 
 module "bag_verifier_pre_replicate_output_topic" {
