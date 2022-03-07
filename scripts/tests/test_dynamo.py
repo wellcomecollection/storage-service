@@ -18,6 +18,7 @@ def test_can_delete_single_item(client):
         TableName="my-table",
         KeySchema=[{"AttributeName": "id", "KeyType": "HASH"}],
         AttributeDefinitions=[{"AttributeName": "id", "AttributeType": "N"}],
+        ProvisionedThroughput={"ReadCapacityUnits": 1, "WriteCapacityUnits": 1},
     )
 
     for i in range(5):
@@ -41,6 +42,7 @@ def test_can_delete_multiple_items(client):
         TableName="my-table",
         KeySchema=[{"AttributeName": "id", "KeyType": "HASH"}],
         AttributeDefinitions=[{"AttributeName": "id", "AttributeType": "N"}],
+        ProvisionedThroughput={"ReadCapacityUnits": 1, "WriteCapacityUnits": 1},
     )
 
     for i in range(50):
