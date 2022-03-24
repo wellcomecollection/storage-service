@@ -81,7 +81,9 @@ module "stack_staging" {
     local.archivematica_ingests_bucket_arn,
   ]
 
-  bag_register_output_subscribe_principals = []
+  bag_register_output_subscribe_principals = [
+    local.digirati_account_principal,
+  ]
 
   # This means the staging service might be interrupted (unlikely), but the
   # staging service doesn't make the same guarantees of uptime and this
