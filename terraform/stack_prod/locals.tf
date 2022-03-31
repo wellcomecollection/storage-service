@@ -22,7 +22,5 @@ locals {
   # TODO: This value should be exported from the workflow-infra state, not hard-coded
   workflow_bucket_arn              = "arn:aws:s3:::wellcomecollection-workflow-export-bagit"
   archivematica_ingests_bucket_arn = data.terraform_remote_state.archivematica_infra.outputs.ingests_bucket_arn
-
-  catalogue_pipeline_account_principal = "arn:aws:iam::760097843905:root"
 }
 

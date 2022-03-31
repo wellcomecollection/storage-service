@@ -166,9 +166,16 @@ data "aws_iam_policy_document" "azure_verifier_tags_readwrite" {
   }
 }
 
-# This policy document is specifically to allow subscription across account
-# boundaries.  It will only be used if there is a non-empty list of other
-# account principals to grant access to.
+# This policy document allows services to subscribe to the bag register
+# output topic.
+#
+# In particular, they can be notified when a new bag is stored in
+# the storage service.
+#
+# This includes supporting cross-account access to storage service
+# notifications, e.g. the METS adapter in the catalogue pipeline that
+# feeds our unified collections search.
+#
 data "aws_iam_policy_document" "allow_bag_registration_notification_subscription" {
   policy_id = "__default_policy_ID"
 
@@ -212,7 +219,14 @@ data "aws_iam_policy_document" "allow_bag_registration_notification_subscription
     sid = "__default_statement_ID"
   }
 
-  # Allow subscription by other principals
+  # Allow subscription by users in other accounts.
+  #
+  # The other account will need a corresponding permission that says which
+  # IAM entities in that account can subscribe to that topic.
+  #
+  # We give blanket permission to everything in that account, because it's
+  # easier than specifying individual roles here.
+  #
   statement {
     effect = "Allow"
 
@@ -223,7 +237,11 @@ data "aws_iam_policy_document" "allow_bag_registration_notification_subscription
     resources = [module.registered_bag_notifications_topic.arn]
 
     principals {
-      identifiers = var.bag_register_output_subscribe_principals
+      identifiers = [
+        for account_id in var.allow_cross_account_subscription_to_bag_register_output_from:
+        "arn:aws:iam::${account_id}:root"
+      ]
+
       type        = "AWS"
     }
   }

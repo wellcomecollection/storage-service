@@ -14,6 +14,10 @@ module "stack_prod" {
   min_capacity = 0
   max_capacity = 10
 
+  allow_cross_account_subscription_to_bag_register_output_from = [
+    "760097843905",  # catalogue
+  ]
+
   azure_ssm_parameter_base = "azure/wecostorageprod/wellcomecollection-storage-replica-netherlands"
 
   vpc_id = local.vpc_id
@@ -80,8 +84,6 @@ module "stack_prod" {
     local.workflow_bucket_arn,
     local.archivematica_ingests_bucket_arn,
   ]
-
-  bag_register_output_subscribe_principals = [local.catalogue_pipeline_account_principal]
 
   logging_container = {
     container_registry = "760097843905.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome"

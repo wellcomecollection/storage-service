@@ -20,6 +20,4 @@ locals {
   # TODO: This value should be exported from the workflow-infra state, not hard-coded
   workflow_bucket_arn              = "arn:aws:s3:::wellcomecollection-workflow-export-bagit-stage"
   archivematica_ingests_bucket_arn = data.terraform_remote_state.archivematica_infra.outputs.ingests_bucket_arn
-
-  digirati_account_principal = "arn:aws:iam::653428163053:root"
 }

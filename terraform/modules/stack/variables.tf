@@ -158,7 +158,9 @@ variable "max_capacity" {
   type = number
 }
 
-variable "bag_register_output_subscribe_principals" {
+variable "allow_cross_account_subscription_to_bag_register_output_from" {
+  description = "A list of account IDs that can subscribe to the bag register output topic"
+
   type = list(string)
 }
 
