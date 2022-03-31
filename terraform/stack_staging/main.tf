@@ -15,7 +15,7 @@ module "stack_staging" {
   max_capacity = 3
 
   allow_cross_account_subscription_to_bag_register_output_from = [
-    "653428163053",  # digirati
+    "653428163053", # digirati
   ]
 
   azure_ssm_parameter_base = "azure/wecostoragestage/wellcomecollection-storage-staging-replica-netherlands"

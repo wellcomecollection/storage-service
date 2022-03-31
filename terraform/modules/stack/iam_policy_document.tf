@@ -238,11 +238,11 @@ data "aws_iam_policy_document" "allow_bag_registration_notification_subscription
 
     principals {
       identifiers = [
-        for account_id in var.allow_cross_account_subscription_to_bag_register_output_from:
+        for account_id in var.allow_cross_account_subscription_to_bag_register_output_from :
         "arn:aws:iam::${account_id}:root"
       ]
 
-      type        = "AWS"
+      type = "AWS"
     }
   }
 }

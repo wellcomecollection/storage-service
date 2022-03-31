@@ -15,7 +15,7 @@ module "stack_prod" {
   max_capacity = 10
 
   allow_cross_account_subscription_to_bag_register_output_from = [
-    "760097843905",  # catalogue
+    "760097843905", # catalogue
   ]
 
   azure_ssm_parameter_base = "azure/wecostorageprod/wellcomecollection-storage-replica-netherlands"
