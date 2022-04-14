@@ -697,7 +697,7 @@ module "replica_aggregator" {
   subnets      = var.private_subnets
   service_name = "${var.namespace}-replica_aggregator"
 
-environment = {
+  environment = {
     replicas_table_name    = var.replicas_table_name
     queue_url              = module.replica_aggregator_input_queue.url
     outgoing_topic_arn     = module.replica_aggregator_output_topic.arn
