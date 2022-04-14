@@ -647,6 +647,17 @@ module "replicator_verifier_azure" {
   ingests_read_policy_json          = data.aws_iam_policy_document.unpacked_bags_bucket_readonly.json
   replicator_lock_table_policy_json = module.working_storage.replicator_lock_iam_policy
 
+  # Reducing the max capacity is somewhat speculative: we've seen very
+  # intermittent issues that we suspect are caused by saturating the S3–Azure
+  # connection, and so we want to avoid hitting those limits.
+  #
+  # We have plans for fixing this properly, but until we can do that we
+  # just cap the capacity in the hope we don't hit the same issues.
+  #
+  # See https://github.com/wellcomecollection/storage-service/issues/993
+  min_capacity = var.min_capacity
+  max_capacity = min(var.max_capacity, 8)
+
   security_group_ids = [
     aws_security_group.interservice.id,
     aws_security_group.service_egress.id,
@@ -663,9 +674,6 @@ module "replicator_verifier_azure" {
 
   bag_replicator_image = local.image_ids["bag_replicator"]
   bag_verifier_image   = local.image_ids["bag_verifier"]
-
-  min_capacity = var.min_capacity
-  max_capacity = var.max_capacity
 
   dlq_alarm_arn = var.dlq_alarm_arn
 
@@ -689,7 +697,7 @@ module "replica_aggregator" {
   subnets      = var.private_subnets
   service_name = "${var.namespace}-replica_aggregator"
 
-  environment = {
+environment = {
     replicas_table_name    = var.replicas_table_name
     queue_url              = module.replica_aggregator_input_queue.url
     outgoing_topic_arn     = module.replica_aggregator_output_topic.arn
@@ -708,7 +716,6 @@ module "replica_aggregator" {
   use_fargate_spot = true
 
   service_discovery_namespace_id = local.service_discovery_namespace_id
-
 
   deployment_service_name = "replica-aggregator"
   deployment_service_env  = var.release_label

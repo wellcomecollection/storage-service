@@ -131,3 +131,24 @@ variable "logging_container" {
     container_tag      = string
   })
 }
+
+# Because these operations take a long time (potentially copying thousands
+# of S3 objects for a single message), we keep a high visibility timeout to
+# avoid messages appearing to time out and fail.
+#
+# Also, we current lock over the entire destination prefix, and there are
+# issues if the lock expires before the message is retried.
+#
+# See https://github.com/wellcomecollection/storage-service/issues/993
+#
+variable "replicator_visibility_timeout_seconds" {
+  description = "Visibility timeout of the SQS queue for the replicator"
+  type        = number
+  default     = 60 * 60 * 5
+}
+
+variable "verifier_visibility_timeout_seconds" {
+  description = "Visibility timeout of the SQS queue for the verifier"
+  type        = number
+  default     = 60 * 60 * 5
+}

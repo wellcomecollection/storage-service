@@ -133,6 +133,10 @@ module "bag_unpacker_queue" {
   # avoid messages appearing to time out and fail.
   visibility_timeout_seconds = 60 * 60 * 5
 
+  # We want to make sure the bag unpacker doesn't get interrupted mid-work,
+  # so we increase the cooldown period to avoid premature scaling down.
+  cooldown_period = "15m"
+
   queue_high_actions = [
     module.bag_unpacker.scale_up_arn,
   ]
