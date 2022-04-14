@@ -14,6 +14,10 @@ module "stack_staging" {
   min_capacity = 0
   max_capacity = 3
 
+  allow_cross_account_subscription_to_bag_register_output_from = [
+    "653428163053", # digirati
+  ]
+
   azure_ssm_parameter_base = "azure/wecostoragestage/wellcomecollection-storage-staging-replica-netherlands"
 
   vpc_id = local.vpc_id
@@ -80,8 +84,6 @@ module "stack_staging" {
     local.workflow_bucket_arn,
     local.archivematica_ingests_bucket_arn,
   ]
-
-  bag_register_output_subscribe_principals = []
 
   # This means the staging service might be interrupted (unlikely), but the
   # staging service doesn't make the same guarantees of uptime and this
