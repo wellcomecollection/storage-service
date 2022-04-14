@@ -52,10 +52,10 @@ if __name__ == "__main__":
     }
 
     if name == "prod":
-        topic_arn = "arn:aws:sns:eu-west-1:975596993436:storage_prod_bag_unpacker_input"
+        topic_arn = "arn:aws:sns:eu-west-1:975596993436:storage-prod_bag_unpacker_input"
     elif name == "stage":
         topic_arn = (
-            "arn:aws:sns:eu-west-1:975596993436:storage_staging_bag_unpacker_input"
+            "arn:aws:sns:eu-west-1:975596993436:storage-staging_bag_unpacker_input"
         )
     else:
         assert False, f"Unrecognised API name: {name}"
