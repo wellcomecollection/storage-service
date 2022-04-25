@@ -9,10 +9,7 @@ module "bag_replicator_input_queue" {
 
   role_names = [module.bag_replicator.task_role_name]
 
-  # Because these operations take a long time (potentially copying thousands
-  # of S3 objects for a single message), we keep a high visibility timeout to
-  # avoid messages appearing to time out and fail.
-  visibility_timeout_seconds = 60 * 60 * 5
+  visibility_timeout_seconds = var.replicator_visibility_timeout_seconds
 
   # We want to make sure the bag replicator doesn't get interrupted mid-work,
   # so we increase the cooldown period to avoid premature scaling down.
@@ -50,9 +47,7 @@ module "bag_verifier_queue" {
 
   role_names = [module.bag_verifier.task_role_name]
 
-  # We keep a high visibility timeout to
-  # avoid messages appearing to time out and fail.
-  visibility_timeout_seconds = 60 * 60 * 5
+  visibility_timeout_seconds = var.verifier_visibility_timeout_seconds
 
   # We want to make sure the bag verifier doesn't get interrupted mid-work,
   # so we increase the cooldown period to avoid premature scaling down.
