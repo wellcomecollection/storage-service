@@ -19,6 +19,7 @@ The storage service is designed to:
 
 -   Ensure the safe, long-term (i.e. decades) storage of our digital assets
 -   Provide a scalable mechanism for identifying, retrieving, and storing content
+-   To support bulk processing of content, e.g. for file format migrations or batch analysis
 -   Follow industry best-practices around file integrity and audit trails
 -   Enable us to meet [NDSA Level 4][ndsa] for both digitised and ["born-digital"][born_digital] assets
 
