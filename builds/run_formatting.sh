@@ -22,7 +22,7 @@ fi
 docker run --tty --rm \
 	--volume "$ROOT:/repo" \
 	--workdir /repo \
-	"$ECR_REGISTRY/hashicorp/terraform:light" fmt -recursive
+	"public.ecr.aws/hashicorp/terraform:light" fmt -recursive
 
 docker run --tty --rm \
   --volume ~/.sbt:/root/.sbt \
