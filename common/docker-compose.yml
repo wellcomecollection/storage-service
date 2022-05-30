@@ -1,9 +1,9 @@
 s3:
-  image: "760097843905.dkr.ecr.eu-west-1.amazonaws.com/zenko/cloudserver:8.1.8"
+  image: "760097843905.dkr.ecr.eu-west-1.amazonaws.com/localstack/localstack"
   environment:
-    - "S3BACKEND=mem"
+    - SERVICES=s3
   ports:
-    - "33333:8000"
+    - "33333:4566"
 azurite:
   image: "mcr.microsoft.com/azure-storage/azurite"
   ports:
