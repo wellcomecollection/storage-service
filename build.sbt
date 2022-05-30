@@ -10,7 +10,6 @@ def setupProject(
   externalDependencies: Seq[ModuleID] = Seq(),
   description: String
 ): Project = {
-
   Metadata.write(project, folder, localDependencies, description)
 
   val dependsOn = localDependencies
