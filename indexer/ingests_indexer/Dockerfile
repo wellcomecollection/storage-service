@@ -1,4 +1,4 @@
-FROM 760097843905.dkr.ecr.eu-west-1.amazonaws.com/openjdk:11
+FROM public.ecr.aws/docker/library/openjdk:11
 
 LABEL maintainer = "Wellcome Collection <digital@wellcomecollection.org>"
 
