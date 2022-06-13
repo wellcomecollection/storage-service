@@ -6,7 +6,8 @@ set -o verbose
 
 ECR_REGISTRY="760097843905.dkr.ecr.eu-west-1.amazonaws.com"
 
-ROOT=$(git rev-parse --show-toplevel)
+ROOT="$(git rev-parse --show-toplevel)"
+ROOT="$(cd "$(dirname "$ROOT")"; pwd)/$(basename "$ROOT")"
 
 # Coursier cache location is platform-dependent
 # https://get-coursier.io/docs/cache.html#default-location
@@ -24,8 +25,10 @@ docker run --tty --rm \
   --volume ~/.ivy2:/root/.ivy2 \
   --volume "$HOST_COURSIER_CACHE:/root/$LINUX_COURSIER_CACHE" \
   --volume /var/run/docker.sock:/var/run/docker.sock \
-  --volume "$DOCKER_CONFIG:/root/.docker" \
+  --volume "${DOCKER_CONFIG:-$HOME/.docker}":/root/.docker \
   --net host \
   --volume "$ROOT:$ROOT" \
   --workdir "$ROOT" \
+  --env "BUILDKITE_BUILD_NUMBER" \
+  --env "ROOT" \
   "$ECR_REGISTRY/wellcome/sbt_wrapper" "$@"
