@@ -9,7 +9,6 @@ import weco.storage_service.ingests.models.IngestID
 import weco.storage_service.storage.models.{EnsureTrailingSlash, StorageSpace}
 import weco.storage_service.storage.services.DestinationBuilder
 import weco.storage._
-import weco.storage.listing.Listing
 import weco.storage.s3.S3ObjectLocationPrefix
 import weco.storage.transfer.{PrefixTransfer, PrefixTransferFailure}
 
@@ -30,8 +29,6 @@ trait Replicator[SrcLocation, DstLocation <: Location, DstPrefix <: Prefix[
     DstPrefix,
     DstLocation
   ]
-
-  implicit val dstListing: Listing[DstPrefix, DstLocation]
 
   def buildDestination(
     namespace: String,

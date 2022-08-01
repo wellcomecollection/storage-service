@@ -2,7 +2,6 @@ package weco.storage_service.bag_replicator.replicator.s3
 
 import com.amazonaws.services.s3.AmazonS3
 import weco.storage_service.bag_replicator.replicator.Replicator
-import weco.storage.listing.s3.S3ObjectLocationListing
 import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.transfer.s3.S3PrefixTransfer
 
@@ -24,9 +23,6 @@ class S3Replicator(implicit s3Client: AmazonS3)
   // to store them as Standard-IA than Standard.
   //
   implicit val prefixTransfer: S3PrefixTransfer = S3PrefixTransfer()
-
-  override implicit val dstListing: S3ObjectLocationListing =
-    S3ObjectLocationListing()
 
   override protected def buildDestinationFromParts(
     bucket: String,
