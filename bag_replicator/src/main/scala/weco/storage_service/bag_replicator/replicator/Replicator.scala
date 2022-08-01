@@ -75,7 +75,6 @@ trait Replicator[SrcLocation, DstLocation <: Location, DstPrefix <: Prefix[
     prefixTransfer.transferPrefix(
       srcPrefix = replicaSrcPrefix,
       dstPrefix = request.dstPrefix,
-
       // We used to condition this on whether there were any existing objects in
       // the prefix; if there weren't, we skip checking to avoid getting eventual
       // consistency from S3.  We no longer need to do so.
