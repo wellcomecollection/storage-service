@@ -298,71 +298,36 @@ trait ReplicatorTestCases[
     result.summary.maybeEndTime.isDefined shouldBe true
   }
 
-  describe(
-    "it only checks for existing objects if the destination is non-empty"
-  ) {
-    it("empty destination => don't check") {
-      withSrcNamespace { srcNamespace =>
-        withDstNamespace { dstNamespace =>
-          val srcLocation = createSrcLocationWith(srcNamespace)
-          putSrcObject(srcLocation, contents = randomAlphanumeric())
+  it("checks for existing objects before replicating") {
+    withSrcNamespace { srcNamespace =>
+      withDstNamespace { dstNamespace =>
+        val srcLocation = createSrcLocationWith(srcNamespace)
+        putSrcObject(srcLocation, contents = randomAlphanumeric())
 
-          val srcPrefix = createSrcPrefixWith(srcNamespace)
-          val dstPrefix = createDstPrefixWith(dstNamespace)
+        val dstLocation =
+          createDstLocationWith(dstNamespace, path = randomAlphanumeric())
+        putDstObject(dstLocation, contents = randomAlphanumeric())
 
-          withPrefixTransfer { prefixTransfer =>
-            val spyTransfer = spy(prefixTransfer)
+        val srcPrefix = createSrcPrefixWith(srcNamespace)
+        val dstPrefix = createDstPrefixWith(dstNamespace)
 
-            withReplicator(spyTransfer) {
-              _.replicate(
-                ingestId = createIngestID,
-                request = ReplicationRequest(
-                  srcPrefix = srcPrefix,
-                  dstPrefix = dstPrefix
-                )
-              ) shouldBe a[ReplicationSucceeded[_]]
-            }
+        withPrefixTransfer { prefixTransfer =>
+          val spyTransfer = spy(prefixTransfer)
 
-            verify(spyTransfer, times(1))
-              .transferPrefix(srcPrefix, dstPrefix, checkForExisting = false)
-            verify(spyTransfer, never())
-              .transferPrefix(srcPrefix, dstPrefix, checkForExisting = true)
+          withReplicator(spyTransfer) {
+            _.replicate(
+              ingestId = createIngestID,
+              request = ReplicationRequest(
+                srcPrefix = srcPrefix,
+                dstPrefix = dstPrefix
+              )
+            ) shouldBe a[ReplicationSucceeded[_]]
           }
-        }
-      }
-    }
 
-    it("non-empty destination => check") {
-      withSrcNamespace { srcNamespace =>
-        withDstNamespace { dstNamespace =>
-          val srcLocation = createSrcLocationWith(srcNamespace)
-          putSrcObject(srcLocation, contents = randomAlphanumeric())
-
-          val dstLocation =
-            createDstLocationWith(dstNamespace, path = randomAlphanumeric())
-          putDstObject(dstLocation, contents = randomAlphanumeric())
-
-          val srcPrefix = createSrcPrefixWith(srcNamespace)
-          val dstPrefix = createDstPrefixWith(dstNamespace)
-
-          withPrefixTransfer { prefixTransfer =>
-            val spyTransfer = spy(prefixTransfer)
-
-            withReplicator(spyTransfer) {
-              _.replicate(
-                ingestId = createIngestID,
-                request = ReplicationRequest(
-                  srcPrefix = srcPrefix,
-                  dstPrefix = dstPrefix
-                )
-              ) shouldBe a[ReplicationSucceeded[_]]
-            }
-
-            verify(spyTransfer, times(1))
-              .transferPrefix(srcPrefix, dstPrefix, checkForExisting = true)
-            verify(spyTransfer, never())
-              .transferPrefix(srcPrefix, dstPrefix, checkForExisting = false)
-          }
+          verify(spyTransfer, times(1))
+            .transferPrefix(srcPrefix, dstPrefix, checkForExisting = true)
+          verify(spyTransfer, never())
+            .transferPrefix(srcPrefix, dstPrefix, checkForExisting = false)
         }
       }
     }

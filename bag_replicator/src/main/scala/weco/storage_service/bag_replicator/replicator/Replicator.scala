@@ -59,32 +59,6 @@ trait Replicator[SrcLocation, DstLocation <: Location, DstPrefix <: Prefix[
       request = request
     )
 
-    // If we know that there is nothing under the prefix (and we're the only
-    // replicator writing to it due to the lock), we can skip checking for
-    // overwrites.
-    //
-    // This gives us read-after-write consistency, rather than eventual
-    // consistency, and makes the verifier more reliable.
-    //
-    // See: https://docs.aws.amazon.com/AmazonS3/latest/dev/Introduction.html
-    //
-    //      Amazon S3 provides read-after-write consistency for PUTS of new objects
-    //      in your S3 bucket in all Regions with one caveat. The caveat is that if
-    //      you make a HEAD or GET request to a key name before the object is created,
-    //      then create the object shortly after that, a subsequent GET might not
-    //      return the object due to eventual consistency.
-    //
-    // See also: https://github.com/wellcomecollection/platform/issues/3897
-    //
-    // In theory this could be even more sophisticated, and compare the keys to
-    // replicate against a list of existing keys -- but that would make the code
-    // even more complicated, and it's not clear it would be beneficial.
-    //
-    val checkForExisting = dstListing.list(request.dstPrefix) match {
-      case Right(listing) if listing.isEmpty => false
-      case _                                 => true
-    }
-
     // It's important that we add slashes to the end of our prefixes, so we're
     // listing a "directory" in S3, and we don't get partial "directories".
     //
@@ -98,14 +72,19 @@ trait Replicator[SrcLocation, DstLocation <: Location, DstPrefix <: Prefix[
     debug(
       "Triggering PrefixTransfer: " + "" +
         s"src = $replicaSrcPrefix, " +
-        s"dst = ${request.dstPrefix}, " +
-        s"checkForExisting = $checkForExisting"
+        s"dst = ${request.dstPrefix}"
     )
 
     prefixTransfer.transferPrefix(
       srcPrefix = replicaSrcPrefix,
       dstPrefix = request.dstPrefix,
-      checkForExisting = checkForExisting
+
+      // We used to condition this on whether there were any existing objects in
+      // the prefix; if there weren't, we skip checking to avoid getting eventual
+      // consistency from S3.  We no longer need to do so.
+      //
+      // See discussion on https://github.com/wellcomecollection/platform/issues/3897
+      checkForExisting = true
     ) match {
       case Right(_) =>
         ReplicationSucceeded(summary.complete)
