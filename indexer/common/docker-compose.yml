@@ -1,5 +1,5 @@
 elasticsearch:
-  image: "docker.elastic.co/elasticsearch/elasticsearch:7.3.0"
+  image: "docker.elastic.co/elasticsearch/elasticsearch:7.17.5"
   ports:
     - "9200:9200"
     - "9300:9300"
@@ -9,3 +9,4 @@ elasticsearch:
     - "cluster.name=wellcome"
     - "ES_JAVA_OPTS=-Xms750m -Xmx750m"
     - "discovery.type=single-node"
+    - "xpack.security.enabled=false"
