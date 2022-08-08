@@ -9,3 +9,4 @@ elasticsearch:
     - "cluster.name=wellcome"
     - "ES_JAVA_OPTS=-Xms750m -Xmx750m"
     - "discovery.type=single-node"
+    - "xpack.security.enabled=false"
