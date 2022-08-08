@@ -3,13 +3,13 @@ package weco.storage_service.generators
 import java.io.{File, FileOutputStream}
 import java.nio.file.Paths
 import java.time.LocalDate
-
 import weco.fixtures.RandomGenerators
 import weco.messaging.fixtures.SQS.Queue
 import weco.storage_service.bagit.models._
 import weco.storage_service.ingests.models.{IngestID, StorageProvider}
 import weco.storage_service.checksum._
 
+import java.util.concurrent.ThreadLocalRandom
 import scala.concurrent.duration._
 import scala.util.Random
 
@@ -122,9 +122,13 @@ trait StorageRandomGenerators extends RandomGenerators {
     ExternalDescription(randomAlphanumeric())
 
   def randomLocalDate: LocalDate = {
-    val startRange = -999999999
-    val maxValue = 1999999998
-    LocalDate.ofEpochDay(startRange + Random.nextInt(maxValue))
+    val startRange = LocalDate.of(-10000, 1, 1).toEpochDay
+    val endRange = LocalDate.of(10000, 12, 31).toEpochDay
+    LocalDate.ofEpochDay(
+      startRange + ThreadLocalRandom
+        .current()
+        .nextLong((endRange - startRange) + 1)
+    )
   }
 
   def createBagVersion: BagVersion =
