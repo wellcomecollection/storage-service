@@ -219,7 +219,7 @@ class CreateIngestApiTest
         assertCatchesMalformedRequest(
           badJson(json).noSpaces,
           expectedMessage =
-            "Invalid value at .ingestType: required property not supplied."
+            "Invalid value at .ingestType: Missing required field"
         )
       }
 
@@ -231,7 +231,7 @@ class CreateIngestApiTest
         assertCatchesMalformedRequest(
           badJson(json).noSpaces,
           expectedMessage =
-            "Invalid value at .ingestType.id: required property not supplied."
+            "Invalid value at .ingestType.id: Missing required field"
         )
       }
 
@@ -256,8 +256,7 @@ class CreateIngestApiTest
 
         assertCatchesMalformedRequest(
           badJson(json).noSpaces,
-          expectedMessage =
-            "Invalid value at .space: required property not supplied."
+          expectedMessage = "Invalid value at .space: Missing required field"
         )
       }
 
@@ -268,8 +267,7 @@ class CreateIngestApiTest
 
         assertCatchesMalformedRequest(
           badJson(json).noSpaces,
-          expectedMessage =
-            "Invalid value at .space.id: required property not supplied."
+          expectedMessage = "Invalid value at .space.id: Missing required field"
         )
       }
 
@@ -305,8 +303,7 @@ class CreateIngestApiTest
 
         assertCatchesMalformedRequest(
           badJson(json).noSpaces,
-          expectedMessage =
-            "Invalid value at .bag: required property not supplied."
+          expectedMessage = "Invalid value at .bag: Missing required field"
         )
       }
 
@@ -317,8 +314,7 @@ class CreateIngestApiTest
 
         assertCatchesMalformedRequest(
           badJson(json).noSpaces,
-          expectedMessage =
-            "Invalid value at .bag.info: required property not supplied."
+          expectedMessage = "Invalid value at .bag.info: Missing required field"
         )
       }
 
@@ -330,7 +326,7 @@ class CreateIngestApiTest
         assertCatchesMalformedRequest(
           badJson(json).noSpaces,
           expectedMessage =
-            "Invalid value at .bag.info.externalIdentifier: required property not supplied."
+            "Invalid value at .bag.info.externalIdentifier: Missing required field"
         )
       }
 
@@ -356,7 +352,7 @@ class CreateIngestApiTest
         assertCatchesMalformedRequest(
           badJson(json).noSpaces,
           expectedMessage =
-            "Invalid value at .sourceLocation: required property not supplied."
+            "Invalid value at .sourceLocation: Missing required field"
         )
       }
 
@@ -368,7 +364,7 @@ class CreateIngestApiTest
         assertCatchesMalformedRequest(
           badJson(json).noSpaces,
           expectedMessage =
-            "Invalid value at .sourceLocation.provider: required property not supplied."
+            "Invalid value at .sourceLocation.provider: Missing required field"
         )
       }
 
@@ -405,7 +401,7 @@ class CreateIngestApiTest
         assertCatchesMalformedRequest(
           badJson(json).noSpaces,
           expectedMessage =
-            "Invalid value at .sourceLocation.bucket: required property not supplied."
+            "Invalid value at .sourceLocation.bucket: Missing required field"
         )
       }
 
@@ -417,7 +413,7 @@ class CreateIngestApiTest
         assertCatchesMalformedRequest(
           badJson(json).noSpaces,
           expectedMessage =
-            "Invalid value at .sourceLocation.path: required property not supplied."
+            "Invalid value at .sourceLocation.path: Missing required field"
         )
       }
     }
@@ -447,8 +443,8 @@ class CreateIngestApiTest
       assertCatchesMalformedRequest(
         badJson(json).noSpaces,
         expectedMessage =
-          """|Invalid value at .sourceLocation: required property not supplied.
-             |Invalid value at .ingestType: required property not supplied.""".stripMargin
+          """|Invalid value at .sourceLocation: Missing required field
+             |Invalid value at .ingestType: Missing required field""".stripMargin
       )
     }
   }
