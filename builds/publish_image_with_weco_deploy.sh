@@ -5,7 +5,7 @@ set -o nounset
 set -o verbose
 
 ECR_REGISTRY="760097843905.dkr.ecr.eu-west-1.amazonaws.com"
-WECO_DEPLOY_IMAGE="wellcome/weco-deploy:5.6.11"
+WECO_DEPLOY_IMAGE="wellcome/weco-deploy:5.7"
 
 ROOT=$(git rev-parse --show-toplevel)
 
