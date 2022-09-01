@@ -1,5 +1,3 @@
-# -*- encoding: utf-8
-
 import pytest
 
 from wellcome_storage_service.exceptions import IngestNotFound, ServerError, UserError

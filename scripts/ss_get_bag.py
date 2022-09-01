@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8
+#!/usr/bin/env python3
 """
 Look up an bag.  Usage:
 

@@ -1,6 +1,3 @@
-# -*- encoding: utf-8
-
-
 def test_refreshes_an_expired_token(client):
     client.get_ingest("025a929b-7ec4-4fe9-836a-a65b39528b09")
 

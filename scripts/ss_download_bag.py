@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8
+#!/usr/bin/env python3
 """
 Download the contents of a bag.  Usage:
 
