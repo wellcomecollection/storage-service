@@ -3,7 +3,6 @@
 import functools
 import json
 import os
-import time
 
 from oauthlib.oauth2 import BackendApplicationClient
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
