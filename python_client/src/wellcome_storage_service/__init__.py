@@ -6,6 +6,7 @@ import os
 import time
 
 from oauthlib.oauth2 import BackendApplicationClient
+from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 from requests_oauthlib import OAuth2Session
 
 from .downloader import download_bag, download_compressed_bag
@@ -161,17 +162,23 @@ class RequestsStorageServiceClient(StorageServiceClientBase):
 def needs_token(f):
     @functools.wraps(f)
     def wrapper(self, *args, **kwargs):
-        # We need to refresh the token if:
-        #   1. We've never asked for a token before
-        #   2. The existing token is close to expiry
-        #
-        if not self.sess.token or (time.time() - 10 > self.sess.token["expires_at"]):
+        if not self.sess.token:
             self.sess.fetch_token(
                 token_url=self.token_url,
                 client_id=self.client_id,
                 client_secret=self.client_secret,
             )
-        return f(self, *args, **kwargs)
+
+        # We refresh the token if we get a TokenExpiredError from the client.
+        try:
+            return f(self, *args, **kwargs)
+        except TokenExpiredError:
+            self.sess.fetch_token(
+                token_url=self.token_url,
+                client_id=self.client_id,
+                client_secret=self.client_secret,
+            )
+            return f(self, *args, **kwargs)
 
     return wrapper
 
