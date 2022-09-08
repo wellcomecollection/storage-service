@@ -10,32 +10,16 @@ import getpass
 import json
 import math
 from pprint import pprint
-import uuid
 
-import boto3
 import click
-from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Search
+from elasticsearch.helpers import scan
 from tqdm import tqdm
 
-ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
-READ_ONLY_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
-
-STAGE_ES_SECRETS = {
-    "username": "staging/indexer/bags/es_username",
-    "password": "staging/indexer/bags/es_password",
-    "hostname": "staging/indexer/es_host",
-}
-
-PROD_ES_SECRETS = {
-    "username": "prod/indexer/bags/es_username",
-    "password": "prod/indexer/bags/es_password",
-    "hostname": "prod/indexer/es_host",
-}
+from clients import create_aws_client, create_es_client
 
 STAGE_CONFIG = {
     "table_name": "vhs-storage-staging-manifests-2020-07-24",
-    "topic_arn": "arn:aws:sns:eu-west-1:975596993436:storage_staging_bag_reindexer_output",
+    "topic_arn": "arn:aws:sns:eu-west-1:975596993436:storage-staging_bag_reindexer_output",
     "es_index": "storage_stage_bags",
 }
 
@@ -51,28 +35,6 @@ def scan_table(dynamodb_client, *, TableName, **kwargs):
 
     for page in paginator.paginate(TableName=TableName, **kwargs):
         yield from page["Items"]
-
-
-def create_client(service_name, role_arn):
-    def _assumed_role_session(role_arn):
-        sts_client = boto3.client("sts")
-
-        assumed_role_object = sts_client.assume_role(
-            RoleArn=role_arn, RoleSessionName=uuid.uuid1().hex
-        )
-
-        credentials = assumed_role_object["Credentials"]
-
-        session = boto3.Session(
-            aws_access_key_id=credentials["AccessKeyId"],
-            aws_secret_access_key=credentials["SecretAccessKey"],
-            aws_session_token=credentials["SessionToken"],
-        )
-
-        return session
-
-    session = _assumed_role_session(role_arn)
-    return session.client(service_name)
 
 
 def fake_notification(space, externalIdentifier, version):
@@ -202,10 +164,8 @@ def confirm_indexed(elastic_client, published_bags, index):
 
     def _query(ids):
         query_body = {"query": {"ids": {"values": ids}}}
-
-        s = Search(index=index).using(elastic_client).update_from_dict(query_body)
-
-        found_ids = [hit.id for hit in s.scan()]
+        scan_response = scan(elastic_client, index=index, query=query_body, _source=False)
+        found_ids = [hit["_id"] for hit in scan_response]
 
         return set(ids).difference(found_ids)
 
@@ -223,36 +183,11 @@ def confirm_indexed(elastic_client, published_bags, index):
     return flat_list
 
 
-def create_elastic_client(role_arn, es_secrets):
-    secretsmanager_client = create_client("secretsmanager", role_arn)
-
-    def _get_secret(secret_id):
-        response = secretsmanager_client.get_secret_value(SecretId=secret_id)
-
-        return response["SecretString"]
-
-    config = {key: _get_secret(value) for (key, value) in es_secrets.items()}
-
-    return Elasticsearch(
-        [config["hostname"]],
-        http_auth=(config["username"], config["password"]),
-        scheme="https",
-        port=9243,
-    )
-
-
 def get_config(env):
     if env == "prod":
         return PROD_CONFIG
     else:
         return STAGE_CONFIG
-
-
-def get_es_secrets(env):
-    if env == "prod":
-        return PROD_ES_SECRETS
-    else:
-        return STAGE_ES_SECRETS
 
 
 def gather_bags(dynamodb_client, table_name, bag_ids):
@@ -274,17 +209,14 @@ def cli():
 @click.command()
 @click.option("--env", default="stage", help="Environment to run against (prod|stage)")
 @click.option(
-    "--ids", default=[], help="Specific Bag to reindex (will not scan for all bags)"
+    "--ids", default=[], help="Specific Bag to reindex (will not scan for all bags)", multiple=True
 )
 @click.option("--dry_run", default=False, is_flag=True, help="Do not publish messages")
-@click.option(
-    "--role_arn", default=ROLE_ARN, help="AWS Role ARN to run this script with"
-)
-def publish(env, ids, dry_run, role_arn):
+def publish(env, ids, dry_run):
     config = get_config(env)
 
-    dynamodb_client = create_client("dynamodb", role_arn)
-    sns_client = create_client("sns", role_arn)
+    dynamodb_client = create_aws_client("dynamodb")
+    sns_client = create_aws_client("sns")
 
     if not ids:
         bags_to_publish = get_latest_bags(dynamodb_client, config["table_name"])
@@ -302,16 +234,12 @@ def publish(env, ids, dry_run, role_arn):
 @click.option(
     "--republish", default=False, is_flag=True, help="If not indexed, republish"
 )
-@click.option(
-    "--role_arn", default=ROLE_ARN, help="AWS Role ARN to run this script with"
-)
-def confirm(env, ids, republish, role_arn):
+def confirm(env, ids, republish):
     config = get_config(env)
-    es_secrets = get_es_secrets(env)
 
-    dynamodb_client = create_client("dynamodb", role_arn)
-    elastic_client = create_elastic_client(role_arn, es_secrets)
-    sns_client = create_client("sns", role_arn)
+    dynamodb_client = create_aws_client("dynamodb")
+    sns_client = create_aws_client("sns")
+    elastic_client = create_es_client(env=env, indexer_type="bags")
 
     if not ids:
         latest_bags = get_latest_bags(dynamodb_client, config["table_name"])
