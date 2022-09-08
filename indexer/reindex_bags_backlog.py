@@ -21,10 +21,16 @@ from tqdm import tqdm
 ROLE_ARN = "arn:aws:iam::975596993436:role/storage-developer"
 READ_ONLY_ROLE_ARN = "arn:aws:iam::975596993436:role/storage-read_only"
 
-ES_SECRETS = {
-    "username": "storage_bags_reindex_script/es_username",
-    "password": "storage_bags_reindex_script/es_password",
-    "hostname": "storage_bags_reindex_script/es_hostname",
+STAGE_ES_SECRETS = {
+    "username": "staging/indexer/bags/es_username",
+    "password": "staging/indexer/bags/es_password",
+    "hostname": "staging/indexer/es_host",
+}
+
+PROD_ES_SECRETS = {
+    "username": "prod/indexer/bags/es_username",
+    "password": "prod/indexer/bags/es_password",
+    "hostname": "prod/indexer/es_host",
 }
 
 STAGE_CONFIG = {
@@ -35,7 +41,7 @@ STAGE_CONFIG = {
 
 PROD_CONFIG = {
     "table_name": "vhs-storage-manifests-2020-07-24",
-    "topic_arn": "arn:aws:sns:eu-west-1:975596993436:storage_prod_bag_reindexer_output",
+    "topic_arn": "arn:aws:sns:eu-west-1:975596993436:storage-prod_bag_reindexer_output",
     "es_index": "storage_bags",
 }
 
@@ -242,6 +248,13 @@ def get_config(env):
         return STAGE_CONFIG
 
 
+def get_es_secrets(env):
+    if env == "prod":
+        return PROD_ES_SECRETS
+    else:
+        return STAGE_ES_SECRETS
+
+
 def gather_bags(dynamodb_client, table_name, bag_ids):
     split_bag_ids = bag_ids.split(",")
     bags = [get_bag(dynamodb_client, table_name, bag_id) for bag_id in split_bag_ids]
@@ -284,7 +297,7 @@ def publish(env, ids, dry_run, role_arn):
 @click.command()
 @click.option("--env", default="stage", help="Environment to run against (prod|stage)")
 @click.option(
-    "--ids", default=[], help="Specific Bag to confirm (will not scan for all bags)"
+    "--ids", default=[], help="Specific Bag to confirm (will not scan for all bags)", multiple=True
 )
 @click.option(
     "--republish", default=False, is_flag=True, help="If not indexed, republish"
@@ -294,9 +307,10 @@ def publish(env, ids, dry_run, role_arn):
 )
 def confirm(env, ids, republish, role_arn):
     config = get_config(env)
+    es_secrets = get_es_secrets(env)
 
     dynamodb_client = create_client("dynamodb", role_arn)
-    elastic_client = create_elastic_client(role_arn, ES_SECRETS)
+    elastic_client = create_elastic_client(role_arn, es_secrets)
     sns_client = create_client("sns", role_arn)
 
     if not ids:
