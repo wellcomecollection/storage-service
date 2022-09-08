@@ -3,86 +3,116 @@
 This script will send every bag in the storage service to the file indexer
 to be re-indexed in Elasticsearch.
 """
-
-import concurrent.futures
-import itertools
-import json
+import math
+from pprint import pprint
 
 import click
-import tqdm
+from tqdm import tqdm
 
-from reindex_bags_backlog import ROLE_ARN, get_config, create_client, scan_table
+from bags import gather_bags, get_latest_bags, publish_bags
+from clients import create_es_client, create_aws_client
+
+STAGE_CONFIG = {
+    "table_name": "vhs-storage-staging-manifests-2020-07-24",
+    "topic_arn": "arn:aws:sns:eu-west-1:975596993436:storage-staging_file_reindexer_output",
+    "es_index": "storage_stage_files",
+}
+
+PROD_CONFIG = {
+    "table_name": "vhs-storage-manifests-2020-07-24",
+    "topic_arn": "arn:aws:sns:eu-west-1:975596993436:storage-prod_file_reindexer_output",
+    "es_index": "storage_files",
+}
+
+
+def get_config(env):
+    if env == "prod":
+        return PROD_CONFIG
+    else:
+        return STAGE_CONFIG
+
+
+def confirm_indexed(elastic_client, published_bags, index):
+    print(f"\nConfirm indexed to {index}")
+
+    def _chunks(big_list, chunk_length):
+        for i in range(0, len(big_list), chunk_length):
+            yield big_list[i : i + chunk_length]
+
+    def _query(bag_ids):
+        external_identifiers = {id.split("/", 1)[1]: id for id in bag_ids}
+        response = elastic_client.search(
+            index=index,
+            query={"terms": {"externalIdentifier": list(external_identifiers.keys())} },
+            size=0,
+            aggregations={
+                "externalIdentifier": {
+                    "terms": {
+                        "field": "externalIdentifier",
+                        "size": len(external_identifiers)
+                    }
+                }
+            }
+        )
+        agg_buckets = response.body["aggregations"]["externalIdentifier"]["buckets"]
+        found_external_ids = set(b["key"] for b in agg_buckets)
+        missing_external_ids = set(external_identifiers.keys()).difference(found_external_ids)
+        return set(external_identifiers[id] for id in missing_external_ids)
+
+
+    chunk_length = 500
+    chunk_count = math.ceil(len(published_bags) / chunk_length)
+
+    diff_list = []
+    for chunk in tqdm(_chunks(published_bags, chunk_length), total=chunk_count):
+        diff_list.append(_query(chunk))
+
+    flat_list = [item for sublist in diff_list for item in sublist]
+
+    print(f"Found {len(flat_list)} not indexed.\n")
+
+    return flat_list
+
+@click.group()
+def cli():
+    pass
 
 
 @click.command()
 @click.option("--env", default="stage", help="Environment to run against (prod|stage)")
-def main(env):
+@click.option(
+    "--ids", default=[], help="Specific Bag to confirm (will not scan for all bags)", multiple=True
+)
+@click.option(
+    "--republish", default=False, is_flag=True, help="If not indexed, republish"
+)
+def confirm(env, ids, republish):
     config = get_config(env)
-    dynamodb_client = create_client("dynamodb", role_arn=ROLE_ARN)
-    sns_client = create_client("sns", role_arn=ROLE_ARN)
+    dynamodb_client = create_aws_client("dynamodb")
+    sns_client = create_aws_client("sns")
+    elastic_client = create_es_client(env=env, indexer_type="files")
 
-    table_name = config["table_name"]
-
-    if env == "prod":
-        topic_arn = (
-            "arn:aws:sns:eu-west-1:975596993436:storage_prod_file_reindexer_output"
-        )
+    if not ids:
+        latest_bags = get_latest_bags(dynamodb_client, table_name=config["table_name"])
     else:
-        topic_arn = (
-            "arn:aws:sns:eu-west-1:975596993436:storage_staging_file_reindexer_output"
-        )
+        latest_bags = gather_bags(dynamodb_client, table_name=config["table_name"], bag_ids=ids)
 
-    messages = []
+    bags_to_confirm = [key for (key, value) in latest_bags.items()]
+    not_indexed = confirm_indexed(elastic_client, bags_to_confirm, config["es_index"])
 
-    for item in tqdm.tqdm(scan_table(dynamodb_client, TableName=table_name)):
-        space, externalIdentifier = item["id"]["S"].split("/", 1)
-        version = int(item["version"]["N"])
-        notification = {
-            "space": space,
-            "externalIdentifier": externalIdentifier,
-            "version": f"v{version}",
-            "type": "RegisteredBagNotification",
-        }
+    if not_indexed:
+        print(f"NOT INDEXED: {len(not_indexed)}")
+        if republish:
+            print(f"Republishing missing files from {len(not_indexed)} bags.")
+            latest_bags = {bag_id: latest_bags[bag_id] for bag_id in not_indexed}
+            publish_bags(sns_client, topic_arn=config["topic_arn"], bags=latest_bags)
+        else:
+            pprint(not_indexed)
+    else:
+        print(f"{len(latest_bags)} bags published.\n")
 
-        # Skip Chemist & Druggist for now
-        if externalIdentifier == "b19974760":
-            continue
 
-        messages.append(json.dumps(notification))
-
-    def publish(message):
-        return sns_client.publish(TopicArn=topic_arn, Message=message)
-
-    message_count = len(messages)
-    messages = iter(messages)
-
-    print(f"\nPublishing {message_count} notifications to {topic_arn}")
-    with tqdm.tqdm(total=message_count) as progress_bar:
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            # Schedule the first N futures.  We don't want to schedule them all
-            # at once, to avoid consuming excessive amounts of memory.
-            futures = {
-                executor.submit(publish, msg) for msg in itertools.islice(messages, 10)
-            }
-
-            while futures:
-                # Wait for the next future to complete.
-                done, futures = concurrent.futures.wait(
-                    futures, return_when=concurrent.futures.FIRST_COMPLETED
-                )
-
-                for fut in done:
-                    fut.result()
-
-                progress_bar.update(len(done))
-
-                # Schedule the next set of futures.  We don't want more than N futures
-                # in the pool at a time, to keep memory consumption down.
-                for msg in itertools.islice(messages, len(done)):
-                    futures.add(executor.submit(publish, msg))
-
-    print(f"Published notifications for {message_count} bags.\n")
-
+cli.add_command(confirm)
 
 if __name__ == "__main__":
-    main()
+    cli()
