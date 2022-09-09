@@ -2,7 +2,8 @@ from tqdm import tqdm
 
 from messaging import publish_notifications
 
-def get_total_bags(dynamodb_client, *, table_name):
+
+def get_table_count(dynamodb_client, *, table_name):
     resp = dynamodb_client.describe_table(TableName=table_name)
     return resp["Table"]["ItemCount"]
 
@@ -15,7 +16,7 @@ def scan_table(dynamodb_client, *, TableName, **kwargs):
 
 
 def get_latest_bags(dynamodb_client, *, table_name):
-    total_bags = get_total_bags(dynamodb_client, table_name=table_name)
+    total_bags = get_table_count(dynamodb_client, table_name=table_name)
 
     print(f"\nGetting latest version of bags from {table_name}")
 
@@ -23,7 +24,7 @@ def get_latest_bags(dynamodb_client, *, table_name):
     seen_bags = 0
 
     for item in tqdm(
-        scan_table(dynamodb_client, TableName=table_name), total=total_bags
+            scan_table(dynamodb_client, TableName=table_name), total=total_bags
     ):
         dynamo_id = item["id"]["S"]
         version = int(item["version"]["N"])

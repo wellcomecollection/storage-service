@@ -13,11 +13,12 @@ def publish_notifications(sns_client, *, topic_arn, payloads, dry_run=False):
 
     def publish(payload):
         if not dry_run:
-            return sns_client.publish(
+            res = sns_client.publish(
                 TopicArn=topic_arn,
                 Subject=f"Sent by reindexer (user {getpass.getuser()})",
                 Message=json.dumps(payload),
             )
+            return res
         else:
             return True
 
