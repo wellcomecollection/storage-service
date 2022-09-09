@@ -3,7 +3,6 @@
 This script will send every bag in the storage service to the bags indexer
 to be re-indexed in Elasticsearch.
 """
-import math
 from pprint import pprint
 
 import click
@@ -11,6 +10,7 @@ from elasticsearch.helpers import scan
 
 from bags import get_latest_bags, gather_bags, publish_bags
 from clients import create_aws_client, create_es_client
+from chunked_diff import chunked_diff
 
 STAGE_CONFIG = {
     "table_name": "vhs-storage-staging-manifests-2020-07-24",
@@ -35,10 +35,6 @@ def get_config(env):
 def confirm_indexed(elastic_client, published_bags, index):
     print(f"\nConfirm indexed to {index}")
 
-    def _chunks(big_list, chunk_length):
-        for i in range(0, len(big_list), chunk_length):
-            yield big_list[i : i + chunk_length]
-
     def _query(ids):
         query_body = {"query": {"ids": {"values": ids}}}
         scan_response = scan(elastic_client, index=index, query=query_body, _source=False)
@@ -46,18 +42,14 @@ def confirm_indexed(elastic_client, published_bags, index):
 
         return set(ids).difference(found_ids)
 
-    chunk_length = 500
-    chunk_count = math.ceil(len(published_bags) / chunk_length)
-
-    diff_list = []
-    for chunk in tqdm(_chunks(published_bags, chunk_length), total=chunk_count):
-        diff_list.append(_query(chunk))
-
-    flat_list = [item for sublist in diff_list for item in sublist]
-
+    flat_list = chunked_diff(diff_for_chunk=_query, all_entries=published_bags)
     print(f"Found {len(flat_list)} not indexed.\n")
-
     return flat_list
+
+
+@click.group()
+def cli():
+    pass
 
 
 @click.command()

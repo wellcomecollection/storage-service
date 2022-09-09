@@ -7,12 +7,12 @@ from boto3.dynamodb.types import TypeDeserializer
 from pprint import pprint
 import click
 import datetime
-import math
 from tqdm import tqdm
 from elasticsearch.helpers import scan
 
 from bags import scan_table, get_table_count
 from clients import create_aws_client, create_es_client
+from chunked_diff import chunked_diff
 from messaging import publish_notifications
 
 STAGE_CONFIG = {
@@ -99,10 +99,6 @@ def get_ingests(dynamodb_client, *, table_name):
 def confirm_indexed(elastic_client, *, ingests_to_confirm, index):
     print(f"\nConfirm indexed to {index}")
 
-    def _chunks(big_list, chunk_length):
-        for i in range(0, len(big_list), chunk_length):
-            yield big_list[i: i + chunk_length]
-
     def _query(ids):
         query_body = {"query": {"ids": {"values": ids}}}
         scan_response = scan(elastic_client, index=index, query=query_body, _source=False)
@@ -110,17 +106,8 @@ def confirm_indexed(elastic_client, *, ingests_to_confirm, index):
 
         return set(ids).difference(found_ids)
 
-    chunk_length = 500
-    chunk_count = math.ceil(len(ingests_to_confirm) / chunk_length)
-
-    diff_list = []
-    for chunk in tqdm(_chunks(ingests_to_confirm, chunk_length), total=chunk_count):
-        diff_list.append(_query(chunk))
-
-    flat_list = [item for sublist in diff_list for item in sublist]
-
+    flat_list = chunked_diff(diff_for_chunk=_query, all_entries=ingests_to_confirm)
     print(f"Found {len(flat_list)} not indexed.\n")
-
     return flat_list
 
 
@@ -148,7 +135,7 @@ def confirm(env, republish):
         else:
             pprint(not_indexed)
     else:
-        print(f"{len(latest_bags)} ingests published.\n")
+        print(f"{len(latest_ingests)} ingests published.\n")
 
 
 cli.add_command(confirm)

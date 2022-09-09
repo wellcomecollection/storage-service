@@ -3,14 +3,13 @@
 This script will send every bag in the storage service to the file indexer
 to be re-indexed in Elasticsearch.
 """
-import math
 from pprint import pprint
 
 import click
-from tqdm import tqdm
 
 from bags import gather_bags, get_latest_bags, publish_bags
 from clients import create_es_client, create_aws_client
+from chunked_diff import chunked_diff
 
 STAGE_CONFIG = {
     "table_name": "vhs-storage-staging-manifests-2020-07-24",
@@ -35,15 +34,11 @@ def get_config(env):
 def confirm_indexed(elastic_client, published_bags, index):
     print(f"\nConfirm indexed to {index}")
 
-    def _chunks(big_list, chunk_length):
-        for i in range(0, len(big_list), chunk_length):
-            yield big_list[i : i + chunk_length]
-
     def _query(bag_ids):
         external_identifiers = {id.split("/", 1)[1]: id for id in bag_ids}
         response = elastic_client.search(
             index=index,
-            query={"terms": {"externalIdentifier": list(external_identifiers.keys())} },
+            query={"terms": {"externalIdentifier": list(external_identifiers.keys())}},
             size=0,
             aggregations={
                 "externalIdentifier": {
@@ -59,19 +54,10 @@ def confirm_indexed(elastic_client, published_bags, index):
         missing_external_ids = set(external_identifiers.keys()).difference(found_external_ids)
         return set(external_identifiers[id] for id in missing_external_ids)
 
-
-    chunk_length = 500
-    chunk_count = math.ceil(len(published_bags) / chunk_length)
-
-    diff_list = []
-    for chunk in tqdm(_chunks(published_bags, chunk_length), total=chunk_count):
-        diff_list.append(_query(chunk))
-
-    flat_list = [item for sublist in diff_list for item in sublist]
-
+    flat_list = chunked_diff(diff_for_chunk=_query, all_entries=published_bags)
     print(f"Found {len(flat_list)} not indexed.\n")
-
     return flat_list
+
 
 @click.group()
 def cli():
