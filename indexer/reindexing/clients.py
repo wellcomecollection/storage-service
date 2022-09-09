@@ -40,8 +40,7 @@ def create_es_client(*, env, indexer_type):
 
     endpoint = f"https://{_get_secret(hostname_secret)}:9243"
     return Elasticsearch(
-        endpoint,
-        http_auth=(_get_secret(username_secret), _get_secret(password_secret)),
+        endpoint, http_auth=(_get_secret(username_secret), _get_secret(password_secret))
     )
 
 
