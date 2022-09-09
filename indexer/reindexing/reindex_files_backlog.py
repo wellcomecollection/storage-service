@@ -43,22 +43,23 @@ def confirm_indexed(elastic_client, published_bags, index):
         external_identifiers = {id.split("/", 1)[1]: id for id in bag_ids}
         response = elastic_client.search(
             index=index,
-            query={"terms": {"externalIdentifier": list(external_identifiers.keys())} },
+            query={"terms": {"externalIdentifier": list(external_identifiers.keys())}},
             size=0,
             aggregations={
                 "externalIdentifier": {
                     "terms": {
                         "field": "externalIdentifier",
-                        "size": len(external_identifiers)
+                        "size": len(external_identifiers),
                     }
                 }
-            }
+            },
         )
         agg_buckets = response.body["aggregations"]["externalIdentifier"]["buckets"]
         found_external_ids = set(b["key"] for b in agg_buckets)
-        missing_external_ids = set(external_identifiers.keys()).difference(found_external_ids)
+        missing_external_ids = set(external_identifiers.keys()).difference(
+            found_external_ids
+        )
         return set(external_identifiers[id] for id in missing_external_ids)
-
 
     chunk_length = 500
     chunk_count = math.ceil(len(published_bags) / chunk_length)
@@ -73,6 +74,7 @@ def confirm_indexed(elastic_client, published_bags, index):
 
     return flat_list
 
+
 @click.group()
 def cli():
     pass
@@ -81,7 +83,10 @@ def cli():
 @click.command()
 @click.option("--env", default="stage", help="Environment to run against (prod|stage)")
 @click.option(
-    "--ids", default=[], help="Specific Bag to confirm (will not scan for all bags)", multiple=True
+    "--ids",
+    default=[],
+    help="Specific Bag to confirm (will not scan for all bags)",
+    multiple=True,
 )
 @click.option(
     "--republish", default=False, is_flag=True, help="If not indexed, republish"
@@ -95,7 +100,9 @@ def confirm(env, ids, republish):
     if not ids:
         latest_bags = get_latest_bags(dynamodb_client, table_name=config["table_name"])
     else:
-        latest_bags = gather_bags(dynamodb_client, table_name=config["table_name"], bag_ids=ids)
+        latest_bags = gather_bags(
+            dynamodb_client, table_name=config["table_name"], bag_ids=ids
+        )
 
     bags_to_confirm = [key for (key, value) in latest_bags.items()]
     not_indexed = confirm_indexed(elastic_client, bags_to_confirm, config["es_index"])

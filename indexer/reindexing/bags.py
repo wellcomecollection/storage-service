@@ -24,7 +24,7 @@ def get_latest_bags(dynamodb_client, *, table_name):
     seen_bags = 0
 
     for item in tqdm(
-            scan_table(dynamodb_client, TableName=table_name), total=total_bags
+        scan_table(dynamodb_client, TableName=table_name), total=total_bags
     ):
         dynamo_id = item["id"]["S"]
         version = int(item["version"]["N"])
@@ -51,7 +51,10 @@ def get_latest_bags(dynamodb_client, *, table_name):
 
 def gather_bags(dynamodb_client, *, table_name, bag_ids):
     split_bag_ids = bag_ids.split(",")
-    bags = [get_bag(dynamodb_client, table_name=table_name, bag_id=bag_id) for bag_id in split_bag_ids]
+    bags = [
+        get_bag(dynamodb_client, table_name=table_name, bag_id=bag_id)
+        for bag_id in split_bag_ids
+    ]
 
     bags_to_publish = {}
     for bag in bags:
@@ -92,5 +95,7 @@ def publish_bags(sns_client, *, topic_arn, bags, dry_run=False):
         payloads.append(payload)
 
     print(f"Prepared notifications for {len(payloads)} bags.\n")
-    publish_notifications(sns_client, topic_arn=topic_arn, payloads=payloads, dry_run=dry_run)
+    publish_notifications(
+        sns_client, topic_arn=topic_arn, payloads=payloads, dry_run=dry_run
+    )
     print(f"Published notifications for {len(payloads)} bags.\n")

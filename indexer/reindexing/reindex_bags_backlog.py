@@ -41,7 +41,9 @@ def confirm_indexed(elastic_client, published_bags, index):
 
     def _query(ids):
         query_body = {"query": {"ids": {"values": ids}}}
-        scan_response = scan(elastic_client, index=index, query=query_body, _source=False)
+        scan_response = scan(
+            elastic_client, index=index, query=query_body, _source=False
+        )
         found_ids = [hit["_id"] for hit in scan_response]
 
         return set(ids).difference(found_ids)
@@ -63,7 +65,10 @@ def confirm_indexed(elastic_client, published_bags, index):
 @click.command()
 @click.option("--env", default="stage", help="Environment to run against (prod|stage)")
 @click.option(
-    "--ids", default=[], help="Specific Bag to reindex (will not scan for all bags)", multiple=True
+    "--ids",
+    default=[],
+    help="Specific Bag to reindex (will not scan for all bags)",
+    multiple=True,
 )
 @click.option("--dry_run", default=False, is_flag=True, help="Do not publish messages")
 def publish(env, ids, dry_run):
@@ -73,9 +78,13 @@ def publish(env, ids, dry_run):
     sns_client = create_aws_client("sns")
 
     if not ids:
-        bags_to_publish = get_latest_bags(dynamodb_client, table_name=config["table_name"])
+        bags_to_publish = get_latest_bags(
+            dynamodb_client, table_name=config["table_name"]
+        )
     else:
-        bags_to_publish = gather_bags(dynamodb_client, table_name=config["table_name"], bag_ids=ids)
+        bags_to_publish = gather_bags(
+            dynamodb_client, table_name=config["table_name"], bag_ids=ids
+        )
 
     publish_bags(sns_client, config["topic_arn"], bags_to_publish, dry_run)
 
@@ -83,7 +92,10 @@ def publish(env, ids, dry_run):
 @click.command()
 @click.option("--env", default="stage", help="Environment to run against (prod|stage)")
 @click.option(
-    "--ids", default=[], help="Specific Bag to confirm (will not scan for all bags)", multiple=True
+    "--ids",
+    default=[],
+    help="Specific Bag to confirm (will not scan for all bags)",
+    multiple=True,
 )
 @click.option(
     "--republish", default=False, is_flag=True, help="If not indexed, republish"
@@ -98,7 +110,9 @@ def confirm(env, ids, republish):
     if not ids:
         latest_bags = get_latest_bags(dynamodb_client, table_name=config["table_name"])
     else:
-        latest_bags = gather_bags(dynamodb_client, table_name=config["table_name"], bag_ids=ids)
+        latest_bags = gather_bags(
+            dynamodb_client, table_name=config["table_name"], bag_ids=ids
+        )
 
     bags_to_confirm = [key for (key, value) in latest_bags.items()]
 

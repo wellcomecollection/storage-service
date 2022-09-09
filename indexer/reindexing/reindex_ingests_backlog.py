@@ -56,17 +56,18 @@ def get_ingests(dynamodb_client, *, table_name):
     total_ingests = get_table_count(dynamodb_client, table_name=table_name)
 
     deserializer = TypeDeserializer()
-    for item in tqdm(scan_table(dynamodb_client, TableName=table_name), total=total_ingests):
-        ingest = {
-            k: deserializer.deserialize(v)
-            for k, v in item.items()
-        }["payload"]
+    for item in tqdm(
+        scan_table(dynamodb_client, TableName=table_name), total=total_ingests
+    ):
+        ingest = {k: deserializer.deserialize(v) for k, v in item.items()}["payload"]
 
         # Modify the structure to match the JSON serialisation of the
         # Scala libraries.  Ideally we'd use Scala directly, but getting that
         # to work is more effort than I care to spend right now.
         try:
-            ingest["callback"]["status"] = {"type": get_first_key(ingest["callback"]["status"])}
+            ingest["callback"]["status"] = {
+                "type": get_first_key(ingest["callback"]["status"])
+            }
         except KeyError:
             pass
 
@@ -87,7 +88,7 @@ def get_ingests(dynamodb_client, *, table_name):
         source_location_type = get_first_key(ingest["sourceLocation"])
         ingest["sourceLocation"] = {
             "type": source_location_type,
-            "location": ingest["sourceLocation"][source_location_type]["location"]
+            "location": ingest["sourceLocation"][source_location_type]["location"],
         }
 
         if ingest["status"]["type"] == "Completed":
@@ -101,11 +102,13 @@ def confirm_indexed(elastic_client, *, ingests_to_confirm, index):
 
     def _chunks(big_list, chunk_length):
         for i in range(0, len(big_list), chunk_length):
-            yield big_list[i: i + chunk_length]
+            yield big_list[i : i + chunk_length]
 
     def _query(ids):
         query_body = {"query": {"ids": {"values": ids}}}
-        scan_response = scan(elastic_client, index=index, query=query_body, _source=False)
+        scan_response = scan(
+            elastic_client, index=index, query=query_body, _source=False
+        )
         found_ids = [hit["_id"] for hit in scan_response]
 
         return set(ids).difference(found_ids)
@@ -138,13 +141,21 @@ def confirm(env, republish):
     latest_ingests = list(get_ingests(dynamodb_client, table_name=config["table_name"]))
     ingest_ids = [ingest["id"] for ingest in latest_ingests]
 
-    not_indexed = set(confirm_indexed(elastic_client, ingests_to_confirm=ingest_ids, index=config["es_index"]))
+    not_indexed = set(
+        confirm_indexed(
+            elastic_client, ingests_to_confirm=ingest_ids, index=config["es_index"]
+        )
+    )
     if not_indexed:
         print(f"NOT INDEXED: {len(not_indexed)}")
         if republish:
             print(f"Republishing {len(not_indexed)} missing ingests.")
-            missing_ingests = [ingest for ingest in latest_ingests if ingest["id"] in not_indexed]
-            publish_notifications(sns_client, topic_arn=config["topic_arn"], payloads=missing_ingests)
+            missing_ingests = [
+                ingest for ingest in latest_ingests if ingest["id"] in not_indexed
+            ]
+            publish_notifications(
+                sns_client, topic_arn=config["topic_arn"], payloads=missing_ingests
+            )
         else:
             pprint(not_indexed)
     else:
