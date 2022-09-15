@@ -13,7 +13,6 @@ import weco.storage_service.bagit.models.BagVersion
   *         worker3 ---+
   *
   */
-
 sealed trait IngestUpdate {
   val id: IngestID
   val events: Seq[IngestEvent]

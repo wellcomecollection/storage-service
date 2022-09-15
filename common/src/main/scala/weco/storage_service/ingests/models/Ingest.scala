@@ -28,6 +28,7 @@ case class Ingest(
 }
 
 case object Ingest {
+
   /** These are the four states of an ingest.
     *
     * When an ingest is created through the ingests API, it starts in the
