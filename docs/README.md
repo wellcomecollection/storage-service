@@ -42,6 +42,7 @@ and some information about what to do when things go wrong:
 
 -   [Why ingests fail: understanding ingest errors]
 -   [Operational monitoring of the storage service]
+-   [Manually marking ingests as failed](howto/manually-marking-ingests-as-failed.md)
 
 
 
