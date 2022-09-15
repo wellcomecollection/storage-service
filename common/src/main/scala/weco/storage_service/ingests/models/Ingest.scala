@@ -28,6 +28,21 @@ case class Ingest(
 }
 
 case object Ingest {
+
+  /** These are the four states of an ingest.
+    *
+    * When an ingest is created through the ingests API, it starts in the
+    * "accepted" state.  As soon as any activity happens, it moves to "processing".
+    *
+    * These are the expected state transitions:
+    *
+    *                                  +---> succeeded
+    *                                  |
+    *      accepted ---> processing ---+
+    *                                  |
+    *                                  +---> failed
+    *
+    */
   sealed trait Status
   sealed trait Completed extends Status
 
