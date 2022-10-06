@@ -37,6 +37,7 @@ Once you're comfortable storing individual bags, you can read about more advance
 -   [Storing preservation and access copies in different storage classes]
 -   [Reporting on the contents of the storage service]
 -   [Getting callback notifications from the storage service]
+-   [Getting notifications of newly stored bags](howto/get-notifications-of-stored-bags.md)
 
 and some information about what to do when things go wrong:
 
