@@ -50,6 +50,16 @@ For more detailed information about the design, see [our documentation](docs).
 
 
 
+## Documentation
+
+We have [documentation](./docs) about the storage service, which includes:
+
+*   How-to guides explaining how to do common operations, e.g. ingest a new bag or look up a stored bag
+*   Reference material explaining how the storage service works
+*   Notes for developers who want to modify or extend the storage service
+
+
+
 ## Usage
 
 We run two instances of the storage service at Wellcome:
