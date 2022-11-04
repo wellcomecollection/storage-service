@@ -1,8 +1,0 @@
-{
-  "id" : "notifier",
-  "folder" : "notifier",
-  "dependencyIds" : [
-    "display"
-  ],
-  "description" : "Sends a callback notification to an external service after an ingest completes"
-}

@@ -1,8 +1,0 @@
-{
-  "id" : "ingests_worker",
-  "folder" : "ingests/ingests_worker",
-  "dependencyIds" : [
-    "ingests_tracker"
-  ],
-  "description" : "Records ingest updates sent by other services in the pipeline"
-}

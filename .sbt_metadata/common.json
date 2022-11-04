@@ -1,7 +1,0 @@
-{
-  "id" : "common",
-  "folder" : "common",
-  "dependencyIds" : [
-  ],
-  "description" : "Common utilities shared throughout the storage-service"
-}

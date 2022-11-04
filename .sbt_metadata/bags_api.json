@@ -1,9 +1,0 @@
-{
-  "id" : "bags_api",
-  "folder" : "bags_api",
-  "dependencyIds" : [
-    "display",
-    "bag_tracker"
-  ],
-  "description" : "User-facing bags API"
-}
