@@ -9,6 +9,7 @@ then
   PROJECT="$1"
   PROJECT_DIRECTORY="$1"
 elif (( $# == 2 ))
+then
   PROJECT="$1"
   PROJECT_DIRECTORY="$2"
 else
