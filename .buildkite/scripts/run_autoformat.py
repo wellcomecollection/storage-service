@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- encoding: utf-8
 """
 This script does autoformatting in Buildkite on pull requests.
 

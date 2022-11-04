@@ -9,4 +9,4 @@ PROJECT="$1"
 ROOT=$(git rev-parse --show-toplevel)
 BUILDS_DIR="$ROOT/builds"
 
-$BUILDS_DIR/run_sbt_task_in_docker.sh "project $PROJECT" "test"
+$BUILDS_DIR/run_sbt_task_in_docker.sh "project $PROJECT" "dockerComposeTest"
