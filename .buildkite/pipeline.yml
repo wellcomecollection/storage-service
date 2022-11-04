@@ -103,7 +103,7 @@ steps:
       agents:
         queue: "scala"
 
-    - command: ./builds/run_sbt_tests_with_docker_compose.sh ingests_api
+    - command: ./builds/run_sbt_tests.sh ingests_api
       label: "ingests API"
       agents:
         queue: "scala"
