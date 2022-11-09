@@ -14,9 +14,10 @@ import weco.storage_service.bagit.models._
 import weco.storage_service.bagit.services.BagMatcher
 import weco.storage.{Location, Prefix}
 
-class BagExpectedFixity[BagLocation <: Location, BagPrefix <: Prefix[
-  BagLocation
-]](root: BagPrefix)(
+class BagExpectedFixity[BagLocation <: Location,
+                        BagPrefix <: Prefix[
+                          BagLocation
+                        ]](root: BagPrefix)(
   implicit resolvable: Resolvable[BagLocation]
 ) extends ExpectedFixity[Bag]
     with Logging {

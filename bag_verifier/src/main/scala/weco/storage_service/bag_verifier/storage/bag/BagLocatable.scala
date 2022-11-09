@@ -9,9 +9,10 @@ import weco.storage_service.bagit.models.BagPath
 import weco.storage.{Location, Prefix}
 
 object BagLocatable {
-  implicit def bagPathLocatable[BagLocation <: Location, BagPrefix <: Prefix[
-    BagLocation
-  ]]: Locatable[BagLocation, BagPrefix, BagPath] =
+  implicit def bagPathLocatable[BagLocation <: Location,
+                                BagPrefix <: Prefix[
+                                  BagLocation
+                                ]]: Locatable[BagLocation, BagPrefix, BagPath] =
     new Locatable[BagLocation, BagPrefix, BagPath] {
       override def locate(bagPath: BagPath)(
         maybeRoot: Option[BagPrefix]

@@ -20,9 +20,12 @@ import weco.storage.transfer.{PrefixTransfer, PrefixTransferFailure}
 // For example, in the BagReplicator, we verify the tag manifests
 // are the same after replication completes.
 
-trait Replicator[SrcLocation, DstLocation <: Location, DstPrefix <: Prefix[
-  DstLocation
-]] extends Logging {
+trait Replicator[SrcLocation,
+                 DstLocation <: Location,
+                 DstPrefix <: Prefix[
+                   DstLocation
+                 ]]
+    extends Logging {
   implicit val prefixTransfer: PrefixTransfer[
     S3ObjectLocationPrefix,
     SrcLocation,

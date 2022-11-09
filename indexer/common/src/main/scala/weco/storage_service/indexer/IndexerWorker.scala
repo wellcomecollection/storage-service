@@ -85,7 +85,7 @@ abstract class IndexerWorker[SourceT, T, IndexedT](
           MessageAction.changeMessageVisibility(
             message = message,
             visibilityTimeout = visibilityTimeoutInSeconds
-          )
+        )
     }
 
   def run(): Future[Any] = worker.start

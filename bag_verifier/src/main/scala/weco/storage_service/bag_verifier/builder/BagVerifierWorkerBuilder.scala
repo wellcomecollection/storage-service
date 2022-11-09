@@ -145,7 +145,7 @@ object BagVerifierWorkerBuilder {
           srcRoot = payload.srcPrefix,
           replicaRoot =
             payload.dstLocation.prefix.asInstanceOf[S3ObjectLocationPrefix]
-        )
+      )
     )
   }
 
@@ -187,7 +187,7 @@ object BagVerifierWorkerBuilder {
           srcRoot = payload.srcPrefix,
           replicaRoot =
             payload.dstLocation.prefix.asInstanceOf[AzureBlobLocationPrefix]
-        )
+      )
     )
   }
 }

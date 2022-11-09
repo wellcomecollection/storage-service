@@ -69,7 +69,9 @@ object Main extends WellcomeTypesafeApp {
       StorageProvider.apply(config.requireString("bag-replicator.provider"))
 
     def createLockingService[DstPrefix <: Prefix[_ <: Location]] =
-      new DynamoLockingService[IngestStepResult[ReplicationSummary[DstPrefix]], Try]()
+      new DynamoLockingService[
+        IngestStepResult[ReplicationSummary[DstPrefix]],
+        Try]()
 
     def createBagReplicatorWorker[
       SrcLocation,
@@ -79,8 +81,9 @@ object Main extends WellcomeTypesafeApp {
       ]
     ](
       lockingService: DynamoLockingService[IngestStepResult[
-        ReplicationSummary[DstPrefix]
-      ], Try],
+                                             ReplicationSummary[DstPrefix]
+                                           ],
+                                           Try],
       replicator: Replicator[SrcLocation, DstLocation, DstPrefix]
     ): BagReplicatorWorker[
       SNSConfig,
