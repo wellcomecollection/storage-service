@@ -14,5 +14,3 @@ docker run --tty --rm \
 	"$ECR_REGISTRY/wellcome/flake8:latest" \
     --exclude .git,__pycache__,target,.terraform \
     --ignore=E501,E122,E126,E203,W503
-
-git diff --exit-code

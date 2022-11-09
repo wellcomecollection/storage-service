@@ -11,8 +11,6 @@ def setupProject(
   description: String
 ): Project = {
 
-  Metadata.write(project, folder, localDependencies, description)
-
   val dependsOn = localDependencies
     .map { project: Project =>
       ClasspathDependency(

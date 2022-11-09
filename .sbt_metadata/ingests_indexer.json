@@ -1,9 +1,0 @@
-{
-  "id" : "ingests_indexer",
-  "folder" : "indexer/ingests_indexer",
-  "dependencyIds" : [
-    "display",
-    "indexer_common"
-  ],
-  "description" : "Indexes information about ingests in an Elasticsearch cluster"
-}

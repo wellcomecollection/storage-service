@@ -1,21 +1,40 @@
 #!/usr/bin/env bash
+<<EOF
+Run tests for an sbt project.
+
+This script will automatically detect whether we need to start containers
+using Docker Compose as part of these tests.
+
+This script is mirrored across our Scala repos.
+
+== Usage ==
+
+Pass the name of the sbt project as a single argument, e.g.
+
+    $ run_sbt_tests.sh file_indexer
+    $ run_sbt_tests.sh snapshot_generator
+    $ run_sbt_tests.sh transformer_mets
+
+EOF
 
 set -o errexit
 set -o nounset
-set -o verbose
 
-PROJECT="$1"
+if (( $# == 1))
+then
+  PROJECT_NAME="$1"
+else
+  echo "Usage: run_sbt_tests.sh <PROJECT>" >&2
+  exit 1
+fi
 
-PROJECT_DIRECTORY=$(jq -r .folder ".sbt_metadata/$PROJECT.json")
+PROJECT_DIRECTORY=$(./builds/get_sbt_project_directory.sh "$PROJECT_NAME")
 
-ROOT=$(git rev-parse --show-toplevel)
-BUILDS_DIR="$ROOT/builds"
+echo "*** Running sbt tests"
 
 if [[ -f "$PROJECT_DIRECTORY/docker-compose.yml" ]]
 then
-  TEST_COMMAND=";dockerComposeUp;test;dockerComposeStop"
+  ./builds/run_sbt_task_in_docker.sh "project $PROJECT_NAME" "dockerComposeTest"
 else
-  TEST_COMMAND="test"
+  ./builds/run_sbt_task_in_docker.sh "project $PROJECT_NAME" "test"
 fi
-
-$BUILDS_DIR/run_sbt_task_in_docker.sh "project $PROJECT" "$TEST_COMMAND"

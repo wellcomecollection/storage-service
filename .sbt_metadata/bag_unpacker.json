@@ -1,8 +1,0 @@
-{
-  "id" : "bag_unpacker",
-  "folder" : "bag_unpacker",
-  "dependencyIds" : [
-    "common"
-  ],
-  "description" : "Unpacks a bag that's compressed as a tar.gz into individual files"
-}

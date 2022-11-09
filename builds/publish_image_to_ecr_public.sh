@@ -5,10 +5,10 @@ set -o nounset
 set -o verbose
 
 PROJECT="$1"
+IMAGE_TAG="$2"
 
 ECR_REGISTRY="public.ecr.aws/y1p3h6z3"
 
-CURRENT_COMMIT=$(git rev-parse HEAD)
 ROOT=$(git rev-parse --show-toplevel)
 
 if [[ "${BUILDKITE:-}" = "true" ]]
