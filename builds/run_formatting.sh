@@ -14,12 +14,6 @@ docker run --tty --rm \
 
 ./builds/run_sbt_task_in_docker.sh "scalafmt"
 
-# Undo any formatting changes to the source_model code copied from
-# the pipeline repo.  Ideally I'd have scalafmt ignore them, but I
-# can't work out how to do that.
-git checkout common/stacks/src/main/scala/weco/catalogue/source_model
-git checkout common/stacks/src/test/scala/weco/catalogue/source_model
-
 docker run --tty --rm \
 	--volume "$ROOT:/repo" \
 	"$ECR_REGISTRY/wellcome/format_python:112"
