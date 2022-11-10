@@ -45,9 +45,12 @@ trait ReplicatedBagVerifier[
     bagReader.readable
 }
 
-trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Location, BagPrefix <: Prefix[
-  BagLocation
-]] extends Logging
+trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix],
+                  BagLocation <: Location,
+                  BagPrefix <: Prefix[
+                    BagLocation
+                  ]]
+    extends Logging
     with VerifyBagDeclaration[BagLocation, BagPrefix]
     with VerifyChecksumAndSize[BagLocation, BagPrefix]
     with VerifyExternalIdentifier

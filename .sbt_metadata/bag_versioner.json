@@ -1,8 +1,0 @@
-{
-  "id" : "bag_versioner",
-  "folder" : "bag_versioner",
-  "dependencyIds" : [
-    "common"
-  ],
-  "description" : "Assigns a version to a bag as it's being ingested"
-}

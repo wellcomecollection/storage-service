@@ -9,9 +9,11 @@ import weco.storage_service.bag_verifier.models.BagVerifierError
 import weco.storage_service.bagit.models.UnreferencedFiles
 import weco.storage.{Location, Prefix}
 
-trait VerifyNoUnreferencedFiles[BagLocation <: Location, BagPrefix <: Prefix[
-  BagLocation
-]] extends Logging {
+trait VerifyNoUnreferencedFiles[BagLocation <: Location,
+                                BagPrefix <: Prefix[
+                                  BagLocation
+                                ]]
+    extends Logging {
 
   // Files that it's okay not to be referenced by any other manifests/files.
   //
