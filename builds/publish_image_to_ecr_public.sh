@@ -28,10 +28,10 @@ PASSWORD=$(python3 "$ROOT/builds/get_ecr_public_password.py")
 
 docker login --username AWS --password "$PASSWORD" public.ecr.aws
 
-docker tag "$PROJECT_NAME:$CURRENT_COMMIT" "$ECR_REGISTRY/$PROJECT_NAME:ref.$IMAGE_TAG"
+docker tag "$PROJECT_NAME:$IMAGE_TAG" "$ECR_REGISTRY/$PROJECT_NAME:ref.$IMAGE_TAG"
 docker push "$ECR_REGISTRY/$PROJECT_NAME:ref.$IMAGE_TAG"
 docker rmi "$ECR_REGISTRY/$PROJECT_NAME:ref.$IMAGE_TAG"
 
-docker tag "$PROJECT_NAME:$CURRENT_COMMIT" "$ECR_REGISTRY/$PROJECT_NAME:latest"
+docker tag "$PROJECT_NAME:$IMAGE_TAG" "$ECR_REGISTRY/$PROJECT_NAME:latest"
 docker push "$ECR_REGISTRY/$PROJECT_NAME:latest"
 docker rmi "$ECR_REGISTRY/$PROJECT_NAME:latest"
