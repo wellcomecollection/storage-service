@@ -25,7 +25,4 @@ This page explains how a merge to the `main` branch becomes a Docker image in EC
     The image is tagged with the Git ref of the merge commit (e.g. `ref.9ff8df730259938685785337579137e097a9157f`) and the tag `latest`.
     Note that the `latest` tag is a tag that moves to reflect the last image pushed by BuildKite.
 
-    BuildKite then publishes the Docker image to two locations:
-
-    -   ECR: The Docker image is published using [weco-deploy](https://github.com/wellcomecollection/weco-deploy), a custom Python tool we use to manage tags on ECR images and deploy ECS services.
-    -   ECR Public: The Docker image is published using [a shell script](../../publish_image_to_ecr_public.sh)
+    BuildKite then publishes the Docker image to two locations: ECR and ECR Public.
