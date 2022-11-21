@@ -33,6 +33,20 @@ def get_client(*, api_url):
     )
 
 
+def pprint_time(seconds):
+    if seconds > 60 * 60:
+        hours = seconds // 60 * 60
+        minutes = (seconds % (60 * 60)) // 60
+        seconds = seconds % 60
+        return "%dh %dm %ds"
+    elif seconds > 60 * 60:
+        minutes = (seconds) // 60
+        seconds = seconds % 60
+        return "%dm %ds"
+    else:
+        return "%ds"
+
+
 if __name__ == "__main__":
     try:
         api_url = {
@@ -55,12 +69,12 @@ if __name__ == "__main__":
     print(f"Waiting for ingest {ingest_url}")
 
     now = time.time()
-    while time.time() - now <= 3600:
+    while time.time() - now <= 2 * 60 * 60:
         current_ingest = client.get_ingest_from_location(ingest_url)
         status = current_ingest["status"]["id"]
         elapsed_time = time.time() - now
 
-        print(f"status = {status.ljust(9)} (t = {int(elapsed_time)}s)")
+        print(f"status = {status.ljust(9)} (t = {pprint_time(elapsed_time)})")
 
         if status == "succeeded":
             print(f"🎉 Test bag successful!")
@@ -72,4 +86,4 @@ if __name__ == "__main__":
             time.sleep(5)
 
     else:  # no break
-        sys.exit(f"Ingest did not complete within an hour: {ingest_url}")
+        sys.exit(f"Ingest did not complete within two hours: {ingest_url}")
