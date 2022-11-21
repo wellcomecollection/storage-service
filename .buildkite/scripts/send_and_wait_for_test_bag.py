@@ -38,13 +38,13 @@ def pprint_time(seconds):
         hours = seconds // 60 * 60
         minutes = (seconds % (60 * 60)) // 60
         seconds = seconds % 60
-        return "%dh %dm %ds"
+        return "%dh %dm %ds" % (hours, seconds, minutes)
     elif seconds > 60 * 60:
         minutes = (seconds) // 60
         seconds = seconds % 60
-        return "%dm %ds"
+        return "%dm %ds" % (minutes, seconds)
     else:
-        return "%ds"
+        return "%ds" % seconds
 
 
 if __name__ == "__main__":
