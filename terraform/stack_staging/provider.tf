@@ -18,11 +18,6 @@ provider "aws" {
   default_tags {
     tags = local.default_tags
   }
-
-  # Ignore deployment tags on services
-  ignore_tags {
-    keys = ["deployment:label"]
-  }
 }
 
 provider "aws" {
