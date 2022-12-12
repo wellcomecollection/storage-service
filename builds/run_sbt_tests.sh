@@ -34,7 +34,7 @@ echo "*** Running sbt tests"
 
 if [[ -f "$PROJECT_DIRECTORY/docker-compose.yml" ]]
 then
-  ./builds/run_sbt_task_in_docker.sh "project $PROJECT_NAME" "dockerComposeTest"
+  ./builds/run_sbt_task_in_docker.sh "project $PROJECT_NAME" ";dockerComposeUp;test;dockerComposeStop"
 else
   ./builds/run_sbt_task_in_docker.sh "project $PROJECT_NAME" "test"
 fi
