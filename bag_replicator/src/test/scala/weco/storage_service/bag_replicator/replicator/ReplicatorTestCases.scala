@@ -324,10 +324,7 @@ trait ReplicatorTestCases[
             ) shouldBe a[ReplicationSucceeded[_]]
           }
 
-          verify(spyTransfer, times(1))
-            .transferPrefix(srcPrefix, dstPrefix, checkForExisting = true)
-          verify(spyTransfer, never())
-            .transferPrefix(srcPrefix, dstPrefix, checkForExisting = false)
+          verify(spyTransfer, times(1)).transferPrefix(srcPrefix, dstPrefix)
         }
       }
     }
