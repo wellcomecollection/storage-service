@@ -1,6 +1,5 @@
 package weco.storage_service.bag_replicator.replicator.azure
 
-import com.amazonaws.services.s3.model.S3ObjectSummary
 import weco.fixtures.TestWith
 import weco.storage_service.bag_replicator.replicator.ReplicatorTestCases
 import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
@@ -10,12 +9,16 @@ import weco.storage.listing.Listing
 import weco.storage.listing.azure.AzureBlobLocationListing
 import weco.storage.store.azure.AzureTypedStore
 import weco.storage.streaming.Codec._
-import weco.storage.transfer.azure.{AzurePrefixTransfer, AzurePutBlockTransfer}
+import weco.storage.transfer.azure.{
+  AzurePrefixTransfer,
+  AzurePutBlockTransfer,
+  SourceS3Object
+}
 
 class AzureReplicatorTest
     extends ReplicatorTestCases[
       Container,
-      S3ObjectSummary,
+      SourceS3Object,
       AzureBlobLocation,
       AzureBlobLocationPrefix,
       AzurePrefixTransfer
