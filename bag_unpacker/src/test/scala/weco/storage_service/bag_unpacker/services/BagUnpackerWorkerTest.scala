@@ -1,7 +1,6 @@
 package weco.storage_service.bag_unpacker.services
 
 import java.nio.file.Paths
-import com.amazonaws.services.s3.model.ObjectMetadata
 import org.scalatest.TryValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
