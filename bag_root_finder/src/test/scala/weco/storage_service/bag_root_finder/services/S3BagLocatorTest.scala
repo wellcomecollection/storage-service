@@ -172,8 +172,8 @@ class S3BagLocatorTest extends AnyFunSpec with Matchers with S3Fixtures {
   }
 
   def createObjectsWith(bucket: Bucket, keys: String*): Unit =
-    keys.foreach { k =>
-      s3Client.putObject(bucket.name, k, "example object")
+    keys.foreach { key =>
+      putString(S3ObjectLocation(bucket.name, key), contents = "example object")
     }
 
   // TODO: Upstream into scala-libs

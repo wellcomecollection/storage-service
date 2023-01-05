@@ -35,11 +35,7 @@ class S3FixityCheckerTest
   override def putString(location: S3ObjectLocation, contents: String)(
     implicit context: Unit
   ): Unit =
-    s3Client.putObject(
-      location.bucket,
-      location.key,
-      contents
-    )
+    putString(location, contents)
 
   override def withStreamReader[R](
     testWith: TestWith[S3StreamStore, R]

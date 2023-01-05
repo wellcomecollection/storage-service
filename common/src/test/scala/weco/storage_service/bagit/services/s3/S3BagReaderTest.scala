@@ -30,7 +30,7 @@ class S3BagReaderTest
   override def deleteFile(root: S3ObjectLocationPrefix, path: String)(
     implicit context: Unit
   ): Unit =
-    s3Client.deleteObject(root.bucket, root.asLocation(path).key)
+    deleteObject(root.asLocation(path))
 
   override def withContext[R](testWith: TestWith[Unit, R]): R = testWith(())
 
