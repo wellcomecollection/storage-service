@@ -63,7 +63,7 @@ trait BagsApiFixture
             override val bagTrackerClient: BagTrackerClient = trackerClient
 
             override val s3Uploader: S3Uploader = uploader
-            override val val s3PresignedUrls: S3PresignedUrls = new S3PresignedUrls()
+            override val s3PresignedUrls: S3PresignedUrls = new S3PresignedUrls()
             override val s3Prefix: S3ObjectLocationPrefix = locationPrefix
 
             override val cacheDuration: Duration = 1 days
