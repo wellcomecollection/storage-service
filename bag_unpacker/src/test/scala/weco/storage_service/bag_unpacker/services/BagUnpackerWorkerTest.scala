@@ -4,10 +4,10 @@ import java.nio.file.Paths
 import org.scalatest.TryValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import weco.fixtures.{LocalResources, TestWith}
+import weco.fixtures.TestWith
 import weco.json.JsonUtil._
 import weco.messaging.memory.MemoryMessageSender
-import weco.storage_service.bag_unpacker.fixtures.BagUnpackerFixtures
+import weco.storage_service.bag_unpacker.fixtures.{BagUnpackerFixtures, LocalResources}
 import weco.storage_service.bag_unpacker.fixtures.s3.S3CompressFixture
 import weco.storage_service.UnpackedBagLocationPayload
 import weco.storage_service.generators.PayloadGenerators
@@ -126,7 +126,7 @@ class BagUnpackerWorkerTest
     withLocalS3Bucket { srcBucket =>
       val location = createS3ObjectLocationWith(srcBucket)
 
-      putString(location, readResource("/crockery.7z"))
+      putStream(location, inputStream = getResource("/crockery.7z"))
 
       val payload = createSourceLocationPayloadWith(location)
 
