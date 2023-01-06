@@ -47,7 +47,7 @@ trait S3BagVerifierTests[Verifier <: BagVerifier[
     createS3ObjectLocationWith(bucket)
 
   override def writeFile(location: S3ObjectLocation, contents: String): Unit =
-    s3Client.putObject(location.bucket, location.key, contents)
+    putString(location, contents)
 
   override def createBagReader
     : BagReader[S3ObjectLocation, S3ObjectLocationPrefix] =
