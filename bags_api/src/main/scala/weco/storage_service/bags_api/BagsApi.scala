@@ -9,6 +9,7 @@ import weco.storage_service.storage.LargeResponses
 import weco.storage_service.storage.models.StorageSpace
 import weco.storage_service.bags_api.responses.{LookupBag, LookupBagVersions}
 import weco.storage.s3.S3ObjectLocation
+import weco.storage.services.s3.S3PresignedUrls
 
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
@@ -18,6 +19,8 @@ trait BagsApi
     with LookupBag
     with LookupBagVersions
     with LookupExternalIdentifier {
+
+  protected val s3PresignedUrls: S3PresignedUrls
 
   private val routes: Route = pathPrefix("bags") {
     concat(
@@ -81,7 +84,7 @@ trait BagsApi
               // See https://github.com/wellcomecollection/platform/issues/4549
               bagId match {
                 case id if id == chemistAndDruggist =>
-                  val url = s3Uploader
+                  val url = s3PresignedUrls
                     .getPresignedGetURL(
                       location = S3ObjectLocation(
                         bucket =

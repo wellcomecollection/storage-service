@@ -12,7 +12,7 @@ import weco.storage_service.bag_tracker.client.{
   BagTrackerClient
 }
 import weco.storage.s3.S3ObjectLocationPrefix
-import weco.storage.services.s3.S3Uploader
+import weco.storage.services.s3.{S3PresignedUrls, S3Uploader}
 import weco.storage.typesafe.S3Builder
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder
@@ -64,6 +64,9 @@ object Main extends WellcomeTypesafeApp {
       override implicit val ec: ExecutionContext = ecMain
 
       override val bagTrackerClient: BagTrackerClient = client
+
+      override val s3PresignedUrls: S3PresignedUrls =
+        new S3PresignedUrls()
 
       override val s3Uploader: S3Uploader = uploader
       override val s3Prefix: S3ObjectLocationPrefix = locationPrefix
