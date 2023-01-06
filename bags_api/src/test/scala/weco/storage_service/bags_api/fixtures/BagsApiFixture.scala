@@ -9,10 +9,7 @@ import org.scalatest.concurrent.ScalaFutures
 import weco.fixtures.TestWith
 import weco.monitoring.memory.MemoryMetrics
 import weco.storage_service.bag_tracker.client.BagTrackerClient
-import weco.storage_service.bag_tracker.fixtures.{
-  BagTrackerFixtures,
-  StorageManifestDaoFixture
-}
+import weco.storage_service.bag_tracker.fixtures.{BagTrackerFixtures, StorageManifestDaoFixture}
 import weco.storage_service.bag_tracker.storage.StorageManifestDao
 import weco.storage_service.bag_tracker.storage.memory.MemoryStorageManifestDao
 import weco.storage_service.bagit.models.{BagId, BagVersion}
@@ -22,7 +19,7 @@ import weco.storage_service.bags_api.BagsApi
 import weco.storage._
 import weco.storage.fixtures.S3Fixtures
 import weco.storage.s3.S3ObjectLocationPrefix
-import weco.storage.services.s3.S3Uploader
+import weco.storage.services.s3.{S3PresignedUrls, S3Uploader}
 import weco.storage.store.memory.MemoryVersionedStore
 import weco.http.WellcomeHttpApp
 import weco.http.fixtures.HttpFixtures
@@ -66,6 +63,7 @@ trait BagsApiFixture
             override val bagTrackerClient: BagTrackerClient = trackerClient
 
             override val s3Uploader: S3Uploader = uploader
+            override val val s3PresignedUrls: S3PresignedUrls = new S3PresignedUrls()
             override val s3Prefix: S3ObjectLocationPrefix = locationPrefix
 
             override val cacheDuration: Duration = 1 days
