@@ -8,8 +8,15 @@ import weco.json.JsonUtil._
 import weco.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, SQSBuilder}
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
-import weco.storage_service.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
-import weco.storage_service.bag_root_finder.services.{BagRootFinder, BagRootFinderWorker}
+import weco.storage_service.config.builders.{
+  IngestUpdaterBuilder,
+  OperationNameBuilder,
+  OutgoingPublisherBuilder
+}
+import weco.storage_service.bag_root_finder.services.{
+  BagRootFinder,
+  BagRootFinderWorker
+}
 import weco.storage.typesafe.S3Builder
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder

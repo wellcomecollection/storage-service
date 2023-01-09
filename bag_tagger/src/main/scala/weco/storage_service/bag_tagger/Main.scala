@@ -9,7 +9,11 @@ import weco.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, SQSBuilder}
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.bag_tracker.client.AkkaBagTrackerClient
-import weco.storage_service.bag_tagger.services.{ApplyTags, BagTaggerWorker, TagRules}
+import weco.storage_service.bag_tagger.services.{
+  ApplyTags,
+  BagTaggerWorker,
+  TagRules
+}
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder
 import weco.typesafe.config.builders.EnrichConfig._

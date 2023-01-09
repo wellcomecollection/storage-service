@@ -63,7 +63,8 @@ class S3BagLocator(s3Client: S3Client) extends Logging {
   private def findBagInfoInRoot(prefix: S3ObjectLocationPrefix): Try[String] =
     Try {
       val listObjectsRequest =
-        ListObjectsV2Request.builder()
+        ListObjectsV2Request
+          .builder()
           .bucket(prefix.bucket)
           .prefix(createBagInfoPath(prefix.keyPrefix))
           .build()
@@ -87,7 +88,8 @@ class S3BagLocator(s3Client: S3Client) extends Logging {
     prefix: S3ObjectLocationPrefix
   ): Try[String] = Try {
     val listObjectsRequest =
-      ListObjectsV2Request.builder()
+      ListObjectsV2Request
+        .builder()
         .bucket(prefix.bucket)
         .prefix(prefix.keyPrefix + "/")
         .delimiter("/")

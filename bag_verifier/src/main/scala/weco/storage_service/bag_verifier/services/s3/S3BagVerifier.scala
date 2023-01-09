@@ -3,8 +3,16 @@ package weco.storage_service.bag_verifier.services.s3
 import software.amazon.awssdk.services.s3.S3Client
 import weco.storage_service.bag_verifier.fixity.FixityListChecker
 import weco.storage_service.bag_verifier.fixity.s3.S3FixityChecker
-import weco.storage_service.bag_verifier.models.{BagVerifierError, BagVerifyContext, ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
-import weco.storage_service.bag_verifier.services.{BagVerifier, ReplicatedBagVerifier}
+import weco.storage_service.bag_verifier.models.{
+  BagVerifierError,
+  BagVerifyContext,
+  ReplicatedBagVerifyContext,
+  StandaloneBagVerifyContext
+}
+import weco.storage_service.bag_verifier.services.{
+  BagVerifier,
+  ReplicatedBagVerifier
+}
 import weco.storage_service.bag_verifier.storage.Resolvable
 import weco.storage_service.bag_verifier.storage.s3.S3Resolvable
 import weco.storage_service.bagit.models.{Bag, ExternalIdentifier}

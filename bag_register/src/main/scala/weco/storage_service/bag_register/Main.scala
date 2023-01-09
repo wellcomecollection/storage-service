@@ -5,13 +5,24 @@ import com.typesafe.config.Config
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
-import weco.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, SNSBuilder, SQSBuilder}
+import weco.messaging.typesafe.{
+  AlpakkaSqsWorkerConfigBuilder,
+  SNSBuilder,
+  SQSBuilder
+}
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
-import weco.storage_service.bag_register.services.{BagRegisterWorker, Register, S3StorageManifestService}
+import weco.storage_service.bag_register.services.{
+  BagRegisterWorker,
+  Register,
+  S3StorageManifestService
+}
 import weco.storage_service.bag_tracker.client.AkkaBagTrackerClient
 import weco.storage_service.bagit.services.s3.S3BagReader
-import weco.storage_service.config.builders.{IngestUpdaterBuilder, OperationNameBuilder}
+import weco.storage_service.config.builders.{
+  IngestUpdaterBuilder,
+  OperationNameBuilder
+}
 import weco.storage.typesafe.S3Builder
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder

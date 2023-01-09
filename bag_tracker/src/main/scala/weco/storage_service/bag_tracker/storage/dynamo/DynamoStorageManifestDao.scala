@@ -14,7 +14,13 @@ import weco.storage_service.storage.models.StorageManifest
 import weco.storage.dynamo.{DynamoConfig, DynamoHashRangeEntry}
 import weco.storage.s3.{S3Config, S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.store.VersionedStore
-import weco.storage.store.dynamo.{ConsistencyMode, DynamoHashRangeStore, DynamoHybridStoreWithMaxima, DynamoVersionedHybridStore, StronglyConsistent}
+import weco.storage.store.dynamo.{
+  ConsistencyMode,
+  DynamoHashRangeStore,
+  DynamoHybridStoreWithMaxima,
+  DynamoVersionedHybridStore,
+  StronglyConsistent
+}
 import weco.storage.store.s3.S3TypedStore
 import weco.storage.streaming.Codec._
 import weco.storage.{ReadError, StoreReadError}

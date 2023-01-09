@@ -2,7 +2,12 @@ package weco.storage_service.bag_tagger.services
 
 import grizzled.slf4j.Logging
 import software.amazon.awssdk.services.s3.S3Client
-import weco.storage_service.storage.models.{AzureStorageLocation, S3StorageLocation, StorageLocation, StorageManifestFile}
+import weco.storage_service.storage.models.{
+  AzureStorageLocation,
+  S3StorageLocation,
+  StorageLocation,
+  StorageManifestFile
+}
 import weco.storage._
 import weco.storage.tags.Tags
 import weco.storage.tags.s3.S3Tags

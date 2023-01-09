@@ -3,7 +3,11 @@ package weco.storage_service.bag_root_finder.services
 import java.time.Instant
 import software.amazon.awssdk.services.s3.S3Client
 import weco.storage_service.ingests.models.IngestID
-import weco.storage_service.storage.models.{IngestFailed, IngestStepResult, IngestStepSucceeded}
+import weco.storage_service.storage.models.{
+  IngestFailed,
+  IngestStepResult,
+  IngestStepSucceeded
+}
 import weco.storage_service.bag_root_finder.models._
 import weco.storage.s3.S3ObjectLocationPrefix
 
