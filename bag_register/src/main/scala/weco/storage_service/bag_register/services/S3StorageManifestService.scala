@@ -14,7 +14,7 @@ import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.services.SizeFinder
 import weco.storage.services.s3.S3SizeFinder
 import weco.storage.store.Readable
-import weco.storage.store.s3.{S3StreamReader, S3StreamStore}
+import weco.storage.store.s3.S3StreamReader
 import weco.storage.streaming.InputStreamWithLength
 import weco.storage_service.checksum.{ChecksumAlgorithm, ChecksumAlgorithms}
 
