@@ -100,7 +100,7 @@ class S3BagLocator(s3Client: S3Client) extends Logging {
 
     if (directoriesInBag.size == 1) {
       val directoryLocation = prefix.copy(
-        keyPrefix = directoriesInBag.head.toString
+        keyPrefix = directoriesInBag.head.prefix()
       )
 
       findBagInfoInRoot(directoryLocation) match {
