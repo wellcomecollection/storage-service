@@ -1,18 +1,11 @@
 package weco.storage_service.bag_verifier.services.s3
 
+import com.amazonaws.services.s3.AmazonS3
 import software.amazon.awssdk.services.s3.S3Client
 import weco.storage_service.bag_verifier.fixity.FixityListChecker
 import weco.storage_service.bag_verifier.fixity.s3.S3FixityChecker
-import weco.storage_service.bag_verifier.models.{
-  BagVerifierError,
-  BagVerifyContext,
-  ReplicatedBagVerifyContext,
-  StandaloneBagVerifyContext
-}
-import weco.storage_service.bag_verifier.services.{
-  BagVerifier,
-  ReplicatedBagVerifier
-}
+import weco.storage_service.bag_verifier.models.{BagVerifierError, BagVerifyContext, ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
+import weco.storage_service.bag_verifier.services.{BagVerifier, ReplicatedBagVerifier}
 import weco.storage_service.bag_verifier.storage.Resolvable
 import weco.storage_service.bag_verifier.storage.s3.S3Resolvable
 import weco.storage_service.bagit.models.{Bag, ExternalIdentifier}
@@ -22,7 +15,7 @@ import weco.storage_service.storage.models.StorageSpace
 import weco.storage.listing.Listing
 import weco.storage.listing.s3.S3ObjectLocationListing
 import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
-import weco.storage.store.s3.{S3StreamReader, S3StreamStore}
+import weco.storage.store.s3.S3StreamReader
 
 trait S3BagVerifier[B <: BagVerifyContext[S3ObjectLocationPrefix]]
     extends BagVerifier[B, S3ObjectLocation, S3ObjectLocationPrefix] {
@@ -71,7 +64,7 @@ class S3ReplicatedBagVerifier(
     Bag
   ],
   val srcReader: S3StreamReader,
-  val streamReader: S3StreamStore
+  val streamReader: S3StreamReader
 ) extends ReplicatedBagVerifier[
       S3ObjectLocation,
       S3ObjectLocationPrefix
@@ -83,7 +76,7 @@ class S3ReplicatedBagVerifier(
 object S3BagVerifier {
   def standalone(
     primaryBucket: String
-  )(implicit s3Client: S3Client): S3StandaloneBagVerifier = {
+  )(implicit s3Client: S3Client, amazonS3: AmazonS3): S3StandaloneBagVerifier = {
     val bagReader = new S3BagReader()
     val listing = S3ObjectLocationListing()
     val resolvable = new S3Resolvable()
@@ -101,7 +94,7 @@ object S3BagVerifier {
   }
   def replicated(
     primaryBucket: String
-  )(implicit s3Client: S3Client): S3ReplicatedBagVerifier = {
+  )(implicit s3Client: S3Client, amazonS3: AmazonS3): S3ReplicatedBagVerifier = {
     val bagReader = new S3BagReader()
     val listing = S3ObjectLocationListing()
     val resolvable = new S3Resolvable()

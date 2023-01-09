@@ -1,6 +1,7 @@
 package weco.storage_service.bag_verifier.builder
 
 import akka.actor.ActorSystem
+import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.{BlobServiceClient, BlobServiceClientBuilder}
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
@@ -11,10 +12,7 @@ import weco.messaging.sns.SNSConfig
 import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
 import weco.monitoring.Metrics
-import weco.storage_service.bag_verifier.models.{
-  ReplicatedBagVerifyContext,
-  StandaloneBagVerifyContext
-}
+import weco.storage_service.bag_verifier.models.{ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
 import weco.storage_service.bag_verifier.services.BagVerifierWorker
 import weco.storage_service.bag_verifier.services.azure.AzureReplicatedBagVerifier
 import weco.storage_service.bag_verifier.services.s3.S3BagVerifier
@@ -35,6 +33,7 @@ object BagVerifierWorkerBuilder {
     outgoingPublisher: OutgoingPublisher[SNSConfig]
   )(
     implicit s3: S3Client,
+    amazonS3: AmazonS3,
     metrics: Metrics[Future],
     as: ActorSystem,
     sc: SqsAsyncClient
@@ -93,6 +92,7 @@ object BagVerifierWorkerBuilder {
     outgoingPublisher: OutgoingPublisher[OutgoingDestination]
   )(
     implicit s3: S3Client,
+    amazonS3: AmazonS3,
     metrics: Metrics[Future],
     as: ActorSystem,
     sc: SqsAsyncClient
@@ -123,6 +123,7 @@ object BagVerifierWorkerBuilder {
     outgoingPublisher: OutgoingPublisher[OutgoingDestination]
   )(
     implicit s3: S3Client,
+    amazonS3: AmazonS3,
     metrics: Metrics[Future],
     as: ActorSystem,
     sc: SqsAsyncClient
