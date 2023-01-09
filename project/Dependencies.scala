@@ -93,6 +93,8 @@ object ExternalDependencies {
     val mockito = "1.9.5"
     val scalatest = "3.2.3"
 
+    val aws1 = "1.11.504"
+
     // This should match the version of circe used in scala-json; see
     // https://github.com/wellcomecollection/scala-json/blob/master/project/Dependencies.scala
     val circeOptics = "0.13.0"
@@ -116,6 +118,10 @@ object ExternalDependencies {
 
   val mockitoDependencies: Seq[ModuleID] = Seq(
     "org.mockito" % "mockito-core" % versions.mockito % "test"
+  )
+
+  val s3Dependencies: Seq[ModuleID] = Seq(
+    "com.amazonaws" % "aws-java-sdk-s3" % versions.aws1
   )
 }
 

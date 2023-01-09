@@ -1,20 +1,17 @@
 package weco.storage_service.bag_verifier.builder
 
 import akka.actor.ActorSystem
-import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.{BlobServiceClient, BlobServiceClientBuilder}
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
+import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
 import weco.messaging.sns.SNSConfig
 import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
 import weco.monitoring.Metrics
-import weco.storage_service.bag_verifier.models.{
-  ReplicatedBagVerifyContext,
-  StandaloneBagVerifyContext
-}
+import weco.storage_service.bag_verifier.models.{ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
 import weco.storage_service.bag_verifier.services.BagVerifierWorker
 import weco.storage_service.bag_verifier.services.azure.AzureReplicatedBagVerifier
 import weco.storage_service.bag_verifier.services.s3.S3BagVerifier
@@ -34,7 +31,7 @@ object BagVerifierWorkerBuilder {
     ingestUpdater: IngestUpdater[SNSConfig],
     outgoingPublisher: OutgoingPublisher[SNSConfig]
   )(
-    implicit s3: AmazonS3,
+    implicit s3: S3Client,
     metrics: Metrics[Future],
     as: ActorSystem,
     sc: SqsAsyncClient
@@ -92,7 +89,7 @@ object BagVerifierWorkerBuilder {
     ingestUpdater: IngestUpdater[IngestDestination],
     outgoingPublisher: OutgoingPublisher[OutgoingDestination]
   )(
-    implicit s3: AmazonS3,
+    implicit s3: S3Client,
     metrics: Metrics[Future],
     as: ActorSystem,
     sc: SqsAsyncClient
@@ -122,7 +119,7 @@ object BagVerifierWorkerBuilder {
     ingestUpdater: IngestUpdater[IngestDestination],
     outgoingPublisher: OutgoingPublisher[OutgoingDestination]
   )(
-    implicit s3: AmazonS3,
+    implicit s3: S3Client,
     metrics: Metrics[Future],
     as: ActorSystem,
     sc: SqsAsyncClient
@@ -159,7 +156,7 @@ object BagVerifierWorkerBuilder {
     ingestUpdater: IngestUpdater[IngestDestination],
     outgoingPublisher: OutgoingPublisher[OutgoingDestination]
   )(
-    implicit s3Client: AmazonS3,
+    implicit s3Client: S3Client,
     blobClient: BlobServiceClient,
     dynamoClient: DynamoDbClient,
     metrics: Metrics[Future],

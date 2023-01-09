@@ -1,18 +1,14 @@
 package weco.storage_service.bag_replicator.replicator.azure
 
-import com.amazonaws.services.s3.AmazonS3
+import software.amazon.awssdk.services.s3.S3Client
 import weco.storage_service.bag_replicator.replicator.Replicator
 import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
-import weco.storage.transfer.azure.{
-  AzurePrefixTransfer,
-  AzureTransfer,
-  SourceS3Object
-}
+import weco.storage.transfer.azure.{AzurePrefixTransfer, AzureTransfer, SourceS3Object}
 
 class AzureReplicator(
   transfer: AzureTransfer[_]
 )(
-  implicit s3Client: AmazonS3
+  implicit s3Client: S3Client
 ) extends Replicator[
       SourceS3Object,
       AzureBlobLocation,

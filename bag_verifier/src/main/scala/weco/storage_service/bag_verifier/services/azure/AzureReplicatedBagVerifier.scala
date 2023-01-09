@@ -1,8 +1,8 @@
 package weco.storage_service.bag_verifier.services.azure
 
-import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.BlobServiceClient
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
+import software.amazon.awssdk.services.s3.S3Client
 import weco.storage_service.bag_verifier.fixity.FixityListChecker
 import weco.storage_service.bag_verifier.fixity.azure.AzureFixityChecker
 import weco.storage_service.bag_verifier.fixity.s3.S3FixityChecker
@@ -19,7 +19,7 @@ import weco.storage.listing.azure.AzureBlobLocationListing
 import weco.storage.s3.S3ObjectLocation
 import weco.storage.store.StreamStore
 import weco.storage.store.azure.AzureStreamStore
-import weco.storage.store.s3.S3StreamStore
+import weco.storage.store.s3.{S3StreamReader, S3StreamStore}
 
 class AzureReplicatedBagVerifier(
   val primaryBucket: String,
@@ -31,7 +31,7 @@ class AzureReplicatedBagVerifier(
     AzureBlobLocationPrefix,
     Bag
   ],
-  val srcReader: StreamStore[S3ObjectLocation],
+  val srcReader: S3StreamReader,
   val streamReader: StreamStore[AzureBlobLocation]
 ) extends ReplicatedBagVerifier[AzureBlobLocation, AzureBlobLocationPrefix] {
 
@@ -44,7 +44,7 @@ class AzureReplicatedBagVerifier(
 
 object AzureReplicatedBagVerifier {
   def apply(primaryBucket: String, dynamoConfig: DynamoConfig)(
-    implicit s3Client: AmazonS3,
+    implicit s3Client: S3Client,
     blobClient: BlobServiceClient,
     dynamoClient: DynamoDbClient
   ): AzureReplicatedBagVerifier = {
@@ -53,7 +53,6 @@ object AzureReplicatedBagVerifier {
     val resolvable = new AzureResolvable()
     implicit val fixityChecker = AzureFixityChecker(dynamoConfig)
     implicit val fetchDirectoryFixityChecker = S3FixityChecker()
-    val srcReader = new S3StreamStore()
     val fixityListChecker =
       new FixityListChecker[AzureBlobLocation, AzureBlobLocationPrefix, Bag]()
     new AzureReplicatedBagVerifier(
@@ -62,7 +61,7 @@ object AzureReplicatedBagVerifier {
       listing,
       resolvable,
       fixityListChecker,
-      srcReader,
+      srcReader = new S3StreamReader(),
       streamReader = new AzureStreamStore()
     )
   }

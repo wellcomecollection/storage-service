@@ -94,7 +94,7 @@ lazy val bag_verifier = setupProject(
   project,
   folder = "bag_verifier",
   localDependencies = Seq(common),
-  externalDependencies = ExternalDependencies.mockitoDependencies,
+  externalDependencies = ExternalDependencies.mockitoDependencies ++ ExternalDependencies.s3Dependencies,
   description =
     "Runs checks and rules against a bag: fixity information, file sizes, no missing files, and so on"
 )

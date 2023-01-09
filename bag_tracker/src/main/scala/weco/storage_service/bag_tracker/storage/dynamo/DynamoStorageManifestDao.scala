@@ -1,10 +1,11 @@
 package weco.storage_service.bag_tracker.storage.dynamo
 
-import com.amazonaws.services.s3.AmazonS3
 import org.scanamo.generic.auto._
 import org.scanamo.{Scanamo, Table => ScanamoTable}
 import org.scanamo.syntax._
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.transfer.s3.S3TransferManager
 import weco.json.JsonUtil._
 import weco.storage_service.bag_tracker.storage.StorageManifestDao
 import weco.storage_service.bagit.models.BagVersion._
@@ -13,13 +14,7 @@ import weco.storage_service.storage.models.StorageManifest
 import weco.storage.dynamo.{DynamoConfig, DynamoHashRangeEntry}
 import weco.storage.s3.{S3Config, S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.store.VersionedStore
-import weco.storage.store.dynamo.{
-  ConsistencyMode,
-  DynamoHashRangeStore,
-  DynamoHybridStoreWithMaxima,
-  DynamoVersionedHybridStore,
-  StronglyConsistent
-}
+import weco.storage.store.dynamo.{ConsistencyMode, DynamoHashRangeStore, DynamoHybridStoreWithMaxima, DynamoVersionedHybridStore, StronglyConsistent}
 import weco.storage.store.s3.S3TypedStore
 import weco.storage.streaming.Codec._
 import weco.storage.{ReadError, StoreReadError}
@@ -33,7 +28,8 @@ class DynamoStorageManifestDao(
 )(
   implicit
   dynamoClient: DynamoDbClient,
-  s3Client: AmazonS3
+  s3Client: S3Client,
+  s3TransferManager: S3TransferManager
 ) extends StorageManifestDao {
 
   //  By default reads are eventually consistent

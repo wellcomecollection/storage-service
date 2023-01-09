@@ -4,8 +4,9 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpMethods.GET
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.stream.Materializer
-import com.amazonaws.services.s3.AmazonS3
 import org.scalatest.concurrent.ScalaFutures
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.transfer.s3.S3TransferManager
 import weco.fixtures.TestWith
 import weco.monitoring.memory.MemoryMetrics
 import weco.storage_service.bag_tracker.client.BagTrackerClient
@@ -91,7 +92,7 @@ trait BagsApiFixture
     maxResponseByteLength: Long = 1048576
   )(
     testWith: TestWith[(StorageManifestDao, MemoryMetrics), R]
-  )(implicit s3Client: AmazonS3): R = {
+  )(implicit s3Client: S3Client, s3TransferManager: S3TransferManager): R = {
     val dao = createStorageManifestDao()
     val uploader = new S3Uploader()
 
