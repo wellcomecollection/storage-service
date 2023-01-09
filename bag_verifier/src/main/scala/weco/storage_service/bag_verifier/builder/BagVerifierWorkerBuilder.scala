@@ -12,7 +12,10 @@ import weco.messaging.sns.SNSConfig
 import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
 import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
 import weco.monitoring.Metrics
-import weco.storage_service.bag_verifier.models.{ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
+import weco.storage_service.bag_verifier.models.{
+  ReplicatedBagVerifyContext,
+  StandaloneBagVerifyContext
+}
 import weco.storage_service.bag_verifier.services.BagVerifierWorker
 import weco.storage_service.bag_verifier.services.azure.AzureReplicatedBagVerifier
 import weco.storage_service.bag_verifier.services.s3.S3BagVerifier

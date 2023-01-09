@@ -4,8 +4,16 @@ import com.amazonaws.services.s3.AmazonS3
 import software.amazon.awssdk.services.s3.S3Client
 import weco.storage_service.bag_verifier.fixity.FixityListChecker
 import weco.storage_service.bag_verifier.fixity.s3.S3FixityChecker
-import weco.storage_service.bag_verifier.models.{BagVerifierError, BagVerifyContext, ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
-import weco.storage_service.bag_verifier.services.{BagVerifier, ReplicatedBagVerifier}
+import weco.storage_service.bag_verifier.models.{
+  BagVerifierError,
+  BagVerifyContext,
+  ReplicatedBagVerifyContext,
+  StandaloneBagVerifyContext
+}
+import weco.storage_service.bag_verifier.services.{
+  BagVerifier,
+  ReplicatedBagVerifier
+}
 import weco.storage_service.bag_verifier.storage.Resolvable
 import weco.storage_service.bag_verifier.storage.s3.S3Resolvable
 import weco.storage_service.bagit.models.{Bag, ExternalIdentifier}
@@ -76,7 +84,8 @@ class S3ReplicatedBagVerifier(
 object S3BagVerifier {
   def standalone(
     primaryBucket: String
-  )(implicit s3Client: S3Client, amazonS3: AmazonS3): S3StandaloneBagVerifier = {
+  )(implicit s3Client: S3Client,
+    amazonS3: AmazonS3): S3StandaloneBagVerifier = {
     val bagReader = new S3BagReader()
     val listing = S3ObjectLocationListing()
     val resolvable = new S3Resolvable()
@@ -94,7 +103,8 @@ object S3BagVerifier {
   }
   def replicated(
     primaryBucket: String
-  )(implicit s3Client: S3Client, amazonS3: AmazonS3): S3ReplicatedBagVerifier = {
+  )(implicit s3Client: S3Client,
+    amazonS3: AmazonS3): S3ReplicatedBagVerifier = {
     val bagReader = new S3BagReader()
     val listing = S3ObjectLocationListing()
     val resolvable = new S3Resolvable()
