@@ -23,7 +23,6 @@ import weco.storage_service.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder
 }
-import weco.storage.typesafe.S3Builder
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder
 import weco.typesafe.config.builders.EnrichConfig._

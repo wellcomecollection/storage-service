@@ -31,7 +31,7 @@ import weco.storage.azure.AzureBlobLocationPrefix
 import weco.storage.locking.dynamo.{DynamoLockDao, DynamoLockingService}
 import weco.storage.s3.S3ObjectLocationPrefix
 import weco.storage.transfer.azure.AzurePutBlockFromUrlTransfer
-import weco.storage.typesafe.{DynamoLockDaoBuilder, S3Builder}
+import weco.storage.typesafe.DynamoLockDaoBuilder
 import weco.storage.{Location, Prefix}
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder

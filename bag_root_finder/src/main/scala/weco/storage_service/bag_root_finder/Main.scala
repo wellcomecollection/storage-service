@@ -17,7 +17,6 @@ import weco.storage_service.bag_root_finder.services.{
   BagRootFinder,
   BagRootFinderWorker
 }
-import weco.storage.typesafe.S3Builder
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.AkkaBuilder
 

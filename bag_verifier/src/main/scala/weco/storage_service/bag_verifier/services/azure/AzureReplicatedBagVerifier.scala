@@ -16,10 +16,9 @@ import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import weco.storage.dynamo.DynamoConfig
 import weco.storage.listing.Listing
 import weco.storage.listing.azure.AzureBlobLocationListing
-import weco.storage.s3.S3ObjectLocation
 import weco.storage.store.StreamStore
 import weco.storage.store.azure.AzureStreamStore
-import weco.storage.store.s3.{S3StreamReader, S3StreamStore}
+import weco.storage.store.s3.S3StreamReader
 
 class AzureReplicatedBagVerifier(
   val primaryBucket: String,
