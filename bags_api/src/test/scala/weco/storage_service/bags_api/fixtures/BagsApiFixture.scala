@@ -6,7 +6,6 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.stream.Materializer
 import org.scalatest.concurrent.ScalaFutures
 import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.transfer.s3.S3TransferManager
 import weco.fixtures.TestWith
 import weco.monitoring.memory.MemoryMetrics
 import weco.storage_service.bag_tracker.client.BagTrackerClient
