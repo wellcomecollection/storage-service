@@ -1,8 +1,5 @@
 package weco.storage_service.bag_verifier.services.s3
 
-import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
-import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
-import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import weco.fixtures.TestWith
 import weco.storage_service.bag_verifier.models.{BagVerifyContext, ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
 import weco.storage_service.bag_verifier.services._
@@ -55,14 +52,6 @@ trait S3BagVerifierTests[Verifier <: BagVerifier[
   override val bagBuilder
     : BagBuilder[S3ObjectLocation, S3ObjectLocationPrefix, Bucket] =
     new S3BagBuilder {}
-
-  implicit val amazonS3: AmazonS3 =
-    AmazonS3ClientBuilder.standard()
-      .withCredentials(new AWSStaticCredentialsProvider(
-        new BasicAWSCredentials("accessKey1", "verySecretKey1")))
-      .withPathStyleAccessEnabled(true)
-      .withEndpointConfiguration(new EndpointConfiguration("http://localhost:33333", "localhost"))
-      .build()
 }
 
 class S3ReplicatedBagVerifierTest
