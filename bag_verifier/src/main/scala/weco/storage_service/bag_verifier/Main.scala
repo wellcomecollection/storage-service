@@ -1,7 +1,6 @@
 package weco.storage_service.bag_verifier
 
 import akka.actor.ActorSystem
-import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
@@ -29,9 +28,6 @@ object Main extends WellcomeTypesafeApp {
 
     implicit val s3Client: S3Client =
       S3Client.builder().build()
-
-    implicit val amazonS3: AmazonS3 =
-      AmazonS3ClientBuilder.standard.build()
 
     implicit val metrics: CloudWatchMetrics =
       CloudWatchBuilder.buildCloudWatchMetrics(config)
