@@ -1,8 +1,7 @@
 package weco.storage_service.bag_root_finder.services
 
 import java.time.Instant
-
-import com.amazonaws.services.s3.AmazonS3
+import software.amazon.awssdk.services.s3.S3Client
 import weco.storage_service.ingests.models.IngestID
 import weco.storage_service.storage.models.{
   IngestFailed,
@@ -14,7 +13,7 @@ import weco.storage.s3.S3ObjectLocationPrefix
 
 import scala.util.{Failure, Success, Try}
 
-class BagRootFinder()(implicit s3Client: AmazonS3) {
+class BagRootFinder()(implicit s3Client: S3Client) {
   val s3BagLocator = new S3BagLocator(s3Client)
 
   type IngestStep = Try[IngestStepResult[RootFinderSummary]]

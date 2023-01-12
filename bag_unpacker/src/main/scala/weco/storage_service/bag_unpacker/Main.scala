@@ -1,15 +1,14 @@
 package weco.storage_service.bag_unpacker
 
 import akka.actor.ActorSystem
-import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
+import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
 import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
 import weco.messaging.typesafe.SQSBuilder.buildSQSAsyncClient
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
-import weco.storage.typesafe.S3Builder
 import weco.storage_service.bag_unpacker.config.builders.UnpackerWorkerConfigBuilder
 import weco.storage_service.bag_unpacker.services.BagUnpackerWorker
 import weco.storage_service.bag_unpacker.services.s3.S3Unpacker
@@ -31,8 +30,8 @@ object Main extends WellcomeTypesafeApp {
     implicit val executionContext: ExecutionContext =
       AkkaBuilder.buildExecutionContext()
 
-    implicit val s3Client: AmazonS3 =
-      S3Builder.buildS3Client
+    implicit val s3Client: S3Client =
+      S3Client.builder().build()
 
     implicit val metrics: CloudWatchMetrics =
       CloudWatchBuilder.buildCloudWatchMetrics(config)

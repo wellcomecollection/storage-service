@@ -1,9 +1,9 @@
 package weco.storage_service.bag_unpacker.services.s3
 
-import com.amazonaws.SdkClientException
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.AmazonS3Exception
 import org.apache.commons.io.FileUtils
+import software.amazon.awssdk.core.exception.SdkClientException
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.S3Exception
 import weco.storage_service.bag_unpacker.services.{
   Unpacker,
   UnpackerError,
@@ -18,7 +18,7 @@ import weco.storage.streaming.InputStreamWithLength
 
 class S3Unpacker(
   bufferSize: Long = 128 * FileUtils.ONE_MB
-)(implicit s3Client: AmazonS3)
+)(implicit s3Client: S3Client)
     extends Unpacker[S3ObjectLocation, S3ObjectLocation, S3ObjectLocationPrefix] {
   override protected val writer
     : Writable[S3ObjectLocation, InputStreamWithLength] =
@@ -46,17 +46,17 @@ class S3Unpacker(
       // to check the object really exists when they get this error, not chalk it up to
       // an IAM error that devs need to fix.  It *might* be something they can fix themselves.
       //
-      case UnpackerStorageError(StoreReadError(exc: AmazonS3Exception))
+      case UnpackerStorageError(StoreReadError(exc: S3Exception))
           if exc.getMessage.startsWith("Access Denied") =>
         Some(
           s"Error reading $srcLocation: either it doesn't exist, or the unpacker doesn't have permission to read it"
         )
 
-      case UnpackerStorageError(StoreReadError(exc: AmazonS3Exception))
+      case UnpackerStorageError(StoreReadError(exc: S3Exception))
           if exc.getMessage.startsWith("The specified bucket is not valid") =>
         Some(s"${srcLocation.bucket} is not a valid S3 bucket name")
 
-      case UnpackerStorageError(DoesNotExistError(exc: AmazonS3Exception))
+      case UnpackerStorageError(DoesNotExistError(exc: S3Exception))
           if exc.getMessage.startsWith("The specified bucket does not exist") =>
         Some(s"There is no S3 bucket ${srcLocation.bucket}")
 

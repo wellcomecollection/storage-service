@@ -1,5 +1,8 @@
 package weco.storage_service.bag_verifier.fixtures
 
+import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
+import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 import weco.akka.fixtures.Akka
 import weco.fixtures.TestWith
@@ -9,15 +12,9 @@ import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import weco.messaging.memory.MemoryMessageSender
 import weco.monitoring.memory.MemoryMetrics
 import weco.storage_service.bag_verifier.builder.BagVerifierWorkerBuilder
-import weco.storage_service.bag_verifier.models.{
-  ReplicatedBagVerifyContext,
-  StandaloneBagVerifyContext
-}
+import weco.storage_service.bag_verifier.models.{ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
 import weco.storage_service.bag_verifier.services.BagVerifierWorker
-import weco.storage_service.bag_verifier.services.s3.{
-  S3BagVerifier,
-  S3StandaloneBagVerifier
-}
+import weco.storage_service.bag_verifier.services.s3.{S3BagVerifier, S3StandaloneBagVerifier}
 import weco.storage_service.fixtures.OperationFixtures
 import weco.storage_service.{BagRootLocationPayload, ReplicaCompletePayload}
 import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
@@ -34,6 +31,14 @@ trait BagVerifierFixtures
     with S3Fixtures
     with AzureFixtures
     with DynamoFixtures {
+  implicit val amazonS3: AmazonS3 =
+    AmazonS3ClientBuilder.standard()
+      .withCredentials(new AWSStaticCredentialsProvider(
+        new BasicAWSCredentials("accessKey1", "verySecretKey1")))
+      .withPathStyleAccessEnabled(true)
+      .withEndpointConfiguration(new EndpointConfiguration("http://localhost:33333", "localhost"))
+      .build()
+
   def withStandaloneBagVerifierWorker[R](
     ingests: MemoryMessageSender = new MemoryMessageSender(),
     outgoing: MemoryMessageSender,

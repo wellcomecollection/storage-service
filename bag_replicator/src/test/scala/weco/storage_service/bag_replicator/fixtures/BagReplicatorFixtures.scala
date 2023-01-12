@@ -22,7 +22,7 @@ import weco.storage_service.ingests.models.{
 import weco.storage_service.storage.models.IngestStepResult
 import weco.storage.fixtures.S3Fixtures
 import weco.storage.fixtures.S3Fixtures.Bucket
-import weco.storage.listing.s3.S3ObjectSummaryListing
+import weco.storage.listing.s3.S3ObjectListing
 import weco.storage.locking.memory.{MemoryLockDao, MemoryLockDaoFixtures}
 import weco.storage.locking.{LockDao, LockingService}
 import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
@@ -124,7 +124,7 @@ trait BagReplicatorFixtures
       replicaType = replicaType
     )
 
-  private val listing = new S3ObjectSummaryListing()
+  private val listing = new S3ObjectListing()
 
   def verifyObjectsCopied(
     srcPrefix: S3ObjectLocationPrefix,
@@ -132,12 +132,12 @@ trait BagReplicatorFixtures
   ): Assertion = {
     val sourceItems = listing.list(srcPrefix).value
     val sourceKeyEtags = sourceItems.map {
-      _.getETag
+      _.eTag()
     }
 
     val destinationItems = listing.list(dstPrefix).value
     val destinationKeyEtags = destinationItems.map {
-      _.getETag
+      _.eTag()
     }
 
     destinationKeyEtags should contain theSameElementsAs sourceKeyEtags

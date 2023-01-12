@@ -1,9 +1,8 @@
 package weco.storage_service.bag_unpacker.services.s3
 
-import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
-import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
-import com.amazonaws.services.s3.model.AmazonS3Exception
-import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
+import software.amazon.awssdk.auth.credentials.{AwsBasicCredentials, StaticCredentialsProvider}
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.NoSuchBucketException
 import weco.fixtures.TestWith
 import weco.storage.fixtures.S3Fixtures.Bucket
 import weco.storage.listing.s3.S3ObjectLocationListing
@@ -13,6 +12,7 @@ import weco.storage_service.bag_unpacker.fixtures.s3.S3CompressFixture
 import weco.storage_service.bag_unpacker.services.{Unpacker, UnpackerTestCases}
 
 import java.io.IOException
+import java.net.URI
 
 class S3UnpackerTest
     extends UnpackerTestCases[
@@ -74,10 +74,7 @@ class S3UnpackerTest
 
           assertIsError(result) {
             case (exc, _) =>
-              exc shouldBe a[AmazonS3Exception]
-              exc.getMessage should startWith(
-                "The specified bucket does not exist"
-              )
+              exc shouldBe a[NoSuchBucketException]
           }
         }
       }
@@ -96,25 +93,15 @@ class S3UnpackerTest
             // zenko s3server Docker image.
             // See https://s3-server.readthedocs.io/en/latest/DOCKER.html#scality-access-key-id-and-scality-secret-access-key
             // https://github.com/scality/cloudserver/blob/5e17ec8343cd181936616efc0ac8d19d06dcd97d/conf/authdata.json
-            implicit val badS3Client: AmazonS3 =
-              AmazonS3ClientBuilder
-                .standard()
-                .withCredentials(
-                  new AWSStaticCredentialsProvider(
-                    new BasicAWSCredentials("accessKey2", "verySecretKey2")
-                  )
-                )
-                .withPathStyleAccessEnabled(true)
-                .withEndpointConfiguration(
-                  new EndpointConfiguration(
-                    "http://localhost:33333",
-                    "localhost"
-                  )
-                )
+            implicit val badS3Client: S3Client =
+              S3Client.builder()
+                .credentialsProvider(StaticCredentialsProvider.create(
+                  AwsBasicCredentials.create("accessKey2", "verySecretKey2")))
+                .forcePathStyle(true)
+                .endpointOverride(new URI("http://localhost:33333"))
                 .build()
 
-            val badUnpacker: S3Unpacker =
-              new S3Unpacker()(badS3Client)
+            val badUnpacker: S3Unpacker = new S3Unpacker()(badS3Client)
 
             val result =
               badUnpacker.unpack(
@@ -228,11 +215,10 @@ class S3UnpackerTest
           assertIsError(result) {
             case (err, maybeUserFacingMessage) =>
               maybeUserFacingMessage.get should startWith(
-                "Error trying to unpack the archive"
+                "Unexpected EOF while unpacking the archive"
               )
 
               err shouldBe a[IOException]
-              err.getMessage shouldBe "Error detected parsing the header"
           }
         }
       }

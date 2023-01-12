@@ -2,8 +2,8 @@ package weco.storage_service.bag_register.services
 
 import java.net.URI
 import java.time.Instant
-import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
+import software.amazon.awssdk.services.s3.S3Client
 import weco.storage_service.bagit.models._
 import weco.storage_service.bagit.services.BagMatcher
 import weco.storage_service.ingests.models.IngestID
@@ -14,18 +14,18 @@ import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.services.SizeFinder
 import weco.storage.services.s3.S3SizeFinder
 import weco.storage.store.Readable
-import weco.storage.store.s3.S3StreamStore
+import weco.storage.store.s3.S3StreamReader
 import weco.storage.streaming.InputStreamWithLength
 import weco.storage_service.checksum.{ChecksumAlgorithm, ChecksumAlgorithms}
 
 import scala.util.{Failure, Success, Try}
 
-class S3StorageManifestService(implicit s3Client: AmazonS3) extends Logging {
+class S3StorageManifestService(implicit s3Client: S3Client) extends Logging {
   val sizeFinder: SizeFinder[S3ObjectLocation] =
     new S3SizeFinder()
 
   implicit val streamReader: Readable[S3ObjectLocation, InputStreamWithLength] =
-    new S3StreamStore()
+    new S3StreamReader()
 
   private lazy val tagManifestFileFinder = new TagManifestFileFinder()
 

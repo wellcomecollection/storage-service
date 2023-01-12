@@ -1,7 +1,7 @@
 package weco.storage_service.bag_tagger.services
 
-import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
+import software.amazon.awssdk.services.s3.S3Client
 import weco.storage_service.storage.models.{
   AzureStorageLocation,
   S3StorageLocation,
@@ -87,7 +87,7 @@ class ApplyTags(s3Tags: S3Tags) extends Logging {
 }
 
 object ApplyTags {
-  def apply()(implicit s3Client: AmazonS3): ApplyTags = {
+  def apply()(implicit s3Client: S3Client): ApplyTags = {
     val s3Tags = new S3Tags()
 
     new ApplyTags(s3Tags = s3Tags)
