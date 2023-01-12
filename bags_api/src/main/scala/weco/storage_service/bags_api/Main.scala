@@ -6,7 +6,6 @@ import com.typesafe.config.Config
 import org.apache.commons.io.FileUtils
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
-import software.amazon.awssdk.transfer.s3.S3TransferManager
 import weco.http.typesafe.HTTPServerBuilder
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.bag_tracker.client.{
@@ -43,8 +42,6 @@ object Main extends WellcomeTypesafeApp {
       AkkaBuilder.buildMaterializer()
 
     implicit val s3Client: S3Client = S3Client.builder().build()
-    implicit val s3TransferManager: S3TransferManager =
-      S3TransferManager.builder().build()
     implicit val s3Presigner: S3Presigner = S3Presigner.builder().build()
 
     val uploader = new S3Uploader()
