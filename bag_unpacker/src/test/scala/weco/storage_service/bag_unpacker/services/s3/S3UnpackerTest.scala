@@ -1,9 +1,8 @@
 package weco.storage_service.bag_unpacker.services.s3
 
 import software.amazon.awssdk.auth.credentials.{AwsBasicCredentials, StaticCredentialsProvider}
-import software.amazon.awssdk.services.s3.{S3AsyncClient, S3Client}
+import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.NoSuchBucketException
-import software.amazon.awssdk.transfer.s3.S3TransferManager
 import weco.fixtures.TestWith
 import weco.storage.fixtures.S3Fixtures.Bucket
 import weco.storage.listing.s3.S3ObjectLocationListing
@@ -102,21 +101,7 @@ class S3UnpackerTest
                 .endpointOverride(new URI("http://localhost:33333"))
                 .build()
 
-            implicit val badS3AsyncClient: S3AsyncClient =
-              S3AsyncClient.builder()
-                .credentialsProvider(StaticCredentialsProvider.create(
-                  AwsBasicCredentials.create("accessKey2", "verySecretKey2")))
-                .forcePathStyle(true)
-                .endpointOverride(new URI("http://localhost:33333"))
-                .build()
-
-            implicit val badS3TransferManager: S3TransferManager =
-              S3TransferManager.builder()
-                .s3Client(badS3AsyncClient)
-                .build()
-
-            val badUnpacker: S3Unpacker =
-              new S3Unpacker()(badS3Client, badS3TransferManager)
+            val badUnpacker: S3Unpacker = new S3Unpacker()(badS3Client)
 
             val result =
               badUnpacker.unpack(
