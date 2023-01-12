@@ -5,7 +5,6 @@ import org.scanamo.{Scanamo, Table => ScanamoTable}
 import org.scanamo.syntax._
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.transfer.s3.S3TransferManager
 import weco.json.JsonUtil._
 import weco.storage_service.bag_tracker.storage.StorageManifestDao
 import weco.storage_service.bagit.models.BagVersion._
@@ -35,7 +34,6 @@ class DynamoStorageManifestDao(
   implicit
   dynamoClient: DynamoDbClient,
   s3Client: S3Client,
-  s3TransferManager: S3TransferManager
 ) extends StorageManifestDao {
 
   //  By default reads are eventually consistent

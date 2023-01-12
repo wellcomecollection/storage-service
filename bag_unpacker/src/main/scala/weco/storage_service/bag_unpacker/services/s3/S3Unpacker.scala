@@ -4,7 +4,6 @@ import org.apache.commons.io.FileUtils
 import software.amazon.awssdk.core.exception.SdkClientException
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.S3Exception
-import software.amazon.awssdk.transfer.s3.S3TransferManager
 import weco.storage_service.bag_unpacker.services.{
   Unpacker,
   UnpackerError,
@@ -19,7 +18,7 @@ import weco.storage.streaming.InputStreamWithLength
 
 class S3Unpacker(
   bufferSize: Long = 128 * FileUtils.ONE_MB
-)(implicit s3Client: S3Client, s3TransferManager: S3TransferManager)
+)(implicit s3Client: S3Client)
     extends Unpacker[S3ObjectLocation, S3ObjectLocation, S3ObjectLocationPrefix] {
   override protected val writer
     : Writable[S3ObjectLocation, InputStreamWithLength] =
