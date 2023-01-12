@@ -1,13 +1,17 @@
 package weco.storage_service.bag_verifier.storage.s3
 
 import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
-import weco.storage_service.bag_verifier.storage.{Locatable, LocateFailure, LocationParsingError}
+import weco.storage_service.bag_verifier.storage.{
+  Locatable,
+  LocateFailure,
+  LocationParsingError
+}
 
 import java.net.URI
 
 object S3Locatable {
   implicit val s3UriLocatable
-  : Locatable[S3ObjectLocation, S3ObjectLocationPrefix, URI] =
+    : Locatable[S3ObjectLocation, S3ObjectLocationPrefix, URI] =
     new Locatable[S3ObjectLocation, S3ObjectLocationPrefix, URI] {
       override def locate(uri: URI)(
         maybeRoot: Option[S3ObjectLocationPrefix]
