@@ -1,8 +1,5 @@
 package weco.storage_service.bag_verifier.fixity.s3
 
-import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
-import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
-import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 
@@ -69,14 +66,6 @@ class S3FixityCheckerTest
     )
 
   implicit val context: Unit = ()
-
-  implicit val amazonS3: AmazonS3 =
-    AmazonS3ClientBuilder.standard()
-      .withCredentials(new AWSStaticCredentialsProvider(
-        new BasicAWSCredentials("accessKey1", "verySecretKey1")))
-      .withPathStyleAccessEnabled(true)
-      .withEndpointConfiguration(new EndpointConfiguration("http://localhost:33333", "localhost"))
-      .build()
 
   implicit val s3Resolvable: S3Resolvable = new S3Resolvable()
 
