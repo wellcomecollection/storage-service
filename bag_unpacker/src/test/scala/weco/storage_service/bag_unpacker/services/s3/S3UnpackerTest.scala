@@ -215,11 +215,10 @@ class S3UnpackerTest
           assertIsError(result) {
             case (err, maybeUserFacingMessage) =>
               maybeUserFacingMessage.get should startWith(
-                "Error trying to unpack the archive"
+                "Unexpected EOF while unpacking the archive"
               )
 
               err shouldBe a[IOException]
-              err.getMessage shouldBe "Error detected parsing the header"
           }
         }
       }

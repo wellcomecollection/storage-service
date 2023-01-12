@@ -92,7 +92,7 @@ trait BagsApiFixture
     maxResponseByteLength: Long = 1048576
   )(
     testWith: TestWith[(StorageManifestDao, MemoryMetrics), R]
-  )(implicit s3Client: S3Client, s3TransferManager: S3TransferManager): R = {
+  )(implicit s3Client: S3Client): R = {
     val dao = createStorageManifestDao()
     val uploader = new S3Uploader()
 
