@@ -6,29 +6,23 @@ import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
 import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
-import weco.messaging.typesafe.SQSBuilder.buildSQSAsyncClient
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.bag_unpacker.config.builders.UnpackerWorkerConfigBuilder
 import weco.storage_service.bag_unpacker.services.BagUnpackerWorker
 import weco.storage_service.bag_unpacker.services.s3.S3Unpacker
-import weco.storage_service.config.builders.{
-  IngestUpdaterBuilder,
-  OperationNameBuilder,
-  OutgoingPublisherBuilder
-}
+import weco.storage_service.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
 import weco.typesafe.WellcomeTypesafeApp
-import weco.typesafe.config.builders.AkkaBuilder
 
 import scala.concurrent.ExecutionContext
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
     implicit val actorSystem: ActorSystem =
-      AkkaBuilder.buildActorSystem()
+      ActorSystem("main-actor-system")
 
-    implicit val executionContext: ExecutionContext =
-      AkkaBuilder.buildExecutionContext()
+    implicit val ec: ExecutionContext =
+      actorSystem.dispatcher
 
     implicit val s3Client: S3Client =
       S3Client.builder().build()
@@ -37,7 +31,7 @@ object Main extends WellcomeTypesafeApp {
       CloudWatchBuilder.buildCloudWatchMetrics(config)
 
     implicit val sqsClient: SqsAsyncClient =
-      buildSQSAsyncClient
+      SqsAsyncClient.builder().build()
 
     val alpakkaSQSWorkerConfig =
       AlpakkaSqsWorkerConfigBuilder.build(config)

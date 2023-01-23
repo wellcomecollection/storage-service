@@ -9,37 +9,28 @@ import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.transfer.s3.S3TransferManager
 import weco.json.JsonUtil._
 import weco.messaging.sns.SNSConfig
-import weco.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, SQSBuilder}
+import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
-import weco.storage_service.bag_replicator.config.ReplicatorDestinationConfig
-import weco.storage_service.bag_replicator.replicator.Replicator
-import weco.storage_service.bag_replicator.replicator.azure.AzureReplicator
-import weco.storage_service.bag_replicator.replicator.models.ReplicationSummary
-import weco.storage_service.bag_replicator.replicator.s3.S3Replicator
-import weco.storage_service.bag_replicator.services.BagReplicatorWorker
-import weco.storage_service.config.builders.{
-  IngestUpdaterBuilder,
-  OperationNameBuilder,
-  OutgoingPublisherBuilder
-}
-import weco.storage_service.ingests.models.{
-  AmazonS3StorageProvider,
-  AzureBlobStorageProvider,
-  StorageProvider
-}
-import weco.storage_service.storage.models.IngestStepResult
 import weco.storage.azure.AzureBlobLocationPrefix
 import weco.storage.locking.dynamo.{DynamoLockDao, DynamoLockingService}
 import weco.storage.s3.S3ObjectLocationPrefix
 import weco.storage.transfer.azure.AzurePutBlockFromUrlTransfer
 import weco.storage.typesafe.DynamoLockDaoBuilder
 import weco.storage.{Location, Prefix}
+import weco.storage_service.bag_replicator.config.ReplicatorDestinationConfig
+import weco.storage_service.bag_replicator.replicator.Replicator
+import weco.storage_service.bag_replicator.replicator.azure.AzureReplicator
+import weco.storage_service.bag_replicator.replicator.models.ReplicationSummary
+import weco.storage_service.bag_replicator.replicator.s3.S3Replicator
+import weco.storage_service.bag_replicator.services.BagReplicatorWorker
+import weco.storage_service.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
+import weco.storage_service.ingests.models.{AmazonS3StorageProvider, AzureBlobStorageProvider, StorageProvider}
+import weco.storage_service.storage.models.IngestStepResult
 import weco.typesafe.WellcomeTypesafeApp
-import weco.typesafe.config.builders.AkkaBuilder
 import weco.typesafe.config.builders.EnrichConfig._
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 object Main extends WellcomeTypesafeApp {
@@ -47,9 +38,8 @@ object Main extends WellcomeTypesafeApp {
     import scala.concurrent.duration._
 
     implicit val actorSystem: ActorSystem =
-      AkkaBuilder.buildActorSystem()
-
-    implicit val executionContext: ExecutionContextExecutor =
+      ActorSystem("main-actor-system")
+    implicit val ec: ExecutionContext =
       actorSystem.dispatcher
 
     implicit val s3Client: S3Client =
@@ -63,7 +53,7 @@ object Main extends WellcomeTypesafeApp {
       CloudWatchBuilder.buildCloudWatchMetrics(config)
 
     implicit val sqsClient: SqsAsyncClient =
-      SQSBuilder.buildSQSAsyncClient
+      SqsAsyncClient.builder().build()
 
     implicit val lockDao: DynamoLockDao =
       DynamoLockDaoBuilder.buildDynamoLockDao(config)

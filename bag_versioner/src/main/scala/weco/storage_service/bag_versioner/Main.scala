@@ -3,49 +3,38 @@ package weco.storage_service.bag_versioner
 import akka.actor.ActorSystem
 import cats.Id
 import com.typesafe.config.Config
-import weco.json.JsonUtil._
 import org.scanamo.generic.auto._
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import weco.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, SQSBuilder}
+import weco.json.JsonUtil._
+import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
-import weco.storage_service.bagit.models.BagVersion
-import weco.storage_service.config.builders.{
-  IngestUpdaterBuilder,
-  OperationNameBuilder,
-  OutgoingPublisherBuilder
-}
-import weco.storage_service.bag_versioner.services.{
-  BagVersioner,
-  BagVersionerWorker
-}
-import weco.storage_service.bag_versioner.versioning.dynamo.{
-  DynamoIngestVersionManager,
-  DynamoIngestVersionManagerDao
-}
-import weco.storage_service.bag_versioner.versioning.{
-  IngestVersionManagerError,
-  VersionPicker
-}
 import weco.storage.locking.dynamo.DynamoLockingService
 import weco.storage.typesafe.{DynamoBuilder, DynamoLockDaoBuilder}
+import weco.storage_service.bag_versioner.services.{BagVersioner, BagVersionerWorker}
+import weco.storage_service.bag_versioner.versioning.dynamo.{DynamoIngestVersionManager, DynamoIngestVersionManagerDao}
+import weco.storage_service.bag_versioner.versioning.{IngestVersionManagerError, VersionPicker}
+import weco.storage_service.bagit.models.BagVersion
+import weco.storage_service.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
 import weco.typesafe.WellcomeTypesafeApp
-import weco.typesafe.config.builders.AkkaBuilder
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.ExecutionContext
 import scala.language.higherKinds
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
-    implicit val actorSystem: ActorSystem = AkkaBuilder.buildActorSystem()
-    implicit val executionContext: ExecutionContextExecutor =
+    implicit val actorSystem: ActorSystem =
+      ActorSystem("main-actor-system")
+
+    implicit val ec: ExecutionContext =
       actorSystem.dispatcher
 
     implicit val metrics: CloudWatchMetrics =
       CloudWatchBuilder.buildCloudWatchMetrics(config)
 
     implicit val sqsClient: SqsAsyncClient =
-      SQSBuilder.buildSQSAsyncClient
+      SqsAsyncClient.builder().build()
 
     implicit val lockDao = DynamoLockDaoBuilder
       .buildDynamoLockDao(config)
@@ -59,7 +48,7 @@ object Main extends WellcomeTypesafeApp {
       ]()
 
     val ingestVersionManagerDao = new DynamoIngestVersionManagerDao(
-      dynamoClient = DynamoBuilder.buildDynamoClient,
+      dynamoClient = DynamoDbClient.builder().build(),
       dynamoConfig =
         DynamoBuilder.buildDynamoConfig(config, namespace = "versions")
     )

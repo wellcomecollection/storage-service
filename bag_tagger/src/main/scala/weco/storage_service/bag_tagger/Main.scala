@@ -5,32 +5,28 @@ import com.typesafe.config.Config
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
-import weco.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, SQSBuilder}
+import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
+import weco.storage_service.bag_tagger.services.{ApplyTags, BagTaggerWorker, TagRules}
 import weco.storage_service.bag_tracker.client.AkkaBagTrackerClient
-import weco.storage_service.bag_tagger.services.{
-  ApplyTags,
-  BagTaggerWorker,
-  TagRules
-}
 import weco.typesafe.WellcomeTypesafeApp
-import weco.typesafe.config.builders.AkkaBuilder
 import weco.typesafe.config.builders.EnrichConfig._
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.ExecutionContext
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
-    implicit val actorSystem: ActorSystem = AkkaBuilder.buildActorSystem()
-    implicit val executionContext: ExecutionContextExecutor =
+    implicit val actorSystem: ActorSystem =
+      ActorSystem("main-actor-system")
+    implicit val ec: ExecutionContext =
       actorSystem.dispatcher
 
     implicit val metrics: CloudWatchMetrics =
       CloudWatchBuilder.buildCloudWatchMetrics(config)
 
     implicit val sqsClient: SqsAsyncClient =
-      SQSBuilder.buildSQSAsyncClient
+      SqsAsyncClient.builder().build()
 
     val bagTrackerClient = new AkkaBagTrackerClient(
       trackerHost = config.requireString("bags.tracker.host")

@@ -13,7 +13,6 @@ import weco.storage_service.ingests_tracker.client.{
   IngestTrackerClient
 }
 import weco.typesafe.WellcomeTypesafeApp
-import weco.typesafe.config.builders.AkkaBuilder
 import weco.typesafe.config.builders.EnrichConfig._
 import weco.http.WellcomeHttpApp
 import weco.http.models.HTTPServerConfig
@@ -24,9 +23,9 @@ import scala.concurrent.ExecutionContext
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
     implicit val actorSystem: ActorSystem =
-      AkkaBuilder.buildActorSystem()
-    implicit val executionContext: ExecutionContext =
-      AkkaBuilder.buildExecutionContext()
+      ActorSystem("main-actor-system")
+    implicit val ec: ExecutionContext =
+      actorSystem.dispatcher
 
     val httpServerConfigMain = HTTPServerBuilder.buildHTTPServerConfig(config)
 
@@ -52,7 +51,7 @@ object Main extends WellcomeTypesafeApp {
 
       override val httpServerConfig: HTTPServerConfig = httpServerConfigMain
 
-      override implicit val ec: ExecutionContext = executionContext
+      override implicit val ec: ExecutionContext = actorSystem.dispatcher
     }
 
     val appName = "IngestsApi"

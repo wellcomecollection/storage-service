@@ -13,15 +13,14 @@ import weco.storage_service.ingests_tracker.tracker.IngestTracker
 import weco.storage_service.ingests_tracker.tracker.dynamo.DynamoIngestTracker
 import weco.storage.typesafe.DynamoBuilder
 import weco.typesafe.WellcomeTypesafeApp
-import weco.typesafe.config.builders.AkkaBuilder
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
     implicit val actorSystem: ActorSystem =
-      AkkaBuilder.buildActorSystem()
+      ActorSystem("main-actor-system")
 
     implicit val dynamoClient: DynamoDbClient =
-      DynamoBuilder.buildDynamoClient
+      DynamoDbClient.builder().build()
 
     val callbackNotificationService: CallbackNotificationService[SNSConfig] =
       new CallbackNotificationService(
