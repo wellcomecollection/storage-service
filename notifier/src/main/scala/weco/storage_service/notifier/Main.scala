@@ -7,7 +7,10 @@ import weco.http.client.AkkaHttpClient
 import weco.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, SNSBuilder}
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
-import weco.storage_service.notifier.services.{CallbackUrlService, NotifierWorker}
+import weco.storage_service.notifier.services.{
+  CallbackUrlService,
+  NotifierWorker
+}
 import weco.typesafe.WellcomeTypesafeApp
 
 import scala.concurrent.ExecutionContext

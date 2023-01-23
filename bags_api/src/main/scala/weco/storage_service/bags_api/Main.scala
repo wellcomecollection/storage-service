@@ -71,7 +71,8 @@ object Main extends WellcomeTypesafeApp {
 
       override val maximumResponseByteLength: Long = defaultMaxByteLength
       override val cacheDuration: Duration = defaultCacheDuration
-      override implicit val materializer: Materializer = Materializer(actorSystem)
+      override implicit val materializer: Materializer =
+        Materializer(actorSystem)
     }
 
     val appName = "BagsApi"

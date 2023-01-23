@@ -12,11 +12,24 @@ import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage.locking.dynamo.DynamoLockingService
 import weco.storage.typesafe.{DynamoBuilder, DynamoLockDaoBuilder}
-import weco.storage_service.bag_versioner.services.{BagVersioner, BagVersionerWorker}
-import weco.storage_service.bag_versioner.versioning.dynamo.{DynamoIngestVersionManager, DynamoIngestVersionManagerDao}
-import weco.storage_service.bag_versioner.versioning.{IngestVersionManagerError, VersionPicker}
+import weco.storage_service.bag_versioner.services.{
+  BagVersioner,
+  BagVersionerWorker
+}
+import weco.storage_service.bag_versioner.versioning.dynamo.{
+  DynamoIngestVersionManager,
+  DynamoIngestVersionManagerDao
+}
+import weco.storage_service.bag_versioner.versioning.{
+  IngestVersionManagerError,
+  VersionPicker
+}
 import weco.storage_service.bagit.models.BagVersion
-import weco.storage_service.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
+import weco.storage_service.config.builders.{
+  IngestUpdaterBuilder,
+  OperationNameBuilder,
+  OutgoingPublisherBuilder
+}
 import weco.typesafe.WellcomeTypesafeApp
 
 import scala.concurrent.ExecutionContext

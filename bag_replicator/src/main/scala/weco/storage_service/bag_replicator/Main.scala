@@ -24,8 +24,16 @@ import weco.storage_service.bag_replicator.replicator.azure.AzureReplicator
 import weco.storage_service.bag_replicator.replicator.models.ReplicationSummary
 import weco.storage_service.bag_replicator.replicator.s3.S3Replicator
 import weco.storage_service.bag_replicator.services.BagReplicatorWorker
-import weco.storage_service.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
-import weco.storage_service.ingests.models.{AmazonS3StorageProvider, AzureBlobStorageProvider, StorageProvider}
+import weco.storage_service.config.builders.{
+  IngestUpdaterBuilder,
+  OperationNameBuilder,
+  OutgoingPublisherBuilder
+}
+import weco.storage_service.ingests.models.{
+  AmazonS3StorageProvider,
+  AzureBlobStorageProvider,
+  StorageProvider
+}
 import weco.storage_service.storage.models.IngestStepResult
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.EnrichConfig._

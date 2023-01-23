@@ -12,9 +12,20 @@ import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage.dynamo.DynamoConfig
 import weco.storage.store.dynamo.DynamoSingleVersionStore
 import weco.storage.typesafe.DynamoBuilder
-import weco.storage_service.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
-import weco.storage_service.replica_aggregator.models.{AggregatorInternalRecord, ReplicaPath}
-import weco.storage_service.replica_aggregator.services.{ReplicaAggregator, ReplicaAggregatorWorker, ReplicaCounter}
+import weco.storage_service.config.builders.{
+  IngestUpdaterBuilder,
+  OperationNameBuilder,
+  OutgoingPublisherBuilder
+}
+import weco.storage_service.replica_aggregator.models.{
+  AggregatorInternalRecord,
+  ReplicaPath
+}
+import weco.storage_service.replica_aggregator.services.{
+  ReplicaAggregator,
+  ReplicaAggregatorWorker,
+  ReplicaCounter
+}
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.EnrichConfig._
 

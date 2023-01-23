@@ -11,7 +11,11 @@ import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.bag_unpacker.config.builders.UnpackerWorkerConfigBuilder
 import weco.storage_service.bag_unpacker.services.BagUnpackerWorker
 import weco.storage_service.bag_unpacker.services.s3.S3Unpacker
-import weco.storage_service.config.builders.{IngestUpdaterBuilder, OperationNameBuilder, OutgoingPublisherBuilder}
+import weco.storage_service.config.builders.{
+  IngestUpdaterBuilder,
+  OperationNameBuilder,
+  OutgoingPublisherBuilder
+}
 import weco.typesafe.WellcomeTypesafeApp
 
 import scala.concurrent.ExecutionContext

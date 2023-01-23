@@ -8,7 +8,11 @@ import weco.json.JsonUtil._
 import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
-import weco.storage_service.bag_tagger.services.{ApplyTags, BagTaggerWorker, TagRules}
+import weco.storage_service.bag_tagger.services.{
+  ApplyTags,
+  BagTaggerWorker,
+  TagRules
+}
 import weco.storage_service.bag_tracker.client.AkkaBagTrackerClient
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.EnrichConfig._
