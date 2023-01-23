@@ -16,7 +16,6 @@ import weco.storage.s3.S3ObjectLocationPrefix
 import weco.storage.services.s3.{S3PresignedUrls, S3Uploader}
 import weco.storage.typesafe.S3Builder
 import weco.typesafe.WellcomeTypesafeApp
-import weco.typesafe.config.builders.AkkaBuilder
 import weco.typesafe.config.builders.EnrichConfig._
 import weco.http.WellcomeHttpApp
 import weco.http.models.HTTPServerConfig

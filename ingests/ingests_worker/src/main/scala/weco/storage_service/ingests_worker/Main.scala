@@ -2,14 +2,14 @@ package weco.storage_service.ingests_worker
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.Uri
+import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import weco.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, SQSBuilder}
+import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
+import weco.storage_service.ingests_tracker.client.AkkaIngestTrackerClient
 import weco.storage_service.ingests_worker.services.IngestsWorkerService
 import weco.typesafe.WellcomeTypesafeApp
-import com.typesafe.config.Config
-import weco.storage_service.ingests_tracker.client.AkkaIngestTrackerClient
 import weco.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.ExecutionContext
