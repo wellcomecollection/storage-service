@@ -5,11 +5,7 @@ import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
 import weco.messaging.sns.SNSMessageSender
-import weco.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  SNSBuilder,
-  SQSBuilder
-}
+import weco.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, SNSBuilder}
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.bag_tracker.client.AkkaBagTrackerClient
