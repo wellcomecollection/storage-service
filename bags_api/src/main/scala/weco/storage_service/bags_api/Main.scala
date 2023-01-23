@@ -16,7 +16,6 @@ import weco.storage.s3.S3ObjectLocationPrefix
 import weco.storage.services.s3.{S3PresignedUrls, S3Uploader}
 import weco.storage.typesafe.S3Builder
 import weco.typesafe.WellcomeTypesafeApp
-import weco.typesafe.config.builders.AkkaBuilder
 import weco.typesafe.config.builders.EnrichConfig._
 import weco.http.WellcomeHttpApp
 import weco.http.models.HTTPServerConfig
@@ -32,14 +31,11 @@ object Main extends WellcomeTypesafeApp {
   val defaultMaxByteLength = 9 * FileUtils.ONE_MB
 
   runWithConfig { config: Config =>
-    implicit val asMain: ActorSystem =
-      AkkaBuilder.buildActorSystem()
+    implicit val actorSystem: ActorSystem =
+      ActorSystem("main-actor-system")
 
-    implicit val ecMain: ExecutionContext =
-      AkkaBuilder.buildExecutionContext()
-
-    implicit val matMain: Materializer =
-      AkkaBuilder.buildMaterializer()
+    implicit val ec: ExecutionContext =
+      actorSystem.dispatcher
 
     implicit val s3Client: S3Client = S3Client.builder().build()
     implicit val s3Presigner: S3Presigner = S3Presigner.builder().build()
@@ -63,7 +59,7 @@ object Main extends WellcomeTypesafeApp {
     val router: BagsApi = new BagsApi {
       override val httpServerConfig: HTTPServerConfig =
         HTTPServerBuilder.buildHTTPServerConfig(config)
-      override implicit val ec: ExecutionContext = ecMain
+      override implicit val ec: ExecutionContext = actorSystem.dispatcher
 
       override val bagTrackerClient: BagTrackerClient = client
 
@@ -75,7 +71,8 @@ object Main extends WellcomeTypesafeApp {
 
       override val maximumResponseByteLength: Long = defaultMaxByteLength
       override val cacheDuration: Duration = defaultCacheDuration
-      override implicit val materializer: Materializer = matMain
+      override implicit val materializer: Materializer =
+        Materializer(actorSystem)
     }
 
     val appName = "BagsApi"

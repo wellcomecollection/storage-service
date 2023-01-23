@@ -5,11 +5,7 @@ import com.typesafe.config.Config
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
-import weco.messaging.typesafe.{
-  AlpakkaSqsWorkerConfigBuilder,
-  SNSBuilder,
-  SQSBuilder
-}
+import weco.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, SNSBuilder}
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.bag_register.services.{
@@ -24,7 +20,6 @@ import weco.storage_service.config.builders.{
   OperationNameBuilder
 }
 import weco.typesafe.WellcomeTypesafeApp
-import weco.typesafe.config.builders.AkkaBuilder
 import weco.typesafe.config.builders.EnrichConfig._
 
 import scala.concurrent.ExecutionContext
@@ -32,9 +27,9 @@ import scala.concurrent.ExecutionContext
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
     implicit val actorSystem: ActorSystem =
-      AkkaBuilder.buildActorSystem()
+      ActorSystem("main-actor-system")
     implicit val ec: ExecutionContext =
-      AkkaBuilder.buildExecutionContext()
+      actorSystem.dispatcher
 
     implicit val s3Client: S3Client =
       S3Client.builder().build()
@@ -43,7 +38,7 @@ object Main extends WellcomeTypesafeApp {
       CloudWatchBuilder.buildCloudWatchMetrics(config)
 
     implicit val sqsClient: SqsAsyncClient =
-      SQSBuilder.buildSQSAsyncClient
+      SqsAsyncClient.builder().build()
 
     val operationName = OperationNameBuilder.getName(config)
 
