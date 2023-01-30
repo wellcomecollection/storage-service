@@ -1,7 +1,7 @@
 import sbt._
 
 object WellcomeDependencies {
-  val defaultVersion = "32.24.0" // This is automatically bumped by the scala-libs release process, do not edit this line manually
+  val defaultVersion = "32.24.1" // This is automatically bumped by the scala-libs release process, do not edit this line manually
 
   lazy val versions = new {
     val fixtures = defaultVersion
