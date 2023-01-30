@@ -35,4 +35,5 @@
 ## Wellcome-specific information
 
 -   [Our three replicas: S3, Glacier, and Azure](wellcome/replica-configuration.md)
+-   [Recovering files from our Azure replica](wellcome/recovering-files-from-our-azure-replica.md)
 -   [Awkward files and bags](wellcome/awkward-files-and-bags.md)
