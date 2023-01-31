@@ -7,12 +7,14 @@
     You want everything in the URL query parameter, which is the SAS token.
     For example, if the URL was:
 
-    ``` https://wecostorageprod.blob.core.windows.net/?se=3020-01-01T01%3A01%3A01Z&sp=rl&sip=1.2.3.4&sv=2019-12-12&sr=c&sig=SIGNATURE1234
+    ```
+    https://wecostorageprod.blob.core.windows.net/?se=3020-01-01T01%3A01%3A01Z&sp=rl&sip=1.2.3.4&sv=2019-12-12&sr=c&sig=SIGNATURE1234
     ```
 
     then the token is
 
-    ``` se=3020-01-01T01%3A01%3A01Z&sp=rl&sip=1.2.3.4&sv=2019-12-12&sr=c&sig=SIGNATURE1234
+    ```
+    se=3020-01-01T01%3A01%3A01Z&sp=rl&sip=1.2.3.4&sv=2019-12-12&sr=c&sig=SIGNATURE1234
     ```
 
     These tokens are IP-restricted, and can only be used from the Elastic IP in the storage account.
