@@ -11,8 +11,6 @@ def chunked_diff(diff_for_chunk, all_entries):
     chunk_length = 500
     chunk_count = math.ceil(len(all_entries) / chunk_length)
 
-    diff_list = []
-    for chunk in tqdm(_chunks(all_entries, chunk_length), total=chunk_count):
-        diff_list.append(diff_for_chunk(chunk))
+    diff_list = (diff_for_chunk(chunk) for chunk in tqdm(_chunks(all_entries, chunk_length), total=chunk_count))
 
     return [item for sublist in diff_list for item in sublist]
