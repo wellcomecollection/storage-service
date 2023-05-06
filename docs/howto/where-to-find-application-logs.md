@@ -1,4 +1,4 @@
-# Viewing application logs
+# Where to find application logs
 
 In the Wellcome installation, all the apps write their logs to our shared logging cluster.
 You can use these links to jump to a pre-filtered search for storage service logs:

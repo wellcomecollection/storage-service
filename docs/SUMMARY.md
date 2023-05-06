@@ -14,7 +14,7 @@
 
 ## How to: debugging errors
 
--   [Viewing application logs](howto/viewing-application-logs.md)
+-   [Where to find application logs](howto/where-to-find-application-logs.md)
 -   [Manually marking ingests as failed](howto/manually-marking-ingests-as-failed.md)
 
 ## Reference/design decisison
