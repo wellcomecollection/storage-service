@@ -11,11 +11,11 @@ resource "aws_s3_bucket_lifecycle_configuration" "unpacked_bags" {
   bucket = aws_s3_bucket.unpacked_bags.id
 
   rule {
-    id           = "expire-after-30-days"
+    id     = "expire-after-30-days"
     status = "Enabled"
 
     expiration {
-      days          = 30
+      days = 30
     }
   }
 }

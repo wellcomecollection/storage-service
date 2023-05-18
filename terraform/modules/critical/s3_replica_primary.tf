@@ -19,7 +19,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "replica_primary" {
   bucket = aws_s3_bucket.replica_primary.id
 
   rule {
-    id      = "transition_objects_to_standard_ia"
+    id     = "transition_objects_to_standard_ia"
     status = "Enabled"
 
     transition {
@@ -29,7 +29,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "replica_primary" {
   }
 
   rule {
-    id      = "move_mxf_objects_to_glacier"
+    id     = "move_mxf_objects_to_glacier"
     status = "Enabled"
 
     filter {
@@ -56,17 +56,17 @@ resource "aws_s3_bucket_lifecycle_configuration" "replica_primary" {
   # recover it -- but we do want deleted objects to disappear eventually,
   # e.g. for data protection.
   rule {
-    id      = "expire_noncurrent_versions"
+    id     = "expire_noncurrent_versions"
     status = var.enable_s3_versioning ? "Enabled" : "Disabled"
 
     noncurrent_version_transition {
-      noncurrent_days          = 30
-      storage_class = "STANDARD_IA"
+      noncurrent_days = 30
+      storage_class   = "STANDARD_IA"
     }
 
     noncurrent_version_transition {
-      noncurrent_days          = 60
-      storage_class = "GLACIER"
+      noncurrent_days = 60
+      storage_class   = "GLACIER"
     }
 
     noncurrent_version_expiration {
@@ -77,7 +77,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "replica_primary" {
   # See comment in TagRules.scala -- this is about moving high-resolution
   # TIFFs in our manuscripts workflow to Glacier.
   rule {
-    id      = "move_digitised_tif_to_glacier"
+    id     = "move_digitised_tif_to_glacier"
     status = "Enabled"
 
     filter {

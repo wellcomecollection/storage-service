@@ -11,7 +11,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "large_response_cache" {
   bucket = aws_s3_bucket.large_response_cache.id
 
   rule {
-    id           = "transition-to-standard-id"
+    id     = "transition-to-standard-id"
     status = "Enabled"
 
     transition {
