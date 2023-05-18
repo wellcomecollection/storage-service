@@ -1,5 +1,5 @@
 module "vhs_manifests" {
-  source = "git::github.com/wellcomecollection/terraform-aws-vhs.git//multi-version-store?ref=v4.2.0"
+  source = "./multi-version-store"
   name   = "${var.namespace}-manifests"
 
   bucket_name = var.vhs_bucket_name

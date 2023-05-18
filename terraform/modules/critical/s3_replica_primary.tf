@@ -1,14 +1,26 @@
 resource "aws_s3_bucket" "replica_primary" {
   bucket = "wellcomecollection-${var.namespace}"
+}
+
+resource "aws_s3_bucket_acl" "replica_primary" {
+  bucket = aws_s3_bucket.replica_primary.id
   acl    = "private"
+}
 
-  versioning {
-    enabled = var.enable_s3_versioning
+resource "aws_s3_bucket_versioning" "replica_primary" {
+  bucket = aws_s3_bucket.replica_primary.id
+
+  versioning_configuration {
+    status = var.enable_s3_versioning ? "Enabled" : "Disabled"
   }
+}
 
-  lifecycle_rule {
+resource "aws_s3_bucket_lifecycle_configuration" "replica_primary" {
+  bucket = aws_s3_bucket.replica_primary.id
+
+  rule {
     id      = "transition_objects_to_standard_ia"
-    enabled = true
+    status = "Enabled"
 
     transition {
       days          = 30
@@ -16,14 +28,18 @@ resource "aws_s3_bucket" "replica_primary" {
     }
   }
 
-  lifecycle_rule {
+  rule {
     id      = "move_mxf_objects_to_glacier"
-    enabled = true
+    status = "Enabled"
 
-    prefix = "digitised/"
+    filter {
+      and {
+        prefix = "digitised/"
 
-    tags = {
-      "Content-Type" = "application/mxf"
+        tags = {
+          "Content-Type" = "application/mxf"
+        }
+      }
     }
 
     transition {
@@ -39,35 +55,39 @@ resource "aws_s3_bucket" "replica_primary" {
   # us a safety net against accidental deletions -- if we delete something, we can
   # recover it -- but we do want deleted objects to disappear eventually,
   # e.g. for data protection.
-  lifecycle_rule {
+  rule {
     id      = "expire_noncurrent_versions"
-    enabled = var.enable_s3_versioning
+    status = var.enable_s3_versioning ? "Enabled" : "Disabled"
 
     noncurrent_version_transition {
-      days          = 30
+      noncurrent_days          = 30
       storage_class = "STANDARD_IA"
     }
 
     noncurrent_version_transition {
-      days          = 60
+      noncurrent_days          = 60
       storage_class = "GLACIER"
     }
 
     noncurrent_version_expiration {
-      days = 90
+      noncurrent_days = 90
     }
   }
 
   # See comment in TagRules.scala -- this is about moving high-resolution
   # TIFFs in our manuscripts workflow to Glacier.
-  lifecycle_rule {
+  rule {
     id      = "move_digitised_tif_to_glacier"
-    enabled = true
+    status = "Enabled"
 
-    prefix = "digitised/"
+    filter {
+      and {
+        prefix = "digitised/"
 
-    tags = {
-      "Content-Type" = "image/tiff"
+        tags = {
+          "Content-Type" = "image/tiff"
+        }
+      }
     }
 
     transition {
