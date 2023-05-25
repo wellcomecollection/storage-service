@@ -18,7 +18,7 @@ import boto3
 import click
 from elasticsearch.exceptions import NotFoundError as ElasticNotFoundError
 import humanize
-from wellcome_storage_service import IngestNotFound
+from wellcome_storage_service import staging_client, prod_client
 
 from helpers import azure, dynamo, s3
 from helpers.iam import (
@@ -34,15 +34,18 @@ from helpers.iam import (
 )
 from helpers.reporting import get_reporting_client
 from helpers.s3 import delete_s3_prefix
-from helpers.storage_service import lookup_ingest
+from helpers.storage_service import lookup_ingest_id
 
 
 @click.command()
-@click.argument("ingest_id", required=True)
+@click.option("--environment", required=True, type=click.Choice(['prod', 'staging']))
+@click.option("--space", required=True)
+@click.option("--external-identifier", required=True)
+@click.option("--version", required=True)
 @click.option("--skip-azure-login", is_flag=True, default=False)
-def main(ingest_id, skip_azure_login):
+def main(environment, space, external_identifier, version, skip_azure_login):
     """
-    Delete an ingest and the corresponding bag from the storage service.
+    Delete a bag and the corresponding ingest from the storage service.
 
     There is no "undo" button.  Please use with caution!
 
@@ -51,15 +54,19 @@ def main(ingest_id, skip_azure_login):
     often, and it's possible something will have broken since the last time it
     was used.
     """
-    try:
-        api_name, storage_client, ingest_data = lookup_ingest(ingest_id)
-    except IngestNotFound:
-        abort(f"Could not find {ingest_id} in either API!")
+    ingest_id = lookup_ingest_id(environment, space, external_identifier, version)
 
-    space = ingest_data["space"]
-    external_identifier = ingest_data["external_identifier"]
-    version = ingest_data["version"]
-    date_created = ingest_data["date_created"]
+    if environment == 'staging':
+        storage_client = staging_client()
+    elif environment == 'prod':
+        storage_client = prod_client()
+    else:
+        sys.exit(f"Unrecognised environment: {environment}")
+
+    ingest = storage_client.get_ingest(ingest_id)
+    date_created = datetime.datetime.strptime(
+        ingest["createdDate"], "%Y-%m-%dT%H:%M:%S.%fZ"
+    )
 
     # Prompt the user to confirm that yes, they really want to delete this bag.
     #
@@ -67,11 +74,12 @@ def main(ingest_id, skip_azure_login):
     # It adds a bit of friction to the process, so somebody can't accidentally
     # invoke this script and delete a whole pile of bags at once.
     _confirm_user_wants_to_delete_bag(
-        api_name=api_name,
+        api_name=environment,
         space=space,
         external_identifier=external_identifier,
         version=version,
         date_created=date_created,
+        ingest_id=ingest_id
     )
 
     reason = _ask_reason_for_deleting_bag(
@@ -107,15 +115,12 @@ def main(ingest_id, skip_azure_login):
         for loc in locations["s3"] + [locations["azure"]]
     )
 
-    environment = api_name
-    assert environment in ("prod", "staging")
-
     dynamo_client = create_dynamo_client_from_role_arn(role_arn=READ_ONLY_ROLE_ARN)
 
     items_to_delete = list(
         _get_dynamodb_items_to_delete(
             dynamo_client,
-            environment=api_name,
+            environment=environment,
             ingest_id=ingest_id,
             space=space,
             external_identifier=external_identifier,
@@ -150,7 +155,7 @@ def main(ingest_id, skip_azure_login):
     dynamo_client = create_dynamo_client_from_role_arn(role_arn=DEV_ROLE_ARN)
     _record_deletion(
         dynamo_client,
-        environment=api_name,
+        environment=environment,
         ingest_id=ingest_id,
         space=space,
         external_identifier=external_identifier,
@@ -178,10 +183,10 @@ def main(ingest_id, skip_azure_login):
     click.echo(
         click.style(
             textwrap.dedent(
-                """
+                f"""
     This bag has been deleted.
 
-    A temporary copy has been saved in s3://wellcomecollection-platform-infra,
+    A temporary copy has been saved in s3://wellcomecollection-storage-infra/tmp/deleted-bags/{ingest_id},
     but this will only be kept for 30 days.
     """
             ).strip(),
@@ -199,7 +204,7 @@ def abort(msg):
 
 
 def _confirm_user_wants_to_delete_bag(
-    api_name, space, external_identifier, version, date_created
+    api_name, space, external_identifier, version, date_created, ingest_id
 ):
     """
     Show the user some information about the bag, and check this is really
@@ -225,6 +230,7 @@ def _confirm_user_wants_to_delete_bag(
     click.echo(f"Space:        {hilight(space)}")
     click.echo(f"External ID:  {hilight(external_identifier)}")
     click.echo(f"Version:      {hilight(version)}")
+    click.echo(f"Ingest ID:    {hilight(ingest_id)}")
 
     date_str = date_created.strftime("%A, %d %B %Y @ %H:%M") + " (%s)" % delta
     click.echo(f"Date created: {hilight(date_str)}")
@@ -558,7 +564,7 @@ def _delete_reporting_cluster_entries(
     if version != "v1":
         version_i = int(version[1:])
 
-        reindexer_topic_arn = f"arn:aws:sns:eu-west-1:{ACCOUNT_ID}:storage_{environment}_bag_reindexer_output"
+        reindexer_topic_arn = f"arn:aws:sns:eu-west-1:{ACCOUNT_ID}:storage-{environment}_bag_reindexer_output"
         sns_client = create_aws_client_from_role_arn("sns", role_arn=DEV_ROLE_ARN)
 
         payload = {

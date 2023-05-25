@@ -1,6 +1,7 @@
 import os
 
 from .iterators import chunked_iterable
+from .concurrently import concurrently
 
 
 def list_s3_prefix(s3_client, *, bucket, prefix=""):
@@ -21,13 +22,15 @@ def copy_s3_prefix(s3_client, *, src_bucket, src_prefix, dst_bucket, dst_prefix)
     """
     Copies all the objects between two prefixes in S3.
     """
-    for src_key in list_s3_prefix(s3_client, bucket=src_bucket, prefix=src_prefix):
-        dst_key = os.path.join(dst_prefix, os.path.relpath(src_key, start=src_prefix))
-        s3_client.copy(
+    for _ in concurrently(
+        handler=lambda src_key: s3_client.copy(
             CopySource={"Bucket": src_bucket, "Key": src_key},
             Bucket=dst_bucket,
-            Key=dst_key,
-        )
+            Key=os.path.join(dst_prefix, os.path.relpath(src_key, start=src_prefix)),
+        ),
+        inputs=list_s3_prefix(s3_client, bucket=src_bucket, prefix=src_prefix)
+    ):
+        pass
 
 
 def delete_s3_prefix(*, s3_list_client, s3_delete_client, bucket, prefix=""):
