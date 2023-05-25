@@ -209,5 +209,16 @@ def delete_azure_prefix(*, account, container, prefix):
     """
     Delete all the objects in a given S3 bucket/prefix.
     """
+    # Implementation note: this is slow and there may be a faster way
+    # of doing it, but:
+    #
+    #   1.  I'm not super familiar with the Azure CLI; when I tried the
+    #       command for deleting multiple objects at once, it just hung
+    #       forever.
+    #   2.  If you try to be clever and run multiple instances of the CLI
+    #       at once, you hit rate limits pretty quickly.
+    #
+    # Given deletions are extremely rare, I'm okay with this being a
+    # somewhat slow process.
     for blob in list_azure_prefix(account=account, container=container, prefix=prefix):
         delete_azure_blob(account=account, container=container, blob=blob)
