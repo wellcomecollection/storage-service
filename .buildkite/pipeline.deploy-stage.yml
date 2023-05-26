@@ -2,7 +2,7 @@ steps:
   - label: deploy to stage
     branches: "main"
     command: |
-      ENV_TAG="stage" ./builds/update_ecr_image_tag.sh \
+      ENV_TAG="env.stage" ./builds/update_ecr_image_tag.sh \
         uk.ac.wellcome/bag_register \
         uk.ac.wellcome/bag_replicator \
         uk.ac.wellcome/bag_root_finder \
