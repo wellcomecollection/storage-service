@@ -58,7 +58,7 @@ def lookup_ingest_id(environment, space, external_identifier, version):
         )
     )
 
-    if len(matching_manifests) >= 1:
+    if matching_manifests:
         manifest_key = matching_manifests[0]
 
         manifest = json.load(
