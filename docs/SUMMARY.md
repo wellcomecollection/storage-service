@@ -41,3 +41,4 @@
     -   [Small fluctuations in our storage bill](wellcome/small-fluctuations-in-our-storage-bill.md)
 -   [Recovering files from our Azure replica](wellcome/recovering-files-from-our-azure-replica.md)
 -   [Awkward files and bags](wellcome/awkward-files-and-bags.md)
+-   [Completely deleting bags from the storage service](wellcome/completely-deleting-bags-from-the-storage-service.md)
