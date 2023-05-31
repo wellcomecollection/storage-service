@@ -70,7 +70,7 @@ lazy val bag_replicator = setupProject(
   project,
   folder = "bag_replicator",
   localDependencies = Seq(common),
-  externalDependencies = ExternalDependencies.mockitoDependencies,
+  externalDependencies = StorageDependencies.bagReplicatorDependencies,
   description = "Replicates the bag to one or more permanent storage locations"
 )
 
