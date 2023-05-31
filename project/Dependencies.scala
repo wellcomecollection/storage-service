@@ -92,6 +92,7 @@ object ExternalDependencies {
     val commonsIO = "2.6"
     val mockito = "1.9.5"
     val scalatest = "3.2.3"
+    val netty = "2.0.61.Final"
 
     // This should match the version of circe used in scala-json; see
     // https://github.com/wellcomecollection/scala-json/blob/master/project/Dependencies.scala
@@ -117,6 +118,10 @@ object ExternalDependencies {
   val mockitoDependencies: Seq[ModuleID] = Seq(
     "org.mockito" % "mockito-core" % versions.mockito % "test"
   )
+
+  val nettyDependencies: Seq[ModuleID] = Seq(
+    "io.netty" % "netty-tcnative" % "2.0.61.Final"
+  )
 }
 
 object StorageDependencies {
@@ -133,4 +138,14 @@ object StorageDependencies {
       WellcomeDependencies.messagingTypesafeLibrary ++
       WellcomeDependencies.storageTypesafeLibrary ++
       WellcomeDependencies.httpTypesafeLibrary
+
+  val bagReplicatorDependencies =
+    ExternalDependencies.mockitoDependencies ++
+      // Note: the netty dependencies here are an attempt to fix an issue we saw where the
+      // bag replicator was unable to start with the following error:
+      //
+      //      java.lang.ClassNotFoundException: io.netty.internal.tcnative.AsyncSSLPrivateKeyMethod
+      //
+      // See https://github.com/wellcomecollection/storage-service/issues/1066
+      ExternalDependencies.nettyDependencies
 }
