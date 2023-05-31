@@ -38,7 +38,7 @@ from helpers.storage_service import lookup_ingest_id
 
 
 @click.command()
-@click.option("--environment", required=True, type=click.Choice(['prod', 'staging']))
+@click.option("--environment", required=True, type=click.Choice(["prod", "staging"]))
 @click.option("--space", required=True)
 @click.option("--external-identifier", required=True)
 @click.option("--version", required=True)
@@ -56,9 +56,9 @@ def main(environment, space, external_identifier, version, skip_azure_login):
     """
     ingest_id = lookup_ingest_id(environment, space, external_identifier, version)
 
-    if environment == 'staging':
+    if environment == "staging":
         storage_client = staging_client()
-    elif environment == 'prod':
+    elif environment == "prod":
         storage_client = prod_client()
     else:
         sys.exit(f"Unrecognised environment: {environment}")
@@ -79,7 +79,7 @@ def main(environment, space, external_identifier, version, skip_azure_login):
         external_identifier=external_identifier,
         version=version,
         date_created=date_created,
-        ingest_id=ingest_id
+        ingest_id=ingest_id,
     )
 
     reason = _ask_reason_for_deleting_bag(

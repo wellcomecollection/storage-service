@@ -19,6 +19,4 @@ def get_reporting_client(secrets_client, *, environment, app_name):
 
     endpoint = f"https://{host}:{port}"
 
-    return Elasticsearch(
-        endpoint, http_auth=(username, password)
-    )
+    return Elasticsearch(endpoint, http_auth=(username, password))

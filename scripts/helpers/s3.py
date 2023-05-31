@@ -28,7 +28,7 @@ def copy_s3_prefix(s3_client, *, src_bucket, src_prefix, dst_bucket, dst_prefix)
             Bucket=dst_bucket,
             Key=os.path.join(dst_prefix, os.path.relpath(src_key, start=src_prefix)),
         ),
-        inputs=list_s3_prefix(s3_client, bucket=src_bucket, prefix=src_prefix)
+        inputs=list_s3_prefix(s3_client, bucket=src_bucket, prefix=src_prefix),
     ):
         pass
 
