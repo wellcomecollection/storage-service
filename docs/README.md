@@ -1,5 +1,46 @@
 # Storage service
 
+<!--
+  Note: this introductory information is copied from the repo's README,
+  and they should be kept in sync.
+-->
+
+The storage service manages the storage of our digital collections, including:
+
+*   Uploading files to cloud storage providers like Amazon S3 and Azure Blob
+*   Verifying fixity information on our files (checksums, sizes, filenames)
+*   Reporting on the contents of our digital archive through machine-readable APIs and search tools
+
+## Requirements
+
+The storage service is designed to:
+
+-   Ensure the safe, long-term (i.e. decades) storage of our digital assets
+-   Provide a scalable mechanism for identifying, retrieving, and storing content
+-   To support bulk processing of content, e.g. for file format migrations or batch analysis
+-   Follow industry best-practices around file integrity and audit trails
+-   Enable us to meet [NDSA Level 4][ndsa] for both digitised and ["born-digital"][born_digital] assets
+
+[ndsa]: https://ndsa.org/activities/levels-of-digital-preservation/
+[born_digital]: https://en.wikipedia.org/wiki/Born-digital
+
+## Documentation
+
+This GitBook space includes:
+
+*   How-to guides explaining how to do common operations, e.g. upload new files into the storage service
+*   Reference material explaining how the storage service is designed, and why we made those choices
+*   Notes for Wellcome developers who need to administer or debug our storage service deployment
+
+## Repo
+
+All our storage service code is in <https://github.com/wellcomecollection/storage-service>
+
+The READMEs in the repo have instructions for specific procedures, e.g. how to create new Docker images.
+This GitBook is meant to be a bit higher-level.
+
+---
+
 The unit of storage in the storage service is a **bag**.
 This is a collection of files packaged together with [the BagIt packaging format][bagit], which are ingested and stored together.
 
