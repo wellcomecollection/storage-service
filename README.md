@@ -4,6 +4,11 @@
 [![Deploy stage](https://img.shields.io/buildkite/d7ca8f1ecfccb947cf48d9835a27dad5d2c731646f7c270296/main.svg?label=deploy%20stage)](https://buildkite.com/wellcomecollection/storage-service-deploy-stage)
 [![Deploy prod](https://img.shields.io/buildkite/61753d376ae4d5bfdf4e0514417dcc96178dc169ff7ca3e2a8/main.svg?label=deploy%20prod)](https://buildkite.com/wellcomecollection/storage-service-deploy-prod)
 
+<!--
+  Note: this introductory information is copied in the GitBook introduction,
+  and they should be kept in sync
+-->
+
 This is the Wellcome Collection storage service.
 It manages the storage of our digital collections, including:
 
