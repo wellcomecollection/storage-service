@@ -37,6 +37,34 @@ trait CreateBagTestCases
       }
     }
 
+    // This is a regression test for some failures we saw where the
+    // bag register was trying to store very large manifests, and it
+    // would fail with the error:
+    //
+    //      413 Payload Too Large for POST to bag tracker
+    //
+    it("can store a very large bag") {
+      val manifest = createStorageManifestWith(
+        files = (1 to 100000).map(_ => createStorageManifestFile)
+      )
+
+      withStorageManifestDao(initialManifests = Seq.empty) { dao =>
+        withApi(dao) { _ =>
+          withClient(trackerHost) { client =>
+            val future = client.createBag(manifest)
+
+            whenReady(future) { result =>
+              result shouldBe Right(())
+
+              dao
+                .get(id = manifest.id, version = manifest.version)
+                .value shouldBe manifest
+            }
+          }
+        }
+      }
+    }
+
     it("returns a Left[BagTrackerCreateError] if it cannot store the bag") {
       val versionedStore =
         MemoryVersionedStore[BagId, StorageManifest](initialEntries = Map.empty)

@@ -50,9 +50,17 @@ class BagTrackerApi(val storageManifestDao: StorageManifestDao)(
     pathPrefix("bags") {
       concat(
         // Store a new bag in the storage manifest dao.
-        post {
-          entity(as[StorageManifest]) { storageManifest =>
-            createBag(storageManifest)
+        //
+        // Note: we use withoutSizeLimit here to allow storing arbitraily large
+        // bags using this API.  The Akka docs discourage using this function,
+        // because it disables certain protections against Denial of Service attacks
+        // from attackers posting large payloads -- but since this is an internal
+        // API, it should be fine.
+        withoutSizeLimit {
+          post {
+            entity(as[StorageManifest]) { storageManifest =>
+              createBag(storageManifest)
+            }
           }
         },
         // We look for /versions at the end of the path: this means we should
