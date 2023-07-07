@@ -24,6 +24,20 @@ The storage service is designed to:
 [ndsa]: https://ndsa.org/activities/levels-of-digital-preservation/
 [born_digital]: https://en.wikipedia.org/wiki/Born-digital
 
+## High-level design
+
+This is the basic architecture:
+
+![](images/high-level-design.png)
+
+Workflow systems (Goobi, Archivematica) create "bags", which are collections of files stored in the BagIt packaging format.
+They upload these bags to a temporary S3 bucket, and call the storage service APIs to ask it to store the bags permanently.
+
+The storage service reads the bags, verifies their contents, and replicates the bags to our permanent storage (S3 buckets/Azure containers).
+It is the only thing which writes to our permanent storage; this ensures everything is stored and labelled consistently.
+
+Delivery systems (e.g. DLCS) can then read objects back out of permanent storage, to provide access to users.
+
 ## Documentation
 
 This GitBook space includes:
