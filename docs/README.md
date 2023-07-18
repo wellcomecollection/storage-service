@@ -140,8 +140,4 @@ Developer workflow:
 
 These topics contain information about the Wellcome instance of the storage service, and may be of less relevance to non-Wellcome readers.
 
--   [Our three replicas: S3, Glacier, and Azure](wellcome/replica-configuration.md)
--   [Awkward files and bags](wellcome/awkward-files-and-bags.md)
--   [Using tags for storage tiering]
--   [Delete protection on the production storage service]
 -   [Why did my callback to Goobi timeout?]
