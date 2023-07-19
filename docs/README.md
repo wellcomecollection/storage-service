@@ -133,11 +133,3 @@ Developer workflow:
 
 -   [Repository layout](developers/repository-layout.md)
 -   [How Docker images are published to ECR](developers/ecr-publishing.md)
-
-
-
-## Wellcome-specific information
-
-These topics contain information about the Wellcome instance of the storage service, and may be of less relevance to non-Wellcome readers.
-
--   [Why did my callback to Goobi timeout?]

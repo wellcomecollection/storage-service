@@ -40,6 +40,10 @@
     -   [Using multiple storage tiers for cost-efficiency (A/V, TIFFs)](wellcome/using-multiple-storage-tiers-for-cost-efficiency-a-v-tiffs.md)
     -   [Small fluctuations in our storage bill](wellcome/small-fluctuations-in-our-storage-bill.md)
     -   [Delete protection on the production storage service](wellcome/delete-protection-on-the-production-storage-service.md)
+
+-   Wellcome-specific debugging
+    -   [Why did my callback to Goobi return a 401 Unauthorized?](wellcome/why-did-my-callback-to-goobi-fail.md)
+
 -   [Recovering files from our Azure replica](wellcome/recovering-files-from-our-azure-replica.md)
 -   [Awkward files and bags](wellcome/awkward-files-and-bags.md)
 -   [Completely deleting bags from the storage service](wellcome/completely-deleting-bags-from-the-storage-service.md)
