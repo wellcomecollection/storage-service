@@ -92,7 +92,8 @@ object ExternalDependencies {
     val commonsIO = "2.6"
     val mockito = "1.9.5"
     val scalatest = "3.2.3"
-    val netty = "2.0.61.Final"
+    val scalatestPlus = "3.1.2.0"
+    val scalatestPlusMockitoArtifactId = "mockito-3-2"
 
     // This should match the version of circe used in scala-json; see
     // https://github.com/wellcomecollection/scala-json/blob/master/project/Dependencies.scala
@@ -122,6 +123,10 @@ object ExternalDependencies {
 
   val scalatestDependencies = Seq[ModuleID](
     "org.scalatest" %% "scalatest" % versions.scalatest % "test"
+  )
+
+  val scalatestPlusDependencies = Seq(
+    "org.scalatestplus" %% versions.scalatestPlusMockitoArtifactId % versions.scalatestPlus % Test
   )
 
   val mockitoDependencies: Seq[ModuleID] = Seq(
@@ -155,6 +160,7 @@ object StorageDependencies {
 
   val bagReplicatorDependencies =
     ExternalDependencies.mockitoDependencies ++
+      ExternalDependencies.scalatestPlusDependencies ++
       ExternalDependencies.awsTransferManagerDependencies ++
       // Note: the netty dependencies here are an attempt to fix an issue we saw where the
       // bag replicator was unable to start with the following error:
