@@ -97,6 +97,15 @@ object ExternalDependencies {
     // This should match the version of circe used in scala-json; see
     // https://github.com/wellcomecollection/scala-json/blob/master/project/Dependencies.scala
     val circeOptics = "0.13.0"
+
+    // This should match the version of aws used in scala-libs; see
+    // https://github.com/wellcomecollection/scala-libs/blob/main/project/Dependencies.scala
+    val aws = "2.19.0"
+
+    // These are the "Common Runtime Libraries", which you're encouraged to use for
+    // better performance.
+    // See https://docs.aws.amazon.com/sdkref/latest/guide/common-runtime.html
+    val awsCrt = "0.20.3"
   }
 
   val commonsCompressDependencies = Seq(
@@ -122,6 +131,11 @@ object ExternalDependencies {
   val nettyDependencies: Seq[ModuleID] = Seq(
     "io.netty" % "netty-tcnative" % "2.0.61.Final"
   )
+
+  val awsTransferManagerDependencies: Seq[ModuleID] = Seq(
+    "software.amazon.awssdk" % "s3-transfer-manager" % versions.aws,
+    "software.amazon.awssdk.crt" % "aws-crt" % versions.awsCrt
+  )
 }
 
 object StorageDependencies {
@@ -141,6 +155,7 @@ object StorageDependencies {
 
   val bagReplicatorDependencies =
     ExternalDependencies.mockitoDependencies ++
+      ExternalDependencies.awsTransferManagerDependencies ++
       // Note: the netty dependencies here are an attempt to fix an issue we saw where the
       // bag replicator was unable to start with the following error:
       //
