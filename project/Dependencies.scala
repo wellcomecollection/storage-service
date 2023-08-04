@@ -1,7 +1,7 @@
 import sbt._
 
 object WellcomeDependencies {
-  val defaultVersion = "32.29.0" // This is automatically bumped by the scala-libs release process, do not edit this line manually
+  val defaultVersion = "32.30.0" // This is automatically bumped by the scala-libs release process, do not edit this line manually
 
   lazy val versions = new {
     val fixtures = defaultVersion
@@ -92,11 +92,21 @@ object ExternalDependencies {
     val commonsIO = "2.6"
     val mockito = "1.9.5"
     val scalatest = "3.2.3"
-    val netty = "2.0.61.Final"
+    val scalatestPlus = "3.1.2.0"
+    val scalatestPlusMockitoArtifactId = "mockito-3-2"
 
     // This should match the version of circe used in scala-json; see
     // https://github.com/wellcomecollection/scala-json/blob/master/project/Dependencies.scala
     val circeOptics = "0.13.0"
+
+    // This should match the version of aws used in scala-libs; see
+    // https://github.com/wellcomecollection/scala-libs/blob/main/project/Dependencies.scala
+    val aws = "2.19.0"
+
+    // These are the "Common Runtime Libraries", which you're encouraged to use for
+    // better performance.
+    // See https://docs.aws.amazon.com/sdkref/latest/guide/common-runtime.html
+    val awsCrt = "0.20.3"
   }
 
   val commonsCompressDependencies = Seq(
@@ -115,12 +125,21 @@ object ExternalDependencies {
     "org.scalatest" %% "scalatest" % versions.scalatest % "test"
   )
 
+  val scalatestPlusDependencies = Seq(
+    "org.scalatestplus" %% versions.scalatestPlusMockitoArtifactId % versions.scalatestPlus % Test
+  )
+
   val mockitoDependencies: Seq[ModuleID] = Seq(
     "org.mockito" % "mockito-core" % versions.mockito % "test"
   )
 
   val nettyDependencies: Seq[ModuleID] = Seq(
     "io.netty" % "netty-tcnative" % "2.0.61.Final"
+  )
+
+  val awsTransferManagerDependencies: Seq[ModuleID] = Seq(
+    "software.amazon.awssdk" % "s3-transfer-manager" % versions.aws,
+    "software.amazon.awssdk.crt" % "aws-crt" % versions.awsCrt
   )
 }
 
@@ -141,6 +160,8 @@ object StorageDependencies {
 
   val bagReplicatorDependencies =
     ExternalDependencies.mockitoDependencies ++
+      ExternalDependencies.scalatestPlusDependencies ++
+      ExternalDependencies.awsTransferManagerDependencies ++
       // Note: the netty dependencies here are an attempt to fix an issue we saw where the
       // bag replicator was unable to start with the following error:
       //
