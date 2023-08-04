@@ -147,6 +147,8 @@ object StorageDependencies {
   val commonDependencies =
     ExternalDependencies.commonsIODependencies ++
       ExternalDependencies.scalatestDependencies ++
+      ExternalDependencies.scalatestPlusDependencies ++
+      ExternalDependencies.mockitoDependencies ++
       WellcomeDependencies.jsonLibrary ++
       WellcomeDependencies.httpLibrary ++
       WellcomeDependencies.messagingLibrary ++
@@ -159,9 +161,7 @@ object StorageDependencies {
       WellcomeDependencies.httpTypesafeLibrary
 
   val bagReplicatorDependencies =
-    ExternalDependencies.mockitoDependencies ++
-      ExternalDependencies.scalatestPlusDependencies ++
-      ExternalDependencies.awsTransferManagerDependencies ++
+    ExternalDependencies.awsTransferManagerDependencies ++
       // Note: the netty dependencies here are an attempt to fix an issue we saw where the
       // bag replicator was unable to start with the following error:
       //
