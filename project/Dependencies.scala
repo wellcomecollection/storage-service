@@ -1,7 +1,7 @@
 import sbt._
 
 object WellcomeDependencies {
-  val defaultVersion = "32.32.0" // This is automatically bumped by the scala-libs release process, do not edit this line manually
+  val defaultVersion = "32.31.0" // This is automatically bumped by the scala-libs release process, do not edit this line manually
 
   lazy val versions = new {
     val fixtures = defaultVersion
@@ -147,6 +147,7 @@ object StorageDependencies {
   val commonDependencies =
     ExternalDependencies.commonsIODependencies ++
       ExternalDependencies.scalatestDependencies ++
+      ExternalDependencies.mockitoDependencies ++
       WellcomeDependencies.jsonLibrary ++
       WellcomeDependencies.httpLibrary ++
       WellcomeDependencies.messagingLibrary ++
@@ -159,8 +160,7 @@ object StorageDependencies {
       WellcomeDependencies.httpTypesafeLibrary
 
   val bagReplicatorDependencies =
-    ExternalDependencies.mockitoDependencies ++
-      ExternalDependencies.scalatestPlusDependencies ++
+    ExternalDependencies.scalatestPlusDependencies ++
       ExternalDependencies.awsTransferManagerDependencies ++
       // Note: the netty dependencies here are an attempt to fix an issue we saw where the
       // bag replicator was unable to start with the following error:
