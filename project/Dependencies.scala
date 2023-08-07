@@ -1,7 +1,7 @@
 import sbt._
 
 object WellcomeDependencies {
-  val defaultVersion = "32.36.0" // This is automatically bumped by the scala-libs release process, do not edit this line manually
+  val defaultVersion = "32.37.0" // This is automatically bumped by the scala-libs release process, do not edit this line manually
 
   lazy val versions = new {
     val fixtures = defaultVersion
@@ -88,6 +88,7 @@ object WellcomeDependencies {
 object ExternalDependencies {
   lazy val versions = new {
 
+    val azure = "12.7.0"
     val commonsCompress = "1.5"
     val commonsIO = "2.6"
     val mockito = "1.9.5"
@@ -108,6 +109,10 @@ object ExternalDependencies {
     // See https://docs.aws.amazon.com/sdkref/latest/guide/common-runtime.html
     val awsCrt = "0.20.3"
   }
+
+  val azureDependencies: Seq[ModuleID] = Seq(
+    "com.azure" % "azure-storage-blob" % versions.azure
+  )
 
   val commonsCompressDependencies = Seq(
     "org.apache.commons" % "commons-compress" % versions.commonsCompress
@@ -145,7 +150,8 @@ object ExternalDependencies {
 
 object StorageDependencies {
   val commonDependencies =
-    ExternalDependencies.commonsIODependencies ++
+    ExternalDependencies.azureDependencies ++
+      ExternalDependencies.commonsIODependencies ++
       ExternalDependencies.scalatestDependencies ++
       ExternalDependencies.scalatestPlusDependencies ++
       ExternalDependencies.mockitoDependencies ++
