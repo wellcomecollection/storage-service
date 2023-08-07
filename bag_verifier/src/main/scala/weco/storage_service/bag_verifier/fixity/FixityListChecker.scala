@@ -1,7 +1,7 @@
 package weco.storage_service.bag_verifier.fixity
 
 import grizzled.slf4j.Logging
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.{Location, Prefix}
 
 import scala.util.Random

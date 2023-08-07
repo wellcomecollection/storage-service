@@ -11,7 +11,7 @@ import weco.storage_service.storage.models.{
 }
 import weco.storage_service.checksum.{SHA256, SHA512}
 import weco.storage_service.indexer.models.FileContext
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 class IndexedFileTest
     extends AnyFunSpec

@@ -8,7 +8,7 @@ import akka.http.scaladsl.server.Directives.mapResponse
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import grizzled.slf4j.Logging
-import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.providers.s3.S3ObjectLocationPrefix
 import weco.storage.services.s3.S3Uploader
 import weco.storage.streaming.InputStreamWithLength
 

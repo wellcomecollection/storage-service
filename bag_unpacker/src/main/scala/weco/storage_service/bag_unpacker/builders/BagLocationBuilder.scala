@@ -5,7 +5,7 @@ import java.nio.file.Paths
 import weco.storage_service.bag_unpacker.config.models.BagUnpackerWorkerConfig
 import weco.storage_service.ingests.models.IngestID
 import weco.storage_service.storage.models.StorageSpace
-import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.providers.s3.S3ObjectLocationPrefix
 
 object BagLocationBuilder {
   def build(

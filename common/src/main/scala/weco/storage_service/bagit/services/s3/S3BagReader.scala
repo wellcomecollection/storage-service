@@ -1,7 +1,7 @@
 package weco.storage_service.bagit.services.s3
 
 import software.amazon.awssdk.services.s3.S3Client
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.store.s3.S3StreamReader
 import weco.storage_service.bagit.services.BagReader
 

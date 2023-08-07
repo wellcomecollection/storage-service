@@ -3,7 +3,7 @@ package weco.storage_service.display
 import io.circe.generic.extras.JsonKey
 import weco.storage_service.ingests.models._
 import weco.storage_service.storage.models.StorageLocation
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 
 case class DisplayLocation(
   provider: DisplayProvider,

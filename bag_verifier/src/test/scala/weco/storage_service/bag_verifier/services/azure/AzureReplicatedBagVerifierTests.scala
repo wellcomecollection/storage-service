@@ -11,7 +11,7 @@ import weco.storage_service.bagit.services.azure.AzureBagReader
 import weco.storage_service.fixtures.BagBuilder
 import weco.storage_service.fixtures.azure.AzureBagBuilder
 import weco.storage_service.storage.models.EnsureTrailingSlash
-import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import weco.storage.providers.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import weco.storage.fixtures.AzureFixtures.Container
 import weco.storage.fixtures.DynamoFixtures.Table
 import weco.storage.fixtures.S3Fixtures.Bucket

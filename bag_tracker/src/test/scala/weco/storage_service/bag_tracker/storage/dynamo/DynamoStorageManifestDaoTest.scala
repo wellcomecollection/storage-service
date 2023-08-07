@@ -10,7 +10,7 @@ import weco.storage_service.bag_tracker.storage.{StorageManifestDao, StorageMani
 import weco.storage.fixtures.DynamoFixtures.Table
 import weco.storage.fixtures.{DynamoFixtures, S3Fixtures}
 import weco.storage.fixtures.S3Fixtures.Bucket
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 
 import scala.language.higherKinds
 

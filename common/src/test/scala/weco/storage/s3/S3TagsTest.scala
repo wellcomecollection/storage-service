@@ -13,7 +13,7 @@ import weco.fixtures.TestWith
 import weco.storage.UpdateWriteError
 import weco.storage.fixtures.S3Fixtures
 import weco.storage.fixtures.S3Fixtures.Bucket
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 import weco.storage.tags.{Tags, TagsTestCases}
 
 import scala.collection.JavaConverters._

@@ -12,7 +12,7 @@ import weco.storage_service.bag_tracker.client.{
   AkkaBagTrackerClient,
   BagTrackerClient
 }
-import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.providers.s3.S3ObjectLocationPrefix
 import weco.storage.services.s3.{S3PresignedUrls, S3Uploader}
 import weco.storage.typesafe.S3Builder
 import weco.typesafe.WellcomeTypesafeApp

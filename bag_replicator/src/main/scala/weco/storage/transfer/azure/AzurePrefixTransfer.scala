@@ -1,10 +1,10 @@
 package weco.storage.transfer.azure
 
 import software.amazon.awssdk.services.s3.S3Client
-import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import weco.storage.providers.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import weco.storage.listing.Listing
 import weco.storage.listing.s3.S3ObjectListing
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.transfer.PrefixTransfer
 
 class AzurePrefixTransfer(

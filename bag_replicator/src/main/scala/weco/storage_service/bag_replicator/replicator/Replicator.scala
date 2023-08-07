@@ -9,7 +9,7 @@ import weco.storage_service.ingests.models.IngestID
 import weco.storage_service.storage.models.{EnsureTrailingSlash, StorageSpace}
 import weco.storage_service.storage.services.DestinationBuilder
 import weco.storage._
-import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.providers.s3.S3ObjectLocationPrefix
 import weco.storage.transfer.{PrefixTransfer, PrefixTransferFailure}
 
 // This is a generic replication from one location to another.

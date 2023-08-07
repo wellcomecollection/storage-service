@@ -6,7 +6,7 @@ import software.amazon.awssdk.services.s3.model.{
   HeadObjectRequest
 }
 import weco.storage._
-import weco.storage.s3.{S3Errors, S3ObjectLocation}
+import weco.storage.providers.s3.{S3Errors, S3ObjectLocation}
 import weco.storage.services.SizeFinder
 import weco.storage.store.RetryableReadable
 

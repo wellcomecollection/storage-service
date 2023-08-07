@@ -18,7 +18,7 @@ import weco.storage_service.storage.models._
 import weco.storage._
 import weco.storage.fixtures.S3Fixtures
 import weco.storage.fixtures.S3Fixtures.Bucket
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.services.s3.S3SizeFinder
 import weco.fixtures.TimeAssertions
 import weco.storage.store.s3.S3TypedStore

@@ -2,7 +2,7 @@ package weco.storage_service.bag_verifier.verify.steps
 
 import org.apache.commons.io.IOUtils
 import weco.storage_service.bag_verifier.models.BagVerifierError
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.store.Readable
 import weco.storage.streaming.InputStreamWithLength
 import weco.storage.{Identified, Location, Prefix}

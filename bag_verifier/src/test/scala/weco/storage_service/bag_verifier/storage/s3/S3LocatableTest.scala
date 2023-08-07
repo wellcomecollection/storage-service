@@ -3,7 +3,7 @@ package weco.storage_service.bag_verifier.storage.s3
 import org.scalatest.EitherValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 import weco.storage_service.bag_verifier.storage.LocationParsingError
 
 import java.net.URI

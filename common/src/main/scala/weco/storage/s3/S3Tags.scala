@@ -7,7 +7,7 @@ import software.amazon.awssdk.services.s3.model.{
   Tag,
   Tagging
 }
-import weco.storage.s3.{S3Errors, S3ObjectLocation}
+import weco.storage.providers.s3.{S3Errors, S3ObjectLocation}
 import weco.storage.store.RetryableReadable
 import weco.storage.tags.Tags
 import weco.storage._

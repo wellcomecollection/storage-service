@@ -2,7 +2,7 @@ package weco.storage.services.azure
 
 import com.azure.storage.blob.BlobServiceClient
 import weco.storage.ReadError
-import weco.storage.azure.{AzureBlobLocation, AzureStorageErrors}
+import weco.storage.providers.azure.{AzureBlobLocation, AzureStorageErrors}
 import weco.storage.services.SizeFinder
 import weco.storage.store.RetryableReadable
 

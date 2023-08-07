@@ -7,7 +7,7 @@ import software.amazon.awssdk.services.s3.S3Client
 import weco.storage_service.bag_verifier.fixity.FixityChecker
 import weco.storage_service.bag_verifier.storage.Locatable
 import weco.storage_service.bag_verifier.storage.s3.S3Locatable
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.services.SizeFinder
 import weco.storage.services.s3.{S3LargeStreamReader, S3SizeFinder}
 import weco.storage.store

@@ -13,7 +13,7 @@ import software.amazon.awssdk.services.s3.model.{
 import software.amazon.awssdk.transfer.s3.S3TransferManager
 import software.amazon.awssdk.transfer.s3.model.{Copy, CopyRequest}
 import weco.storage.{NotFoundError, ReadError}
-import weco.storage.s3.{S3Errors, S3ObjectLocation}
+import weco.storage.providers.s3.{S3Errors, S3ObjectLocation}
 import weco.storage.store.s3.{S3StreamReadable, S3StreamReader}
 import weco.storage.transfer._
 

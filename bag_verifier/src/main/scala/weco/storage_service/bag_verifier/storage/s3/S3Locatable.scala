@@ -1,6 +1,6 @@
 package weco.storage_service.bag_verifier.storage.s3
 
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage_service.bag_verifier.storage.{
   Locatable,
   LocateFailure,

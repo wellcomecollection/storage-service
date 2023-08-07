@@ -10,7 +10,7 @@ import weco.storage_service.bag_unpacker.services.{
   UnpackerStorageError
 }
 import weco.storage._
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.services.s3.S3LargeStreamReader
 import weco.storage.store.s3.S3StreamStore
 import weco.storage.store.{Readable, Writable}

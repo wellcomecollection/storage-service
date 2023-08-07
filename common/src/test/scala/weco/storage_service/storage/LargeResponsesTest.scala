@@ -20,7 +20,7 @@ import weco.akka.fixtures.Akka
 import weco.fixtures.TestWith
 import weco.storage.fixtures.S3Fixtures
 import weco.storage.fixtures.S3Fixtures.Bucket
-import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.providers.s3.S3ObjectLocationPrefix
 import weco.storage.services.s3.S3Uploader
 
 import scala.concurrent.ExecutionContext.Implicits.global

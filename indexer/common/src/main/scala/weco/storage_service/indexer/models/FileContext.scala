@@ -1,6 +1,6 @@
 package weco.storage_service.indexer.models
 
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 import weco.storage_service.bagit.models.ExternalIdentifier
 import weco.storage_service.storage.models.{
   PrimaryS3StorageLocation,

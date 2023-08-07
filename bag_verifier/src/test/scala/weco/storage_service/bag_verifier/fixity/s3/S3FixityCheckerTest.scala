@@ -10,7 +10,7 @@ import weco.storage_service.bag_verifier.storage.s3.{S3Locatable, S3Resolvable}
 import weco.storage_service.bag_verifier.storage.{LocationError, LocationNotFound}
 import weco.storage.fixtures.S3Fixtures
 import weco.storage.fixtures.S3Fixtures.Bucket
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.services.s3.S3SizeFinder
 import weco.storage.store.s3.S3StreamStore
 import weco.storage.tags.s3.S3Tags

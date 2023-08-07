@@ -3,7 +3,7 @@ package weco.storage_service.bagit.services.azure
 import weco.fixtures.TestWith
 import weco.storage_service.bagit.services.{BagReader, BagReaderTestCases}
 import weco.storage_service.fixtures.azure.AzureBagBuilder
-import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import weco.storage.providers.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import weco.storage.fixtures.AzureFixtures.Container
 import weco.storage.store.TypedStore
 

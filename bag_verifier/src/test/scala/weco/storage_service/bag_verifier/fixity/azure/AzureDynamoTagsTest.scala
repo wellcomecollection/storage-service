@@ -2,7 +2,7 @@ package weco.storage_service.bag_verifier.fixity.azure
 
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 import weco.fixtures.TestWith
-import weco.storage.azure.AzureBlobLocation
+import weco.storage.providers.azure.AzureBlobLocation
 import weco.storage.fixtures.{AzureFixtures, DynamoFixtures}
 import weco.storage.fixtures.AzureFixtures.Container
 import weco.storage.fixtures.DynamoFixtures.Table

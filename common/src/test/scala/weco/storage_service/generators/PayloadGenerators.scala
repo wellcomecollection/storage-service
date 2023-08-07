@@ -4,7 +4,7 @@ import java.time.Instant
 import weco.storage_service.bagit.models.{BagVersion, ExternalIdentifier}
 import weco.storage_service.ingests.models._
 import weco.storage_service.storage.models._
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage_service._
 
 trait PayloadGenerators

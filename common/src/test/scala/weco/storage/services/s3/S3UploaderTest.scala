@@ -7,7 +7,7 @@ import org.scalatest.matchers.should.Matchers
 import software.amazon.awssdk.services.s3.model.{HeadObjectRequest, S3Exception}
 import weco.storage._
 import weco.storage.fixtures.S3Fixtures
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 
 import java.time.Instant
 import scala.concurrent.duration._

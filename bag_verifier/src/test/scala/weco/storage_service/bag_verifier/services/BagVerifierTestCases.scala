@@ -29,10 +29,10 @@ import weco.storage_service.storage.models.{
   IngestStepSucceeded,
   StorageSpace
 }
-import weco.storage.azure.AzureBlobLocation
+import weco.storage.providers.azure.AzureBlobLocation
 import weco.storage.fixtures.S3Fixtures
 import weco.storage.fixtures.S3Fixtures.Bucket
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 import weco.storage.store.TypedStore
 import weco.storage.store.fixtures.NamespaceFixtures
 import weco.storage.{Location, Prefix}
