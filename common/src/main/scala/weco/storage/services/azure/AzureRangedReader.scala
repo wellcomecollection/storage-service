@@ -10,7 +10,7 @@ import com.azure.storage.blob.models.{
   DownloadRetryOptions
 }
 import weco.storage.ReadError
-import weco.storage.azure.{AzureBlobLocation, AzureStorageErrors}
+import weco.storage.providers.azure.{AzureBlobLocation, AzureStorageErrors}
 import weco.storage.models.{ByteRange, ClosedByteRange, OpenByteRange}
 import weco.storage.services.RangedReader
 

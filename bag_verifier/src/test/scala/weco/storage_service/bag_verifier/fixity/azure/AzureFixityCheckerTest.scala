@@ -13,7 +13,7 @@ import weco.storage_service.bag_verifier.storage.azure.{
   AzureResolvable
 }
 import weco.storage_service.checksum._
-import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import weco.storage.providers.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import weco.storage.fixtures.AzureFixtures.Container
 import weco.storage.fixtures.DynamoFixtures.Table
 import weco.storage.fixtures.{AzureFixtures, DynamoFixtures}

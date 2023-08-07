@@ -18,7 +18,7 @@ import weco.storage_service.storage.models.StorageManifest
 import weco.storage_service.bags_api.BagsApi
 import weco.storage._
 import weco.storage.fixtures.S3Fixtures
-import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.providers.s3.S3ObjectLocationPrefix
 import weco.storage.services.s3.{S3PresignedUrls, S3Uploader}
 import weco.storage.store.memory.MemoryVersionedStore
 import weco.http.WellcomeHttpApp

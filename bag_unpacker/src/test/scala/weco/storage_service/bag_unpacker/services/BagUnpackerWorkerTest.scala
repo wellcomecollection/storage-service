@@ -14,7 +14,7 @@ import weco.storage_service.generators.PayloadGenerators
 import weco.storage_service.ingests.fixtures.IngestUpdateAssertions
 import weco.storage_service.storage.models.{IngestFailed, IngestStepSucceeded}
 import weco.storage.fixtures.S3Fixtures.Bucket
-import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.providers.s3.S3ObjectLocationPrefix
 
 class BagUnpackerWorkerTest
     extends AnyFunSpec

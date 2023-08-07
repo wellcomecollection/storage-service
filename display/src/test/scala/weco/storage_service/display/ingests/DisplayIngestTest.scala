@@ -8,7 +8,7 @@ import weco.storage_service.generators.{BagIdGenerators, IngestGenerators}
 import weco.storage_service.ingests.models._
 import weco.storage_service.storage.models.StorageSpace
 import weco.storage_service.display._
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 import weco.fixtures.TimeAssertions
 
 class DisplayIngestTest

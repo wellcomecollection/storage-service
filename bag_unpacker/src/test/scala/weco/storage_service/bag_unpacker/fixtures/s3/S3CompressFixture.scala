@@ -3,7 +3,7 @@ package weco.storage_service.bag_unpacker.fixtures.s3
 import weco.storage_service.bag_unpacker.fixtures.CompressFixture
 import weco.storage.fixtures.S3Fixtures
 import weco.storage.fixtures.S3Fixtures.Bucket
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 
 trait S3CompressFixture
     extends CompressFixture[S3ObjectLocation, Bucket]

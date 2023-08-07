@@ -6,7 +6,7 @@ import weco.storage.DoesNotExistError
 import weco.storage.fixtures.S3Fixtures
 import weco.storage.fixtures.S3Fixtures.Bucket
 import weco.storage.generators.StreamGenerators
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 import weco.storage.services.{SizeFinder, SizeFinderTestCases}
 
 class S3SizeFinderTest

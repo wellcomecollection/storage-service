@@ -3,7 +3,7 @@ package weco.storage.services.s3
 import weco.fixtures.TestWith
 import weco.storage.fixtures.S3Fixtures
 import weco.storage.fixtures.S3Fixtures.Bucket
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 import weco.storage.services.{RangedReader, RangedReaderTestCases}
 
 class S3RangedReaderTest

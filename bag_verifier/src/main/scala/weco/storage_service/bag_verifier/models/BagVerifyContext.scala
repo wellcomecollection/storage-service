@@ -1,6 +1,6 @@
 package weco.storage_service.bag_verifier.models
 
-import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.providers.s3.S3ObjectLocationPrefix
 import weco.storage.{Location, Prefix}
 
 sealed trait BagVerifyContext[BagPrefix <: Prefix[_ <: Location]] {

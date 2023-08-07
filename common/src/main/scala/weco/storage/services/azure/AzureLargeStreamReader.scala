@@ -1,7 +1,7 @@
 package weco.storage.services.azure
 
 import com.azure.storage.blob.BlobServiceClient
-import weco.storage.azure.AzureBlobLocation
+import weco.storage.providers.azure.AzureBlobLocation
 import weco.storage.services.{LargeStreamReader, RangedReader, SizeFinder}
 
 class AzureLargeStreamReader(

@@ -2,7 +2,7 @@ package weco.storage_service.bag_replicator.replicator.azure
 
 import weco.fixtures.TestWith
 import weco.storage_service.bag_replicator.replicator.ReplicatorTestCases
-import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import weco.storage.providers.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import weco.storage.fixtures.AzureFixtures
 import weco.storage.fixtures.AzureFixtures.Container
 import weco.storage.listing.Listing

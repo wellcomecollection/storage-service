@@ -3,7 +3,7 @@ package weco.storage_service.bag_root_finder.services
 import grizzled.slf4j.Logging
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}

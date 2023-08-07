@@ -6,7 +6,7 @@ import org.scanamo.syntax._
 import org.scanamo.{Scanamo, Table}
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import weco.storage._
-import weco.storage.azure.AzureBlobLocation
+import weco.storage.providers.azure.AzureBlobLocation
 import weco.storage.dynamo.DynamoConfig
 import weco.storage.tags.Tags
 

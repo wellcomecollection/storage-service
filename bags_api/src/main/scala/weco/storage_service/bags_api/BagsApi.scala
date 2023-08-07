@@ -8,7 +8,7 @@ import weco.storage_service.http.LookupExternalIdentifier
 import weco.storage_service.storage.LargeResponses
 import weco.storage_service.storage.models.StorageSpace
 import weco.storage_service.bags_api.responses.{LookupBag, LookupBagVersions}
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 import weco.storage.services.s3.S3PresignedUrls
 
 import scala.concurrent.duration._

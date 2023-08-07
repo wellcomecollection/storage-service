@@ -3,7 +3,7 @@ package weco.storage.services.s3
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.{HeadObjectRequest, S3Exception}
 import weco.storage.StoreReadError
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 import weco.storage.services.ObjectExists
 
 import scala.util.{Failure, Success, Try}

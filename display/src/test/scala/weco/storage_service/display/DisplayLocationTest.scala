@@ -9,8 +9,8 @@ import weco.storage_service.storage.models.{
   SecondaryAzureStorageLocation,
   SecondaryS3StorageLocation
 }
-import weco.storage.azure.AzureBlobLocationPrefix
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.azure.AzureBlobLocationPrefix
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 class DisplayLocationTest
     extends AnyFunSpec

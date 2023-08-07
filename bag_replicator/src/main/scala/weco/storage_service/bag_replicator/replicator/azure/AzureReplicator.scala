@@ -2,7 +2,7 @@ package weco.storage_service.bag_replicator.replicator.azure
 
 import software.amazon.awssdk.services.s3.S3Client
 import weco.storage_service.bag_replicator.replicator.Replicator
-import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import weco.storage.providers.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import weco.storage.transfer.azure.{
   AzurePrefixTransfer,
   AzureTransfer,

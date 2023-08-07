@@ -21,7 +21,7 @@ import weco.storage_service.bagit.services.s3.S3BagReader
 import weco.storage_service.storage.models.StorageSpace
 import weco.storage.listing.Listing
 import weco.storage.listing.s3.S3ObjectLocationListing
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.store.s3.S3StreamReader
 
 trait S3BagVerifier[B <: BagVerifyContext[S3ObjectLocationPrefix]]

@@ -1,7 +1,7 @@
 package weco.storage.services.azure
 
 import weco.fixtures.TestWith
-import weco.storage.azure.AzureBlobLocation
+import weco.storage.providers.azure.AzureBlobLocation
 import weco.storage.fixtures.AzureFixtures
 import weco.storage.fixtures.AzureFixtures.Container
 import weco.storage.services.{SizeFinder, SizeFinderTestCases}

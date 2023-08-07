@@ -11,9 +11,9 @@ import grizzled.slf4j.Logging
 import org.apache.commons.io.IOUtils
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import software.amazon.awssdk.services.s3.S3Client
-import weco.storage.azure.AzureBlobLocation
+import weco.storage.providers.azure.AzureBlobLocation
 import weco.storage.models.ByteRange
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 import weco.storage.services.azure.AzureSizeFinder
 import weco.storage.services.s3.{S3PresignedUrls, S3RangedReader}
 import weco.storage.store.azure.AzureStreamStore

@@ -8,7 +8,7 @@ import weco.storage_service.bag_verifier.storage.{
   LocateFailure,
   LocationParsingError
 }
-import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import weco.storage.providers.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 
 import scala.util.Try
 

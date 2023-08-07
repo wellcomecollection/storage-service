@@ -21,7 +21,7 @@ import weco.storage_service.ingests.fixtures.IngestUpdateAssertions
 import weco.storage_service.storage.models._
 import weco.storage.locking.memory.MemoryLockDao
 import weco.storage.locking.{LockDao, LockFailure}
-import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.providers.s3.S3ObjectLocationPrefix
 
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global

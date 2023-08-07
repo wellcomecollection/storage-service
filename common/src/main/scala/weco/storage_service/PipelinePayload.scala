@@ -8,7 +8,7 @@ import weco.storage_service.ingests.models.{
   IngestType,
   SourceLocation
 }
-import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.providers.s3.S3ObjectLocationPrefix
 import weco.storage_service.storage.models.{
   KnownReplicas,
   ReplicaLocation,

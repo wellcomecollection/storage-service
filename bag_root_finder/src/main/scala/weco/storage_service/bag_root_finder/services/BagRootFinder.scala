@@ -9,7 +9,7 @@ import weco.storage_service.storage.models.{
   IngestStepSucceeded
 }
 import weco.storage_service.bag_root_finder.models._
-import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.providers.s3.S3ObjectLocationPrefix
 
 import scala.util.{Failure, Success, Try}
 

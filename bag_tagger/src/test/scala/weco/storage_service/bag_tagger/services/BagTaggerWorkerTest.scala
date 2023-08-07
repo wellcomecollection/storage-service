@@ -14,7 +14,7 @@ import weco.storage_service.bag_tagger.fixtures.BagTaggerFixtures
 import weco.storage.store.memory.MemoryVersionedStore
 import weco.storage.tags.s3.S3Tags
 import weco.storage._
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 
 import scala.util.{Failure, Try}
 

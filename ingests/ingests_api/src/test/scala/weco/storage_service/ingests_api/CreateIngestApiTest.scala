@@ -22,7 +22,7 @@ import weco.storage_service.storage.models.StorageSpace
 import weco.storage_service.display._
 import weco.storage_service.display.ingests._
 import weco.storage_service.ingests_api.fixtures.IngestsApiFixture
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 import weco.http.monitoring.HttpMetricResults
 
 /** Tests for POST /ingests

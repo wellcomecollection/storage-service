@@ -3,7 +3,7 @@ package weco.storage.transfer.s3
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.transfer.s3.S3TransferManager
 import weco.storage.listing.s3.S3ObjectLocationListing
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.transfer.PrefixTransfer
 
 class S3PrefixTransfer()(

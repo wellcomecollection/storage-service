@@ -2,12 +2,12 @@ package weco.storage_service.storage.models
 
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import weco.storage.azure.AzureBlobLocationPrefix
+import weco.storage.providers.azure.AzureBlobLocationPrefix
 import weco.storage.generators.{
   AzureBlobLocationGenerators,
   S3ObjectLocationGenerators
 }
-import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.providers.s3.S3ObjectLocationPrefix
 
 class EnsureTrailingSlashTest
     extends AnyFunSpec

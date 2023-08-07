@@ -6,12 +6,12 @@ import com.azure.storage.blob.models.BlobRange
 import weco.fixtures.TestWith
 import weco.json.JsonUtil._
 import weco.storage.Identified
-import weco.storage.azure.AzureBlobLocation
+import weco.storage.providers.azure.AzureBlobLocation
 import weco.storage.fixtures.AzureFixtures.Container
 import weco.storage.fixtures.S3Fixtures.Bucket
 import weco.storage.fixtures.{AzureFixtures, S3Fixtures}
 import weco.storage.generators.Record
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 import weco.storage.store.azure.AzureTypedStore
 import weco.storage.store.s3.{S3StreamStore, S3TypedStore}
 import weco.storage.store.{StreamStore, TypedStore}

@@ -12,8 +12,8 @@ import weco.storage_service.storage.models.{
   SecondaryS3ReplicaLocation
 }
 import weco.storage._
-import weco.storage.azure.AzureBlobLocationPrefix
-import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.providers.azure.AzureBlobLocationPrefix
+import weco.storage.providers.s3.S3ObjectLocationPrefix
 
 case class ReplicationRequest[DstPrefix <: Prefix[_ <: Location]](
   srcPrefix: S3ObjectLocationPrefix,

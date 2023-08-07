@@ -12,9 +12,9 @@ import weco.messaging.sns.SNSConfig
 import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
-import weco.storage.azure.AzureBlobLocationPrefix
+import weco.storage.providers.azure.AzureBlobLocationPrefix
 import weco.storage.locking.dynamo.{DynamoLockDao, DynamoLockingService}
-import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.providers.s3.S3ObjectLocationPrefix
 import weco.storage.transfer.azure.AzurePutBlockFromUrlTransfer
 import weco.storage.typesafe.DynamoLockDaoBuilder
 import weco.storage.{Location, Prefix}

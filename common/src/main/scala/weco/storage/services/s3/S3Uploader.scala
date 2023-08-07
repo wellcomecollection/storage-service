@@ -3,7 +3,7 @@ package weco.storage.services.s3
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import weco.storage._
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 import weco.storage.store.s3.S3StreamStore
 import weco.storage.streaming.Codec.stringCodec
 import weco.storage.streaming.InputStreamWithLength

@@ -6,8 +6,8 @@ import weco.storage_service.ingests.models.{
   StorageProvider
 }
 import weco.storage.{Location, Prefix}
-import weco.storage.azure.AzureBlobLocationPrefix
-import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.providers.azure.AzureBlobLocationPrefix
+import weco.storage.providers.s3.S3ObjectLocationPrefix
 
 // Represents the location of all the versions of a given (space, externalIdentifier) pair
 sealed trait StorageLocation {

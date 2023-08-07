@@ -4,7 +4,7 @@ import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import weco.storage.ReadError
 import weco.storage.models.{ByteRange, ClosedByteRange, OpenByteRange}
-import weco.storage.s3.{S3Errors, S3ObjectLocation}
+import weco.storage.providers.s3.{S3Errors, S3ObjectLocation}
 import weco.storage.services.RangedReader
 
 import scala.util.{Failure, Success, Try}

@@ -10,7 +10,7 @@ import software.amazon.awssdk.transfer.s3.model.CopyRequest
 import weco.fixtures.TestWith
 import weco.storage.fixtures.S3Fixtures.Bucket
 import weco.storage.generators.{Record, RecordGenerators}
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 import weco.storage.store.s3.{S3StreamStore, S3TypedStore}
 import weco.storage.tags.s3.S3Tags
 import weco.storage.transfer.{Transfer, TransferSourceFailure, TransferTestCases, _}

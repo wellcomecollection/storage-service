@@ -12,7 +12,7 @@ import weco.storage_service.bag_verifier.storage.azure.AzureResolvable
 import weco.storage_service.bagit.models.Bag
 import weco.storage_service.bagit.services.BagReader
 import weco.storage_service.bagit.services.azure.AzureBagReader
-import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import weco.storage.providers.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import weco.storage.dynamo.DynamoConfig
 import weco.storage.listing.Listing
 import weco.storage.listing.azure.AzureBlobLocationListing

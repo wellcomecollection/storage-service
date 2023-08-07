@@ -2,7 +2,7 @@ package weco.storage.transfer.s3
 
 import weco.fixtures.TestWith
 import weco.storage.fixtures.S3Fixtures.Bucket
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 import weco.storage.store.s3.{S3TypedStore, S3TypedStoreFixtures}
 import weco.storage.transfer.Transfer
 import weco.storage.transfer.fixtures.{S3TransferManagerFixtures, TransferFixtures}

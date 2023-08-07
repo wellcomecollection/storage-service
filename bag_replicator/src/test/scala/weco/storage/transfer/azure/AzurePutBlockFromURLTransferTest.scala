@@ -3,9 +3,9 @@ package weco.storage.transfer.azure
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
-import weco.storage.azure.AzureBlobLocation
+import weco.storage.providers.azure.AzureBlobLocation
 import weco.storage.fixtures.{AzureFixtures, S3Fixtures}
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 import weco.storage.store.azure.AzureTypedStore
 import weco.storage.store.s3.S3TypedStore
 import weco.storage.transfer.{TransferNoOp, TransferOverwriteFailure}
