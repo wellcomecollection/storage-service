@@ -3,7 +3,9 @@ locals {
 }
 
 module "catalogue_secrets" {
-  source = "github.com/wellcomecollection/terraform-aws-secrets.git?ref=v1.3.0"
+  source = "github.com/wellcomecollection/terraform-aws-secrets.git?ref=v1.4.0"
+
+  description = local.description
 
   providers = {
     aws = aws.platform
@@ -16,7 +18,9 @@ module "catalogue_secrets" {
 }
 
 module "end_to_end_tester_secrets" {
-  source = "github.com/wellcomecollection/terraform-aws-secrets.git?ref=v1.3.0"
+  source = "github.com/wellcomecollection/terraform-aws-secrets.git?ref=v1.4.0"
+
+  description = local.description
 
   providers = {
     aws = aws.storage
@@ -29,7 +33,9 @@ module "end_to_end_tester_secrets" {
 }
 
 module "dev_secrets" {
-  source = "github.com/wellcomecollection/terraform-aws-secrets.git?ref=v1.3.0"
+  source = "github.com/wellcomecollection/terraform-aws-secrets.git?ref=v1.4.0"
+
+  description = local.description
 
   providers = {
     aws = aws.storage
@@ -42,7 +48,9 @@ module "dev_secrets" {
 }
 
 module "buildkite_secrets" {
-  source = "github.com/wellcomecollection/terraform-aws-secrets.git?ref=v1.3.0"
+  source = "github.com/wellcomecollection/terraform-aws-secrets.git?ref=v1.4.0"
+
+  description = local.description
 
   providers = {
     aws = aws.platform
