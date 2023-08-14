@@ -17,8 +17,6 @@ locals {
   cognito_user_pool_arn          = data.terraform_remote_state.app_clients.outputs.cognito_user_pool_arn
   cognito_storage_api_identifier = data.terraform_remote_state.app_clients.outputs.cognito_storage_api_identifier
 
-  nginx_image = "975596993436.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome/nginx:95821b39e1683a0a7098cd67d82bc690415c1d5a"
-
   # TODO: This value should be exported from the workflow-infra state, not hard-coded
   workflow_bucket_arn              = "arn:aws:s3:::wellcomecollection-workflow-export-bagit"
   archivematica_ingests_bucket_arn = data.terraform_remote_state.archivematica_infra.outputs.ingests_bucket_arn

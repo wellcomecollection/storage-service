@@ -29,8 +29,6 @@ module "stack_staging" {
   cognito_user_pool_arn          = local.cognito_user_pool_arn
   cognito_storage_api_identifier = local.cognito_storage_api_identifier
 
-  release_label = local.release_label
-
   replica_primary_bucket_name = data.terraform_remote_state.critical_staging.outputs.replica_primary_bucket_name
   replica_glacier_bucket_name = data.terraform_remote_state.critical_staging.outputs.replica_glacier_bucket_name
   azure_container_name        = "wellcomecollection-storage-staging-replica-netherlands"
