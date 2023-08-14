@@ -15,7 +15,7 @@ data "terraform_remote_state" "accounts_storage" {
   config = {
     role_arn = "arn:aws:iam::760097843905:role/platform-read_only"
     bucket   = "wellcomecollection-platform-infra"
-    key      = "terraform/platform-infrastructure/accounts/storage.tfstate"
+    key      = "terraform/aws-account-infrastructure/storage.tfstate"
     region   = "eu-west-1"
   }
 }
