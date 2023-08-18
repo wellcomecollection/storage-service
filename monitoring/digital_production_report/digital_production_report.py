@@ -1,4 +1,27 @@
 #!/usr/bin/env python
+"""
+This posts some basic stats to the #wc-preservation channel at the
+start of each month.  It reports the number of files ingested in
+the digitised and born-digital spaces.
+
+Example message:
+
+    Stats for July 2023
+
+    Born-digital: 6706
+
+    Digitised:
+    jp2,121850
+    xml,82972
+    mp4,52
+    jpg,51
+    mxf,51
+    wav,32
+    pdf,1
+
+These are used by the Digital Production team for their reporting.
+
+"""
 
 import base64
 import calendar
