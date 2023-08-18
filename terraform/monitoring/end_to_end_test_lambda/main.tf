@@ -4,11 +4,11 @@ data "aws_s3_object" "end_to_end_bag_test" {
 }
 
 moved {
-  from = module.lambda.module.lambda
-  to   = module.lambda2
+  from = module.lambda2
+  to   = module.end_to_end_bag_test
 }
 
-module "lambda2" {
+module "end_to_end_bag_test" {
   source = "github.com/wellcomecollection/terraform-aws-lambda.git?ref=v1.2.0"
 
   name        = var.name
@@ -28,12 +28,4 @@ module "lambda2" {
   timeout = 15
 
   error_alarm_topic_arn = var.lambda_error_alerts_topic_arn
-}
-
-output "function_name" {
-  value = module.lambda2.lambda.function_name
-}
-
-output "function_arn" {
-  value = module.lambda2.lambda.arn
 }

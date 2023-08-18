@@ -23,6 +23,6 @@ data "aws_iam_policy_document" "read_end_to_end_secrets" {
 }
 
 resource "aws_iam_role_policy" "allow_read_secrets" {
-  role   = module.lambda2.lambda_role.name
+  role   = module.end_to_end_bag_test.lambda_role.name
   policy = data.aws_iam_policy_document.read_end_to_end_secrets.json
 }
