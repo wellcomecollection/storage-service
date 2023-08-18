@@ -14,7 +14,7 @@ resource "aws_s3_bucket" "daily_reporter" {
 
 resource "aws_s3_bucket_acl" "daily_reporter" {
   bucket = aws_s3_bucket.daily_reporter.id
-  acl = "public-read"
+  acl    = "public-read"
 
   provider = aws.platform
 }
