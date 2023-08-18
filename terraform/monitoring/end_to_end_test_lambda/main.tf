@@ -3,11 +3,6 @@ data "aws_s3_object" "end_to_end_bag_test" {
   key    = "lambdas/monitoring/end_to_end_bag_test.zip"
 }
 
-moved {
-  from = module.lambda2
-  to   = module.end_to_end_bag_test
-}
-
 module "end_to_end_bag_test" {
   source = "github.com/wellcomecollection/terraform-aws-lambda.git?ref=v1.2.0"
 

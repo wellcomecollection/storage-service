@@ -3,11 +3,6 @@ data "aws_s3_object" "daily_reporter" {
   key    = "lambdas/monitoring/daily_reporter.zip"
 }
 
-moved {
-  from = module.daily_reporter_lambda.module.lambda
-  to   = module.daily_reporter
-}
-
 module "daily_reporter" {
   source = "github.com/wellcomecollection/terraform-aws-lambda.git?ref=v1.2.0"
 

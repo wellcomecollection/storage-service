@@ -11,11 +11,6 @@ resource "aws_s3_object" "digital_production_report_lambda" {
   etag   = data.archive_file.digital_production_report_lambda.output_md5
 }
 
-moved {
-  from = module.digital_production_report_lambda2
-  to   = module.digital_production_report_lambda
-}
-
 module "digital_production_report_lambda" {
   source = "github.com/wellcomecollection/terraform-aws-lambda.git?ref=v1.2.0"
 
