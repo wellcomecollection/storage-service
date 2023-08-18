@@ -4,7 +4,7 @@ data "archive_file" "digital_production_report_lambda" {
   output_path = "${path.module}/digital_production_report.zip"
 }
 
-resource "aws_s3_bucket_object" "digital_production_report_lambda" {
+resource "aws_s3_object" "digital_production_report_lambda" {
   bucket = "wellcomecollection-storage-infra"
   key    = "lambdas/monitoring/digital_production_report.zip"
   source = "${path.module}/digital_production_report.zip"
@@ -17,8 +17,8 @@ module "digital_production_report_lambda" {
   name        = "digital_production_report"
   description = "Create monthly/quarterly reports for the Digital Production team"
 
-  s3_bucket = aws_s3_bucket_object.digital_production_report_lambda.bucket
-  s3_key    = aws_s3_bucket_object.digital_production_report_lambda.key
+  s3_bucket = aws_s3_object.digital_production_report_lambda.bucket
+  s3_key    = aws_s3_object.digital_production_report_lambda.key
 
   timeout = 300
 
