@@ -11,7 +11,7 @@ resource "aws_lambda_permission" "allow_cloudwatch_trigger" {
   count = 0
 
   action        = "lambda:InvokeFunction"
-  function_name = module.lambda.function_name
+  function_name = module.lambda2.lambda.function_name
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.every_day_at_9pm.arn
 }
@@ -20,5 +20,5 @@ resource "aws_cloudwatch_event_target" "event_trigger" {
   count = 0
 
   rule = aws_cloudwatch_event_rule.every_day_at_9pm.name
-  arn  = module.lambda.arn
+  arn  = module.lambda2.lambda.arn
 }

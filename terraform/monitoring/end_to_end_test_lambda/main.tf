@@ -1,24 +1,39 @@
-module "lambda" {
-  source = "../../modules/lambda"
+data "aws_s3_object" "end_to_end_bag_test" {
+  bucket = "wellcomecollection-storage-infra"
+  key    = "lambdas/monitoring/end_to_end_bag_test.zip"
+}
+
+moved {
+  from = module.lambda.module.lambda
+  to   = module.lambda2
+}
+
+module "lambda2" {
+  source = "github.com/wellcomecollection/terraform-aws-lambda.git?ref=v1.2.0"
 
   name        = var.name
-  module_name = "end_to_end_bag_test"
   description = var.description
 
-  environment = var.environment
+  handler = "end_to_end_bag_test.main"
+  runtime = "python3.8"
 
-  s3_bucket = "wellcomecollection-storage-infra"
-  s3_key    = "lambdas/monitoring/end_to_end_bag_test.zip"
+  environment = {
+    variables = var.environment
+  }
+
+  s3_bucket         = data.aws_s3_object.end_to_end_bag_test.bucket
+  s3_key            = data.aws_s3_object.end_to_end_bag_test.key
+  s3_object_version = data.aws_s3_object.end_to_end_bag_test.version_id
 
   timeout = 15
 
-  lambda_error_alerts_topic_arn = var.lambda_error_alerts_topic_arn
+  error_alarm_topic_arn = var.lambda_error_alerts_topic_arn
 }
 
 output "function_name" {
-  value = module.lambda.function_name
+  value = module.lambda2.lambda.function_name
 }
 
 output "function_arn" {
-  value = module.lambda.arn
+  value = module.lambda2.lambda.arn
 }
