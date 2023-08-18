@@ -13,7 +13,7 @@ provider "aws" {
     role_arn = "arn:aws:iam::975596993436:role/storage-admin"
   }
 
-  region = var.aws_region
+  region = "eu-west-1"
 
   default_tags {
     tags = local.default_tags
@@ -27,7 +27,7 @@ provider "aws" {
     role_arn = "arn:aws:iam::267269328833:role/wellcomecollection-assume_role_hosted_zone_update"
   }
 
-  region = var.aws_region
+  region = "eu-west-1"
 
   default_tags {
     tags = local.default_tags
