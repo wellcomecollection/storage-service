@@ -12,11 +12,11 @@ resource "aws_s3_object" "digital_production_report_lambda" {
 }
 
 moved {
-  from = module.digital_production_report_lambda.module.lambda
-  to   = module.digital_production_report_lambda2
+  from = module.digital_production_report_lambda2
+  to   = module.digital_production_report_lambda
 }
 
-module "digital_production_report_lambda2" {
+module "digital_production_report_lambda" {
   source = "github.com/wellcomecollection/terraform-aws-lambda.git?ref=v1.2.0"
 
   name        = "digital_production_report"
@@ -49,7 +49,7 @@ data "aws_iam_policy_document" "read_reporting_secrets" {
 }
 
 resource "aws_iam_role_policy" "allow_production_report_to_read_secrets" {
-  role   = module.digital_production_report_lambda2.lambda_role.name
+  role   = module.digital_production_report_lambda.lambda_role.name
   policy = data.aws_iam_policy_document.read_reporting_secrets.json
 }
 
@@ -62,12 +62,12 @@ resource "aws_cloudwatch_event_rule" "first_of_month_at_7am" {
 
 resource "aws_lambda_permission" "allow_production_report_cloudwatch_trigger" {
   action        = "lambda:InvokeFunction"
-  function_name = module.digital_production_report_lambda2.lambda.function_name
+  function_name = module.digital_production_report_lambda.lambda.function_name
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.first_of_month_at_7am.arn
 }
 
 resource "aws_cloudwatch_event_target" "first_of_month_at_7am" {
   rule = aws_cloudwatch_event_rule.first_of_month_at_7am.name
-  arn  = module.digital_production_report_lambda2.lambda.arn
+  arn  = module.digital_production_report_lambda.lambda.arn
 }
