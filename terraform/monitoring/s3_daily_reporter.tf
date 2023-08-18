@@ -4,26 +4,44 @@
 
 resource "aws_s3_bucket" "daily_reporter" {
   bucket = "wellcomecollection-storage-daily-reporting"
-  acl    = "public-read"
 
   provider = aws.platform
-
-  website {
-    index_document = "index.html"
-  }
 
   lifecycle {
     prevent_destroy = true
   }
+}
 
-  lifecycle_rule {
-    id      = "expire_old_reports"
-    enabled = true
+resource "aws_s3_bucket_acl" "daily_reporter" {
+  bucket = aws_s3_bucket.daily_reporter.id
+  acl    = "public-read"
+
+  provider = aws.platform
+}
+
+resource "aws_s3_bucket_website_configuration" "daily_reporter" {
+  bucket = aws_s3_bucket.daily_reporter.id
+
+  index_document {
+    suffix = "index.html"
+  }
+
+  provider = aws.platform
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "daily_reporter" {
+  bucket = aws_s3_bucket.daily_reporter.id
+
+  rule {
+    id     = "expire_old_reports"
+    status = "Enabled"
 
     expiration {
       days = 90
     }
   }
+
+  provider = aws.platform
 }
 
 resource "aws_s3_bucket_policy" "daily_reporter_storage_access" {

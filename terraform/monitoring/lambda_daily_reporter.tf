@@ -1,15 +1,24 @@
-module "daily_reporter_lambda" {
-  source = "../modules/lambda"
+data "aws_s3_object" "daily_reporter" {
+  bucket = "wellcomecollection-storage-infra"
+  key    = "lambdas/monitoring/daily_reporter.zip"
+}
+
+module "daily_reporter" {
+  source = "github.com/wellcomecollection/terraform-aws-lambda.git?ref=v1.2.0"
 
   name        = "daily_reporter"
   description = "Publish a daily report of storage service activity to Slack"
 
-  s3_bucket = "wellcomecollection-storage-infra"
-  s3_key    = "lambdas/monitoring/daily_reporter.zip"
+  handler = "daily_reporter.main"
+  runtime = "python3.8"
+
+  s3_bucket         = data.aws_s3_object.daily_reporter.bucket
+  s3_key            = data.aws_s3_object.daily_reporter.key
+  s3_object_version = data.aws_s3_object.daily_reporter.version_id
 
   timeout = 300
 
-  lambda_error_alerts_topic_arn = local.lambda_error_alerts_topic_arn
+  error_alarm_topic_arn = local.lambda_error_alerts_topic_arn
 }
 
 data "aws_secretsmanager_secret_version" "storage_service_reporter_slack_webhook" {
@@ -49,7 +58,7 @@ data "aws_iam_policy_document" "read_es_secrets" {
 }
 
 resource "aws_iam_role_policy" "allow_reporter_to_read_es_secrets" {
-  role   = module.daily_reporter_lambda.role_name
+  role   = module.daily_reporter.lambda_role.name
   policy = data.aws_iam_policy_document.read_es_secrets.json
 }
 
@@ -66,7 +75,7 @@ data "aws_iam_policy_document" "upload_to_s3" {
 }
 
 resource "aws_iam_role_policy" "allow_reporter_to_upload_to_s3" {
-  role   = module.daily_reporter_lambda.role_name
+  role   = module.daily_reporter.lambda_role.name
   policy = data.aws_iam_policy_document.upload_to_s3.json
 }
 
@@ -79,12 +88,12 @@ resource "aws_cloudwatch_event_rule" "every_day_at_6am" {
 
 resource "aws_lambda_permission" "allow_reporter_cloudwatch_trigger" {
   action        = "lambda:InvokeFunction"
-  function_name = module.daily_reporter_lambda.function_name
+  function_name = module.daily_reporter.lambda.function_name
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.every_day_at_6am.arn
 }
 
 resource "aws_cloudwatch_event_target" "event_trigger" {
   rule = aws_cloudwatch_event_rule.every_day_at_6am.name
-  arn  = module.daily_reporter_lambda.arn
+  arn  = module.daily_reporter.lambda.arn
 }
