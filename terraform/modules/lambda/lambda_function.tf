@@ -13,7 +13,7 @@ resource "aws_lambda_function" "lambda_function" {
 
   role    = aws_iam_role.iam_role.arn
   handler = var.module_name == "" ? "${var.name}.main" : "${var.module_name}.main"
-  runtime = "python3.6"
+  runtime = "python3.8"
   timeout = var.timeout
 
   memory_size = var.memory_size
