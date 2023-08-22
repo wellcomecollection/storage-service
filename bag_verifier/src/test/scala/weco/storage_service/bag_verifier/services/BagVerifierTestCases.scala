@@ -276,6 +276,11 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     val uppercaseBuilder = new BagBuilderImpl {
       override protected def createDigest(string: String): String =
         super.createDigest(string).toUpperCase
+
+      // This is to avoid having to deal with URI-encoding the spaces
+      // in the fetch.txt file.
+      override protected def getFetchEntryCount(payloadFileCount: Int): Int =
+        0
     }
 
     withNamespace { implicit namespace =>
