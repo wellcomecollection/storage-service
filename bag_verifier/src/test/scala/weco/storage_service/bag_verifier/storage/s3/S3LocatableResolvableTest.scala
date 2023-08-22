@@ -43,7 +43,7 @@ class S3LocatableResolvableTest extends AnyFunSpec with Matchers with EitherValu
 
   def assertLocationIsRoundtrippedCorrectly(location: S3ObjectLocation): Assertion = {
     val encodedUri = resolver.resolve(location)
-    val decodedLocation = S3Locatable.s3UriLocatable.locate(uri)(maybeRoot = None)
+    val decodedLocation = S3Locatable.s3UriLocatable.locate(encodedUri)(maybeRoot = None)
 
     decodedLocation.value shouldBe location
   }
