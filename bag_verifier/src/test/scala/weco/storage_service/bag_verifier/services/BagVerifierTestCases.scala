@@ -269,6 +269,38 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     }
   }
 
+  it("passes a bag with whitespace in the external identifier") {
+    val space = createStorageSpace
+    val externalIdentifier = ExternalIdentifier("external identifier with spaces")
+
+    val uppercaseBuilder = new BagBuilderImpl {
+      override protected def createDigest(string: String): String =
+        super.createDigest(string).toUpperCase
+    }
+
+    withNamespace { implicit namespace =>
+      withBag(space, externalIdentifier, bagBuilder = uppercaseBuilder) {
+        case (primaryBucket, bagRoot) =>
+          val ingestStep =
+            withBagContext(bagRoot) { bagContext =>
+              withVerifier(primaryBucket) {
+                _.verify(
+                  ingestId = createIngestID,
+                  bagContext = bagContext,
+                  space = space,
+                  externalIdentifier = externalIdentifier
+                )
+              }
+            }
+
+          val result = ingestStep.success.get
+
+          result shouldBe a[IngestStepSucceeded[_]]
+          result.summary shouldBe a[VerificationSuccessSummary]
+      }
+    }
+  }
+
   it("fails a bag with an incorrect checksum in the file manifest") {
     val badBuilder: BagBuilderImpl = new BagBuilderImpl {
       override protected def createPayloadManifest(
