@@ -49,15 +49,17 @@ I could download the blobs to an EC2 instance using the Azure CLI, and I verifie
 
 I didn't have time to debug why the verifier can't read blobs which have been rehydrated from the archive tier, but since we can retrieve them through the Azure CLI I don't think it's a major issue.
 
-## 'miro/library/V Images/V0047000' and 'miro/library/jpg/V0047000_2': a single image removed
+## miro/V0047000: a single image was removed
 
-This bag contains files from Miro (the Wellcome Images management software).
-It was originally processed using Archivematica.
-
+Bags in the Miro space contain files from Wellcome Images.
+They were processed using Archivematica.
 In July 2023, Collections asked us to permanently remove a single image from the Miro data.
-This image was present in these two bags, once as a JP2, once as a JPEG.
+This image was present in these two bags:
 
-We removed the image by:
+*   `miro/library/V Images/V0047000` – as a JPEG2000
+*   `miro/library/jpg/V0047000_2` – as a JPEG
+
+We removed the image from these bags by:
 
 1.  Deleting the original bag
 2.  Uploading a replacement bag with this image removed
