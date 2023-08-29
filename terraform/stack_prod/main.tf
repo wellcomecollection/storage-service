@@ -29,8 +29,6 @@ module "stack_prod" {
   cognito_user_pool_arn          = local.cognito_user_pool_arn
   cognito_storage_api_identifier = local.cognito_storage_api_identifier
 
-  release_label = local.release_label
-
   replica_primary_bucket_name = data.terraform_remote_state.critical_prod.outputs.replica_primary_bucket_name
   replica_glacier_bucket_name = data.terraform_remote_state.critical_prod.outputs.replica_glacier_bucket_name
   azure_container_name        = "wellcomecollection-storage-replica-netherlands"
@@ -88,7 +86,8 @@ module "stack_prod" {
   logging_container = {
     container_registry = "760097843905.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome"
     container_name     = "fluentbit"
-    container_tag      = "0fe256a94441ceff15629344d4225fbb64457fdd"
+    # https://github.com/wellcomecollection/terraform-aws-ecs-service/tree/v3.13.1
+    container_tag = "ac9e48d11d76f3d3abd64e4a9440462539da2e7a"
   }
 
   nginx_container = {

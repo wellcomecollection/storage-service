@@ -1,7 +1,7 @@
 package weco.storage_service.replica_aggregator.models
 
-import weco.storage.azure.AzureBlobLocationPrefix
-import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.providers.azure.AzureBlobLocationPrefix
+import weco.storage.providers.s3.S3ObjectLocationPrefix
 import weco.storage.{Location, Prefix, TypedStringScanamoOps}
 import weco.json.TypedString
 

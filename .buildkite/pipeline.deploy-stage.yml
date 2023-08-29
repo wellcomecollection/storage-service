@@ -1,22 +1,53 @@
 steps:
   - label: deploy to stage
+    branches: "main"
+    command: |
+      ENV_TAG="env.stage" ./builds/update_ecr_image_tag.sh \
+        uk.ac.wellcome/bag_register \
+        uk.ac.wellcome/bag_replicator \
+        uk.ac.wellcome/bag_root_finder \
+        uk.ac.wellcome/bag_tagger \
+        uk.ac.wellcome/bag_tracker \
+        uk.ac.wellcome/bag_unpacker \
+        uk.ac.wellcome/bag_verifier \
+        uk.ac.wellcome/bag_versioner \
+        uk.ac.wellcome/bags_api \
+        uk.ac.wellcome/notifier \
+        uk.ac.wellcome/replica_aggregator \
+        uk.ac.wellcome/bag_indexer \
+        uk.ac.wellcome/ingests_indexer \
+        uk.ac.wellcome/ingests_api \
+        uk.ac.wellcome/ingests_tracker \
+        uk.ac.wellcome/ingests_worker \
+        uk.ac.wellcome/file_finder \
+        uk.ac.wellcome/file_indexer
+
+      CLUSTER="storage-staging" ./builds/deploy_ecs_services.sh \
+        storage-staging-bag-indexer \
+        storage-staging-bag-replicator_azure \
+        storage-staging-bag-replicator_glacier \
+        storage-staging-bag-replicator_primary \
+        storage-staging-bag-root-finder \
+        storage-staging-bag-tagger \
+        storage-staging-bag-unpacker \
+        storage-staging-bag-verifier-pre-replication \
+        storage-staging-bag-verifier_azure \
+        storage-staging-bag-verifier_glacier \
+        storage-staging-bag-verifier_primary \
+        storage-staging-bag-versioner \
+        storage-staging-bags-api \
+        storage-staging-bag_register \
+        storage-staging-file-finder \
+        storage-staging-file-indexer \
+        storage-staging-ingests-indexer \
+        storage-staging-ingests-service \
+        storage-staging-notifier \
+        storage-staging-replica_aggregator
+
     plugins:
-      - ecr#v2.1.1:
-          login: true
-          account_ids: "760097843905"
-          assume_role:
-            role_arn: "arn:aws:iam::760097843905:role/platform-ci"
-      - docker#v3.5.0:
-          image: "760097843905.dkr.ecr.eu-west-1.amazonaws.com/wellcome/weco-deploy:5.7"
-          workdir: /repo
-          mount-ssh-agent: true
-          command: [
-              "--confirm",
-              "release-deploy",
-              "--from-label", "latest",
-              "--environment-id", "stage",
-              "--description", $BUILDKITE_BUILD_URL,
-              "--confirmation-wait-for", 3600]
+      - wellcomecollection/aws-assume-role#v0.2.2:
+          role: "arn:aws:iam::975596993436:role/storage-ci"
+
     agents:
       queue: nano
 

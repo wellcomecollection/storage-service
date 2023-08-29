@@ -1,21 +1,16 @@
 package weco.storage_service.bag_verifier.fixity.s3
 
-import java.net.URI
+import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
 
+import java.net.URI
 import weco.fixtures.TestWith
-import weco.storage_service.bag_verifier.fixity.{
-  FileFixityCouldNotRead,
-  FixityChecker,
-  FixityCheckerTagsTestCases
-}
+import weco.storage_service.bag_verifier.fixity.{FileFixityCouldNotRead, FixityChecker, FixityCheckerTagsTestCases}
 import weco.storage_service.bag_verifier.storage.s3.{S3Locatable, S3Resolvable}
-import weco.storage_service.bag_verifier.storage.{
-  LocationError,
-  LocationNotFound
-}
+import weco.storage_service.bag_verifier.storage.{LocationError, LocationNotFound}
 import weco.storage.fixtures.S3Fixtures
 import weco.storage.fixtures.S3Fixtures.Bucket
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.services.s3.S3SizeFinder
 import weco.storage.store.s3.S3StreamStore
 import weco.storage.tags.s3.S3Tags
@@ -34,12 +29,17 @@ class S3FixityCheckerTest
 
   override def putString(location: S3ObjectLocation, contents: String)(
     implicit context: Unit
-  ): Unit =
-    s3Client.putObject(
-      location.bucket,
-      location.key,
-      contents
-    )
+  ): Unit = {
+    val putRequest =
+      PutObjectRequest.builder()
+        .bucket(location.bucket)
+        .key(location.key)
+        .build()
+
+    val requestBody = RequestBody.fromString(contents)
+
+    s3Client.putObject(putRequest, requestBody)
+  }
 
   override def withStreamReader[R](
     testWith: TestWith[S3StreamStore, R]

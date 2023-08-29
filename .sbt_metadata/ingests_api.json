@@ -1,9 +1,0 @@
-{
-  "id" : "ingests_api",
-  "folder" : "ingests/ingests_api",
-  "dependencyIds" : [
-    "display",
-    "ingests_tracker"
-  ],
-  "description" : "User-facing ingests API"
-}

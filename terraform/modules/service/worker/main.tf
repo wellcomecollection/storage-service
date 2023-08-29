@@ -1,8 +1,3 @@
-locals {
-  # Override the default service name if requested
-  deployment_service_name = var.deployment_service_name == "" ? var.service_name : var.deployment_service_name
-}
-
 module "base" {
   source = "../base"
 
@@ -23,16 +18,13 @@ module "base" {
 
   subnets = var.subnets
 
-  deployment_service_name = var.deployment_service_name
-  deployment_service_env  = var.deployment_service_env
-
   use_fargate_spot = var.use_fargate_spot
 
   logging_container = var.logging_container
 }
 
 module "app_container" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.12.2"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.13.1"
   name   = "app"
 
   image = var.container_image
@@ -44,13 +36,13 @@ module "app_container" {
 }
 
 module "app_container_secrets_permissions" {
-  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v3.12.2"
+  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v3.13.1"
   secrets   = var.secrets
   role_name = module.base.task_execution_role_name
 }
 
 module "scaling" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/autoscaling?ref=v3.12.2"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/autoscaling?ref=v3.13.1"
 
   name = var.service_name
 

@@ -9,9 +9,10 @@ import weco.storage.streaming.Codec._
 import scala.io.Source
 import scala.util.matching.Regex
 
-trait VerifyBagDeclaration[BagLocation <: Location, BagPrefix <: Prefix[
-  BagLocation
-]] {
+trait VerifyBagDeclaration[BagLocation <: Location,
+                           BagPrefix <: Prefix[
+                             BagLocation
+                           ]] {
   protected val streamReader: Readable[BagLocation, InputStreamWithLength]
 
   private val versionLine = new Regex("BagIt-Version: \\d\\.\\d+")

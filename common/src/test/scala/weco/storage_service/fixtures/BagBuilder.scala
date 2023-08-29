@@ -5,7 +5,7 @@ import weco.storage_service.bagit.models._
 import weco.storage.fixtures.S3Fixtures
 import weco.storage_service.storage.models.StorageSpace
 import weco.storage.fixtures.S3Fixtures.Bucket
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 import weco.storage.store.TypedStore
 import weco.storage.store.s3.S3TypedStore
 import weco.storage.{Location, Prefix}

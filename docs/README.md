@@ -1,5 +1,60 @@
 # Storage service
 
+<!--
+  Note: this introductory information is copied from the repo's README,
+  and they should be kept in sync.
+-->
+
+The storage service manages the storage of our digital collections, including:
+
+*   Uploading files to cloud storage providers like Amazon S3 and Azure Blob
+*   Verifying fixity information on our files (checksums, sizes, filenames)
+*   Reporting on the contents of our digital archive through machine-readable APIs and search tools
+
+## Requirements
+
+The storage service is designed to:
+
+-   Ensure the safe, long-term (i.e. decades) storage of our digital assets
+-   Provide a scalable mechanism for identifying, retrieving, and storing content
+-   To support bulk processing of content, e.g. for file format migrations or batch analysis
+-   Follow industry best-practices around file integrity and audit trails
+-   Enable us to meet [NDSA Level 4][ndsa] for both digitised and ["born-digital"][born_digital] assets
+
+[ndsa]: https://ndsa.org/activities/levels-of-digital-preservation/
+[born_digital]: https://en.wikipedia.org/wiki/Born-digital
+
+## High-level design
+
+This is the basic architecture:
+
+![](images/high-level-design.png)
+
+Workflow systems (Goobi, Archivematica) create "bags", which are collections of files stored in the BagIt packaging format.
+They upload these bags to a temporary S3 bucket, and call the storage service APIs to ask it to store the bags permanently.
+
+The storage service reads the bags, verifies their contents, and replicates the bags to our permanent storage (S3 buckets/Azure containers).
+It is the only thing which writes to our permanent storage; this ensures everything is stored and labelled consistently.
+
+Delivery systems (e.g. DLCS) can then read objects back out of permanent storage, to provide access to users.
+
+## Documentation
+
+This GitBook space includes:
+
+*   How-to guides explaining how to do common operations, e.g. upload new files into the storage service
+*   Reference material explaining how the storage service is designed, and why we made those choices
+*   Notes for Wellcome developers who need to administer or debug our storage service deployment
+
+## Repo
+
+All our storage service code is in <https://github.com/wellcomecollection/storage-service>
+
+The READMEs in the repo have instructions for specific procedures, e.g. how to create new Docker images.
+This GitBook is meant to be a bit higher-level.
+
+---
+
 The unit of storage in the storage service is a **bag**.
 This is a collection of files packaged together with [the BagIt packaging format][bagit], which are ingested and stored together.
 
@@ -37,11 +92,13 @@ Once you're comfortable storing individual bags, you can read about more advance
 -   [Storing preservation and access copies in different storage classes]
 -   [Reporting on the contents of the storage service]
 -   [Getting callback notifications from the storage service]
+-   [Getting notifications of newly stored bags](howto/get-notifications-of-stored-bags.md)
 
 and some information about what to do when things go wrong:
 
 -   [Why ingests fail: understanding ingest errors]
 -   [Operational monitoring of the storage service]
+-   [Manually marking ingests as failed](howto/manually-marking-ingests-as-failed.md)
 
 
 
@@ -76,12 +133,3 @@ Developer workflow:
 
 -   [Repository layout](developers/repository-layout.md)
 -   [How Docker images are published to ECR](developers/ecr-publishing.md)
-
-
-
-## Wellcome-specific information
-
-These topics contain information about the Wellcome instance of the storage service, and may be of less relevance to non-Wellcome readers.
-
--   [Our three replicas: S3, Glacier, and Azure](wellcome/replica-configuration.md)
--   [Awkward files and bags](wellcome/awkward-files-and-bags.md)

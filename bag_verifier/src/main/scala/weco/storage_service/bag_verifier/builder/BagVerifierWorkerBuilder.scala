@@ -1,10 +1,10 @@
 package weco.storage_service.bag_verifier.builder
 
 import akka.actor.ActorSystem
-import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.{BlobServiceClient, BlobServiceClientBuilder}
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
+import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
 import weco.messaging.sns.SNSConfig
@@ -21,9 +21,9 @@ import weco.storage_service.bag_verifier.services.s3.S3BagVerifier
 import weco.storage_service.ingests.services.IngestUpdater
 import weco.storage_service.operation.services.OutgoingPublisher
 import weco.storage_service.{BagRootLocationPayload, ReplicaCompletePayload}
-import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import weco.storage.providers.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import weco.storage.dynamo.DynamoConfig
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.typesafe.DynamoBuilder
 import weco.typesafe.config.builders.EnrichConfig._
 
@@ -34,7 +34,7 @@ object BagVerifierWorkerBuilder {
     ingestUpdater: IngestUpdater[SNSConfig],
     outgoingPublisher: OutgoingPublisher[SNSConfig]
   )(
-    implicit s3: AmazonS3,
+    implicit s3: S3Client,
     metrics: Metrics[Future],
     as: ActorSystem,
     sc: SqsAsyncClient
@@ -60,7 +60,7 @@ object BagVerifierWorkerBuilder {
             .buildClient()
 
         implicit val dynamoClient: DynamoDbClient =
-          DynamoBuilder.buildDynamoClient
+          DynamoDbClient.builder().build()
 
         val dynamoConfig = DynamoBuilder
           .buildDynamoConfig(config, namespace = "azure_verifier_cache")
@@ -92,7 +92,7 @@ object BagVerifierWorkerBuilder {
     ingestUpdater: IngestUpdater[IngestDestination],
     outgoingPublisher: OutgoingPublisher[OutgoingDestination]
   )(
-    implicit s3: AmazonS3,
+    implicit s3: S3Client,
     metrics: Metrics[Future],
     as: ActorSystem,
     sc: SqsAsyncClient
@@ -122,7 +122,7 @@ object BagVerifierWorkerBuilder {
     ingestUpdater: IngestUpdater[IngestDestination],
     outgoingPublisher: OutgoingPublisher[OutgoingDestination]
   )(
-    implicit s3: AmazonS3,
+    implicit s3: S3Client,
     metrics: Metrics[Future],
     as: ActorSystem,
     sc: SqsAsyncClient
@@ -145,7 +145,7 @@ object BagVerifierWorkerBuilder {
           srcRoot = payload.srcPrefix,
           replicaRoot =
             payload.dstLocation.prefix.asInstanceOf[S3ObjectLocationPrefix]
-        )
+      )
     )
   }
 
@@ -159,7 +159,7 @@ object BagVerifierWorkerBuilder {
     ingestUpdater: IngestUpdater[IngestDestination],
     outgoingPublisher: OutgoingPublisher[OutgoingDestination]
   )(
-    implicit s3Client: AmazonS3,
+    implicit s3Client: S3Client,
     blobClient: BlobServiceClient,
     dynamoClient: DynamoDbClient,
     metrics: Metrics[Future],
@@ -187,7 +187,7 @@ object BagVerifierWorkerBuilder {
           srcRoot = payload.srcPrefix,
           replicaRoot =
             payload.dstLocation.prefix.asInstanceOf[AzureBlobLocationPrefix]
-        )
+      )
     )
   }
 }

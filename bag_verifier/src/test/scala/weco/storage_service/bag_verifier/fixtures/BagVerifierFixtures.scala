@@ -9,22 +9,16 @@ import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
 import weco.messaging.memory.MemoryMessageSender
 import weco.monitoring.memory.MemoryMetrics
 import weco.storage_service.bag_verifier.builder.BagVerifierWorkerBuilder
-import weco.storage_service.bag_verifier.models.{
-  ReplicatedBagVerifyContext,
-  StandaloneBagVerifyContext
-}
+import weco.storage_service.bag_verifier.models.{ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
 import weco.storage_service.bag_verifier.services.BagVerifierWorker
-import weco.storage_service.bag_verifier.services.s3.{
-  S3BagVerifier,
-  S3StandaloneBagVerifier
-}
+import weco.storage_service.bag_verifier.services.s3.{S3BagVerifier, S3StandaloneBagVerifier}
 import weco.storage_service.fixtures.OperationFixtures
 import weco.storage_service.{BagRootLocationPayload, ReplicaCompletePayload}
-import weco.storage.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
+import weco.storage.providers.azure.{AzureBlobLocation, AzureBlobLocationPrefix}
 import weco.storage.fixtures.DynamoFixtures.Table
 import weco.storage.fixtures.S3Fixtures.Bucket
 import weco.storage.fixtures.{AzureFixtures, DynamoFixtures, S3Fixtures}
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 trait BagVerifierFixtures
     extends AlpakkaSQSWorkerFixtures

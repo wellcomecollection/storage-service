@@ -70,6 +70,14 @@ class ExternalIdentifier(val underlying: String)
   // trying to handle the mess that is URL-encoding.
   //
   // If we need to revisit this, we should consider rethinking the bags API.
+  //
+  // Use cases for specific characters beyond alphanumeric:
+  //
+  //    - We use forward slashes for CALM identifiers, e.g. `ARTCOO/B/14`
+  //      These form a hierarchy in CALM, which we can replicate in the storage service.
+  //
+  //    - We use spaces in the bags of Miro images, e.g. `B images`
+  //
   val regex: String = "^[a-zA-Z0-9_\\-/ ]+$"
   require(
     underlying.matches(regex),

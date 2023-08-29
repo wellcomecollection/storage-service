@@ -1,22 +1,20 @@
 package weco.storage_service.bag_unpacker.services
 
 import java.nio.file.Paths
-
-import com.amazonaws.services.s3.model.ObjectMetadata
 import org.scalatest.TryValues
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.fixtures.TestWith
 import weco.json.JsonUtil._
 import weco.messaging.memory.MemoryMessageSender
-import weco.storage_service.bag_unpacker.fixtures.BagUnpackerFixtures
+import weco.storage_service.bag_unpacker.fixtures.{BagUnpackerFixtures, LocalResources}
 import weco.storage_service.bag_unpacker.fixtures.s3.S3CompressFixture
 import weco.storage_service.UnpackedBagLocationPayload
 import weco.storage_service.generators.PayloadGenerators
 import weco.storage_service.ingests.fixtures.IngestUpdateAssertions
 import weco.storage_service.storage.models.{IngestFailed, IngestStepSucceeded}
 import weco.storage.fixtures.S3Fixtures.Bucket
-import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.providers.s3.S3ObjectLocationPrefix
 
 class BagUnpackerWorkerTest
     extends AnyFunSpec
@@ -25,6 +23,7 @@ class BagUnpackerWorkerTest
     with S3CompressFixture
     with IngestUpdateAssertions
     with PayloadGenerators
+    with LocalResources
     with TryValues {
 
   it("processes a message") {
@@ -127,14 +126,7 @@ class BagUnpackerWorkerTest
     withLocalS3Bucket { srcBucket =>
       val location = createS3ObjectLocationWith(srcBucket)
 
-      val inputStream = getClass.getResourceAsStream("/crockery.7z")
-
-      s3Client.putObject(
-        location.bucket,
-        location.key,
-        inputStream,
-        new ObjectMetadata()
-      )
+      putStream(location, inputStream = getResource("/crockery.7z"))
 
       val payload = createSourceLocationPayloadWith(location)
 

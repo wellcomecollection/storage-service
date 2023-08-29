@@ -4,10 +4,14 @@ import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import org.scanamo.generic.auto._
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
+import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
-import weco.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, SQSBuilder}
+import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
+import weco.storage.dynamo.DynamoConfig
+import weco.storage.store.dynamo.DynamoSingleVersionStore
+import weco.storage.typesafe.DynamoBuilder
 import weco.storage_service.config.builders.{
   IngestUpdaterBuilder,
   OperationNameBuilder,
@@ -22,36 +26,31 @@ import weco.storage_service.replica_aggregator.services.{
   ReplicaAggregatorWorker,
   ReplicaCounter
 }
-import weco.storage.dynamo.DynamoConfig
-import weco.storage.store.dynamo.DynamoSingleVersionStore
-import weco.storage.typesafe.DynamoBuilder
 import weco.typesafe.WellcomeTypesafeApp
-import weco.typesafe.config.builders.AkkaBuilder
 import weco.typesafe.config.builders.EnrichConfig._
-import software.amazon.awssdk.services.sqs.SqsAsyncClient
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.ExecutionContext
 import scala.language.higherKinds
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
     implicit val actorSystem: ActorSystem =
-      AkkaBuilder.buildActorSystem()
+      ActorSystem("main-actor-system")
 
-    implicit val executionContext: ExecutionContextExecutor =
+    implicit val ec: ExecutionContext =
       actorSystem.dispatcher
 
     implicit val metrics: CloudWatchMetrics =
       CloudWatchBuilder.buildCloudWatchMetrics(config)
 
     implicit val sqsClient: SqsAsyncClient =
-      SQSBuilder.buildSQSAsyncClient
+      SqsAsyncClient.builder().build()
 
     val dynamoConfig: DynamoConfig =
       DynamoBuilder.buildDynamoConfig(config, namespace = "replicas")
 
     implicit val dynamoClient: DynamoDbClient =
-      DynamoBuilder.buildDynamoClient
+      DynamoDbClient.builder().build()
 
     val dynamoVersionedStore =
       new DynamoSingleVersionStore[ReplicaPath, AggregatorInternalRecord](

@@ -29,10 +29,10 @@ import weco.storage_service.storage.models.{
   IngestStepSucceeded,
   StorageSpace
 }
-import weco.storage.azure.AzureBlobLocation
+import weco.storage.providers.azure.AzureBlobLocation
 import weco.storage.fixtures.S3Fixtures
 import weco.storage.fixtures.S3Fixtures.Bucket
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 import weco.storage.store.TypedStore
 import weco.storage.store.fixtures.NamespaceFixtures
 import weco.storage.{Location, Prefix}
@@ -244,6 +244,43 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
     val uppercaseBuilder = new BagBuilderImpl {
       override protected def createDigest(string: String): String =
         super.createDigest(string).toUpperCase
+    }
+
+    withNamespace { implicit namespace =>
+      withBag(space, externalIdentifier, bagBuilder = uppercaseBuilder) {
+        case (primaryBucket, bagRoot) =>
+          val ingestStep =
+            withBagContext(bagRoot) { bagContext =>
+              withVerifier(primaryBucket) {
+                _.verify(
+                  ingestId = createIngestID,
+                  bagContext = bagContext,
+                  space = space,
+                  externalIdentifier = externalIdentifier
+                )
+              }
+            }
+
+          val result = ingestStep.success.get
+
+          result shouldBe a[IngestStepSucceeded[_]]
+          result.summary shouldBe a[VerificationSuccessSummary]
+      }
+    }
+  }
+
+  it("passes a bag with whitespace in the external identifier") {
+    val space = createStorageSpace
+    val externalIdentifier = ExternalIdentifier("external identifier with spaces")
+
+    val uppercaseBuilder = new BagBuilderImpl {
+      override protected def createDigest(string: String): String =
+        super.createDigest(string).toUpperCase
+
+      // This is to avoid having to deal with URI-encoding the spaces
+      // in the fetch.txt file.
+      override protected def getFetchEntryCount(payloadFileCount: Int): Int =
+        0
     }
 
     withNamespace { implicit namespace =>

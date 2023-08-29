@@ -1,112 +1,60 @@
 steps:
-  - command: .buildkite/scripts/run_autoformat.py
+  - command: |
+      ./builds/run_formatting.sh
+      .buildkite/scripts/push_autoformatting_changes.sh
+      ./builds/run_linting.sh
     label: "autoformat"
     agents:
       queue: "scala"
 
-  - command: .buildkite/scripts/run_job.py common
-    label: "common"
+    # We increase the priority of this task because it may push a commit
+    # and trigger a new build; if so, we want that to happen ASAP.
+    priority: 1
+
+  - label: "{{ matrix }} (library)"
+    command: "./builds/run_sbt_tests.sh {{ matrix }}"
+    matrix:
+      - "common"
+      - "display"
+      - "indexer_common"
+
     agents:
       queue: "scala"
 
-  - command: .buildkite/scripts/run_job.py display
-    label: "display"
-    agents:
-      queue: "scala"
+  - label: "{{ matrix }} (app)"
+    command: |
+      ./builds/run_sbt_tests.sh {{ matrix }}
+      ./builds/build_sbt_image.sh {{ matrix }} "$BUILDKITE_COMMIT"
 
-  - command: .buildkite/scripts/run_job.py indexer_common
-    label: "indexer common"
-    agents:
-      queue: "scala"
-    skip: "this only contains helpers for other test suites, not actual tests"
+      if [[ "$BUILDKITE_BRANCH" == "main" ]]
+      then
+        ./builds/publish_sbt_image_to_ecr.sh {{ matrix }} "$BUILDKITE_COMMIT"
+        ./builds/publish_image_to_ecr_public.sh {{ matrix }} "$BUILDKITE_COMMIT"
+      fi
 
-  - command: .buildkite/scripts/run_job.py bags_api
-    label: "bags API"
-    agents:
-      queue: "scala"
+    matrix:
+      - "bags_api"
+      - "bag_register"
+      - "bag_replicator"
+      - "bag_root_finder"
+      - "bag_tracker"
+      - "bag_verifier"
+      - "bag_unpacker"
+      - "bag_versioner"
+      - "replica_aggregator"
+      - "bag_indexer"
+      - "ingests_indexer"
+      - "file_finder"
+      - "file_indexer"
+      - "ingests_worker"
+      - "ingests_tracker"
+      - "ingests_api"
+      - "notifier"
 
-  - command: .buildkite/scripts/run_job.py bag_register
-    label: "bag register"
-    agents:
-      queue: "scala"
+    plugins:
+      - wellcomecollection/aws-assume-role#v0.2.2:
+          role: "arn:aws:iam::975596993436:role/storage-ci"
 
-  - command: .buildkite/scripts/run_job.py bag_replicator
-    label: "bag replicator"
-    agents:
-      queue: "scala"
-
-  - command: .buildkite/scripts/run_job.py bag_root_finder
-    label: "bag root finder"
-    agents:
-      queue: "scala"
-
-  - command: .buildkite/scripts/run_job.py bag_tagger
-    label: "bag tagger"
-    agents:
-      queue: "scala"
-
-  - command: .buildkite/scripts/run_job.py bag_tracker
-    label: "bag tracker"
-    agents:
-      queue: "scala"
-
-  - command: .buildkite/scripts/run_job.py bag_verifier
-    label: "bag verifier"
-    agents:
-      queue: "scala"
-
-  - command: .buildkite/scripts/run_job.py bag_unpacker
-    label: "bag unpacker"
-    agents:
-      queue: "scala"
-
-  - command: .buildkite/scripts/run_job.py bag_versioner
-    label: "bag versioner"
-    agents:
-      queue: "scala"
-
-  - command: .buildkite/scripts/run_job.py replica_aggregator
-    label: "replica aggregator"
-    agents:
-      queue: "scala"
-
-  - command: .buildkite/scripts/run_job.py bag_indexer
-    label: "bag indexer"
-    agents:
-      queue: "scala"
-
-  - command: .buildkite/scripts/run_job.py ingests_indexer
-    label: "ingests indexer"
-    agents:
-      queue: "scala"
-
-  - command: .buildkite/scripts/run_job.py file_finder
-    label: "file finder"
-    agents:
-      queue: "scala"
-
-  - command: .buildkite/scripts/run_job.py file_indexer
-    label: "file indexer"
-    agents:
-      queue: "scala"
-
-  - command: .buildkite/scripts/run_job.py ingests_worker
-    label: "ingests worker"
-    agents:
-      queue: "scala"
-
-  - command: .buildkite/scripts/run_job.py ingests_tracker
-    label: "ingests tracker"
-    agents:
-      queue: "scala"
-
-  - command: .buildkite/scripts/run_job.py ingests_api
-    label: "ingests API"
-    agents:
-      queue: "scala"
-
-  - command: .buildkite/scripts/run_job.py notifier
-    label: "notifier"
     agents:
       queue: "scala"
 
@@ -115,14 +63,6 @@ steps:
       cd scripts &&
       /var/lib/buildkite-agent/.local/bin/tox -e py3
     label: "Test Python scripts"
-
-  - wait
-
-  - command: .buildkite/scripts/complete_build.py
-    label: "tag commit as latest"
-    if: build.branch == "main"
-    agents:
-      queue: nano
 
   - wait
 

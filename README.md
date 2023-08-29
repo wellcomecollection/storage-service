@@ -4,6 +4,11 @@
 [![Deploy stage](https://img.shields.io/buildkite/d7ca8f1ecfccb947cf48d9835a27dad5d2c731646f7c270296/main.svg?label=deploy%20stage)](https://buildkite.com/wellcomecollection/storage-service-deploy-stage)
 [![Deploy prod](https://img.shields.io/buildkite/61753d376ae4d5bfdf4e0514417dcc96178dc169ff7ca3e2a8/main.svg?label=deploy%20prod)](https://buildkite.com/wellcomecollection/storage-service-deploy-prod)
 
+<!--
+  Note: this introductory information is copied in the GitBook introduction,
+  and they should be kept in sync
+-->
+
 This is the Wellcome Collection storage service.
 It manages the storage of our digital collections, including:
 
@@ -34,7 +39,7 @@ The storage service is designed to:
 
 The user uploads a "bag" to the storage service.
 This bag should use the [BagIt packaging format][bagit].
-The user could be a person, of an automated workflow system like [Goobi](https://www.intranda.com/en/digiverso/goobi/goobi-overview/) or [Archivematica](https://archivematica.org/).
+The user could be a person, or an automated workflow system like [Goobi](https://www.intranda.com/en/digiverso/goobi/goobi-overview/) or [Archivematica](https://archivematica.org/).
 
 The storage service verifies the fixity information in the bag (checksums, file sizes, filenames).
 If the fixity information is correct, it replicates the bag to multiple storage locations, split across different cloud providers and geographic locations.
@@ -47,6 +52,16 @@ The storage service runs entirely in AWS, with no on-premise infrastructure requ
 For more detailed information about the design, see [our documentation](docs).
 
 [bagit]: https://datatracker.ietf.org/doc/html/rfc8493
+
+
+
+## Documentation
+
+We have [documentation](./docs) about the storage service, which includes:
+
+*   How-to guides explaining how to do common operations, e.g. ingest a new bag or look up a stored bag
+*   Reference material explaining how the storage service works
+*   Notes for developers who want to modify or extend the storage service
 
 
 

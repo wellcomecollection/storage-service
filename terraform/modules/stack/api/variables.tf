@@ -2,10 +2,6 @@ variable "subnets" {
   type = list(string)
 }
 
-variable "aws_region" {
-  default = "eu-west-1"
-}
-
 variable "namespace" {
   type = string
 }

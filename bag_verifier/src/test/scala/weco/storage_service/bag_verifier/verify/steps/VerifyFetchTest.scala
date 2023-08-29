@@ -8,7 +8,7 @@ import org.scalatest.matchers.should.Matchers
 import weco.storage_service.bag_verifier.models.BagVerifierError
 import weco.storage_service.bagit.models.{BagFetch, BagFetchMetadata, BagPath}
 import weco.storage.fixtures.S3Fixtures
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 class VerifyFetchTest
     extends AnyFunSpec

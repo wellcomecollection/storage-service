@@ -1,8 +1,8 @@
 package weco.storage_service.storage.models
 
 import grizzled.slf4j.Logging
-import weco.storage.azure.AzureBlobLocationPrefix
-import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.providers.azure.AzureBlobLocationPrefix
+import weco.storage.providers.s3.S3ObjectLocationPrefix
 import weco.storage.{Location, Prefix}
 
 trait EnsureTrailingSlash[BagPrefix <: Prefix[_ <: Location]] {

@@ -1,21 +1,35 @@
 resource "aws_s3_bucket" "infra" {
   bucket = "wellcomecollection-storage-infra"
-  acl    = "private"
 
   lifecycle {
     prevent_destroy = true
   }
+}
 
-  versioning {
-    enabled = true
+resource "aws_s3_bucket_acl" "infra" {
+  bucket = aws_s3_bucket.infra.id
+  acl    = "private"
+}
+
+resource "aws_s3_bucket_versioning" "infra" {
+  bucket = aws_s3_bucket.infra.id
+
+  versioning_configuration {
+    status = "Enabled"
   }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "infra" {
+  bucket = aws_s3_bucket.infra.id
 
   # Objects in tmp/ should be deleted
-  lifecycle_rule {
-    id      = "expire_tmp"
-    enabled = true
+  rule {
+    id     = "expire_tmp"
+    status = "Enabled"
 
-    prefix = "tmp/"
+    filter {
+      prefix = "tmp/"
+    }
 
     transition {
       days          = 30
@@ -35,11 +49,13 @@ resource "aws_s3_bucket" "infra" {
   # We use S3 Inventory to write an inventory for our storage buckets to the
   # infra bucket.  We don't need to keep inventories forever, so delete them
   # after 90 days.
-  lifecycle_rule {
-    id      = "expire_old_inventory"
-    enabled = true
+  rule {
+    id     = "expire_old_inventory"
+    status = "Enabled"
 
-    prefix = "s3_inventory/"
+    filter {
+      prefix = "s3_inventory/"
+    }
 
     transition {
       days          = 30
@@ -56,18 +72,17 @@ resource "aws_s3_bucket" "infra" {
     }
   }
 
-  lifecycle_rule {
-    id = "expire_noncurrent_versions"
+  rule {
+    id     = "expire_noncurrent_versions"
+    status = "Enabled"
 
     noncurrent_version_expiration {
-      days = 30
+      noncurrent_days = 30
     }
 
     expiration {
       expired_object_delete_marker = true
     }
-
-    enabled = true
   }
 }
 

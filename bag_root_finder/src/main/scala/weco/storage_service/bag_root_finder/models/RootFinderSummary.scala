@@ -4,7 +4,7 @@ import java.time.Instant
 
 import weco.storage_service.ingests.models.IngestID
 import weco.storage_service.operation.models.Summary
-import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.providers.s3.S3ObjectLocationPrefix
 
 sealed trait RootFinderSummary extends Summary {
   val searchRoot: S3ObjectLocationPrefix

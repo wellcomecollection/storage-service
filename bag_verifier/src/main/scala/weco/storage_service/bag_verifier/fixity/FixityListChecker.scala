@@ -1,7 +1,7 @@
 package weco.storage_service.bag_verifier.fixity
 
 import grizzled.slf4j.Logging
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.{Location, Prefix}
 
 import scala.util.Random
@@ -10,9 +10,11 @@ import scala.util.Random
   * file in the container, then verify the fixity on each of them.
   *
   */
-class FixityListChecker[BagLocation <: Location, BagPrefix <: Prefix[
-  BagLocation
-], Container](
+class FixityListChecker[BagLocation <: Location,
+                        BagPrefix <: Prefix[
+                          BagLocation
+                        ],
+                        Container](
   implicit
   dataDirectoryFixityChecker: FixityChecker[BagLocation, BagPrefix],
   val fetchEntriesFixityChecker: FixityChecker[

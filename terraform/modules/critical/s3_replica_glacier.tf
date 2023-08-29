@@ -1,14 +1,26 @@
 resource "aws_s3_bucket" "replica_glacier" {
   bucket = "wellcomecollection-${var.namespace}-replica-ireland"
+}
+
+resource "aws_s3_bucket_acl" "replica_glacier" {
+  bucket = aws_s3_bucket.replica_glacier.id
   acl    = "private"
+}
 
-  versioning {
-    enabled = var.enable_s3_versioning
+resource "aws_s3_bucket_versioning" "replica_glacier" {
+  bucket = aws_s3_bucket.replica_glacier.id
+
+  versioning_configuration {
+    status = var.enable_s3_versioning ? "Enabled" : "Disabled"
   }
+}
 
-  lifecycle_rule {
-    id      = "transition_objects_to_deep_archive"
-    enabled = true
+resource "aws_s3_bucket_lifecycle_configuration" "replica_glacier" {
+  bucket = aws_s3_bucket.replica_glacier.id
+
+  rule {
+    id     = "transition_objects_to_deep_archive"
+    status = "Enabled"
 
     transition {
       days          = 90
@@ -23,22 +35,22 @@ resource "aws_s3_bucket" "replica_glacier" {
   # us a safety net against accidental deletions -- if we delete something, we can
   # recover it -- but we do want deleted objects to disappear eventually,
   # e.g. for data protection.
-  lifecycle_rule {
-    id      = "expire_noncurrent_versions"
-    enabled = var.enable_s3_versioning
+  rule {
+    id     = "expire_noncurrent_versions"
+    status = var.enable_s3_versioning ? "Enabled" : "Disabled"
 
     noncurrent_version_transition {
-      days          = 30
-      storage_class = "STANDARD_IA"
+      noncurrent_days = 30
+      storage_class   = "STANDARD_IA"
     }
 
     noncurrent_version_transition {
-      days          = 60
-      storage_class = "GLACIER"
+      noncurrent_days = 60
+      storage_class   = "GLACIER"
     }
 
     noncurrent_version_expiration {
-      days = 90
+      noncurrent_days = 90
     }
   }
 }

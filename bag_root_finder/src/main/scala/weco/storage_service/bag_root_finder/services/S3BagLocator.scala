@@ -1,9 +1,9 @@
 package weco.storage_service.bag_root_finder.services
 
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.ListObjectsV2Request
 import grizzled.slf4j.Logging
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
@@ -34,7 +34,7 @@ import scala.util.{Failure, Success, Try}
   * SERIOUSLY, THINK CAREFULLY BEFORE YOU ADD COMPLEXITY HERE.
   *
   */
-class S3BagLocator(s3Client: AmazonS3) extends Logging {
+class S3BagLocator(s3Client: S3Client) extends Logging {
   def locateBagInfo(prefix: S3ObjectLocationPrefix): Try[S3ObjectLocation] = {
     val bagInfoInRoot = findBagInfoInRoot(prefix)
     val bagInfoInDirectory = findBagInfoInDirectory(prefix)
@@ -62,12 +62,16 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
   /** Find a bag directly below a given ObjectLocation. */
   private def findBagInfoInRoot(prefix: S3ObjectLocationPrefix): Try[String] =
     Try {
-      val listObjectsResult = s3Client.listObjectsV2(
-        prefix.bucket,
-        createBagInfoPath(prefix.keyPrefix)
-      )
+      val listObjectsRequest =
+        ListObjectsV2Request
+          .builder()
+          .bucket(prefix.bucket)
+          .prefix(createBagInfoPath(prefix.keyPrefix))
+          .build()
 
-      val keyCount = listObjectsResult.getObjectSummaries.size()
+      val listObjectsResult = s3Client.listObjectsV2(listObjectsRequest)
+
+      val keyCount = listObjectsResult.contents().size()
 
       if (keyCount == 1) {
         createBagInfoPath(prefix.keyPrefix)
@@ -83,17 +87,20 @@ class S3BagLocator(s3Client: AmazonS3) extends Logging {
   private def findBagInfoInDirectory(
     prefix: S3ObjectLocationPrefix
   ): Try[String] = Try {
-    val listObjectsRequest = new ListObjectsV2Request()
-      .withBucketName(prefix.bucket)
-      .withPrefix(prefix.keyPrefix + "/")
-      .withDelimiter("/")
+    val listObjectsRequest =
+      ListObjectsV2Request
+        .builder()
+        .bucket(prefix.bucket)
+        .prefix(prefix.keyPrefix + "/")
+        .delimiter("/")
+        .build()
 
     val directoriesInBag =
-      s3Client.listObjectsV2(listObjectsRequest).getCommonPrefixes.asScala
+      s3Client.listObjectsV2(listObjectsRequest).commonPrefixes().asScala
 
     if (directoriesInBag.size == 1) {
       val directoryLocation = prefix.copy(
-        keyPrefix = directoriesInBag.head
+        keyPrefix = directoriesInBag.head.prefix()
       )
 
       findBagInfoInRoot(directoryLocation) match {

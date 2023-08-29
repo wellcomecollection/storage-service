@@ -1,15 +1,23 @@
 package weco.storage_service.bag_replicator
 
 import akka.actor.ActorSystem
-import com.amazonaws.services.s3.AmazonS3
 import com.azure.storage.blob.{BlobServiceClient, BlobServiceClientBuilder}
 import com.typesafe.config.Config
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
+import software.amazon.awssdk.transfer.s3.S3TransferManager
 import weco.json.JsonUtil._
 import weco.messaging.sns.SNSConfig
-import weco.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, SQSBuilder}
+import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
+import weco.storage.providers.azure.AzureBlobLocationPrefix
+import weco.storage.locking.dynamo.{DynamoLockDao, DynamoLockingService}
+import weco.storage.providers.s3.S3ObjectLocationPrefix
+import weco.storage.transfer.azure.AzurePutBlockFromUrlTransfer
+import weco.storage.typesafe.DynamoLockDaoBuilder
+import weco.storage.{Location, Prefix}
 import weco.storage_service.bag_replicator.config.ReplicatorDestinationConfig
 import weco.storage_service.bag_replicator.replicator.Replicator
 import weco.storage_service.bag_replicator.replicator.azure.AzureReplicator
@@ -27,17 +35,10 @@ import weco.storage_service.ingests.models.{
   StorageProvider
 }
 import weco.storage_service.storage.models.IngestStepResult
-import weco.storage.azure.AzureBlobLocationPrefix
-import weco.storage.locking.dynamo.{DynamoLockDao, DynamoLockingService}
-import weco.storage.s3.S3ObjectLocationPrefix
-import weco.storage.transfer.azure.AzurePutBlockFromUrlTransfer
-import weco.storage.typesafe.{DynamoLockDaoBuilder, S3Builder}
-import weco.storage.{Location, Prefix}
 import weco.typesafe.WellcomeTypesafeApp
-import weco.typesafe.config.builders.AkkaBuilder
 import weco.typesafe.config.builders.EnrichConfig._
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 object Main extends WellcomeTypesafeApp {
@@ -45,19 +46,22 @@ object Main extends WellcomeTypesafeApp {
     import scala.concurrent.duration._
 
     implicit val actorSystem: ActorSystem =
-      AkkaBuilder.buildActorSystem()
-
-    implicit val executionContext: ExecutionContextExecutor =
+      ActorSystem("main-actor-system")
+    implicit val ec: ExecutionContext =
       actorSystem.dispatcher
 
-    implicit val s3Client: AmazonS3 =
-      S3Builder.buildS3Client
+    implicit val s3Client: S3Client =
+      S3Client.builder().build()
+    implicit val s3TransferManager: S3TransferManager =
+      S3TransferManager.builder().build()
+    implicit val s3Presigner: S3Presigner =
+      S3Presigner.builder().build()
 
     implicit val metrics: CloudWatchMetrics =
       CloudWatchBuilder.buildCloudWatchMetrics(config)
 
     implicit val sqsClient: SqsAsyncClient =
-      SQSBuilder.buildSQSAsyncClient
+      SqsAsyncClient.builder().build()
 
     implicit val lockDao: DynamoLockDao =
       DynamoLockDaoBuilder.buildDynamoLockDao(config)
@@ -69,7 +73,9 @@ object Main extends WellcomeTypesafeApp {
       StorageProvider.apply(config.requireString("bag-replicator.provider"))
 
     def createLockingService[DstPrefix <: Prefix[_ <: Location]] =
-      new DynamoLockingService[IngestStepResult[ReplicationSummary[DstPrefix]], Try]()
+      new DynamoLockingService[
+        IngestStepResult[ReplicationSummary[DstPrefix]],
+        Try]()
 
     def createBagReplicatorWorker[
       SrcLocation,
@@ -79,8 +85,9 @@ object Main extends WellcomeTypesafeApp {
       ]
     ](
       lockingService: DynamoLockingService[IngestStepResult[
-        ReplicationSummary[DstPrefix]
-      ], Try],
+                                             ReplicationSummary[DstPrefix]
+                                           ],
+                                           Try],
       replicator: Replicator[SrcLocation, DstLocation, DstPrefix]
     ): BagReplicatorWorker[
       SNSConfig,

@@ -3,7 +3,7 @@ package weco.storage_service.bagit.services.s3
 import weco.fixtures.TestWith
 import weco.storage_service.bagit.services.{BagReader, BagReaderTestCases}
 import weco.storage.fixtures.S3Fixtures.Bucket
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.store.TypedStore
 import weco.storage.store.s3.S3TypedStore
 import weco.storage_service.fixtures.s3.S3BagBuilder
@@ -30,7 +30,7 @@ class S3BagReaderTest
   override def deleteFile(root: S3ObjectLocationPrefix, path: String)(
     implicit context: Unit
   ): Unit =
-    s3Client.deleteObject(root.bucket, root.asLocation(path).key)
+    deleteObject(root.asLocation(path))
 
   override def withContext[R](testWith: TestWith[Unit, R]): R = testWith(())
 

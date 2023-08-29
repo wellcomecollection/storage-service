@@ -1,14 +1,13 @@
 package weco.storage_service.bag_verifier.fixity.s3
 
 import java.net.URI
-
-import com.amazonaws.services.s3.AmazonS3
 import grizzled.slf4j.Logging
 import org.apache.commons.io.FileUtils
+import software.amazon.awssdk.services.s3.S3Client
 import weco.storage_service.bag_verifier.fixity.FixityChecker
 import weco.storage_service.bag_verifier.storage.Locatable
 import weco.storage_service.bag_verifier.storage.s3.S3Locatable
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.services.SizeFinder
 import weco.storage.services.s3.{S3LargeStreamReader, S3SizeFinder}
 import weco.storage.store
@@ -25,7 +24,7 @@ class S3FixityChecker(
     with Logging
 
 object S3FixityChecker {
-  def apply()(implicit s3Client: AmazonS3) = {
+  def apply()(implicit s3Client: S3Client) = {
     val streamReader = new S3LargeStreamReader(
       bufferSize = 128 * FileUtils.ONE_MB
     )

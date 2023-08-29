@@ -9,7 +9,7 @@ import weco.storage_service.ingests.models.IngestID
 import weco.storage_service.storage.models.{EnsureTrailingSlash, StorageSpace}
 import weco.storage_service.storage.services.DestinationBuilder
 import weco.storage._
-import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.providers.s3.S3ObjectLocationPrefix
 import weco.storage.transfer.{PrefixTransfer, PrefixTransferFailure}
 
 // This is a generic replication from one location to another.
@@ -20,9 +20,12 @@ import weco.storage.transfer.{PrefixTransfer, PrefixTransferFailure}
 // For example, in the BagReplicator, we verify the tag manifests
 // are the same after replication completes.
 
-trait Replicator[SrcLocation, DstLocation <: Location, DstPrefix <: Prefix[
-  DstLocation
-]] extends Logging {
+trait Replicator[SrcLocation,
+                 DstLocation <: Location,
+                 DstPrefix <: Prefix[
+                   DstLocation
+                 ]]
+    extends Logging {
   implicit val prefixTransfer: PrefixTransfer[
     S3ObjectLocationPrefix,
     SrcLocation,
@@ -74,13 +77,7 @@ trait Replicator[SrcLocation, DstLocation <: Location, DstPrefix <: Prefix[
 
     prefixTransfer.transferPrefix(
       srcPrefix = replicaSrcPrefix,
-      dstPrefix = request.dstPrefix,
-      // We used to condition this on whether there were any existing objects in
-      // the prefix; if there weren't, we skip checking to avoid getting eventual
-      // consistency from S3.  We no longer need to do so.
-      //
-      // See discussion on https://github.com/wellcomecollection/platform/issues/3897
-      checkForExisting = true
+      dstPrefix = request.dstPrefix
     ) match {
       case Right(_) =>
         ReplicationSucceeded(summary.complete)

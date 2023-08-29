@@ -76,9 +76,9 @@ data "aws_iam_policy_document" "prevent_writes_to_prod" {
 }
 
 resource "aws_iam_role_policy" "prevent_deletions" {
-  count = length(local.storage_roles)
+  for_each = toset(local.storage_roles)
 
-  role   = element(local.storage_roles, count.index)
+  role   = each.key
   policy = data.aws_iam_policy_document.prevent_writes_to_prod.json
 }
 

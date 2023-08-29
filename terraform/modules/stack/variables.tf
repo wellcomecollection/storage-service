@@ -11,10 +11,6 @@ variable "dlq_alarm_arn" {
   type = string
 }
 
-variable "release_label" {
-  type = string
-}
-
 variable "working_storage_bucket_prefix" {
   type    = string
   default = ""

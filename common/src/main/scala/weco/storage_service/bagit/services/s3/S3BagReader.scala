@@ -1,12 +1,12 @@
 package weco.storage_service.bagit.services.s3
 
-import com.amazonaws.services.s3.AmazonS3
+import software.amazon.awssdk.services.s3.S3Client
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.store.s3.S3StreamReader
 import weco.storage_service.bagit.services.BagReader
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
-import weco.storage.store.s3.S3StreamStore
 
-class S3BagReader()(implicit s3Client: AmazonS3)
+class S3BagReader()(implicit s3Client: S3Client)
     extends BagReader[S3ObjectLocation, S3ObjectLocationPrefix] {
-  override implicit val readable: S3StreamStore =
-    new S3StreamStore()
+  override implicit val readable: S3StreamReader =
+    new S3StreamReader()
 }

@@ -37,9 +37,6 @@ module "base" {
 
   subnets = var.subnets
 
-  deployment_service_name = var.deployment_service_name
-  deployment_service_env  = var.deployment_service_env
-
   # We don't use Fargate Spot for the ingests service, because it includes the
   # external-facing ingests API which has to stay up.
   use_fargate_spot = false
@@ -48,7 +45,7 @@ module "base" {
 }
 
 module "nginx_container" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/nginx/apigw?ref=v3.12.2"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/nginx/apigw?ref=v3.13.1"
 
   forward_port      = var.external_api_container_port
   log_configuration = module.base.log_configuration
@@ -59,7 +56,7 @@ module "nginx_container" {
 }
 
 module "external_api_container" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.12.2"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.13.1"
   name   = "api"
 
   image = var.external_api_container_image
@@ -71,13 +68,13 @@ module "external_api_container" {
 }
 
 module "external_api_container_secrets_permissions" {
-  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v3.12.2"
+  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v3.13.1"
   secrets   = var.external_api_secrets
   role_name = module.base.task_execution_role_name
 }
 
 module "worker_container" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.12.2"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.13.1"
   name   = "worker"
 
   image = var.worker_container_image
@@ -89,13 +86,13 @@ module "worker_container" {
 }
 
 module "worker_container_secrets_permissions" {
-  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v3.12.2"
+  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v3.13.1"
   secrets   = var.worker_secrets
   role_name = module.base.task_execution_role_name
 }
 
 module "internal_api_container" {
-  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.12.2"
+  source = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/container_definition?ref=v3.13.1"
   name   = "tracker"
 
   image = var.internal_api_container_image
@@ -107,7 +104,7 @@ module "internal_api_container" {
 }
 
 module "internal_api_container_secrets_permissions" {
-  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v3.12.2"
+  source    = "git::github.com/wellcomecollection/terraform-aws-ecs-service.git//modules/secrets?ref=v3.13.1"
   secrets   = var.internal_api_secrets
   role_name = module.base.task_execution_role_name
 }

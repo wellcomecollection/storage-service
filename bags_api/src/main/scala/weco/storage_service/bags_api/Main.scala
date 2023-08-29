@@ -2,20 +2,20 @@ package weco.storage_service.bags_api
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import com.amazonaws.services.s3.AmazonS3
 import com.typesafe.config.Config
 import org.apache.commons.io.FileUtils
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import weco.http.typesafe.HTTPServerBuilder
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.bag_tracker.client.{
   AkkaBagTrackerClient,
   BagTrackerClient
 }
-import weco.storage.s3.S3ObjectLocationPrefix
-import weco.storage.services.s3.S3Uploader
+import weco.storage.providers.s3.S3ObjectLocationPrefix
+import weco.storage.services.s3.{S3PresignedUrls, S3Uploader}
 import weco.storage.typesafe.S3Builder
 import weco.typesafe.WellcomeTypesafeApp
-import weco.typesafe.config.builders.AkkaBuilder
 import weco.typesafe.config.builders.EnrichConfig._
 import weco.http.WellcomeHttpApp
 import weco.http.models.HTTPServerConfig
@@ -31,16 +31,14 @@ object Main extends WellcomeTypesafeApp {
   val defaultMaxByteLength = 9 * FileUtils.ONE_MB
 
   runWithConfig { config: Config =>
-    implicit val asMain: ActorSystem =
-      AkkaBuilder.buildActorSystem()
+    implicit val actorSystem: ActorSystem =
+      ActorSystem("main-actor-system")
 
-    implicit val ecMain: ExecutionContext =
-      AkkaBuilder.buildExecutionContext()
+    implicit val ec: ExecutionContext =
+      actorSystem.dispatcher
 
-    implicit val matMain: Materializer =
-      AkkaBuilder.buildMaterializer()
-
-    implicit val s3Client: AmazonS3 = S3Builder.buildS3Client
+    implicit val s3Client: S3Client = S3Client.builder().build()
+    implicit val s3Presigner: S3Presigner = S3Presigner.builder().build()
 
     val uploader = new S3Uploader()
 
@@ -61,16 +59,20 @@ object Main extends WellcomeTypesafeApp {
     val router: BagsApi = new BagsApi {
       override val httpServerConfig: HTTPServerConfig =
         HTTPServerBuilder.buildHTTPServerConfig(config)
-      override implicit val ec: ExecutionContext = ecMain
+      override implicit val ec: ExecutionContext = actorSystem.dispatcher
 
       override val bagTrackerClient: BagTrackerClient = client
+
+      override val s3PresignedUrls: S3PresignedUrls =
+        new S3PresignedUrls()
 
       override val s3Uploader: S3Uploader = uploader
       override val s3Prefix: S3ObjectLocationPrefix = locationPrefix
 
       override val maximumResponseByteLength: Long = defaultMaxByteLength
       override val cacheDuration: Duration = defaultCacheDuration
-      override implicit val materializer: Materializer = matMain
+      override implicit val materializer: Materializer =
+        Materializer(actorSystem)
     }
 
     val appName = "BagsApi"

@@ -4,11 +4,17 @@ set -o errexit
 set -o nounset
 set -o verbose
 
-PROJECT="$1"
+if (( $# == 2))
+then
+  PROJECT_NAME="$1"
+  IMAGE_TAG="$2"
+else
+  echo "Usage: publish_image_to_ecr_public.sh <PROJECT> <IMAGE_TAG>" >&2
+  exit 1
+fi
 
 ECR_REGISTRY="public.ecr.aws/y1p3h6z3"
 
-CURRENT_COMMIT=$(git rev-parse HEAD)
 ROOT=$(git rev-parse --show-toplevel)
 
 if [[ "${BUILDKITE:-}" = "true" ]]
@@ -22,10 +28,10 @@ PASSWORD=$(python3 "$ROOT/builds/get_ecr_public_password.py")
 
 docker login --username AWS --password "$PASSWORD" public.ecr.aws
 
-docker tag "$PROJECT:$CURRENT_COMMIT" "$ECR_REGISTRY/$PROJECT:ref.$CURRENT_COMMIT"
-docker push "$ECR_REGISTRY/$PROJECT:ref.$CURRENT_COMMIT"
-docker rmi "$ECR_REGISTRY/$PROJECT:ref.$CURRENT_COMMIT"
+docker tag "$PROJECT_NAME:$IMAGE_TAG" "$ECR_REGISTRY/$PROJECT_NAME:ref.$IMAGE_TAG"
+docker push "$ECR_REGISTRY/$PROJECT_NAME:ref.$IMAGE_TAG"
+docker rmi "$ECR_REGISTRY/$PROJECT_NAME:ref.$IMAGE_TAG"
 
-docker tag "$PROJECT:$CURRENT_COMMIT" "$ECR_REGISTRY/$PROJECT:latest"
-docker push "$ECR_REGISTRY/$PROJECT:latest"
-docker rmi "$ECR_REGISTRY/$PROJECT:latest"
+docker tag "$PROJECT_NAME:$IMAGE_TAG" "$ECR_REGISTRY/$PROJECT_NAME:latest"
+docker push "$ECR_REGISTRY/$PROJECT_NAME:latest"
+docker rmi "$ECR_REGISTRY/$PROJECT_NAME:latest"

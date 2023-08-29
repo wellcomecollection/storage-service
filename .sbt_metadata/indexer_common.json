@@ -1,8 +1,0 @@
-{
-  "id" : "indexer_common",
-  "folder" : "indexer/common",
-  "dependencyIds" : [
-    "common"
-  ],
-  "description" : "Common utilities shared among the indexer applications"
-}

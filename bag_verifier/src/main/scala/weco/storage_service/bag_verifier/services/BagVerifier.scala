@@ -12,7 +12,7 @@ import weco.storage_service.bagit.services.BagReader
 import weco.storage_service.ingests.models.IngestID
 import weco.storage_service.storage.models._
 import weco.storage.listing.Listing
-import weco.storage.s3.S3ObjectLocationPrefix
+import weco.storage.providers.s3.S3ObjectLocationPrefix
 import weco.storage.{store, Location, Prefix}
 import EnsureTrailingSlash._
 import weco.storage.streaming.InputStreamWithLength
@@ -45,9 +45,12 @@ trait ReplicatedBagVerifier[
     bagReader.readable
 }
 
-trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix], BagLocation <: Location, BagPrefix <: Prefix[
-  BagLocation
-]] extends Logging
+trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix],
+                  BagLocation <: Location,
+                  BagPrefix <: Prefix[
+                    BagLocation
+                  ]]
+    extends Logging
     with VerifyBagDeclaration[BagLocation, BagPrefix]
     with VerifyChecksumAndSize[BagLocation, BagPrefix]
     with VerifyExternalIdentifier

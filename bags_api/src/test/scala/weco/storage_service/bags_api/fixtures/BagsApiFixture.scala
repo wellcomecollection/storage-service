@@ -4,15 +4,12 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpMethods.GET
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.stream.Materializer
-import com.amazonaws.services.s3.AmazonS3
 import org.scalatest.concurrent.ScalaFutures
+import software.amazon.awssdk.services.s3.S3Client
 import weco.fixtures.TestWith
 import weco.monitoring.memory.MemoryMetrics
 import weco.storage_service.bag_tracker.client.BagTrackerClient
-import weco.storage_service.bag_tracker.fixtures.{
-  BagTrackerFixtures,
-  StorageManifestDaoFixture
-}
+import weco.storage_service.bag_tracker.fixtures.{BagTrackerFixtures, StorageManifestDaoFixture}
 import weco.storage_service.bag_tracker.storage.StorageManifestDao
 import weco.storage_service.bag_tracker.storage.memory.MemoryStorageManifestDao
 import weco.storage_service.bagit.models.{BagId, BagVersion}
@@ -21,8 +18,8 @@ import weco.storage_service.storage.models.StorageManifest
 import weco.storage_service.bags_api.BagsApi
 import weco.storage._
 import weco.storage.fixtures.S3Fixtures
-import weco.storage.s3.S3ObjectLocationPrefix
-import weco.storage.services.s3.S3Uploader
+import weco.storage.providers.s3.S3ObjectLocationPrefix
+import weco.storage.services.s3.{S3PresignedUrls, S3Uploader}
 import weco.storage.store.memory.MemoryVersionedStore
 import weco.http.WellcomeHttpApp
 import weco.http.fixtures.HttpFixtures
@@ -66,6 +63,7 @@ trait BagsApiFixture
             override val bagTrackerClient: BagTrackerClient = trackerClient
 
             override val s3Uploader: S3Uploader = uploader
+            override val s3PresignedUrls: S3PresignedUrls = new S3PresignedUrls()
             override val s3Prefix: S3ObjectLocationPrefix = locationPrefix
 
             override val cacheDuration: Duration = 1 days
@@ -93,7 +91,7 @@ trait BagsApiFixture
     maxResponseByteLength: Long = 1048576
   )(
     testWith: TestWith[(StorageManifestDao, MemoryMetrics), R]
-  )(implicit s3Client: AmazonS3): R = {
+  )(implicit s3Client: S3Client): R = {
     val dao = createStorageManifestDao()
     val uploader = new S3Uploader()
 

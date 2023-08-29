@@ -17,7 +17,7 @@ import weco.storage.store.TypedStore
 import weco.storage.tags.Tags
 import weco.storage._
 import weco.storage.listing.Listing
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.store.s3.S3TypedStore
 import weco.storage.tags.s3.S3Tags
 import weco.storage.transfer.PrefixTransfer
@@ -324,10 +324,7 @@ trait ReplicatorTestCases[
             ) shouldBe a[ReplicationSucceeded[_]]
           }
 
-          verify(spyTransfer, times(1))
-            .transferPrefix(srcPrefix, dstPrefix, checkForExisting = true)
-          verify(spyTransfer, never())
-            .transferPrefix(srcPrefix, dstPrefix, checkForExisting = false)
+          verify(spyTransfer, times(1)).transferPrefix(srcPrefix, dstPrefix)
         }
       }
     }

@@ -14,7 +14,7 @@ import weco.storage_service.bag_unpacker.services.s3.S3Unpacker
 import weco.storage_service.fixtures.OperationFixtures
 import weco.storage.fixtures.S3Fixtures
 import weco.storage.fixtures.S3Fixtures.Bucket
-import weco.storage.s3.S3ObjectLocation
+import weco.storage.providers.s3.S3ObjectLocation
 import weco.storage.store.StreamStore
 import weco.storage.store.s3.S3StreamStore
 

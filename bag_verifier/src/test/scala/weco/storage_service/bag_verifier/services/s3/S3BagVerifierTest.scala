@@ -1,11 +1,7 @@
 package weco.storage_service.bag_verifier.services.s3
 
 import weco.fixtures.TestWith
-import weco.storage_service.bag_verifier.models.{
-  BagVerifyContext,
-  ReplicatedBagVerifyContext,
-  StandaloneBagVerifyContext
-}
+import weco.storage_service.bag_verifier.models.{BagVerifyContext, ReplicatedBagVerifyContext, StandaloneBagVerifyContext}
 import weco.storage_service.bag_verifier.services._
 import weco.storage_service.bagit.services.BagReader
 import weco.storage_service.bagit.services.s3.S3BagReader
@@ -13,7 +9,7 @@ import weco.storage_service.fixtures.BagBuilder
 import weco.storage_service.fixtures.s3.S3BagBuilder
 import weco.storage_service.storage.models.EnsureTrailingSlash
 import weco.storage.fixtures.S3Fixtures.Bucket
-import weco.storage.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
+import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.store.TypedStore
 import weco.storage.store.s3.S3TypedStore
 
@@ -47,7 +43,7 @@ trait S3BagVerifierTests[Verifier <: BagVerifier[
     createS3ObjectLocationWith(bucket)
 
   override def writeFile(location: S3ObjectLocation, contents: String): Unit =
-    s3Client.putObject(location.bucket, location.key, contents)
+    putString(location, contents)
 
   override def createBagReader
     : BagReader[S3ObjectLocation, S3ObjectLocationPrefix] =

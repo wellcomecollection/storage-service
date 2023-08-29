@@ -6,13 +6,11 @@ import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
 import weco.fixtures.TestWith
 import weco.storage_service.bagit.models.{BagId, ExternalIdentifier}
 import weco.storage_service.storage.models.StorageSpace
-import weco.storage_service.bag_tracker.storage.{
-  StorageManifestDao,
-  StorageManifestDaoTestCases
-}
+import weco.storage_service.bag_tracker.storage.{StorageManifestDao, StorageManifestDaoTestCases}
 import weco.storage.fixtures.DynamoFixtures.Table
 import weco.storage.fixtures.{DynamoFixtures, S3Fixtures}
 import weco.storage.fixtures.S3Fixtures.Bucket
+import weco.storage.providers.s3.S3ObjectLocation
 
 import scala.language.higherKinds
 
@@ -155,8 +153,8 @@ class DynamoStorageManifestDaoTest
           withDao { dao =>
             dao.put(storageManifest)
 
-            listKeysInBucket(bucket).foreach {
-              s3Client.deleteObject(bucket.name, _)
+            listKeysInBucket(bucket).foreach { key =>
+              deleteObject(S3ObjectLocation(bucket.name, key))
             }
 
             val err = dao.listAllVersions(storageManifest.id).left.value
@@ -179,8 +177,11 @@ class DynamoStorageManifestDaoTest
           withDao { dao =>
             dao.put(storageManifest)
 
-            listKeysInBucket(bucket).foreach {
-              s3Client.putObject(bucket.name, _, randomAlphanumeric())
+            listKeysInBucket(bucket).foreach { key =>
+              putString(
+                location = S3ObjectLocation(bucket.name, key),
+                contents = randomAlphanumeric()
+              )
             }
 
             val err = dao.listAllVersions(storageManifest.id).left.value

@@ -4,12 +4,11 @@ import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import weco.storage_service.bag_tracker.config.builders.StorageManifestDaoBuilder
 import weco.typesafe.WellcomeTypesafeApp
-import weco.typesafe.config.builders.AkkaBuilder
 
 object Main extends WellcomeTypesafeApp {
   runWithConfig { config: Config =>
     implicit val actorSystem: ActorSystem =
-      AkkaBuilder.buildActorSystem()
+      ActorSystem("main-actor-system")
 
     // We need to bind to 0.0.0.0, not localhost, so the API listens for connections
     // from other services.
