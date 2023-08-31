@@ -81,7 +81,6 @@ class TestS3IADownload(object):
             assert len(tarred_files) == len(files)
 
             for tarinfo in tarred_files:
-
                 # All files in the compressed bag are under a directory
                 assert tarinfo.name.startswith("b11733330/")
 
@@ -176,6 +175,5 @@ class TestS3IADownload(object):
             tarred_files = [member for member in tf.getmembers() if member.isfile()]
 
             for tarinfo in tarred_files:
-
                 # All files in the compressed bag are under a directory
                 assert tarinfo.name.startswith("custom_dir/")
