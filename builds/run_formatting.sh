@@ -16,6 +16,4 @@ docker run --tty --rm \
 
 docker run --tty --rm \
 	--volume "$ROOT:/repo" \
-  --workdir /repo \
-	"$ECR_REGISTRY/pyfound/black" \
-  black --exclude ".lambda_zips/|.terraform/|target/" .
+	"$ECR_REGISTRY/wellcome/format_python:112"
