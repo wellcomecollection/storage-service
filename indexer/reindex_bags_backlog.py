@@ -134,7 +134,7 @@ def publish_bags(sns_client, topic_arn, bags, dry_run=False):
 
     print(f"\nGenerating notifications for {unique_bags} bags.")
     payloads = []
-    for (dynamo_id, version) in tqdm(bags.items(), total=unique_bags):
+    for dynamo_id, version in tqdm(bags.items(), total=unique_bags):
         space, external_id = dynamo_id.split("/", 1)
         payload = fake_notification(space, external_id, version)
         payloads.append(payload)

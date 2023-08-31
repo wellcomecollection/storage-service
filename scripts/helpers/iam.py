@@ -70,27 +70,27 @@ def get_underlying_role_arn():
 @contextlib.contextmanager
 def temporary_iam_credentials(*, admin_role_arn, policy_document):
     """
-     Creates a temporary IAM credentials to use a particular policy document.
-     Requires an IAM role that:
+    Creates a temporary IAM credentials to use a particular policy document.
+    Requires an IAM role that:
 
-     *   The caller is allowed to assume
-     *   Has permission to manage IAM roles
+    *   The caller is allowed to assume
+    *   Has permission to manage IAM roles
 
-     Use this function as a context manager:
+    Use this function as a context manager:
 
-         with temporary_iam_credentials(admin_role, policy_document) as credentials:
-             # Do stuff with credentials
+        with temporary_iam_credentials(admin_role, policy_document) as credentials:
+            # Do stuff with credentials
 
-     It creates a temporary admin role with the right policy document, and then
-     cleans up the role once you're finished (even if an exception is thrown
-     while using the credentials).
+    It creates a temporary admin role with the right policy document, and then
+    cleans up the role once you're finished (even if an exception is thrown
+    while using the credentials).
 
-     Our storage-dev and storage-admin roles have an explicit, blanket "Deny" on
-     deleting any objects in our permanent S3 buckets and DynamoDB tables.
-     This allows us to create a role with a tightly-scoped holepunch through
-     these Deny policies.
+    Our storage-dev and storage-admin roles have an explicit, blanket "Deny" on
+    deleting any objects in our permanent S3 buckets and DynamoDB tables.
+    This allows us to create a role with a tightly-scoped holepunch through
+    these Deny policies.
 
-     """
+    """
     iam_client = create_aws_client_from_role_arn("iam", role_arn=admin_role_arn)
 
     # Name for the temporary role.  Role names must be between 1 and 64 chars
