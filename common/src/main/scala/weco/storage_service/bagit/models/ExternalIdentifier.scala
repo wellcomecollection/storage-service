@@ -5,7 +5,7 @@ import weco.json.TypedString
 
 class ExternalIdentifier(val underlying: String)
     extends TypedString[ExternalIdentifier] {
-  private def m(message: String) = s"$message, was $underlying"
+  private def failureMessage(message: String) = s"$message, was $underlying"
 
   require(underlying.nonEmpty, "External identifier cannot be empty")
 
@@ -17,7 +17,7 @@ class ExternalIdentifier(val underlying: String)
   // ends with /versions.
   require(
     !underlying.endsWith("/versions"),
-    m("External identifier cannot end with /versions")
+    failureMessage("External identifier cannot end with /versions")
   )
 
   // When we store a bag in S3, we store different versions of it under the key
@@ -30,17 +30,17 @@ class ExternalIdentifier(val underlying: String)
   // identifier that includes anything that looks like /v1, /v2, etc.
   require(
     !underlying.matches("^.*/v\\d+$"),
-    m("External identifier cannot end with a version string")
+    failureMessage("External identifier cannot end with a version string")
   )
 
   require(
     !underlying.matches("^.*/v\\d+/.*$"),
-    m("External identifier cannot contain a version string")
+    failureMessage("External identifier cannot contain a version string")
   )
 
   require(
     !underlying.matches("^v\\d+/.*$"),
-    m("External identifier cannot start with a version string")
+    failureMessage("External identifier cannot start with a version string")
   )
 
   // If you put a slash at the end of the identifier (e.g. "b12345678/"), you'd
@@ -52,22 +52,22 @@ class ExternalIdentifier(val underlying: String)
   // the key, so prevent people from putting slashes at the beginning or end.
   require(
     !underlying.startsWith("/"),
-    m("External identifier cannot start with a slash")
+    failureMessage("External identifier cannot start with a slash")
   )
   require(
     !underlying.endsWith("/"),
-    m("External identifier cannot end with a slash")
+    failureMessage("External identifier cannot end with a slash")
   )
   require(
     !underlying.contains("//"),
-    m("External identifier cannot contain consecutive slashes")
+    failureMessage("External identifier cannot contain consecutive slashes")
   )
 
   // Consecutive spaces are difficult for a human to count.
   //
   require(
     !underlying.contains("  "),
-    m("External identifier cannot contain consecutive spaces")
+    failureMessage("External identifier cannot contain consecutive spaces")
   )
   // Starting and ending with an alphanumeric character.
   // Although some of the above rules would also be covered by these two,
@@ -76,12 +76,12 @@ class ExternalIdentifier(val underlying: String)
 
   require(
     underlying.head.isLetterOrDigit && underlying.head <= 'z',
-    m("External identifier must begin with a Basic Latin letter or digit")
+    failureMessage("External identifier must begin with a Basic Latin letter or digit")
   )
 
   require(
     underlying.last.isLetterOrDigit && underlying.last <= 'z',
-    m("External identifier must end with a Basic Latin letter or digit")
+    failureMessage("External identifier must end with a Basic Latin letter or digit")
   )
 
   // We're super careful about the characters we allow in external identifiers,
@@ -107,7 +107,7 @@ class ExternalIdentifier(val underlying: String)
 
   require(
     underlying.matches(s"^$characterClass+$$"),
-    m(s"External identifier can only contain characters in the class $characterClass")
+    failureMessage(s"External identifier can only contain characters in the class $characterClass")
   )
 }
 
