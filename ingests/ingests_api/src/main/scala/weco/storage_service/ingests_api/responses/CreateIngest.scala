@@ -4,8 +4,15 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server.Route
 import grizzled.slf4j.Logging
-import weco.storage_service.ingests.models.{AmazonS3StorageProvider, Ingest, StorageProvider}
-import weco.storage_service.display.ingests.{RequestDisplayIngest, ResponseDisplayIngest}
+import weco.storage_service.ingests.models.{
+  AmazonS3StorageProvider,
+  Ingest,
+  StorageProvider
+}
+import weco.storage_service.display.ingests.{
+  RequestDisplayIngest,
+  ResponseDisplayIngest
+}
 import weco.storage_service.ingests_api.services.IngestCreator
 import weco.http.FutureDirectives
 import weco.http.models.{DisplayError, HTTPServerConfig}
@@ -61,12 +68,15 @@ trait CreateIngest[UnpackerDestination] extends FutureDirectives with Logging {
       invalidRequest(description)
     )
 
-  private def convertToBadRequestResponse(invalidArg: IllegalArgumentException): Future[Route] = {
+  private def convertToBadRequestResponse(
+    invalidArg: IllegalArgumentException): Future[Route] = {
     def originalMessage = invalidArg.getMessage
     def prefix = "requirement failed: External identifier"
-    def newMessage = if(originalMessage.startsWith(prefix))
-      "Invalid value at .bag.info.externalIdentifier:" + originalMessage.stripPrefix(prefix)
-    else originalMessage
+    def newMessage =
+      if (originalMessage.startsWith(prefix))
+        "Invalid value at .bag.info.externalIdentifier:" + originalMessage
+          .stripPrefix(prefix)
+      else originalMessage
 
     createBadRequestResponse(newMessage)
   }
@@ -78,10 +88,12 @@ trait CreateIngest[UnpackerDestination] extends FutureDirectives with Logging {
     Try {
       requestDisplayIngest.toIngest
     } match {
-      case Failure(exception) => exception match {
-        case invalidArg: IllegalArgumentException => convertToBadRequestResponse(invalidArg)
-        case otherException => throw otherException
-      }
+      case Failure(exception) =>
+        exception match {
+          case invalidArg: IllegalArgumentException =>
+            convertToBadRequestResponse(invalidArg)
+          case otherException => throw otherException
+        }
       case Success(ingest) => triggerIngestStarter(ingest)
     }
   }
