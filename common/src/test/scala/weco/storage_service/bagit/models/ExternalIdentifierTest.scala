@@ -7,7 +7,7 @@ import org.scalatest.matchers.should.Matchers
 class ExternalIdentifierTest extends AnyFunSpec with Matchers {
   describe("permitted characters in identifiers") {
     info(
-      "A permissible identifier consists of alphanumeric characters (Basic Latin only)" +
+      "A permissible identifier consists of alphanumeric characters (Basic Latin only) " +
       "plus spaces, underscores, hyphens and forward slashes."
     )
 
@@ -45,19 +45,19 @@ class ExternalIdentifierTest extends AnyFunSpec with Matchers {
     it("blocks creating an external identifier with non-English letters") {
       assertFailsRequirement(
         identifier = "PP/MIÅ/1",
-        message = "External identifier must match regex: ^[-_/ .a-zA-Z0-9]+$"
+        message = "External identifier can only contain characters in the class [-_/ .a-zA-Z0-9]"
       )
     }
 
     it("blocks creating an external identifier with common URL substitutions for spaces") {
       assertFailsRequirement(
         identifier = "miro+space",
-        message = "External identifier must match regex: ^[-_/ .a-zA-Z0-9]+$"
+        message = "External identifier can only contain characters in the class [-_/ .a-zA-Z0-9]"
       )
 
       assertFailsRequirement(
         identifier = "miro%20space",
-        message = "External identifier must match regex: ^[-_/ .a-zA-Z0-9]+$"
+        message = "External identifier can only contain characters in the class [-_/ .a-zA-Z0-9]"
       )
     }
   }
@@ -170,6 +170,6 @@ class ExternalIdentifierTest extends AnyFunSpec with Matchers {
       ExternalIdentifier(identifier)
     }
 
-    err.getMessage shouldBe s"requirement failed: $message"
+    err.getMessage shouldBe s"requirement failed: $message, was $identifier"
   }
 }

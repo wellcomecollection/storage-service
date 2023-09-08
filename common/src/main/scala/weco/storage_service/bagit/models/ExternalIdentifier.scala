@@ -5,8 +5,9 @@ import weco.json.TypedString
 
 class ExternalIdentifier(val underlying: String)
     extends TypedString[ExternalIdentifier] {
+  private def m(message: String) = s"$message, was $underlying"
 
-  require(underlying.nonEmpty, "External identifier cannot be empty")
+  require(underlying.nonEmpty, m("External identifier cannot be empty"))
 
   // When you want to see all versions of a bag in the bags API, you call
   //
@@ -16,7 +17,7 @@ class ExternalIdentifier(val underlying: String)
   // ends with /versions.
   require(
     !underlying.endsWith("/versions"),
-    "External identifier cannot end with /versions"
+    m("External identifier cannot end with /versions")
   )
 
   // When we store a bag in S3, we store different versions of it under the key
@@ -29,17 +30,17 @@ class ExternalIdentifier(val underlying: String)
   // identifier that includes anything that looks like /v1, /v2, etc.
   require(
     !underlying.matches("^.*/v\\d+$"),
-    "External identifier cannot end with a version string"
+    m("External identifier cannot end with a version string")
   )
 
   require(
     !underlying.matches("^.*/v\\d+/.*$"),
-    "External identifier cannot contain a version string"
+    m("External identifier cannot contain a version string")
   )
 
   require(
     !underlying.matches("^v\\d+/.*$"),
-    "External identifier cannot start with a version string"
+    m("External identifier cannot start with a version string")
   )
 
   // If you put a slash at the end of the identifier (e.g. "b12345678/"), you'd
@@ -51,22 +52,22 @@ class ExternalIdentifier(val underlying: String)
   // the key, so prevent people from putting slashes at the beginning or end.
   require(
     !underlying.startsWith("/"),
-    "External identifier cannot start with a slash"
+    m("External identifier cannot start with a slash")
   )
   require(
     !underlying.endsWith("/"),
-    "External identifier cannot end with a slash"
+    m("External identifier cannot end with a slash")
   )
   require(
     !underlying.contains("//"),
-    "External identifier cannot contain consecutive slashes"
+    m("External identifier cannot contain consecutive slashes")
   )
 
   // Consecutive spaces are difficult for a human to count.
   //
   require(
     !underlying.contains("  "),
-    "External identifier cannot contain consecutive spaces"
+    m("External identifier cannot contain consecutive spaces")
   )
   // Starting and ending with an alphanumeric character.
   // Although some of the above rules would also be covered by these two,
@@ -75,12 +76,12 @@ class ExternalIdentifier(val underlying: String)
 
   require(
     underlying.head.isLetterOrDigit && underlying.head <= 'z',
-    "External identifier must begin with a Basic Latin letter or digit"
+    m("External identifier must begin with a Basic Latin letter or digit")
   )
 
   require(
     underlying.last.isLetterOrDigit && underlying.last <= 'z',
-    "External identifier must end with a Basic Latin letter or digit"
+    m("External identifier must end with a Basic Latin letter or digit")
   )
 
   // We're super careful about the characters we allow in external identifiers,
@@ -98,13 +99,15 @@ class ExternalIdentifier(val underlying: String)
   //    - We use forward slashes for CALM identifiers, e.g. `ARTCOO/B/14`
   //      These form a hierarchy in CALM, which we can replicate in the storage service.
   //
+  //    - Dots are also present in CALM identifiers, e.g. PP/GRF/A.41
+  //
   //    - We use spaces in the bags of Miro images, e.g. `B images`
   //
-  val permittedNonAlphanumerics = "-_/ ."
-  val regex: String = s"^[${permittedNonAlphanumerics}a-zA-Z0-9]+$$"
+  val characterClass = "[-_/ .a-zA-Z0-9]"
+
   require(
-    underlying.matches(regex),
-    s"External identifier must match regex: $regex"
+    underlying.matches(s"^$characterClass+$$"),
+    m(s"External identifier can only contain characters in the class $characterClass")
   )
 }
 
