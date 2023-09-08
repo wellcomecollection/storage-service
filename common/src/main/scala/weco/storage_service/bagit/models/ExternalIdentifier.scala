@@ -5,6 +5,7 @@ import weco.json.TypedString
 
 class ExternalIdentifier(val underlying: String)
     extends TypedString[ExternalIdentifier] {
+
   require(underlying.nonEmpty, "External identifier cannot be empty")
 
   // When you want to see all versions of a bag in the bags API, you call
@@ -61,6 +62,27 @@ class ExternalIdentifier(val underlying: String)
     "External identifier cannot contain consecutive slashes"
   )
 
+  // Consecutive spaces are difficult for a human to count.
+  //
+  require(
+    !underlying.contains("  "),
+    "External identifier cannot contain consecutive spaces"
+  )
+  // Starting and ending with an alphanumeric character.
+  // Although some of the above rules would also be covered by these two,
+  // They are kept separate in order to provide a more informative
+  // error message
+
+  require(
+    underlying.head.isLetterOrDigit && underlying.head <= 'z',
+    "External identifier must begin with a Basic Latin letter or digit"
+  )
+
+  require(
+    underlying.last.isLetterOrDigit && underlying.last <= 'z',
+    "External identifier must end with a Basic Latin letter or digit"
+  )
+
   // We're super careful about the characters we allow in external identifiers,
   // because anything we use will end up in a URL for the bags API:
   //
@@ -78,7 +100,8 @@ class ExternalIdentifier(val underlying: String)
   //
   //    - We use spaces in the bags of Miro images, e.g. `B images`
   //
-  val regex: String = "^[a-zA-Z0-9_\\-/ ]+$"
+  val permittedNonAlphanumerics = "-_/ ."
+  val regex: String = s"^[${permittedNonAlphanumerics}a-zA-Z0-9]+$$"
   require(
     underlying.matches(regex),
     s"External identifier must match regex: $regex"
