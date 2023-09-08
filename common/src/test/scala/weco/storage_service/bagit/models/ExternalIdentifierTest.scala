@@ -69,9 +69,9 @@ class ExternalIdentifierTest extends AnyFunSpec with Matchers {
     )
 
     it("blocks creating an external identifier with an empty string") {
-      assertFailsRequirement(
+      assertFailsRequirementExactMessage(
         identifier = "",
-        message = "External identifier cannot be empty"
+        message = "requirement failed: External identifier cannot be empty"
       )
     }
 
@@ -166,10 +166,16 @@ class ExternalIdentifierTest extends AnyFunSpec with Matchers {
     identifier: String,
     message: String
   ): Assertion = {
+    assertFailsRequirementExactMessage(identifier, s"requirement failed: $message, was $identifier")
+  }
+
+  private def assertFailsRequirementExactMessage(
+    identifier: String,
+    message: String
+  ): Assertion = {
     val err = intercept[IllegalArgumentException] {
       ExternalIdentifier(identifier)
     }
-
-    err.getMessage shouldBe s"requirement failed: $message, was $identifier"
+    err.getMessage shouldBe message
   }
 }

@@ -7,7 +7,7 @@ class ExternalIdentifier(val underlying: String)
     extends TypedString[ExternalIdentifier] {
   private def m(message: String) = s"$message, was $underlying"
 
-  require(underlying.nonEmpty, m("External identifier cannot be empty"))
+  require(underlying.nonEmpty, "External identifier cannot be empty")
 
   // When you want to see all versions of a bag in the bags API, you call
   //
