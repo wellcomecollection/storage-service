@@ -91,7 +91,7 @@ trait CreateIngest[UnpackerDestination] extends FutureDirectives with Logging {
       case Failure(invalidArg: IllegalArgumentException) =>
         convertToBadRequestResponse(invalidArg)
       case Failure(exception) => throw exception
-      case Success(ingest) => triggerIngestStarter(ingest)
+      case Success(ingest)    => triggerIngestStarter(ingest)
     }
   }
 
