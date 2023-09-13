@@ -248,6 +248,10 @@ class LookupBagApiTest
       externalIdentifier = ExternalIdentifier("miro/A images")
     )
 
+    val manifestWithDot: StorageManifest = createStorageManifestWith(
+      externalIdentifier = ExternalIdentifier("PP/GRF/A.41")
+    )
+
     val lookupPaths = Table(
       ("manifest", "path"),
       // when the identifier is URL encoded
@@ -278,6 +282,10 @@ class LookupBagApiTest
       (
         manifestWithSlashAndSpace,
         s"${manifestWithSlashAndSpace.space}/miro%2FA%20images?version=${manifestWithSlashAndSpace.version}"
+      ),
+      (
+        manifestWithDot,
+        s"${manifestWithDot.space}/PP/GRF/A.41?version=${manifestWithDot.version}"
       )
     )
 

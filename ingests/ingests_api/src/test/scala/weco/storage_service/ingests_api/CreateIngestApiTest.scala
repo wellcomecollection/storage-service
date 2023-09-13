@@ -341,6 +341,18 @@ class CreateIngestApiTest
             "Invalid value at .bag.info.externalIdentifier: must not be empty."
         )
       }
+
+      it("if the info.externalIdentifier field is invalid") {
+        val badJson = root.bag.info.obj.modify {
+          _.add("externalIdentifier", Json.fromString("-øåæ//v99/versions"))
+        }
+
+        assertCatchesMalformedRequest(
+          badJson(json).noSpaces,
+          expectedMessage =
+            "Invalid value at .bag.info.externalIdentifier: cannot end with /versions, was -øåæ//v99/versions"
+        )
+      }
     }
 
     describe("problems with the sourceLocation") {

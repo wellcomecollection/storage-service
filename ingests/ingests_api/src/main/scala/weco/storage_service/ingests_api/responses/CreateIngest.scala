@@ -6,6 +6,7 @@ import akka.http.scaladsl.server.Route
 import grizzled.slf4j.Logging
 import weco.storage_service.ingests.models.{
   AmazonS3StorageProvider,
+  Ingest,
   StorageProvider
 }
 import weco.storage_service.display.ingests.{
@@ -16,7 +17,9 @@ import weco.storage_service.ingests_api.services.IngestCreator
 import weco.http.FutureDirectives
 import weco.http.models.{DisplayError, HTTPServerConfig}
 
+import java.lang.IllegalArgumentException
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 trait CreateIngest[UnpackerDestination] extends FutureDirectives with Logging {
   val httpServerConfig: HTTPServerConfig
@@ -65,11 +68,34 @@ trait CreateIngest[UnpackerDestination] extends FutureDirectives with Logging {
       invalidRequest(description)
     )
 
+  private def convertToBadRequestResponse(
+    invalidArg: IllegalArgumentException): Future[Route] = {
+    def originalMessage = invalidArg.getMessage
+    def prefix = "requirement failed: External identifier"
+    def newMessage =
+      if (originalMessage.startsWith(prefix))
+        "Invalid value at .bag.info.externalIdentifier:" + originalMessage
+          .stripPrefix(prefix)
+      else originalMessage
+
+    createBadRequestResponse(newMessage)
+  }
+
   private def triggerIngestStarter(
     requestDisplayIngest: RequestDisplayIngest
   ): Future[Route] = {
 
-    val ingest = requestDisplayIngest.toIngest
+    Try {
+      requestDisplayIngest.toIngest
+    } match {
+      case Failure(invalidArg: IllegalArgumentException) =>
+        convertToBadRequestResponse(invalidArg)
+      case Failure(exception) => throw exception
+      case Success(ingest)    => triggerIngestStarter(ingest)
+    }
+  }
+
+  private def triggerIngestStarter(ingest: Ingest): Future[Route] = {
     val creationResult = ingestCreator.create(ingest)
 
     creationResult
@@ -101,4 +127,5 @@ trait CreateIngest[UnpackerDestination] extends FutureDirectives with Logging {
           internalError(err)
       }
   }
+
 }
