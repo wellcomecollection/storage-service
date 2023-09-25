@@ -16,9 +16,7 @@ from wellcome_storage_service import BagNotFound, staging_client, prod_client
 
 from common import get_logger
 
-
 logger = get_logger(__name__)
-
 
 def lookup_bag(space, external_identifier, version):
     logger.debug("Looking up bag %s/%s", space, external_identifier)
@@ -26,14 +24,14 @@ def lookup_bag(space, external_identifier, version):
     api_variants = {"stage": staging_client(), "prod": prod_client()}
 
     for name, client in api_variants.items():
-        logging.debug("Checking %s API", name)
+        logger.debug("Checking %s API", name)
 
         try:
             bag = client.get_bag(space, external_identifier, version)
         except BagNotFound:
-            logging.debug("Not found in %s API", name)
+            logger.debug("Not found in %s API", name)
         else:
-            logging.debug("Found bag in %s API:", name)
+            logger.debug("Found bag in %s API:", name)
             return bag
 
     logging.error("Could not find %s/%s in either API!", space, external_identifier)
