@@ -18,6 +18,7 @@ from common import get_logger
 
 logger = get_logger(__name__)
 
+
 def lookup_bag(space, external_identifier, version):
     logger.debug("Looking up bag %s/%s", space, external_identifier)
 
