@@ -365,7 +365,6 @@ if __name__ == "__main__":
 
     processed_documents = 0
     for result in tqdm_iterator:
-
         if processed_documents == documents_to_process:
             tqdm_iterator.close()
             break

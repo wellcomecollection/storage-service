@@ -205,7 +205,7 @@ class BagInfoParserTest
       assertIsError(
         bagInfoString,
         errorMessage =
-          "Unable to parse External-Identifier in bag-info.txt: External identifier cannot start with a slash"
+          "Unable to parse External-Identifier in bag-info.txt: External identifier cannot start with a slash, was /a"
       )
     }
 

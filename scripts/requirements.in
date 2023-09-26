@@ -1,0 +1,6 @@
+boto3
+tenacity
+elasticsearch
+humanize
+click
+daiquiri

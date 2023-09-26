@@ -86,7 +86,6 @@ def unlocked_azure_container(*, account, container):
     # try … finally block, so if anything goes wrong the legal hold should
     # be restored.
     try:
-
         # It's possible to remove multiple legal hold tags in one command,
         # but it's not clear from the docs.  You need to supply the tags as
         # separate arguments, e.g. `--tags tag1 tag2`
@@ -115,7 +114,6 @@ def unlocked_azure_container(*, account, container):
 
         yield
     finally:
-
         # Similarly to deleting, it's possible to set multiple legal holds in
         # one command, using the same syntax, just not documented.
         #

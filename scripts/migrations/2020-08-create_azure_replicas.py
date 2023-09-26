@@ -23,7 +23,6 @@ def find_incomplete_replicas(replicas_table):
     Find all the bags that don't have a replica in Azure.
     """
     for item in scan_table(TableName=replicas_table):
-
         # Check the structure is sensible: we expect an S3 primary replica,
         # and one S3 secondary replica and (optionally) an Azure replica,
         # depending on whether this bag has already been replicated to Azure.
