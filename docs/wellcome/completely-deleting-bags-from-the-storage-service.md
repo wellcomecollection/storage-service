@@ -54,11 +54,20 @@ This includes identifying:
 *   external identifier
 *   version
 
+(see [identifiers](../explanations/identifiers))
+
 {% hint style="info" %}
 You can only delete the latest version of a bag.
 If you want to delete every version of a bag, you'll have to delete them one-by-one, working backwards from the latest version.
 This is a by-product of the way versioning works.
 {% endhint %}
+
+### 3a. How to identify the bag
+
+To confirm you have the right details for the bag, you can either:
+ 
+* Look in s3 and examine the corresponding bag-info.txt to compare the description with the original deletion request.
+* Run `ss_get_bag.py` with those details. Compare the value of info.externalDescription with your expectations.
 
 ## 4. Run the "delete bag" script
 
@@ -79,11 +88,16 @@ This script will:
 *   prompt you to confirm you do want to delete this bag
 *   ask for a reason, which is recorded in DynamoDB
 *   create a temporary copy of the bag in the `wellcomecollection-storage-infra` bucket (kept for 30 days)
+  * If you need to recover the bag using this copy, you can create a tgz file from it and [ingest](../howto/ingest-a-bag.md) it.
 *   remove the bag from the reporting cluster, all the objects in S3, all the blobs in Azure, and the bags/ingests APIs
 
 {% hint style="warning" %}
 Only run one deletion at a time.
 This is slower, but is necessary because of the way we handle the legal holds on the Azure replica – running two deletions at once may cause a conflict.
+{% endhint %}
+
+{% hint style="info" %}
+It can take a long time for the Azure phase of deletion to complete for a large bag.
 {% endhint %}
 
 ## 5. Ask D&T to downgrade your permissions to the Azure replica
