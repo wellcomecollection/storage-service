@@ -35,7 +35,7 @@ Here's a script for the Service Desk ticket (fill in the details):
 
   <p>We need to [explanation], and for this I need to be able to delete the copies we keep in Azure.</p>
 
-  <p>Please give my c_ cloud account write access to the wecostorageprod and wecostoragestage Azure storage accounts, so that I can remove these files. Once this is done, I'll file a second request to downgrade my permissions again.</p>
+  <p>Please give my c_ cloud account write access to the wecostorage{prod,stage} Azure storage account, so that I can remove these files. This is usually done by assigning the "Contributor" role to the c_cloud account.<br/> Once this is done, I'll file a second request to downgrade my permissions again.</p>
 
   <p>If you want approval, contact [name] – she'll confirm that we want to delete all copies of a particular set of images.</p>
 </details>
