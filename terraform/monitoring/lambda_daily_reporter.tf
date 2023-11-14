@@ -10,7 +10,7 @@ module "daily_reporter" {
   description = "Publish a daily report of storage service activity to Slack"
 
   handler = "daily_reporter.main"
-  runtime = "python3.8"
+  runtime = "python3.10"
 
   s3_bucket         = data.aws_s3_object.daily_reporter.bucket
   s3_key            = data.aws_s3_object.daily_reporter.key

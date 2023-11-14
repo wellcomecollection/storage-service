@@ -10,7 +10,7 @@ module "end_to_end_bag_test" {
   description = var.description
 
   handler = "end_to_end_bag_test.main"
-  runtime = "python3.8"
+  runtime = "python3.10"
 
   environment = {
     variables = var.environment

@@ -24,7 +24,7 @@ module "digital_production_report_lambda" {
   s3_object_version = aws_s3_object.digital_production_report_lambda.version_id
 
   handler = "digital_production_report.main"
-  runtime = "python3.8"
+  runtime = "python3.10"
   timeout = 300
 
   memory_size = 128
