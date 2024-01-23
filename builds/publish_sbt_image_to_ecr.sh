@@ -21,7 +21,8 @@ EOF
 set -o errexit
 set -o nounset
 
-ECR_REGISTRY="975596993436.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome"
+REGISTRY_BASE="975596993436.dkr.ecr.eu-west-1.amazonaws.com"
+ECR_REGISTRY="$REGISTRY_BASE/uk.ac.wellcome"
 
 if (( $# == 2))
 then
@@ -34,7 +35,10 @@ fi
 
 echo "*** Publishing Docker image to ECR"
 
-eval $(aws ecr get-login --no-include-email)
+aws ecr get-login-password \
+| docker login \
+    --username AWS \
+    --password-stdin $REGISTRY_BASE
 
 docker tag "$PROJECT_NAME:$IMAGE_TAG" "$ECR_REGISTRY/$PROJECT_NAME:$IMAGE_TAG"
 docker push "$ECR_REGISTRY/$PROJECT_NAME:$IMAGE_TAG"
