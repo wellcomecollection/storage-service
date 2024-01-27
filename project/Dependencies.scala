@@ -98,7 +98,7 @@ object ExternalDependencies {
 
     // This should match the version of circe used in scala-json; see
     // https://github.com/wellcomecollection/scala-json/blob/master/project/Dependencies.scala
-    val circeOptics = "0.13.0"
+    val circeOptics = "0.14.1"
 
     // This should match the version of aws used in scala-libs; see
     // https://github.com/wellcomecollection/scala-libs/blob/main/project/Dependencies.scala
