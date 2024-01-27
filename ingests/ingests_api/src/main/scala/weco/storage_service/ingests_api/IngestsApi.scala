@@ -10,15 +10,24 @@ trait IngestsApi[UnpackerDestination]
     extends CreateIngest[UnpackerDestination]
     with LookupIngest {
 
-  val ingests: Route = pathPrefix("ingests") {
-    post {
-      entity(as[RequestDisplayIngest]) { ingest =>
-        withFuture { createIngest(ingest) }
+  val ingests: Route = concat(
+    pathPrefix("ingests") {
+      post {
+        entity(as[RequestDisplayIngest]) { ingest =>
+          withFuture { createIngest(ingest) }
+        }
+      } ~ path(JavaUUID) { id: UUID =>
+        get {
+          withFuture { lookupIngest(id) }
+        }
       }
-    } ~ path(JavaUUID) { id: UUID =>
-      get {
-        withFuture { lookupIngest(id) }
+    },
+    pathPrefix("management") {
+      path("healthcheck") {
+        get {
+          complete("ok")
+        }
       }
     }
-  }
+  )
 }
