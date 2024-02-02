@@ -86,7 +86,7 @@ module "stack_prod" {
   logging_container = {
     container_registry = "760097843905.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome"
     container_name     = "fluentbit"
-    container_tag = "ac9e48d11d76f3d3abd64e4a9440462539da2e7a"
+    container_tag      = "ac9e48d11d76f3d3abd64e4a9440462539da2e7a"
   }
 
   nginx_container = {
