@@ -14,7 +14,9 @@ resource "aws_lb_target_group" "tcp" {
   deregistration_delay = 90
 
   health_check {
-    protocol = "TCP"
+    protocol = "HTTP"
+    path     = var.healthcheck_path
+    matcher  = "200"
   }
 }
 

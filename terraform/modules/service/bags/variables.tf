@@ -80,3 +80,8 @@ variable "nginx_container" {
     container_tag      = string
   })
 }
+
+variable "healthcheck_path" {
+  type    = string
+  default = "/management/healthcheck"
+}
