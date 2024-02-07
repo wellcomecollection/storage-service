@@ -248,3 +248,4 @@ The notifier is responsible for actually fulfilling the callback; for making a G
 This diagram attempts to provide a more detailed overview of how all the services fit together. Where not specifies as topic/queue services interact via HTTP.
 
 ![](images/architecture/architecture.overview.png)
+[Click to enlarge](images/architecture/architecture.overview.png)
