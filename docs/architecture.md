@@ -242,3 +242,10 @@ This means the user is immediately notified of the result, rather than having to
 
 When the ingests monitor learns that a bag has finished processing, it sends a message to the **notifier**.
 The notifier is responsible for actually fulfilling the callback; for making a GET request to the callback URL.
+
+## Detailed overview
+
+This diagram attempts to provide a more detailed overview of how all the services fit together. Where not specifies as topic/queue services interact via HTTP.
+
+![](images/architecture/architecture.overview.png)
+[Click to enlarge](images/architecture/architecture.overview.png)
