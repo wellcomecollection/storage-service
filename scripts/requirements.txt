@@ -36,7 +36,7 @@ six==1.16.0
     # via python-dateutil
 tenacity==8.2.3
     # via -r requirements.in
-urllib3==1.26.16
+urllib3==1.26.18
     # via
     #   botocore
     #   elastic-transport
