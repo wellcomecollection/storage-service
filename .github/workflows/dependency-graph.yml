@@ -1,0 +1,23 @@
+# .github/workflows/dependency-graph.yml
+name: Update Dependency Graph
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+
+jobs:
+  dependency-graph:
+    name: Update Dependency Graph
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: eu-west-1
+          role-to-assume: ${{ secrets.WECO_GHAWS_ROLE_ARN }}
+      - uses: scalacenter/sbt-dependency-submission@v2
