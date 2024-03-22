@@ -200,7 +200,7 @@ lazy val ingests_indexer = setupProject(
 
 s3CredentialsProvider := { _ =>
   val builder = new STSAssumeRoleSessionCredentialsProvider.Builder(
-    "arn:aws:iam::760097843905:role/platform-read_only",
+    "arn:aws:iam::760097843905:role/terraform-20210811133135108800000001",
     UUID.randomUUID().toString
   )
   builder.build()
