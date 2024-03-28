@@ -88,7 +88,7 @@ object WellcomeDependencies {
 object ExternalDependencies {
   lazy val versions = new {
 
-    val azure = "12.7.0"
+    val azure = "12.25.3"
     val commonsCompress = "1.5"
     val commonsIO = "2.6"
     val mockito = "1.9.5"
