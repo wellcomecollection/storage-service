@@ -38,8 +38,8 @@ module "bag_replicator" {
 
   secrets = var.replicator_secrets
 
-  cpu    = 1024
-  memory = 2048
+  cpu    = 4096
+  memory = 8192
 
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
