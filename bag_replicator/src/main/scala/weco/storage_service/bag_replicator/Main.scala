@@ -54,7 +54,6 @@ object Main extends WellcomeTypesafeApp {
       S3Client.builder().build()
     implicit val s3AsyncClient: S3AsyncClient =
       S3AsyncClient.crtBuilder().build()
-
     implicit val s3TransferManager: S3TransferManager =
       S3TransferManager.builder().s3Client(s3AsyncClient).build()
 
