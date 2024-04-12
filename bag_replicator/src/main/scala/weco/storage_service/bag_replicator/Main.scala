@@ -60,7 +60,7 @@ object Main extends WellcomeTypesafeApp {
       CloudWatchBuilder.buildCloudWatchMetrics(config)
 
     implicit val sqsClient: SqsAsyncClient =
-      SqsAsyncClient.builder().build()use
+      SqsAsyncClient.builder().build()
 
     implicit val lockDao: DynamoLockDao =
       DynamoLockDaoBuilder.buildDynamoLockDao(config)
