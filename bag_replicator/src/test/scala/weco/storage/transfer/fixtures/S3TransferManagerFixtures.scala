@@ -9,7 +9,7 @@ import java.net.URI
 trait S3TransferManagerFixtures extends S3Fixtures {
   def createS3TransferManagerWithEndpoint(endpoint: String): S3TransferManager = {
     val s3AsyncClient =
-      S3AsyncClient.crtBuilder()
+      S3AsyncClient.builder()
         .credentialsProvider(s3Credentials)
         .forcePathStyle(true)
         .endpointOverride(new URI(endpoint))
