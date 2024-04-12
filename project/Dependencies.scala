@@ -102,12 +102,12 @@ object ExternalDependencies {
 
     // This should match the version of aws used in scala-libs; see
     // https://github.com/wellcomecollection/scala-libs/blob/main/project/Dependencies.scala
-    val aws = "2.19.0"
+    val aws = "2.25.28"
 
     // These are the "Common Runtime Libraries", which you're encouraged to use for
     // better performance.
     // See https://docs.aws.amazon.com/sdkref/latest/guide/common-runtime.html
-    val awsCrt = "0.20.3"
+    val awsCrt = "0.29.16"
   }
 
   val azureDependencies: Seq[ModuleID] = Seq(
