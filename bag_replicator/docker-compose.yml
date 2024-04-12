@@ -1,17 +1,21 @@
-localstack:
-  image: "public.ecr.aws/localstack/localstack:3.0.0"
-  environment:
-    - SERVICES=sqs
-  ports:
-    - "4566:4566"
-s3:
-  image: "760097843905.dkr.ecr.eu-west-1.amazonaws.com/zenko/cloudserver:8.1.8"
-  environment:
-    - "S3BACKEND=mem"
-  ports:
-    - "33333:8000"
-azurite:
-  image: "mcr.microsoft.com/azure-storage/azurite"
-  ports:
-    - "10000:10000"
-  command: ["azurite", "--blobHost", "0.0.0.0"]
+version: "3.0.0"
+services:
+  localstack:
+    image: "public.ecr.aws/localstack/localstack:3.0.0"
+    environment:
+      - SERVICES=sqs
+      - USE_SINGLE_REGION=1
+      - DEFAULT_REGION=eu-west-1
+    ports:
+      - "4566:4566"
+  s3:
+    image: "760097843905.dkr.ecr.eu-west-1.amazonaws.com/zenko/cloudserver:8.1.8"
+    environment:
+      - "S3BACKEND=mem"
+    ports:
+      - "33333:8000"
+  azurite:
+    image: "mcr.microsoft.com/azure-storage/azurite"
+    ports:
+      - "10000:10000"
+    command: ["azurite", "--blobHost", "0.0.0.0"]
