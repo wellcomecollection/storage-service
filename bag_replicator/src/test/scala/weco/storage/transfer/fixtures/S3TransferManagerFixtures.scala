@@ -1,6 +1,5 @@
 package weco.storage.transfer.fixtures
 
-import software.amazon.awssdk.services.s3.S3AsyncClient
 import software.amazon.awssdk.services.s3.internal.crt.S3CrtAsyncClient
 import software.amazon.awssdk.transfer.s3.S3TransferManager
 import weco.storage.fixtures.S3Fixtures
