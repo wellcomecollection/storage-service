@@ -1,6 +1,7 @@
 package weco.storage.transfer.fixtures
 
 import software.amazon.awssdk.services.s3.S3AsyncClient
+import software.amazon.awssdk.services.s3.internal.crt.S3CrtAsyncClient
 import software.amazon.awssdk.transfer.s3.S3TransferManager
 import weco.storage.fixtures.S3Fixtures
 
@@ -9,7 +10,7 @@ import java.net.URI
 trait S3TransferManagerFixtures extends S3Fixtures {
   def createS3TransferManagerWithEndpoint(endpoint: String): S3TransferManager = {
     val s3AsyncClient =
-      S3AsyncClient.crtBuilder()
+      S3CrtAsyncClient.builder()
         .credentialsProvider(s3Credentials)
         .forcePathStyle(true)
         .endpointOverride(new URI(endpoint))
