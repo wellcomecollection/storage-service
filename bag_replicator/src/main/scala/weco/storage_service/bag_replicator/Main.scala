@@ -3,7 +3,6 @@ package weco.storage_service.bag_replicator
 import akka.actor.ActorSystem
 import com.azure.storage.blob.{BlobServiceClient, BlobServiceClientBuilder}
 import com.typesafe.config.Config
-
 import software.amazon.awssdk.services.s3.{S3Client, S3AsyncClient}
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
