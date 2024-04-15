@@ -2,6 +2,7 @@ localstack:
   image: "public.ecr.aws/localstack/localstack:3.0.0"
   environment:
     - SERVICES=sqs
+    - AWS_REGION=us-east-1
   ports:
     - "4566:4566"
 s3:
