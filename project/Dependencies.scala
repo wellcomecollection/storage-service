@@ -88,11 +88,11 @@ object WellcomeDependencies {
 object ExternalDependencies {
   lazy val versions = new {
 
-    val azure = "12.7.0"
-    val commonsCompress = "1.5"
-    val commonsIO = "2.6"
-    val mockito = "1.9.5"
-    val scalatest = "3.2.3"
+    val azure = "12.25.3"
+    val commonsCompress = "1.26.1"
+    val commonsIO = "2.16.1"
+    val mockito = "1.10.19"
+    val scalatest = "3.2.18"
     val scalatestPlus = "3.1.2.0"
     val scalatestPlusMockitoArtifactId = "mockito-3-2"
 
@@ -107,7 +107,7 @@ object ExternalDependencies {
     // These are the "Common Runtime Libraries", which you're encouraged to use for
     // better performance.
     // See https://docs.aws.amazon.com/sdkref/latest/guide/common-runtime.html
-    val awsCrt = "0.29.16"
+    val awsCrt = "0.29.17"
   }
 
   val azureDependencies: Seq[ModuleID] = Seq(
@@ -139,7 +139,7 @@ object ExternalDependencies {
   )
 
   val nettyDependencies: Seq[ModuleID] = Seq(
-    "io.netty" % "netty-tcnative" % "2.0.61.Final"
+    "io.netty" % "netty-tcnative" % "2.0.65.Final"
   )
 
   val awsTransferManagerDependencies: Seq[ModuleID] = Seq(
