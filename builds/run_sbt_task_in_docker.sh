@@ -52,9 +52,8 @@ docker run --tty --rm \
   --volume ~/.ivy2:/root/.ivy2 \
   --volume "$HOST_COURSIER_CACHE:/root/$LINUX_COURSIER_CACHE" \
   --volume /var/run/docker.sock:/var/run/docker.sock \
-  --volume ~/.aws:/root/.aws \
+  --volume "${DOCKER_CONFIG:-$HOME/.docker}:/root/.docker" \
   --net host \
   --volume "$ROOT:$ROOT" \
   --workdir "$ROOT" \
-  --env AWS_REGION="eu-west-1" \
   "$ECR_REGISTRY/wellcome/sbt_wrapper:no_alpine" "$@"
