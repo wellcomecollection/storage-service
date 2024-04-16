@@ -3,7 +3,7 @@ package weco.storage_service.bag_replicator
 import akka.actor.ActorSystem
 import com.azure.storage.blob.{BlobServiceClient, BlobServiceClientBuilder}
 import com.typesafe.config.Config
-import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.{S3AsyncClient, S3Client}
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.transfer.s3.S3TransferManager
@@ -52,8 +52,13 @@ object Main extends WellcomeTypesafeApp {
 
     implicit val s3Client: S3Client =
       S3Client.builder().build()
+
+    implicit val s3AsyncClient: S3AsyncClient =
+      S3AsyncClient.crtBuilder().build()
+
     implicit val s3TransferManager: S3TransferManager =
-      S3TransferManager.builder().build()
+      S3TransferManager.builder().s3Client(s3AsyncClient).build()
+
     implicit val s3Presigner: S3Presigner =
       S3Presigner.builder().build()
 
