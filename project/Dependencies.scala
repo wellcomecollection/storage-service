@@ -102,7 +102,7 @@ object ExternalDependencies {
 
     // This should match the version of aws used in scala-libs; see
     // https://github.com/wellcomecollection/scala-libs/blob/main/project/Dependencies.scala
-    val aws = "2.25.28"
+    val aws = "2.25.40"
 
     // These are the "Common Runtime Libraries", which you're encouraged to use for
     // better performance.
