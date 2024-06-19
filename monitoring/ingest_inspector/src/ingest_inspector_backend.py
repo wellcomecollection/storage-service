@@ -50,7 +50,7 @@ def lambda_handler(event, context):
 
     response = {"environment": environment, "ingest": ingest}
 
-    return {"status": 200, "body": json.dumps(response)}
+    return {"statusCode": 200, "body": json.dumps(response)}
 
 
 if __name__ == "__main__":
