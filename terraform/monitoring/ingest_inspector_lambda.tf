@@ -24,7 +24,7 @@ module "ingest_inspector_lambda" {
     }
   }
 
-#  error_alarm_topic_arn = local.lambda_error_alerts_topic_arn
+  #  error_alarm_topic_arn = local.lambda_error_alerts_topic_arn
 }
 
 data "aws_iam_policy_document" "allow_secret_read" {

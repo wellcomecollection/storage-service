@@ -22,7 +22,7 @@ def _client_from_environment(api_url):
         api_url=api_url,
         client_id=client_id,
         client_secret=client_secret,
-        token_url="https://auth.wellcomecollection.org/oauth2/token"
+        token_url="https://auth.wellcomecollection.org/oauth2/token",
     )
 
 
@@ -38,9 +38,9 @@ def get_staging_client():
 
 def lambda_handler(event, context):
     print(f"Starting lambda_handler, got event: {event}")
-    
+
     ingest_id = event["pathParameters"]["ingest_id"]
-    
+
     try:
         ingest = get_prod_client().get_ingest(ingest_id=ingest_id)
         environment = "production"
@@ -48,10 +48,7 @@ def lambda_handler(event, context):
         ingest = get_staging_client().get_ingest(ingest_id=ingest_id)
         environment = "staging"
 
-    response = {
-        "environment": environment,
-        "ingest": ingest
-    }
+    response = {"environment": environment, "ingest": ingest}
 
     return {"status": 200, "body": json.dumps(response)}
 
