@@ -45,6 +45,12 @@ resource "aws_iam_role_policy" "read_secrets_policy" {
 resource "aws_apigatewayv2_api" "ingest_inspector_api" {
   name          = "Ingest Inspector API"
   protocol_type = "HTTP"
+
+  cors_configuration {
+    allow_origins = ["*"]
+    allow_methods = ["GET", "OPTIONS"]
+    max_age = 300
+  }
 }
 
 resource "aws_apigatewayv2_stage" "ingest_inspector_api_v1" {

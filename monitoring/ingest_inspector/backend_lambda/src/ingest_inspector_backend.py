@@ -3,7 +3,7 @@ import functools
 
 import boto3
 from wellcome_storage_service import RequestsOAuthStorageServiceClient, IngestNotFound
-
+from utils import tally_event_descriptions, get_s3_url, get_display_s3_url, get_last_updated_date
 
 STAGING_URL = "https://api-stage.wellcomecollection.org/storage/v1"
 PRODUCTION_URL = "https://api.wellcomecollection.org/storage/v1"
@@ -48,8 +48,12 @@ def lambda_handler(event, context):
         ingest = get_staging_client().get_ingest(ingest_id=ingest_id)
         environment = "staging"
 
-    response = {"environment": environment, "ingest": ingest}
+    ingest["events"] = tally_event_descriptions(ingest["events"], environment) 
+    ingest["s3Url"] = get_s3_url(ingest["sourceLocation"])
+    ingest["displayS3Url"] = get_display_s3_url(ingest["sourceLocation"])
+    ingest["lastUpdatedDate"] = get_last_updated_date(ingest)
 
+    response = {"environment": environment, "ingest": ingest}
     return {"statusCode": 200, "body": json.dumps(response)}
 
 
