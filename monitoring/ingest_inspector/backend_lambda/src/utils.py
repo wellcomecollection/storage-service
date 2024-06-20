@@ -33,7 +33,7 @@ def tally_event_descriptions(events, environment: str):
 
         ev["_repeated"] = all_descriptions[ev["description"]] > 1
 
-        future_events = events[i+1:]
+        future_events = events[i + 1 :]
         assert ev not in future_events
 
         if ev["description"].endswith(" started"):
@@ -48,7 +48,7 @@ def tally_event_descriptions(events, environment: str):
             )
         else:
             ev["_is_unmatched_start"] = False
-        
+
         ev["kibanaUrl"] = get_kibana_url(ev, environment)
 
     return events
@@ -64,7 +64,10 @@ def deduce_service_name_from_event_description(description):
         ("Verification (Azure)", "bag-verifier_azure"),
         ("Verification (Amazon Glacier)", "bag-verifier_glacier"),
         ("Verification (primary location)", "bag-verifier_primary"),
-        ("Verification (pre-replicating to archive storage)", "bag-verifier-pre-replication"),
+        (
+            "Verification (pre-replicating to archive storage)",
+            "bag-verifier-pre-replication",
+        ),
         ("Assigning bag version", "bag-versioner"),
         ("Unpacking", "bag-unpacker"),
     ]:
@@ -81,7 +84,9 @@ def get_kibana_url(event, api):
     }[api]
 
     try:
-        ecs_service_name = deduce_service_name_from_event_description(event["description"])
+        ecs_service_name = deduce_service_name_from_event_description(
+            event["description"]
+        )
     except ValueError:
         # Otherwise, we don't know what logs to redirect to.
         return ""

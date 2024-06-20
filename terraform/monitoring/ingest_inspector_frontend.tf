@@ -1,11 +1,11 @@
 resource "aws_s3_bucket" "ingest_inspector_frontend" {
-  bucket = "wellcomecollection-ingest-inspector-static-frontend"
+  bucket   = "wellcomecollection-ingest-inspector-static-frontend"
   provider = aws.platform
 }
 
 
 resource "aws_s3_bucket_public_access_block" "ingest_inspector_frontend" {
-  bucket = aws_s3_bucket.ingest_inspector_frontend.id
+  bucket   = aws_s3_bucket.ingest_inspector_frontend.id
   provider = aws.platform
 
   block_public_acls       = false
@@ -15,7 +15,7 @@ resource "aws_s3_bucket_public_access_block" "ingest_inspector_frontend" {
 }
 
 resource "aws_s3_bucket_website_configuration" "ingest_inspector_frontend" {
-  bucket = aws_s3_bucket.ingest_inspector_frontend.id
+  bucket   = aws_s3_bucket.ingest_inspector_frontend.id
   provider = aws.platform
 
   index_document {
@@ -28,7 +28,7 @@ resource "aws_s3_bucket_website_configuration" "ingest_inspector_frontend" {
 }
 
 resource "aws_s3_bucket_ownership_controls" "ingest_inspector_frontend" {
-  bucket = aws_s3_bucket.ingest_inspector_frontend.id
+  bucket   = aws_s3_bucket.ingest_inspector_frontend.id
   provider = aws.platform
 
   rule {
@@ -37,7 +37,7 @@ resource "aws_s3_bucket_ownership_controls" "ingest_inspector_frontend" {
 }
 
 resource "aws_s3_bucket_acl" "site" {
-  bucket = aws_s3_bucket.ingest_inspector_frontend.id
+  bucket   = aws_s3_bucket.ingest_inspector_frontend.id
   provider = aws.platform
 
   acl = "public-read"
@@ -48,7 +48,7 @@ resource "aws_s3_bucket_acl" "site" {
 }
 
 resource "aws_s3_bucket_policy" "ingest_inspector_frontend" {
-  bucket = aws_s3_bucket.ingest_inspector_frontend.id
+  bucket   = aws_s3_bucket.ingest_inspector_frontend.id
   provider = aws.platform
 
   policy = jsonencode({

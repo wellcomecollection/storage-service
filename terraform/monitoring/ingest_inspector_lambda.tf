@@ -49,7 +49,7 @@ resource "aws_apigatewayv2_api" "ingest_inspector_api" {
   cors_configuration {
     allow_origins = ["*"]
     allow_methods = ["GET", "OPTIONS"]
-    max_age = 300
+    max_age       = 300
   }
 }
 
