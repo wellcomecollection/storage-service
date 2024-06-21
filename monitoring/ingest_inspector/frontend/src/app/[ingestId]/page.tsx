@@ -6,7 +6,7 @@ import useSWR from "swr";
 import Form from "../components/Form";
 import { IngestInspectorApiResponse } from "../types";
 import { useEffect } from "react";
-import { storeNewIngest } from "../utils";
+import { storeNewIngest } from "../components/RecentIngests";
 import { useParams } from "next/navigation";
 import NProgress from "nprogress";
 
@@ -37,12 +37,7 @@ const IngestPage = () => {
 
   useEffect(() => {
     if (data) {
-      const ingest = data.ingest;
-      storeNewIngest(
-        ingestId,
-        ingest.space.id,
-        ingest.bag.info.externalIdentifier,
-      );
+      storeNewIngest(data.ingest);
     }
   }, [data]);
 
@@ -55,17 +50,11 @@ const IngestPage = () => {
 
 
   return (
-    <div>
+    <div className={cx(`status-${data?.ingest.status.id}`)}>
       <main>
-        <div
-          className="content"
-          style={{ marginBottom: "2em", marginTop: "1em" }}
-        >
-          <Form/>
-        </div>
-        {!isLoading && <hr />}
-        <div className="content">
-          {isLoading && !data && !error && <div>Loading</div>}
+        <Form ingestId={ingestId}/>
+        {(data || error) && <hr />}
+        <div className="content mt-6">
           {data && (
             <Ingest ingestData={data.ingest} environment={data.environment} />
           )}

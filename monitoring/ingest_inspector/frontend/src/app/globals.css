@@ -2,13 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-div.content {
-  max-width: 950px;
+.content {
+  width: 100%;
+  max-width: 1280px;
   margin-left: auto;
   margin-right: auto;
   padding-left: 1em;
   padding-right: 1em;
-  width: 100%;
 }
 
 @font-face {
@@ -32,6 +32,9 @@ body {
   color: #121212;
   line-height: 1.5;
   margin: 0;
+  min-height: 100vh;
+  grid-template-rows: auto 1fr auto;
+  display: grid;
 }
 
 header {
@@ -61,10 +64,6 @@ header a:visited:hover {
   background: none;
 }
 
-a:hover {
-  text-decoration: none;
-}
-
 hr {
   background-color: #ddd;
   height: 1px;
@@ -91,19 +90,19 @@ input:focus-within {
   outline: 3px solid black;
 }
 
-input:focus-within.status-succeeded {
+.status-succeeded input:focus-within {
   box-shadow: 0 0 0 4px #0b7051; /* validation green */
 }
 
-input:focus-within.status-processing {
+.status-processing input:focus-within {
   box-shadow: 0 0 0 4px #1dbebb; /* turquoise */
 }
 
-input:focus-within.status-failed {
+.status-failed input:focus-within {
   box-shadow: 0 0 0 4px #e01b2f; /* validation red */
 }
 
-input:focus-within.status-accepted {
+.status-accepted input:focus-within {
   box-shadow: 0 0 0 4px #ffce3c; /* yellow */
 }
 
@@ -141,25 +140,25 @@ form {
   align-items: flex-end;
 }
 
-button.status-succeeded {
+.status-succeeded .status-bg {
   background: #0b7051; /* validation green */
   border-color: #0b7051;
   color: white;
 }
 
-button.status-processing {
+.status-processing .status-bg {
   background: #1dbebb; /* turquoise */
   border-color: #1dbebb;
   color: white;
 }
 
-button.status-failed {
+.status-failed .status-bg {
   background: #e01b2f; /* validation red */
   border-color: #e01b2f;
   color: white;
 }
 
-button.status-accepted {
+.status-accepted .status-bg {
   background: #ffce3c; /* yellow */
   border-color: #ffce3c;
   color: black;
@@ -179,35 +178,35 @@ button.status-accepted {
   padding: 0.75em;
 }
 
-.card.status-succeeded {
+.status-succeeded .card {
   border-color: #0b7051; /* validation green */
 }
 
-.card.status-succeeded a {
+.status-succeeded .card a {
   color: #0b7051; /* validation green */
 }
 
-.card.status-processing {
+.status-processing .card {
   border-color: #1dbebb; /* turquoise */
 }
 
-.card.status-processing a {
+.status-processing .card a {
   color: #1dbebb; /* turquoise */
 }
 
-.card.status-failed {
+.status-failed .card {
   border-color: #e01b2f; /* validation red */
 }
 
-.card.status-failed a {
+.status-failed .card a {
   color: #e01b2f; /* validation red */
 }
 
-.card.status-accepted {
+.status-accepted .card {
   border-color: #ffce3c; /* yellow */
 }
 
-.card.status-accepted a {
+.status-accepted .card a {
   color: #c29207;
 }
 
@@ -216,39 +215,39 @@ button.status-accepted {
   font-weight: bold;
 }
 
-.card.status-succeeded .card-header.api-production {
+.status-succeeded .card .card-header.api-production {
   background: #0b7051; /* validation green */
   color: white;
 }
 
-.card.status-succeeded .card-header.api-staging {
+.status-succeeded .card .card-header.api-staging {
   color: #0b7051; /* validation green */
 }
 
-.card.status-processing .card-header.api-production {
+.status-processing .card .card-header.api-production {
   background: #1dbebb; /* turquoise */
   color: white;
 }
 
-.card.status-processing .card-header.api-staging {
+.status-processing .card .card-header.api-staging {
   color: #1dbebb; /* turquoise */
 }
 
-.card.status-failed .card-header.api-production {
+.status-failed .card .card-header.api-production {
   background: #e01b2f; /* validation red */
   color: white;
 }
 
-.card.status-failed .card-header.api-staging {
+.status-failed .card .card-header.api-staging {
   color: #e01b2f; /* validation red */
 }
 
-.card.status-accepted .card-header.api-production {
+.status-accepted .card .card-header.api-production {
   background: #ffce3c; /* yellow */
   color: black;
 }
 
-.card.status-accepted .card-header.api-staging {
+.status-accepted .card .card-header.api-staging {
   color: #c29207;
 }
 
@@ -284,22 +283,6 @@ footer a:visited {
   color: #777;
 }
 
-footer .heart.status-succeeded {
-  color: #0b7051; /* validation green */
-}
-
-footer .heart.status-processing {
-  color: #1dbebb; /* turquoise */
-}
-
-footer .heart.status-failed {
-  color: #e01b2f; /* validation red */
-}
-
-footer .heart.status-accepted {
-  color: #ffce3c; /* yellow */
-}
-
 .count,
 .status-accepted .count a,
 .status-processing .count a,
@@ -314,21 +297,21 @@ footer .heart.status-accepted {
   background: none;
 }
 
-.ingest_data {
+.ingest-data {
   display: grid;
   grid-column-gap: 8px;
   grid-row-gap: 2px;
-  grid-template-columns: 200px auto;
-}
-
-#recentIngests li a {
-  font-family: monospace;
+  grid-template-columns: 180px auto;
 }
 
 .label {
   grid-column: 1 / 2;
   text-align: right;
   font-weight: 575;
+}
+
+a {
+  text-decoration: underline;
 }
 
 strong {
@@ -354,7 +337,7 @@ strong {
 }
 
 @media screen and (max-width: 500px) {
-  .ingest_data {
+  .ingest-data {
     grid-template-columns: auto;
   }
 

@@ -6,12 +6,7 @@ import Form from "./components/Form";
 const HomePage = () => {
   return (
       <div>
-        <div
-          className="content"
-          style={{ marginBottom: "2em", marginTop: "1em" }}
-        >
-          <Form/>
-        </div>  
+        <Form/>
         <hr />
         <RecentIngests />
       </div>

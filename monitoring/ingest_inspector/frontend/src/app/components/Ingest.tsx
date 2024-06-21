@@ -1,5 +1,6 @@
 import { localiseDateString, updateDelta } from "../utils";
 import { IngestData } from "../types";
+import cx from "classnames";
 
 const STAGING_PRIMARY_BUCKET = "wellcomecollection-storage-staging";
 const STAGING_GLACIER_BUCKET =
@@ -48,12 +49,12 @@ const Ingest = ({ ingestData, environment }: IngestProps) => {
       <p>
         Found ingest in the <strong>{environment}</strong> API:
       </p>
-      <div className={`card status-${status}`}>
+      <div className="card">
         <div className={`card-header api-${environment}`}>
           {ingestData.id}: {status}
         </div>
         <div className="card-body">
-          <div className="ingest_data">
+          <div className="ingest-data">
             <div className="label">source location:</div>
             <div className="value">
               <a href={ingestData.s3Url}>{ingestData.displayS3Url}</a>
@@ -94,7 +95,7 @@ const Ingest = ({ ingestData, environment }: IngestProps) => {
             </div>
 
             <div className="label">last update:</div>
-            <div className="value timestamp" title="{{ ingest | last_update }}">
+            <div className="value timestamp" title={ingestData.lastUpdatedDate}>
               {localiseDateString(ingestData.lastUpdatedDate) +
                 updateDelta(ingestData.lastUpdatedDate)}
             </div>
@@ -120,11 +121,7 @@ const Ingest = ({ ingestData, environment }: IngestProps) => {
               <ul>
                 {ingestData.events.map((event) => (
                   <li title={event.createdDate} key={event.createdDate}>
-                    {event.description.includes("failed") ? (
-                      <strong>{event.description}</strong>
-                    ) : (
-                      event.description
-                    )}
+                    <span className={cx({"font-semibold": event.description.includes("failed")})}>{event.description}</span>
                     {event._repeated && (
                       <span className="count">
                         {" "}

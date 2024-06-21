@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
+import cx from "classnames";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,15 +28,15 @@ export default function RootLayout({
       <main>
         {children}
       </main>
-      <footer>
-        <div className="content">
+      <footer className="w-full">
+        <div className="content mt-6">
           <p>
             made with{" "}
-            <span className="heart {% if ingest %}status-{{ ingest.status.id }}{% endif %}">
+            <span className="heart">
               ♥
             </span>{" "}
             • source on{" "}
-            <a href="https://github.com/wellcomecollection/ingest-inspector">
+            <a href="https://github.com/wellcomecollection/storage-service">
               GitHub
             </a>
           </p>

@@ -1,33 +1,3 @@
-export const getRecentIngests = () => {
-  const storedIngests = localStorage.getItem("recentIngests");
-
-  if (storedIngests === null) {
-    return [];
-  }
-
-  return JSON.parse(storedIngests);
-};
-
-export const storeNewIngest = (ingestId, space, externalIdentifier) => {
-  const recentIngests = getRecentIngests();
-
-  const otherIngests = recentIngests.filter(
-    (ingest) => ingest["ingestId"] != ingestId,
-  );
-
-  const newIngests = [
-    {
-      ingestId: ingestId,
-      space: space,
-      externalIdentifier: externalIdentifier,
-    },
-  ].concat(otherIngests);
-
-  const ingestsToStore = newIngests.slice(0, 10);
-
-  localStorage.setItem("recentIngests", JSON.stringify(ingestsToStore));
-};
-
 const dateFormatter = new Intl.DateTimeFormat([], {
   year: "numeric",
   month: "long",
