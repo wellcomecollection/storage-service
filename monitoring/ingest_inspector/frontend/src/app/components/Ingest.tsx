@@ -1,5 +1,5 @@
-import { localiseDateString, updateDelta } from "./utils";
-import { IngestData } from "./types";
+import { localiseDateString, updateDelta } from "../utils";
+import { IngestData } from "../types";
 
 const STAGING_PRIMARY_BUCKET = "wellcomecollection-storage-staging";
 const STAGING_GLACIER_BUCKET =

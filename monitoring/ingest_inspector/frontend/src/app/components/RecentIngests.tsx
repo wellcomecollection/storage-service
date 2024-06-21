@@ -1,4 +1,5 @@
-import { getRecentIngests } from "./utils";
+import Link from "next/link";
+import { getRecentIngests } from "../utils";
 
 export const RecentIngests = () => {
   const recentIngests = getRecentIngests();
@@ -9,7 +10,7 @@ export const RecentIngests = () => {
       <ul>
         {recentIngests.map((ingestData) => (
           <li key={ingestData.ingestId}>
-            <a href={`/${ingestData.ingestId}`}>{ingestData.ingestId}</a>{" "}
+            <Link href={`/${ingestData.ingestId}`}>{ingestData.ingestId}</Link>{" "}
             &ndash; {ingestData.space}/{ingestData.externalIdentifier}
           </li>
         ))}
