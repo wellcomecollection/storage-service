@@ -1,5 +1,5 @@
 import {useRouter} from "next/navigation";
-import cx from 'classnames';
+import {FormEvent} from "react";
 
 type FontProps = {
     ingestId?: string;
@@ -8,13 +8,13 @@ type FontProps = {
 export const Form = ({ingestId}: FontProps) => {
     const router = useRouter();
 
-    const onSubmit = (e) => {
+    const onSubmit = (e: FormEvent) => {
         e.preventDefault();
-        const data = new FormData(e.target);
-        const ingestId: string = [...data.entries()][0][1] as string;
+        const data = new FormData(e.target as HTMLFormElement);
+        const ingestId = data.get("ingest-id") as string;
 
         if (ingestId?.length > 0) {
-            router.push(`/${ingestId}`);
+            router.push(`/?ingestId=${ingestId}`);
         }
     };
 

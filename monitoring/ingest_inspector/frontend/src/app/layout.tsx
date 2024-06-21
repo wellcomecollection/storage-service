@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
 import cx from "classnames";
+import {Suspense} from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,11 +23,13 @@ export default function RootLayout({
       <header>
         <div className="loading-indicator-wrapper w-full h-1 top-0 absolute" />
         <div className="content">
-          <Link href="/">wellcome ingest inspector</Link>
+          <Link href="/?">wellcome ingest inspector</Link>
         </div>
       </header>
       <main>
+          <Suspense>
         {children}
+          </Suspense>
       </main>
       <footer className="w-full">
         <div className="content mt-6">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {IngestData} from "@/app/types";
 import cx from "classnames";
+import {useEffect, useState} from "react";
 
 export const getRecentIngests = (): Array<IngestData> => {
     const storedIngests = localStorage.getItem("recentIngests");
@@ -24,27 +25,37 @@ export const storeNewIngest = (ingest: IngestData) => {
 };
 
 export const RecentIngests = () => {
-  const recentIngests = getRecentIngests();
-  return (
-    <div className="content mt-6">
-        {recentIngests.length > 0 && <h2 className="font-bold text-xl mb-2">Recently viewed ingests</h2>}
-      <ul className="flex flex-wrap gap-4">
-        {recentIngests.map((ingestData) => (
-          <li key={ingestData.id} className="w-full basis-full lg:basis-[calc(50%-16px)]">
-              <div className={cx("w-full h-fit flex relative bg-[#EDECE3]", `status-${ingestData.status.id}`)}>
-                  <Link href={`/${ingestData.id}`} className="w-full h-full no-underline">
-                      <div className="status-bg w-2 h-full absolute"/>
-                      <div className="p-4">
-                          <div>{ingestData.id}</div>
-                          <div>{ingestData.space.id}/{ingestData.bag.info.externalIdentifier}</div>
-                      </div>
-                  </Link>
-              </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+    const [recentIngests, setRecentIngests] = useState<Array<IngestData>>([]);
+
+    useEffect(() => {
+        setRecentIngests(getRecentIngests());
+    }, []);
+
+    if (recentIngests.length === 0) {
+        return null
+    }
+
+    return (
+        <div className="content mt-6">
+            {recentIngests.length > 0 && <h2 className="font-bold text-xl mb-2">Recently viewed ingests</h2>}
+            <ul className="flex flex-wrap gap-4">
+                {recentIngests.map((ingestData) => (
+                    <li key={ingestData.id} className="w-full basis-full lg:basis-[calc(50%-16px)]">
+                        <div
+                            className={cx("w-full h-fit flex relative bg-[#EDECE3]", `status-${ingestData.status.id}`)}>
+                            <Link href={`?ingestId=${ingestData.id}`} className="w-full h-full no-underline">
+                                <div className="status-bg w-2 h-full absolute"/>
+                                <div className="p-4">
+                                    <div>{ingestData.id}</div>
+                                    <div>{ingestData.space.id}/{ingestData.bag.info.externalIdentifier}</div>
+                                </div>
+                            </Link>
+                        </div>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
 };
 
 export default RecentIngests;

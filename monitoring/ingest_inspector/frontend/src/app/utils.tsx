@@ -12,7 +12,7 @@ const timeFormatter = new Intl.DateTimeFormat([], {
 });
 
 // Localise a date for the current timezone
-export const localiseDateString = (ds) => {
+export const localiseDateString = (ds: string) => {
   const today = new Date();
   const yesterday = new Date().setDate(new Date().getDate() - 1);
 
