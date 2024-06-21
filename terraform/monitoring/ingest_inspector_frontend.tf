@@ -78,12 +78,12 @@ locals {
 }
 
 resource "aws_cloudfront_distribution" "ingest_inspector_cloudfront_distribution" {
-  enabled = true
+  enabled  = true
   provider = aws.platform
 
   origin {
-    origin_id                = local.s3_origin_id
-    domain_name              = local.s3_domain_name
+    origin_id   = local.s3_origin_id
+    domain_name = local.s3_domain_name
     custom_origin_config {
       http_port              = 80
       https_port             = 443
