@@ -1,14 +1,14 @@
 resource "aws_s3_bucket" "ingest_inspector_frontend" {
-  bucket   = "wellcomecollection-ingest-inspector-frontend"
+  bucket = "wellcomecollection-ingest-inspector-frontend"
 }
 
 locals {
-  s3_origin_id   = "origin-${aws_s3_bucket.ingest_inspector_frontend.bucket}"
+  s3_origin_id = "origin-${aws_s3_bucket.ingest_inspector_frontend.bucket}"
 }
 
 # Create a CloudFront distribution to serve the contents of the bucket via HTTPS
 resource "aws_cloudfront_distribution" "ingest_inspector_cloudfront_distribution" {
-  enabled = true
+  enabled             = true
   default_root_object = "index.html"
 
   origin {
