@@ -3,7 +3,11 @@ import json
 import functools
 
 import boto3
-from wellcome_storage_service import RequestsOAuthStorageServiceClient, IngestNotFound, UserError
+from wellcome_storage_service import (
+    RequestsOAuthStorageServiceClient,
+    IngestNotFound,
+    UserError,
+)
 from utils import (
     tally_event_descriptions,
     get_s3_url,
@@ -49,7 +53,7 @@ def get_ingest(ingest_id: str):
     except IngestNotFound:
         ingest = get_staging_client().get_ingest(ingest_id=ingest_id)
         environment = "staging"
-    
+
     return ingest, environment
 
 
@@ -57,19 +61,13 @@ def lambda_handler(event, context):
     print(f"Starting lambda_handler, got event: {event}")
 
     ingest_id = event["pathParameters"]["ingest_id"]
-    
+
     try:
         ingest, environment = get_ingest(ingest_id)
     except IngestNotFound:
-        return {
-            "statusCode": 404,
-            "body": "Ingest not found."
-        }
+        return {"statusCode": 404, "body": "Ingest not found."}
     except UserError:
-        return {
-            "statusCode": 400,
-            "body": "Invalid ingest ID."
-        }
+        return {"statusCode": 400, "body": "Invalid ingest ID."}
 
     ingest["events"] = tally_event_descriptions(ingest["events"], environment)
     ingest["s3Url"] = get_s3_url(ingest["sourceLocation"])
