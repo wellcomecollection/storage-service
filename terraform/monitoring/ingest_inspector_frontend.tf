@@ -8,7 +8,7 @@ locals {
 
 # Create a CloudFront distribution to serve the contents of the bucket via HTTPS
 resource "aws_cloudfront_distribution" "ingest_inspector_cloudfront_distribution" {
-  enabled = true
+  enabled             = true
   default_root_object = "index.html"
 
   origin {
