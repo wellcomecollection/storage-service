@@ -20,7 +20,7 @@ export const Form = ({ingestId}: FontProps) => {
 
     return (
         <div className="content my-8">
-            <form onSubmit={onSubmit}>
+            <form onSubmit={onSubmit} className="flex items-end">
                 <div className="input-wrapper">
                     <label htmlFor="ingest-id">Ingest ID</label>
                     <input
@@ -30,7 +30,6 @@ export const Form = ({ingestId}: FontProps) => {
                         placeholder="123e4567-e89b-12d3-a456-426655440000"
                         autoFocus
                         spellCheck="false"
-                        size={36}
                     />
                 </div>
                 <button type="submit" className="status-bg">

@@ -7,13 +7,16 @@ import NProgress from "nprogress";
 const BASE_API_URL =
     "https://xkgpnijmy5.execute-api.eu-west-1.amazonaws.com/v1/ingest";
 
+export const APIErrors = {
+    INVALID_INGEST_ID: "Invalid ingest ID.",
+    INGEST_NOT_FOUND: "Ingest not found."
+}
+
 const getIngest = async (
     ingestId: string,
 ): Promise<IngestInspectorApiResponse> => {
-    NProgress.start();
     const response = await fetch(`${BASE_API_URL}/${ingestId}`);
     const content = await response.json();
-    NProgress.done();
 
     if (response.status === 200) {
         return content;
@@ -32,12 +35,22 @@ export const useGetIngest = (ingestId: string | null) => {
         }
     }, [data]);
 
+    // Configure loading progress bar on mount
     useEffect(() => {
         NProgress.configure({
             showSpinner: false,
             parent: ".loading-indicator-wrapper",
         });
     }, []);
+
+    useEffect(() => {
+        if(isLoading) {
+            NProgress.start();
+        }
+        if(!isLoading) {
+            NProgress.done();
+        }
+    }, [isLoading]);
 
     return {
         data: data,

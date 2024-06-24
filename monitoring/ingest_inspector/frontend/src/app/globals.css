@@ -3,386 +3,364 @@
 @tailwind utilities;
 
 .content {
-  width: 100%;
-  max-width: 1280px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 1em;
-  padding-right: 1em;
+    width: 100%;
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1em;
+    padding-right: 1em;
 }
 
 @font-face {
-  font-family: Wellcome;
-  /* https://wellcome.ac.uk/sites/all/themes/corp_base/assets/fonts/wellcome-bold-webfont.woff2, with extra characters stripped out */
-  src: url(data:;base64,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);
+    font-family: Wellcome;
+    /* https://wellcome.ac.uk/sites/all/themes/corp_base/assets/fonts/wellcome-bold-webfont.woff2, with extra characters stripped out */
+    src: url(data:;base64,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);
 }
 
 @font-face {
-  font-family: Inter;
-  src: url("https://i.wellcomecollection.org/assets/fonts/Inter-VariableFont_slnt,wght.ttf");
+    font-family: Inter;
+    src: url("https://i.wellcomecollection.org/assets/fonts/Inter-VariableFont_slnt,wght.ttf");
 }
 
 body {
-  font:
-    12pt Inter,
+    font: 12pt Inter,
     "Helvetica Neue",
     Helvetica,
     Arial,
     sans-serif;
-  color: #121212;
-  line-height: 1.5;
-  margin: 0;
-  min-height: 100vh;
-  grid-template-rows: auto 1fr auto;
-  display: grid;
+    color: #121212;
+    line-height: 1.5;
+    margin: 0;
+    min-height: 100vh;
+    grid-template-rows: auto 1fr auto;
+    display: grid;
 }
 
 header {
-  border-bottom: 1px solid rgb(217, 216, 208);
-  font:
-    18pt Wellcome,
+    border-bottom: 1px solid rgb(217, 216, 208);
+    font: 18pt Wellcome,
     sans-serif;
-  height: 85px;
-  transition: background-color 0.2s;
-  display: flex;
-  align-items: center;
+    height: 85px;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
 }
 
 header a,
 header a:visited {
-  color: black;
-  text-decoration: none;
-  transition: color 0.2s;
+    color: black;
+    text-decoration: none;
+    transition: color 0.2s;
 }
 
 header a:hover {
-  text-decoration: underline;
-  background: none;
+    text-decoration: underline;
+    background: none;
 }
 
 header a:visited:hover {
-  background: none;
+    background: none;
 }
 
 hr {
-  background-color: #ddd;
-  height: 1px;
-  border: 0;
-  width: 100%;
+    background-color: #ddd;
+    height: 1px;
+    border: 0;
+    width: 100%;
 }
 
 input {
-  padding: 11px 36px 11px 16px;
-  appearance: none;
-  border: 1px solid rgb(106, 106, 106);
-  font-size: 1.175rem;
-  width: 100%;
-  line-height: 1.15;
-  margin-top: 8px;
-  outline-offset: -2px;
-  overflow: visible;
-  box-sizing: border-box;
-  transition: box-shadow 0.2s;
+    padding: 11px 36px 11px 16px;
+    appearance: none;
+    border: 1px solid rgb(106, 106, 106);
+    font-size: 1.175rem;
+    width: 100%;
+    line-height: 1.15;
+    margin-top: 8px;
+    outline-offset: -2px;
+    overflow: visible;
+    box-sizing: border-box;
+    transition: box-shadow 0.2s;
 }
 
 input:focus-within {
-  box-shadow: 0 0 0 4px #ffea02;
-  outline: 3px solid black;
+    box-shadow: 0 0 0 4px #ffea02;
+    outline: 3px solid black;
 }
 
 .status-succeeded input:focus-within {
-  box-shadow: 0 0 0 4px #0b7051; /* validation green */
+    box-shadow: 0 0 0 4px #0b7051; /* validation green */
 }
 
 .status-processing input:focus-within {
-  box-shadow: 0 0 0 4px #1dbebb; /* turquoise */
+    box-shadow: 0 0 0 4px #1dbebb; /* turquoise */
 }
 
 .status-failed input:focus-within {
-  box-shadow: 0 0 0 4px #e01b2f; /* validation red */
+    box-shadow: 0 0 0 4px #e01b2f; /* validation red */
 }
 
 .status-accepted input:focus-within {
-  box-shadow: 0 0 0 4px #ffce3c; /* yellow */
+    box-shadow: 0 0 0 4px #ffce3c; /* yellow */
 }
 
 .input-wrapper {
-  width: 100%;
-  margin-right: 10px;
+    width: 100%;
+    margin-right: 10px;
 }
 
 label {
-  font-weight: 700;
-  font-size: 1rem;
-  line-height: 1.2;
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.2;
 }
 
 button {
-  cursor: pointer;
-  background: #ffce3c; /* yellow */
-  border: 2px solid #ffce3c;
-  padding: 13px 20px;
-  color: black;
-  font-size: 1rem;
-  display: inline-flex;
-  white-space: nowrap;
-  line-height: 1.15;
-  box-sizing: border-box;
-  overflow: visible;
-  transition:
-    background-color 0.2s,
+    cursor: pointer;
+    background: #ffce3c; /* yellow */
+    border: 2px solid #ffce3c;
+    padding: 13px 20px;
+    color: black;
+    font-size: 1rem;
+    display: inline-flex;
+    white-space: nowrap;
+    line-height: 1.15;
+    box-sizing: border-box;
+    overflow: visible;
+    transition: background-color 0.2s,
     border-color 0.2s;
-  font-weight: 700;
-}
-
-form {
-  display: flex;
-  align-items: flex-end;
+    font-weight: 700;
 }
 
 .status-succeeded .status-bg {
-  background: #0b7051; /* validation green */
-  border-color: #0b7051;
-  color: white;
+    background: #0b7051; /* validation green */
+    border-color: #0b7051;
+    color: white;
 }
 
 .status-processing .status-bg {
-  background: #1dbebb; /* turquoise */
-  border-color: #1dbebb;
-  color: white;
+    background: #1dbebb; /* turquoise */
+    border-color: #1dbebb;
+    color: white;
 }
 
 .status-failed .status-bg {
-  background: #e01b2f; /* validation red */
-  border-color: #e01b2f;
-  color: white;
+    background: #e01b2f; /* validation red */
+    border-color: #e01b2f;
+    color: white;
 }
 
 .status-accepted .status-bg {
-  background: #ffce3c; /* yellow */
-  border-color: #ffce3c;
-  color: black;
+    background: #ffce3c; /* yellow */
+    border-color: #ffce3c;
+    color: black;
 }
 
 .card {
-  margin-bottom: 1em;
-  border: 3px solid;
+    margin-bottom: 1em;
+    border: 3px solid;
 }
 
 .card-header {
-  padding: 0.5em 0.75em;
-  font-size: 120%;
-}
-
-.card-body {
-  padding: 0.75em;
+    padding: 0.5em 0.75em;
+    font-size: 120%;
 }
 
 .status-succeeded .card {
-  border-color: #0b7051; /* validation green */
+    border-color: #0b7051; /* validation green */
 }
 
 .status-succeeded .card a {
-  color: #0b7051; /* validation green */
+    color: #0b7051; /* validation green */
 }
 
 .status-processing .card {
-  border-color: #1dbebb; /* turquoise */
+    border-color: #1dbebb; /* turquoise */
 }
 
 .status-processing .card a {
-  color: #1dbebb; /* turquoise */
+    color: #1dbebb; /* turquoise */
 }
 
 .status-failed .card {
-  border-color: #e01b2f; /* validation red */
+    border-color: #e01b2f; /* validation red */
 }
 
 .status-failed .card a {
-  color: #e01b2f; /* validation red */
+    color: #e01b2f; /* validation red */
 }
 
 .status-accepted .card {
-  border-color: #ffce3c; /* yellow */
+    border-color: #ffce3c; /* yellow */
 }
 
 .status-accepted .card a {
-  color: #c29207;
+    color: #c29207;
 }
 
 .card .card-header.api-staging {
-  border-bottom: 3px solid;
-  font-weight: bold;
+    border-bottom: 3px solid;
+    font-weight: bold;
 }
 
 .status-succeeded .card .card-header.api-production {
-  background: #0b7051; /* validation green */
-  color: white;
+    background: #0b7051; /* validation green */
+    color: white;
 }
 
 .status-succeeded .card .card-header.api-staging {
-  color: #0b7051; /* validation green */
+    color: #0b7051; /* validation green */
 }
 
 .status-processing .card .card-header.api-production {
-  background: #1dbebb; /* turquoise */
-  color: white;
+    background: #1dbebb; /* turquoise */
+    color: white;
 }
 
 .status-processing .card .card-header.api-staging {
-  color: #1dbebb; /* turquoise */
+    color: #1dbebb; /* turquoise */
 }
 
 .status-failed .card .card-header.api-production {
-  background: #e01b2f; /* validation red */
-  color: white;
+    background: #e01b2f; /* validation red */
+    color: white;
 }
 
 .status-failed .card .card-header.api-staging {
-  color: #e01b2f; /* validation red */
+    color: #e01b2f; /* validation red */
 }
 
 .status-accepted .card .card-header.api-production {
-  background: #ffce3c; /* yellow */
-  color: black;
+    background: #ffce3c; /* yellow */
+    color: black;
 }
 
 .status-accepted .card .card-header.api-staging {
-  color: #c29207;
-}
-
-#recentIngests {
-  font-size: 120%;
-}
-
-#recentIngests a,
-#recentIngests a:visited {
-  color: #c29207;
+    color: #c29207;
 }
 
 .card ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
 }
 
 .card li {
-  line-height: 1.6em;
+    line-height: 1.6em;
 }
 
 footer {
-  border-top: 1px solid rgb(217, 216, 208);
-  margin-top: 4em;
-  margin-bottom: 2em;
-  color: #777;
-  font-size: 75%;
+    border-top: 1px solid rgb(217, 216, 208);
+    margin-top: 4em;
+    margin-bottom: 2em;
+    color: #777;
+    font-size: 75%;
 }
 
 footer a,
 footer a:visited {
-  color: #777;
+    color: #777;
 }
 
 .count,
 .status-accepted .count a,
 .status-processing .count a,
 .status-failed .count a {
-  color: #555;
-  background: #ededed;
+    color: #555;
+    background: #ededed;
 }
 
 .status-succeeded .count,
 .status-succeeded .count a {
-  color: #777;
-  background: none;
+    color: #777;
+    background: none;
 }
 
 .ingest-data {
-  display: grid;
-  grid-column-gap: 8px;
-  grid-row-gap: 2px;
-  grid-template-columns: 180px auto;
+    display: grid;
+    grid-column-gap: 8px;
+    grid-row-gap: 2px;
+    grid-template-columns: 180px auto;
 }
 
-.label {
-  grid-column: 1 / 2;
-  text-align: right;
-  font-weight: 575;
+dt {
+    grid-column: 1 / 2;
+    text-align: right;
+    font-weight: 575;
 }
 
 a {
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
 strong {
-  font-weight: 575;
+    font-weight: 575;
 }
 
-.value {
-  grid-column: 2 / 2;
+dd {
+    grid-column: 2 / 2;
 }
 
 /* https://twitter.com/thingskatedid/status/1314843881993764864 */
 .timestamp {
-  font-feature-settings: "tnum" on;
+    font-feature-settings: "tnum" on;
 }
 
 /* Give a strong visual hint that there's still callback stuff to do */
 
 .status-succeeded .callback--processing,
 .status-failed .callback--processing {
-  background: rgba(0, 155, 178, 0.3);
-  padding: 1px 4px;
-  margin: -1px -4px;
+    background: rgba(0, 155, 178, 0.3);
+    padding: 1px 4px;
+    margin: -1px -4px;
 }
 
 @media screen and (max-width: 500px) {
-  .ingest-data {
-    grid-template-columns: auto;
-  }
+    .ingest-data {
+        grid-template-columns: auto;
+    }
 
-  .label {
-    grid-column: 1 / 1;
-    text-align: left;
-  }
+    .label {
+        grid-column: 1 / 1;
+        text-align: left;
+    }
 
-  .value {
-    grid-column: 1 / 1;
-  }
+    dt {
+        grid-column: 1 / 1;
+    }
 
-  .value:not(last-child) {
-    margin-bottom: 1.2em;
-  }
+    dt:not(last-child) {
+        margin-bottom: 1.2em;
+    }
 
-  .status-succeeded .callback--processing.value,
-  .status-failed .callback--processing.value {
-    margin-bottom: calc(1.2em - 2px);
-  }
+    .status-succeeded .callback--processing dd,
+    .status-failed .callback--processing dd {
+        padding-bottom: calc(1.2em - 2px);
+    }
 }
 
 #nprogress {
-  pointer-events: none;
+    pointer-events: none;
 }
 
 #nprogress .bar {
-  background: #ffce3c;
-  position: fixed;
-  z-index: 1031;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 4px;
+    background: #ffce3c;
+    position: fixed;
+    z-index: 1031;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
 }
 
 #nprogress .peg {
-  display: block;
-  position: absolute;
-  right: 0;
-  width: 100px;
-  height: 100%;
-  box-shadow:
-    0 0 10px #ffce3c,
+    display: block;
+    position: absolute;
+    right: 0;
+    width: 100px;
+    height: 100%;
+    box-shadow: 0 0 10px #ffce3c,
     0 0 5px #ffce3c;
-  opacity: 1;
-  transform: rotate(3deg) translate(0, -4px);
+    opacity: 1;
+    transform: rotate(3deg) translate(0, -4px);
 }

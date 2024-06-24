@@ -39,7 +39,7 @@ export default function RootLayout({
               ♥
             </span>{" "}
             • source on{" "}
-            <a href="https://github.com/wellcomecollection/storage-service">
+            <a href="https://github.com/wellcomecollection/storage-service" target="_blank" rel="noreferrer">
               GitHub
             </a>
           </p>
