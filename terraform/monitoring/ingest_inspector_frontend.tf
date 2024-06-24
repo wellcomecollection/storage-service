@@ -1,9 +1,9 @@
 resource "aws_s3_bucket" "ingest_inspector_frontend" {
-  bucket   = "wellcomecollection-ingest-inspector-frontend"
+  bucket = "wellcomecollection-ingest-inspector-frontend"
 }
 
 locals {
-  s3_origin_id   = "origin-${aws_s3_bucket.ingest_inspector_frontend.bucket}"
+  s3_origin_id = "origin-${aws_s3_bucket.ingest_inspector_frontend.bucket}"
 }
 
 # Create a CloudFront distribution to serve the contents of the bucket via HTTPS
