@@ -36,7 +36,7 @@ export const RecentIngests = () => {
     }
 
     return (
-        <div className="content mt-6">
+        <>
             {recentIngests.length > 0 && <h2 className="font-bold text-xl mb-2">Recently viewed ingests</h2>}
             <ul className="flex flex-wrap gap-4">
                 {recentIngests.map((ingestData) => (
@@ -54,7 +54,7 @@ export const RecentIngests = () => {
                     </li>
                 ))}
             </ul>
-        </div>
+        </>
     );
 };
 

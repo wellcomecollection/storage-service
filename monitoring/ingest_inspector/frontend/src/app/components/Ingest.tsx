@@ -46,10 +46,10 @@ const Ingest = ({ ingestData, environment }: IngestProps) => {
 
   return (
     <>
-      <p>
+      <p className="text-lg">
         Found ingest in the <strong>{environment}</strong> API:
       </p>
-      <div className="card">
+      <div className="card mt-3">
         <div className={`card-header api-${environment}`}>
           {ingestData.id}: {status}
         </div>

@@ -42,6 +42,7 @@ resource "aws_iam_role_policy" "read_secrets_policy" {
   policy = data.aws_iam_policy_document.allow_secret_read.json
 }
 
+# Place an API Gateway between the backend Lambda and the frontend to decouple them
 resource "aws_apigatewayv2_api" "ingest_inspector_api" {
   name          = "Ingest Inspector API"
   protocol_type = "HTTP"
@@ -60,6 +61,7 @@ resource "aws_apigatewayv2_stage" "ingest_inspector_api_v1" {
   auto_deploy = true
 }
 
+# Invoke Lambda function from the API Gateway endpoint
 resource "aws_apigatewayv2_integration" "ingest_inspector_api_lambda_integration" {
   api_id = aws_apigatewayv2_api.ingest_inspector_api.id
 

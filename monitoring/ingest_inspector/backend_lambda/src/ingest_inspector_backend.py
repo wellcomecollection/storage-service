@@ -1,8 +1,9 @@
+import argparse
 import json
 import functools
 
 import boto3
-from wellcome_storage_service import RequestsOAuthStorageServiceClient, IngestNotFound
+from wellcome_storage_service import RequestsOAuthStorageServiceClient, IngestNotFound, UserError
 from utils import (
     tally_event_descriptions,
     get_s3_url,
@@ -41,17 +42,34 @@ def get_staging_client():
     return _client_from_environment(STAGING_URL)
 
 
-def lambda_handler(event, context):
-    print(f"Starting lambda_handler, got event: {event}")
-
-    ingest_id = event["pathParameters"]["ingest_id"]
-
+def get_ingest(ingest_id: str):
     try:
         ingest = get_prod_client().get_ingest(ingest_id=ingest_id)
         environment = "production"
     except IngestNotFound:
         ingest = get_staging_client().get_ingest(ingest_id=ingest_id)
         environment = "staging"
+    
+    return ingest, environment
+
+
+def lambda_handler(event, context):
+    print(f"Starting lambda_handler, got event: {event}")
+
+    ingest_id = event["pathParameters"]["ingest_id"]
+    
+    try:
+        ingest, environment = get_ingest(ingest_id)
+    except IngestNotFound:
+        return {
+            "statusCode": 404,
+            "body": "Ingest not found."
+        }
+    except UserError:
+        return {
+            "statusCode": 400,
+            "body": "Invalid ingest ID."
+        }
 
     ingest["events"] = tally_event_descriptions(ingest["events"], environment)
     ingest["s3Url"] = get_s3_url(ingest["sourceLocation"])
@@ -63,5 +81,16 @@ def lambda_handler(event, context):
 
 
 if __name__ == "__main__":
-    event = {"pathParameters": {"ingest_id": "bd62a401-11c6-46c9-bdc3-346b01f1d05b"}}
+    parser = argparse.ArgumentParser(
+        description="Index EBSCO item fields into the Elasticsearch reporting cluster."
+    )
+    parser.add_argument(
+        "--ingest-id",
+        type=str,
+        help="The ID of the ingest to retrieve.",
+        required=True,
+    )
+    args = parser.parse_args()
+
+    event = {"pathParameters": {"ingest_id": args.ingest_id}}
     print(lambda_handler(event, None))

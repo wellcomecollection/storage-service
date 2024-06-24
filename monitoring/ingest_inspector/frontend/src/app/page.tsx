@@ -17,7 +17,7 @@ const HomePage = () => {
     const {data, isLoading, error} = useGetIngest(ingestId);
 
     return (
-        <div className={cx(`status-${data?.ingest.status.id}`)}>
+        <div className={cx(data && `status-${data.ingest.status.id}`)}>
             <Form ingestId={ingestId as string}/>
             <hr/>
             <div className="content mt-6">
@@ -33,8 +33,8 @@ const HomePage = () => {
                         </p>
                     </div>
                 )}
+                {!ingestId && <RecentIngests />}
             </div>
-            {!ingestId && <RecentIngests />}
         </div>
     );
 };
