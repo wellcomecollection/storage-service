@@ -65,14 +65,11 @@ def lambda_handler(event, context):
     try:
         ingest, environment = get_ingest(ingest_id)
     except IngestNotFound:
-        return {
-            "statusCode": 404,
-            "body": json.dumps({"message": "Ingest not found."})
-        }
+        return {"statusCode": 404, "body": json.dumps({"message": "Ingest not found."})}
     except UserError:
         return {
             "statusCode": 400,
-            "body": json.dumps({"message": "Invalid ingest ID."})
+            "body": json.dumps({"message": "Invalid ingest ID."}),
         }
 
     ingest["events"] = tally_event_descriptions(ingest["events"], environment)
