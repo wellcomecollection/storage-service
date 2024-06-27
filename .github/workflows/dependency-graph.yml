@@ -19,5 +19,5 @@ jobs:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: eu-west-1
-          role-to-assume: ${{ secrets.WECO_GHAWS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.S3_SCALA_RELEASES_READ_ROLE_ARN }}
       - uses: scalacenter/sbt-dependency-submission@v2
