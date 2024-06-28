@@ -1,6 +1,0 @@
-services:
-  test:
-    build:
-      context: ebsco_indexer
-      dockerfile: ../../builds/test.python.Dockerfile
-    command: ["py.test"]

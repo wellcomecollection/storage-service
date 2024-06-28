@@ -36,8 +36,9 @@ const IngestEventItem = ({event}: { event: IngestData["events"][0] }) => {
             {(attemptCount || isFailed || event._is_unmatched_start) && (
                 <span className="text-[#777]">
                     {' '}(
-                    {attemptCount && `${attemptCount} / `}
-                    <a className={cx({"status-color font-medium": isFailed})} href={event.kibanaUrl} target="_blank" rel="noreferrer">dev logs</a>)
+                    {attemptCount}
+                    {attemptCount && event.kibanaUrl && ` / `}
+                    {event.kibanaUrl && <a className={cx({"status-color font-medium": isFailed})} href={event.kibanaUrl} target="_blank" rel="noreferrer">dev logs</a>})
                 </span>
             )}
         </li>

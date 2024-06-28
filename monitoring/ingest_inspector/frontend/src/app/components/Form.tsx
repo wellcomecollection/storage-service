@@ -38,7 +38,7 @@ export const Form = ({defaultIngestId}: FormProps) => {
                         onChange={(e) => setIngestId(e.target.value)}
                     />
                 </div>
-                <button type="submit" className="status-bg">
+                <button type="submit" className="status-bg hover:underline">
                     Look up ingest
                 </button>
             </form>

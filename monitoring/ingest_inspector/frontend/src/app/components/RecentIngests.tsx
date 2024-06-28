@@ -39,9 +39,9 @@ export const RecentIngests = () => {
     return (
         <>
             {recentIngests.length > 0 && <h2 className="font-bold text-xl mb-6">Recently viewed ingests</h2>}
-            <ul className="flex flex-wrap gap-4">
+            <ul className="flex flex-wrap gap-6">
                 {recentIngests.map((ingestData) => (
-                    <li key={ingestData.id} className="w-full basis-full lg:basis-[calc(50%-24px)]">
+                    <li key={ingestData.id} className="w-full basis-full lg:basis-[calc(50%-12px)]">
                         <div className={cx("w-full h-fit flex relative bg-[#EDECE3] rounded-md", `status-${ingestData.status.id}`)}>
                             <Link href={`?ingestId=${ingestData.id}`} className="w-full h-full no-underline group">
                                 <div className="p-4">
