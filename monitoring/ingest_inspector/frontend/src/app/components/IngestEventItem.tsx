@@ -26,7 +26,7 @@ const getAttemptCount = (event: IngestData["events"][0]) => {
     }
 }
 
-const IngestEvent = ({event}: { event: IngestData["events"][0] }) => {
+const IngestEventItem = ({event}: { event: IngestData["events"][0] }) => {
     const isFailed = event.description.includes("failed");
     const attemptCount = getAttemptCount(event);
 
@@ -43,4 +43,4 @@ const IngestEvent = ({event}: { event: IngestData["events"][0] }) => {
         </li>
     )
 }
-export default IngestEvent;
+export default IngestEventItem;

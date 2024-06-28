@@ -79,9 +79,9 @@ def lambda_handler(event, context):
     ingest["s3Url"] = get_s3_url(ingest["sourceLocation"])
     ingest["displayS3Url"] = get_display_s3_url(ingest["sourceLocation"])
     ingest["lastUpdatedDate"] = get_last_updated_date(ingest)
+    ingest["environment"] = environment
 
-    response = {"environment": environment, "ingest": ingest}
-    return {"statusCode": 200, "body": json.dumps(response)}
+    return {"statusCode": 200, "body": json.dumps(ingest)}
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@ import Link from "next/link";
 import {IngestData} from "@/app/types";
 import cx from "classnames";
 import {useEffect, useState} from "react";
+import IngestTags from "@/app/components/IngestTags";
 
 export const getRecentIngests = (): Array<IngestData> => {
     const storedIngests = localStorage.getItem("recentIngests");
@@ -37,16 +38,15 @@ export const RecentIngests = () => {
 
     return (
         <>
-            {recentIngests.length > 0 && <h2 className="font-bold text-xl mb-2">Recently viewed ingests</h2>}
+            {recentIngests.length > 0 && <h2 className="font-bold text-xl mb-6">Recently viewed ingests</h2>}
             <ul className="flex flex-wrap gap-4">
                 {recentIngests.map((ingestData) => (
-                    <li key={ingestData.id} className="w-full basis-full lg:basis-[calc(50%-16px)]">
-                        <div
-                            className={cx("w-full h-fit flex relative bg-[#EDECE3]", `status-${ingestData.status.id}`)}>
-                            <Link href={`?ingestId=${ingestData.id}`} className="w-full h-full no-underline">
-                                <div className="status-bg w-2 h-full absolute"/>
+                    <li key={ingestData.id} className="w-full basis-full lg:basis-[calc(50%-24px)]">
+                        <div className={cx("w-full h-fit flex relative bg-[#EDECE3] rounded-md", `status-${ingestData.status.id}`)}>
+                            <Link href={`?ingestId=${ingestData.id}`} className="w-full h-full no-underline group">
                                 <div className="p-4">
-                                    <div>{ingestData.id}</div>
+                                    <IngestTags ingestData={ingestData}/>
+                                    <h3 className="font-semibold text-xl mt-3 group-hover:underline">{ingestData.id}</h3>
                                     <div>{ingestData.space.id}/{ingestData.bag.info.externalIdentifier}</div>
                                 </div>
                             </Link>

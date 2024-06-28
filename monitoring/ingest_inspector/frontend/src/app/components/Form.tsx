@@ -1,12 +1,17 @@
 import {useRouter} from "next/navigation";
-import {FormEvent} from "react";
+import {FormEvent, useEffect, useState} from "react";
 
-type FontProps = {
-    ingestId?: string;
+type FormProps = {
+    defaultIngestId: string;
 }
 
-export const Form = ({ingestId}: FontProps) => {
+export const Form = ({defaultIngestId}: FormProps) => {
+    const [ingestId, setIngestId] = useState<string>(defaultIngestId);
     const router = useRouter();
+
+    useEffect(() => {
+        setIngestId(defaultIngestId);
+    }, [defaultIngestId])
 
     const onSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -24,12 +29,13 @@ export const Form = ({ingestId}: FontProps) => {
                 <div className="input-wrapper">
                     <label htmlFor="ingest-id">Ingest ID</label>
                     <input
-                        defaultValue={ingestId}
                         type="text"
                         name="ingest-id"
                         placeholder="123e4567-e89b-12d3-a456-426655440000"
                         autoFocus
                         spellCheck="false"
+                        value={ingestId}
+                        onChange={(e) => setIngestId(e.target.value)}
                     />
                 </div>
                 <button type="submit" className="status-bg">

@@ -13,16 +13,16 @@ const KIBANA_ERROR_URL =
 
 const HomePage = () => {
     const searchParams = useSearchParams();
-    const ingestId = searchParams.get("ingestId");
+    const ingestId = searchParams.get("ingestId") || "";
     const {data, isLoading, error} = useGetIngest(ingestId);
 
     return (
-        <div className={cx(data && `status-${data.ingest.status.id}`)}>
-            <Form ingestId={ingestId as string}/>
+        <div className={cx(data && `status-${data.status.id}`)}>
+            <Form defaultIngestId={ingestId}/>
             <hr/>
             <div className="content mt-6">
                 {data && (
-                    <Ingest ingestData={data.ingest} environment={data.environment}/>
+                    <Ingest ingestData={data} environment={data.environment}/>
                 )}
                 {error && (
                     <div className="mt-12">

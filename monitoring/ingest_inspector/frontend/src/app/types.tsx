@@ -50,9 +50,5 @@ export type IngestData = {
     _count: number;
     _repeated: boolean;
   }[];
-};
-
-export type IngestInspectorApiResponse = {
   environment: string;
-  ingest: IngestData;
 };

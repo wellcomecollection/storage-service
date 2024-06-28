@@ -156,16 +156,6 @@ button {
     color: black;
 }
 
-.card {
-    margin-bottom: 1em;
-    border: 3px solid;
-}
-
-.card-header {
-    padding: 0.5em 0.75em;
-    font-size: 120%;
-}
-
 .status-succeeded .card {
     border-color: #0b7051; /* validation green */
 }
@@ -203,40 +193,50 @@ button {
     font-weight: bold;
 }
 
-.status-succeeded .card .card-header.api-production {
+.status-succeeded .api-production {
     background: #0b7051; /* validation green */
     color: white;
+    border: 3px solid #0b7051;
 }
 
-.status-succeeded .card .card-header.api-staging {
+.status-succeeded .api-staging {
     color: #0b7051; /* validation green */
+    border: 3px solid #0b7051;
 }
 
-.status-processing .card .card-header.api-production {
+.status-processing .api-production {
     background: #1dbebb; /* turquoise */
     color: white;
+    border: 3px solid #1dbebb;
+
 }
 
-.status-processing .card .card-header.api-staging {
+.status-processing .api-staging {
     color: #1dbebb; /* turquoise */
+    border: 3px solid #1dbebb;
 }
 
-.status-failed .card .card-header.api-production {
+.status-failed .api-production {
     background: #e01b2f; /* validation red */
     color: white;
+    border: 3px solid #e01b2f;
 }
 
-.status-failed .card .card-header.api-staging {
+.status-failed .api-staging {
     color: #e01b2f; /* validation red */
+    border: 3px solid #e01b2f;
 }
 
-.status-accepted .card .card-header.api-production {
+.status-accepted .api-production {
     background: #ffce3c; /* yellow */
     color: black;
+    border: 3px solid #ffce3c;
+
 }
 
-.status-accepted .card .card-header.api-staging {
-    color: #c29207;
+.status-accepted .api-staging {
+    color: #ffce3c;
+    border: 3px solid #ffce3c;
 }
 
 .card ul {
@@ -320,16 +320,16 @@ dd {
         grid-template-columns: auto;
     }
 
-    .label {
+    dt {
         grid-column: 1 / 1;
         text-align: left;
     }
 
-    dt {
+    dd {
         grid-column: 1 / 1;
     }
 
-    dt:not(last-child) {
+    dd:not(last-child) {
         margin-bottom: 1.2em;
     }
 

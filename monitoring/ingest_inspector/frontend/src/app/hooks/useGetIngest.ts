@@ -27,11 +27,11 @@ const getIngest = async (
 
 
 export const useGetIngest = (ingestId: string | null) => {
-    const {data, isLoading, error} = useSWR<IngestInspectorApiResponse>(ingestId, getIngest, {revalidateOnFocus: false});
+    const {data, isLoading, error} = useSWR<IngestData>(ingestId, getIngest, {revalidateOnFocus: false});
 
     useEffect(() => {
         if (data) {
-            storeNewIngest(data.ingest);
+            storeNewIngest(data);
         }
     }, [data]);
 
