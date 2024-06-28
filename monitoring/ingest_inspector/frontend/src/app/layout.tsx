@@ -23,7 +23,7 @@ export default function RootLayout({
       <header>
         <div className="loading-indicator-wrapper w-full h-1 top-0 absolute" />
         <div className="content">
-          <Link href="/?">wellcome ingest inspector</Link>
+          <Link href="/?" className="no-underline hover:underline">wellcome ingest inspector</Link>
         </div>
       </header>
       <main>

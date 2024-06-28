@@ -26,7 +26,7 @@ export const Form = ({defaultIngestId}: FormProps) => {
     return (
         <div className="content my-8">
             <form onSubmit={onSubmit} className="flex items-end">
-                <div className="input-wrapper">
+                <div className="w-full mr-[10px]">
                     <label htmlFor="ingest-id">Ingest ID</label>
                     <input
                         type="text"

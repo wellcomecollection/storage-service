@@ -46,22 +46,6 @@ header {
     align-items: center;
 }
 
-header a,
-header a:visited {
-    color: black;
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-header a:hover {
-    text-decoration: underline;
-    background: none;
-}
-
-header a:visited:hover {
-    background: none;
-}
-
 hr {
     background-color: #ddd;
     height: 1px;
@@ -102,11 +86,6 @@ input:focus-within {
 
 .status-accepted input:focus-within {
     box-shadow: 0 0 0 4px #ffce3c; /* yellow */
-}
-
-.input-wrapper {
-    width: 100%;
-    margin-right: 10px;
 }
 
 label {
@@ -156,97 +135,65 @@ button {
     color: black;
 }
 
-.status-succeeded .card {
-    border-color: #0b7051; /* validation green */
+.status-succeeded .status-color {
+    color: #0b7051;
+    border-color: #0b7051;
 }
 
-.status-succeeded .card a {
-    color: #0b7051; /* validation green */
+.status-processing .status-color {
+    color: #1dbebb;
+    border-color: #1dbebb;
 }
 
-.status-processing .card {
-    border-color: #1dbebb; /* turquoise */
+.status-failed .status-color {
+    color: #e01b2f;
+    border-color: #e01b2f;
 }
 
-.status-processing .card a {
-    color: #1dbebb; /* turquoise */
+.status-accepted .status-color {
+    color: #ffce3c;
+    border-color: #ffce3c;
 }
 
-.status-failed .card {
-    border-color: #e01b2f; /* validation red */
-}
-
-.status-failed .card a {
-    color: #e01b2f; /* validation red */
-}
-
-.status-accepted .card {
-    border-color: #ffce3c; /* yellow */
-}
-
-.status-accepted .card a {
-    color: #c29207;
-}
-
-.card .card-header.api-staging {
-    border-bottom: 3px solid;
-    font-weight: bold;
+.api-production, .api-staging {
+    border-width: 3px;
+    border-style: solid;
 }
 
 .status-succeeded .api-production {
     background: #0b7051; /* validation green */
     color: white;
-    border: 3px solid #0b7051;
 }
 
 .status-succeeded .api-staging {
     color: #0b7051; /* validation green */
-    border: 3px solid #0b7051;
 }
 
 .status-processing .api-production {
     background: #1dbebb; /* turquoise */
     color: white;
-    border: 3px solid #1dbebb;
-
 }
 
 .status-processing .api-staging {
     color: #1dbebb; /* turquoise */
-    border: 3px solid #1dbebb;
 }
 
 .status-failed .api-production {
     background: #e01b2f; /* validation red */
     color: white;
-    border: 3px solid #e01b2f;
 }
 
 .status-failed .api-staging {
     color: #e01b2f; /* validation red */
-    border: 3px solid #e01b2f;
 }
 
 .status-accepted .api-production {
     background: #ffce3c; /* yellow */
     color: black;
-    border: 3px solid #ffce3c;
-
 }
 
 .status-accepted .api-staging {
     color: #ffce3c;
-    border: 3px solid #ffce3c;
-}
-
-.card ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-}
-
-.card li {
-    line-height: 1.6em;
 }
 
 footer {
@@ -262,30 +209,15 @@ footer a:visited {
     color: #777;
 }
 
-.count,
-.status-accepted .count a,
-.status-processing .count a,
-.status-failed .count a {
-    color: #555;
-    background: #ededed;
-}
-
-.status-succeeded .count,
-.status-succeeded .count a {
-    color: #777;
-    background: none;
-}
-
 .ingest-data {
     display: grid;
-    grid-column-gap: 8px;
-    grid-row-gap: 2px;
+    grid-row-gap: 20px;
     grid-template-columns: 180px auto;
 }
 
 dt {
     grid-column: 1 / 2;
-    text-align: right;
+    text-align: left;
     font-weight: 575;
 }
 
@@ -299,6 +231,7 @@ strong {
 
 dd {
     grid-column: 2 / 2;
+    width: fit-content;
 }
 
 /* https://twitter.com/thingskatedid/status/1314843881993764864 */
@@ -307,7 +240,6 @@ dd {
 }
 
 /* Give a strong visual hint that there's still callback stuff to do */
-
 .status-succeeded .callback--processing,
 .status-failed .callback--processing {
     background: rgba(0, 155, 178, 0.3);
@@ -315,9 +247,10 @@ dd {
     margin: -1px -4px;
 }
 
-@media screen and (max-width: 500px) {
+@media screen and (max-width: 700px) {
     .ingest-data {
         grid-template-columns: auto;
+        grid-row-gap: 0;
     }
 
     dt {

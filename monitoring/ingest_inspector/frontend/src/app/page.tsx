@@ -21,9 +21,7 @@ const HomePage = () => {
             <Form defaultIngestId={ingestId}/>
             <hr/>
             <div className="content mt-6">
-                {data && (
-                    <Ingest ingestData={data} environment={data.environment}/>
-                )}
+                {data && (<Ingest ingestData={data} />)}
                 {error && (
                     <div className="mt-12">
                         {error.message === APIErrors.INVALID_INGEST_ID && <h3 className="text-2xl">The ingest ID <strong>{ingestId}</strong> is not valid.</h3>}

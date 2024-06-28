@@ -34,50 +34,50 @@ const Ingest = ({ingestData}: IngestProps) => {
     const callbackStatus = ingestData.callback?.status.id;
 
     return (
-        <div className="mt-3 bg-[#EDECE3] p-8 card">
+        <div className="mt-3 bg-[#EDECE3] p-4 sm:p-8 card">
             <IngestTags ingestData={ingestData}/>
-            <h2 className="text-3xl font-medium mt-2">{ingestData.id}</h2>
-            <dl className="ingest-data p-4">
-                <dt>source location:</dt>
+            <h2 className="text-3xl font-medium mt-2 mb-4">{ingestData.id}</h2>
+            <dl className="ingest-data">
+                <dt>Source location:</dt>
                 <dd>
-                    <a href={ingestData.s3Url} target="_blank" rel="noreferrer">{ingestData.displayS3Url}</a>
+                    <a className="status-color" href={ingestData.s3Url} target="_blank" rel="noreferrer">{ingestData.displayS3Url}</a>
                 </dd>
 
-                <dt>storage space:</dt>
+                <dt>Storage space:</dt>
                 <dd>{space}</dd>
 
-                <dt>external identifier:</dt>
+                <dt>External identifier:</dt>
                 <dd>{ingestData.bag.info.externalIdentifier}</dd>
 
-                <dt>version:</dt>
-                <dd>{version || "none assigned"}</dd>
+                <dt>Version:</dt>
+                <dd>{version || "-"}</dd>
 
                 {/*If the ingest succeeded, we can link to the bag in S3.*/}
                 {status === "succeeded" && (
                     <>
-                        <dt>bag locations:</dt>
+                        <dt>Bag locations:</dt>
                         <dd>
-                            <a href={getS3Url(primaryBucket, path)}>s3://{primaryBucket}/{path}</a>
+                            <a className="status-color" href={getS3Url(primaryBucket, path)}>s3://{primaryBucket}/{path}</a>
                             <br/>
-                            <a href={getS3Url(glacierBucket, path)}>s3://{glacierBucket}/{path}</a>
+                            <a className="status-color" href={getS3Url(glacierBucket, path)}>s3://{glacierBucket}/{path}</a>
                         </dd>
                     </>
                 )}
 
-                <IngestFormattedDateItem label="created date:" date={ingestData.createdDate} includeDelta={false}/>
-                <IngestFormattedDateItem label="last update:" date={ingestData.lastUpdatedDate} includeDelta/>
+                <IngestFormattedDateItem label="Created:" date={ingestData.createdDate} includeDelta={false}/>
+                <IngestFormattedDateItem label="Last updated:" date={ingestData.lastUpdatedDate} includeDelta/>
 
                 {callbackStatus && (
                     <>
                         <dt className={`callback--${callbackStatus}`}>
-                            callback status:
+                            Callback status:
                         </dt>
                         <dd className={`callback--${callbackStatus}`}>
                             {callbackStatus === "processing" ? "pending" : callbackStatus}
                         </dd>
                     </>
                 )}
-                <dt>events:</dt>
+                <dt>Events:</dt>
                 <dd>
                     <ul>
                         {ingestData.events.map((event) => (

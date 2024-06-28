@@ -91,7 +91,7 @@ type IngestFormattedDateItemProps = {
 const IngestFormattedDateItem = ({label, date, includeDelta}: IngestFormattedDateItemProps) => (
     <>
         <dt>{label}</dt>
-        <dd className="timestamp" title={date}>
+        <dd className="timestamp w-fit" title={date}>
             {localiseDateString(date)}
             {includeDelta && ` ${updateDelta(date)}`}
         </dd>

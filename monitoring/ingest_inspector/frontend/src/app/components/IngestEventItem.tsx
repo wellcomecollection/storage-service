@@ -31,13 +31,13 @@ const IngestEventItem = ({event}: { event: IngestData["events"][0] }) => {
     const attemptCount = getAttemptCount(event);
 
     return (
-        <li title={event.createdDate} key={event.createdDate}>
+        <li title={event.createdDate} className="w-fit leading-[1.6rem]">
             <span className={cx({"font-semibold": isFailed})}>{event.description}</span>
             {(attemptCount || isFailed || event._is_unmatched_start) && (
-                <span className={cx({"count": attemptCount})}>
+                <span className="text-[#777]">
                     {' '}(
                     {attemptCount && `${attemptCount} / `}
-                    <a href={event.kibanaUrl} target="_blank" rel="noreferrer">dev logs</a>)
+                    <a className={cx({"status-color font-medium": isFailed})} href={event.kibanaUrl} target="_blank" rel="noreferrer">dev logs</a>)
                 </span>
             )}
         </li>

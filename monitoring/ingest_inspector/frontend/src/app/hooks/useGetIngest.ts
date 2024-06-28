@@ -1,8 +1,8 @@
 import useSWR from "swr";
-import {IngestInspectorApiResponse} from "@/app/types";
 import {useEffect} from "react";
 import {storeNewIngest} from "@/app/components/RecentIngests";
 import NProgress from "nprogress";
+import {IngestData} from "@/app/types";
 
 const BASE_API_URL =
     "https://xkgpnijmy5.execute-api.eu-west-1.amazonaws.com/v1/ingest";
@@ -14,7 +14,7 @@ export const APIErrors = {
 
 const getIngest = async (
     ingestId: string,
-): Promise<IngestInspectorApiResponse> => {
+): Promise<IngestData> => {
     const response = await fetch(`${BASE_API_URL}/${ingestId}`);
     const content = await response.json();
 
