@@ -1,17 +1,15 @@
-'use client';
+"use client";
 
-import {useRouter} from "next/navigation";
-import {useEffect} from "react";
-
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const NotFoundPage = () => {
-    const router = useRouter();
+  const router = useRouter();
 
-    // Redirect user to home page
-    useEffect(() => {
-        router.replace("/")
-    })
+  // Redirect user to home page
+  useEffect(() => {
+    router.replace("/");
+  });
 };
-
 
 export default NotFoundPage;
