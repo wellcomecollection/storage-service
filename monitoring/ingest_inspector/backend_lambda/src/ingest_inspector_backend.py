@@ -83,7 +83,7 @@ def lambda_handler(event, context):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Index EBSCO item fields into the Elasticsearch reporting cluster."
+        description="Retrieve a single ingest from the Wellcome Storage Service by its ID."
     )
     parser.add_argument(
         "--ingest-id",

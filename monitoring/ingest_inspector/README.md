@@ -134,9 +134,14 @@ The app has a number of features designed to make it as easy as possible for som
 
 You can use the app by visiting <https://d1dti1kbjcy26.cloudfront.net>.
 
-
 ## Development
+### Backend
 
+The backend consists of a single Lambda function, which fetches ingests from the Wellcome Storage Service. To run the Lambda function code locally, navigate into the `ingest_inspector/backend_lambda` directory and run:
+
+```shell
+AWS_PROFILE=storage-developer python3 src/ingest_inspector_backend.py --ingest-id=<INGEST_ID>
+```
 
 ### Frontend
 
@@ -149,9 +154,16 @@ npm run dev
 
 ### Deployments
 
+To upload a new version of the backend Lambda function into S3, run:
+
+```shell
+AWS_PROFILE=storage-developer python3 ./builds/publish_lambda_zip.py monitoring/ingest_inspector/backend_lambda --bucket=wellcomecollection-storage-infra --key=lambdas/monitoring/ingest_inspector_backend.zip
+```
+
 The frontend is hosted as a static website on S3 and served via CloudFront. To build and deploy the app, navigate into
 the `ingest_inspector/frontend` directory and run:
 
 ```shell
 sh deploy.sh
 ```
+
