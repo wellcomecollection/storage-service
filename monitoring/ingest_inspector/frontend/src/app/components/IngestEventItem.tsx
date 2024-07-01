@@ -27,7 +27,7 @@ const IngestEventItem = ({ event }: { event: IngestData["events"][0] }) => {
 
   return (
     <li title={event.createdDate} className="w-fit leading-[1.6rem]">
-      <span className={cx({ "font-semibold": isFailed })}>
+      <span className={cx({ "font-[575]": isFailed })}>
         {event.description}
       </span>
       {(attemptCount || isFailed || event._is_unmatched_start) && (

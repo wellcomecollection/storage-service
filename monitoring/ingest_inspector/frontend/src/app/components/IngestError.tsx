@@ -9,18 +9,32 @@ type IngestErrorProps = {
 };
 
 const IngestError = ({ ingestId, error }: IngestErrorProps) => {
+  let errorMessage;
+
+  if (error.message === APIErrors.INVALID_INGEST_ID) {
+    errorMessage = (
+      <>
+        The ingest ID <strong>{ingestId}</strong> is not valid.
+      </>
+    );
+  } else if (error.message === APIErrors.INGEST_NOT_FOUND) {
+    errorMessage = (
+      <>
+        Could not find ingest <strong>{ingestId}</strong>.
+      </>
+    );
+  } else {
+    errorMessage = (
+      <>
+        Something went wrong while looking up ingest <strong>{ingestId}</strong>
+        .
+      </>
+    );
+  }
+
   return (
     <div className="mt-12">
-      {error.message === APIErrors.INVALID_INGEST_ID && (
-        <h3 className="text-2xl">
-          The ingest ID <strong>{ingestId}</strong> is not valid.
-        </h3>
-      )}
-      {error.message === APIErrors.INGEST_NOT_FOUND && (
-        <h3 className="text-2xl">
-          Could not find ingest <strong>{ingestId}</strong>.
-        </h3>
-      )}
+      <h3 className="text-2xl">{errorMessage}</h3>
       <p className="mt-4 text-lg">
         Developers can{" "}
         <a href={KIBANA_ERROR_URL} target="_blank" rel="noreferrer">

@@ -201,9 +201,10 @@ dd {
 /* Give a strong visual hint that there's still callback stuff to do */
 .status-succeeded .callback--processing,
 .status-failed .callback--processing {
-  background: rgba(0, 155, 178, 0.3);
-  padding: 1px 4px;
-  margin: -1px -4px;
+  background: #B4D4D4;
+  padding: 6px;
+  margin: -6px;
+  width: 100%
 }
 
 @media screen and (max-width: 700px) {
@@ -224,9 +225,16 @@ dd {
     margin-bottom: 1.2em;
   }
 
-  .status-succeeded .callback--processing dd,
-  .status-failed .callback--processing dd {
-    padding-bottom: calc(1.2em - 2px);
+  .status-succeeded dt.callback--processing,
+  .status-failed dt.callback--processing {
+    margin-top: 0;
+    margin-bottom: -6px;
+  }
+
+  .status-succeeded dd.callback--processing,
+  .status-failed dd.callback--processing {
+    margin-top: -6px;
+    margin-bottom: 12px;
   }
 }
 
