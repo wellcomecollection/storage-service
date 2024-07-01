@@ -48,6 +48,16 @@ module "alex_glitch_dashboard" {
   allow_ingests_access = true
 }
 
+module "ingest_inspector_dashboard" {
+  source = "../modules/app_client"
+
+  name         = "Ingest Inspector dashboard"
+  user_pool_id = aws_cognito_user_pool.pool.id
+
+  allow_bags_access    = false
+  allow_ingests_access = true
+}
+
 module "catalogue_client" {
   source = "../modules/app_client"
 
