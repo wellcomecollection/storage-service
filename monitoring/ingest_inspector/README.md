@@ -132,7 +132,7 @@ The app has a number of features designed to make it as easy as possible for som
 
 ## Usage
 
-You can use the app by visiting <https://d1dti1kbjcy26.cloudfront.net>.
+You can use the app by visiting <https://ingest-inspector.wellcomecollection.org/>.
 
 ## Development
 ### Backend

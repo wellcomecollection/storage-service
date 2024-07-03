@@ -1,6 +1,7 @@
 import argparse
 import json
 import functools
+import os
 
 import boto3
 from wellcome_storage_service import (
@@ -18,6 +19,9 @@ from utils import (
 STAGING_URL = "https://api-stage.wellcomecollection.org/storage/v1"
 PRODUCTION_URL = "https://api.wellcomecollection.org/storage/v1"
 
+COGNITO_CLIENT_ID_SECRET_NAME = os.environ["COGNITO_CLIENT_ID_SECRET_NAME"]
+COGNITO_CLIENT_SECRET_SECRET_NAME = os.environ["COGNITO_CLIENT_SECRET_SECRET_NAME"]
+
 
 def _client_from_environment(api_url):
     secretsmanager = boto3.Session().client("secretsmanager")
@@ -25,8 +29,8 @@ def _client_from_environment(api_url):
     def _get_secretsmanager_value(secret_id: str):
         return secretsmanager.get_secret_value(SecretId=secret_id)["SecretString"]
 
-    client_id = _get_secretsmanager_value("ingest-inspector/cognito-client-id")
-    client_secret = _get_secretsmanager_value("ingest-inspector/cognito-client-secret")
+    client_id = _get_secretsmanager_value(COGNITO_CLIENT_ID_SECRET_NAME)
+    client_secret = _get_secretsmanager_value(COGNITO_CLIENT_SECRET_SECRET_NAME)
 
     return RequestsOAuthStorageServiceClient(
         api_url=api_url,

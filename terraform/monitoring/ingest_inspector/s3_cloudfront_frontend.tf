@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "ingest_inspector_frontend" {
-  bucket = "wellcomecollection-ingest-inspector-frontend"
+  bucket = var.serve_frontend_bucket_name
 }
 
 locals {
@@ -16,6 +16,8 @@ resource "aws_cloudfront_distribution" "ingest_inspector_cloudfront_distribution
     domain_name              = aws_s3_bucket.ingest_inspector_frontend.bucket_regional_domain_name
     origin_access_control_id = aws_cloudfront_origin_access_control.ingest_inspector_oac.id
   }
+
+  aliases = [var.domain_name]
 
   default_cache_behavior {
     target_origin_id = local.s3_origin_id
@@ -43,7 +45,9 @@ resource "aws_cloudfront_distribution" "ingest_inspector_cloudfront_distribution
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn = aws_acm_certificate.ingest_inspector_certificate.arn
+    ssl_support_method = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
   }
 
   price_class = "PriceClass_100"

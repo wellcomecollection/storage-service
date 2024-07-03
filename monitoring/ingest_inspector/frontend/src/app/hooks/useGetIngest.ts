@@ -5,7 +5,7 @@ import NProgress from "nprogress";
 import { IngestData } from "@/app/types";
 
 const BASE_API_URL =
-  "https://xkgpnijmy5.execute-api.eu-west-1.amazonaws.com/v1/ingest";
+  "https://gzz79crkhl.execute-api.eu-west-1.amazonaws.com/v1/ingest";
 
 export const APIErrors = {
   INVALID_INGEST_ID: "Invalid ingest ID.",
