@@ -45,7 +45,7 @@ resource "aws_cloudfront_distribution" "ingest_inspector_cloudfront_distribution
   }
 
   viewer_certificate {
-    acm_certificate_arn      = aws_acm_certificate.ingest_inspector_certificate.arn
+    acm_certificate_arn      = module.ingest_inspector_certificate.arn
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2021"
   }
