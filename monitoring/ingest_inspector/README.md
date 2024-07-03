@@ -164,6 +164,6 @@ The frontend is hosted as a static website on S3 and served via CloudFront. To b
 the `ingest_inspector/frontend` directory and run:
 
 ```shell
-sh deploy.sh
+AWS_PROFILE=storage-developer sh deploy.sh
 ```
 
