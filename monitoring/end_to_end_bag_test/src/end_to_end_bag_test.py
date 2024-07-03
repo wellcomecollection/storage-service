@@ -53,7 +53,7 @@ def main(*args):
     print(ingest_location)
 
     ingest_id = ingest_location.split("/")[-1]
-    return f"https://wellcome-ingest-inspector.glitch.me/ingests/{ingest_id}"
+    return f"https://ingest-inspector.wellcomecollection.org/ingests/{ingest_id}"
 
 
 if __name__ == "__main__":
