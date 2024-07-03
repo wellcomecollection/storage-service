@@ -1,6 +1,6 @@
 # The ACM certificate must be created in the us-east-1 region to work with CloudFront
 resource "aws_acm_certificate" "ingest_inspector_certificate" {
-  provider = aws.us-east-1
+  provider          = aws.us-east-1
   domain_name       = var.domain_name
   validation_method = "DNS"
 
@@ -30,7 +30,7 @@ resource "aws_route53_record" "cert_validation" {
 }
 
 resource "aws_acm_certificate_validation" "validation" {
-  provider = aws.us-east-1
-  certificate_arn = aws_acm_certificate.ingest_inspector_certificate.arn
+  provider                = aws.us-east-1
+  certificate_arn         = aws_acm_certificate.ingest_inspector_certificate.arn
   validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
 }
