@@ -21,8 +21,8 @@ module "ingest_inspector_lambda" {
   environment = {
     variables = {
       # The wellcome_storage_service Python package will not successfully import unless there is a HOME environment variable
-      "HOME" = "dummy_value"
-      "COGNITO_CLIENT_ID_SECRET_NAME" = aws_secretsmanager_secret.ingest_inspector_cognito_client_id.name
+      "HOME"                              = "dummy_value"
+      "COGNITO_CLIENT_ID_SECRET_NAME"     = aws_secretsmanager_secret.ingest_inspector_cognito_client_id.name
       "COGNITO_CLIENT_SECRET_SECRET_NAME" = aws_secretsmanager_secret.ingest_inspector_cognito_client_secret.name
     }
   }
