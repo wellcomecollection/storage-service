@@ -18,12 +18,11 @@ jobs:
           role-to-assume: ${{ secrets.DEPLOY_INGEST_INSPECTOR_GHA_ROLE_ARN }}
       - name: Deploy Ingest Inspector backend
         run: |
-          cd builds
-          pip3 install -r requirements.txt
-          python3 ./publish_lambda_zip.py monitoring/ingest_inspector/backend_lambda \
+          pip3 install -r ./builds/requirements.txt
+          python3 ./builds/publish_lambda_zip.py monitoring/ingest_inspector/backend_lambda \
               --bucket=wellcomecollection-storage-infra \
               --key=lambdas/monitoring/ingest_inspector_backend.zip
-          ./deploy_lambda_zip.sh monitoring/ingest_inspector_backend ingest_inspector_backend
+          ./builds/deploy_lambda_zip.sh monitoring/ingest_inspector_backend ingest_inspector_backend
       - name: Deploy Ingest Inspector frontend
         run: |
           cd monitoring/ingest_inspector/frontend
