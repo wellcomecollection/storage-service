@@ -7,7 +7,7 @@ Get a response from the ingests API.  Usage:
 The script will attempt to find the ingest ID in both the prod and staging APIs.
 
 For most use cases, you can use the web inspector:
-https://wellcome-ingest-inspector.glitch.me/
+https://ingest-inspector.wellcomecollection.org
 
 This script is useful if you need to see the raw JSON response direct from
 the ingests API.  We don't expose the raw JSON online -- it's publicly visible,

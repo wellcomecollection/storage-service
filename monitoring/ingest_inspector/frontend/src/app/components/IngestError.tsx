@@ -34,7 +34,7 @@ const IngestError = ({ ingestId, error }: IngestErrorProps) => {
 
   return (
     <div className="mt-12">
-      <h3 className="text-2xl">{errorMessage}</h3>
+      <h3 className="text-2xl break-all">{errorMessage}</h3>
       <p className="mt-4 text-lg">
         Developers can{" "}
         <a href={KIBANA_ERROR_URL} target="_blank" rel="noreferrer">

@@ -65,4 +65,6 @@ if __name__ == "__main__":
     resp = sns.publish(TopicArn=topic_arn, Message=json.dumps(payload))
     print(resp)
 
-    webbrowser.open(f"https://wellcome-ingest-inspector.glitch.me/ingests/{ingest_id}")
+    webbrowser.open(
+        f"https://ingest-inspector.wellcomecollection.org/ingests/{ingest_id}"
+    )

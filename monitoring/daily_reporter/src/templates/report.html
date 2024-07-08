@@ -169,7 +169,7 @@
                   {% for ingest in ingests_by_status[label].get(classification) | sort(attribute="lastModifiedDate", reverse=True) %}
                   <tr class="status-{{ ingest.status }}">
                     <td class="ingest_id">
-                      <a href="https://wellcome-ingest-inspector.glitch.me/ingests/{{ ingest.id }}">{{ ingest.id }}</a></td>
+                      <a href="https://ingest-inspector.wellcomecollection.org/ingests/{{ ingest.id }}">{{ ingest.id }}</a></td>
                     <td>{{ ingest.space }}</td>
                     <td>{{ ingest.externalIdentifier }}</td>
                     <td>{{ ingest.version or "(no version)" }}</td>

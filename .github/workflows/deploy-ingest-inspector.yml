@@ -1,0 +1,29 @@
+name: Deploy Ingest Inspector
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+
+jobs:
+  deploy_ingest_inspector:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: eu-west-1
+          role-to-assume: ${{ secrets.DEPLOY_INGEST_INSPECTOR_GHA_ROLE_ARN }}
+      - name: Deploy Ingest Inspector backend
+        run: |
+          pip3 install -r ./builds/requirements.txt
+          python3 ./builds/publish_lambda_zip.py monitoring/ingest_inspector/backend_lambda \
+              --bucket=wellcomecollection-storage-infra \
+              --key=lambdas/monitoring/ingest_inspector_backend.zip
+          ./builds/deploy_lambda_zip.sh monitoring/ingest_inspector_backend ingest_inspector_backend
+      - name: Deploy Ingest Inspector frontend
+        run: |
+          cd monitoring/ingest_inspector/frontend
+          sh deploy.sh

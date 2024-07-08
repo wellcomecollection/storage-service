@@ -132,7 +132,7 @@ The app has a number of features designed to make it as easy as possible for som
 
 ## Usage
 
-You can use the app by visiting <https://d1dti1kbjcy26.cloudfront.net>.
+You can use the app by visiting <https://ingest-inspector.wellcomecollection.org/>.
 
 ## Development
 ### Backend
@@ -164,6 +164,6 @@ The frontend is hosted as a static website on S3 and served via CloudFront. To b
 the `ingest_inspector/frontend` directory and run:
 
 ```shell
-sh deploy.sh
+AWS_PROFILE=storage-developer sh deploy.sh
 ```
 

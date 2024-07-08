@@ -1,5 +1,8 @@
 #!/bin/sh
 
+echo "Installing packages..."
+npm install
+
 echo "Building app..."
 npm run build
 
@@ -9,7 +12,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Uploading to S3..."
-AWS_PROFILE=storage-developer aws s3 cp out s3://wellcomecollection-ingest-inspector-frontend --recursive --only-show-errors
+aws s3 cp out s3://wellcomecollection-ingest-inspector-frontend --recursive --only-show-errors
 
 if [ $? -eq 0 ]; then
   echo "Success!"

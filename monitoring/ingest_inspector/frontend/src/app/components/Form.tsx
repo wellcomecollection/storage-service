@@ -19,7 +19,7 @@ export const Form = ({ defaultIngestId }: FormProps) => {
     const ingestId = data.get("ingest-id") as string;
 
     if (ingestId?.length > 0) {
-      router.push(`/?ingestId=${ingestId}`);
+      router.push(`/?ingestId=${encodeURIComponent(ingestId)}`);
     }
   };
 
