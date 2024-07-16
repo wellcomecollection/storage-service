@@ -5,10 +5,7 @@ import grizzled.slf4j.Logging
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
 import weco.messaging.MessageSender
-import weco.messaging.sqsworker.pekko.{
-  PekkoSQSWorker,
-  PekkoSQSWorkerConfig
-}
+import weco.messaging.sqsworker.pekko.{PekkoSQSWorker, PekkoSQSWorkerConfig}
 import weco.messaging.worker.models.{Result, Successful}
 import weco.monitoring.Metrics
 import weco.storage_service.ingests.models.{

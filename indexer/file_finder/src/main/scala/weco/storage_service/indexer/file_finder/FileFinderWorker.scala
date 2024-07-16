@@ -6,10 +6,7 @@ import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
 import weco.messaging.MessageSender
-import weco.messaging.sqsworker.pekko.{
-  PekkoSQSWorker,
-  PekkoSQSWorkerConfig
-}
+import weco.messaging.sqsworker.pekko.{PekkoSQSWorker, PekkoSQSWorkerConfig}
 import weco.messaging.worker.models.{Result, RetryableFailure, Successful}
 import weco.monitoring.Metrics
 import weco.storage_service.bag_tracker.client.{

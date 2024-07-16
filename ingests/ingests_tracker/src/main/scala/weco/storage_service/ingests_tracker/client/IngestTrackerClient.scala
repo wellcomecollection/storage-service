@@ -10,7 +10,7 @@ import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
 import weco.json.JsonUtil._
 import weco.storage_service.ingests.models.{Ingest, IngestID, IngestUpdate}
-import weco.http.client.{PekkoHttpClient, HttpClient, HttpGet, HttpPost}
+import weco.http.client.{HttpClient, HttpGet, HttpPost, PekkoHttpClient}
 
 import scala.concurrent.{ExecutionContext, Future}
 

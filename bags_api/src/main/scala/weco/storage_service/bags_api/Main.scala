@@ -9,8 +9,8 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import weco.http.typesafe.HTTPServerBuilder
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.bag_tracker.client.{
-  PekkoBagTrackerClient,
-  BagTrackerClient
+  BagTrackerClient,
+  PekkoBagTrackerClient
 }
 import weco.storage.providers.s3.S3ObjectLocationPrefix
 import weco.storage.services.s3.{S3PresignedUrls, S3Uploader}

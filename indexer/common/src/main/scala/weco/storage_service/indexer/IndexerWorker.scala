@@ -9,10 +9,7 @@ import grizzled.slf4j.Logging
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.Message
-import weco.messaging.sqsworker.pekko.{
-  PekkoSQSWorker,
-  PekkoSQSWorkerConfig
-}
+import weco.messaging.sqsworker.pekko.{PekkoSQSWorker, PekkoSQSWorkerConfig}
 import weco.messaging.worker.models.{
   Result,
   RetryableFailure,

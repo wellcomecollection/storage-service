@@ -12,7 +12,7 @@ import weco.storage_service.bag_tracker.models.BagVersionList
 import weco.storage_service.bagit.models.{BagId, BagVersion}
 import weco.storage_service.storage.models.StorageManifest
 import weco.storage.RetryableError
-import weco.http.client.{PekkoHttpClient, HttpClient, HttpGet, HttpPost}
+import weco.http.client.{HttpClient, HttpGet, HttpPost, PekkoHttpClient}
 import weco.http.json.CirceMarshalling
 
 import scala.concurrent.{ExecutionContext, Future}

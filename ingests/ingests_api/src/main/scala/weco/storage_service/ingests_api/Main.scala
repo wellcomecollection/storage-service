@@ -9,8 +9,8 @@ import weco.messaging.typesafe.SNSBuilder
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.ingests_api.services.IngestCreator
 import weco.storage_service.ingests_tracker.client.{
-  PekkoIngestTrackerClient,
-  IngestTrackerClient
+  IngestTrackerClient,
+  PekkoIngestTrackerClient
 }
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.EnrichConfig._
