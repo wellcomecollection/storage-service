@@ -1,12 +1,12 @@
 package weco.messaging.typesafe
 
 import com.typesafe.config.Config
-import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import weco.messaging.sqsworker.pekko.PekkoSQSWorkerConfig
 import weco.monitoring.typesafe.MetricsBuilder
 
-object AlpakkaSqsWorkerConfigBuilder {
+object PekkoSQSWorkerConfigBuilder {
   def build(config: Config) =
-    AlpakkaSQSWorkerConfig(
+    PekkoSQSWorkerConfig(
       metricsConfig = MetricsBuilder.buildMetricsConfig(config),
       sqsConfig = SQSBuilder.buildSQSConfig(config)
     )

@@ -1,6 +1,6 @@
 package weco.storage_service.notifier.services
 
-import akka.http.scaladsl.model.HttpResponse
+import org.apache.pekko.http.scaladsl.model.HttpResponse
 import grizzled.slf4j.Logging
 import weco.storage_service.ingests.models.Callback.{Failed, Succeeded}
 import weco.storage_service.ingests.models.IngestCallbackStatusUpdate

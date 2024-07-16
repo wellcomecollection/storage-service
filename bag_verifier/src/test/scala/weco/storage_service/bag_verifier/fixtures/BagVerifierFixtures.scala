@@ -1,11 +1,11 @@
 package weco.storage_service.bag_verifier.fixtures
 
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType
-import weco.akka.fixtures.Akka
+import weco.pekko.fixtures.Pekko
 import weco.fixtures.TestWith
 import weco.messaging.fixtures.SQS
 import weco.messaging.fixtures.SQS.Queue
-import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.messaging.fixtures.worker.PekkoSQSWorkerFixtures
 import weco.messaging.memory.MemoryMessageSender
 import weco.monitoring.memory.MemoryMetrics
 import weco.storage_service.bag_verifier.builder.BagVerifierWorkerBuilder
@@ -21,9 +21,9 @@ import weco.storage.fixtures.{AzureFixtures, DynamoFixtures, S3Fixtures}
 import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 
 trait BagVerifierFixtures
-    extends AlpakkaSQSWorkerFixtures
+    extends PekkoSQSWorkerFixtures
     with SQS
-    with Akka
+    with Pekko
     with OperationFixtures
     with S3Fixtures
     with AzureFixtures
@@ -55,7 +55,7 @@ trait BagVerifierFixtures
       val worker = BagVerifierWorkerBuilder
         .buildStandaloneVerifierWorker(
           primaryBucket = bucket.name,
-          alpakkaSqsWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+          PekkoSQSWorkerConfig = createPekkoSQSWorkerConfig(queue),
           ingestUpdater = ingestUpdater,
           outgoingPublisher = outgoingPublisher
         )
@@ -93,7 +93,7 @@ trait BagVerifierFixtures
 
       val worker = BagVerifierWorkerBuilder.buildReplicaS3BagVerifierWorker(
         primaryBucket = bucket.name,
-        alpakkaSqsWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+        PekkoSQSWorkerConfig = createPekkoSQSWorkerConfig(queue),
         ingestUpdater = ingestUpdater,
         outgoingPublisher = outgoingPublisher
       )
@@ -134,7 +134,7 @@ trait BagVerifierFixtures
           BagVerifierWorkerBuilder.buildReplicaAzureBagVerifierWorker(
             primaryBucket = bucket.name,
             dynamoConfig = createDynamoConfigWith(table),
-            alpakkaSqsWorkerConfig = createAlpakkaSQSWorkerConfig(queue),
+            PekkoSQSWorkerConfig = createPekkoSQSWorkerConfig(queue),
             ingestUpdater = ingestUpdater,
             outgoingPublisher = outgoingPublisher
           )

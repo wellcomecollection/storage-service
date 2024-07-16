@@ -1,7 +1,7 @@
 package weco.storage_service.ingests_api
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.model.Uri
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.http.scaladsl.model.Uri
 import com.typesafe.config.Config
 import weco.http.typesafe.HTTPServerBuilder
 import weco.messaging.sns.SNSConfig
@@ -9,7 +9,7 @@ import weco.messaging.typesafe.SNSBuilder
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.ingests_api.services.IngestCreator
 import weco.storage_service.ingests_tracker.client.{
-  AkkaIngestTrackerClient,
+  PekkoIngestTrackerClient,
   IngestTrackerClient
 }
 import weco.typesafe.WellcomeTypesafeApp
@@ -34,7 +34,7 @@ object Main extends WellcomeTypesafeApp {
     )
 
     val ingestCreatorInstance = new IngestCreator(
-      ingestTrackerClient = new AkkaIngestTrackerClient(ingestTrackerHost),
+      ingestTrackerClient = new PekkoIngestTrackerClient(ingestTrackerHost),
       unpackerMessageSender = SNSBuilder.buildSNSMessageSender(
         config,
         namespace = "unpacker",
@@ -42,7 +42,7 @@ object Main extends WellcomeTypesafeApp {
       )
     )
 
-    val client = new AkkaIngestTrackerClient(ingestTrackerHost)
+    val client = new PekkoIngestTrackerClient(ingestTrackerHost)
 
     val router = new IngestsApi[SNSConfig] {
       override val ingestTrackerClient: IngestTrackerClient = client

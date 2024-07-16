@@ -1,16 +1,16 @@
 package weco.storage_service.indexer.bags
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import com.sksamuel.elastic4s.Index
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.elasticsearch.ElasticsearchIndexCreator
 import weco.elasticsearch.typesafe.ElasticBuilder
 import weco.json.JsonUtil._
-import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
+import weco.messaging.typesafe.PekkoSQSWorkerConfigBuilder
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
-import weco.storage_service.bag_tracker.client.AkkaBagTrackerClient
+import weco.storage_service.bag_tracker.client.PekkoBagTrackerClient
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.EnrichConfig._
 
@@ -49,12 +49,12 @@ object Main extends WellcomeTypesafeApp {
       index = index
     )
 
-    val bagTrackerClient = new AkkaBagTrackerClient(
+    val bagTrackerClient = new PekkoBagTrackerClient(
       trackerHost = config.requireString("bags.tracker.host")
     )
 
     new BagIndexerWorker(
-      config = AlpakkaSqsWorkerConfigBuilder.build(config),
+      config = PekkoSQSWorkerConfigBuilder.build(config),
       indexer = bagIndexer,
       bagTrackerClient = bagTrackerClient
     )

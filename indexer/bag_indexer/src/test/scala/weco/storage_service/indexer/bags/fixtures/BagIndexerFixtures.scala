@@ -93,7 +93,7 @@ trait BagIndexerFixtures
 
       withBagTrackerClient(storageManifestDao) { bagTrackerClient =>
         val worker = new BagIndexerWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
+          config = createPekkoSQSWorkerConfig(queue),
           indexer = createIndexer(index),
           bagTrackerClient = bagTrackerClient
         )

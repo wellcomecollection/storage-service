@@ -1,11 +1,11 @@
 package weco.storage_service.bag_register.services
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
 import weco.messaging.MessageSender
-import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import weco.messaging.sqsworker.pekko.PekkoSQSWorkerConfig
 import weco.messaging.worker.models.Result
 import weco.monitoring.Metrics
 import weco.storage_service.bag_register.models.RegistrationSummary
@@ -22,7 +22,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 class BagRegisterWorker[IngestDestination, NotificationDestination](
-  val config: AlpakkaSQSWorkerConfig,
+  val config: PekkoSQSWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   registrationNotifications: MessageSender[NotificationDestination],
   register: Register
@@ -93,7 +93,7 @@ class BagRegisterWorker[IngestDestination, NotificationDestination](
 
   // The IngestStepWorker trait expects a processMessage() method, which returns
   // a Try[…].  That method then gets called to provide the process() method,
-  // which is in turn used by the AlpakkaSQSWorker.
+  // which is in turn used by the PekkoSQSWorker.
   //
   // Because the bag tracker client returns a Future[…] rather than a Try[…],
   // we bypass this method and define our own process().  We still have to define

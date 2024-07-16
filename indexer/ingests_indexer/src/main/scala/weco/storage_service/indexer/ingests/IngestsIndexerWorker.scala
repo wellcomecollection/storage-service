@@ -1,9 +1,9 @@
 package weco.storage_service.indexer.ingests
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import weco.messaging.sqsworker.pekko.PekkoSQSWorkerConfig
 import weco.monitoring.Metrics
 import weco.storage_service.ingests.models.Ingest
 import weco.storage_service.indexer.{Indexer, IndexerWorker, IndexerWorkerError}
@@ -12,7 +12,7 @@ import weco.storage_service.indexer.ingests.models.IndexedIngest
 import scala.concurrent.Future
 
 class IngestsIndexerWorker(
-  config: AlpakkaSQSWorkerConfig,
+  config: PekkoSQSWorkerConfig,
   val indexer: Indexer[Ingest, IndexedIngest]
 )(
   implicit

@@ -1,14 +1,14 @@
 package weco.storage_service.indexer.file_finder
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
 import weco.messaging.sns.SNSMessageSender
-import weco.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, SNSBuilder}
+import weco.messaging.typesafe.{PekkoSQSWorkerConfigBuilder, SNSBuilder}
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
-import weco.storage_service.bag_tracker.client.AkkaBagTrackerClient
+import weco.storage_service.bag_tracker.client.PekkoBagTrackerClient
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.EnrichConfig._
 
@@ -34,12 +34,12 @@ object Main extends WellcomeTypesafeApp {
         subject = "Sent from the file finder"
       )
 
-    val bagTrackerClient = new AkkaBagTrackerClient(
+    val bagTrackerClient = new PekkoBagTrackerClient(
       trackerHost = config.requireString("bags.tracker.host")
     )
 
     new FileFinderWorker(
-      config = AlpakkaSqsWorkerConfigBuilder.build(config),
+      config = PekkoSQSWorkerConfigBuilder.build(config),
       bagTrackerClient = bagTrackerClient,
       messageSender = sender
     )

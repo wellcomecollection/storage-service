@@ -1,11 +1,11 @@
 package weco.storage_service.bag_register
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
-import weco.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, SNSBuilder}
+import weco.messaging.typesafe.{PekkoSQSWorkerConfigBuilder, SNSBuilder}
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.bag_register.services.{
@@ -13,7 +13,7 @@ import weco.storage_service.bag_register.services.{
   Register,
   S3StorageManifestService
 }
-import weco.storage_service.bag_tracker.client.AkkaBagTrackerClient
+import weco.storage_service.bag_tracker.client.PekkoBagTrackerClient
 import weco.storage_service.bagit.services.s3.S3BagReader
 import weco.storage_service.config.builders.{
   IngestUpdaterBuilder,
@@ -48,7 +48,7 @@ object Main extends WellcomeTypesafeApp {
 
     val register = new Register(
       bagReader = new S3BagReader(),
-      bagTrackerClient = new AkkaBagTrackerClient(
+      bagTrackerClient = new PekkoBagTrackerClient(
         trackerHost = config.requireString("bags.tracker.host")
       ),
       storageManifestService = storageManifestService
@@ -61,7 +61,7 @@ object Main extends WellcomeTypesafeApp {
     )
 
     new BagRegisterWorker(
-      config = AlpakkaSqsWorkerConfigBuilder.build(config),
+      config = PekkoSQSWorkerConfigBuilder.build(config),
       ingestUpdater = ingestUpdater,
       registrationNotifications = registrationNotifications,
       register = register

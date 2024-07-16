@@ -2,21 +2,21 @@ package weco.storage_service.storage
 
 import java.util.UUID
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.headers.{ETag, Location}
-import akka.http.scaladsl.model.{
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.http.scaladsl.model.headers.{ETag, Location}
+import org.apache.pekko.http.scaladsl.model.{
   HttpHeader,
   HttpRequest,
   HttpResponse,
   StatusCodes
 }
-import akka.http.scaladsl.server.Directives._
-import akka.stream.Materializer
-import akka.stream.scaladsl.StreamConverters
+import org.apache.pekko.http.scaladsl.server.Directives._
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.StreamConverters
 import org.apache.commons.io.IOUtils
 import org.scalatest.funspec.AnyFunSpec
-import weco.akka.fixtures.Akka
+import weco.pekko.fixtures.Pekko
 import weco.fixtures.TestWith
 import weco.storage.fixtures.S3Fixtures
 import weco.storage.fixtures.S3Fixtures.Bucket
@@ -27,7 +27,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class LargeResponsesTest extends AnyFunSpec with S3Fixtures with Akka {
+class LargeResponsesTest extends AnyFunSpec with S3Fixtures with Pekko {
 
   private val converter = StreamConverters.asInputStream()
 

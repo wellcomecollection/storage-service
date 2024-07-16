@@ -1,12 +1,12 @@
 package weco.storage_service.bag_register.services
 
-import akka.http.scaladsl.model.Uri
+import org.apache.pekko.http.scaladsl.model.Uri
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import weco.storage_service.bag_register.fixtures.BagRegisterFixtures
 import weco.storage_service.bag_register.models.RegistrationSummary
-import weco.storage_service.bag_tracker.client.AkkaBagTrackerClient
+import weco.storage_service.bag_tracker.client.PekkoBagTrackerClient
 import weco.storage_service.bag_tracker.fixtures.BagTrackerFixtures
 import weco.storage_service.bagit.models.BagId
 import weco.storage_service.bagit.services.s3.S3BagReader
@@ -111,7 +111,7 @@ class RegisterTest
       val ingestId = createIngestID
 
       withActorSystem { implicit actorSystem =>
-        val bagTrackerClient = new AkkaBagTrackerClient(
+        val bagTrackerClient = new PekkoBagTrackerClient(
           trackerHost = Uri("http://localhost:9000/doesnotexist")
         )
 

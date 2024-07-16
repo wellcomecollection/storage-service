@@ -1,6 +1,6 @@
 package weco.storage_service.bag_replicator
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import com.azure.storage.blob.{BlobServiceClient, BlobServiceClientBuilder}
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.s3.{S3AsyncClient, S3Client}
@@ -9,7 +9,7 @@ import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.transfer.s3.S3TransferManager
 import weco.json.JsonUtil._
 import weco.messaging.sns.SNSConfig
-import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
+import weco.messaging.typesafe.PekkoSQSWorkerConfigBuilder
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage.providers.azure.AzureBlobLocationPrefix
@@ -102,7 +102,7 @@ object Main extends WellcomeTypesafeApp {
       DstPrefix
     ] =
       new BagReplicatorWorker(
-        config = AlpakkaSqsWorkerConfigBuilder.build(config),
+        config = PekkoSQSWorkerConfigBuilder.build(config),
         ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
         outgoingPublisher =
           OutgoingPublisherBuilder.build(config, operationName),

@@ -1,11 +1,11 @@
 package weco.storage_service.notifier
 
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
+import org.apache.pekko.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
 import org.scalatest.Inside
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import weco.akka.fixtures.Akka
+import weco.pekko.fixtures.Pekko
 import weco.fixtures.TimeAssertions
 import weco.http.client.HttpClient
 import weco.http.fixtures.HttpFixtures
@@ -23,7 +23,7 @@ class NotifierFeatureTest
     extends AnyFunSpec
     with Matchers
     with ScalaFutures
-    with Akka
+    with Pekko
     with IntegrationPatience
     with NotifierFixtures
     with Inside

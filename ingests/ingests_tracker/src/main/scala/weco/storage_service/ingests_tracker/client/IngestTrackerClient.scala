@@ -1,16 +1,16 @@
 package weco.storage_service.ingests_tracker.client
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.marshalling.Marshal
-import akka.http.scaladsl.model.Uri.Path
-import akka.http.scaladsl.model._
-import akka.http.scaladsl.unmarshalling.Unmarshal
-import akka.stream.Materializer
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.http.scaladsl.marshalling.Marshal
+import org.apache.pekko.http.scaladsl.model.Uri.Path
+import org.apache.pekko.http.scaladsl.model._
+import org.apache.pekko.http.scaladsl.unmarshalling.Unmarshal
+import org.apache.pekko.stream.Materializer
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
 import weco.json.JsonUtil._
 import weco.storage_service.ingests.models.{Ingest, IngestID, IngestUpdate}
-import weco.http.client.{AkkaHttpClient, HttpClient, HttpGet, HttpPost}
+import weco.http.client.{PekkoHttpClient, HttpClient, HttpGet, HttpPost}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -98,14 +98,14 @@ trait IngestTrackerClient extends Logging {
     } yield ingest
 }
 
-class AkkaIngestTrackerClient(trackerHost: Uri)(
+class PekkoIngestTrackerClient(trackerHost: Uri)(
   implicit
   as: ActorSystem,
   val mat: Materializer,
   val ec: ExecutionContext
 ) extends IngestTrackerClient {
   override val client =
-    new AkkaHttpClient() with HttpGet with HttpPost {
+    new PekkoHttpClient() with HttpGet with HttpPost {
       override val baseUri: Uri = trackerHost
     }
 }

@@ -79,7 +79,7 @@ trait BagVerifierTestCases[Verifier <: BagVerifier[
   )(
     testWith: TestWith[(Bucket, BagPrefix), R]
   )(implicit namespace: Namespace): R =
-    withTypedStore { implicit typedStore =>
+    withTypedStore { _ =>
       withLocalS3Bucket { implicit primaryBucket =>
         val (bagRoot, _) = bagBuilder.storeBagWith(
           space = space,

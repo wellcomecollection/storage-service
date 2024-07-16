@@ -1,12 +1,12 @@
 package weco.storage_service.ingests_worker.services
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import grizzled.slf4j.Logging
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
-import weco.messaging.sqsworker.alpakka.{
-  AlpakkaSQSWorker,
-  AlpakkaSQSWorkerConfig
+import weco.messaging.sqsworker.pekko.{
+  PekkoSQSWorker,
+  PekkoSQSWorkerConfig
 }
 import weco.messaging.worker.models.{
   Result,
@@ -27,7 +27,7 @@ import weco.typesafe.Runnable
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
 class IngestsWorkerService(
-  config: AlpakkaSQSWorkerConfig,
+  config: PekkoSQSWorkerConfig,
   ingestTrackerClient: IngestTrackerClient
 )(
   implicit actorSystem: ActorSystem,
@@ -39,7 +39,7 @@ class IngestsWorkerService(
   implicit val ec: ExecutionContextExecutor = actorSystem.dispatcher
 
   private val worker =
-    new AlpakkaSQSWorker[IngestUpdate, Ingest](config)(processMessage)
+    new PekkoSQSWorker[IngestUpdate, Ingest](config)(processMessage)
 
   def processMessage(ingestUpdate: IngestUpdate): Future[Result[Ingest]] = {
     ingestTrackerClient.updateIngest(ingestUpdate).map {

@@ -2,8 +2,8 @@ package weco.storage_service.bags_api
 
 import java.time.format.DateTimeFormatter
 
-import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.model.headers.{ETag, Location}
+import org.apache.pekko.http.scaladsl.model.StatusCodes
+import org.apache.pekko.http.scaladsl.model.headers.{ETag, Location}
 import io.circe.optics.JsonPath.root
 import io.circe.parser.parse
 import org.scalatest.Assertion

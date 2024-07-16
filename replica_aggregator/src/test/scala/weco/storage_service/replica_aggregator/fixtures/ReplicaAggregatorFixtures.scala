@@ -1,10 +1,10 @@
 package weco.storage_service.replica_aggregator.fixtures
 
-import weco.akka.fixtures.Akka
+import weco.pekko.fixtures.Pekko
 import weco.fixtures.TestWith
 import weco.json.JsonUtil._
 import weco.messaging.fixtures.SQS.Queue
-import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.messaging.fixtures.worker.PekkoSQSWorkerFixtures
 import weco.messaging.memory.MemoryMessageSender
 import weco.monitoring.memory.MemoryMetrics
 import weco.storage_service.fixtures.OperationFixtures
@@ -22,8 +22,8 @@ import weco.storage.store.memory.MemoryVersionedStore
 
 trait ReplicaAggregatorFixtures
     extends OperationFixtures
-    with Akka
-    with AlpakkaSQSWorkerFixtures {
+    with Pekko
+    with PekkoSQSWorkerFixtures {
 
   def withReplicaAggregatorWorker[R](
     queue: Queue = dummyQueue,
@@ -43,7 +43,7 @@ trait ReplicaAggregatorFixtures
       implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
       val worker = new ReplicaAggregatorWorker(
-        config = createAlpakkaSQSWorkerConfig(queue),
+        config = createPekkoSQSWorkerConfig(queue),
         replicaAggregator = new ReplicaAggregator(versionedStore),
         replicaCounter =
           new ReplicaCounter(expectedReplicaCount = expectedReplicaCount),

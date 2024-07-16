@@ -1,13 +1,13 @@
 package weco.storage_service.notifier.services
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import grizzled.slf4j.Logging
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
 import weco.messaging.MessageSender
-import weco.messaging.sqsworker.alpakka.{
-  AlpakkaSQSWorker,
-  AlpakkaSQSWorkerConfig
+import weco.messaging.sqsworker.pekko.{
+  PekkoSQSWorker,
+  PekkoSQSWorkerConfig
 }
 import weco.messaging.worker.models.{Result, Successful}
 import weco.monitoring.Metrics
@@ -21,7 +21,7 @@ import weco.typesafe.Runnable
 import scala.concurrent.{ExecutionContext, Future}
 
 class NotifierWorker[Destination](
-  config: AlpakkaSQSWorkerConfig,
+  config: PekkoSQSWorkerConfig,
   callbackUrlService: CallbackUrlService,
   messageSender: MessageSender[Destination]
 )(
@@ -32,7 +32,7 @@ class NotifierWorker[Destination](
 ) extends Runnable
     with Logging {
   private val worker =
-    new AlpakkaSQSWorker[CallbackNotification, IngestCallbackStatusUpdate](
+    new PekkoSQSWorker[CallbackNotification, IngestCallbackStatusUpdate](
       config
     )(processMessage)
 

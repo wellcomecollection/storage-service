@@ -1,9 +1,9 @@
 package weco.storage_service.indexer.bags
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import weco.messaging.sqsworker.pekko.PekkoSQSWorkerConfig
 import weco.monitoring.Metrics
 import weco.storage_service.bag_tracker.client.{
   BagTrackerClient,
@@ -25,7 +25,7 @@ import weco.storage_service.indexer.{
 import scala.concurrent.Future
 
 class BagIndexerWorker(
-  config: AlpakkaSQSWorkerConfig,
+  config: PekkoSQSWorkerConfig,
   val indexer: Indexer[StorageManifest, IndexedStorageManifest],
   val bagTrackerClient: BagTrackerClient
 )(

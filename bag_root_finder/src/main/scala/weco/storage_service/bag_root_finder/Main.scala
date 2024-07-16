@@ -1,11 +1,11 @@
 package weco.storage_service.bag_root_finder
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
-import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
+import weco.messaging.typesafe.PekkoSQSWorkerConfigBuilder
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.bag_root_finder.services.{
@@ -39,7 +39,7 @@ object Main extends WellcomeTypesafeApp {
     val operationName = OperationNameBuilder.getName(config)
 
     new BagRootFinderWorker(
-      config = AlpakkaSqsWorkerConfigBuilder.build(config),
+      config = PekkoSQSWorkerConfigBuilder.build(config),
       bagRootFinder = new BagRootFinder(),
       ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
       outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName)

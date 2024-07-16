@@ -2,7 +2,7 @@ package weco.storage_service.ingests_tracker.client
 
 import java.time.Instant
 
-import akka.http.scaladsl.model.Uri
+import org.apache.pekko.http.scaladsl.model.Uri
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
@@ -242,14 +242,14 @@ trait IngestTrackerClientTestCases
   }
 }
 
-class AkkaIngestTrackerClientTest
+class PekkoIngestTrackerClientTest
     extends IngestTrackerClientTestCases
     with IntegrationPatience {
   override def withIngestTrackerClient[R](
     trackerUri: String
   )(testWith: TestWith[IngestTrackerClient, R]): R =
     withActorSystem { implicit actorSystem =>
-      val client = new AkkaIngestTrackerClient(trackerHost = Uri(trackerUri))
+      val client = new PekkoIngestTrackerClient(trackerHost = Uri(trackerUri))
 
       testWith(client)
     }

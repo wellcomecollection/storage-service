@@ -6,7 +6,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import weco.fixtures.TestWith
 import weco.json.JsonUtil._
 import weco.messaging.fixtures.SQS.Queue
-import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.messaging.fixtures.worker.PekkoSQSWorkerFixtures
 import weco.messaging.memory.MemoryMessageSender
 import weco.monitoring.memory.MemoryMetrics
 import weco.storage_service.bag_tracker.client.BagTrackerClient
@@ -17,7 +17,7 @@ import weco.storage_service.bag_tracker.fixtures.{
 import weco.storage_service.indexer.file_finder.FileFinderWorker
 
 trait WorkerServiceFixture
-    extends AlpakkaSQSWorkerFixtures
+    extends PekkoSQSWorkerFixtures
     with BagTrackerFixtures
     with StorageManifestDaoFixture {
   def withWorkerService[R](
@@ -32,7 +32,7 @@ trait WorkerServiceFixture
       implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
       val service = new FileFinderWorker(
-        config = createAlpakkaSQSWorkerConfig(queue),
+        config = createPekkoSQSWorkerConfig(queue),
         bagTrackerClient = bagTrackerClient,
         messageSender = messageSender,
         batchSize = batchSize

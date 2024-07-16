@@ -1,6 +1,6 @@
 package weco.storage_service.ingests_api.fixtures
 
-import akka.http.scaladsl.model.HttpEntity
+import org.apache.pekko.http.scaladsl.model.HttpEntity
 import io.circe.Decoder
 import weco.fixtures.TestWith
 import weco.json.JsonUtil.fromJson
@@ -12,7 +12,7 @@ import weco.storage_service.ingests.models.Ingest
 import weco.storage_service.ingests_api.IngestsApi
 import weco.storage_service.ingests_api.services.IngestCreator
 import weco.storage_service.ingests_tracker.client.{
-  AkkaIngestTrackerClient,
+  PekkoIngestTrackerClient,
   IngestTrackerClient
 }
 import weco.storage_service.ingests_tracker.fixtures.{
@@ -47,7 +47,7 @@ trait IngestsApiFixture
         metrics = metrics
       )
 
-      val client = new AkkaIngestTrackerClient(trackerUri)
+      val client = new PekkoIngestTrackerClient(trackerUri)
 
       val ingestCreatorInstance = new IngestCreator(
         ingestTrackerClient = client,

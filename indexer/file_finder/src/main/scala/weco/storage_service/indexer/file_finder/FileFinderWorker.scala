@@ -1,14 +1,14 @@
 package weco.storage_service.indexer.file_finder
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import grizzled.slf4j.Logging
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
 import weco.messaging.MessageSender
-import weco.messaging.sqsworker.alpakka.{
-  AlpakkaSQSWorker,
-  AlpakkaSQSWorkerConfig
+import weco.messaging.sqsworker.pekko.{
+  PekkoSQSWorker,
+  PekkoSQSWorkerConfig
 }
 import weco.messaging.worker.models.{Result, RetryableFailure, Successful}
 import weco.monitoring.Metrics
@@ -24,7 +24,7 @@ import weco.typesafe.Runnable
 import scala.concurrent.{ExecutionContext, Future}
 
 class FileFinderWorker(
-  val config: AlpakkaSQSWorkerConfig,
+  val config: PekkoSQSWorkerConfig,
   val bagTrackerClient: BagTrackerClient,
   messageSender: MessageSender[_],
   // How this default was derived: the max SNS message size is 256KB.
@@ -44,7 +44,7 @@ class FileFinderWorker(
     with Logging {
 
   private val worker =
-    new AlpakkaSQSWorker[BagRegistrationNotification, Nothing](config)(
+    new PekkoSQSWorker[BagRegistrationNotification, Nothing](config)(
       processMessage
     )
 

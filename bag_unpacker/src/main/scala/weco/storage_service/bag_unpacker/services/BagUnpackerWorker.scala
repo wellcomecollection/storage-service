@@ -1,9 +1,9 @@
 package weco.storage_service.bag_unpacker.services
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import weco.messaging.sqsworker.pekko.PekkoSQSWorkerConfig
 import weco.monitoring.Metrics
 import weco.storage_service.bag_unpacker.builders.BagLocationBuilder
 import weco.storage_service.bag_unpacker.config.models.BagUnpackerWorkerConfig
@@ -18,7 +18,7 @@ import scala.concurrent.Future
 import scala.util.Try
 
 class BagUnpackerWorker[IngestDestination, OutgoingDestination](
-  val config: AlpakkaSQSWorkerConfig,
+  val config: PekkoSQSWorkerConfig,
   bagUnpackerWorkerConfig: BagUnpackerWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],

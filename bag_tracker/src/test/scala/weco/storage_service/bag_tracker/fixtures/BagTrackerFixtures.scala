@@ -1,18 +1,18 @@
 package weco.storage_service.bag_tracker.fixtures
 
-import akka.http.scaladsl.model.Uri
-import weco.akka.fixtures.Akka
+import org.apache.pekko.http.scaladsl.model.Uri
+import weco.pekko.fixtures.Pekko
 import weco.fixtures.TestWith
 import weco.storage_service.bag_tracker.BagTrackerApi
 import weco.storage_service.bag_tracker.client.{
-  AkkaBagTrackerClient,
+  PekkoBagTrackerClient,
   BagTrackerClient
 }
 import weco.storage_service.bag_tracker.storage.StorageManifestDao
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-trait BagTrackerFixtures extends Akka {
+trait BagTrackerFixtures extends Pekko {
   private val host: String = "localhost"
   private val port: Int = 8080
 
@@ -34,7 +34,7 @@ trait BagTrackerFixtures extends Akka {
   )(testWith: TestWith[BagTrackerClient, R]): R =
     withActorSystem { implicit actorSystem =>
       withApi(storageManifestDao) { _ =>
-        val client = new AkkaBagTrackerClient(trackerHost = Uri(trackerHost))
+        val client = new PekkoBagTrackerClient(trackerHost = Uri(trackerHost))
 
         testWith(client)
       }

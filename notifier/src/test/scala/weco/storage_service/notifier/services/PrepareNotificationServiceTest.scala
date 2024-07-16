@@ -1,11 +1,11 @@
 package weco.storage_service.notifier.services
 
-import akka.http.scaladsl.model.HttpResponse
+import org.apache.pekko.http.scaladsl.model.HttpResponse
 import org.scalatest.prop.TableDrivenPropertyChecks._
 import org.scalatest.Assertion
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import weco.akka.fixtures.Akka
+import weco.pekko.fixtures.Pekko
 import weco.storage_service.generators.StorageRandomGenerators
 import weco.storage_service.ingests.models.{Callback, IngestID}
 import weco.fixtures.TimeAssertions
@@ -15,7 +15,7 @@ import scala.util.{Failure, Success, Try}
 class PrepareNotificationServiceTest
     extends AnyFunSpec
     with Matchers
-    with Akka
+    with Pekko
     with TimeAssertions
     with StorageRandomGenerators {
 

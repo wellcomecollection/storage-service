@@ -1,6 +1,6 @@
 package weco.storage_service.notifier.services
 
-import akka.http.scaladsl.model._
+import org.apache.pekko.http.scaladsl.model._
 import grizzled.slf4j.Logging
 import weco.http.client.HttpClient
 import weco.http.json.DisplayJsonUtil

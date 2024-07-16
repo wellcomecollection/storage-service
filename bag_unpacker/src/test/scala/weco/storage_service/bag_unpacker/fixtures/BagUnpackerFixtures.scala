@@ -1,11 +1,11 @@
 package weco.storage_service.bag_unpacker.fixtures
 
-import weco.akka.fixtures.Akka
+import weco.pekko.fixtures.Pekko
 import weco.fixtures.TestWith
 import weco.json.JsonUtil._
 import weco.messaging.fixtures.SQS
 import weco.messaging.fixtures.SQS.Queue
-import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.messaging.fixtures.worker.PekkoSQSWorkerFixtures
 import weco.messaging.memory.MemoryMessageSender
 import weco.monitoring.memory.MemoryMetrics
 import weco.storage_service.bag_unpacker.config.models.BagUnpackerWorkerConfig
@@ -21,8 +21,8 @@ import weco.storage.store.s3.S3StreamStore
 trait BagUnpackerFixtures
     extends SQS
     with OperationFixtures
-    with Akka
-    with AlpakkaSQSWorkerFixtures
+    with Pekko
+    with PekkoSQSWorkerFixtures
     with S3Fixtures {
 
   def withBagUnpackerWorker[R](
@@ -39,7 +39,7 @@ trait BagUnpackerFixtures
       implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
       val bagUnpackerWorker = new BagUnpackerWorker(
-        config = createAlpakkaSQSWorkerConfig(queue),
+        config = createPekkoSQSWorkerConfig(queue),
         bagUnpackerWorkerConfig = BagUnpackerWorkerConfig(dstBucket.name),
         ingestUpdater = ingestUpdater,
         outgoingPublisher = outgoingPublisher,

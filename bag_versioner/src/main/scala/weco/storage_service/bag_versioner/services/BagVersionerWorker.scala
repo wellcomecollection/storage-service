@@ -1,9 +1,9 @@
 package weco.storage_service.bag_versioner.services
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import weco.messaging.sqsworker.pekko.PekkoSQSWorkerConfig
 import weco.monitoring.Metrics
 import weco.storage_service.ingests.models.{
   IngestEvent,
@@ -28,7 +28,7 @@ import scala.concurrent.duration._
 import scala.util.{Success, Try}
 
 class BagVersionerWorker[IngestDestination, OutgoingDestination](
-  val config: AlpakkaSQSWorkerConfig,
+  val config: PekkoSQSWorkerConfig,
   bagVersioner: BagVersioner,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination]

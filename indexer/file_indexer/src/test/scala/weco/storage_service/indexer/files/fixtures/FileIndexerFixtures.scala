@@ -60,7 +60,7 @@ trait FileIndexerFixtures
       implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
       val worker = new FileIndexerWorker(
-        config = createAlpakkaSQSWorkerConfig(queue),
+        config = createPekkoSQSWorkerConfig(queue),
         indexer = createIndexer(index)
       )
 

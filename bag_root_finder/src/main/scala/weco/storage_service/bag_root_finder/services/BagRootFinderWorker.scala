@@ -1,9 +1,9 @@
 package weco.storage_service.bag_root_finder.services
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import weco.messaging.sqsworker.pekko.PekkoSQSWorkerConfig
 import weco.monitoring.Metrics
 import weco.storage_service._
 import weco.storage_service.ingests.services.IngestUpdater
@@ -22,7 +22,7 @@ import scala.concurrent.Future
 import scala.util.{Success, Try}
 
 class BagRootFinderWorker[IngestDestination, OutgoingDestination](
-  val config: AlpakkaSQSWorkerConfig,
+  val config: PekkoSQSWorkerConfig,
   bagRootFinder: BagRootFinder,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination]

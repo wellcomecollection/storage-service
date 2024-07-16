@@ -1,12 +1,12 @@
 package weco.storage_service.replica_aggregator
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import com.typesafe.config.Config
 import org.scanamo.generic.auto._
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
-import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
+import weco.messaging.typesafe.PekkoSQSWorkerConfigBuilder
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage.dynamo.DynamoConfig
@@ -61,7 +61,7 @@ object Main extends WellcomeTypesafeApp {
       OperationNameBuilder.getName(config)
 
     new ReplicaAggregatorWorker(
-      config = AlpakkaSqsWorkerConfigBuilder.build(config),
+      config = PekkoSQSWorkerConfigBuilder.build(config),
       replicaAggregator = new ReplicaAggregator(dynamoVersionedStore),
       replicaCounter = new ReplicaCounter(
         expectedReplicaCount =

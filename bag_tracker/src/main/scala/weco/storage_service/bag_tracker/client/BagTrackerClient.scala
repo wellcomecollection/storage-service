@@ -1,10 +1,10 @@
 package weco.storage_service.bag_tracker.client
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.model.Uri.Path
-import akka.http.scaladsl.model._
-import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
-import akka.stream.{Materializer, StreamTcpException}
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.http.scaladsl.model.Uri.Path
+import org.apache.pekko.http.scaladsl.model._
+import org.apache.pekko.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
+import org.apache.pekko.stream.{Materializer, StreamTcpException}
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
 import weco.json.JsonUtil._
@@ -12,7 +12,7 @@ import weco.storage_service.bag_tracker.models.BagVersionList
 import weco.storage_service.bagit.models.{BagId, BagVersion}
 import weco.storage_service.storage.models.StorageManifest
 import weco.storage.RetryableError
-import weco.http.client.{AkkaHttpClient, HttpClient, HttpGet, HttpPost}
+import weco.http.client.{PekkoHttpClient, HttpClient, HttpGet, HttpPost}
 import weco.http.json.CirceMarshalling
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -179,13 +179,13 @@ trait BagTrackerClient extends Logging {
     }
 }
 
-class AkkaBagTrackerClient(trackerHost: Uri)(
+class PekkoBagTrackerClient(trackerHost: Uri)(
   implicit actorSystem: ActorSystem,
   val ec: ExecutionContext,
   val mat: Materializer
 ) extends BagTrackerClient {
   override val client =
-    new AkkaHttpClient() with HttpGet with HttpPost {
+    new PekkoHttpClient() with HttpGet with HttpPost {
       override val baseUri: Uri = trackerHost
     }
 }

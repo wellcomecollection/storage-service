@@ -2,10 +2,10 @@ package weco.storage_service.replica_aggregator.services
 
 import java.time.Instant
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import weco.messaging.sqsworker.pekko.PekkoSQSWorkerConfig
 import weco.monitoring.Metrics
 import weco.storage_service.bagit.models.BagVersion
 import weco.storage_service.ingests.services.IngestUpdater
@@ -23,7 +23,7 @@ import scala.concurrent.Future
 import scala.util.{Success, Try}
 
 class ReplicaAggregatorWorker[IngestDestination, OutgoingDestination](
-  val config: AlpakkaSQSWorkerConfig,
+  val config: PekkoSQSWorkerConfig,
   replicaAggregator: ReplicaAggregator,
   replicaCounter: ReplicaCounter,
   ingestUpdater: IngestUpdater[IngestDestination],

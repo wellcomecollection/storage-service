@@ -2,15 +2,15 @@ package weco.storage_service.ingests_tracker
 
 import java.time.Instant
 
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.HttpMethods._
-import akka.http.scaladsl.model._
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.http.scaladsl.model.HttpMethods._
+import org.apache.pekko.http.scaladsl.model._
 import io.circe.syntax._
 import org.scalatest.EitherValues
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
-import weco.akka.fixtures.Akka
+import weco.pekko.fixtures.Pekko
 import weco.fixtures.TestWith
 import weco.json.JsonUtil._
 import weco.json.utils.JsonAssertions
@@ -24,7 +24,7 @@ import weco.http.fixtures.HttpFixtures
 class IngestsTrackerApiFeatureTest
     extends AnyFunSpec
     with Matchers
-    with Akka
+    with Pekko
     with IngestsTrackerApiFixture
     with JsonAssertions
     with HttpFixtures

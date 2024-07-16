@@ -1,6 +1,6 @@
 package weco.storage_service.bag_tracker
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import com.typesafe.config.Config
 import weco.storage_service.bag_tracker.config.builders.StorageManifestDaoBuilder
 import weco.typesafe.WellcomeTypesafeApp

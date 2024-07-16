@@ -1,7 +1,7 @@
 package weco.storage_service.notifier.services
 
 import java.net.URI
-import akka.http.scaladsl.model._
+import org.apache.pekko.http.scaladsl.model._
 import io.circe.parser.parse
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{Assertion, EitherValues}

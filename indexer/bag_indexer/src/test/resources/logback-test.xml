@@ -16,5 +16,5 @@
   <logger name="software.amazon.awssdk" level="WARN"/>
 
   <!-- This class logs the merged Akka config at INFO level -->
-  <logger name="akka.actor.ActorSystemImpl" level="WARN"/>
+  <logger name="pekko.actor.ActorSystemImpl" level="WARN"/>
 </configuration>

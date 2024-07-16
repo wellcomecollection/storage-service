@@ -2,11 +2,11 @@ package weco.storage_service.bag_versioner.fixtures
 
 import java.util.UUID
 
-import weco.akka.fixtures.Akka
+import weco.pekko.fixtures.Pekko
 import weco.fixtures.TestWith
 import weco.json.JsonUtil._
 import weco.messaging.fixtures.SQS.Queue
-import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.messaging.fixtures.worker.PekkoSQSWorkerFixtures
 import weco.messaging.memory.MemoryMessageSender
 import weco.monitoring.memory.MemoryMetrics
 import weco.storage_service.fixtures.OperationFixtures
@@ -18,8 +18,8 @@ import weco.storage.locking.LockDao
 
 trait BagVersionerFixtures
     extends OperationFixtures
-    with Akka
-    with AlpakkaSQSWorkerFixtures
+    with Pekko
+    with PekkoSQSWorkerFixtures
     with VersionPickerFixtures {
 
   def withBagVersioner[R](
@@ -48,7 +48,7 @@ trait BagVersionerFixtures
 
       withBagVersioner { bagVersioner =>
         val worker = new BagVersionerWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
+          config = createPekkoSQSWorkerConfig(queue),
           bagVersioner = bagVersioner,
           ingestUpdater = ingestUpdater,
           outgoingPublisher = outgoingPublisher
