@@ -4,7 +4,7 @@ import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.http.scaladsl.Http
 import org.apache.pekko.http.scaladsl.server.Directives._
 import org.apache.pekko.http.scaladsl.server.Route
-import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
+import com.github.pjfanning.pekkohttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
 import weco.json.JsonUtil._
 import weco.storage_service.bag_tracker.services.{

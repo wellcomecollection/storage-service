@@ -5,7 +5,7 @@ import java.util.UUID
 
 import org.apache.pekko.http.scaladsl.model._
 import org.apache.pekko.http.scaladsl.unmarshalling.Unmarshal
-import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
+import com.github.pjfanning.pekkohttpcirce.FailFastCirceSupport._
 import io.circe.Json
 import io.circe.optics.JsonPath.root
 import io.circe.parser._

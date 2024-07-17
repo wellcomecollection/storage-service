@@ -5,7 +5,7 @@ import org.apache.pekko.http.scaladsl.Http
 import org.apache.pekko.http.scaladsl.model._
 import org.apache.pekko.http.scaladsl.server.Directives.{get, _}
 import org.apache.pekko.http.scaladsl.server.Route
-import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
+import com.github.pjfanning.pekkohttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
 import weco.json.JsonUtil._
 import weco.storage_service.ingests.models.{Ingest, IngestID, IngestUpdate}

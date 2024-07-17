@@ -6,7 +6,7 @@ import org.apache.pekko.http.scaladsl.model.Uri.Path
 import org.apache.pekko.http.scaladsl.model._
 import org.apache.pekko.http.scaladsl.unmarshalling.Unmarshal
 import org.apache.pekko.stream.Materializer
-import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
+import com.github.pjfanning.pekkohttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
 import weco.json.JsonUtil._
 import weco.storage_service.ingests.models.{Ingest, IngestID, IngestUpdate}

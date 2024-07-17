@@ -3,7 +3,7 @@ package weco.storage_service.bag_tracker.services
 import org.apache.pekko.http.scaladsl.model.StatusCodes
 import org.apache.pekko.http.scaladsl.server.Directives.complete
 import org.apache.pekko.http.scaladsl.server.Route
-import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
+import com.github.pjfanning.pekkohttpcirce.ErrorAccumulatingCirceSupport._
 import grizzled.slf4j.Logging
 import weco.json.JsonUtil._
 import weco.storage_service.bag_tracker.storage.StorageManifestDao
