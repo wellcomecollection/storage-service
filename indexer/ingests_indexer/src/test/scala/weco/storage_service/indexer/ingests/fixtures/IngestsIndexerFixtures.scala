@@ -43,7 +43,7 @@ trait IngestsIndexerFixtures
       implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
       val worker = new IngestsIndexerWorker(
-        config = createAlpakkaSQSWorkerConfig(queue),
+        config = createPekkoSQSWorkerConfig(queue),
         indexer = createIndexer(index)
       )
 

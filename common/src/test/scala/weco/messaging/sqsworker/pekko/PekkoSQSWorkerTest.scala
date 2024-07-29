@@ -1,4 +1,4 @@
-package weco.messaging.sqsworker.alpakka
+package weco.messaging.sqsworker.pekko
 
 import java.net.SocketTimeoutException
 
@@ -10,24 +10,24 @@ import org.scalatest.concurrent.{
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{Millis, Seconds, Span}
-import weco.akka.fixtures.Akka
+import weco.pekko.fixtures.Pekko
 import weco.json.JsonUtil._
 import weco.messaging.fixtures.SQS.QueuePair
 import weco.messaging.fixtures.monitoring.metrics.MetricsFixtures
-import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.messaging.fixtures.worker.PekkoSQSWorkerFixtures
 import weco.messaging.worker.models.TerminalFailure
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class AlpakkaSQSWorkerTest
+class PekkoSQSWorkerTest
     extends AnyFunSpec
     with Matchers
-    with AlpakkaSQSWorkerFixtures
+    with PekkoSQSWorkerFixtures
     with MetricsFixtures
     with ScalaFutures
     with Eventually
     with AbstractPatienceConfiguration
-    with Akka {
+    with Pekko {
 
   override implicit val patienceConfig: PatienceConfig =
     PatienceConfig(
@@ -35,14 +35,14 @@ class AlpakkaSQSWorkerTest
       interval = scaled(Span(150, Millis))
     )
 
-  val namespace = "AlpakkaSQSWorkerTest"
+  val namespace = "PekkoSQSWorkerTest"
 
   describe("When a message is processed") {
     it("consumes a message and increments success metrics") {
       withLocalSqsQueuePair() {
         case QueuePair(queue, dlq) =>
           withActorSystem { implicit actorSystem =>
-            withAlpakkaSQSWorker(queue, successful, namespace) {
+            withPekkoSQSWorker(queue, successful, namespace) {
               case (worker, _, metrics, callCounter) =>
                 worker.start
 
@@ -80,7 +80,7 @@ class AlpakkaSQSWorkerTest
       withLocalSqsQueuePair() {
         case QueuePair(queue, dlq) =>
           withActorSystem { implicit actorSystem =>
-            withAlpakkaSQSWorker(queue, successful, namespace) {
+            withPekkoSQSWorker(queue, successful, namespace) {
               case (worker, _, metrics, callCounter) =>
                 worker.start
 
@@ -113,7 +113,7 @@ class AlpakkaSQSWorkerTest
       withLocalSqsQueuePair() {
         case QueuePair(queue, dlq) =>
           withActorSystem { implicit actorSystem =>
-            withAlpakkaSQSWorker(queue, terminalFailure, namespace) {
+            withPekkoSQSWorker(queue, terminalFailure, namespace) {
               case (worker, _, metrics, callCounter) =>
                 worker.start
 
@@ -147,7 +147,7 @@ class AlpakkaSQSWorkerTest
       withLocalSqsQueuePair() {
         case QueuePair(queue, dlq) =>
           withActorSystem { implicit actorSystem =>
-            withAlpakkaSQSWorker(queue, retryableFailure, namespace) {
+            withPekkoSQSWorker(queue, retryableFailure, namespace) {
               case (worker, _, metrics, callCounter) =>
                 worker.start
 
@@ -187,7 +187,7 @@ class AlpakkaSQSWorkerTest
       withLocalSqsQueuePair() {
         case QueuePair(queue, dlq) =>
           withActorSystem { implicit actorSystem =>
-            withAlpakkaSQSWorker(queue, terminalFailure, namespace) {
+            withPekkoSQSWorker(queue, terminalFailure, namespace) {
               case (worker, _, metrics, callCounter) =>
                 worker.start
 
@@ -223,7 +223,7 @@ class AlpakkaSQSWorkerTest
       withLocalSqsQueuePair() {
         case QueuePair(queue, dlq) =>
           withActorSystem { implicit actorSystem =>
-            withAlpakkaSQSWorker(queue, successful, namespace) {
+            withPekkoSQSWorker(queue, successful, namespace) {
               case (worker, _, metrics, _) =>
                 worker.start
 
@@ -253,7 +253,7 @@ class AlpakkaSQSWorkerTest
       withLocalSqsQueuePair() {
         case QueuePair(queue, dlq) =>
           withActorSystem { implicit actorSystem =>
-            withAlpakkaSQSWorker(queue, successful, namespace) {
+            withPekkoSQSWorker(queue, successful, namespace) {
               case (worker, _, metrics, _) =>
                 worker.start
 

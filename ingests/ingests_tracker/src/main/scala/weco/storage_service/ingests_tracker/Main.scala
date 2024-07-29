@@ -1,6 +1,6 @@
 package weco.storage_service.ingests_tracker
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import weco.messaging.sns.{SNSConfig, SNSMessageSender}

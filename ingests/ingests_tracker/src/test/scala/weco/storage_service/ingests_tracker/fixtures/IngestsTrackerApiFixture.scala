@@ -1,12 +1,12 @@
 package weco.storage_service.ingests_tracker.fixtures
 
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.HttpMethods.{GET, POST}
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse, RequestEntity}
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.http.scaladsl.model.HttpMethods.{GET, POST}
+import org.apache.pekko.http.scaladsl.model.{HttpRequest, HttpResponse, RequestEntity}
 import org.scalatest.concurrent.ScalaFutures.whenReady
 import org.scalatest.concurrent.{IntegrationPatience, PatienceConfiguration}
 import org.scalatest.time.{Seconds, Span}
-import weco.akka.fixtures.Akka
+import weco.pekko.fixtures.Pekko
 import weco.fixtures.TestWith
 import weco.messaging.memory.MemoryMessageSender
 import weco.storage.maxima.memory.MemoryMaxima
@@ -26,7 +26,7 @@ trait IngestsTrackerApiFixture
     extends IngestTrackerFixtures
     with IngestGenerators
     with IntegrationPatience
-    with Akka {
+    with Pekko {
 
   val trackerUri = "http://localhost:8080"
 

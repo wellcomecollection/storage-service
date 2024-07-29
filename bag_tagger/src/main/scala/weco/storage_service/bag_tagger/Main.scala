@@ -1,11 +1,11 @@
 package weco.storage_service.bag_tagger
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
-import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
+import weco.messaging.typesafe.PekkoSQSWorkerConfigBuilder
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.bag_tagger.services.{
@@ -13,7 +13,7 @@ import weco.storage_service.bag_tagger.services.{
   BagTaggerWorker,
   TagRules
 }
-import weco.storage_service.bag_tracker.client.AkkaBagTrackerClient
+import weco.storage_service.bag_tracker.client.PekkoBagTrackerClient
 import weco.typesafe.WellcomeTypesafeApp
 import weco.typesafe.config.builders.EnrichConfig._
 
@@ -32,7 +32,7 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: SqsAsyncClient =
       SqsAsyncClient.builder().build()
 
-    val bagTrackerClient = new AkkaBagTrackerClient(
+    val bagTrackerClient = new PekkoBagTrackerClient(
       trackerHost = config.requireString("bags.tracker.host")
     )
 
@@ -40,7 +40,7 @@ object Main extends WellcomeTypesafeApp {
       S3Client.builder().build()
 
     new BagTaggerWorker(
-      config = AlpakkaSqsWorkerConfigBuilder.build(config),
+      config = PekkoSQSWorkerConfigBuilder.build(config),
       bagTrackerClient = bagTrackerClient,
       applyTags = ApplyTags(),
       tagRules = TagRules.chooseTags

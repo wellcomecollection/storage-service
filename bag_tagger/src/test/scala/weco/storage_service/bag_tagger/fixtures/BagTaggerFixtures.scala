@@ -7,7 +7,7 @@ import org.scalatest.Suite
 
 import weco.fixtures.TestWith
 import weco.messaging.fixtures.SQS.Queue
-import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.messaging.fixtures.worker.PekkoSQSWorkerFixtures
 import weco.monitoring.memory.MemoryMetrics
 import weco.storage_service.bag_tracker.fixtures.{
   BagTrackerFixtures,
@@ -32,7 +32,7 @@ trait BagTaggerFixtures
     with S3Fixtures
     with BagTrackerFixtures
     with StorageManifestDaoFixture
-    with AlpakkaSQSWorkerFixtures { this: Suite =>
+    with PekkoSQSWorkerFixtures { this: Suite =>
 
   def withWorkerService[R](
     queue: Queue = Queue(
@@ -53,7 +53,7 @@ trait BagTaggerFixtures
       withBagTrackerClient(storageManifestDao = storageManifestDao) {
         trackerClient =>
           val worker = new BagTaggerWorker(
-            config = createAlpakkaSQSWorkerConfig(queue),
+            config = createPekkoSQSWorkerConfig(queue),
             bagTrackerClient = trackerClient,
             applyTags = applyTags,
             tagRules = tagRules

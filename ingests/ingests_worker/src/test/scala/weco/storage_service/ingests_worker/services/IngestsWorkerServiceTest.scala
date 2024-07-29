@@ -1,6 +1,6 @@
 package weco.storage_service.ingests_worker.services
 
-import akka.http.scaladsl.model.Uri
+import org.apache.pekko.http.scaladsl.model.Uri
 import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
@@ -13,7 +13,7 @@ import weco.messaging.worker.models.{
 }
 import weco.storage_service.ingests.models.Ingest
 import weco.storage_service.ingests_tracker.client.{
-  AkkaIngestTrackerClient,
+  PekkoIngestTrackerClient,
   IngestTrackerClient
 }
 import weco.storage_service.ingests_tracker.fixtures.IngestsTrackerApiFixture
@@ -93,7 +93,7 @@ class IngestsWorkerServiceTest
     trackerUri: String
   )(testWith: TestWith[IngestTrackerClient, R]): R =
     withActorSystem { implicit actorSystem =>
-      val client = new AkkaIngestTrackerClient(trackerHost = Uri(trackerUri))
+      val client = new PekkoIngestTrackerClient(trackerHost = Uri(trackerUri))
 
       testWith(client)
     }

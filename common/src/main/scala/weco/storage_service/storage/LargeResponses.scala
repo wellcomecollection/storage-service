@@ -2,11 +2,11 @@ package weco.storage_service.storage
 
 import java.net.URL
 
-import akka.http.scaladsl.model.headers.{ETag, Location}
-import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
-import akka.http.scaladsl.server.Directives.mapResponse
-import akka.http.scaladsl.server.Route
-import akka.stream.Materializer
+import org.apache.pekko.http.scaladsl.model.headers.{ETag, Location}
+import org.apache.pekko.http.scaladsl.model.{HttpResponse, StatusCodes}
+import org.apache.pekko.http.scaladsl.server.Directives.mapResponse
+import org.apache.pekko.http.scaladsl.server.Route
+import org.apache.pekko.stream.Materializer
 import grizzled.slf4j.Logging
 import weco.storage.providers.s3.S3ObjectLocationPrefix
 import weco.storage.services.s3.S3Uploader
@@ -18,7 +18,7 @@ trait LargeResponses extends Logging {
 
   import java.util.UUID
 
-  import akka.stream.scaladsl.StreamConverters
+  import org.apache.pekko.stream.scaladsl.StreamConverters
 
   val s3Uploader: S3Uploader
   val s3Prefix: S3ObjectLocationPrefix

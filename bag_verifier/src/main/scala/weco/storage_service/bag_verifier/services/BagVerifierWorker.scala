@@ -1,9 +1,9 @@
 package weco.storage_service.bag_verifier.services
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import weco.messaging.sqsworker.pekko.PekkoSQSWorkerConfig
 import weco.monitoring.Metrics
 import weco.storage_service.bag_verifier.models.{
   BagVerifyContext,
@@ -39,7 +39,7 @@ class BagVerifierWorker[
   IngestDestination,
   OutgoingDestination
 ](
-  val config: AlpakkaSQSWorkerConfig,
+  val config: PekkoSQSWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
   verifier: BagVerifier[BagContext, BagLocation, BagPrefix],

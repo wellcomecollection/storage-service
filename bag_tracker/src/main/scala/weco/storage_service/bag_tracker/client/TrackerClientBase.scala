@@ -1,6 +1,6 @@
 package weco.storage_service.bag_tracker.client
 
-import akka.stream.StreamTcpException
+import org.apache.pekko.stream.StreamTcpException
 
 trait TrackerClientBase {
   def isRetryable(err: Throwable): Boolean =

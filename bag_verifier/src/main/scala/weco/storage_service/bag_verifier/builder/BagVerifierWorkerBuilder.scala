@@ -1,6 +1,6 @@
 package weco.storage_service.bag_verifier.builder
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import com.azure.storage.blob.{BlobServiceClient, BlobServiceClientBuilder}
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
@@ -8,8 +8,8 @@ import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
 import weco.messaging.sns.SNSConfig
-import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
-import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
+import weco.messaging.sqsworker.pekko.PekkoSQSWorkerConfig
+import weco.messaging.typesafe.PekkoSQSWorkerConfigBuilder
 import weco.monitoring.Metrics
 import weco.storage_service.bag_verifier.models.{
   ReplicatedBagVerifyContext,
@@ -39,7 +39,7 @@ object BagVerifierWorkerBuilder {
     as: ActorSystem,
     sc: SqsAsyncClient
   ) = {
-    val alpakkaSqsWorkerConfig = AlpakkaSqsWorkerConfigBuilder.build(config)
+    val PekkoSQSWorkerConfig = PekkoSQSWorkerConfigBuilder.build(config)
 
     val verifierMode = config.getString("bag-verifier.mode")
     val primaryBucket =
@@ -49,7 +49,7 @@ object BagVerifierWorkerBuilder {
       case "replica-s3" =>
         buildReplicaS3BagVerifierWorker(
           primaryBucket,
-          alpakkaSqsWorkerConfig,
+          PekkoSQSWorkerConfig,
           ingestUpdater,
           outgoingPublisher
         )
@@ -68,14 +68,14 @@ object BagVerifierWorkerBuilder {
         buildReplicaAzureBagVerifierWorker(
           primaryBucket,
           dynamoConfig,
-          alpakkaSqsWorkerConfig,
+          PekkoSQSWorkerConfig,
           ingestUpdater,
           outgoingPublisher
         )
       case "standalone" =>
         buildStandaloneVerifierWorker(
           primaryBucket,
-          alpakkaSqsWorkerConfig,
+          PekkoSQSWorkerConfig,
           ingestUpdater,
           outgoingPublisher
         )
@@ -88,7 +88,7 @@ object BagVerifierWorkerBuilder {
 
   def buildStandaloneVerifierWorker[IngestDestination, OutgoingDestination](
     primaryBucket: String,
-    alpakkaSqsWorkerConfig: AlpakkaSQSWorkerConfig,
+    PekkoSQSWorkerConfig: PekkoSQSWorkerConfig,
     ingestUpdater: IngestUpdater[IngestDestination],
     outgoingPublisher: OutgoingPublisher[OutgoingDestination]
   )(
@@ -107,7 +107,7 @@ object BagVerifierWorkerBuilder {
     val verifier = S3BagVerifier.standalone(primaryBucket)
 
     new BagVerifierWorker(
-      config = alpakkaSqsWorkerConfig,
+      config = PekkoSQSWorkerConfig,
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,
       verifier = verifier,
@@ -118,7 +118,7 @@ object BagVerifierWorkerBuilder {
 
   def buildReplicaS3BagVerifierWorker[IngestDestination, OutgoingDestination](
     primaryBucket: String,
-    alpakkaSqsWorkerConfig: AlpakkaSQSWorkerConfig,
+    PekkoSQSWorkerConfig: PekkoSQSWorkerConfig,
     ingestUpdater: IngestUpdater[IngestDestination],
     outgoingPublisher: OutgoingPublisher[OutgoingDestination]
   )(
@@ -136,7 +136,7 @@ object BagVerifierWorkerBuilder {
   ] = {
     val verifier = S3BagVerifier.replicated(primaryBucket)
     new BagVerifierWorker(
-      config = alpakkaSqsWorkerConfig,
+      config = PekkoSQSWorkerConfig,
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,
       verifier = verifier,
@@ -155,7 +155,7 @@ object BagVerifierWorkerBuilder {
   ](
     primaryBucket: String,
     dynamoConfig: DynamoConfig,
-    alpakkaSqsWorkerConfig: AlpakkaSQSWorkerConfig,
+    PekkoSQSWorkerConfig: PekkoSQSWorkerConfig,
     ingestUpdater: IngestUpdater[IngestDestination],
     outgoingPublisher: OutgoingPublisher[OutgoingDestination]
   )(
@@ -178,7 +178,7 @@ object BagVerifierWorkerBuilder {
       dynamoConfig = dynamoConfig
     )
     new BagVerifierWorker(
-      config = alpakkaSqsWorkerConfig,
+      config = PekkoSQSWorkerConfig,
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,
       verifier = verifier,

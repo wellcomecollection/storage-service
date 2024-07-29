@@ -1,15 +1,12 @@
 package weco.storage_service.storage.models
 
-import akka.actor.ActorSystem
-import akka.stream.alpakka.sqs
-import akka.stream.alpakka.sqs.MessageAction
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.connectors.sqs
+import org.apache.pekko.stream.connectors.sqs.MessageAction
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.Message
-import weco.messaging.sqsworker.alpakka.{
-  AlpakkaSQSWorker,
-  AlpakkaSQSWorkerConfig
-}
+import weco.messaging.sqsworker.pekko.{PekkoSQSWorker, PekkoSQSWorkerConfig}
 import weco.messaging.worker.models.{
   Result,
   RetryableFailure,
@@ -62,7 +59,7 @@ case class IngestShouldRetry[T](
 trait IngestStepWorker[Work <: PipelinePayload, Summary] extends Runnable {
 
   // TODO: Move visibilityTimeout into SQSConfig
-  val config: AlpakkaSQSWorkerConfig
+  val config: PekkoSQSWorkerConfig
   val visibilityTimeout: Duration = 0.seconds
 
   implicit val mc: Metrics[Future]
@@ -76,8 +73,8 @@ trait IngestStepWorker[Work <: PipelinePayload, Summary] extends Runnable {
     processMessage(payload).map(toResult)
   }
 
-  val worker: AlpakkaSQSWorker[Work, Summary] =
-    new AlpakkaSQSWorker[Work, Summary](config)(process) {
+  val worker: PekkoSQSWorker[Work, Summary] =
+    new PekkoSQSWorker[Work, Summary](config)(process) {
       override val retryAction: Message => sqs.MessageAction =
         (message: Message) =>
           MessageAction.changeMessageVisibility(

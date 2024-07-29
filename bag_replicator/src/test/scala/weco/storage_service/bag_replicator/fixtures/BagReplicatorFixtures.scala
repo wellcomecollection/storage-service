@@ -2,11 +2,11 @@ package weco.storage_service.bag_replicator.fixtures
 
 import java.util.UUID
 import org.scalatest.Assertion
-import weco.akka.fixtures.Akka
+import weco.pekko.fixtures.Pekko
 import weco.fixtures.TestWith
 import weco.json.JsonUtil._
 import weco.messaging.fixtures.SQS.Queue
-import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.messaging.fixtures.worker.PekkoSQSWorkerFixtures
 import weco.messaging.memory.MemoryMessageSender
 import weco.monitoring.memory.MemoryMetrics
 import weco.storage_service.bag_replicator.config.ReplicatorDestinationConfig
@@ -31,9 +31,9 @@ import scala.concurrent.duration._
 import scala.util.Try
 
 trait BagReplicatorFixtures
-    extends Akka
+    extends Pekko
     with OperationFixtures
-    with AlpakkaSQSWorkerFixtures
+    with PekkoSQSWorkerFixtures
     with MemoryLockDaoFixtures
     with S3TransferManagerFixtures {
 
@@ -99,7 +99,7 @@ trait BagReplicatorFixtures
       val replicator = new S3Replicator()
 
       val service = new BagReplicatorWorker(
-        config = createAlpakkaSQSWorkerConfig(queue),
+        config = createPekkoSQSWorkerConfig(queue),
         ingestUpdater = ingestUpdater,
         outgoingPublisher = outgoingPublisher,
         lockingService = lockingService,

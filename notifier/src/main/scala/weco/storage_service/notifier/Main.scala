@@ -1,10 +1,10 @@
 package weco.storage_service.notifier
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import weco.http.client.AkkaHttpClient
-import weco.messaging.typesafe.{AlpakkaSqsWorkerConfigBuilder, SNSBuilder}
+import weco.http.client.PekkoHttpClient
+import weco.messaging.typesafe.{PekkoSQSWorkerConfigBuilder, SNSBuilder}
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.notifier.services.{
@@ -29,11 +29,11 @@ object Main extends WellcomeTypesafeApp {
       SqsAsyncClient.builder().build()
 
     val callbackUrlService = new CallbackUrlService(
-      client = new AkkaHttpClient()
+      client = new PekkoHttpClient()
     )
 
     new NotifierWorker(
-      config = AlpakkaSqsWorkerConfigBuilder.build(config),
+      config = PekkoSQSWorkerConfigBuilder.build(config),
       callbackUrlService = callbackUrlService,
       messageSender = SNSBuilder.buildSNSMessageSender(
         config,

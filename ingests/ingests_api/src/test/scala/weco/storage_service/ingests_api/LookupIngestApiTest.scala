@@ -2,7 +2,7 @@ package weco.storage_service.ingests_api
 
 import java.time.Instant
 
-import akka.http.scaladsl.model._
+import org.apache.pekko.http.scaladsl.model._
 import io.circe.optics.JsonPath.root
 import io.circe.parser._
 import org.scalatest.concurrent.IntegrationPatience

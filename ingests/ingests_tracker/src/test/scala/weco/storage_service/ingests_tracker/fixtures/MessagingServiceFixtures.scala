@@ -1,9 +1,9 @@
 package weco.storage_service.ingests_tracker.fixtures
 
 import org.scalatest.concurrent.ScalaFutures
-import weco.akka.fixtures.Akka
+import weco.pekko.fixtures.Pekko
 import weco.fixtures.TestWith
-import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.messaging.fixtures.worker.PekkoSQSWorkerFixtures
 import weco.messaging.memory.MemoryMessageSender
 import weco.storage_service.ingests_tracker.services.{
   CallbackNotificationService,
@@ -12,8 +12,8 @@ import weco.storage_service.ingests_tracker.services.{
 
 trait MessagingServiceFixtures
     extends ScalaFutures
-    with Akka
-    with AlpakkaSQSWorkerFixtures
+    with Pekko
+    with PekkoSQSWorkerFixtures
     with IngestTrackerFixtures {
 
   def withMessagingService[R](

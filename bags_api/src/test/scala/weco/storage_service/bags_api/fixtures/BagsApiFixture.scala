@@ -1,9 +1,9 @@
 package weco.storage_service.bags_api.fixtures
 
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.HttpMethods.GET
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
-import akka.stream.Materializer
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.http.scaladsl.model.HttpMethods.GET
+import org.apache.pekko.http.scaladsl.model.{HttpRequest, HttpResponse}
+import org.apache.pekko.stream.Materializer
 import org.scalatest.concurrent.ScalaFutures
 import software.amazon.awssdk.services.s3.S3Client
 import weco.fixtures.TestWith

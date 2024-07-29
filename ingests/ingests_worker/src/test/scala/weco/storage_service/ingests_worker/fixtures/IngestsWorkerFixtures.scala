@@ -1,13 +1,13 @@
 package weco.storage_service.ingests_worker.fixtures
 
-import akka.stream.Materializer
+import org.apache.pekko.stream.Materializer
 
 import java.time.Instant
 import org.scalatest.concurrent.ScalaFutures
-import weco.akka.fixtures.Akka
+import weco.pekko.fixtures.Pekko
 import weco.fixtures.TestWith
 import weco.messaging.fixtures.SQS.Queue
-import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.messaging.fixtures.worker.PekkoSQSWorkerFixtures
 import weco.monitoring.memory.MemoryMetrics
 import weco.storage_service.generators.IngestGenerators
 import weco.storage_service.ingests.models.Ingest.Succeeded
@@ -21,9 +21,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 trait IngestsWorkerFixtures
     extends ScalaFutures
-    with Akka
+    with Pekko
     with IngestGenerators
-    with AlpakkaSQSWorkerFixtures
+    with PekkoSQSWorkerFixtures
     with IngestTrackerFixtures {
 
   val ingest = createIngestWith(
@@ -90,7 +90,7 @@ trait IngestsWorkerFixtures
       implicit val metrics: MemoryMetrics = new MemoryMetrics()
 
       val service = new IngestsWorkerService(
-        config = createAlpakkaSQSWorkerConfig(queue),
+        config = createPekkoSQSWorkerConfig(queue),
         ingestTrackerClient = ingestTrackerClient
       )
 

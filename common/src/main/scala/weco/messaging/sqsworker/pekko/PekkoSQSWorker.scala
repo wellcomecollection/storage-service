@@ -1,10 +1,10 @@
-package weco.messaging.sqsworker.alpakka
+package weco.messaging.sqsworker.pekko
 
 import java.net.SocketTimeoutException
 
-import akka.actor.ActorSystem
-import akka.stream.alpakka.sqs.MessageAction
-import akka.stream.alpakka.sqs.scaladsl.{SqsAckSink, SqsSource}
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.connectors.sqs.MessageAction
+import org.apache.pekko.stream.connectors.sqs.scaladsl.{SqsAckSink, SqsSource}
 import grizzled.slf4j.Logging
 import io.circe.Decoder
 import software.amazon.awssdk.awscore.exception.AwsServiceException
@@ -14,17 +14,17 @@ import software.amazon.awssdk.services.sqs.model.{Message => SQSMessage}
 import weco.json.JsonUtil.fromJson
 import weco.messaging.sns.NotificationMessage
 import weco.messaging.worker.models.Result
-import weco.messaging.worker.AkkaWorker
+import weco.messaging.worker.PekkoWorker
 import weco.monitoring.Metrics
 
 import scala.concurrent.Future
 
 /**
-  * Implementation of [[AkkaWorker]] that uses SQS as source and sink.
+  * Implementation of [[PekkoWorker]] that uses SQS as source and sink.
   * It receives messages from SQS and deletes messages from SQS on successful completion
   */
-class AlpakkaSQSWorker[Work, Summary](
-  config: AlpakkaSQSWorkerConfig
+class PekkoSQSWorker[Work, Summary](
+  config: PekkoSQSWorkerConfig
 )(
   val doWork: Work => Future[Result[Summary]]
 )(implicit
@@ -32,7 +32,7 @@ class AlpakkaSQSWorker[Work, Summary](
   val wd: Decoder[Work],
   sc: SqsAsyncClient,
   val metrics: Metrics[Future])
-    extends AkkaWorker[SQSMessage, Work, Summary, MessageAction]
+    extends PekkoWorker[SQSMessage, Work, Summary, MessageAction]
     with Logging {
   override protected val metricsNamespace: String =
     config.metricsConfig.namespace

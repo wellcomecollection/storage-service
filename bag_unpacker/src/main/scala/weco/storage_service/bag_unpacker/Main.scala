@@ -1,11 +1,11 @@
 package weco.storage_service.bag_unpacker
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.json.JsonUtil._
-import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
+import weco.messaging.typesafe.PekkoSQSWorkerConfigBuilder
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.bag_unpacker.config.builders.UnpackerWorkerConfigBuilder
@@ -37,8 +37,8 @@ object Main extends WellcomeTypesafeApp {
     implicit val sqsClient: SqsAsyncClient =
       SqsAsyncClient.builder().build()
 
-    val alpakkaSQSWorkerConfig =
-      AlpakkaSqsWorkerConfigBuilder.build(config)
+    val PekkoSQSWorkerConfig =
+      PekkoSQSWorkerConfigBuilder.build(config)
 
     val unpackerWorkerConfig =
       UnpackerWorkerConfigBuilder.build(config)
@@ -52,7 +52,7 @@ object Main extends WellcomeTypesafeApp {
       OutgoingPublisherBuilder.build(config, operationName = operationName)
 
     new BagUnpackerWorker(
-      config = alpakkaSQSWorkerConfig,
+      config = PekkoSQSWorkerConfig,
       bagUnpackerWorkerConfig = unpackerWorkerConfig,
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,

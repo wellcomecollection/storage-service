@@ -1,7 +1,7 @@
 package weco.storage_service.bags_api
 
-import akka.actor.ActorSystem
-import akka.stream.Materializer
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.Materializer
 import com.typesafe.config.Config
 import org.apache.commons.io.FileUtils
 import software.amazon.awssdk.services.s3.S3Client
@@ -9,8 +9,8 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import weco.http.typesafe.HTTPServerBuilder
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.storage_service.bag_tracker.client.{
-  AkkaBagTrackerClient,
-  BagTrackerClient
+  BagTrackerClient,
+  PekkoBagTrackerClient
 }
 import weco.storage.providers.s3.S3ObjectLocationPrefix
 import weco.storage.services.s3.{S3PresignedUrls, S3Uploader}
@@ -52,7 +52,7 @@ object Main extends WellcomeTypesafeApp {
       keyPrefix = "responses"
     )
 
-    val client = new AkkaBagTrackerClient(
+    val client = new PekkoBagTrackerClient(
       trackerHost = config.requireString("bags.tracker.host")
     )
 

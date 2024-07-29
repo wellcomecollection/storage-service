@@ -2,7 +2,7 @@ package weco.storage_service.bags_api
 
 import java.time.format.DateTimeFormatter
 
-import akka.http.scaladsl.model._
+import org.apache.pekko.http.scaladsl.model._
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers

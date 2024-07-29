@@ -1,18 +1,15 @@
 package weco.storage_service.indexer
 
-import akka.actor.ActorSystem
-import akka.stream.alpakka.sqs
-import akka.stream.alpakka.sqs.MessageAction
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.connectors.sqs
+import org.apache.pekko.stream.connectors.sqs.MessageAction
 import cats.data.EitherT
 import cats.implicits._
 import grizzled.slf4j.Logging
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.Message
-import weco.messaging.sqsworker.alpakka.{
-  AlpakkaSQSWorker,
-  AlpakkaSQSWorkerConfig
-}
+import weco.messaging.sqsworker.pekko.{PekkoSQSWorker, PekkoSQSWorkerConfig}
 import weco.messaging.worker.models.{
   Result,
   RetryableFailure,
@@ -25,7 +22,7 @@ import weco.typesafe.Runnable
 import scala.concurrent.{ExecutionContext, Future}
 
 abstract class IndexerWorker[SourceT, T, IndexedT](
-  config: AlpakkaSQSWorkerConfig,
+  config: PekkoSQSWorkerConfig,
   indexer: Indexer[T, IndexedT]
 )(
   implicit
@@ -74,8 +71,8 @@ abstract class IndexerWorker[SourceT, T, IndexedT](
     }
   }
 
-  val worker: AlpakkaSQSWorker[SourceT, Unit] =
-    new AlpakkaSQSWorker[SourceT, Unit](config)(process) {
+  val worker: PekkoSQSWorker[SourceT, Unit] =
+    new PekkoSQSWorker[SourceT, Unit](config)(process) {
       // If we retry set a non-zero visibility timeout to give
       // whatever dependency isn't working time to recover
       val visibilityTimeoutInSeconds = 5

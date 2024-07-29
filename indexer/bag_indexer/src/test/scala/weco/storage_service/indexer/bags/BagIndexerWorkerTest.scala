@@ -55,7 +55,7 @@ class BagIndexerWorkerTest
         }
       withBagTrackerClient(storageManifestDao) { trackerClient =>
         val worker = new BagIndexerWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
+          config = createPekkoSQSWorkerConfig(queue),
           indexer = createIndexer(index),
           bagTrackerClient = trackerClient
         )
@@ -93,7 +93,7 @@ class BagIndexerWorkerTest
         }
       withBagTrackerClient(storageManifestDao) { trackerClient =>
         val worker = new BagIndexerWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
+          config = createPekkoSQSWorkerConfig(queue),
           indexer = createIndexer(index),
           bagTrackerClient = trackerClient
         )

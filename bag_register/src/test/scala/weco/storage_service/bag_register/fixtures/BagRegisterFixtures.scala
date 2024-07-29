@@ -1,11 +1,11 @@
 package weco.storage_service.bag_register.fixtures
 
 import org.scalatest.Assertion
-import weco.akka.fixtures.Akka
+import weco.pekko.fixtures.Pekko
 import weco.fixtures.TestWith
 import weco.json.JsonUtil._
 import weco.messaging.fixtures.SQS.{Queue, QueuePair}
-import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.messaging.fixtures.worker.PekkoSQSWorkerFixtures
 import weco.messaging.memory.MemoryMessageSender
 import weco.monitoring.memory.MemoryMetrics
 import weco.storage_service.bag_register.services.{
@@ -30,8 +30,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 trait BagRegisterFixtures
     extends StorageRandomGenerators
-    with Akka
-    with AlpakkaSQSWorkerFixtures
+    with Pekko
+    with PekkoSQSWorkerFixtures
     with OperationFixtures
     with StorageManifestDaoFixture
     with IngestUpdateAssertions
@@ -70,7 +70,7 @@ trait BagRegisterFixtures
         )
 
         val service = new BagRegisterWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
+          config = createPekkoSQSWorkerConfig(queue),
           ingestUpdater =
             createIngestUpdaterWith(ingests, stepName = "register"),
           registrationNotifications = registrationNotifications,

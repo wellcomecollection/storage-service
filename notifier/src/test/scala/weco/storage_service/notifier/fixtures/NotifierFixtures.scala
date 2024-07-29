@@ -1,9 +1,9 @@
 package weco.storage_service.notifier.fixtures
 
-import weco.akka.fixtures.Akka
+import weco.pekko.fixtures.Pekko
 import weco.fixtures.TestWith
 import weco.messaging.fixtures.SQS.Queue
-import weco.messaging.fixtures.worker.AlpakkaSQSWorkerFixtures
+import weco.messaging.fixtures.worker.PekkoSQSWorkerFixtures
 import weco.messaging.memory.MemoryMessageSender
 import weco.monitoring.memory.MemoryMetrics
 import weco.storage_service.notifier.services.{
@@ -14,7 +14,7 @@ import weco.http.client.HttpClient
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-trait NotifierFixtures extends Akka with AlpakkaSQSWorkerFixtures {
+trait NotifierFixtures extends Pekko with PekkoSQSWorkerFixtures {
   def withNotifier[R](
     client: HttpClient
   )(testWith: TestWith[(Queue, MemoryMessageSender), R]): R =
@@ -27,7 +27,7 @@ trait NotifierFixtures extends Akka with AlpakkaSQSWorkerFixtures {
 
       withActorSystem { implicit actorSystem =>
         val workerService = new NotifierWorker(
-          config = createAlpakkaSQSWorkerConfig(queue),
+          config = createPekkoSQSWorkerConfig(queue),
           callbackUrlService = callbackUrlService,
           messageSender = messageSender
         )

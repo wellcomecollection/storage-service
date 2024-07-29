@@ -1,13 +1,13 @@
 package weco.storage_service.indexer.ingests
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import com.sksamuel.elastic4s.Index
 import com.typesafe.config.Config
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import weco.elasticsearch.ElasticsearchIndexCreator
 import weco.elasticsearch.typesafe.ElasticBuilder
 import weco.json.JsonUtil._
-import weco.messaging.typesafe.AlpakkaSqsWorkerConfigBuilder
+import weco.messaging.typesafe.PekkoSQSWorkerConfigBuilder
 import weco.monitoring.cloudwatch.CloudWatchMetrics
 import weco.monitoring.typesafe.CloudWatchBuilder
 import weco.typesafe.WellcomeTypesafeApp
@@ -49,7 +49,7 @@ object Main extends WellcomeTypesafeApp {
     )
 
     new IngestsIndexerWorker(
-      config = AlpakkaSqsWorkerConfigBuilder.build(config),
+      config = PekkoSQSWorkerConfigBuilder.build(config),
       indexer = ingestIndexer
     )
   }

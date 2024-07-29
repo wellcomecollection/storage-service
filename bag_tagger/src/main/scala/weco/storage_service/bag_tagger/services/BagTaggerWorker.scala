@@ -1,16 +1,13 @@
 package weco.storage_service.bag_tagger.services
 
-import akka.actor.ActorSystem
-import akka.stream.alpakka.sqs
-import akka.stream.alpakka.sqs.MessageAction
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.connectors.sqs
+import org.apache.pekko.stream.connectors.sqs.MessageAction
 import grizzled.slf4j.Logging
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.Message
-import weco.messaging.sqsworker.alpakka.{
-  AlpakkaSQSWorker,
-  AlpakkaSQSWorkerConfig
-}
+import weco.messaging.sqsworker.pekko.{PekkoSQSWorker, PekkoSQSWorkerConfig}
 import weco.messaging.worker.models.{Result, RetryableFailure, Successful}
 import weco.monitoring.Metrics
 import weco.storage_service.bag_tracker.client.BagTrackerClient
@@ -25,7 +22,7 @@ import weco.typesafe.Runnable
 import scala.concurrent.Future
 
 class BagTaggerWorker(
-  config: AlpakkaSQSWorkerConfig,
+  config: PekkoSQSWorkerConfig,
   bagTrackerClient: BagTrackerClient,
   applyTags: ApplyTags,
   tagRules: StorageManifest => Map[StorageManifestFile, Map[String, String]]
@@ -84,8 +81,8 @@ class BagTaggerWorker(
       }
   }
 
-  val worker: AlpakkaSQSWorker[BagRegistrationNotification, Unit] =
-    new AlpakkaSQSWorker[BagRegistrationNotification, Unit](config)(process) {
+  val worker: PekkoSQSWorker[BagRegistrationNotification, Unit] =
+    new PekkoSQSWorker[BagRegistrationNotification, Unit](config)(process) {
       override val retryAction: Message => sqs.MessageAction =
         (message: Message) =>
           MessageAction.changeMessageVisibility(message, visibilityTimeout = 0)

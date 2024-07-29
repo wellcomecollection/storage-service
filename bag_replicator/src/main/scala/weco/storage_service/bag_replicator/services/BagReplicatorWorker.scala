@@ -2,11 +2,11 @@ package weco.storage_service.bag_replicator.services
 
 import java.time.Instant
 import java.util.UUID
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import cats.instances.try_._
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import weco.messaging.sqsworker.pekko.PekkoSQSWorkerConfig
 import weco.monitoring.Metrics
 import weco.storage_service.bag_replicator.config.ReplicatorDestinationConfig
 import weco.storage_service.bag_replicator.replicator.Replicator
@@ -30,7 +30,7 @@ class BagReplicatorWorker[
   DstLocation <: Location,
   DstPrefix <: Prefix[DstLocation]
 ](
-  val config: AlpakkaSQSWorkerConfig,
+  val config: PekkoSQSWorkerConfig,
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
   lockingService: LockingService[IngestStepResult[

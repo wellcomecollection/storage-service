@@ -1,12 +1,12 @@
 package weco.messaging.worker
 
-import akka.actor.ActorSystem
-import akka.stream.scaladsl.{Keep, Sink, Source}
-import akka.{Done, NotUsed}
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.scaladsl.{Keep, Sink, Source}
+import org.apache.pekko.{Done, NotUsed}
 
 import scala.concurrent.Future
 
-trait AkkaWorker[Message, Work, Summary, Action]
+trait PekkoWorker[Message, Work, Summary, Action]
     extends Worker[Message, Work, Summary, Action] {
   implicit val as: ActorSystem
   override implicit val ec = as.dispatcher

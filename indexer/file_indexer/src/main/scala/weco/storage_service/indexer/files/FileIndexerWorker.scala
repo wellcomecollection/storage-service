@@ -1,9 +1,9 @@
 package weco.storage_service.indexer.files
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import io.circe.Decoder
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
-import weco.messaging.sqsworker.alpakka.AlpakkaSQSWorkerConfig
+import weco.messaging.sqsworker.pekko.PekkoSQSWorkerConfig
 import weco.messaging.worker.models.{Result, RetryableFailure, Successful}
 import weco.monitoring.Metrics
 import weco.storage_service.indexer._
@@ -13,7 +13,7 @@ import weco.storage_service.indexer.files.models.IndexedFile
 import scala.concurrent.Future
 
 class FileIndexerWorker(
-  config: AlpakkaSQSWorkerConfig,
+  config: PekkoSQSWorkerConfig,
   val indexer: Indexer[FileContext, IndexedFile]
 )(
   implicit

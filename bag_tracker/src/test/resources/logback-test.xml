@@ -14,4 +14,8 @@
   <logger name="io.netty" level="ERROR"/>
   <logger name="com.amazonaws" level="WARN"/>
   <logger name="software.amazon.awssdk" level="WARN"/>
+
+  <!-- Disable DEBUG logs from the MemoryVersionedStore class because the `it("can store a very large bag")` test
+   makes it log 100,000 items, which causes timeout issues -->
+  <logger name="weco.storage.store.memory.MemoryVersionedStore" level="INFO"/>
 </configuration>

@@ -2,8 +2,8 @@ package weco.storage_service.ingests_worker
 
 import java.time.Instant
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.model.{StatusCodes, Uri}
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.http.scaladsl.model.{StatusCodes, Uri}
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
@@ -16,7 +16,7 @@ import weco.storage_service.ingests.models.{
   Ingest,
   IngestUpdate
 }
-import weco.storage_service.ingests_tracker.client.AkkaIngestTrackerClient
+import weco.storage_service.ingests_tracker.client.PekkoIngestTrackerClient
 import weco.storage_service.ingests_tracker.fixtures.IngestsTrackerApiFixture
 import weco.storage_service.ingests_worker.fixtures.IngestsWorkerFixtures
 import weco.http.fixtures.HttpFixtures
@@ -38,7 +38,7 @@ class IngestsWorkerIntegrationTest
   val host = "http://localhost:8080"
   val healthcheckPath = s"$host/healthcheck"
 
-  val ingestTrackerClient = new AkkaIngestTrackerClient(Uri(host))
+  val ingestTrackerClient = new PekkoIngestTrackerClient(Uri(host))
 
   it("marks an ingest as Completed") {
     val ingest = createIngestWith(

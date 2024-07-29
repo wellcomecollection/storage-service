@@ -123,7 +123,7 @@ class S3UnpackerTest
       val srcLocation = createS3ObjectLocationWith(bucket = createBucket)
       val dstPrefix = createS3ObjectLocationPrefix
 
-      withStreamStore { implicit streamStore =>
+      withStreamStore { _ =>
         val result =
           unpacker.unpack(
             ingestId = createIngestID,
@@ -144,7 +144,7 @@ class S3UnpackerTest
       withLocalS3Bucket { bucket =>
         val srcLocation = createS3ObjectLocationWith(bucket = bucket)
 
-        withStreamStore { implicit streamStore =>
+        withStreamStore { _ =>
           val result =
             unpacker.unpack(
               ingestId = createIngestID,
@@ -164,7 +164,7 @@ class S3UnpackerTest
       val srcLocation = createS3ObjectLocationWith(bucket = createInvalidBucket)
       val dstPrefix = createS3ObjectLocationPrefix
 
-      withStreamStore { implicit streamStore =>
+      withStreamStore { _ =>
         val result =
           unpacker.unpack(
             ingestId = createIngestID,
