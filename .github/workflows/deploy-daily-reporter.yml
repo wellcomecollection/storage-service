@@ -1,0 +1,26 @@
+name: Deploy Daily Reporter
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+
+jobs:
+  deploy_ingest_inspector:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: eu-west-1
+          role-to-assume: ${{ secrets.DEPLOY_INGEST_INSPECTOR_GHA_ROLE_ARN }}
+      - name: Deploy Daily Reporter
+        run: |
+          pip3 install -r ./builds/requirements.txt
+          python3 ./builds/publish_lambda_zip.py monitoring/daily_reporter \
+              --bucket=wellcomecollection-storage-infra \
+              --key=lambdas/monitoring/daily_reporter.zip
+          ./builds/deploy_lambda_zip.sh monitoring/daily_reporter daily_reporter
