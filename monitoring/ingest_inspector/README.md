@@ -22,8 +22,6 @@ The ingests data isn't sensitive, so we don't need authentication in front of it
 It mostly contains user-facing messages from the storage service, or an identifier used by one of Wellcome's catalogue databases.
 The user-facing messages can be seen in the publicly-available source code, and the identifiers don't encode any sensitive information.
 
-
-
 ## Features
 
 The app has a number of features designed to make it as easy as possible for somebody to get the data they need.
@@ -128,8 +126,6 @@ The app has a number of features designed to make it as easy as possible for som
 
     ![A line "callback status:" pending highlighted in blue.](screenshots/pending_callback.png)
 
-
-
 ## Usage
 
 You can use the app by visiting <https://ingest-inspector.wellcomecollection.org/>.
@@ -166,4 +162,3 @@ the `ingest_inspector/frontend` directory and run:
 ```shell
 AWS_PROFILE=storage-developer sh deploy.sh
 ```
-
