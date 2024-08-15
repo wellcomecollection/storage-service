@@ -29,7 +29,7 @@ def _get_slack_message(label, ingests):
         if ingests.get(status, []):
             result += "\n" + status.title() + ":"
             for i in ingests[status][:15]:
-                result += f"\n- <https://ingest-inspector.wellcomecollection.org/ingests/{i['id']}|`{i['id']}`> – {i['space']}/{i['externalIdentifier']}"
+                result += f"\n- <https://ingest-inspector.wellcomecollection.org/?ingestId={i['id']}|`{i['id']}`> – {i['space']}/{i['externalIdentifier']}"
                 if i["version"]:
                     result += "/" + i["version"]
 
