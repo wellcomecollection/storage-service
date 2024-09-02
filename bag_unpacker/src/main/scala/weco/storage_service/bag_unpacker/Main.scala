@@ -53,7 +53,7 @@ object Main extends WellcomeTypesafeApp {
 
     new BagUnpackerWorker(
       config = PekkoSQSWorkerConfig,
-          bagUnpackerWorkerConfig = unpackerWorkerConfig,
+      bagUnpackerWorkerConfig = unpackerWorkerConfig,
       ingestUpdater = ingestUpdater,
       outgoingPublisher = outgoingPublisher,
       unpacker = new S3Unpacker()
