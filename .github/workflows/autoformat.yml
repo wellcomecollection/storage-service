@@ -1,0 +1,13 @@
+# Runs auto-formatting script on push to any branch
+name: "Scala auto-formatting"
+
+on: push
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  autoformat:
+    uses: wellcomecollection/.github/.github/workflows/scala_formatting.yml@main
+    secrets: inherit
