@@ -1,9 +1,7 @@
 steps:
   - command: |
-      ./builds/run_formatting.sh
-      .buildkite/scripts/push_autoformatting_changes.sh
       ./builds/run_linting.sh
-    label: "autoformat"
+    label: "linting"
     agents:
       queue: "scala"
 
