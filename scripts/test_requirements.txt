@@ -23,7 +23,7 @@ coverage[toml]==6.4.4
     # via
     #   -r test_requirements.in
     #   pytest-cov
-cryptography==37.0.4
+cryptography==43.0.1
     # via moto
 idna==3.3
     # via requests
@@ -51,12 +51,12 @@ pycparser==2.21
     # via cffi
 pyparsing==3.0.9
     # via packaging
-pytest-cov==3.0.0
-    # via -r test_requirements.in
 pytest==7.1.2
     # via
     #   -r test_requirements.in
     #   pytest-cov
+pytest-cov==3.0.0
+    # via -r test_requirements.in
 python-dateutil==2.8.2
     # via
     #   botocore
