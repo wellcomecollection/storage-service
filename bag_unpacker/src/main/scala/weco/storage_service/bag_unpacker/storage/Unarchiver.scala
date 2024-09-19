@@ -73,7 +73,7 @@ object Unarchiver {
       }
 
       override def next(): (ArchiveEntry, InputStream) =
-        (latest, new CloseShieldInputStream(archiveInputStream))
+        (latest, CloseShieldInputStream.wrap(archiveInputStream))
     }
 
   private def uncompress(
