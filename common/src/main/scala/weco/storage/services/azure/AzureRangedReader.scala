@@ -35,7 +35,7 @@ class AzureRangedReader(implicit blobServiceClient: BlobServiceClient)
     }
 
     Try {
-      blobClient.downloadWithResponse(
+      blobClient.downloadStreamWithResponse(
         stream,
         blobRange,
         new DownloadRetryOptions,

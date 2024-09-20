@@ -1,8 +1,6 @@
 import java.io.File
 import java.util.UUID
 
-import com.amazonaws.auth.STSAssumeRoleSessionCredentialsProvider
-
 def setupProject(
   project: Project,
   folder: String,
@@ -195,13 +193,3 @@ lazy val ingests_indexer = setupProject(
   localDependencies = Seq(display, indexer_common),
   description = "Indexes information about ingests in an Elasticsearch cluster"
 )
-
-// AWS Credentials to read from S3
-
-s3CredentialsProvider := { _ =>
-  val builder = new STSAssumeRoleSessionCredentialsProvider.Builder(
-    "arn:aws:iam::760097843905:role/terraform-20210811133135108800000001",
-    UUID.randomUUID().toString
-  )
-  builder.build()
-}
