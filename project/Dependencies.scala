@@ -89,7 +89,7 @@ object ExternalDependencies {
   lazy val versions = new {
 
     val azure = "12.25.3"
-    val commonsCompress = "1.26.1"
+    val commonsCompress = "1.5"
     val commonsIO = "2.16.1"
     val mockito = "1.10.19"
     val scalatest = "3.2.18"
