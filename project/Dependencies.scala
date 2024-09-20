@@ -139,7 +139,7 @@ object ExternalDependencies {
   )
 
   val nettyDependencies: Seq[ModuleID] = Seq(
-    "io.netty" % "netty-tcnative" % "2.0.65.Final"
+    "io.netty" % "netty-tcnative" % "2.0.66.Final"
   )
 
   val awsTransferManagerDependencies: Seq[ModuleID] = Seq(
