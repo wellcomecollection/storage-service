@@ -92,7 +92,7 @@ object ExternalDependencies {
     val commonsCompress = "1.27.1"
     val commonsIO = "2.17.0"
     val mockito = "5.13.0"
-    val scalatest = "3.2.18"
+    val scalatest = "3.2.19"
     val scalatestPlus = "3.1.2.0"
     val scalatestPlusMockitoArtifactId = "mockito-3-2"
 
