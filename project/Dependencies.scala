@@ -107,7 +107,7 @@ object ExternalDependencies {
     // These are the "Common Runtime Libraries", which you're encouraged to use for
     // better performance.
     // See https://docs.aws.amazon.com/sdkref/latest/guide/common-runtime.html
-    val awsCrt = "0.29.17"
+    val awsCrt = "0.29.25"
   }
 
   val azureDependencies: Seq[ModuleID] = Seq(
