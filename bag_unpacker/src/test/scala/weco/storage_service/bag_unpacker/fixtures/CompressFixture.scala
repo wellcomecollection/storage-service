@@ -182,7 +182,7 @@ trait CompressFixture[BagLocation <: Location, Namespace]
       compressorName: String
     )(
       outputStream: OutputStream
-    ): CompressorOutputStream = {
+    ): CompressorOutputStream[BufferedOutputStream] = {
 
       val compressorStreamFactory =
         new CompressorStreamFactory()
@@ -195,13 +195,13 @@ trait CompressFixture[BagLocation <: Location, Namespace]
           compressorName,
           bufferedOutputStream
         )
-    }
+    }.asInstanceOf[CompressorOutputStream[BufferedOutputStream]]
 
     private def packer(
       archiverName: String
     )(
       outputStream: OutputStream
-    ): ArchiveOutputStream = {
+    ): ArchiveOutputStream[ArchiveEntry] = {
 
       val archiveStreamFactory =
         new ArchiveStreamFactory()
