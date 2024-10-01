@@ -67,7 +67,7 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
         )
 
         withStreamReader { streamReader =>
-          val spyReader: StreamReaderImpl = Mockito.spy(streamReader)
+          val spyReader: StreamReaderImpl = Mockito.spy[StreamReaderImpl](streamReader)
 
           withFixityChecker(spyReader) { fixityChecker =>
             fixityChecker.check(expectedFileFixity) shouldBe a[
@@ -108,7 +108,7 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
         )
 
         withStreamReader { streamReader =>
-          val spyReader: StreamReaderImpl = Mockito.spy(streamReader)
+          val spyReader: StreamReaderImpl = Mockito.spy[StreamReaderImpl](streamReader)
 
           withFixityChecker(spyReader) { fixityChecker =>
             fixityChecker.check(expectedFileFixity) shouldBe a[
@@ -152,7 +152,7 @@ trait FixityCheckerTagsTestCases[BagLocation <: Location, BagPrefix <: Prefix[
         )
 
         withStreamReader { streamReader =>
-          val spyReadable: StreamReaderImpl = Mockito.spy(streamReader)
+          val spyReadable: StreamReaderImpl = Mockito.spy[StreamReaderImpl](streamReader)
 
           withFixityChecker(spyReadable) { fixityChecker =>
             fixityChecker.check(expectedFileFixity) shouldBe a[
