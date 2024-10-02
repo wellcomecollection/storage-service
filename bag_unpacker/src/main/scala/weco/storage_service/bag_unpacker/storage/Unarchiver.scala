@@ -1,9 +1,17 @@
 package weco.storage_service.bag_unpacker.storage
 
-
 import java.io.{BufferedInputStream, InputStream}
-import org.apache.commons.compress.archivers.{ArchiveEntry, ArchiveException, ArchiveInputStream, ArchiveStreamFactory}
-import org.apache.commons.compress.compressors.{CompressorException, CompressorInputStream, CompressorStreamFactory}
+import org.apache.commons.compress.archivers.{
+  ArchiveEntry,
+  ArchiveException,
+  ArchiveInputStream,
+  ArchiveStreamFactory
+}
+import org.apache.commons.compress.compressors.{
+  CompressorException,
+  CompressorInputStream,
+  CompressorStreamFactory
+}
 import org.apache.commons.io.input.CloseShieldInputStream
 
 import scala.util.{Failure, Success, Try}
@@ -88,7 +96,8 @@ object Unarchiver {
       // We have to wrap in a BufferedInputStream because this method
       // only takes InputStreams that support the `mark()` method.
       new ArchiveStreamFactory()
-        .createArchiveInputStream(new BufferedInputStream(inputStream)).asInstanceOf[ArchiveInputStream[ArchiveEntry]]
+        .createArchiveInputStream(new BufferedInputStream(inputStream))
+        .asInstanceOf[ArchiveInputStream[ArchiveEntry]]
     } match {
       case Success(stream)                => Right(stream)
       case Failure(err: ArchiveException) => Left(ArchiveFormatError(err))
