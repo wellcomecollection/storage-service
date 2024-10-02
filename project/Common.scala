@@ -5,9 +5,6 @@ object Common {
   val settings: Seq[Def.Setting[_]] = Seq(
     scalaVersion := "2.12.16",
     organization := "weco",
-    resolvers ++= Seq(
-      "Wellcome releases" at "https://oss.sonatype.org/content/repositories/snapshots/"
-    ),
     scalacOptions ++= Seq(
       "-deprecation",
       "-unchecked",
