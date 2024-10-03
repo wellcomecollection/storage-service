@@ -9,7 +9,7 @@ from helpers import bulk_delete_dynamo_items, delete_dynamo_item
 
 @pytest.fixture
 def client():
-    with moto.mock_dynamodb2():
+    with moto.mock_aws():
         yield boto3.resource("dynamodb", region_name="eu-west-1").meta.client
 
 

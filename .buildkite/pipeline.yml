@@ -57,9 +57,10 @@ steps:
       queue: "scala"
 
   - command:
-      pip3 install --user tox &&
-      cd scripts &&
-      /var/lib/buildkite-agent/.local/bin/tox -e py3
+      - cd scripts
+      - python3 -m venv venv && source venv/bin/activate
+      - pip3 install tox
+      - venv/bin/tox -e py3
     label: "Test Python scripts"
 
   - wait
