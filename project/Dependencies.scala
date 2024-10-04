@@ -2,15 +2,15 @@ import sbt._
 
 object WellcomeDependencies {
   lazy val versions = new {
-    val typesafe = "32.42.1"
-    val fixtures = "32.42.1"
-    val http = "32.42.1"
-    val json = "32.42.1"
-    val messaging = "32.42.1"
-    val monitoring = "32.42.1"
-    val storage = "32.42.1"
-    val elasticsearch = "32.42.1"
-    val sierra = "32.42.1"
+    val typesafe = "32.43.1"
+    val fixtures = "32.43.1"
+    val http = "32.43.1"
+    val json = "32.43.1"
+    val messaging = "32.43.1"
+    val monitoring = "32.43.1"
+    val storage = "32.43.1"
+    val elasticsearch = "32.43.1"
+    val sierra = "32.43.1"
   }
 
   val jsonLibrary: Seq[ModuleID] = Seq(
@@ -83,7 +83,7 @@ object ExternalDependencies {
   lazy val versions = new {
 
     val azure = "12.25.4"
-    val commonsCompress = "1.27.1"
+    val commonsCompress = "1.14"
     val commonsIO = "2.17.0"
     val mockito = "5.13.0"
     val scalatest = "3.2.19"
@@ -96,7 +96,7 @@ object ExternalDependencies {
 
     // This should match the version of aws used in scala-libs; see
     // https://github.com/wellcomecollection/scala-libs/blob/main/project/Dependencies.scala
-    val aws = "2.25.28"
+    val aws = "2.25.70"
 
     // These are the "Common Runtime Libraries", which you're encouraged to use for
     // better performance.

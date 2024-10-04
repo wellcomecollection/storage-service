@@ -41,8 +41,8 @@ import scala.util.{Failure, Success, Try}
   */
 object Unarchiver {
   def open(
-    inputStream: InputStream
-  ): Either[UnarchiverError, Iterator[(ArchiveEntry, InputStream)]] =
+            inputStream: InputStream
+          ): Either[UnarchiverError, Iterator[(ArchiveEntry, InputStream)]] =
     for {
       uncompressedStream <- uncompress(inputStream)
       archiveInputStream <- extract(uncompressedStream)
@@ -50,8 +50,8 @@ object Unarchiver {
     } yield iterator
 
   private def createIterator(
-    archiveInputStream: ArchiveInputStream[ArchiveEntry]
-  ): Iterator[(ArchiveEntry, InputStream)] =
+                              archiveInputStream: ArchiveInputStream
+                            ): Iterator[(ArchiveEntry, InputStream)] =
     new Iterator[(ArchiveEntry, InputStream)] {
       private var latest: ArchiveEntry = _
       private var seen: Set[ArchiveEntry] = Set.empty
@@ -84,20 +84,19 @@ object Unarchiver {
       new CompressorStreamFactory()
         .createCompressorInputStream(new BufferedInputStream(compressedStream))
     } match {
-      case Success(stream)                   => Right(stream)
+      case Success(stream) => Right(stream)
       case Failure(err: CompressorException) => Left(CompressorError(err))
-      case Failure(err)                      => Left(UnexpectedUnarchiverError(err))
+      case Failure(err) => Left(UnexpectedUnarchiverError(err))
     }
-
   private def extract(
     inputStream: InputStream
-  ): Either[UnarchiverError, ArchiveInputStream[ArchiveEntry]] =
+  ): Either[UnarchiverError, ArchiveInputStream] =
     Try {
       // We have to wrap in a BufferedInputStream because this method
       // only takes InputStreams that support the `mark()` method.
       new ArchiveStreamFactory()
         .createArchiveInputStream(new BufferedInputStream(inputStream))
-        .asInstanceOf[ArchiveInputStream[ArchiveEntry]]
+        .asInstanceOf[ArchiveInputStream]
     } match {
       case Success(stream)                => Right(stream)
       case Failure(err: ArchiveException) => Left(ArchiveFormatError(err))
