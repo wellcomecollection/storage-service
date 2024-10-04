@@ -50,8 +50,8 @@ object Unarchiver {
     } yield iterator
 
   private def createIterator(
-                              archiveInputStream: ArchiveInputStream
-                            ): Iterator[(ArchiveEntry, InputStream)] =
+    archiveInputStream: ArchiveInputStream
+  ): Iterator[(ArchiveEntry, InputStream)] =
     new Iterator[(ArchiveEntry, InputStream)] {
       private var latest: ArchiveEntry = _
       private var seen: Set[ArchiveEntry] = Set.empty
