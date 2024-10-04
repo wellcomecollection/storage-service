@@ -41,8 +41,8 @@ import scala.util.{Failure, Success, Try}
   */
 object Unarchiver {
   def open(
-            inputStream: InputStream
-          ): Either[UnarchiverError, Iterator[(ArchiveEntry, InputStream)]] =
+    inputStream: InputStream
+  ): Either[UnarchiverError, Iterator[(ArchiveEntry, InputStream)]] =
     for {
       uncompressedStream <- uncompress(inputStream)
       archiveInputStream <- extract(uncompressedStream)
@@ -84,9 +84,9 @@ object Unarchiver {
       new CompressorStreamFactory()
         .createCompressorInputStream(new BufferedInputStream(compressedStream))
     } match {
-      case Success(stream) => Right(stream)
+      case Success(stream)                   => Right(stream)
       case Failure(err: CompressorException) => Left(CompressorError(err))
-      case Failure(err) => Left(UnexpectedUnarchiverError(err))
+      case Failure(err)                      => Left(UnexpectedUnarchiverError(err))
     }
   private def extract(
     inputStream: InputStream
