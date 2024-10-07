@@ -8,7 +8,7 @@ atomicwrites==1.3.0       # via pytest
 attrs==19.1.0             # via pytest
 betamax-serializers==0.2.1
 betamax==0.8.1
-certifi==2019.3.9         # via requests
+certifi==2024.8.30        # via requests
 chardet==3.0.4            # via requests
 coverage==4.5.3
 idna==2.8                 # via requests

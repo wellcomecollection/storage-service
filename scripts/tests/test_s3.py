@@ -7,7 +7,7 @@ from helpers import copy_s3_prefix, delete_s3_prefix, list_s3_prefix
 
 @pytest.fixture
 def client():
-    with moto.mock_s3():
+    with moto.mock_aws():
         yield boto3.client("s3", region_name="us-east-1")
 
 

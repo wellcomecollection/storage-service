@@ -7,7 +7,7 @@ from helpers import read_secret, write_secret
 
 @pytest.fixture
 def client():
-    with moto.mock_secretsmanager():
+    with moto.mock_aws():
         yield boto3.client("secretsmanager", region_name="eu-west-1")
 
 
