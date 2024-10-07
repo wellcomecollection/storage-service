@@ -2,16 +2,9 @@ package weco.storage_service.bag_unpacker.fixtures
 
 import java.io.{File, _}
 import grizzled.slf4j.Logging
-import org.apache.commons.compress.archivers.{
-  ArchiveEntry,
-  ArchiveOutputStream,
-  ArchiveStreamFactory
-}
-import org.apache.commons.compress.compressors.{
-  CompressorOutputStream,
-  CompressorStreamFactory
-}
 import org.apache.commons.io.IOUtils
+import org.apache.commons.compress.archivers.{ArchiveEntry, ArchiveOutputStream, ArchiveStreamFactory}
+import org.apache.commons.compress.compressors.{CompressorOutputStream, CompressorStreamFactory}
 import org.scalatest.matchers.should.Matchers
 import weco.fixtures.TestWith
 import weco.storage_service.generators.StorageRandomGenerators
@@ -146,6 +139,7 @@ trait CompressFixture[BagLocation <: Location, Namespace]
     def finish(): Unit = {
       archiveOutputStream.flush()
       archiveOutputStream.finish()
+      archiveOutputStream.close()
       compressorOutputStream.flush()
       compressorOutputStream.close()
     }
@@ -182,7 +176,7 @@ trait CompressFixture[BagLocation <: Location, Namespace]
       compressorName: String
     )(
       outputStream: OutputStream
-    ): CompressorOutputStream = {
+    ): CompressorOutputStream[BufferedOutputStream] = {
 
       val compressorStreamFactory =
         new CompressorStreamFactory()
@@ -195,13 +189,13 @@ trait CompressFixture[BagLocation <: Location, Namespace]
           compressorName,
           bufferedOutputStream
         )
-    }
+    }.asInstanceOf[CompressorOutputStream[BufferedOutputStream]]
 
     private def packer(
       archiverName: String
     )(
       outputStream: OutputStream
-    ): ArchiveOutputStream = {
+    ): ArchiveOutputStream[ArchiveEntry] = {
 
       val archiveStreamFactory =
         new ArchiveStreamFactory()
