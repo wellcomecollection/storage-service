@@ -312,7 +312,7 @@ trait ReplicatorTestCases[
         val dstPrefix = createDstPrefixWith(dstNamespace)
 
         withPrefixTransfer { prefixTransfer =>
-          val spyTransfer = spy(prefixTransfer)
+          val spyTransfer = spy[PrefixTransferImpl](prefixTransfer)
 
           withReplicator(spyTransfer) {
             _.replicate(

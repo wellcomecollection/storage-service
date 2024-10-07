@@ -190,7 +190,9 @@ trait Unpacker[
       case err: IOException
           if err.getMessage == "Error detected parsing the header" =>
         UnpackerUnarchiverError(UnexpectedUnarchiverError(err))
-      case err: IOException if err.getMessage.startsWith("unexpected EOF") =>
+      case err: IOException
+          if err.getMessage.startsWith("unexpected EOF") || err.getMessage
+            .startsWith("Truncated TAR archive") =>
         UnpackerEOFError(err)
       case err => UnpackerUnexpectedError(err)
     }
