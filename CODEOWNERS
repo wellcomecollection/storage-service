@@ -1,10 +1,2 @@
-# These are default codeowners, later rules take precedence
-*	@wellcomecollection/scala-reviewers
-
-# To ensure only properly audited changes are run in CI, we require reviews
-# from @wellcomecollection/developers when updating pipeline config
-/CODEOWNERS	@wellcomecollection/developers
-/.buildkite/    @wellcomecollection/developers
-
-# Allow reviews from all developers on infrastructure changes
-/terraform/    @wellcomecollection/developers
+*   @wellcomecollection/digital-platform
+    
