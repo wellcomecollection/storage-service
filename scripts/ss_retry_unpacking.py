@@ -39,8 +39,10 @@ if __name__ == "__main__":
 
     try:
         # Sometimes, a bag can get stuck in a partially ingested state,
-        # where it cannot be "created", because it already exists, but
-        # it is al
+        # where it cannot be "created", because it already exists.
+        # The default behaviour copies the previous ingest, which is a "create"
+        # using the 'update' option, you can force it to run an update ingest,
+        # regardless of the previous ingest type
         ingest_type = sys.argv[2]
         if ingest_type != "update":
             sys.exit(f"Usage: {__file__} <INGEST_ID> update")
