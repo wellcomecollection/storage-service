@@ -19,10 +19,10 @@ from _aws import get_aws_client, DEV_ROLE_ARN
 from ss_get_ingest import lookup_ingest
 
 
-def create_context(ingest):
+def create_context(ingest, ingest_type):
     return {
         "ingestId": ingest["id"],
-        "ingestType": {"id": ingest["ingestType"]["id"]},
+        "ingestType": {"id": ingest_type},
         "storageSpace": ingest["space"]["id"],
         "externalIdentifier": ingest["bag"]["info"]["externalIdentifier"],
         "ingestDate": ingest["createdDate"],
@@ -37,7 +37,19 @@ if __name__ == "__main__":
 
     name, ingest = lookup_ingest(ingest_id)
 
-    context = create_context(ingest)
+    try:
+        # Sometimes, a bag can get stuck in a partially ingested state,
+        # where it cannot be "created", because it already exists.
+        # The default behaviour copies the previous ingest, which is a "create"
+        # using the 'update' option, you can force it to run an update ingest,
+        # regardless of the previous ingest type
+        ingest_type = sys.argv[2]
+        if ingest_type != "update":
+            sys.exit(f"Usage: {__file__} <INGEST_ID> update")
+    except IndexError:
+        ingest_type = ingest["ingestType"]["id"]
+
+    context = create_context(ingest, ingest_type)
 
     payload = {
         "context": context,
