@@ -1,6 +1,9 @@
 import contextlib
 import json
 import subprocess
+from azure.storage.blob import BlobServiceClient
+from concurrent.futures import ThreadPoolExecutor
+from _azure import get_connection_string
 
 
 def az(*args, **kwargs):
@@ -220,3 +223,23 @@ def delete_azure_prefix(*, account, container, prefix):
     # somewhat slow process.
     for blob in list_azure_prefix(account=account, container=container, prefix=prefix):
         delete_azure_blob(account=account, container=container, blob=blob)
+
+
+def delete_azure_blobs_concurrently(*, account, container, prefix):
+    def delete_blob(blob_name):
+        try:
+            container_client.delete_blob(blob_name)
+            print(f"Deleted blob: {blob_name}")
+        except Exception as e:
+            print(f"Failed to delete blob {blob_name}: {str(e)}")
+
+    connection_string = get_connection_string(account)
+    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+    container_client = blob_service_client.get_container_client(container)
+
+    # List blobs
+    blobs = container_client.list_blobs(name_starts_with=prefix)
+
+    # Delete blobs concurrently
+    with ThreadPoolExecutor(max_workers=30) as executor: 
+        executor.map(lambda blob: delete_blob(blob.name), blobs)
