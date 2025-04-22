@@ -665,16 +665,11 @@ def _delete_azure_blobs(*, azure_location):
     with azure.unlocked_azure_container(
         account=azure_location["account"], container=azure_location["container"]
     ):
-        azure.delete_azure_prefix(
+        azure.delete_azure_prefix_concurrently(
             account=azure_location["account"],
             container=azure_location["container"],
-            prefix=azure_location["prefix"],
+            prefix=azure_location["prefix"]
         )
-        # azure.delete_azure_blobs_concurrently(
-        #     account=azure_location["account"],
-        #     container=azure_location["container"],
-        #     prefix=azure_location["prefix"]
-        # )
 
 
 def _delete_dynamodb_items(items_to_delete):
