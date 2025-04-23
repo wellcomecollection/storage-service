@@ -1,6 +1,9 @@
 import contextlib
 import json
 import subprocess
+from azure.storage.blob import BlobServiceClient
+from concurrent.futures import ThreadPoolExecutor
+from _azure import get_connection_string
 
 
 def az(*args, **kwargs):
@@ -142,81 +145,24 @@ def unlocked_azure_container(*, account, container):
         )
 
 
-def list_azure_prefix(*, account, container, prefix=""):
+def delete_azure_prefix_concurrently(*, account, container, prefix):
     """
-    Lists all the blob names in a given Azure container/prefix.
+    Delete all the objects in a given Azure container/prefix.
     """
-    cmd = [
-        "storage",
-        "blob",
-        "list",
-        "--account-name",
-        account,
-        "--container-name",
-        container,
-        # Return all the results
-        "--num-results=*",
-    ]
 
-    if prefix:
-        cmd += ["--prefix", prefix]
+    def delete_blob(blob_name):
+        try:
+            container_client.delete_blob(blob_name)
+        except Exception as e:
+            print(f"Failed to delete blob {blob_name}: {str(e)}")
 
-    list_resp = az(
-        *cmd,
-        # Otherwise we get warnings like:
-        #
-        #       Please provide --connection-string, --account-key or --sas-token
-        #       as credential, or use `--auth-mode login` if you have required RBAC
-        #       roles in your command. For more information about RBAC roles in
-        #       storage, you can see
-        #       https://docs.microsoft.com/en-us/azure/storage/common/storage-auth-aad-rbac-cli.
-        #
-        stderr=subprocess.DEVNULL,
-    )
+    connection_string = get_connection_string(account)
+    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+    container_client = blob_service_client.get_container_client(container)
 
-    return [azure_obj["name"] for azure_obj in list_resp]
+    # List blobs
+    blobs = container_client.list_blobs(name_starts_with=prefix)
 
-
-def delete_azure_blob(*, account, container, blob):
-    """
-    Deletes an individual Azure blob.
-    """
-    az(
-        "storage",
-        "blob",
-        "delete",
-        "--account-name",
-        account,
-        "--container-name",
-        container,
-        "--name",
-        blob,
-        # Otherwise we get warnings like:
-        #
-        #       Please provide --connection-string, --account-key or --sas-token
-        #       as credential, or use `--auth-mode login` if you have required RBAC
-        #       roles in your command. For more information about RBAC roles in
-        #       storage, you can see
-        #       https://docs.microsoft.com/en-us/azure/storage/common/storage-auth-aad-rbac-cli.
-        #
-        stderr=subprocess.DEVNULL,
-    )
-
-
-def delete_azure_prefix(*, account, container, prefix):
-    """
-    Delete all the objects in a given S3 bucket/prefix.
-    """
-    # Implementation note: this is slow and there may be a faster way
-    # of doing it, but:
-    #
-    #   1.  I'm not super familiar with the Azure CLI; when I tried the
-    #       command for deleting multiple objects at once, it just hung
-    #       forever.
-    #   2.  If you try to be clever and run multiple instances of the CLI
-    #       at once, you hit rate limits pretty quickly.
-    #
-    # Given deletions are extremely rare, I'm okay with this being a
-    # somewhat slow process.
-    for blob in list_azure_prefix(account=account, container=container, prefix=prefix):
-        delete_azure_blob(account=account, container=container, blob=blob)
+    # Delete blobs concurrently
+    with ThreadPoolExecutor(max_workers=30) as executor:
+        executor.map(lambda blob: delete_blob(blob.name), blobs)
