@@ -143,7 +143,6 @@ def unlocked_azure_container(*, account, container):
             f"Unable to restore legal hold tags from Azure container {container} "
             f" ({' '.join(existing_legal_hold_tags)})"
         )
-        
 
 def delete_azure_prefix_concurrently(*, account, container, prefix):
     """
