@@ -152,7 +152,6 @@ def delete_azure_prefix_concurrently(*, account, container, prefix):
     def delete_blob(blob_name):
         try:
             container_client.delete_blob(blob_name)
-            print(f"Deleted blob: {blob_name}")
         except Exception as e:
             print(f"Failed to delete blob {blob_name}: {str(e)}")
 
