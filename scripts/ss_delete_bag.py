@@ -668,7 +668,7 @@ def _delete_azure_blobs(*, azure_location):
         azure.delete_azure_prefix_concurrently(
             account=azure_location["account"],
             container=azure_location["container"],
-            prefix=azure_location["prefix"]
+            prefix=azure_location["prefix"],
         )
 
 

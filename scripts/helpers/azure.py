@@ -149,6 +149,7 @@ def delete_azure_prefix_concurrently(*, account, container, prefix):
     """
     Delete all the objects in a given Azure container/prefix.
     """
+
     def delete_blob(blob_name):
         try:
             container_client.delete_blob(blob_name)
@@ -165,4 +166,3 @@ def delete_azure_prefix_concurrently(*, account, container, prefix):
     # Delete blobs concurrently
     with ThreadPoolExecutor(max_workers=30) as executor:
         executor.map(lambda blob: delete_blob(blob.name), blobs)
-        
