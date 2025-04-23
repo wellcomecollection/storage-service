@@ -144,6 +144,7 @@ def unlocked_azure_container(*, account, container):
             f" ({' '.join(existing_legal_hold_tags)})"
         )
 
+
 def delete_azure_prefix_concurrently(*, account, container, prefix):
     """
     Delete all the objects in a given Azure container/prefix.
@@ -162,5 +163,6 @@ def delete_azure_prefix_concurrently(*, account, container, prefix):
     blobs = container_client.list_blobs(name_starts_with=prefix)
 
     # Delete blobs concurrently
-    with ThreadPoolExecutor(max_workers=30) as executor: 
+    with ThreadPoolExecutor(max_workers=30) as executor:
         executor.map(lambda blob: delete_blob(blob.name), blobs)
+        
