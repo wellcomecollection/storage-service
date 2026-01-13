@@ -4,7 +4,7 @@
 #
 #    pip-compile requirements.in
 #
-azure-core==1.33.0
+azure-core==1.38.0
     # via azure-storage-blob
 azure-storage-blob==12.25.1
     # via -r requirements.in
@@ -53,9 +53,7 @@ requests==2.32.3
 s3transfer==0.6.2
     # via boto3
 six==1.16.0
-    # via
-    #   azure-core
-    #   python-dateutil
+    # via python-dateutil
 tenacity==8.2.3
     # via -r requirements.in
 typing-extensions==4.13.2
