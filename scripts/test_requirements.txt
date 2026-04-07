@@ -13,7 +13,7 @@ botocore==1.35.32
     #   s3transfer
 certifi==2024.8.30
     # via requests
-cffi==1.17.1
+cffi==2.0.0
     # via cryptography
 charset-normalizer==3.3.2
     # via requests
@@ -21,10 +21,8 @@ coverage[toml]==7.6.1
     # via
     #   -r test_requirements.in
     #   pytest-cov
-cryptography==43.0.1
+cryptography==46.0.6
     # via moto
-exceptiongroup==1.2.2
-    # via pytest
 idna==3.10
     # via requests
 iniconfig==2.0.0
@@ -69,10 +67,6 @@ s3transfer==0.10.2
     # via boto3
 six==1.16.0
     # via python-dateutil
-tomli==2.0.2
-    # via
-    #   coverage
-    #   pytest
 urllib3==1.26.19
     # via
     #   botocore
