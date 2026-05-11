@@ -59,4 +59,4 @@ docker run --tty --rm \
   --net host \
   --volume "$ROOT:$ROOT" \
   --workdir "$ROOT" \
-  "$ECR_REGISTRY/wellcome/sbt_wrapper:1.10.2" "$@"
+  "$ECR_REGISTRY/wellcome/sbt_wrapper:1.10.7" "$@"
