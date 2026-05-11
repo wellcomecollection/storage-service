@@ -1,0 +1,29 @@
+name: "daily_reporter: Python checks"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "monitoring/daily_reporter/**"
+      - ".github/workflows/monitoring-daily-reporter-ci.yml"
+  pull_request:
+    paths:
+      - "monitoring/daily_reporter/**"
+      - ".github/workflows/monitoring-daily-reporter-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: wellcomecollection/.github/.github/actions/python_check@main
+        with:
+          folder: monitoring/daily_reporter
+          skip-lint: "true"
+          skip-format-check: "true"
+          skip-type-check: "true"
