@@ -1,0 +1,73 @@
+name: "Build Lambda ZIP"
+description: "Builds a Python lambda ZIP package using uv and optionally uploads to S3"
+inputs:
+  folder:
+    description: "Working folder containing the Python project"
+    required: true
+  python_version_file:
+    description: "Path to .python-version file relative to folder"
+    required: false
+    default: ".python-version"
+  target_dir:
+    description: "Target directory for build artifacts relative to folder"
+    required: false
+    default: "target"
+  zip_name:
+    description: "Name of the ZIP file to create"
+    required: false
+    default: "build.zip"
+  upload_to_s3:
+    description: "Whether to upload the ZIP to S3"
+    required: false
+    default: "false"
+  s3_bucket:
+    description: "S3 bucket to upload to (required if upload_to_s3 is true)"
+    required: false
+  s3_key:
+    description: "Full S3 key for the upload (required if upload_to_s3 is true)"
+    required: false
+  role_to_assume:
+    description: "AWS role to assume for S3 upload (required if upload_to_s3 is true)"
+    required: false
+outputs:
+  zip_path:
+    description: "Path to the created ZIP file"
+    value: ${{ steps.build.outputs.zip_path }}
+runs:
+  using: "composite"
+  steps:
+    - name: Install UV
+      shell: bash
+      run: |
+        if ! command -v uv &> /dev/null; then
+            echo "Installing UV..."
+            pip install uv
+        fi
+
+    - name: Configure AWS credentials
+      if: ${{ inputs.upload_to_s3 == 'true' }}
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: eu-west-1
+        role-to-assume: ${{ inputs.role_to_assume }}
+
+    - name: Build Lambda ZIP
+      id: build
+      shell: bash
+      run: |
+        "${{ github.action_path }}/build.sh" \
+          "${{ inputs.folder }}" \
+          "${{ inputs.python_version_file }}" \
+          "${{ inputs.target_dir }}" \
+          "${{ inputs.zip_name }}"
+
+    - name: Upload to S3
+      if: ${{ inputs.upload_to_s3 == 'true' }}
+      shell: bash
+      run: |
+        "${{ github.action_path }}/upload.sh" \
+          "${{ inputs.folder }}" \
+          "${{ inputs.target_dir }}" \
+          "${{ inputs.zip_name }}" \
+          "${{ inputs.s3_bucket }}" \
+          "${{ inputs.s3_key }}"

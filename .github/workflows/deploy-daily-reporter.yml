@@ -7,20 +7,23 @@ on:
 
 permissions:
   id-token: write
+  contents: read
 
 jobs:
-  deploy_ingest_inspector:
+  deploy_daily_reporter:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: aws-actions/configure-aws-credentials@v4
+      - uses: ./.github/actions/build-lambda-zip
         with:
-          aws-region: eu-west-1
-          role-to-assume: ${{ secrets.DEPLOY_INGEST_INSPECTOR_GHA_ROLE_ARN }}
-      - name: Deploy Daily Reporter
-        run: |
-          pip3 install -r ./builds/requirements.txt
-          python3 ./builds/publish_lambda_zip.py monitoring/daily_reporter \
-              --bucket=wellcomecollection-storage-infra \
-              --key=lambdas/monitoring/daily_reporter.zip
-          ./builds/deploy_lambda_zip.sh monitoring/daily_reporter daily_reporter
+          folder: monitoring/daily_reporter
+          upload_to_s3: "true"
+          s3_bucket: wellcomecollection-storage-infra
+          s3_key: lambdas/monitoring/daily_reporter.zip
+          role_to_assume: ${{ secrets.DEPLOY_INGEST_INSPECTOR_GHA_ROLE_ARN }}
+      - uses: ./.github/actions/deploy-lambda-zip
+        with:
+          lambda_name: daily_reporter
+          s3_bucket: wellcomecollection-storage-infra
+          s3_key: lambdas/monitoring/daily_reporter.zip
+          role_to_assume: ${{ secrets.DEPLOY_INGEST_INSPECTOR_GHA_ROLE_ARN }}

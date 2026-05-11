@@ -27,6 +27,12 @@ from ingests import get_dev_status
             {
                 "status": "processing",
                 "createdDate": datetime.datetime.now() - datetime.timedelta(seconds=5),
+                "events": [
+                    {
+                        "createdDate": datetime.datetime.now()
+                        - datetime.timedelta(seconds=5)
+                    }
+                ],
             },
             "processing",
         ),
@@ -34,6 +40,12 @@ from ingests import get_dev_status
             {
                 "status": "processing",
                 "createdDate": datetime.datetime.now() - datetime.timedelta(days=5),
+                "events": [
+                    {
+                        "createdDate": datetime.datetime.now()
+                        - datetime.timedelta(days=5)
+                    }
+                ],
             },
             "stalled",
         ),
