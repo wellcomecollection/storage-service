@@ -1,0 +1,30 @@
+[project]
+name = "scripts"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "azure-storage-blob>=12.28.0",
+    "boto3>=1.43.4",
+    "click>=8.3.3",
+    "daiquiri>=3.4.0",
+    "elasticsearch>=9.3.0",
+    "humanize>=4.15.0",
+    "tenacity>=9.1.4",
+    "wellcome-storage-service",
+]
+
+[tool.uv.sources]
+wellcome-storage-service = { path = "../python_client", editable = true }
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
+[dependency-groups]
+test = [
+    "coverage>=7.13.5",
+    "moto>=5.2.0",
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+]

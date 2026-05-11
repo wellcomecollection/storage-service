@@ -1,0 +1,29 @@
+name: "scripts: Python checks"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "scripts/**"
+      - ".github/workflows/scripts-ci.yml"
+  pull_request:
+    paths:
+      - "scripts/**"
+      - ".github/workflows/scripts-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: wellcomecollection/.github/.github/actions/python_check@main
+        with:
+          folder: scripts
+          skip-lint: "true"
+          skip-format-check: "true"
+          skip-type-check: "true"

@@ -56,13 +56,6 @@ steps:
     agents:
       queue: "scala"
 
-  - command:
-      - cd scripts
-      - python3 -m venv venv && source venv/bin/activate
-      - pip3 install tox
-      - venv/bin/tox -e py3
-    label: "Test Python scripts"
-
   - wait
 
   - label: trigger stage deploy
