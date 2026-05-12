@@ -35,6 +35,7 @@ set -o nounset
 ECR_REGISTRY="760097843905.dkr.ecr.eu-west-1.amazonaws.com"
 
 ROOT=$(git rev-parse --show-toplevel)
+SBT_VERSION=$(sed -n 's/^sbt.version=//p' "$ROOT/project/build.properties")
 
 # Coursier cache location is platform-dependent
 # https://get-coursier.io/docs/cache.html#default-location
@@ -59,4 +60,4 @@ docker run --tty --rm \
   --net host \
   --volume "$ROOT:$ROOT" \
   --workdir "$ROOT" \
-  "$ECR_REGISTRY/wellcome/sbt_wrapper:no_alpine" "$@"
+  "$ECR_REGISTRY/wellcome/sbt_wrapper:$SBT_VERSION" "$@"
