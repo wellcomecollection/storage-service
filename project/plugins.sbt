@@ -1,4 +1,12 @@
 
+{
+  val mode = if (sys.env.get("CODEARTIFACT_AUTH_TOKEN").exists(_.nonEmpty))
+    "CodeArtifact → Maven Central"
+  else
+    "Maven Central only"
+  println(s"[info] Plugin resolution: $mode")
+}
+
 resolvers ++= sys.env.get("CODEARTIFACT_AUTH_TOKEN").filter(_.nonEmpty).map(_ =>
   "CodeArtifact" at "https://wellcomecollection-maven-mirror-760097843905.d.codeartifact.eu-west-1.amazonaws.com/maven/wellcomecollection-maven-mirror/"
 ).toSeq
