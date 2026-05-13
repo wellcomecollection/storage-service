@@ -6,11 +6,9 @@ import weco.storage_service.checksum.ChecksumAlgorithms
   * manifest file, which is in turn referred to by a tag manifest file. But how
   * do we know the tag manifest file is there?
   *
-  * tagmanifest-sha256.txt tag manifest file
-  * \| (references)
-  * \| v manifest-sha256.txt payload manifest file
-  * \| (references)
-  * \| v b12345.jpg payload file
+  * tagmanifest-sha256.txt tag manifest file \| (references) \| v
+  * manifest-sha256.txt payload manifest file \| (references) \| v b12345.jpg
+  * payload file
   *
   * There's nothing in a bag that refers to the tag manifest file. This is okay
   * -- the chain of checksums/references has to stop somewhere!

@@ -6,9 +6,8 @@ import weco.storage_service.bagit.models.BagVersion
   * worker services. They send a message asynchronously whenever they start or
   * stop a processing step, and the tracker updates the ingests database.
   *
-  * worker1 ---+
-  * \| worker2 ---+---> ingests tracker ---> ingests database
-  * \| worker3 ---+
+  * worker1 ---+ \| worker2 ---+---> ingests tracker ---> ingests database \|
+  * worker3 ---+
   */
 sealed trait IngestUpdate {
   val id: IngestID
