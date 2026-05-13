@@ -1,0 +1,19 @@
+[project]
+name = "ingest-inspector-backend"
+version = "0.1.0"
+description = "API endpoint for the Ingest Inspector app"
+requires-python = ">=3.12"
+dependencies = [
+    "boto3>=1.23.10",
+    "requests>=2.27.1",
+    "wellcome-storage-service>=2.1.0,<3",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["src"]
+
+[dependency-groups]
+test = [
+    "pytest>=8.0.0",
+]

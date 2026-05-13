@@ -1,0 +1,31 @@
+name: "Deploy Lambda ZIP"
+description: "Deploys a Lambda function from a ZIP file stored in S3"
+inputs:
+  lambda_name:
+    description: "Name of the Lambda function to deploy"
+    required: true
+  s3_bucket:
+    description: "S3 bucket containing the Lambda ZIP"
+    required: true
+  s3_key:
+    description: "Full S3 key for the Lambda ZIP"
+    required: true
+  role_to_assume:
+    description: "AWS role to assume for deployment"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: eu-west-1
+        role-to-assume: ${{ inputs.role_to_assume }}
+
+    - name: Deploy Lambda function
+      shell: bash
+      run: |
+        "${{ github.action_path }}/deploy.sh" \
+          "${{ inputs.lambda_name }}" \
+          "${{ inputs.s3_bucket }}" \
+          "${{ inputs.s3_key }}"

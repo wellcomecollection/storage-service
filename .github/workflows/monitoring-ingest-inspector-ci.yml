@@ -1,0 +1,29 @@
+name: "ingest_inspector: Python checks"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "monitoring/ingest_inspector/backend_lambda/**"
+      - ".github/workflows/monitoring-ingest-inspector-ci.yml"
+  pull_request:
+    paths:
+      - "monitoring/ingest_inspector/backend_lambda/**"
+      - ".github/workflows/monitoring-ingest-inspector-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: wellcomecollection/.github/.github/actions/python_check@main
+        with:
+          folder: monitoring/ingest_inspector/backend_lambda
+          skip-lint: "true"
+          skip-format-check: "true"
+          skip-type-check: "true"
