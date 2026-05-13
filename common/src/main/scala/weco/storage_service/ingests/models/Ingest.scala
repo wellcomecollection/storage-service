@@ -37,9 +37,7 @@ case object Ingest {
     *
     * These are the expected state transitions:
     *
-    * \+---> succeeded
-    * \| accepted ---> processing ---+
-    * \| +---> failed
+    * \+---> succeeded \| accepted ---> processing ---+ \| +---> failed
     */
   sealed trait Status
   sealed trait Completed extends Status

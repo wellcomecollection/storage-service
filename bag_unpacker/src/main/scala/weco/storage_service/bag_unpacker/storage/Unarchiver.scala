@@ -29,10 +29,8 @@ import scala.util.{Failure, Success, Try}
   *
   * \+------------------------------------------+ original stream
   *
-  * \+-------+ file1
-  * \+------------------+ file2
-  * \+---------+ file3
-  * \+-----+ file4
+  * \+-------+ file1 \+------------------+ file2 \+---------+ file3 \+-----+
+  * file4
   *
   * This is why we wrap the output in a close shield: if the caller closed the
   * individual stream, they'd close the underlying stream and we'd be unable to
