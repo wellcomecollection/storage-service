@@ -1,13 +1,16 @@
 
-sys.env.get("CODEARTIFACT_AUTH_TOKEN").filter(_.nonEmpty).foreach { token =>
-  resolvers += "CodeArtifact" at "https://wellcomecollection-maven-mirror-760097843905.d.codeartifact.eu-west-1.amazonaws.com/maven/wellcomecollection-maven-mirror/"
-  credentials += Credentials(
+resolvers ++= sys.env.get("CODEARTIFACT_AUTH_TOKEN").filter(_.nonEmpty).map(_ =>
+  "CodeArtifact" at "https://wellcomecollection-maven-mirror-760097843905.d.codeartifact.eu-west-1.amazonaws.com/maven/wellcomecollection-maven-mirror/"
+).toSeq
+
+credentials ++= sys.env.get("CODEARTIFACT_AUTH_TOKEN").filter(_.nonEmpty).map(token =>
+  Credentials(
     "wellcomecollection-maven-mirror/wellcomecollection-maven-mirror",
     "wellcomecollection-maven-mirror-760097843905.d.codeartifact.eu-west-1.amazonaws.com",
     "aws",
     token
   )
-}
+).toSeq
 
 addSbtPlugin("com.tapad" % "sbt-docker-compose" % "1.0.35")
 addSbtPlugin("com.github.sbt" % "sbt-native-packager" % "1.10.4")
