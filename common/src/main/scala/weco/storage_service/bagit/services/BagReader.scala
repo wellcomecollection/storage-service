@@ -156,15 +156,15 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
     * i.e. loads manifest-{algorithm}.txt or tagmanifest-{algorithm}.txt for
     * every supported checksum algorithm
     *
-    * Returns a list of checksum algorithms for which the manifest files are defined
-    * in the bag, and a list of entries correlated across the manifests.  These are
-    * returned separately because the list of entries may be empty (if there's nothing
-    * in the payload manifests).
+    * Returns a list of checksum algorithms for which the manifest files are
+    * defined in the bag, and a list of entries correlated across the manifests.
+    * These are returned separately because the list of entries may be empty (if
+    * there's nothing in the payload manifests).
     *
-    * This function is responsible for checking consistency within a type of manifest,
-    * e.g. does every manifest list the same filenames.  Callers may assume the manifest
-    * data is consistent, although we can't easily enforce that in the type system.
-    *
+    * This function is responsible for checking consistency within a type of
+    * manifest, e.g. does every manifest list the same filenames. Callers may
+    * assume the manifest data is consistent, although we can't easily enforce
+    * that in the type system.
     */
   private def loadManifestEntries(
     root: BagPrefix
@@ -222,13 +222,14 @@ trait BagReader[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
       }
 
       entries <- Try {
-        filenames.map { bagPath =>
-          bagPath -> MultiManifestChecksum(
-            md5 = md5.map(_(bagPath)),
-            sha1 = sha1.map(_(bagPath)),
-            sha256 = sha256.map(_(bagPath)),
-            sha512 = sha512.map(_(bagPath))
-          )
+        filenames.map {
+          bagPath =>
+            bagPath -> MultiManifestChecksum(
+              md5 = md5.map(_(bagPath)),
+              sha1 = sha1.map(_(bagPath)),
+              sha256 = sha256.map(_(bagPath)),
+              sha512 = sha512.map(_(bagPath))
+            )
         }.toMap
       } match {
         case Success(entries) => Right(entries)

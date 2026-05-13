@@ -21,51 +21,52 @@ import weco.http.monitoring.HttpMetrics
 import scala.concurrent.ExecutionContext
 
 object Main extends WellcomeTypesafeApp {
-  runWithConfig { config: Config =>
-    implicit val actorSystem: ActorSystem =
-      ActorSystem("main-actor-system")
-    implicit val ec: ExecutionContext =
-      actorSystem.dispatcher
+  runWithConfig {
+    config: Config =>
+      implicit val actorSystem: ActorSystem =
+        ActorSystem("main-actor-system")
+      implicit val ec: ExecutionContext =
+        actorSystem.dispatcher
 
-    val httpServerConfigMain = HTTPServerBuilder.buildHTTPServerConfig(config)
+      val httpServerConfigMain = HTTPServerBuilder.buildHTTPServerConfig(config)
 
-    val ingestTrackerHost = Uri(
-      config.requireString("ingests.tracker.host")
-    )
-
-    val ingestCreatorInstance = new IngestCreator(
-      ingestTrackerClient = new PekkoIngestTrackerClient(ingestTrackerHost),
-      unpackerMessageSender = SNSBuilder.buildSNSMessageSender(
-        config,
-        namespace = "unpacker",
-        subject = "Sent from the ingests API"
+      val ingestTrackerHost = Uri(
+        config.requireString("ingests.tracker.host")
       )
-    )
 
-    val client = new PekkoIngestTrackerClient(ingestTrackerHost)
+      val ingestCreatorInstance = new IngestCreator(
+        ingestTrackerClient = new PekkoIngestTrackerClient(ingestTrackerHost),
+        unpackerMessageSender = SNSBuilder.buildSNSMessageSender(
+          config,
+          namespace = "unpacker",
+          subject = "Sent from the ingests API"
+        )
+      )
 
-    val router = new IngestsApi[SNSConfig] {
-      override val ingestTrackerClient: IngestTrackerClient = client
+      val client = new PekkoIngestTrackerClient(ingestTrackerHost)
 
-      override val ingestCreator = ingestCreatorInstance
+      val router = new IngestsApi[SNSConfig] {
+        override val ingestTrackerClient: IngestTrackerClient = client
 
-      override val httpServerConfig: HTTPServerConfig = httpServerConfigMain
+        override val ingestCreator = ingestCreatorInstance
 
-      override implicit val ec: ExecutionContext = actorSystem.dispatcher
-    }
+        override val httpServerConfig: HTTPServerConfig = httpServerConfigMain
 
-    val appName = "IngestsApi"
+        override implicit val ec: ExecutionContext = actorSystem.dispatcher
+      }
 
-    val httpMetrics = new HttpMetrics(
-      name = appName,
-      metrics = CloudWatchBuilder.buildCloudWatchMetrics(config)
-    )
+      val appName = "IngestsApi"
 
-    new WellcomeHttpApp(
-      routes = router.ingests,
-      httpMetrics = httpMetrics,
-      httpServerConfig = httpServerConfigMain,
-      appName = appName
-    )
+      val httpMetrics = new HttpMetrics(
+        name = appName,
+        metrics = CloudWatchBuilder.buildCloudWatchMetrics(config)
+      )
+
+      new WellcomeHttpApp(
+        routes = router.ingests,
+        httpMetrics = httpMetrics,
+        httpServerConfig = httpServerConfigMain,
+        appName = appName
+      )
   }
 }

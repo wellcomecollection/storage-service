@@ -20,8 +20,7 @@ import scala.util.{Failure, Success, Try}
 // Using DynamoDB to store tags about blobs in Azure is a stopgap until we get
 // access to first-class Azure tags.
 class AzureDynamoTags(dynamoConfig: DynamoConfig)(
-  implicit
-  blobServiceClient: BlobServiceClient,
+  implicit blobServiceClient: BlobServiceClient,
   dynamoClient: DynamoDbClient
 ) extends Tags[AzureBlobLocation] {
   case class DynamoTagsEntry(id: String, tags: Map[String, String])

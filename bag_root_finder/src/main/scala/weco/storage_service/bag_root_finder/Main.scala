@@ -22,27 +22,29 @@ import weco.typesafe.WellcomeTypesafeApp
 import scala.concurrent.ExecutionContext
 
 object Main extends WellcomeTypesafeApp {
-  runWithConfig { config: Config =>
-    implicit val actorSystem: ActorSystem =
-      ActorSystem("main-actor-system")
-    implicit val ec: ExecutionContext =
-      actorSystem.dispatcher
+  runWithConfig {
+    config: Config =>
+      implicit val actorSystem: ActorSystem =
+        ActorSystem("main-actor-system")
+      implicit val ec: ExecutionContext =
+        actorSystem.dispatcher
 
-    implicit val s3Client: S3Client = S3Client.builder().build()
+      implicit val s3Client: S3Client = S3Client.builder().build()
 
-    implicit val metrics: CloudWatchMetrics =
-      CloudWatchBuilder.buildCloudWatchMetrics(config)
+      implicit val metrics: CloudWatchMetrics =
+        CloudWatchBuilder.buildCloudWatchMetrics(config)
 
-    implicit val sqsClient: SqsAsyncClient =
-      SqsAsyncClient.builder().build()
+      implicit val sqsClient: SqsAsyncClient =
+        SqsAsyncClient.builder().build()
 
-    val operationName = OperationNameBuilder.getName(config)
+      val operationName = OperationNameBuilder.getName(config)
 
-    new BagRootFinderWorker(
-      config = PekkoSQSWorkerConfigBuilder.build(config),
-      bagRootFinder = new BagRootFinder(),
-      ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
-      outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName)
-    )
+      new BagRootFinderWorker(
+        config = PekkoSQSWorkerConfigBuilder.build(config),
+        bagRootFinder = new BagRootFinder(),
+        ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
+        outgoingPublisher =
+          OutgoingPublisherBuilder.build(config, operationName)
+      )
   }
 }

@@ -41,7 +41,7 @@ object S3Locatable {
                   LocationParsingError(
                     uri,
                     s"Failed to parse S3 URI: invalid path trying to parse local URL (${default
-                      .mkString("/")})"
+                        .mkString("/")})"
                   )
                 )
             }

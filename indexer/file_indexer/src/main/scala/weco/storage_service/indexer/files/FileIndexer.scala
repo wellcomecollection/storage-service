@@ -9,8 +9,7 @@ import weco.storage_service.indexer.files.models.IndexedFile
 import scala.concurrent.ExecutionContext
 
 class FileIndexer(val client: ElasticClient, val index: Index)(
-  implicit
-  val ec: ExecutionContext,
+  implicit val ec: ExecutionContext,
   val encoder: Encoder[IndexedFile]
 ) extends Indexer[FileContext, IndexedFile] {
   override def id(file: FileContext): String = file.location.toString

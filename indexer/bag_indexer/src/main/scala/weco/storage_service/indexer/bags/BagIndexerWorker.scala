@@ -29,8 +29,7 @@ class BagIndexerWorker(
   val indexer: Indexer[StorageManifest, IndexedStorageManifest],
   val bagTrackerClient: BagTrackerClient
 )(
-  implicit
-  val actorSystem: ActorSystem,
+  implicit val actorSystem: ActorSystem,
   val sqsAsync: SqsAsyncClient,
   val metrics: Metrics[Future],
   val decoder: Decoder[BagRegistrationNotification]

@@ -8,15 +8,11 @@ import scala.util.Random
 
 /** Given some Container of files, get the expected fixity information for every
   * file in the container, then verify the fixity on each of them.
-  *
   */
-class FixityListChecker[BagLocation <: Location,
-                        BagPrefix <: Prefix[
-                          BagLocation
-                        ],
-                        Container](
-  implicit
-  dataDirectoryFixityChecker: FixityChecker[BagLocation, BagPrefix],
+class FixityListChecker[BagLocation <: Location, BagPrefix <: Prefix[
+  BagLocation
+], Container](
+  implicit dataDirectoryFixityChecker: FixityChecker[BagLocation, BagPrefix],
   val fetchEntriesFixityChecker: FixityChecker[
     S3ObjectLocation,
     S3ObjectLocationPrefix
@@ -53,14 +49,14 @@ class FixityListChecker[BagLocation <: Location,
           ) {
 
             case (
-                existingCorrect: FixityListAllCorrect[BagLocation],
-                newCorrect: FileFixityCorrect[BagLocation]
+                  existingCorrect: FixityListAllCorrect[BagLocation],
+                  newCorrect: FileFixityCorrect[BagLocation]
                 ) =>
               FixityListAllCorrect(newCorrect :: existingCorrect.locations)
 
             case (
-                correct: FixityListAllCorrect[BagLocation],
-                err: FileFixityError[BagLocation]
+                  correct: FixityListAllCorrect[BagLocation],
+                  err: FileFixityError[BagLocation]
                 ) =>
               FixityListWithErrors(
                 errors = List(err),
@@ -68,8 +64,8 @@ class FixityListChecker[BagLocation <: Location,
               )
 
             case (
-                existingErrors: FixityListWithErrors[BagLocation],
-                c: FileFixityCorrect[BagLocation]
+                  existingErrors: FixityListWithErrors[BagLocation],
+                  c: FileFixityCorrect[BagLocation]
                 ) =>
               FixityListWithErrors(
                 existingErrors.errors,
@@ -77,8 +73,8 @@ class FixityListChecker[BagLocation <: Location,
               )
 
             case (
-                existingErrors: FixityListWithErrors[BagLocation],
-                err: FileFixityError[BagLocation]
+                  existingErrors: FixityListWithErrors[BagLocation],
+                  err: FileFixityError[BagLocation]
                 ) =>
               FixityListWithErrors(
                 errors = err :: existingErrors.errors,

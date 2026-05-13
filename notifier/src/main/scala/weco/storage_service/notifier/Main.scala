@@ -16,29 +16,30 @@ import weco.typesafe.WellcomeTypesafeApp
 import scala.concurrent.ExecutionContext
 
 object Main extends WellcomeTypesafeApp {
-  runWithConfig { config: Config =>
-    implicit val actorSystem: ActorSystem =
-      ActorSystem("main-actor-system")
-    implicit val ec: ExecutionContext =
-      actorSystem.dispatcher
+  runWithConfig {
+    config: Config =>
+      implicit val actorSystem: ActorSystem =
+        ActorSystem("main-actor-system")
+      implicit val ec: ExecutionContext =
+        actorSystem.dispatcher
 
-    implicit val metrics: CloudWatchMetrics =
-      CloudWatchBuilder.buildCloudWatchMetrics(config)
+      implicit val metrics: CloudWatchMetrics =
+        CloudWatchBuilder.buildCloudWatchMetrics(config)
 
-    implicit val sqsClient: SqsAsyncClient =
-      SqsAsyncClient.builder().build()
+      implicit val sqsClient: SqsAsyncClient =
+        SqsAsyncClient.builder().build()
 
-    val callbackUrlService = new CallbackUrlService(
-      client = new PekkoHttpClient()
-    )
-
-    new NotifierWorker(
-      config = PekkoSQSWorkerConfigBuilder.build(config),
-      callbackUrlService = callbackUrlService,
-      messageSender = SNSBuilder.buildSNSMessageSender(
-        config,
-        subject = "Sent from the notifier"
+      val callbackUrlService = new CallbackUrlService(
+        client = new PekkoHttpClient()
       )
-    )
+
+      new NotifierWorker(
+        config = PekkoSQSWorkerConfigBuilder.build(config),
+        callbackUrlService = callbackUrlService,
+        messageSender = SNSBuilder.buildSNSMessageSender(
+          config,
+          subject = "Sent from the notifier"
+        )
+      )
   }
 }

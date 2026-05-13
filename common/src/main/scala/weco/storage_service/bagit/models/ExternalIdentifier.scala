@@ -77,13 +77,15 @@ class ExternalIdentifier(val underlying: String)
   require(
     underlying.head.isLetterOrDigit && underlying.head <= 'z',
     failureMessage(
-      "External identifier must begin with a Basic Latin letter or digit")
+      "External identifier must begin with a Basic Latin letter or digit"
+    )
   )
 
   require(
     underlying.last.isLetterOrDigit && underlying.last <= 'z',
     failureMessage(
-      "External identifier must end with a Basic Latin letter or digit")
+      "External identifier must end with a Basic Latin letter or digit"
+    )
   )
 
   // We're super careful about the characters we allow in external identifiers,
@@ -110,7 +112,8 @@ class ExternalIdentifier(val underlying: String)
   require(
     underlying.matches(s"^$characterClass+$$"),
     failureMessage(
-      s"External identifier can only contain characters in the class $characterClass")
+      s"External identifier can only contain characters in the class $characterClass"
+    )
   )
 }
 

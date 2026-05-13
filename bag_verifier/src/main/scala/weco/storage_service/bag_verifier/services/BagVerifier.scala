@@ -45,12 +45,11 @@ trait ReplicatedBagVerifier[
     bagReader.readable
 }
 
-trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix],
-                  BagLocation <: Location,
-                  BagPrefix <: Prefix[
-                    BagLocation
-                  ]]
-    extends Logging
+trait BagVerifier[BagContext <: BagVerifyContext[
+  BagPrefix
+], BagLocation <: Location, BagPrefix <: Prefix[
+  BagLocation
+]] extends Logging
     with VerifyBagDeclaration[BagLocation, BagPrefix]
     with VerifyChecksumAndSize[BagLocation, BagPrefix]
     with VerifyExternalIdentifier
@@ -209,7 +208,7 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix],
         )
 
       case Right(
-          creationError: CouldNotCreateExpectedFixityList[BagLocation]
+            creationError: CouldNotCreateExpectedFixityList[BagLocation]
           ) =>
         IngestFailed(
           summary = VerificationIncompleteSummary(
@@ -237,8 +236,9 @@ trait BagVerifier[BagContext <: BagVerifyContext[BagPrefix],
       case Right(result: FixityListWithErrors[BagLocation]) =>
         val verificationFailureMessage =
           result.errors
-            .map { fixityError: FileFixityError[BagLocation] =>
-              s"${fixityError.expectedFileFixity.uri}: ${fixityError.e.getMessage}"
+            .map {
+              fixityError: FileFixityError[BagLocation] =>
+                s"${fixityError.expectedFileFixity.uri}: ${fixityError.e.getMessage}"
             }
             .mkString("\n")
 

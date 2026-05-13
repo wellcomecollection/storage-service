@@ -35,6 +35,7 @@ set -o nounset
 ECR_REGISTRY="760097843905.dkr.ecr.eu-west-1.amazonaws.com"
 
 ROOT=$(git rev-parse --show-toplevel)
+SBT_VERSION=$(sed -n 's/^sbt.version=//p' "$ROOT/project/build.properties")
 
 # Coursier cache location is platform-dependent
 # https://get-coursier.io/docs/cache.html#default-location
@@ -51,6 +52,7 @@ docker run --tty --rm \
   -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-}" \
   -e AWS_SECRET_KEY="${AWS_SECRET_KEY:-}" \
   -e AWS_SESSION_TOKEN="${AWS_SESSION_TOKEN:-}" \
+  -e CODEARTIFACT_AUTH_TOKEN="${CODEARTIFACT_AUTH_TOKEN:-}" \
   --volume ~/.sbt:/root/.sbt \
   --volume ~/.ivy2:/root/.ivy2 \
   --volume "$HOST_COURSIER_CACHE:/root/$LINUX_COURSIER_CACHE" \
@@ -59,4 +61,4 @@ docker run --tty --rm \
   --net host \
   --volume "$ROOT:$ROOT" \
   --workdir "$ROOT" \
-  "$ECR_REGISTRY/wellcome/sbt_wrapper:no_alpine" "$@"
+  "$ECR_REGISTRY/wellcome/sbt_wrapper:$SBT_VERSION" "$@"

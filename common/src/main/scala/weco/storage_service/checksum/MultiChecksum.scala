@@ -7,9 +7,8 @@ import java.security.MessageDigest
 import scala.util.Try
 
 /** This class records the actual checksum of a file in a bag, based on the
-  * contents of the file as read from storage.  It records checksums for every
+  * contents of the file as read from storage. It records checksums for every
   * checksum algorithm supported by the storage service.
-  *
   */
 case class MultiChecksum(
   md5: ChecksumValue,
@@ -25,9 +24,8 @@ case class MultiChecksum(
       case SHA512 => sha512
     }
 
-  /** Compare to the expected checksum information.  Does the actual file match the
-    * expected checksum, or are they different?
-    *
+  /** Compare to the expected checksum information. Does the actual file match
+    * the expected checksum, or are they different?
     */
   def compare(
     manifestChecksum: MultiManifestChecksum

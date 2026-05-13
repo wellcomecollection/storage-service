@@ -10,18 +10,17 @@ import scala.util.{Failure, Success, Try}
 
 /** Each line in a manifest file _manifest-algorithm.txt_ is of the form
   *
-  *     checksum filepath
+  * checksum filepath
   *
-  * where _checksum_ is a hex-encoded checksum for the file at _filepath_ created
-  * using _algorithm_ (e.g. md5, sha256).  The payload manifest lists every
-  * file in the data/ directory; the tag manifest lists every file in the
+  * where _checksum_ is a hex-encoded checksum for the file at _filepath_
+  * created using _algorithm_ (e.g. md5, sha256). The payload manifest lists
+  * every file in the data/ directory; the tag manifest lists every file in the
   * top directory.
   *
   * This class parses the contents of a manifest file.
   *
   * See https://tools.ietf.org/html/rfc8493#section-2.1.3
-  *     https://tools.ietf.org/html/rfc8493#section-2.2.1
-  *
+  * https://tools.ietf.org/html/rfc8493#section-2.2.1
   */
 object BagManifestParser {
 

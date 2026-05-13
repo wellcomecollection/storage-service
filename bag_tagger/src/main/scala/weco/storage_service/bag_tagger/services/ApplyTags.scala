@@ -21,28 +21,30 @@ class ApplyTags(s3Tags: S3Tags) extends Logging {
   ): Try[Unit] =
     Try {
       val results: Seq[Either[UpdateError, Unit]] =
-        storageLocations.flatMap { location =>
-          location match {
-            case s3Location: S3StorageLocation =>
-              applyTagsToPrefix(
-                tags = s3Tags,
-                prefix = s3Location.prefix,
-                tagsToApply = tagsToApply
-              )
+        storageLocations.flatMap {
+          location =>
+            location match {
+              case s3Location: S3StorageLocation =>
+                applyTagsToPrefix(
+                  tags = s3Tags,
+                  prefix = s3Location.prefix,
+                  tagsToApply = tagsToApply
+                )
 
-            // We don't write tags to our replica in Azure -- at present, they're only
-            // used to inform S3 lifecycle rules, which aren't important in Azure.
-            // Additionally, Azure doesn't allow using hyphens (-) in tag names, because
-            // names have to be valid C# identifiers.
-            //
-            // See https://github.com/wellcomecollection/platform/issues/4730
-            // https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-properties-metadata?tabs=dotnet
-            case azureLocation: AzureStorageLocation =>
-              info(s"Azure location: not applying tags to $azureLocation")
-              tagsToApply.map { _ =>
-                Right(())
-              }
-          }
+              // We don't write tags to our replica in Azure -- at present, they're only
+              // used to inform S3 lifecycle rules, which aren't important in Azure.
+              // Additionally, Azure doesn't allow using hyphens (-) in tag names, because
+              // names have to be valid C# identifiers.
+              //
+              // See https://github.com/wellcomecollection/platform/issues/4730
+              // https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-properties-metadata?tabs=dotnet
+              case azureLocation: AzureStorageLocation =>
+                info(s"Azure location: not applying tags to $azureLocation")
+                tagsToApply.map {
+                  _ =>
+                    Right(())
+                }
+            }
         }
 
       val failures = results.collect { case Left(updateError) => updateError }
@@ -68,20 +70,22 @@ class ApplyTags(s3Tags: S3Tags) extends Logging {
           )
           val location = prefix.asLocation(storageManifestFile.path)
 
-          val result = tags.update(location) { existingTags =>
-            // The bag tagger runs after the bag verifier, which means we should see
-            // a Content-SHA256 tag here.  If not, we should abort -- either the storage
-            // service is broken, or we're waiting for something to happen with consistency.
-            existingTags.get("Content-SHA256") match {
-              case Some(_) => Right(existingTags ++ newTags)
-              case None =>
-                throw new Throwable(s"No Content-SHA256 tag on $location")
-            }
+          val result = tags.update(location) {
+            existingTags =>
+              // The bag tagger runs after the bag verifier, which means we should see
+              // a Content-SHA256 tag here.  If not, we should abort -- either the storage
+              // service is broken, or we're waiting for something to happen with consistency.
+              existingTags.get("Content-SHA256") match {
+                case Some(_) => Right(existingTags ++ newTags)
+                case None =>
+                  throw new Throwable(s"No Content-SHA256 tag on $location")
+              }
           }
           debug(s"Result of applying tags: $result")
 
-          result.map { _ =>
-            ()
+          result.map {
+            _ =>
+              ()
           }
       }
 }

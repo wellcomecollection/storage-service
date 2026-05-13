@@ -19,7 +19,11 @@ import weco.storage.streaming.InputStreamWithLength
 class S3Unpacker(
   bufferSize: Long = 128 * FileUtils.ONE_MB
 )(implicit s3Client: S3Client)
-    extends Unpacker[S3ObjectLocation, S3ObjectLocation, S3ObjectLocationPrefix] {
+    extends Unpacker[
+      S3ObjectLocation,
+      S3ObjectLocation,
+      S3ObjectLocationPrefix
+    ] {
   override protected val writer
     : Writable[S3ObjectLocation, InputStreamWithLength] =
     new S3StreamStore()

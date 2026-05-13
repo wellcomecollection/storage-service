@@ -47,7 +47,7 @@ trait CreateIngest[UnpackerDestination] extends FutureDirectives with Logging {
     } else if (!StorageProvider.allowedValues.contains(providerId)) {
       createBadRequestResponse(
         s"""Unrecognised value at .sourceLocation.provider.id: got "$providerId", valid values are: ${StorageProvider.recognisedValues
-          .mkString(", ")}."""
+            .mkString(", ")}."""
       )
     }
     // In theory we might support unpacking bags uploaded to a different location
@@ -69,7 +69,8 @@ trait CreateIngest[UnpackerDestination] extends FutureDirectives with Logging {
     )
 
   private def convertToBadRequestResponse(
-    invalidArg: IllegalArgumentException): Future[Route] = {
+    invalidArg: IllegalArgumentException
+  ): Future[Route] = {
     def originalMessage = invalidArg.getMessage
     def prefix = "requirement failed: External identifier"
     def newMessage =

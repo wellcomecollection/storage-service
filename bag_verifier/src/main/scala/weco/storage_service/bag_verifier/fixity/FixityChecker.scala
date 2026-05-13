@@ -20,7 +20,6 @@ import weco.storage.{DoesNotExistError, Location, Prefix, ReadError}
 import scala.util.{Failure, Success}
 
 /** Look up and check the fixity info (checksum, size) on an individual file.
-  *
   */
 trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
     extends FixityTagChecker
@@ -261,22 +260,23 @@ trait FixityChecker[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]]
   ): Unit = {
     val updateResult =
       tags
-        .update(location) { existingTags =>
-          val newFixityTags = expectedFileFixity.fixityTags
+        .update(location) {
+          existingTags =>
+            val newFixityTags = expectedFileFixity.fixityTags
 
-          // We've already checked the tags on this location once, so we shouldn't
-          // see conflicting values here.  Check we're not about to blat some existing
-          // tags just in case.  If we do see conflicting tags here, there's something
-          // badly wrong with the storage service.
-          //
-          // Note: this is a fairly weak guarantee, because tags aren't locked during
-          // an update operation.
-          assert(
-            existingTags.isCompatibleWith(newFixityTags),
-            s"Trying to write $newFixityTags to $location; existing tags conflict: $existingTags"
-          )
+            // We've already checked the tags on this location once, so we shouldn't
+            // see conflicting values here.  Check we're not about to blat some existing
+            // tags just in case.  If we do see conflicting tags here, there's something
+            // badly wrong with the storage service.
+            //
+            // Note: this is a fairly weak guarantee, because tags aren't locked during
+            // an update operation.
+            assert(
+              existingTags.isCompatibleWith(newFixityTags),
+              s"Trying to write $newFixityTags to $location; existing tags conflict: $existingTags"
+            )
 
-          Right(existingTags ++ newFixityTags)
+            Right(existingTags ++ newFixityTags)
         }
 
     updateResult match {

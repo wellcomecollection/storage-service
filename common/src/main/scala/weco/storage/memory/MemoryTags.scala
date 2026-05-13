@@ -15,13 +15,15 @@ class MemoryTags[Ident](initialTags: Map[Ident, Map[String, String]])
           Left(
             DoesNotExistError(
               new Throwable(s"There is no entry for id=$id")
-            ))
+            )
+          )
       }
     }
 
   override protected def writeTags(
     id: Ident,
-    tags: Map[String, String]): Either[WriteError, Map[String, String]] =
+    tags: Map[String, String]
+  ): Either[WriteError, Map[String, String]] =
     synchronized {
       debug(s"MemoryTags.put($id, $tags) before = $underlying")
       underlying = underlying ++ Map(id -> tags)

@@ -25,17 +25,15 @@ object BagFetch {
     *
     *   - Each line of a fetch file MUST be of the form
     *
-    *         url length filepath
+    * url length filepath
     *
-    *     `url` must be an absolute URI, and whitespace characters must be
-    *     percent encoded
-    *     `length` is the number of octets in the file, or "-" if unspecified
-    *     `filename` is the path to the file.  Line break characters (LR, CF, LRCF)
-    *     and *only* those characters must be percent-encoded.
+    * `url` must be an absolute URI, and whitespace characters must be percent
+    * encoded `length` is the number of octets in the file, or "-" if
+    * unspecified `filename` is the path to the file. Line break characters (LR,
+    * CF, LRCF) and *only* those characters must be percent-encoded.
     *
     *   - A fetch file must not list any tag files (everything in the fetch file
     *     must be in the payload; that is, in the data/ directory).
-    *
     */
   val FETCH_LINE_REGEX: Regex = new Regex(
     "(.*)[ \t]+(\\d*|-)[ \t]+(.*)",

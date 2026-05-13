@@ -44,7 +44,9 @@ class Register(
     )
 
     val result: Future[IngestStepResult[RegistrationSummary]] = for {
-      bag <- bagReader.get(location.prefix.asInstanceOf[S3ObjectLocationPrefix]) match {
+      bag <- bagReader.get(
+        location.prefix.asInstanceOf[S3ObjectLocationPrefix]
+      ) match {
         case Right(value) => Future(value)
         case Left(err) =>
           Future.failed(

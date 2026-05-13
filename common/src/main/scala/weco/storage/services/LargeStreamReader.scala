@@ -15,27 +15,27 @@ case class LargeStreamReaderCannotReadRange[Ident](
   err: ReadError
 ) extends Throwable(s"Unable to read range $range from $ident: ${err.e}")
 
-/** If you hold open an InputStream for a long time, eventually the network times out
-  * and you get an error.
+/** If you hold open an InputStream for a long time, eventually the network
+  * times out and you get an error.
   *
   * For example, from S3:
   *
-  *     com.amazonaws.SdkClientException: Data read has a different length than the expected:
-  *     dataLength=1234; expectedLength=56789
+  * com.amazonaws.SdkClientException: Data read has a different length than the
+  * expected: dataLength=1234; expectedLength=56789
   *
   * and Azure:
   *
+  * Could not create checksum: java.util.concurrent.TimeoutException: Did not
+  * observe any item or terminal signal within 60000ms in 'map' (and no fallback
+  * has been configured)
   *
-  *     Could not create checksum: java.util.concurrent.TimeoutException: Did not observe
-  *     any item or terminal signal within 60000ms in 'map' (and no fallback has been configured)
+  * To get around this issue, we read large streams in "chunks", making a
+  * separate request for each segment. The individual streams are then stitched
+  * back together in a SequenceInputStream, so to the caller it's presented as a
+  * single continuous stream.
   *
-  * To get around this issue, we read large streams in "chunks", making a separate
-  * request for each segment.  The individual streams are then stitched back together
-  * in a SequenceInputStream, so to the caller it's presented as a single continuous stream.
-  *
-  * We're hoping that making regular Get requests will keep the network "fresh", and
-  * reduce the risk of a timeout while we're reading the stream.
-  *
+  * We're hoping that making regular Get requests will keep the network "fresh",
+  * and reduce the risk of a timeout while we're reading the stream.
   */
 trait LargeStreamReader[Ident] extends Readable[Ident, InputStreamWithLength] {
   val bufferSize: Long
@@ -56,8 +56,9 @@ trait LargeStreamReader[Ident] extends Readable[Ident, InputStreamWithLength] {
       ranges = ByteRangeUtil.partition(size, bufferSize = bufferSize)
 
       individualStreams = ranges.iterator
-        .map { range =>
-          getBytes(ident, range = range)
+        .map {
+          range =>
+            getBytes(ident, range = range)
         }
         .map { new ByteArrayInputStream(_) }
         .asJavaEnumeration
@@ -91,7 +92,8 @@ trait LargeStreamReader[Ident] extends Readable[Ident, InputStreamWithLength] {
         throw new LargeStreamReaderCannotReadRange(
           ident = ident,
           range = range,
-          err = err)
+          err = err
+        )
     }
   }
 }

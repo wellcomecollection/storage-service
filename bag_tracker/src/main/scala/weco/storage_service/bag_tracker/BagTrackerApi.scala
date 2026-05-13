@@ -25,8 +25,7 @@ class BagTrackerApi(val storageManifestDao: StorageManifestDao)(
   host: String,
   port: Int
 )(
-  implicit
-  actorSystem: ActorSystem
+  implicit actorSystem: ActorSystem
 ) extends Runnable
     with Logging
     with CreateBag
@@ -58,8 +57,9 @@ class BagTrackerApi(val storageManifestDao: StorageManifestDao)(
         // API, it should be fine.
         withoutSizeLimit {
           post {
-            entity(as[StorageManifest]) { storageManifest =>
-              createBag(storageManifest)
+            entity(as[StorageManifest]) {
+              storageManifest =>
+                createBag(storageManifest)
             }
           }
         },
@@ -80,10 +80,14 @@ class BagTrackerApi(val storageManifestDao: StorageManifestDao)(
               )
 
               get {
-                parameter('before.as[Int] ?) { maybeBefore =>
-                  lookupVersions(bagId = bagId, maybeBefore = maybeBefore.map {
-                    BagVersion(_)
-                  })
+                parameter('before.as[Int] ?) {
+                  maybeBefore =>
+                    lookupVersions(
+                      bagId = bagId,
+                      maybeBefore = maybeBefore.map {
+                        BagVersion(_)
+                      }
+                    )
                 }
               }
           }

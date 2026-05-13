@@ -8,8 +8,9 @@ class S3ObjectLocationListing(implicit objectListing: S3ObjectListing)
   override def list(prefix: S3ObjectLocationPrefix): ListingResult =
     objectListing.list(prefix) match {
       case Right(result) =>
-        Right(result.map { s3Object =>
-          S3ObjectLocation(bucket = prefix.bucket, key = s3Object.key())
+        Right(result.map {
+          s3Object =>
+            S3ObjectLocation(bucket = prefix.bucket, key = s3Object.key())
         })
       case Left(err) => Left(err)
     }

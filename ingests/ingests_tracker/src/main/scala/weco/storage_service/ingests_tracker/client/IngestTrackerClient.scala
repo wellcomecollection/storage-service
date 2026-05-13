@@ -99,8 +99,7 @@ trait IngestTrackerClient extends Logging {
 }
 
 class PekkoIngestTrackerClient(trackerHost: Uri)(
-  implicit
-  as: ActorSystem,
+  implicit as: ActorSystem,
   val mat: Materializer,
   val ec: ExecutionContext
 ) extends IngestTrackerClient {

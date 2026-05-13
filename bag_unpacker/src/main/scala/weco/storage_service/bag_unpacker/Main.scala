@@ -21,42 +21,43 @@ import weco.typesafe.WellcomeTypesafeApp
 import scala.concurrent.ExecutionContext
 
 object Main extends WellcomeTypesafeApp {
-  runWithConfig { config: Config =>
-    implicit val actorSystem: ActorSystem =
-      ActorSystem("main-actor-system")
+  runWithConfig {
+    config: Config =>
+      implicit val actorSystem: ActorSystem =
+        ActorSystem("main-actor-system")
 
-    implicit val ec: ExecutionContext =
-      actorSystem.dispatcher
+      implicit val ec: ExecutionContext =
+        actorSystem.dispatcher
 
-    implicit val s3Client: S3Client =
-      S3Client.builder().build()
+      implicit val s3Client: S3Client =
+        S3Client.builder().build()
 
-    implicit val metrics: CloudWatchMetrics =
-      CloudWatchBuilder.buildCloudWatchMetrics(config)
+      implicit val metrics: CloudWatchMetrics =
+        CloudWatchBuilder.buildCloudWatchMetrics(config)
 
-    implicit val sqsClient: SqsAsyncClient =
-      SqsAsyncClient.builder().build()
+      implicit val sqsClient: SqsAsyncClient =
+        SqsAsyncClient.builder().build()
 
-    val PekkoSQSWorkerConfig =
-      PekkoSQSWorkerConfigBuilder.build(config)
+      val PekkoSQSWorkerConfig =
+        PekkoSQSWorkerConfigBuilder.build(config)
 
-    val unpackerWorkerConfig =
-      UnpackerWorkerConfigBuilder.build(config)
+      val unpackerWorkerConfig =
+        UnpackerWorkerConfigBuilder.build(config)
 
-    val operationName = OperationNameBuilder.getName(config)
+      val operationName = OperationNameBuilder.getName(config)
 
-    val ingestUpdater =
-      IngestUpdaterBuilder.build(config, operationName = operationName)
+      val ingestUpdater =
+        IngestUpdaterBuilder.build(config, operationName = operationName)
 
-    val outgoingPublisher =
-      OutgoingPublisherBuilder.build(config, operationName = operationName)
+      val outgoingPublisher =
+        OutgoingPublisherBuilder.build(config, operationName = operationName)
 
-    new BagUnpackerWorker(
-      config = PekkoSQSWorkerConfig,
-      bagUnpackerWorkerConfig = unpackerWorkerConfig,
-      ingestUpdater = ingestUpdater,
-      outgoingPublisher = outgoingPublisher,
-      unpacker = new S3Unpacker()
-    )
+      new BagUnpackerWorker(
+        config = PekkoSQSWorkerConfig,
+        bagUnpackerWorkerConfig = unpackerWorkerConfig,
+        ingestUpdater = ingestUpdater,
+        outgoingPublisher = outgoingPublisher,
+        unpacker = new S3Unpacker()
+      )
   }
 }

@@ -27,8 +27,7 @@ class BagRootFinderWorker[IngestDestination, OutgoingDestination](
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination]
 )(
-  implicit
-  val mc: Metrics[Future],
+  implicit val mc: Metrics[Future],
   val as: ActorSystem,
   val sc: SqsAsyncClient,
   val wd: Decoder[UnpackedBagLocationPayload]

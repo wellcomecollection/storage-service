@@ -27,8 +27,7 @@ class BagTaggerWorker(
   applyTags: ApplyTags,
   tagRules: StorageManifest => Map[StorageManifestFile, Map[String, String]]
 )(
-  implicit
-  val mc: Metrics[Future],
+  implicit val mc: Metrics[Future],
   val as: ActorSystem,
   val sc: SqsAsyncClient,
   val wd: Decoder[BagRegistrationNotification]
@@ -64,7 +63,8 @@ class BagTaggerWorker(
 
       _ <- Future.fromTry {
         applyTags.applyTags(
-          storageLocations = Seq(manifest.location) ++ manifest.replicaLocations,
+          storageLocations =
+            Seq(manifest.location) ++ manifest.replicaLocations,
           tagsToApply = tagsToApply
         )
       }

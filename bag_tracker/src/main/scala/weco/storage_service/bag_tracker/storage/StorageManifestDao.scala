@@ -63,7 +63,9 @@ trait StorageManifestDao {
     vhs.get(id) match {
       // Two manifests are equivalent if they are the same modulo createdDate.
       case Right(Identified(_, storedManifest)) =>
-        manifest.copy(createdDate = storedManifest.createdDate) == storedManifest
+        manifest.copy(createdDate =
+          storedManifest.createdDate
+        ) == storedManifest
 
       case _ => false
     }

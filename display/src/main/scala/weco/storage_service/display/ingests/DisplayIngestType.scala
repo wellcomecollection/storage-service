@@ -30,12 +30,12 @@ object DisplayIngestType {
         .apply(cursor)
         .map {
           DisplayIngestType(_)
-      }
+        }
 
   implicit val encoder: Encoder[DisplayIngestType] =
     (ingestType: DisplayIngestType) =>
       Json.obj(
         "id" -> Json.fromString(ingestType.id),
         "type" -> Json.fromString("IngestType")
-    )
+      )
 }
