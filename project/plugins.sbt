@@ -2,7 +2,7 @@
 resolvers ++= {
   val token = sys.env.get("CODEARTIFACT_AUTH_TOKEN").filter(_.nonEmpty)
   if (token.isDefined) {
-    println("[info] Plugin resolution: CodeArtifact → Maven Central")
+    println("[info] Plugin resolution: CodeArtifact + Maven Central")
     Seq("CodeArtifact" at "https://wellcomecollection-maven-mirror-760097843905.d.codeartifact.eu-west-1.amazonaws.com/maven/wellcomecollection-maven-mirror/")
   } else {
     println("[info] Plugin resolution: Maven Central only")
