@@ -67,8 +67,8 @@ trait Worker[Message, Work, Summary, Action] extends Logging {
       case r @ TerminalFailure(e, _)  => error(r.toString, e)
     }
 
-  /** Records metrics about the work that's just been completed; in particular the
-    * outcome and the duration.
+  /** Records metrics about the work that's just been completed; in particular
+    * the outcome and the duration.
     */
   private def recordEnd(startTime: Instant, result: Result[_]): Future[Unit] = {
     val futures = Seq(

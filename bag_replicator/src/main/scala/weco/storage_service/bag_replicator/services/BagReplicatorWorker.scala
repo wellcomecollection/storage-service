@@ -34,27 +34,22 @@ class BagReplicatorWorker[
   ingestUpdater: IngestUpdater[IngestDestination],
   outgoingPublisher: OutgoingPublisher[OutgoingDestination],
   lockingService: LockingService[IngestStepResult[
-                                   ReplicationSummary[DstPrefix]
-                                 ],
-                                 Try,
-                                 LockDao[
-                                   String,
-                                   UUID
-                                 ]],
+    ReplicationSummary[DstPrefix]
+  ], Try, LockDao[
+    String,
+    UUID
+  ]],
   destinationConfig: ReplicatorDestinationConfig,
   replicator: Replicator[SrcLocation, DstLocation, DstPrefix],
   override val visibilityTimeout: Duration = 3.minutes
 )(
-  implicit
-  val mc: Metrics[Future],
+  implicit val mc: Metrics[Future],
   val as: ActorSystem,
   val sc: SqsAsyncClient,
   val wd: Decoder[VersionedBagRootPayload]
-) extends IngestStepWorker[
-      VersionedBagRootPayload,
-      ReplicationSummary[
-        DstPrefix
-      ]] {
+) extends IngestStepWorker[VersionedBagRootPayload, ReplicationSummary[
+      DstPrefix
+    ]] {
 
   def processMessage(
     payload: VersionedBagRootPayload
@@ -114,11 +109,9 @@ class BagReplicatorWorker[
   def lockFailed(
     ingestId: IngestID,
     request: ReplicationRequest[DstPrefix]
-  ): PartialFunction[Either[FailedLockingServiceOp,
-                            IngestStepResult[
-                              ReplicationSummary[DstPrefix]
-                            ]],
-                     IngestStepResult[ReplicationSummary[DstPrefix]]] = {
+  ): PartialFunction[Either[FailedLockingServiceOp, IngestStepResult[
+    ReplicationSummary[DstPrefix]
+  ]], IngestStepResult[ReplicationSummary[DstPrefix]]] = {
     case Right(result) => result
     case Left(failedLockingServiceOp) =>
       warn(s"Unable to lock successfully: $failedLockingServiceOp")

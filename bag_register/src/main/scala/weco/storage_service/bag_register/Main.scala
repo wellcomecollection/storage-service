@@ -25,46 +25,47 @@ import weco.typesafe.config.builders.EnrichConfig._
 import scala.concurrent.ExecutionContext
 
 object Main extends WellcomeTypesafeApp {
-  runWithConfig { config: Config =>
-    implicit val actorSystem: ActorSystem =
-      ActorSystem("main-actor-system")
-    implicit val ec: ExecutionContext =
-      actorSystem.dispatcher
+  runWithConfig {
+    config: Config =>
+      implicit val actorSystem: ActorSystem =
+        ActorSystem("main-actor-system")
+      implicit val ec: ExecutionContext =
+        actorSystem.dispatcher
 
-    implicit val s3Client: S3Client =
-      S3Client.builder().build()
+      implicit val s3Client: S3Client =
+        S3Client.builder().build()
 
-    implicit val metrics: CloudWatchMetrics =
-      CloudWatchBuilder.buildCloudWatchMetrics(config)
+      implicit val metrics: CloudWatchMetrics =
+        CloudWatchBuilder.buildCloudWatchMetrics(config)
 
-    implicit val sqsClient: SqsAsyncClient =
-      SqsAsyncClient.builder().build()
+      implicit val sqsClient: SqsAsyncClient =
+        SqsAsyncClient.builder().build()
 
-    val operationName = OperationNameBuilder.getName(config)
+      val operationName = OperationNameBuilder.getName(config)
 
-    val ingestUpdater = IngestUpdaterBuilder.build(config, operationName)
+      val ingestUpdater = IngestUpdaterBuilder.build(config, operationName)
 
-    val storageManifestService = new S3StorageManifestService()
+      val storageManifestService = new S3StorageManifestService()
 
-    val register = new Register(
-      bagReader = new S3BagReader(),
-      bagTrackerClient = new PekkoBagTrackerClient(
-        trackerHost = config.requireString("bags.tracker.host")
-      ),
-      storageManifestService = storageManifestService
-    )
+      val register = new Register(
+        bagReader = new S3BagReader(),
+        bagTrackerClient = new PekkoBagTrackerClient(
+          trackerHost = config.requireString("bags.tracker.host")
+        ),
+        storageManifestService = storageManifestService
+      )
 
-    val registrationNotifications = SNSBuilder.buildSNSMessageSender(
-      config,
-      namespace = "registration-notifications",
-      subject = "Sent by the bag register"
-    )
+      val registrationNotifications = SNSBuilder.buildSNSMessageSender(
+        config,
+        namespace = "registration-notifications",
+        subject = "Sent by the bag register"
+      )
 
-    new BagRegisterWorker(
-      config = PekkoSQSWorkerConfigBuilder.build(config),
-      ingestUpdater = ingestUpdater,
-      registrationNotifications = registrationNotifications,
-      register = register
-    )
+      new BagRegisterWorker(
+        config = PekkoSQSWorkerConfigBuilder.build(config),
+        ingestUpdater = ingestUpdater,
+        registrationNotifications = registrationNotifications,
+        register = register
+      )
   }
 }

@@ -23,9 +23,8 @@ class OutgoingPublisher[Destination](
     result match {
       case IngestStepSucceeded(_, _) | IngestCompleted(_) =>
         debug(
-          msg =
-            "Ingest step succeeded/completed: " +
-              s"sending an outgoing message $outgoing"
+          msg = "Ingest step succeeded/completed: " +
+            s"sending an outgoing message $outgoing"
         )
 
         send(outgoing)

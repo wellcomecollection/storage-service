@@ -27,12 +27,13 @@ class MemoryStorageManifestDao(
         }
         .map { case (_, manifest) => manifest }
         .toSeq
-        .filter { manifest =>
-          before match {
-            case Some(beforeVersion) =>
-              manifest.version.underlying < beforeVersion.underlying
-            case _ => true
-          }
+        .filter {
+          manifest =>
+            before match {
+              case Some(beforeVersion) =>
+                manifest.version.underlying < beforeVersion.underlying
+              case _ => true
+            }
         }
         .sortBy { _.version.underlying }
         .reverse

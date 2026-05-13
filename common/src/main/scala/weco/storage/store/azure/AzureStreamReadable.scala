@@ -11,7 +11,8 @@ trait AzureStreamReadable
   implicit val blobClient: BlobServiceClient
 
   override protected def retryableGetFunction(
-    location: AzureBlobLocation): InputStreamWithLength = {
+    location: AzureBlobLocation
+  ): InputStreamWithLength = {
     val blobInputStream = blobClient
       .getBlobContainerClient(location.container)
       .getBlobClient(location.name)
@@ -19,7 +20,7 @@ trait AzureStreamReadable
 
     new InputStreamWithLength(
       inputStream = blobInputStream,
-      length = blobInputStream.getProperties.getBlobSize,
+      length = blobInputStream.getProperties.getBlobSize
     )
   }
 

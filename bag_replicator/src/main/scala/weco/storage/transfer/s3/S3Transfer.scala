@@ -22,15 +22,18 @@ import java.io.InputStream
 import java.util.concurrent.CompletionException
 import scala.util.{Failure, Success, Try}
 
-class S3Transfer(implicit transferManager: S3TransferManager,
-                 s3Readable: S3StreamReadable)
-    extends Transfer[S3ObjectLocation, S3ObjectLocation]
+class S3Transfer(
+  implicit transferManager: S3TransferManager,
+  s3Readable: S3StreamReadable
+) extends Transfer[S3ObjectLocation, S3ObjectLocation]
     with Logging {
 
   import weco.storage.RetryOps._
 
-  override def transfer(src: S3ObjectLocation,
-                        dst: S3ObjectLocation): TransferEither =
+  override def transfer(
+    src: S3ObjectLocation,
+    dst: S3ObjectLocation
+  ): TransferEither =
     getStream(dst) match {
 
       // If the destination object doesn't exist, we can go ahead and
@@ -80,12 +83,15 @@ class S3Transfer(implicit transferManager: S3TransferManager,
         }
     }
 
-  private def compare(src: S3ObjectLocation,
-                      dst: S3ObjectLocation,
-                      srcStream: InputStream,
-                      dstStream: InputStream)
-    : Either[TransferOverwriteFailure[S3ObjectLocation, S3ObjectLocation],
-             TransferNoOp[S3ObjectLocation, S3ObjectLocation]] =
+  private def compare(
+    src: S3ObjectLocation,
+    dst: S3ObjectLocation,
+    srcStream: InputStream,
+    dstStream: InputStream
+  ): Either[
+    TransferOverwriteFailure[S3ObjectLocation, S3ObjectLocation],
+    TransferNoOp[S3ObjectLocation, S3ObjectLocation]
+  ] =
     if (IOUtils.contentEquals(srcStream, dstStream)) {
       Right(TransferNoOp(src, dst))
     } else {
@@ -95,8 +101,10 @@ class S3Transfer(implicit transferManager: S3TransferManager,
   private def getStream(location: S3ObjectLocation) =
     s3Readable.get(location).map(id => id.identifiedT)
 
-  private def runTransfer(src: S3ObjectLocation,
-                          dst: S3ObjectLocation): TransferEither =
+  private def runTransfer(
+    src: S3ObjectLocation,
+    dst: S3ObjectLocation
+  ): TransferEither =
     for {
       transfer <- tryCopyFromSource(src, dst)
         .retry(maxAttempts = 3)
@@ -116,7 +124,8 @@ class S3Transfer(implicit transferManager: S3TransferManager,
 
   private def tryCopyFromSource(
     src: S3ObjectLocation,
-    dst: S3ObjectLocation): Either[ReadError, Copy] = {
+    dst: S3ObjectLocation
+  ): Either[ReadError, Copy] = {
     // We use tags in the verifier in the storage service to check if we've already
     // verified an object.  For safety, we drop all the tags every time an object
     // gets rewritten or copied around.
@@ -150,9 +159,11 @@ class S3Transfer(implicit transferManager: S3TransferManager,
     }
   }
 
-  private def tryCopyToDestination(src: S3ObjectLocation,
-                                   dst: S3ObjectLocation,
-                                   transfer: Copy) =
+  private def tryCopyToDestination(
+    src: S3ObjectLocation,
+    dst: S3ObjectLocation,
+    transfer: Copy
+  ) =
     Try {
       transfer.completionFuture().join()
     } match {
@@ -164,8 +175,10 @@ class S3Transfer(implicit transferManager: S3TransferManager,
 }
 
 object S3Transfer {
-  def apply()(implicit s3Client: S3Client,
-              transferManager: S3TransferManager): S3Transfer = {
+  def apply()(
+    implicit s3Client: S3Client,
+    transferManager: S3TransferManager
+  ): S3Transfer = {
     implicit val readable: S3StreamReader = new S3StreamReader()
 
     new S3Transfer()

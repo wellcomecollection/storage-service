@@ -20,8 +20,7 @@ class DynamoIngestVersionManagerDao(
   dynamoClient: DynamoDbClient,
   dynamoConfig: DynamoConfig
 )(
-  implicit
-  formatVersionRecord: DynamoFormat[DynamoVersionRecord]
+  implicit formatVersionRecord: DynamoFormat[DynamoVersionRecord]
 ) extends IngestVersionManagerDao {
 
   private val scanamoTable =

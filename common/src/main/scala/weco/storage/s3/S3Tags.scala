@@ -20,7 +20,8 @@ class S3Tags(val maxRetries: Int = 3)(implicit s3Client: S3Client)
     with RetryableReadable[S3ObjectLocation, Map[String, String]] {
 
   override protected def retryableGetFunction(
-    location: S3ObjectLocation): Map[String, String] = {
+    location: S3ObjectLocation
+  ): Map[String, String] = {
     val request = GetObjectTaggingRequest
       .builder()
       .bucket(location.bucket)
@@ -32,8 +33,9 @@ class S3Tags(val maxRetries: Int = 3)(implicit s3Client: S3Client)
     response
       .tagSet()
       .asScala
-      .map { tag: Tag =>
-        tag.key() -> tag.value()
+      .map {
+        tag: Tag =>
+          tag.key() -> tag.value()
       }
       .toMap
   }
@@ -55,7 +57,8 @@ class S3Tags(val maxRetries: Int = 3)(implicit s3Client: S3Client)
 
   private def writeTagsOnce(
     location: S3ObjectLocation,
-    tags: Map[String, String]): Either[WriteError, Map[String, String]] = {
+    tags: Map[String, String]
+  ): Either[WriteError, Map[String, String]] = {
     val tagSet = tags
       .map { case (k, v) => Tag.builder().key(k).value(v).build() }
       .toSeq

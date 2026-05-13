@@ -6,8 +6,8 @@ import scala.util.Try
 
 /** This records all the replicas that the aggregator knows about.
   *
-  * The location may be None if the aggregator receives notice of
-  * a secondary replica first.
+  * The location may be None if the aggregator receives notice of a secondary
+  * replica first.
   */
 case class AggregatorInternalRecord(
   location: Option[PrimaryReplicaLocation],
@@ -70,7 +70,7 @@ object AggregatorInternalRecord {
     primaryLocation: PrimaryReplicaLocation
   ): Try[AggregatorInternalRecord] = Try {
     record.location match {
-      case None                                          => record.copy(location = Some(primaryLocation))
+      case None => record.copy(location = Some(primaryLocation))
       case Some(location) if location == primaryLocation => record
       case Some(location) =>
         throw new Exception(

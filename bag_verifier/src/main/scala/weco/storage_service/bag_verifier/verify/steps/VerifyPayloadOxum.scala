@@ -31,8 +31,9 @@ trait VerifyPayloadOxum {
 
     val actualSize =
       locations
-        .filter { loc =>
-          payloadPaths.contains(loc.expectedFileFixity.path)
+        .filter {
+          loc =>
+            payloadPaths.contains(loc.expectedFileFixity.path)
         }
         .map { _.size }
         .sum

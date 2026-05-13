@@ -192,20 +192,24 @@ trait AzureTransfer[Context]
       case Failure(err) => throw err
     }
 
-  override def transfer(src: SourceS3Object,
-                        dst: AzureBlobLocation): TransferEither =
+  override def transfer(
+    src: SourceS3Object,
+    dst: AzureBlobLocation
+  ): TransferEither =
     getAzureStream(dst) match {
       // If the destination object doesn't exist, we can go ahead and
       // start the transfer.
       case Left(_: NotFoundError) =>
-        runTransfer(src, dst).map { _ =>
-          TransferPerformed(src, dst)
+        runTransfer(src, dst).map {
+          _ =>
+            TransferPerformed(src, dst)
         }
 
       case Left(e) =>
         warn(s"Unexpected error retrieving Azure blob from $dst: $e")
-        runTransfer(src, dst).map { _ =>
-          TransferPerformed(src, dst)
+        runTransfer(src, dst).map {
+          _ =>
+            TransferPerformed(src, dst)
         }
 
       case Right(Identified(_, dstStream)) =>
@@ -275,8 +279,7 @@ class AzurePutBlockTransfer(
   // high may cause issues.
   val blockSize: Long = 1000000000
 )(
-  implicit
-  val s3Client: S3Client,
+  implicit val s3Client: S3Client,
   val blobServiceClient: BlobServiceClient
 ) extends AzureTransfer[Unit] {
 
@@ -322,12 +325,11 @@ class AzurePutBlockTransfer(
   }
 }
 
-class AzurePutBlockFromUrlTransfer(azureSizeFinder: AzureSizeFinder,
-                                   blockTransfer: AzurePutBlockTransfer)(
-  signedUrlValidity: FiniteDuration,
-  val blockSize: Long)(
-  implicit
-  val s3Client: S3Client,
+class AzurePutBlockFromUrlTransfer(
+  azureSizeFinder: AzureSizeFinder,
+  blockTransfer: AzurePutBlockTransfer
+)(signedUrlValidity: FiniteDuration, val blockSize: Long)(
+  implicit val s3Client: S3Client,
   val s3Presigner: S3Presigner,
   val blobServiceClient: BlobServiceClient
 ) extends AzureTransfer[URL] {
@@ -341,10 +343,12 @@ class AzurePutBlockFromUrlTransfer(azureSizeFinder: AzureSizeFinder,
     s3PresignedUrls
       .getPresignedGetURL(
         location = src.location,
-        expiryLength = signedUrlValidity)
+        expiryLength = signedUrlValidity
+      )
       .left
-      .map { readError =>
-        TransferSourceFailure(src, dst, e = readError.e)
+      .map {
+        readError =>
+          TransferSourceFailure(src, dst, e = readError.e)
       }
 
   override protected def writeBlockToAzure(
@@ -389,8 +393,10 @@ class AzurePutBlockFromUrlTransfer(azureSizeFinder: AzureSizeFinder,
   private def isWeirdKey(key: String): Boolean =
     key.endsWith(".")
 
-  override def transfer(src: SourceS3Object,
-                        dst: AzureBlobLocation): TransferEither =
+  override def transfer(
+    src: SourceS3Object,
+    dst: AzureBlobLocation
+  ): TransferEither =
     if (isWeirdKey(src.location.key)) {
       blockTransfer.transfer(src, dst)
     } else {
@@ -400,10 +406,10 @@ class AzurePutBlockFromUrlTransfer(azureSizeFinder: AzureSizeFinder,
 
 object AzurePutBlockFromUrlTransfer {
   def apply(signedUrlValidity: FiniteDuration, blockSize: Long)(
-    implicit
-    s3Client: S3Client,
+    implicit s3Client: S3Client,
     s3Presigner: S3Presigner,
-    blobServiceClient: BlobServiceClient) = {
+    blobServiceClient: BlobServiceClient
+  ) = {
 
     // In the actual replicator, if there's an object in S3 and an object in Azure,
     // assume they're both the same.  The verifier will validate the checksum later.
@@ -427,6 +433,7 @@ object AzurePutBlockFromUrlTransfer {
     val blockTransfer = new AzurePutBlockTransfer(blockSize = blockSize)
     new AzurePutBlockFromUrlTransfer(azureSizeFinder, blockTransfer)(
       signedUrlValidity,
-      blockSize)
+      blockSize
+    )
   }
 }

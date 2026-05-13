@@ -19,20 +19,20 @@ import weco.monitoring.Metrics
 
 import scala.concurrent.Future
 
-/**
-  * Implementation of [[PekkoWorker]] that uses SQS as source and sink.
-  * It receives messages from SQS and deletes messages from SQS on successful completion
+/** Implementation of [[PekkoWorker]] that uses SQS as source and sink. It
+  * receives messages from SQS and deletes messages from SQS on successful
+  * completion
   */
 class PekkoSQSWorker[Work, Summary](
   config: PekkoSQSWorkerConfig
 )(
   val doWork: Work => Future[Result[Summary]]
-)(implicit
-  val as: ActorSystem,
+)(
+  implicit val as: ActorSystem,
   val wd: Decoder[Work],
   sc: SqsAsyncClient,
-  val metrics: Metrics[Future])
-    extends PekkoWorker[SQSMessage, Work, Summary, MessageAction]
+  val metrics: Metrics[Future]
+) extends PekkoWorker[SQSMessage, Work, Summary, MessageAction]
     with Logging {
   override protected val metricsNamespace: String =
     config.metricsConfig.namespace
@@ -102,7 +102,8 @@ class PekkoSQSWorker[Work, Summary](
 
       case exc: SdkClientException
           if exc.getMessage.startsWith(
-            "Received an UnknownHostException when attempting to interact with a service") =>
+            "Received an UnknownHostException when attempting to interact with a service"
+          ) =>
         true
 
       case _: SocketTimeoutException => true

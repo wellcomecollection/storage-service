@@ -24,10 +24,11 @@ class AzureLocatable
         container = blobUrlParts.getBlobContainerName,
         name = blobUrlParts.getBlobName
       )
-    }.toEither.left.map { throwable =>
-      LocationParsingError(
-        uri,
-        s"Failed parsing Azure location: ${throwable.getMessage}"
-      )
+    }.toEither.left.map {
+      throwable =>
+        LocationParsingError(
+          uri,
+          s"Failed parsing Azure location: ${throwable.getMessage}"
+        )
     }
 }

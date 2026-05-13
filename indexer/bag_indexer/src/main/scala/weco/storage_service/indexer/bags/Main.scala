@@ -17,46 +17,47 @@ import weco.typesafe.config.builders.EnrichConfig._
 import scala.concurrent.ExecutionContextExecutor
 
 object Main extends WellcomeTypesafeApp {
-  runWithConfig { config: Config =>
-    implicit val actorSystem: ActorSystem =
-      ActorSystem("main-actor-system")
+  runWithConfig {
+    config: Config =>
+      implicit val actorSystem: ActorSystem =
+        ActorSystem("main-actor-system")
 
-    implicit val executionContext: ExecutionContextExecutor =
-      actorSystem.dispatcher
+      implicit val executionContext: ExecutionContextExecutor =
+        actorSystem.dispatcher
 
-    implicit val metrics: CloudWatchMetrics =
-      CloudWatchBuilder.buildCloudWatchMetrics(config)
+      implicit val metrics: CloudWatchMetrics =
+        CloudWatchBuilder.buildCloudWatchMetrics(config)
 
-    implicit val sqsClient: SqsAsyncClient =
-      SqsAsyncClient.builder().build()
+      implicit val sqsClient: SqsAsyncClient =
+        SqsAsyncClient.builder().build()
 
-    val index = Index(name = config.requireString("es.bags.index-name"))
-    info(s"Writing bags to index $index")
+      val index = Index(name = config.requireString("es.bags.index-name"))
+      info(s"Writing bags to index $index")
 
-    info(s"Creating the Elasticsearch index mapping")
-    val elasticClient = ElasticBuilder.buildElasticClient(config)
+      info(s"Creating the Elasticsearch index mapping")
+      val elasticClient = ElasticBuilder.buildElasticClient(config)
 
-    val indexCreator = new ElasticsearchIndexCreator(
-      elasticClient = elasticClient,
-      index = index,
-      config = BagsIndexConfig.config
-    )
+      val indexCreator = new ElasticsearchIndexCreator(
+        elasticClient = elasticClient,
+        index = index,
+        config = BagsIndexConfig.config
+      )
 
-    indexCreator.create
+      indexCreator.create
 
-    val bagIndexer = new BagIndexer(
-      client = elasticClient,
-      index = index
-    )
+      val bagIndexer = new BagIndexer(
+        client = elasticClient,
+        index = index
+      )
 
-    val bagTrackerClient = new PekkoBagTrackerClient(
-      trackerHost = config.requireString("bags.tracker.host")
-    )
+      val bagTrackerClient = new PekkoBagTrackerClient(
+        trackerHost = config.requireString("bags.tracker.host")
+      )
 
-    new BagIndexerWorker(
-      config = PekkoSQSWorkerConfigBuilder.build(config),
-      indexer = bagIndexer,
-      bagTrackerClient = bagTrackerClient
-    )
+      new BagIndexerWorker(
+        config = PekkoSQSWorkerConfigBuilder.build(config),
+        indexer = bagIndexer,
+        bagTrackerClient = bagTrackerClient
+      )
   }
 }

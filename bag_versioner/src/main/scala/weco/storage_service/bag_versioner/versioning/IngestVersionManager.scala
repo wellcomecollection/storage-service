@@ -125,25 +125,25 @@ trait IngestVersionManager {
 
   /** We always want to assign the same version to a given ingest ID.
     *
-    * That way, if a message is double-sent or an ingest gets retried, we
-    * won't have multiple versions for the same ingest.
+    * That way, if a message is double-sent or an ingest gets retried, we won't
+    * have multiple versions for the same ingest.
     *
-    * This function checks that the external identifier/space on the
-    * stored version match the ingest.
+    * This function checks that the external identifier/space on the stored
+    * version match the ingest.
     *
-    * In theory an ingest is immutable, and the externalIdentifier/space
-    * will always be the same.  If they're different, something funky is
-    * definitely happening, so we should fail the ingest and flag it for
-    * further attention.
-    *
+    * In theory an ingest is immutable, and the externalIdentifier/space will
+    * always be the same. If they're different, something funky is definitely
+    * happening, so we should fail the ingest and flag it for further attention.
     */
   private def verifyExistingVersion(
     existingVersion: VersionRecord,
     externalIdentifier: ExternalIdentifier,
     space: StorageSpace
   ): Either[IngestVersionManagerError, BagVersion] =
-    if (existingVersion.externalIdentifier == externalIdentifier &&
-        existingVersion.storageSpace == space)
+    if (
+      existingVersion.externalIdentifier == externalIdentifier &&
+      existingVersion.storageSpace == space
+    )
       Right(existingVersion.version)
     else if (existingVersion.externalIdentifier != externalIdentifier)
       Left(

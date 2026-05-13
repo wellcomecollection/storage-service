@@ -13,6 +13,6 @@ object UnpackerMessage {
   def create(summary: UnpackSummary[_, _]): String = {
     val displayFileCount = NumberFormat.getInstance().format(summary.fileCount)
     s"Unpacked ${summary.size} from $displayFileCount file${if (summary.fileCount != 1) "s"
-    else ""}"
+      else ""}"
   }
 }

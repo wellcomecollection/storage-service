@@ -13,8 +13,8 @@ import scala.util.{Failure, Success, Try}
   * any of the other manifests in the bag, but we still want to include them in
   * the storage manifest created by the storage service.
   *
-  * This class creates the `StorageManifestFile` entries for BagIt tag manifest files.
-  *
+  * This class creates the `StorageManifestFile` entries for BagIt tag manifest
+  * files.
   */
 class TagManifestFileFinder[BagLocation <: Location](
   implicit streamReader: Readable[BagLocation, InputStreamWithLength]

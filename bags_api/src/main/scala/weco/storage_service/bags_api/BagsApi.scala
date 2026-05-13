@@ -43,13 +43,14 @@ trait BagsApi
                       externalIdentifier = externalIdentifier
                     )
 
-                    parameter('before.as[String] ?) { maybeBefore =>
-                      withFuture {
-                        lookupVersions(
-                          bagId = bagId,
-                          maybeBeforeString = maybeBefore
-                        )
-                      }
+                    parameter('before.as[String] ?) {
+                      maybeBefore =>
+                        withFuture {
+                          lookupVersions(
+                            bagId = bagId,
+                            maybeBeforeString = maybeBefore
+                          )
+                        }
                     }
 
                   case Failure(_) =>
@@ -105,13 +106,14 @@ trait BagsApi
                         )
                       )
                     case _ =>
-                      parameter('version.as[String] ?) { maybeVersionString =>
-                        withFuture {
-                          lookupBag(
-                            bagId = bagId,
-                            maybeVersionString = maybeVersionString
-                          )
-                        }
+                      parameter('version.as[String] ?) {
+                        maybeVersionString =>
+                          withFuture {
+                            lookupBag(
+                              bagId = bagId,
+                              maybeVersionString = maybeVersionString
+                            )
+                          }
                       }
                   }
 

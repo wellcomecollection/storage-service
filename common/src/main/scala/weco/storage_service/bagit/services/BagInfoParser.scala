@@ -69,25 +69,26 @@ object BagInfoParser extends Logging {
     metadata: BagInfoMetadata
   ): Try[ExternalIdentifier] =
     getSingleRequiredValue(metadata, label = "External-Identifier")
-      .flatMap { value =>
-        Try { ExternalIdentifier(value) } match {
-          case Success(externalIdentifier) => Success(externalIdentifier)
+      .flatMap {
+        value =>
+          Try { ExternalIdentifier(value) } match {
+            case Success(externalIdentifier) => Success(externalIdentifier)
 
-          // The error messages from the External-Identifier apply() method are typically
-          // of the form
-          //
-          //      requirement failed: External identifier cannot start with a slash
-          //
-          // That's an internal Scala detail, and not something we want to expose in an
-          // end-user facing message.
-          case Failure(e) =>
-            Failure(
-              new RuntimeException(
-                s"Unable to parse External-Identifier in bag-info.txt: ${e.getMessage
-                  .replaceAll("^requirement failed: ", "")}"
+            // The error messages from the External-Identifier apply() method are typically
+            // of the form
+            //
+            //      requirement failed: External identifier cannot start with a slash
+            //
+            // That's an internal Scala detail, and not something we want to expose in an
+            // end-user facing message.
+            case Failure(e) =>
+              Failure(
+                new RuntimeException(
+                  s"Unable to parse External-Identifier in bag-info.txt: ${e.getMessage
+                      .replaceAll("^requirement failed: ", "")}"
+                )
               )
-            )
-        }
+          }
       }
 
   // Matches the Payload-Oxum value, which is of the form "_OctetCount_._StreamCount_",
@@ -112,16 +113,17 @@ object BagInfoParser extends Logging {
 
   private def extractBaggingDate(metadata: BagInfoMetadata): Try[LocalDate] =
     getSingleRequiredValue(metadata, label = "Bagging-Date")
-      .flatMap { dateString =>
-        Try { LocalDate.parse(dateString) } match {
-          case Success(baggingDate) => Success(baggingDate)
-          case Failure(e) =>
-            Failure(
-              new RuntimeException(
-                s"Unable to parse Bagging-Date in bag-info.txt: ${e.getMessage}"
+      .flatMap {
+        dateString =>
+          Try { LocalDate.parse(dateString) } match {
+            case Success(baggingDate) => Success(baggingDate)
+            case Failure(e) =>
+              Failure(
+                new RuntimeException(
+                  s"Unable to parse Bagging-Date in bag-info.txt: ${e.getMessage}"
+                )
               )
-            )
-        }
+          }
       }
 
   private def extractSourceOrganisation(

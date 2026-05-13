@@ -8,11 +8,10 @@ import weco.storage_service.bagit.models.{
   MatchedLocation
 }
 
-/** A bag can contain concrete files or refer to files stored elsewhere
-  * in the fetch file.  This object takes a list of files referenced in
-  * the manifest and the fetch entries (if any), and works out which
-  * are files held outside the main bag.
-  *
+/** A bag can contain concrete files or refer to files stored elsewhere in the
+  * fetch file. This object takes a list of files referenced in the manifest and
+  * the fetch entries (if any), and works out which are files held outside the
+  * main bag.
   */
 object BagMatcher {
 

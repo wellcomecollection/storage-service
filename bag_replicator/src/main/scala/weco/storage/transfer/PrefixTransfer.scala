@@ -19,37 +19,39 @@ trait PrefixTransfer[SrcPrefix, SrcLocation, DstPrefix, DstLocation]
   private def copyPrefix(
     iterator: Iterable[SrcLocation],
     srcPrefix: SrcPrefix,
-    dstPrefix: DstPrefix,
+    dstPrefix: DstPrefix
   ): Either[PrefixTransferIncomplete, PrefixTransferSuccess] = {
     var successes = 0
     var failures = 0
 
     iterator
       .grouped(10)
-      .foreach { locations =>
-        val results: ParIterable[(SrcLocation, transfer.TransferEither)] =
-          locations.par.map { srcLocation =>
-            (
-              srcLocation,
-              transfer.transfer(
-                src = srcLocation,
-                dst = buildDstLocation(
-                  srcPrefix = srcPrefix,
-                  dstPrefix = dstPrefix,
-                  srcLocation = srcLocation
+      .foreach {
+        locations =>
+          val results: ParIterable[(SrcLocation, transfer.TransferEither)] =
+            locations.par.map {
+              srcLocation =>
+                (
+                  srcLocation,
+                  transfer.transfer(
+                    src = srcLocation,
+                    dst = buildDstLocation(
+                      srcPrefix = srcPrefix,
+                      dstPrefix = dstPrefix,
+                      srcLocation = srcLocation
+                    )
+                  )
                 )
-              )
-            )
-          }
+            }
 
-        results.foreach {
-          case (srcLocation, Right(_)) =>
-            debug(s"Successfully copied $srcLocation to $dstPrefix")
-            successes += 1
-          case (srcLocation, Left(err)) =>
-            warn(s"Error copying $srcLocation to $dstPrefix: $err")
-            failures += 1
-        }
+          results.foreach {
+            case (srcLocation, Right(_)) =>
+              debug(s"Successfully copied $srcLocation to $dstPrefix")
+              successes += 1
+            case (srcLocation, Left(err)) =>
+              warn(s"Error copying $srcLocation to $dstPrefix: $err")
+              failures += 1
+          }
       }
 
     Either.cond(

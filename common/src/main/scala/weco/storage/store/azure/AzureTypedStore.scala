@@ -11,8 +11,10 @@ class AzureTypedStore[T](
 ) extends TypedStore[AzureBlobLocation, T]
 
 object AzureTypedStore {
-  def apply[T](implicit codec: Codec[T],
-               blobServiceClient: BlobServiceClient): AzureTypedStore[T] = {
+  def apply[T](
+    implicit codec: Codec[T],
+    blobServiceClient: BlobServiceClient
+  ): AzureTypedStore[T] = {
     implicit val streamStore: AzureStreamStore = new AzureStreamStore()
 
     new AzureTypedStore[T]()

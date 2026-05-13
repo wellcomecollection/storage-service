@@ -25,7 +25,7 @@ class S3ObjectExists(s3Client: S3Client)
     } match {
       case Success(exists)                                  => Right(true)
       case Failure(e: S3Exception) if e.statusCode() == 404 => Right(false)
-      case Failure(e)                                       => Left(StoreReadError(e))
+      case Failure(e) => Left(StoreReadError(e))
     }
   }
 }

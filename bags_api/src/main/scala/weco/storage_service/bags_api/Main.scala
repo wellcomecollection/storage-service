@@ -30,61 +30,62 @@ object Main extends WellcomeTypesafeApp {
   // https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html
   val defaultMaxByteLength = 9 * FileUtils.ONE_MB
 
-  runWithConfig { config: Config =>
-    implicit val actorSystem: ActorSystem =
-      ActorSystem("main-actor-system")
+  runWithConfig {
+    config: Config =>
+      implicit val actorSystem: ActorSystem =
+        ActorSystem("main-actor-system")
 
-    implicit val ec: ExecutionContext =
-      actorSystem.dispatcher
+      implicit val ec: ExecutionContext =
+        actorSystem.dispatcher
 
-    implicit val s3Client: S3Client = S3Client.builder().build()
-    implicit val s3Presigner: S3Presigner = S3Presigner.builder().build()
+      implicit val s3Client: S3Client = S3Client.builder().build()
+      implicit val s3Presigner: S3Presigner = S3Presigner.builder().build()
 
-    val uploader = new S3Uploader()
+      val uploader = new S3Uploader()
 
-    val s3Config = S3Builder.buildS3Config(
-      config,
-      namespace = "responses"
-    )
+      val s3Config = S3Builder.buildS3Config(
+        config,
+        namespace = "responses"
+      )
 
-    val locationPrefix = S3ObjectLocationPrefix(
-      bucket = s3Config.bucketName,
-      keyPrefix = "responses"
-    )
+      val locationPrefix = S3ObjectLocationPrefix(
+        bucket = s3Config.bucketName,
+        keyPrefix = "responses"
+      )
 
-    val client = new PekkoBagTrackerClient(
-      trackerHost = config.requireString("bags.tracker.host")
-    )
+      val client = new PekkoBagTrackerClient(
+        trackerHost = config.requireString("bags.tracker.host")
+      )
 
-    val router: BagsApi = new BagsApi {
-      override val httpServerConfig: HTTPServerConfig =
-        HTTPServerBuilder.buildHTTPServerConfig(config)
-      override implicit val ec: ExecutionContext = actorSystem.dispatcher
+      val router: BagsApi = new BagsApi {
+        override val httpServerConfig: HTTPServerConfig =
+          HTTPServerBuilder.buildHTTPServerConfig(config)
+        override implicit val ec: ExecutionContext = actorSystem.dispatcher
 
-      override val bagTrackerClient: BagTrackerClient = client
+        override val bagTrackerClient: BagTrackerClient = client
 
-      override val s3PresignedUrls: S3PresignedUrls =
-        new S3PresignedUrls()
+        override val s3PresignedUrls: S3PresignedUrls =
+          new S3PresignedUrls()
 
-      override val s3Uploader: S3Uploader = uploader
-      override val s3Prefix: S3ObjectLocationPrefix = locationPrefix
+        override val s3Uploader: S3Uploader = uploader
+        override val s3Prefix: S3ObjectLocationPrefix = locationPrefix
 
-      override val maximumResponseByteLength: Long = defaultMaxByteLength
-      override val cacheDuration: Duration = defaultCacheDuration
-      override implicit val materializer: Materializer =
-        Materializer(actorSystem)
-    }
+        override val maximumResponseByteLength: Long = defaultMaxByteLength
+        override val cacheDuration: Duration = defaultCacheDuration
+        override implicit val materializer: Materializer =
+          Materializer(actorSystem)
+      }
 
-    val appName = "BagsApi"
+      val appName = "BagsApi"
 
-    new WellcomeHttpApp(
-      routes = router.bags,
-      httpMetrics = new HttpMetrics(
-        name = appName,
-        metrics = CloudWatchBuilder.buildCloudWatchMetrics(config)
-      ),
-      httpServerConfig = HTTPServerBuilder.buildHTTPServerConfig(config),
-      appName = appName
-    )
+      new WellcomeHttpApp(
+        routes = router.bags,
+        httpMetrics = new HttpMetrics(
+          name = appName,
+          metrics = CloudWatchBuilder.buildCloudWatchMetrics(config)
+        ),
+        httpServerConfig = HTTPServerBuilder.buildHTTPServerConfig(config),
+        appName = appName
+      )
   }
 }

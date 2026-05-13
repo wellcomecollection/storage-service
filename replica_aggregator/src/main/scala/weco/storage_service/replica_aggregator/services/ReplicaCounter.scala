@@ -17,7 +17,6 @@ case class NotEnoughReplicas(
   *
   *   - there's a primary replica
   *   - there are at least `expectedReplicas` overall
-  *
   */
 class ReplicaCounter(val expectedReplicaCount: Int) {
   def countReplicas(

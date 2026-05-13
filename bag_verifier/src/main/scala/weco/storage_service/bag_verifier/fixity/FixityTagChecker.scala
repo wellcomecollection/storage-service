@@ -51,8 +51,9 @@ trait FixityTagChecker {
     def isCompatibleWith(other: Map[K, V]): Boolean =
       m.keySet
         .intersect(other.keySet)
-        .map { key =>
-          (m(key), other(key))
+        .map {
+          key =>
+            (m(key), other(key))
         }
         .collect {
           case (mValue, otherValue) if mValue != otherValue =>

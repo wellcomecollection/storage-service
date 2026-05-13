@@ -29,40 +29,44 @@ trait Indexer[Document, DisplayDocument] extends Logging {
   ): Future[Either[Seq[Document], Seq[Document]]] = {
     debug(s"Indexing documents: ${documents.map { id }.mkString(", ")}")
 
-    val inserts = documents.map { doc =>
-      indexInto(index)
-        .id { id(doc) }
-        .version(version(doc))
-        .versionType(ExternalGte)
-        .doc { toDisplay(doc) }
+    val inserts = documents.map {
+      doc =>
+        indexInto(index)
+          .id { id(doc) }
+          .version(version(doc))
+          .versionType(ExternalGte)
+          .doc { toDisplay(doc) }
     }
 
     client
       .execute { bulk(inserts) }
-      .map { response: Response[BulkResponse] =>
-        if (response.isError) {
-          error(s"Error from Elasticsearch: $response")
-          Left(documents)
-        } else {
-          val actualFailures =
-            response.result.failures
-              .filterNot { isVersionConflictException }
-
-          if (actualFailures.isEmpty) {
-            Right(documents)
+      .map {
+        response: Response[BulkResponse] =>
+          if (response.isError) {
+            error(s"Error from Elasticsearch: $response")
+            Left(documents)
           } else {
-            val failedIds = actualFailures.map { failure =>
-              error(s"Error indexing ${failure.id}: ${failure.error}")
-              failure.id
-            }.toSet
+            val actualFailures =
+              response.result.failures
+                .filterNot { isVersionConflictException }
 
-            val failedDocuments = documents.filter { doc =>
-              failedIds.contains(id(doc))
+            if (actualFailures.isEmpty) {
+              Right(documents)
+            } else {
+              val failedIds = actualFailures.map {
+                failure =>
+                  error(s"Error indexing ${failure.id}: ${failure.error}")
+                  failure.id
+              }.toSet
+
+              val failedDocuments = documents.filter {
+                doc =>
+                  failedIds.contains(id(doc))
+              }
+
+              Left(failedDocuments)
             }
-
-            Left(failedDocuments)
           }
-        }
       }
   }
 

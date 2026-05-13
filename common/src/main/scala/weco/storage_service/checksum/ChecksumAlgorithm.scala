@@ -7,9 +7,9 @@ import org.apache.commons.codec.digest.MessageDigestAlgorithms
   *
   * It is not an exhaustive list, and we may add new checksums in the future.
   *
-  * As much as possible, we try to keep all the code related to checksum algorithms
-  * within this directory, to make it as easy as possible to add new algorithms later.
-  *
+  * As much as possible, we try to keep all the code related to checksum
+  * algorithms within this directory, to make it as easy as possible to add new
+  * algorithms later.
   */
 sealed trait ChecksumAlgorithm {
   val value: String

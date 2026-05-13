@@ -31,8 +31,7 @@ class FileFinderWorker(
   // a bit of overhead to be safe.
   batchSize: Int = 140
 )(
-  implicit
-  actorSystem: ActorSystem,
+  implicit actorSystem: ActorSystem,
   sqsAsync: SqsAsyncClient,
   mc: Metrics[Future],
   wd: Decoder[BagRegistrationNotification],
@@ -68,13 +67,15 @@ class FileFinderWorker(
           case Right(bag) =>
             Right(
               bag.manifest.files
-              // Only index files that are new in this version.
-              // e.g. if this is a V2 manifest, skip reindexing files from V1
-                .filter { f =>
-                  f.path.startsWith(s"${bag.version}/")
+                // Only index files that are new in this version.
+                // e.g. if this is a V2 manifest, skip reindexing files from V1
+                .filter {
+                  f =>
+                    f.path.startsWith(s"${bag.version}/")
                 }
-                .map { f =>
-                  FileContext(bag, f)
+                .map {
+                  f =>
+                    FileContext(bag, f)
                 }
             )
           case Left(BagTrackerUnknownGetError(e)) =>
@@ -105,14 +106,16 @@ class FileFinderWorker(
 
         val futures =
           batches
-            .map { b =>
-              Future.fromTry(messageSender.sendT(b))
+            .map {
+              b =>
+                Future.fromTry(messageSender.sendT(b))
             }
 
         Future
           .sequence(futures)
-          .map { _ =>
-            Successful(None)
+          .map {
+            _ =>
+              Successful(None)
           }
           .recover { case t: Throwable => RetryableFailure(t) }
 
