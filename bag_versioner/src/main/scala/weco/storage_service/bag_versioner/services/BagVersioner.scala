@@ -72,6 +72,6 @@ class BagVersioner(versionPicker: VersionPicker) {
   ): Throwable =
     error match {
       case err: IngestVersionManagerDaoError => err.e
-      case err                               => new Throwable(s"Unexpected error in the bag versioner: $err")
+      case err => new Throwable(s"Unexpected error in the bag versioner: $err")
     }
 }

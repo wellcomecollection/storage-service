@@ -17,27 +17,26 @@ import org.apache.commons.io.input.CloseShieldInputStream
 import scala.util.{Failure, Success, Try}
 
 /** You pass this class an inputStream that comes from the storage provider,
-  * e.g. a FileInputStream or an S3InputStream.  The stream should be a tar.gz
-  * or similar container + compression format.
+  * e.g. a FileInputStream or an S3InputStream. The stream should be a tar.gz or
+  * similar container + compression format.
   *
   * The iterator it produces has two pieces:
-  *  1. ArchiveEntry -- metadata about the original file, e.g. name/size
-  *  2. InputStream -- a stream that gives you the content for this file
+  *   1. ArchiveEntry -- metadata about the original file, e.g. name/size 2.
+  *      InputStream -- a stream that gives you the content for this file
   *
-  * This InputStream is really just a view into the original stream.
-  * If you advance one, the other advances.  They move together.
+  * This InputStream is really just a view into the original stream. If you
+  * advance one, the other advances. They move together.
   *
-  *       +------------------------------------------+ original stream
+  * \+------------------------------------------+ original stream
   *
-  *       +-------+                                    file1
-  *               +------------------+                 file2
-  *                                  +---------+       file3
-  *                                            +-----+ file4
+  * \+-------+ file1
+  * \+------------------+ file2
+  * \+---------+ file3
+  * \+-----+ file4
   *
-  * This is why we wrap the output in a close shield: if the caller closed
-  * the individual stream, they'd close the underlying stream and we'd be
-  * unable to read any more of the archive.
-  *
+  * This is why we wrap the output in a close shield: if the caller closed the
+  * individual stream, they'd close the underlying stream and we'd be unable to
+  * read any more of the archive.
   */
 object Unarchiver {
   def open(
@@ -86,7 +85,7 @@ object Unarchiver {
     } match {
       case Success(stream)                   => Right(stream)
       case Failure(err: CompressorException) => Left(CompressorError(err))
-      case Failure(err)                      => Left(UnexpectedUnarchiverError(err))
+      case Failure(err) => Left(UnexpectedUnarchiverError(err))
     }
   private def extract(
     inputStream: InputStream
@@ -100,7 +99,7 @@ object Unarchiver {
     } match {
       case Success(stream)                => Right(stream)
       case Failure(err: ArchiveException) => Left(ArchiveFormatError(err))
-      case Failure(err)                   => Left(UnexpectedUnarchiverError(err))
+      case Failure(err) => Left(UnexpectedUnarchiverError(err))
     }
 }
 

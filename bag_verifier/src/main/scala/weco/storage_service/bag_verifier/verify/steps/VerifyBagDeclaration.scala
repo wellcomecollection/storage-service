@@ -9,10 +9,9 @@ import weco.storage.streaming.Codec._
 import scala.io.Source
 import scala.util.matching.Regex
 
-trait VerifyBagDeclaration[BagLocation <: Location,
-                           BagPrefix <: Prefix[
-                             BagLocation
-                           ]] {
+trait VerifyBagDeclaration[BagLocation <: Location, BagPrefix <: Prefix[
+  BagLocation
+]] {
   protected val streamReader: Readable[BagLocation, InputStreamWithLength]
 
   private val versionLine = new Regex("BagIt-Version: \\d\\.\\d+")
@@ -57,10 +56,11 @@ trait VerifyBagDeclaration[BagLocation <: Location,
             )
 
           case Right(declaration) =>
-            validateDeclaration(declaration).left.map { message =>
-              BagVerifierError(
-                s"Error loading Bag Declaration (bagit.txt): $message"
-              )
+            validateDeclaration(declaration).left.map {
+              message =>
+                BagVerifierError(
+                  s"Error loading Bag Declaration (bagit.txt): $message"
+                )
             }
         }
 
@@ -85,7 +85,6 @@ trait VerifyBagDeclaration[BagLocation <: Location,
 
   /** Checks whether the Bag Declaration is correctly formatted, or explains why
     * it isn't if not.
-    *
     */
   private def validateDeclaration(contents: String): Either[String, Unit] = {
     val lines = Source.fromString(contents).getLines().toList
@@ -97,7 +96,7 @@ trait VerifyBagDeclaration[BagLocation <: Location,
       case Seq(versionLine(), _)  => Left("encoding line was not correct")
       case Seq(_, encodingLine()) => Left("version line was not correct")
       case Seq(_, _)              => Left("not correctly formatted")
-      case other                  => Left(s"expected 2 lines, got ${other.size}")
+      case other => Left(s"expected 2 lines, got ${other.size}")
     }
   }
 }

@@ -27,8 +27,7 @@ class BagRegisterWorker[IngestDestination, NotificationDestination](
   registrationNotifications: MessageSender[NotificationDestination],
   register: Register
 )(
-  implicit
-  val mc: Metrics[Future],
+  implicit val mc: Metrics[Future],
   val as: ActorSystem,
   val sc: SqsAsyncClient,
   val wd: Decoder[KnownReplicasPayload]

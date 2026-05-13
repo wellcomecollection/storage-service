@@ -9,8 +9,7 @@ import weco.storage_service.indexer.ingests.models.IndexedIngest
 import scala.concurrent.ExecutionContext
 
 class IngestIndexer(val client: ElasticClient, val index: Index)(
-  implicit
-  val ec: ExecutionContext,
+  implicit val ec: ExecutionContext,
   val encoder: Encoder[IndexedIngest]
 ) extends Indexer[Ingest, IndexedIngest] {
 

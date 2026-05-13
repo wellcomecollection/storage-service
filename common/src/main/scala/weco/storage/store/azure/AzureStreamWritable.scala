@@ -16,8 +16,9 @@ trait AzureStreamWritable
   implicit val blobClient: BlobServiceClient
   val allowOverwrites: Boolean
 
-  override def put(location: AzureBlobLocation)(
-    inputStream: InputStreamWithLength): WriteEither =
+  override def put(
+    location: AzureBlobLocation
+  )(inputStream: InputStreamWithLength): WriteEither =
     Try {
       val individualBlobClient =
         blobClient
@@ -58,7 +59,7 @@ trait AzureStreamWritable
     } match {
       case Success(_) => Right(Identified(location, inputStream))
       case Failure(
-          exc: BlobStorageException
+            exc: BlobStorageException
           ) if exc.getErrorCode == BlobErrorCode.BLOB_ALREADY_EXISTS =>
         Left(OverwriteError(exc))
       case Failure(throwable) => Left(StoreWriteError(throwable))

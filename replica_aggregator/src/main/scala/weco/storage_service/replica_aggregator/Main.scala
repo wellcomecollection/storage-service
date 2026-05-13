@@ -33,42 +33,44 @@ import scala.concurrent.ExecutionContext
 import scala.language.higherKinds
 
 object Main extends WellcomeTypesafeApp {
-  runWithConfig { config: Config =>
-    implicit val actorSystem: ActorSystem =
-      ActorSystem("main-actor-system")
+  runWithConfig {
+    config: Config =>
+      implicit val actorSystem: ActorSystem =
+        ActorSystem("main-actor-system")
 
-    implicit val ec: ExecutionContext =
-      actorSystem.dispatcher
+      implicit val ec: ExecutionContext =
+        actorSystem.dispatcher
 
-    implicit val metrics: CloudWatchMetrics =
-      CloudWatchBuilder.buildCloudWatchMetrics(config)
+      implicit val metrics: CloudWatchMetrics =
+        CloudWatchBuilder.buildCloudWatchMetrics(config)
 
-    implicit val sqsClient: SqsAsyncClient =
-      SqsAsyncClient.builder().build()
+      implicit val sqsClient: SqsAsyncClient =
+        SqsAsyncClient.builder().build()
 
-    val dynamoConfig: DynamoConfig =
-      DynamoBuilder.buildDynamoConfig(config, namespace = "replicas")
+      val dynamoConfig: DynamoConfig =
+        DynamoBuilder.buildDynamoConfig(config, namespace = "replicas")
 
-    implicit val dynamoClient: DynamoDbClient =
-      DynamoDbClient.builder().build()
+      implicit val dynamoClient: DynamoDbClient =
+        DynamoDbClient.builder().build()
 
-    val dynamoVersionedStore =
-      new DynamoSingleVersionStore[ReplicaPath, AggregatorInternalRecord](
-        dynamoConfig
+      val dynamoVersionedStore =
+        new DynamoSingleVersionStore[ReplicaPath, AggregatorInternalRecord](
+          dynamoConfig
+        )
+
+      val operationName =
+        OperationNameBuilder.getName(config)
+
+      new ReplicaAggregatorWorker(
+        config = PekkoSQSWorkerConfigBuilder.build(config),
+        replicaAggregator = new ReplicaAggregator(dynamoVersionedStore),
+        replicaCounter = new ReplicaCounter(
+          expectedReplicaCount =
+            config.requireInt("aggregator.expected_replica_count")
+        ),
+        ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
+        outgoingPublisher =
+          OutgoingPublisherBuilder.build(config, operationName)
       )
-
-    val operationName =
-      OperationNameBuilder.getName(config)
-
-    new ReplicaAggregatorWorker(
-      config = PekkoSQSWorkerConfigBuilder.build(config),
-      replicaAggregator = new ReplicaAggregator(dynamoVersionedStore),
-      replicaCounter = new ReplicaCounter(
-        expectedReplicaCount =
-          config.requireInt("aggregator.expected_replica_count")
-      ),
-      ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
-      outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName)
-    )
   }
 }

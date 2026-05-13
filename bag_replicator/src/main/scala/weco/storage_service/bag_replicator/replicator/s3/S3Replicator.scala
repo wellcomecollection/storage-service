@@ -6,9 +6,10 @@ import weco.storage_service.bag_replicator.replicator.Replicator
 import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.transfer.s3.S3PrefixTransfer
 
-class S3Replicator(implicit s3Client: S3Client,
-                   s3TransferManager: S3TransferManager)
-    extends Replicator[
+class S3Replicator(
+  implicit s3Client: S3Client,
+  s3TransferManager: S3TransferManager
+) extends Replicator[
       S3ObjectLocation,
       S3ObjectLocation,
       S3ObjectLocationPrefix

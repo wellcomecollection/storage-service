@@ -44,8 +44,9 @@ trait Unpacker[
   ): Either[StorageError, Unit] =
     writer
       .put(location)(inputStream)
-      .map { _ =>
-        ()
+      .map {
+        _ =>
+          ()
       }
 
   def unpack(
@@ -62,8 +63,9 @@ trait Unpacker[
       )
 
     val result = for {
-      srcStream <- get(srcLocation).left.map { storageError =>
-        UnpackerStorageError(storageError)
+      srcStream <- get(srcLocation).left.map {
+        storageError =>
+          UnpackerStorageError(storageError)
       }
 
       unpackSummary <- unpack(unpackSummary, srcStream, dstPrefix)

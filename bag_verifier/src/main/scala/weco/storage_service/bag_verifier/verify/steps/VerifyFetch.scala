@@ -44,7 +44,7 @@ trait VerifyFetch[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
             Left(
               BagVerifierError(
                 s"fetch.txt refers to paths in a mismatched prefix or with a non-S3 URI scheme: ${mismatchedPaths
-                  .mkString(", ")}"
+                    .mkString(", ")}"
               )
             )
         }
@@ -68,8 +68,9 @@ trait VerifyFetch[BagLocation <: Location, BagPrefix <: Prefix[BagLocation]] {
     val bagFetchLocations: Seq[(BagPath, BagLocation)] = fetch match {
       case Some(bagFetch) =>
         bagFetch.paths
-          .map { path: BagPath =>
-            path -> root.asLocation(path.value)
+          .map {
+            path: BagPath =>
+              path -> root.asLocation(path.value)
           }
 
       case None => Seq.empty

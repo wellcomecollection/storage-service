@@ -15,33 +15,34 @@ import weco.typesafe.config.builders.EnrichConfig._
 import scala.concurrent.ExecutionContextExecutor
 
 object Main extends WellcomeTypesafeApp {
-  runWithConfig { config: Config =>
-    implicit val actorSystem: ActorSystem =
-      ActorSystem("main-actor-system")
+  runWithConfig {
+    config: Config =>
+      implicit val actorSystem: ActorSystem =
+        ActorSystem("main-actor-system")
 
-    implicit val executionContext: ExecutionContextExecutor =
-      actorSystem.dispatcher
+      implicit val executionContext: ExecutionContextExecutor =
+        actorSystem.dispatcher
 
-    implicit val metrics: CloudWatchMetrics =
-      CloudWatchBuilder.buildCloudWatchMetrics(config)
+      implicit val metrics: CloudWatchMetrics =
+        CloudWatchBuilder.buildCloudWatchMetrics(config)
 
-    implicit val sqsClient: SqsAsyncClient =
-      SqsAsyncClient.builder().build()
+      implicit val sqsClient: SqsAsyncClient =
+        SqsAsyncClient.builder().build()
 
-    implicit val sender: SNSMessageSender =
-      SNSBuilder.buildSNSMessageSender(
-        config,
-        subject = "Sent from the file finder"
+      implicit val sender: SNSMessageSender =
+        SNSBuilder.buildSNSMessageSender(
+          config,
+          subject = "Sent from the file finder"
+        )
+
+      val bagTrackerClient = new PekkoBagTrackerClient(
+        trackerHost = config.requireString("bags.tracker.host")
       )
 
-    val bagTrackerClient = new PekkoBagTrackerClient(
-      trackerHost = config.requireString("bags.tracker.host")
-    )
-
-    new FileFinderWorker(
-      config = PekkoSQSWorkerConfigBuilder.build(config),
-      bagTrackerClient = bagTrackerClient,
-      messageSender = sender
-    )
+      new FileFinderWorker(
+        config = PekkoSQSWorkerConfigBuilder.build(config),
+        bagTrackerClient = bagTrackerClient,
+        messageSender = sender
+      )
   }
 }

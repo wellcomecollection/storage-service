@@ -9,11 +9,9 @@ import weco.storage_service.bag_verifier.models.BagVerifierError
 import weco.storage_service.bagit.models.UnreferencedFiles
 import weco.storage.{Location, Prefix}
 
-trait VerifyNoUnreferencedFiles[BagLocation <: Location,
-                                BagPrefix <: Prefix[
-                                  BagLocation
-                                ]]
-    extends Logging {
+trait VerifyNoUnreferencedFiles[BagLocation <: Location, BagPrefix <: Prefix[
+  BagLocation
+]] extends Logging {
 
   // Files that it's okay not to be referenced by any other manifests/files.
   //
@@ -44,8 +42,9 @@ trait VerifyNoUnreferencedFiles[BagLocation <: Location,
 
         val unreferencedFiles = actualLocations
           .filterNot { expectedLocations.contains }
-          .filterNot { location =>
-            excludedFiles.exists { root.asLocation(_) == location }
+          .filterNot {
+            location =>
+              excludedFiles.exists { root.asLocation(_) == location }
           }
 
         if (unreferencedFiles.isEmpty) {
@@ -72,8 +71,9 @@ trait VerifyNoUnreferencedFiles[BagLocation <: Location,
 
           val userMessage = messagePrefix +
             unreferencedFiles
-              .map { loc: BagLocation =>
-                getRelativePath(root, loc)
+              .map {
+                loc: BagLocation =>
+                  getRelativePath(root, loc)
               }
               .mkString(", ")
 

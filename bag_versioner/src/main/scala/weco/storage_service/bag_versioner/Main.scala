@@ -36,47 +36,49 @@ import scala.concurrent.ExecutionContext
 import scala.language.higherKinds
 
 object Main extends WellcomeTypesafeApp {
-  runWithConfig { config: Config =>
-    implicit val actorSystem: ActorSystem =
-      ActorSystem("main-actor-system")
+  runWithConfig {
+    config: Config =>
+      implicit val actorSystem: ActorSystem =
+        ActorSystem("main-actor-system")
 
-    implicit val ec: ExecutionContext =
-      actorSystem.dispatcher
+      implicit val ec: ExecutionContext =
+        actorSystem.dispatcher
 
-    implicit val metrics: CloudWatchMetrics =
-      CloudWatchBuilder.buildCloudWatchMetrics(config)
+      implicit val metrics: CloudWatchMetrics =
+        CloudWatchBuilder.buildCloudWatchMetrics(config)
 
-    implicit val sqsClient: SqsAsyncClient =
-      SqsAsyncClient.builder().build()
+      implicit val sqsClient: SqsAsyncClient =
+        SqsAsyncClient.builder().build()
 
-    implicit val lockDao = DynamoLockDaoBuilder
-      .buildDynamoLockDao(config)
+      implicit val lockDao = DynamoLockDaoBuilder
+        .buildDynamoLockDao(config)
 
-    val operationName = OperationNameBuilder.getName(config)
+      val operationName = OperationNameBuilder.getName(config)
 
-    val lockingService =
-      new DynamoLockingService[
-        Either[IngestVersionManagerError, BagVersion],
-        Id
-      ]()
+      val lockingService =
+        new DynamoLockingService[
+          Either[IngestVersionManagerError, BagVersion],
+          Id
+        ]()
 
-    val ingestVersionManagerDao = new DynamoIngestVersionManagerDao(
-      dynamoClient = DynamoDbClient.builder().build(),
-      dynamoConfig =
-        DynamoBuilder.buildDynamoConfig(config, namespace = "versions")
-    )
+      val ingestVersionManagerDao = new DynamoIngestVersionManagerDao(
+        dynamoClient = DynamoDbClient.builder().build(),
+        dynamoConfig =
+          DynamoBuilder.buildDynamoConfig(config, namespace = "versions")
+      )
 
-    val versionPicker = new VersionPicker(
-      lockingService = lockingService,
-      ingestVersionManager =
-        new DynamoIngestVersionManager(ingestVersionManagerDao)
-    )
+      val versionPicker = new VersionPicker(
+        lockingService = lockingService,
+        ingestVersionManager =
+          new DynamoIngestVersionManager(ingestVersionManagerDao)
+      )
 
-    new BagVersionerWorker(
-      config = PekkoSQSWorkerConfigBuilder.build(config),
-      bagVersioner = new BagVersioner(versionPicker = versionPicker),
-      ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
-      outgoingPublisher = OutgoingPublisherBuilder.build(config, operationName)
-    )
+      new BagVersionerWorker(
+        config = PekkoSQSWorkerConfigBuilder.build(config),
+        bagVersioner = new BagVersioner(versionPicker = versionPicker),
+        ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
+        outgoingPublisher =
+          OutgoingPublisherBuilder.build(config, operationName)
+      )
   }
 }

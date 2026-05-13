@@ -80,7 +80,7 @@ trait IngestStepWorker[Work <: PipelinePayload, Summary] extends Runnable {
           MessageAction.changeMessageVisibility(
             message,
             visibilityTimeout.toSeconds.toInt
-        )
+          )
     }
 
   def run(): Future[Any] = worker.start

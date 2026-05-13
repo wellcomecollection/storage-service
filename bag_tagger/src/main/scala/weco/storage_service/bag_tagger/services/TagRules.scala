@@ -8,7 +8,6 @@ import weco.storage_service.storage.models.{
 
 /** Given a storage manifest, decide what tags (if any) should be applied to the
   * objects in the bag.
-  *
   */
 object TagRules {
   def chooseTags(
@@ -21,9 +20,9 @@ object TagRules {
     * Our tags are based on the official list of MIME types from
     * http://www.iana.org/assignments/media-types/media-types.xhtml
     *
-    * We prefer to tag with MIME types because these are standardised tags
-    * that might be useful elsewhere, rather than inventing an unnecessary
-    * tagging scheme solely for the storage service.
+    * We prefer to tag with MIME types because these are standardised tags that
+    * might be useful elsewhere, rather than inventing an unnecessary tagging
+    * scheme solely for the storage service.
     */
   private def createContentTypeTags(
     manifest: StorageManifest
@@ -63,9 +62,10 @@ object TagRules {
 
   implicit class FileOps(f: StorageManifestFile) {
     def hasExtension(exts: String*): Boolean = {
-      exts.foreach { e =>
-        assert(e.startsWith("."))
-        assert(e.toLowerCase == e)
+      exts.foreach {
+        e =>
+          assert(e.startsWith("."))
+          assert(e.toLowerCase == e)
       }
 
       exts.exists(f.path.toLowerCase.endsWith)

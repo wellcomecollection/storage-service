@@ -42,101 +42,101 @@ import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 object Main extends WellcomeTypesafeApp {
-  runWithConfig { config: Config =>
-    import scala.concurrent.duration._
+  runWithConfig {
+    config: Config =>
+      import scala.concurrent.duration._
 
-    implicit val actorSystem: ActorSystem =
-      ActorSystem("main-actor-system")
-    implicit val ec: ExecutionContext =
-      actorSystem.dispatcher
+      implicit val actorSystem: ActorSystem =
+        ActorSystem("main-actor-system")
+      implicit val ec: ExecutionContext =
+        actorSystem.dispatcher
 
-    implicit val s3Client: S3Client =
-      S3Client.builder().build()
+      implicit val s3Client: S3Client =
+        S3Client.builder().build()
 
-    implicit val s3AsyncClient: S3AsyncClient =
-      S3AsyncClient.crtBuilder().build()
+      implicit val s3AsyncClient: S3AsyncClient =
+        S3AsyncClient.crtBuilder().build()
 
-    implicit val s3TransferManager: S3TransferManager =
-      S3TransferManager.builder().s3Client(s3AsyncClient).build()
+      implicit val s3TransferManager: S3TransferManager =
+        S3TransferManager.builder().s3Client(s3AsyncClient).build()
 
-    implicit val s3Presigner: S3Presigner =
-      S3Presigner.builder().build()
+      implicit val s3Presigner: S3Presigner =
+        S3Presigner.builder().build()
 
-    implicit val metrics: CloudWatchMetrics =
-      CloudWatchBuilder.buildCloudWatchMetrics(config)
+      implicit val metrics: CloudWatchMetrics =
+        CloudWatchBuilder.buildCloudWatchMetrics(config)
 
-    implicit val sqsClient: SqsAsyncClient =
-      SqsAsyncClient.builder().build()
+      implicit val sqsClient: SqsAsyncClient =
+        SqsAsyncClient.builder().build()
 
-    implicit val lockDao: DynamoLockDao =
-      DynamoLockDaoBuilder.buildDynamoLockDao(config)
+      implicit val lockDao: DynamoLockDao =
+        DynamoLockDaoBuilder.buildDynamoLockDao(config)
 
-    val operationName =
-      OperationNameBuilder.getName(config)
+      val operationName =
+        OperationNameBuilder.getName(config)
 
-    val provider =
-      StorageProvider.apply(config.requireString("bag-replicator.provider"))
+      val provider =
+        StorageProvider.apply(config.requireString("bag-replicator.provider"))
 
-    def createLockingService[DstPrefix <: Prefix[_ <: Location]] =
-      new DynamoLockingService[
-        IngestStepResult[ReplicationSummary[DstPrefix]],
-        Try]()
+      def createLockingService[DstPrefix <: Prefix[_ <: Location]] =
+        new DynamoLockingService[IngestStepResult[
+          ReplicationSummary[DstPrefix]
+        ], Try]()
 
-    def createBagReplicatorWorker[
-      SrcLocation,
-      DstLocation <: Location,
-      DstPrefix <: Prefix[
-        DstLocation
-      ]
-    ](
-      lockingService: DynamoLockingService[IngestStepResult[
-                                             ReplicationSummary[DstPrefix]
-                                           ],
-                                           Try],
-      replicator: Replicator[SrcLocation, DstLocation, DstPrefix]
-    ): BagReplicatorWorker[
-      SNSConfig,
-      SNSConfig,
-      SrcLocation,
-      DstLocation,
-      DstPrefix
-    ] =
-      new BagReplicatorWorker(
-        config = PekkoSQSWorkerConfigBuilder.build(config),
-        ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
-        outgoingPublisher =
-          OutgoingPublisherBuilder.build(config, operationName),
-        lockingService = lockingService,
-        destinationConfig = ReplicatorDestinationConfig
-          .buildDestinationConfig(config),
-        replicator = replicator
-      )
-
-    provider match {
-      case AmazonS3StorageProvider =>
-        createBagReplicatorWorker(
-          lockingService = createLockingService[S3ObjectLocationPrefix],
-          replicator = new S3Replicator()
+      def createBagReplicatorWorker[
+        SrcLocation,
+        DstLocation <: Location,
+        DstPrefix <: Prefix[
+          DstLocation
+        ]
+      ](
+        lockingService: DynamoLockingService[IngestStepResult[
+          ReplicationSummary[DstPrefix]
+        ], Try],
+        replicator: Replicator[SrcLocation, DstLocation, DstPrefix]
+      ): BagReplicatorWorker[
+        SNSConfig,
+        SNSConfig,
+        SrcLocation,
+        DstLocation,
+        DstPrefix
+      ] =
+        new BagReplicatorWorker(
+          config = PekkoSQSWorkerConfigBuilder.build(config),
+          ingestUpdater = IngestUpdaterBuilder.build(config, operationName),
+          outgoingPublisher =
+            OutgoingPublisherBuilder.build(config, operationName),
+          lockingService = lockingService,
+          destinationConfig = ReplicatorDestinationConfig
+            .buildDestinationConfig(config),
+          replicator = replicator
         )
 
-      case AzureBlobStorageProvider =>
-        implicit val azureBlobClient: BlobServiceClient =
-          new BlobServiceClientBuilder()
-            .endpoint(config.requireString("azure.endpoint"))
-            .buildClient()
-        // The max length you can put in a single Put Block from URL API call is 100 MiB.
-        // The class will load a block of this size into memory, so setting it too
-        // high may cause issues.
-        val blockSize: Long = 100000000L
-
-        //Some objects can big, and take a long time to transfer, so we need to set a high validity for the s3 URL
-        val s3UrlValidity = 12.hours
-        createBagReplicatorWorker(
-          lockingService = createLockingService[AzureBlobLocationPrefix],
-          replicator = new AzureReplicator(
-            transfer = AzurePutBlockFromUrlTransfer(s3UrlValidity, blockSize)
+      provider match {
+        case AmazonS3StorageProvider =>
+          createBagReplicatorWorker(
+            lockingService = createLockingService[S3ObjectLocationPrefix],
+            replicator = new S3Replicator()
           )
-        )
-    }
+
+        case AzureBlobStorageProvider =>
+          implicit val azureBlobClient: BlobServiceClient =
+            new BlobServiceClientBuilder()
+              .endpoint(config.requireString("azure.endpoint"))
+              .buildClient()
+          // The max length you can put in a single Put Block from URL API call is 100 MiB.
+          // The class will load a block of this size into memory, so setting it too
+          // high may cause issues.
+          val blockSize: Long = 100000000L
+
+          // Some objects can big, and take a long time to transfer, so we need to set a high validity for the s3 URL
+          val s3UrlValidity = 12.hours
+          createBagReplicatorWorker(
+            lockingService = createLockingService[AzureBlobLocationPrefix],
+            replicator = new AzureReplicator(
+              transfer = AzurePutBlockFromUrlTransfer(s3UrlValidity, blockSize)
+            )
+          )
+      }
   }
 }

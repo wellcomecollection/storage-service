@@ -16,41 +16,42 @@ import weco.typesafe.config.builders.EnrichConfig._
 import scala.concurrent.ExecutionContextExecutor
 
 object Main extends WellcomeTypesafeApp {
-  runWithConfig { config: Config =>
-    implicit val actorSystem: ActorSystem =
-      ActorSystem("main-actor-system")
+  runWithConfig {
+    config: Config =>
+      implicit val actorSystem: ActorSystem =
+        ActorSystem("main-actor-system")
 
-    implicit val executionContext: ExecutionContextExecutor =
-      actorSystem.dispatcher
+      implicit val executionContext: ExecutionContextExecutor =
+        actorSystem.dispatcher
 
-    implicit val metrics: CloudWatchMetrics =
-      CloudWatchBuilder.buildCloudWatchMetrics(config)
+      implicit val metrics: CloudWatchMetrics =
+        CloudWatchBuilder.buildCloudWatchMetrics(config)
 
-    implicit val sqsClient: SqsAsyncClient =
-      SqsAsyncClient.builder().build()
+      implicit val sqsClient: SqsAsyncClient =
+        SqsAsyncClient.builder().build()
 
-    val index = Index(name = config.requireString("es.files.index-name"))
-    info(s"Writing files to index $index")
+      val index = Index(name = config.requireString("es.files.index-name"))
+      info(s"Writing files to index $index")
 
-    info(s"Creating the Elasticsearch index mapping")
-    val elasticClient = ElasticBuilder.buildElasticClient(config)
+      info(s"Creating the Elasticsearch index mapping")
+      val elasticClient = ElasticBuilder.buildElasticClient(config)
 
-    val indexCreator = new ElasticsearchIndexCreator(
-      elasticClient = elasticClient,
-      index = index,
-      config = FilesIndexConfig.config
-    )
+      val indexCreator = new ElasticsearchIndexCreator(
+        elasticClient = elasticClient,
+        index = index,
+        config = FilesIndexConfig.config
+      )
 
-    indexCreator.create
+      indexCreator.create
 
-    val ingestIndexer = new FileIndexer(
-      client = elasticClient,
-      index = index
-    )
+      val ingestIndexer = new FileIndexer(
+        client = elasticClient,
+        index = index
+      )
 
-    new FileIndexerWorker(
-      config = PekkoSQSWorkerConfigBuilder.build(config),
-      indexer = ingestIndexer
-    )
+      new FileIndexerWorker(
+        config = PekkoSQSWorkerConfigBuilder.build(config),
+        indexer = ingestIndexer
+      )
   }
 }

@@ -25,8 +25,7 @@ abstract class IndexerWorker[SourceT, T, IndexedT](
   config: PekkoSQSWorkerConfig,
   indexer: Indexer[T, IndexedT]
 )(
-  implicit
-  actorSystem: ActorSystem,
+  implicit actorSystem: ActorSystem,
   sqsAsync: SqsAsyncClient,
   metrics: Metrics[Future],
   decoder: Decoder[SourceT]
@@ -82,7 +81,7 @@ abstract class IndexerWorker[SourceT, T, IndexedT](
           MessageAction.changeMessageVisibility(
             message = message,
             visibilityTimeout = visibilityTimeoutInSeconds
-        )
+          )
     }
 
   def run(): Future[Any] = worker.start

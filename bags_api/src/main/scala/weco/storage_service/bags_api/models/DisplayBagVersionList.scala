@@ -11,11 +11,12 @@ case class DisplayBagVersionList(
 case object DisplayBagVersionList {
   def apply(bagVersionList: BagVersionList): DisplayBagVersionList =
     DisplayBagVersionList(
-      results = bagVersionList.versions.map { entry =>
-        DisplayBagVersionEntry(
-          id = bagVersionList.id,
-          entry = entry
-        )
+      results = bagVersionList.versions.map {
+        entry =>
+          DisplayBagVersionEntry(
+            id = bagVersionList.id,
+            entry = entry
+          )
       }
     )
 }

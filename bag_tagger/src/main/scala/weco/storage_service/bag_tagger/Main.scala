@@ -20,30 +20,31 @@ import weco.typesafe.config.builders.EnrichConfig._
 import scala.concurrent.ExecutionContext
 
 object Main extends WellcomeTypesafeApp {
-  runWithConfig { config: Config =>
-    implicit val actorSystem: ActorSystem =
-      ActorSystem("main-actor-system")
-    implicit val ec: ExecutionContext =
-      actorSystem.dispatcher
+  runWithConfig {
+    config: Config =>
+      implicit val actorSystem: ActorSystem =
+        ActorSystem("main-actor-system")
+      implicit val ec: ExecutionContext =
+        actorSystem.dispatcher
 
-    implicit val metrics: CloudWatchMetrics =
-      CloudWatchBuilder.buildCloudWatchMetrics(config)
+      implicit val metrics: CloudWatchMetrics =
+        CloudWatchBuilder.buildCloudWatchMetrics(config)
 
-    implicit val sqsClient: SqsAsyncClient =
-      SqsAsyncClient.builder().build()
+      implicit val sqsClient: SqsAsyncClient =
+        SqsAsyncClient.builder().build()
 
-    val bagTrackerClient = new PekkoBagTrackerClient(
-      trackerHost = config.requireString("bags.tracker.host")
-    )
+      val bagTrackerClient = new PekkoBagTrackerClient(
+        trackerHost = config.requireString("bags.tracker.host")
+      )
 
-    implicit val s3Client: S3Client =
-      S3Client.builder().build()
+      implicit val s3Client: S3Client =
+        S3Client.builder().build()
 
-    new BagTaggerWorker(
-      config = PekkoSQSWorkerConfigBuilder.build(config),
-      bagTrackerClient = bagTrackerClient,
-      applyTags = ApplyTags(),
-      tagRules = TagRules.chooseTags
-    )
+      new BagTaggerWorker(
+        config = PekkoSQSWorkerConfigBuilder.build(config),
+        bagTrackerClient = bagTrackerClient,
+        applyTags = ApplyTags(),
+        tagRules = TagRules.chooseTags
+      )
   }
 }

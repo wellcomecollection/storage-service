@@ -35,9 +35,8 @@ class DynamoStorageManifestDao(
   dynamoConfig: DynamoConfig,
   s3Config: S3Config
 )(
-  implicit
-  dynamoClient: DynamoDbClient,
-  s3Client: S3Client,
+  implicit dynamoClient: DynamoDbClient,
+  s3Client: S3Client
 ) extends StorageManifestDao {
 
   //  By default reads are eventually consistent
@@ -134,7 +133,7 @@ class DynamoStorageManifestDao(
       }
 
       scanamoSuccesses = scanamoResult.collect { case Right(entry) => entry }
-      scanamoErrors = scanamoResult.collect { case Left(err)       => err }
+      scanamoErrors = scanamoResult.collect { case Left(err) => err }
 
       indexEntries <- Either.cond(
         scanamoErrors.isEmpty,

@@ -29,9 +29,10 @@ class MemoryIngestVersionManagerDao() extends IngestVersionManagerDao {
   ): Either[MaximaError, VersionRecord] = {
     val matchingVersions =
       records
-        .filter { record =>
-          record.externalIdentifier == externalIdentifier &&
-          record.storageSpace == space
+        .filter {
+          record =>
+            record.externalIdentifier == externalIdentifier &&
+            record.storageSpace == space
         }
 
     if (matchingVersions.isEmpty) {

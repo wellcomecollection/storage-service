@@ -31,11 +31,12 @@ class S3Uploader(implicit val s3Client: S3Client, s3Presigner: S3Presigner) {
     for {
       exists <- location.exists
 
-      _ <- if (!exists || !checkExists) {
-        s3StreamStore.put(location)(content)
-      } else {
-        Right(Identified(location, content))
-      }
+      _ <-
+        if (!exists || !checkExists) {
+          s3StreamStore.put(location)(content)
+        } else {
+          Right(Identified(location, content))
+        }
 
       url <- presignedUrls.getPresignedGetURL(location, expiryLength)
     } yield url

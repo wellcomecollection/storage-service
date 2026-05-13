@@ -108,20 +108,19 @@ class S3StorageManifestService(implicit s3Client: S3Client) extends Logging {
     location match {
       case s3Location: S3ObjectLocation     => s3Location.key
       case azureLocation: AzureBlobLocation => azureLocation.name
-      case _                                => throw new Throwable(s"Unsupported location: $location")
+      case _ => throw new Throwable(s"Unsupported location: $location")
     }
 
   /** The replicator writes bags inside a bucket to paths of the form
     *
-    *     /{storageSpace}/{externalIdentifier}/v{version}
+    * /{storageSpace}/{externalIdentifier}/v{version}
     *
-    * All the versions of a bag should follow this convention, so if we
-    * strip off the /:version prefix we'll find the root of all bags
-    * with this (storage space, external ID) pair.
+    * All the versions of a bag should follow this convention, so if we strip
+    * off the /:version prefix we'll find the root of all bags with this
+    * (storage space, external ID) pair.
     *
-    * TODO: It would be better if we passed a structured object out of
-    * the replicator.
-    *
+    * TODO: It would be better if we passed a structured object out of the
+    * replicator.
     */
   private def getBagRoot(
     replicaRoot: Prefix[_ <: Location],
@@ -161,9 +160,12 @@ class S3StorageManifestService(implicit s3Client: S3Client) extends Logging {
     tagManifest: TagManifest
   ): Try[ChecksumAlgorithm] =
     ChecksumAlgorithms.algorithms
-      .find { algorithm =>
-        payloadManifest.algorithms.contains(algorithm) && tagManifest.algorithms
-          .contains(algorithm)
+      .find {
+        algorithm =>
+          payloadManifest.algorithms.contains(
+            algorithm
+          ) && tagManifest.algorithms
+            .contains(algorithm)
       } match {
       case Some(algorithm) => Success(algorithm)
       case None =>
@@ -200,8 +202,7 @@ class S3StorageManifestService(implicit s3Client: S3Client) extends Logging {
     *
     * The map contains data
     *
-    *   (bag path) -> (location, size if known)
-    *
+    * (bag path) -> (location, size if known)
     */
   private def createPathLocationMap(
     matchedLocations: Seq[MatchedLocation],
@@ -209,11 +210,12 @@ class S3StorageManifestService(implicit s3Client: S3Client) extends Logging {
     version: BagVersion
   ): Try[Map[BagPath, (S3ObjectLocation, Option[Long])]] =
     Try {
-      matchedLocations.map { matchedLoc =>
-        (
-          matchedLoc.bagPath,
-          getSizeAndLocation(matchedLoc, bagRoot, version)
-        )
+      matchedLocations.map {
+        matchedLoc =>
+          (
+            matchedLoc.bagPath,
+            getSizeAndLocation(matchedLoc, bagRoot, version)
+          )
       }.toMap
     }
 
@@ -290,8 +292,9 @@ class S3StorageManifestService(implicit s3Client: S3Client) extends Logging {
       )
       .map {
         // Remember to prefix all the entries with a version string
-        _.map { f =>
-          f.copy(path = s"$version/${f.path}")
+        _.map {
+          f =>
+            f.copy(path = s"$version/${f.path}")
         }
       }
 
@@ -301,13 +304,14 @@ class S3StorageManifestService(implicit s3Client: S3Client) extends Logging {
   ): Try[Seq[SecondaryStorageLocation]] = {
     val rootReplicas =
       replicas
-        .map { loc =>
-          getBagRoot(replicaRoot = loc.prefix, version = version)
-            .map { SecondaryStorageLocation(_) }
+        .map {
+          loc =>
+            getBagRoot(replicaRoot = loc.prefix, version = version)
+              .map { SecondaryStorageLocation(_) }
         }
 
     val successes = rootReplicas.collect { case Success(loc) => loc }
-    val failures = rootReplicas.collect { case Failure(err)  => err }
+    val failures = rootReplicas.collect { case Failure(err) => err }
 
     if (failures.isEmpty) {
       Success(successes)

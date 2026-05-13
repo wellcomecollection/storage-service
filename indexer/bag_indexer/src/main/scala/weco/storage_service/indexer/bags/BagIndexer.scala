@@ -9,8 +9,7 @@ import weco.storage_service.indexer.Indexer
 import scala.concurrent.ExecutionContext
 
 class BagIndexer(val client: ElasticClient, val index: Index)(
-  implicit
-  val ec: ExecutionContext,
+  implicit val ec: ExecutionContext,
   val encoder: Encoder[IndexedStorageManifest]
 ) extends Indexer[StorageManifest, IndexedStorageManifest] {
 

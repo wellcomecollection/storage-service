@@ -31,11 +31,12 @@ trait LookupBagVersions extends Logging {
         )
         val bagVersionList = BagVersionList(
           id = bagId,
-          versions = storageManifests.map { manifest =>
-            BagVersionEntry(
-              version = manifest.version,
-              createdDate = manifest.createdDate
-            )
+          versions = storageManifests.map {
+            manifest =>
+              BagVersionEntry(
+                version = manifest.version,
+                createdDate = manifest.createdDate
+              )
           }
         )
 

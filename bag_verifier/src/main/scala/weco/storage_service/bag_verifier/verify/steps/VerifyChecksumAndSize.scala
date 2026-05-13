@@ -12,10 +12,9 @@ import weco.storage.{Location, Prefix}
 
 import scala.util.{Failure, Success, Try}
 
-trait VerifyChecksumAndSize[BagLocation <: Location,
-                            BagPrefix <: Prefix[
-                              BagLocation
-                            ]] {
+trait VerifyChecksumAndSize[BagLocation <: Location, BagPrefix <: Prefix[
+  BagLocation
+]] {
   implicit val resolvable: Resolvable[BagLocation]
   val fixityListChecker: FixityListChecker[BagLocation, BagPrefix, Bag]
 

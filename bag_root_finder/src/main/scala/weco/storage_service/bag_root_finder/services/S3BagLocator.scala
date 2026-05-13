@@ -20,19 +20,18 @@ import scala.util.{Failure, Success, Try}
   *
   * Anything else is an error.
   *
-  * This code is deliberately conservative -- it has the potential to lose
-  * data from a bag if we infer incorrectly.
+  * This code is deliberately conservative -- it has the potential to lose data
+  * from a bag if we infer incorrectly.
   *
-  * If you find yourself adding lots of logic to this class, STOP.  THINK.
-  * If clients are putting bags in odd locations, consider modifying the
-  * ingests API so the clients can *tell us* where they're putting the bag,
-  * not leave us to reverse-engineer their logic.
+  * If you find yourself adding lots of logic to this class, STOP. THINK. If
+  * clients are putting bags in odd locations, consider modifying the ingests
+  * API so the clients can *tell us* where they're putting the bag, not leave us
+  * to reverse-engineer their logic.
   *
-  * The method returns an ObjectLocation for bag-info.txt, or an error
-  * if it can't find it.
+  * The method returns an ObjectLocation for bag-info.txt, or an error if it
+  * can't find it.
   *
   * SERIOUSLY, THINK CAREFULLY BEFORE YOU ADD COMPLEXITY HERE.
-  *
   */
 class S3BagLocator(s3Client: S3Client) extends Logging {
   def locateBagInfo(prefix: S3ObjectLocationPrefix): Try[S3ObjectLocation] = {
@@ -55,8 +54,9 @@ class S3BagLocator(s3Client: S3Client) extends Logging {
   def locateBagRoot(
     prefix: S3ObjectLocationPrefix
   ): Try[S3ObjectLocationPrefix] =
-    locateBagInfo(prefix).map { loc =>
-      loc.copy(key = loc.key.stripSuffix("/bag-info.txt")).asPrefix
+    locateBagInfo(prefix).map {
+      loc =>
+        loc.copy(key = loc.key.stripSuffix("/bag-info.txt")).asPrefix
     }
 
   /** Find a bag directly below a given ObjectLocation. */
@@ -82,7 +82,6 @@ class S3BagLocator(s3Client: S3Client) extends Logging {
 
   /** Look for a subdirectory of the current location, and find a bag-info.txt
     * if there's exactly one such subdirectory.
-    *
     */
   private def findBagInfoInDirectory(
     prefix: S3ObjectLocationPrefix

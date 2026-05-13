@@ -15,15 +15,13 @@ trait VerifySourceTagManifest[ReplicaBagLocation <: Location] {
     InputStreamWithLength
   ]
 
-  /** This step is here to check the bag created by the replica and the
-    * original bag are the same; the verifier can only check that a
-    * bag is correctly formed.
+  /** This step is here to check the bag created by the replica and the original
+    * bag are the same; the verifier can only check that a bag is correctly
+    * formed.
     *
-    * Without this check, it would be possible for the replicator to
-    * write an entirely different, valid bag -- and because the verifier
-    * doesn't have context for the original bag, it wouldn't flag
-    * it as an error.
-    *
+    * Without this check, it would be possible for the replicator to write an
+    * entirely different, valid bag -- and because the verifier doesn't have
+    * context for the original bag, it wouldn't flag it as an error.
     */
   def verifySourceTagManifestIsTheSame(
     srcPrefix: S3ObjectLocationPrefix,
@@ -33,17 +31,18 @@ trait VerifySourceTagManifest[ReplicaBagLocation <: Location] {
       srcManifest <- getTagManifest(srcPrefix, srcReader)
       replicaManifest <- getTagManifest(replicaPrefix, replicaReader)
 
-      result <- if (IOUtils.contentEquals(srcManifest, replicaManifest)) {
-        Right(())
-      } else {
-        Left(
-          BagVerifierError(
-            new Throwable(
-              "tagmanifest-sha256.txt in replica source and replica location do not match!"
+      result <-
+        if (IOUtils.contentEquals(srcManifest, replicaManifest)) {
+          Right(())
+        } else {
+          Left(
+            BagVerifierError(
+              new Throwable(
+                "tagmanifest-sha256.txt in replica source and replica location do not match!"
+              )
             )
           )
-        )
-      }
+        }
     } yield result
   }
 

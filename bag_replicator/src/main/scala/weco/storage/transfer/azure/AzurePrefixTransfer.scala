@@ -8,8 +8,7 @@ import weco.storage.providers.s3.{S3ObjectLocation, S3ObjectLocationPrefix}
 import weco.storage.transfer.PrefixTransfer
 
 class AzurePrefixTransfer(
-  implicit
-  s3Client: S3Client,
+  implicit s3Client: S3Client,
   val transfer: AzureTransfer[_]
 ) extends PrefixTransfer[
       S3ObjectLocationPrefix,
@@ -24,14 +23,18 @@ class AzurePrefixTransfer(
 
     new Listing[S3ObjectLocationPrefix, SourceS3Object] {
       override def list(prefix: S3ObjectLocationPrefix): ListingResult =
-        underlying.list(prefix).map { iterable =>
-          iterable.map { s3Object =>
-            SourceS3Object(
-              location =
-                S3ObjectLocation(bucket = prefix.bucket, key = s3Object.key()),
-              size = s3Object.size()
-            )
-          }
+        underlying.list(prefix).map {
+          iterable =>
+            iterable.map {
+              s3Object =>
+                SourceS3Object(
+                  location = S3ObjectLocation(
+                    bucket = prefix.bucket,
+                    key = s3Object.key()
+                  ),
+                  size = s3Object.size()
+                )
+            }
         }
     }
   }

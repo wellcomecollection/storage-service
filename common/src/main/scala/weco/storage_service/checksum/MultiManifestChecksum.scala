@@ -8,12 +8,12 @@ object MultiManifestChecksumException {
 }
 
 /** This class records the expected checksum of a file in a bag, based on the
-  * manifests provided in the bag.  It can record checksums for multiple checksum
+  * manifests provided in the bag. It can record checksums for multiple checksum
   * algorithms, e.g. a file in an MD5 manifest and a SHA-256 manifest.
   *
-  * Note: the omission of default values is deliberate here -- it's so that if we add
-  * a new checksum algorithm, we remember to add it everywhere we use MultiManifestChecksum.
-  *
+  * Note: the omission of default values is deliberate here -- it's so that if
+  * we add a new checksum algorithm, we remember to add it everywhere we use
+  * MultiManifestChecksum.
   */
 case class MultiManifestChecksum(
   md5: Option[ChecksumValue],
@@ -32,8 +32,9 @@ case class MultiManifestChecksum(
 
   def definedChecksums: Set[(ChecksumAlgorithm, ChecksumValue)] =
     definedAlgorithms
-      .map { algorithm =>
-        algorithm -> getValue(algorithm).get
+      .map {
+        algorithm =>
+          algorithm -> getValue(algorithm).get
       }
 
   def getValue(algorithm: ChecksumAlgorithm): Option[ChecksumValue] =
