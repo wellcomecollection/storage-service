@@ -4,6 +4,11 @@ import sbt._
 object Common {
   private val codeArtifactToken = sys.env.get("CODEARTIFACT_AUTH_TOKEN").filter(_.nonEmpty)
 
+  {
+    val mode = if (codeArtifactToken.isDefined) "CodeArtifact → Maven Central" else "Maven Central only"
+    println(s"[info] Dependency resolution: $mode")
+  }
+
   val settings: Seq[Def.Setting[_]] = Seq(
     scalaVersion := "2.12.16",
     organization := "weco",
