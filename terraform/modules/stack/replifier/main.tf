@@ -38,8 +38,10 @@ module "bag_replicator" {
 
   secrets = var.replicator_secrets
 
+  # Must exceed the JVM's -Xmx3G plus native/sidecar overhead; a 2048 MB
+  # task gets OOM-killed mid-replication on large bags.
   cpu    = 1024
-  memory = 2048
+  memory = 4096
 
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
