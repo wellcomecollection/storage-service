@@ -24,10 +24,15 @@ trait Worker[Message, Work, Summary, Action] extends Logging {
   protected def isRetryable(t: Throwable): Boolean =
     false
 
+  protected val taskProtection: TaskScaleInProtection =
+    TaskScaleInProtection.default
+
   def process(message: Message): Future[Action] = {
     val startTime = Instant.now()
 
-    for {
+    taskProtection.acquire()
+
+    val processed = for {
       result <- parseMessage(message) match {
         case Failure(e) => Future.successful(TerminalFailure[Summary](e))
 
@@ -42,6 +47,10 @@ trait Worker[Message, Work, Summary, Action] extends Logging {
 
       action = chooseAction(result)
     } yield action(message)
+
+    // Released before the action is applied downstream; workers are
+    // idempotent, so a scale-in in that window only costs a redelivery.
+    processed.andThen { case _ => taskProtection.release() }
   }
 
   private def chooseAction(result: Result[_]): Message => Action =
