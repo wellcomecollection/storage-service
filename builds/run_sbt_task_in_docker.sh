@@ -48,11 +48,17 @@ else
   HOST_COURSIER_CACHE=~/$LINUX_COURSIER_CACHE
 fi
 
+# Coursier fetches 6 artefacts at a time per JVM by default. Our builds fan out
+# to 20+ parallel jobs, and that was enough to be rate-limited (HTTP 429) by both
+# Maven Central and the CodeArtifact mirror.
+COURSIER_PARALLELISM=2
+
 docker run --tty --rm \
   -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-}" \
   -e AWS_SECRET_KEY="${AWS_SECRET_KEY:-}" \
   -e AWS_SESSION_TOKEN="${AWS_SESSION_TOKEN:-}" \
   -e CODEARTIFACT_AUTH_TOKEN="${CODEARTIFACT_AUTH_TOKEN:-}" \
+  -e SBT_OPTS="-Dcoursier.parallel-download-count=$COURSIER_PARALLELISM" \
   --volume ~/.sbt:/root/.sbt \
   --volume ~/.ivy2:/root/.ivy2 \
   --volume "$HOST_COURSIER_CACHE:/root/$LINUX_COURSIER_CACHE" \
