@@ -1,6 +1,7 @@
 ### Project Specific ###
 
 .metals
+metals.sbt
 .idea
 *.iml
 .lambda_hashes.json
