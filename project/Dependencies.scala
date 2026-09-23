@@ -2,15 +2,15 @@ import sbt._
 
 object WellcomeDependencies {
   lazy val versions = new {
-    val typesafe = "32.43.2"
-    val fixtures = "32.43.2"
-    val http = "32.43.2"
-    val json = "32.43.2"
-    val messaging = "32.43.2"
-    val monitoring = "32.43.2"
-    val storage = "32.43.2"
-    val elasticsearch = "32.43.2"
-    val sierra = "32.43.2"
+    val typesafe = "32.44.0"
+    val fixtures = "32.44.0"
+    val http = "32.44.0"
+    val json = "32.44.0"
+    val messaging = "32.44.0"
+    val monitoring = "32.44.0"
+    val storage = "32.44.0"
+    val elasticsearch = "32.44.0"
+    val sierra = "32.44.0"
   }
 
   val jsonLibrary: Seq[ModuleID] = Seq(
@@ -83,6 +83,7 @@ object ExternalDependencies {
   lazy val versions = new {
 
     val azure = "12.25.4"
+    val commonsCodec = "1.17.1"
     val commonsCompress = "1.27.1"
     val commonsIO = "2.17.0"
     val mockito = "5.13.0"
@@ -96,16 +97,21 @@ object ExternalDependencies {
 
     // This should match the version of aws used in scala-libs; see
     // https://github.com/wellcomecollection/scala-libs/blob/main/project/Dependencies.scala
-    val aws = "2.28.16"
+    val aws = "2.55.0"
 
     // These are the "Common Runtime Libraries", which you're encouraged to use for
     // better performance.
     // See https://docs.aws.amazon.com/sdkref/latest/guide/common-runtime.html
-    val awsCrt = "0.29.25"
+    val awsCrt = "0.48.4"
   }
 
   val azureDependencies: Seq[ModuleID] = Seq(
     "com.azure" % "azure-storage-blob" % versions.azure
+  )
+
+  // Used to arrive through the AWS SDK's apache-client, which scala-libs no longer brings in
+  val commonsCodecDependencies = Seq(
+    "commons-codec" % "commons-codec" % versions.commonsCodec
   )
 
   val commonsCompressDependencies = Seq(
@@ -133,7 +139,7 @@ object ExternalDependencies {
   )
 
   val nettyDependencies: Seq[ModuleID] = Seq(
-    "io.netty" % "netty-tcnative" % "2.0.66.Final"
+    "io.netty" % "netty-tcnative" % "2.0.84.Final"
   )
 
   val awsTransferManagerDependencies: Seq[ModuleID] = Seq(
@@ -145,6 +151,7 @@ object ExternalDependencies {
 object StorageDependencies {
   val commonDependencies =
     ExternalDependencies.azureDependencies ++
+      ExternalDependencies.commonsCodecDependencies ++
       ExternalDependencies.commonsIODependencies ++
       ExternalDependencies.scalatestDependencies ++
       ExternalDependencies.scalatestPlusDependencies ++

@@ -40,6 +40,11 @@ object Common {
       "-Xcheckinit"
     ),
     parallelExecution in Test := false,
+    // zenko, the test S3, can't parse the trailing checksums newer AWS SDKs send by default
+    testOptions in Test += Tests.Setup { () =>
+      sys.props("aws.requestChecksumCalculation") = "when_required"
+      sys.props("aws.responseChecksumValidation") = "when_required"
+    },
     // Don't build scaladocs
     // https://www.scala-sbt.org/sbt-native-packager/formats/universal.html#skip-packagedoc-task-on-stage
     mappings in (Compile, packageDoc) := Nil
