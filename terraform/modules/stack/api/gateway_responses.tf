@@ -1,5 +1,5 @@
 module "gateway_responses" {
-  source = "github.com/wellcomecollection/terraform-aws-api-gateway-responses.git?ref=v1.1.3"
+  source = "github.com/wellcomecollection/terraform-aws-api-gateway-responses.git?ref=v1.2.0"
 
   rest_api_id = aws_api_gateway_rest_api.api.id
 }
