@@ -18,4 +18,7 @@ provider "aws" {
 
 provider "azurerm" {
   features {}
+
+  # azurerm 3.x tries to register resource providers Azure has since retired
+  skip_provider_registration = true
 }

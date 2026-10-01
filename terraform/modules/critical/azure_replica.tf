@@ -27,6 +27,11 @@ resource "azurerm_storage_account" "wellcome" {
   # checks a blob was written correctly.  After 30 days, blobs will be
   # cycled out of Cool into the Archive tier.
   access_tier = "Cool"
+
+  # Tags are owned by Wellcome's Azure governance tooling, not this config
+  lifecycle {
+    ignore_changes = [tags]
+  }
 }
 
 # These containers both have legal holds enabled, as described in
