@@ -36,7 +36,7 @@ sniffio==1.3.1
     # via httpx
 typing-extensions==4.12.2
     # via anyio
-urllib3==2.7.0
+urllib3==2.8.0
     # via requests
 wellcome-storage-service==1.5.0
     # via -r requirements.in
