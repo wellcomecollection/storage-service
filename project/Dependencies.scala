@@ -2,15 +2,15 @@ import sbt._
 
 object WellcomeDependencies {
   lazy val versions = new {
-    val typesafe = "32.44.0"
-    val fixtures = "32.44.0"
-    val http = "32.44.0"
-    val json = "32.44.0"
-    val messaging = "32.44.0"
-    val monitoring = "32.44.0"
-    val storage = "32.44.0"
-    val elasticsearch = "32.44.0"
-    val sierra = "32.44.0"
+    val typesafe = "32.44.1"
+    val fixtures = "32.44.1"
+    val http = "32.44.1"
+    val json = "32.44.1"
+    val messaging = "32.44.1"
+    val monitoring = "32.44.1"
+    val storage = "32.44.1"
+    val elasticsearch = "32.44.1"
+    val sierra = "32.44.1"
   }
 
   val jsonLibrary: Seq[ModuleID] = Seq(
@@ -83,6 +83,11 @@ object ExternalDependencies {
   lazy val versions = new {
 
     val azure = "12.25.4"
+
+    // azure-core 1.48.0 brings in jackson 2.13.5 and netty-resolver-dns 4.1.107,
+    // which have open security advisories
+    val jackson = "2.18.11"
+    val nettyDns = "4.1.138.Final"
     val commonsCodec = "1.17.1"
     val commonsCompress = "1.27.1"
     val commonsIO = "2.17.0"
@@ -106,7 +111,11 @@ object ExternalDependencies {
   }
 
   val azureDependencies: Seq[ModuleID] = Seq(
-    "com.azure" % "azure-storage-blob" % versions.azure
+    "com.azure" % "azure-storage-blob" % versions.azure,
+    "com.fasterxml.jackson.core" % "jackson-core" % versions.jackson,
+    "com.fasterxml.jackson.core" % "jackson-databind" % versions.jackson,
+    "io.netty" % "netty-resolver-dns" % versions.nettyDns,
+    "io.netty" % "netty-codec-dns" % versions.nettyDns
   )
 
   // Used to arrive through the AWS SDK's apache-client, which scala-libs no longer brings in
