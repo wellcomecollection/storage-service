@@ -92,7 +92,7 @@ module "stack_prod" {
   nginx_container = {
     container_registry = "760097843905.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome"
     container_name     = "nginx_apigw"
-    container_tag      = "f1188c2a7df01663dd96c99b26666085a4192167"
+    container_tag      = "db63674d25832955b2127ecdc0d8ec3c2129fcab"
   }
 
   app_containers = {
