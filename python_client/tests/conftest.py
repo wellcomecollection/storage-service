@@ -35,11 +35,23 @@ def sanitize_token(interaction, current_cassette):
         pass
 
 
+# Swapping secrets for placeholders changes the length of recorded bodies, so
+# the recorded Content-Length no longer matches.  urllib3 2 enforces it and
+# fails with IncompleteRead, so drop it and let replayed bodies be read in full.
+def drop_content_length(interaction, current_cassette):
+    resp_headers = interaction.data["response"]["headers"]
+
+    for name in list(resp_headers):
+        if name.lower() == "content-length":
+            del resp_headers[name]
+
+
 betamax.Betamax.register_serializer(PrettyJSONSerializer)
 
 with betamax.Betamax.configure() as config:
     config.cassette_library_dir = "tests/cassettes"
     config.before_record(callback=sanitize_token)
+    config.before_playback(callback=drop_content_length)
     config.default_cassette_options["serialize_with"] = PrettyJSONSerializer.name
 
 
