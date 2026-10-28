@@ -1,6 +1,6 @@
 boto3==1.43.6
 botocore==1.43.6
-certifi==2026.4.22
+certifi==2026.10.23
 click==8.3.3
 elastic-transport==8.17.1
 elasticsearch==8.19.3
