@@ -2,15 +2,15 @@ import sbt._
 
 object WellcomeDependencies {
   lazy val versions = new {
-    val typesafe = "32.44.1"
-    val fixtures = "32.44.1"
-    val http = "32.44.1"
-    val json = "32.44.1"
-    val messaging = "32.44.1"
-    val monitoring = "32.44.1"
-    val storage = "32.44.1"
-    val elasticsearch = "32.44.1"
-    val sierra = "32.44.1"
+    val typesafe = "32.45.0"
+    val fixtures = "32.45.0"
+    val http = "32.45.0"
+    val json = "32.45.0"
+    val messaging = "32.45.0"
+    val monitoring = "32.45.0"
+    val storage = "32.45.0"
+    val elasticsearch = "32.45.0"
+    val sierra = "32.45.0"
   }
 
   val jsonLibrary: Seq[ModuleID] = Seq(
