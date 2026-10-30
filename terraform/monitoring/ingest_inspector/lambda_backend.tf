@@ -8,7 +8,7 @@ module "ingest_inspector_lambda" {
 
   name        = "ingest_inspector_backend"
   description = "API endpoint for the Ingest Inspector app."
-  runtime     = "python3.10"
+  runtime     = "python3.12"
 
   s3_bucket         = data.aws_s3_object.ingest_inspector.bucket
   s3_key            = data.aws_s3_object.ingest_inspector.key
