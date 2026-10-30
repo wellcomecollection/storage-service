@@ -17,21 +17,6 @@ module "catalogue_secrets" {
   }
 }
 
-module "end_to_end_tester_secrets" {
-  source = "github.com/wellcomecollection/terraform-aws-secrets.git?ref=v1.4.0"
-
-  description = local.description
-
-  providers = {
-    aws = aws.storage
-  }
-
-  key_value_map = {
-    "end_to_end_bag_tester/client_id"     = module.end_to_end_client.id
-    "end_to_end_bag_tester/client_secret" = module.end_to_end_client.secret
-  }
-}
-
 module "dev_secrets" {
   source = "github.com/wellcomecollection/terraform-aws-secrets.git?ref=v1.4.0"
 

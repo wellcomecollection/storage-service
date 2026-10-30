@@ -32,9 +32,14 @@ resource "aws_s3_bucket_website_configuration" "daily_reporter" {
 resource "aws_s3_bucket_lifecycle_configuration" "daily_reporter" {
   bucket = aws_s3_bucket.daily_reporter.id
 
+  # Keep the values AWS already has; provider 6.x would otherwise change them.
+  transition_default_minimum_object_size = "varies_by_storage_class"
+
   rule {
     id     = "expire_old_reports"
     status = "Enabled"
+
+    filter {}
 
     expiration {
       days = 90
