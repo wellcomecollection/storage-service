@@ -168,9 +168,9 @@ class ArchivematicaUUIDBagMigrator:
             file_location=f"{working_folder}/bag-info.txt", delimiter=": "
         )
 
-        assert (
-            "Internal-Sender-Identifier:" not in bag_info
-        ), "Found Internal-Sender-Identifier in bag-info.txt"
+        assert "Internal-Sender-Identifier:" not in bag_info, (
+            "Found Internal-Sender-Identifier in bag-info.txt"
+        )
 
         bag_info["Internal-Sender-Identifier"] = archivematica_uuid
         bag_info_path = os.path.join(working_folder, "bag-info.txt")
@@ -184,16 +184,16 @@ class ArchivematicaUUIDBagMigrator:
         for k, v in new_checksums.items():
             merged_checksums[k] = v
 
-        assert (
-            "fetch.txt" in merged_checksums.keys()
-        ), "fetch.txt not found in merged checksums"
+        assert "fetch.txt" in merged_checksums.keys(), (
+            "fetch.txt not found in merged checksums"
+        )
 
         old_bag_info_checksum = existing_checksums.get("bag-info.txt")
         new_bag_info_checksum = merged_checksums.get("bag-info.txt")
 
-        assert (
-            old_bag_info_checksum != new_bag_info_checksum
-        ), "bag-info.txt checksum is incorrect"
+        assert old_bag_info_checksum != new_bag_info_checksum, (
+            "bag-info.txt checksum is incorrect"
+        )
 
         with open(f"{working_folder}/{self.tagmanifest_name}", "w") as fp:
             for checksum, filename in merged_checksums.items():
@@ -223,9 +223,9 @@ class ArchivematicaUUIDBagMigrator:
         internal_identifier = storage_manifest["info"].get("internalSenderIdentifier")
 
         assert provider == "amazon-s3", f"Provider must be amazon-s3, found {provider}"
-        assert (
-            internal_identifier is None
-        ), f"Internal identifier found: {internal_identifier}"
+        assert internal_identifier is None, (
+            f"Internal identifier found: {internal_identifier}"
+        )
 
         working_id = id.replace("/", "_")
         working_folder = os.path.join(self.target_folder, working_id)
@@ -241,7 +241,7 @@ class ArchivematicaUUIDBagMigrator:
         self._write_fetch_file(
             working_folder=working_folder, bucket=bucket, path=path, files=payload_files
         )
-        logger.log(f"Wrote fetch.txt")
+        logger.log("Wrote fetch.txt")
 
         # Get required files from bag
         self._get_bagit_files_from_s3(
@@ -251,7 +251,7 @@ class ArchivematicaUUIDBagMigrator:
             version=version,
             tagmanifest_files=tagmanifest_files,
         )
-        logger.log(f"Got BagIt files from S3")
+        logger.log("Got BagIt files from S3")
 
         # Update bag-info.txt
         archivematica_uuid = self._get_archivematica_uuid(files=payload_files)
@@ -357,7 +357,7 @@ if __name__ == "__main__":
     os.makedirs(target_folder, exist_ok=True)
 
     logger = SimpleLog(
-        log_location=os.path.join(target_folder, f"error.log"),
+        log_location=os.path.join(target_folder, "error.log"),
         init_msg=f"Starting migration of {documents_to_process} bags",
     )
 

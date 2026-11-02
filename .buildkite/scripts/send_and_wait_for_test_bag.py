@@ -77,10 +77,10 @@ if __name__ == "__main__":
         print(f"status = {status.ljust(9)} (t = {pprint_time(elapsed_time)})")
 
         if status == "succeeded":
-            print(f"🎉 Test bag successful!")
+            print("🎉 Test bag successful!")
             break
         elif status == "failed":
-            print(f"😱 Test bag failed!")
+            print("😱 Test bag failed!")
             sys.exit(1)
         else:
             time.sleep(5)

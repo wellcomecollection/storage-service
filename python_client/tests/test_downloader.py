@@ -90,7 +90,7 @@ class TestS3IADownload(object):
             bagit = tf.getmember("b11733330/bagit.txt")
             tf.extract(bagit, path=str(tmpdir))
             assert tmpdir.join("b11733330", "bagit.txt").read() == (
-                "BagIt-Version: 0.97\n" "Tag-File-Character-Encoding: UTF-8\n"
+                "BagIt-Version: 0.97\nTag-File-Character-Encoding: UTF-8\n"
             )
 
     def test_downloading_compressed_bag_gets_dir_entries(self, client, tmpdir):

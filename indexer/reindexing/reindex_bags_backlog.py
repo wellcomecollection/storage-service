@@ -3,6 +3,7 @@
 This script will send every bag in the storage service to the bags indexer
 to be re-indexed in Elasticsearch.
 """
+
 from pprint import pprint
 
 import click

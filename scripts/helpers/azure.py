@@ -111,9 +111,9 @@ def unlocked_azure_container(*, account, container):
 
         # Check we really have removed all the legal hold tags, or the inner
         # body of the 'with' block will fail.
-        assert (
-            _get_legal_hold_tags(account=account, container=container) == []
-        ), f"Unable to remove legal hold tags from Azure container {container}"
+        assert _get_legal_hold_tags(account=account, container=container) == [], (
+            f"Unable to remove legal hold tags from Azure container {container}"
+        )
 
         yield
     finally:

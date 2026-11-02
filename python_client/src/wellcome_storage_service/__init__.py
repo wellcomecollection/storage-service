@@ -219,7 +219,7 @@ def prod_client():
     return RequestsOAuthStorageServiceClient(
         api_url=api_url,
         token_url="https://auth.wellcomecollection.org/oauth2/token",
-        **secrets
+        **secrets,
     )
 
 
@@ -229,5 +229,5 @@ def staging_client():
     return RequestsOAuthStorageServiceClient(
         api_url=api_url,
         token_url="https://auth.wellcomecollection.org/oauth2/token",
-        **secrets
+        **secrets,
     )

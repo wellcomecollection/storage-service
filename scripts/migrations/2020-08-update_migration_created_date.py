@@ -71,7 +71,7 @@ def get_backfill_item(id, version):
             Key={"id": id, "version": version}
         )["Item"]
     except KeyError:
-        record_error(id, version, f"Cannot find backfill storage manifest!!!!")
+        record_error(id, version, "Cannot find backfill storage manifest!!!!")
 
 
 def is_expected_diff(id, version, diff):
