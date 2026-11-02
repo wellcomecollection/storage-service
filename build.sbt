@@ -20,7 +20,6 @@ def setupProject(
   project
     .in(new File(folder))
     .settings(Common.settings: _*)
-    .enablePlugins(DockerComposePlugin)
     .enablePlugins(JavaAppPackaging)
     .dependsOn(dependsOn: _*)
     .settings(libraryDependencies ++= externalDependencies)

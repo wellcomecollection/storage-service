@@ -1,19 +1,20 @@
-elasticsearch:
-  image: "docker.elastic.co/elasticsearch/elasticsearch:7.17.5"
-  ports:
-    - "9200:9200"
-    - "9300:9300"
-  environment:
-    - "http.host=0.0.0.0"
-    - "transport.host=0.0.0.0"
-    - "cluster.name=wellcome"
-    - "ES_JAVA_OPTS=-Xms750m -Xmx750m"
-    - "discovery.type=single-node"
-    - "xpack.security.enabled=false"
-localstack:
-  image: "public.ecr.aws/localstack/localstack:3.0.0"
-  environment:
-    - SERVICES=sqs
-    - ALLOW_NONSTANDARD_REGIONS=1
-  ports:
-    - "4566:4566"
+services:
+  elasticsearch:
+    image: "docker.elastic.co/elasticsearch/elasticsearch:7.17.5"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - "http.host=0.0.0.0"
+      - "transport.host=0.0.0.0"
+      - "cluster.name=wellcome"
+      - "ES_JAVA_OPTS=-Xms750m -Xmx750m"
+      - "discovery.type=single-node"
+      - "xpack.security.enabled=false"
+  localstack:
+    image: "public.ecr.aws/localstack/localstack:3.0.0"
+    environment:
+      - SERVICES=sqs
+      - ALLOW_NONSTANDARD_REGIONS=1
+    ports:
+      - "4566:4566"

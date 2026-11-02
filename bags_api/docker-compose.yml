@@ -1,6 +1,7 @@
-s3:
-  image: "ghcr.io/scality/cloudserver:9.5.2"
-  environment:
-    - "S3BACKEND=mem"
-  ports:
-    - "33333:8000"
+services:
+  s3:
+    image: "ghcr.io/scality/cloudserver:9.5.2"
+    environment:
+      - "S3BACKEND=mem"
+    ports:
+      - "33333:8000"
