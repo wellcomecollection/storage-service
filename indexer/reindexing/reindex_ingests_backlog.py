@@ -3,6 +3,7 @@
 This script will send every ingest in the storage service to the ingests indexer
 to be re-indexed in Elasticsearch.
 """
+
 from boto3.dynamodb.types import TypeDeserializer
 from pprint import pprint
 import click

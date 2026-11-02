@@ -42,7 +42,7 @@ def get_s3_object(*, bucket, key):
     """
     Retrieves the contents of an object from S3.
     """
-    out_path = os.path.join(f"_cache", bucket, key)
+    out_path = os.path.join("_cache", bucket, key)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
     try:

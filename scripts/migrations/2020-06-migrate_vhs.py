@@ -125,9 +125,9 @@ def parallel_scan_table(dynamo_client, *, TableName, **kwargs):
                 tasks_to_do.append(scan_params)
 
             for scan_params in itertools.islice(scans_to_run, len(done)):
-                futures[
-                    executor.submit(dynamo_client.scan, **scan_params)
-                ] = scan_params
+                futures[executor.submit(dynamo_client.scan, **scan_params)] = (
+                    scan_params
+                )
 
 
 @click.command()

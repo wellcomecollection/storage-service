@@ -15,7 +15,7 @@ def get_aws_session(*, role_arn, **kwargs):
         aws_access_key_id=credentials["AccessKeyId"],
         aws_secret_access_key=credentials["SecretAccessKey"],
         aws_session_token=credentials["SessionToken"],
-        **kwargs
+        **kwargs,
     )
 
 

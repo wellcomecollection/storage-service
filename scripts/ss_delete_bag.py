@@ -408,9 +408,9 @@ def _get_dynamodb_items_to_delete(
     #
     # This information can be reconstructed by running the verifier over the
     # Azure replica.
-    assert all(
-        f["path"].startswith(f"{version}/") for f in files_to_delete
-    ), files_to_delete
+    assert all(f["path"].startswith(f"{version}/") for f in files_to_delete), (
+        files_to_delete
+    )
     assert azure_location["prefix"].endswith(f"/{version}")
 
     azure_table_name = f"storage-{environment}_azure_verifier_tags"

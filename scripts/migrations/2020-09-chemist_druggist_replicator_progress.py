@@ -116,6 +116,6 @@ if __name__ == "__main__":
 
     print("")
     print(
-        f"This means {round(position/len(files)*100, 1)}% "
+        f"This means {round(position / len(files) * 100, 1)}% "
         f"({position} / {len(files)}) of files have been replicated"
     )

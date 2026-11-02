@@ -155,7 +155,7 @@ def run_query(*, es_host, es_user, es_pass, query_type, query):
     es_url = f"https://{es_host}:9243/storage_files/_{query_type}"
 
     auth_string = f"{es_user}:{es_pass}".encode("ascii")
-    auth_header = f"Basic " + base64.b64encode(auth_string).decode("ascii")
+    auth_header = "Basic " + base64.b64encode(auth_string).decode("ascii")
 
     print(f"Making query {json.dumps(query)}")
     req = urllib.request.Request(

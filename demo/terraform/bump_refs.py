@@ -28,7 +28,7 @@ def update_commit_id(line, commit_id):
     return re.sub(
         r'source = "github\.com/wellcomecollection/storage-service\.git//(?P<directory>[^\?]+)\?ref=[a-f0-9]+"',
         f'source = "github.com/wellcomecollection/storage-service.git//\\g<directory>?ref={commit_id}"',
-        line
+        line,
     )
 
 
@@ -42,7 +42,7 @@ def update_file(path, commit_id):
         subprocess.check_call(["git", "add", path])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         commit_id = sys.argv[1]
     except IndexError:
@@ -52,12 +52,28 @@ if __name__ == '__main__':
         if path.endswith(".tf"):
             update_file(path, commit_id)
 
-    subprocess.check_call(["git", "commit", "-m", f"Bump module references in the demo stack to {commit_id}"])
+    subprocess.check_call(
+        [
+            "git",
+            "commit",
+            "-m",
+            f"Bump module references in the demo stack to {commit_id}",
+        ]
+    )
 
-    current_commit = subprocess.check_output(["git", "rev-parse", "HEAD"]).strip().decode("utf8")[:7]
+    current_commit = (
+        subprocess.check_output(["git", "rev-parse", "HEAD"]).strip().decode("utf8")[:7]
+    )
 
     for f in ("README.md", "main.tf"):
         update_file(f, current_commit)
         subprocess.check_call(["git", "add", f])
 
-    subprocess.check_call(["git", "commit", "-m", f"Bump module references in the demo stack README to {current_commit}"])
+    subprocess.check_call(
+        [
+            "git",
+            "commit",
+            "-m",
+            f"Bump module references in the demo stack README to {current_commit}",
+        ]
+    )
