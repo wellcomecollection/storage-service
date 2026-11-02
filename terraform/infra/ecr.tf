@@ -20,19 +20,52 @@ locals {
     "replica_aggregator",
   ]
 
-  ecr_policy_only_keep_the_last_100_images = jsonencode({
+  # Keeps every image a deployment can reference (env.* and latest tags), then only the newest 10 others,
+  # so Inspector scans what we run rather than months of CI builds.
+  ecr_lifecycle_policy = jsonencode({
     rules = [
       {
         rulePriority = 1
-        description  = "Only keep the last 100 images in a repo"
+        description  = "Keep env tagged images, e.g. env.prod or env.stage"
         selection = {
-          tagStatus   = "any"
+          tagStatus     = "tagged"
+          tagPrefixList = ["env."]
+          countType     = "imageCountMoreThan"
+          countNumber   = 20
+        }
+        action = { type = "expire" }
+      },
+      {
+        rulePriority = 2
+        description  = "Keep the latest tagged image"
+        selection = {
+          tagStatus     = "tagged"
+          tagPrefixList = ["latest"]
+          countType     = "imageCountMoreThan"
+          countNumber   = 1
+        }
+        action = { type = "expire" }
+      },
+      {
+        rulePriority = 3
+        description  = "Expire other tagged images, keep only the last 10"
+        selection = {
+          tagStatus      = "tagged"
+          tagPatternList = ["*"]
+          countType      = "imageCountMoreThan"
+          countNumber    = 10
+        }
+        action = { type = "expire" }
+      },
+      {
+        rulePriority = 4
+        description  = "Expire untagged images, keep only the last 5"
+        selection = {
+          tagStatus   = "untagged"
           countType   = "imageCountMoreThan"
-          countNumber = 100
+          countNumber = 5
         }
-        action = {
-          type = "expire"
-        }
+        action = { type = "expire" }
       }
     ]
   })
@@ -48,7 +81,7 @@ resource "aws_ecr_lifecycle_policy" "private" {
   for_each = aws_ecr_repository.private
 
   repository = each.value.name
-  policy     = local.ecr_policy_only_keep_the_last_100_images
+  policy     = local.ecr_lifecycle_policy
 }
 
 resource "aws_ecrpublic_repository" "public" {
