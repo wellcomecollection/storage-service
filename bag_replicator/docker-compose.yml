@@ -1,18 +1,19 @@
-localstack:
-  image: "public.ecr.aws/localstack/localstack:3.0.0"
-  environment:
-    - SERVICES=sqs
-    - ALLOW_NONSTANDARD_REGIONS=1
-  ports:
-    - "4566:4566"
-s3:
-  image: "ghcr.io/scality/cloudserver:9.5.2"
-  environment:
-    - "S3BACKEND=mem"
-  ports:
-    - "33333:8000"
-azurite:
-  image: "mcr.microsoft.com/azure-storage/azurite"
-  ports:
-    - "10000:10000"
-  command: ["azurite", "--blobHost", "0.0.0.0"]
+services:
+  localstack:
+    image: "public.ecr.aws/localstack/localstack:3.0.0"
+    environment:
+      - SERVICES=sqs
+      - ALLOW_NONSTANDARD_REGIONS=1
+    ports:
+      - "4566:4566"
+  s3:
+    image: "ghcr.io/scality/cloudserver:9.5.2"
+    environment:
+      - "S3BACKEND=mem"
+    ports:
+      - "33333:8000"
+  azurite:
+    image: "mcr.microsoft.com/azure-storage/azurite"
+    ports:
+      - "10000:10000"
+    command: ["azurite", "--blobHost", "0.0.0.0"]
