@@ -91,7 +91,7 @@ module "stack_staging" {
   logging_container = {
     container_registry = "760097843905.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome"
     container_name     = "fluentbit"
-    container_tag      = "e0fd0a21b26600e07ca0748bd64819f058d5e40c"
+    container_tag      = "0b9948b83bfb68e4481ed988f15ede80239e4879"
   }
 
   nginx_container = {
