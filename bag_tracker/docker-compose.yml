@@ -4,7 +4,7 @@ services:
     ports:
       - "45678:8000"
   s3:
-    image: "760097843905.dkr.ecr.eu-west-1.amazonaws.com/zenko/cloudserver:8.1.8"
+    image: "ghcr.io/scality/cloudserver:9.5.2"
     environment:
       - "S3BACKEND=mem"
     ports:

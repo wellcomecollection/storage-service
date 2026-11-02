@@ -70,7 +70,8 @@ class S3TagsTest
   describe("handles S3-specific errors") {
     // We can associate with at most 10 tags on an object; see
     // https://docs.aws.amazon.com/AmazonS3/latest/dev/object-tagging.html
-    it("if you send more than 10 tags") {
+    // Ignored because cloudserver, the test S3, stopped enforcing this limit after 8.1.8.
+    ignore("if you send more than 10 tags") {
       val newTags = (1 to 11).map { i =>
         s"key-$i" -> s"value-$i"
       }.toMap
@@ -124,7 +125,7 @@ class S3TagsTest
             }
 
         assertIsS3Exception(result) {
-          _ should startWith("The TagKey you have provided is invalid")
+          _ should startWith("The TagKey you have provided is too long")
         }
       }
     }
@@ -144,7 +145,7 @@ class S3TagsTest
             }
 
         assertIsS3Exception(result) {
-          _ should startWith("The TagValue you have provided is invalid")
+          _ should startWith("The TagValue you have provided is too long")
         }
       }
     }
