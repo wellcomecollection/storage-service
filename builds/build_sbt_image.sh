@@ -35,7 +35,15 @@ echo "*** Building Docker image for sbt app"
 
 ./builds/run_sbt_task_in_docker.sh "project $PROJECT_NAME" ";stage"
 
+# Where the image came from, so a vulnerability finding on it can link to the
+# commit and Dockerfile that built it.
+SOURCE_REPOSITORY=$(git config --get remote.origin.url | sed -E 's#^(git@github\.com:|https://github\.com/)##; s#\.git$##')
+SOURCE_REVISION=$(git rev-parse HEAD)
+
 docker build \
   --file "$PROJECT_DIRECTORY/Dockerfile" \
   --tag "$PROJECT_NAME:$IMAGE_TAG" \
+  --label "org.opencontainers.image.source=https://github.com/$SOURCE_REPOSITORY" \
+  --label "org.opencontainers.image.revision=$SOURCE_REVISION" \
+  --label "org.wellcomecollection.dockerfile=$PROJECT_DIRECTORY/Dockerfile" \
   "$PROJECT_DIRECTORY"
