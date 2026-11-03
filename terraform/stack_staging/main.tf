@@ -97,7 +97,7 @@ module "stack_staging" {
   nginx_container = {
     container_registry = "760097843905.dkr.ecr.eu-west-1.amazonaws.com/uk.ac.wellcome"
     container_name     = "nginx_apigw"
-    container_tag      = "db63674d25832955b2127ecdc0d8ec3c2129fcab"
+    container_tag      = "a7ebe942849d2368af6de85fa1c4ca639a293bf3"
   }
 
   app_containers = {
