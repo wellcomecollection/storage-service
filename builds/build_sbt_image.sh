@@ -37,7 +37,7 @@ echo "*** Building Docker image for sbt app"
 
 # Where the image came from, so a vulnerability finding on it can link to the
 # commit and Dockerfile that built it.
-SOURCE_REPOSITORY=$(git config --get remote.origin.url | sed -E 's#^(git@github\.com:|https://github\.com/)##; s#\.git$##')
+SOURCE_REPOSITORY=$(git config --get remote.origin.url | sed -E 's#^.*github\.com(:[0-9]+)?[:/]##; s#\.git$##')
 SOURCE_REVISION=$(git rev-parse HEAD)
 
 docker build \
