@@ -1,0 +1,8 @@
+# Sidecar image tags are set centrally in platform-infrastructure/sidecars/terraform.
+data "aws_ssm_parameter" "fluentbit_tag" {
+  name = "/platform/sidecars/fluentbit/prod"
+}
+
+data "aws_ssm_parameter" "nginx_tag" {
+  name = "/platform/sidecars/nginx/prod"
+}
