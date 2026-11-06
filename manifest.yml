@@ -1,7 +1,7 @@
-# Backstage-format description of this repository, gathered into
+# Backplane (backplane/v1) description of this repository, gathered into
 # https://github.com/wellcomecollection/catalog, which names the owning team
 # for this repository wherever it appears (for example in the security digests).
-apiVersion: backstage.io/v1alpha1
+apiVersion: backplane/v1
 kind: System
 metadata:
   name: storage-service
@@ -9,4 +9,4 @@ metadata:
   annotations:
     github.com/project-slug: wellcomecollection/storage-service
 spec:
-  owner: digital-platform
+  owner: team:digital-platform
