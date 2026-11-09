@@ -22,6 +22,11 @@ FROM public.ecr.aws/docker/library/eclipse-temurin:11-jre
 
 LABEL maintainer = "Wellcome Collection <digital@wellcomecollection.org>"
 
+# Pick up Ubuntu security fixes the upstream image has not been rebuilt with yet.
+RUN apt-get update \
+    && apt-get upgrade --yes --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
 ADD target/universal/stage /opt/docker
 
 ENTRYPOINT ["/opt/docker/bin/bag_replicator"]

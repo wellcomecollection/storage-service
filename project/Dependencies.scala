@@ -84,10 +84,10 @@ object ExternalDependencies {
 
     val azure = "12.25.4"
 
-    // azure-core 1.48.0 brings in jackson 2.13.5 and netty-resolver-dns 4.1.107,
+    // azure-core 1.48.0 brings in jackson 2.13.5 and netty 4.1.107/4.1.108 modules,
     // which have open security advisories
     val jackson = "2.18.11"
-    val nettyDns = "4.1.138.Final"
+    val netty = "4.1.138.Final"
     val commonsCodec = "1.17.1"
     val commonsCompress = "1.27.1"
     val commonsIO = "2.17.0"
@@ -114,8 +114,10 @@ object ExternalDependencies {
     "com.azure" % "azure-storage-blob" % versions.azure,
     "com.fasterxml.jackson.core" % "jackson-core" % versions.jackson,
     "com.fasterxml.jackson.core" % "jackson-databind" % versions.jackson,
-    "io.netty" % "netty-resolver-dns" % versions.nettyDns,
-    "io.netty" % "netty-codec-dns" % versions.nettyDns
+    "io.netty" % "netty-resolver-dns" % versions.netty,
+    "io.netty" % "netty-codec-dns" % versions.netty,
+    "io.netty" % "netty-handler-proxy" % versions.netty,
+    "io.netty" % "netty-transport-native-epoll" % versions.netty
   )
 
   // Used to arrive through the AWS SDK's apache-client, which scala-libs no longer brings in
