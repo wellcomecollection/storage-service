@@ -1,0 +1,8 @@
+name: backplane
+on: pull_request
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: wellcometrust/backplane-validate@v0

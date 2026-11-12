@@ -1,0 +1,11 @@
+apiVersion: backplane/v1
+kind: Component
+metadata:
+  name: storage-bag-versioner
+  title: Bag versioner
+  description: Assigns a version to each new bag
+spec:
+  type: pipeline
+  owner: team:digital-platform
+  lifecycle: production
+  system: system:storage-service
