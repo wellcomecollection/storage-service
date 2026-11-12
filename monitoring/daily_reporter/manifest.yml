@@ -1,0 +1,11 @@
+apiVersion: backplane/v1
+kind: Component
+metadata:
+  name: storage-daily-reporter
+  title: Daily reporter
+  description: Daily Lambda that posts a summary of recent ingests to Slack
+spec:
+  type: service
+  owner: team:digital-platform
+  lifecycle: production
+  system: system:storage-service

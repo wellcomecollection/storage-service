@@ -1,0 +1,11 @@
+apiVersion: backplane/v1
+kind: Component
+metadata:
+  name: storage-file-finder
+  title: File finder
+  description: Lists the files in a stored bag for the file indexer
+spec:
+  type: pipeline
+  owner: team:digital-platform
+  lifecycle: production
+  system: system:storage-service

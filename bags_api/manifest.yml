@@ -1,0 +1,11 @@
+apiVersion: backplane/v1
+kind: Component
+metadata:
+  name: storage-bags-api
+  title: Bags API
+  description: Public API for reading stored bags, run with the bag tracker as a sidecar
+spec:
+  type: service
+  owner: team:digital-platform
+  lifecycle: production
+  system: system:storage-service

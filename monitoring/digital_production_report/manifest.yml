@@ -1,0 +1,11 @@
+apiVersion: backplane/v1
+kind: Component
+metadata:
+  name: storage-digital-production-report
+  title: Digital production report
+  description: Monthly Lambda that builds reports for the Digital Production team
+spec:
+  type: service
+  owner: team:digital-platform
+  lifecycle: production
+  system: system:storage-service

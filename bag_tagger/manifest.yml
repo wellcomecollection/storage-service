@@ -1,0 +1,11 @@
+apiVersion: backplane/v1
+kind: Component
+metadata:
+  name: storage-bag-tagger
+  title: Bag tagger
+  description: Tags stored objects with their content type
+spec:
+  type: pipeline
+  owner: team:digital-platform
+  lifecycle: production
+  system: system:storage-service

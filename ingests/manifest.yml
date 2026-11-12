@@ -1,0 +1,11 @@
+apiVersion: backplane/v1
+kind: Component
+metadata:
+  name: storage-ingests-service
+  title: Ingests service
+  description: API, tracker and worker that accept new ingests and record their progress
+spec:
+  type: service
+  owner: team:digital-platform
+  lifecycle: production
+  system: system:storage-service

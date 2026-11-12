@@ -1,0 +1,11 @@
+apiVersion: backplane/v1
+kind: Component
+metadata:
+  name: storage-ingest-inspector
+  title: Ingest Inspector
+  description: Web app for tracking the progress of an ingest
+spec:
+  type: website
+  owner: team:digital-platform
+  lifecycle: production
+  system: system:storage-service

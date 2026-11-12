@@ -1,0 +1,11 @@
+apiVersion: backplane/v1
+kind: Component
+metadata:
+  name: storage-ingests-indexer
+  title: Ingests indexer
+  description: Indexes ingests into Elasticsearch
+spec:
+  type: pipeline
+  owner: team:digital-platform
+  lifecycle: production
+  system: system:storage-service
