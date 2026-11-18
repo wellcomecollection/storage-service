@@ -7,6 +7,7 @@ resource "aws_cloudwatch_metric_alarm" "alarm_5xx" {
   period              = "60"
   statistic           = "Sum"
   threshold           = "0"
+  alarm_description   = "[component=storage-bags-api severity=${var.alarm_severity}] Storage API Gateway is returning 5xx errors"
 
   dimensions = {
     ApiName = aws_api_gateway_rest_api.api.name
@@ -14,5 +15,11 @@ resource "aws_cloudwatch_metric_alarm" "alarm_5xx" {
   }
 
   alarm_actions = [var.alarm_topic_arn]
+
+  tags = {
+    "backplane:component"     = "storage-bags-api"
+    "github.com/project-slug" = "wellcomecollection/storage-service"
+    severity                  = var.alarm_severity
+  }
 }
 

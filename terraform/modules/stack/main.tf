@@ -760,6 +760,7 @@ module "api" {
   cognito_user_pool_arn = var.cognito_user_pool_arn
 
   alarm_topic_arn = var.api_gateway_alarm_topic_arn
+  alarm_severity  = var.api_alarm_severity
 
   auth_scopes = [
     "${var.cognito_storage_api_identifier}/ingests",

@@ -11,6 +11,11 @@ variable "dlq_alarm_arn" {
   type = string
 }
 
+variable "api_alarm_severity" {
+  type    = string
+  default = "low"
+}
+
 variable "working_storage_bucket_prefix" {
   type    = string
   default = ""

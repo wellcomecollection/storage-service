@@ -26,6 +26,8 @@ module "stack_staging" {
 
   dlq_alarm_arn = local.dlq_alarm_arn
 
+  api_alarm_severity = "low"
+
   cognito_user_pool_arn          = local.cognito_user_pool_arn
   cognito_storage_api_identifier = local.cognito_storage_api_identifier
 

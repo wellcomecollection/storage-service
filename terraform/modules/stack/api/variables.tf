@@ -17,3 +17,7 @@ variable "auth_scopes" {
 variable "alarm_topic_arn" {
   type = string
 }
+
+variable "alarm_severity" {
+  type = string
+}
