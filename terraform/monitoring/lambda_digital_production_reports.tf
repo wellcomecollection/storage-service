@@ -12,12 +12,14 @@ resource "aws_s3_object" "digital_production_report_lambda" {
 }
 
 module "digital_production_report_lambda" {
-  source = "github.com/wellcomecollection/terraform-aws-lambda.git?ref=v1.2.0"
+  source = "github.com/wellcomecollection/terraform-aws-lambda.git?ref=v1.3.0"
 
   name        = "digital_production_report"
   description = "Create monthly/quarterly reports for the Digital Production team"
 
   error_alarm_topic_arn = local.lambda_error_alerts_topic_arn
+  alarm_component       = "storage-digital-production-report"
+  alarm_repository      = "wellcomecollection/storage-service"
 
   s3_bucket         = aws_s3_object.digital_production_report_lambda.bucket
   s3_key            = aws_s3_object.digital_production_report_lambda.key

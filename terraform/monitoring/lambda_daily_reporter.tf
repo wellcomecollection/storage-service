@@ -4,7 +4,7 @@ data "aws_s3_object" "daily_reporter" {
 }
 
 module "daily_reporter" {
-  source = "github.com/wellcomecollection/terraform-aws-lambda.git?ref=v1.2.0"
+  source = "github.com/wellcomecollection/terraform-aws-lambda.git?ref=v1.3.0"
 
   name        = "daily_reporter"
   description = "Publish a daily report of storage service activity to Slack"
@@ -19,6 +19,8 @@ module "daily_reporter" {
   timeout = 300
 
   error_alarm_topic_arn = local.lambda_error_alerts_topic_arn
+  alarm_component       = "storage-daily-reporter"
+  alarm_repository      = "wellcomecollection/storage-service"
 }
 
 data "aws_secretsmanager_secret_version" "storage_service_reporter_slack_webhook" {
