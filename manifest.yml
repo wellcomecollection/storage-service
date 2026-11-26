@@ -10,3 +10,13 @@ metadata:
     github.com/project-slug: wellcomecollection/storage-service
 spec:
   owner: team:digital-platform
+---
+apiVersion: backplane/v1
+kind: Resource
+metadata:
+  name: storage-replica-primary
+  description: S3 bucket wellcomecollection-storage, the primary replica, read directly by iiif-builder, the METS transformer and DLCS
+spec:
+  type: bucket
+  owner: team:digital-platform
+  system: system:storage-service
