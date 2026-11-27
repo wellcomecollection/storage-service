@@ -9,3 +9,6 @@ spec:
   owner: team:digital-platform
   lifecycle: production
   system: system:storage-service
+  dependsOn:
+    - ref: resource:reporting-elasticsearch
+      description: Reads the reporting cluster

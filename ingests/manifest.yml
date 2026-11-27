@@ -9,3 +9,5 @@ spec:
   owner: team:digital-platform
   lifecycle: production
   system: system:storage-service
+  dependsOn:
+    - resource:api-wellcomecollection-org-cloudfront
